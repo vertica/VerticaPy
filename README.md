@@ -1,3 +1,5 @@
+<img src='./tutorials/images/vpython.png' width="230px">
+
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
 Licensed under the Apache License, Version 2.0 (the "License");
 You may not use this file except in compliance with the License.
