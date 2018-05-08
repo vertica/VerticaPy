@@ -56,4 +56,4 @@ from vertica_ml_python import RVD
 myRVD = RVD('input_relation', dsn='VerticaDSN')
 ```
 
-You can then see the documentation for the different methods or just enjoy the different tutorials!
+You can then see the documentation for the different methods or just enjoy the different tutorials! The titanic and iris tutorials are perfect to understand the library.
