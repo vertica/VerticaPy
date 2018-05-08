@@ -30,7 +30,7 @@ It is a prototype version (0.1) and it is thanks to all the feedbacks that it ca
 
 / ! \ Some of the functions will drastically change in the next release!
 
-If you have any feedback about the library please contact me: badr.ouali@microfocus.com
+If you have any feedback about the library, please contact me: badr.ouali@microfocus.com
 
 ## Prerequires:
 
