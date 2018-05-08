@@ -1,4 +1,4 @@
-<div style="text-align:center"><img src='./tutorial/images/vpython.png' width="230px"></div>
+<img align="center" src='./tutorial/images/vpython.png' width="230px">
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
 Licensed under the Apache License, Version 2.0 (the "License");
