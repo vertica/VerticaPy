@@ -45,7 +45,9 @@ Easy Start:
 
 If you have a DSN and pyodbc is already installed in your machine, write the following command.
 
+```
 from vertica_ml_python import RVD
-myRVD=RVD('input_relation',dsn='VerticaDSN')
+myRVD = RVD('input_relation', dsn='VerticaDSN')
+```
 
-You can then see the documentation for the different methods.
+You can then see the documentation for the different methods or just enjoy the different tutorials!
