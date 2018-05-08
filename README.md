@@ -1,3 +1,5 @@
+
+<br>
 <img align="center" src='./tutorial/images/vpython.png' width="230px">
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
