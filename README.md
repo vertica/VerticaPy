@@ -27,6 +27,7 @@ Disadvantages:
 / ! \ Please read the Vertica ML Python Documentation. If you do not have time just read below.
 
 It is a prototype version (0.1) and it is thanks to all the feedbacks that it can really be improved. 
+
 / ! \ Some of the functions will drastically change in the next release!
 
 If you have any feedback about the library please contact me: badr.ouali@microfocus.com
