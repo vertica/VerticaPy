@@ -31,7 +31,7 @@
 #                    #
 ######################
 
-__version__ = "1.0.0"
+__version__ = "0.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@microfocus.com"
 __description__ = """Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica."""
