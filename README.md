@@ -20,7 +20,7 @@ limitations under the License.
 
 When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, if we want to use all our data and do not move it we need to adapt to the DB language.
 
-Vertica-ML-Python allows user to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without loading any data in memory.
+Vertica-ML-Python allows user to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without the inconvenient to load data in memory. The user can then explore all the data he has, do all the data preparation and create a model without modifying anything. Vertica-ML-Python will help him to generate the SQL pipeline he needs to create the object. 
 
 It introduces an object called the RVD which is quite similar in the use to pandas.Dataframe in order to make the Python users feel comfortable. The following example shows how to create a RVD from a csv file (the titanic dataset) and draw the 'embarked' feature histogram.
 
@@ -36,7 +36,7 @@ titanic=read_csv('titanic.csv',cur)
 titanic["embarked"].hist()
 ```
 <p align="center">
-<img src='./tutorial/images/embarked_hist.png' width="230px">
+<img src='./tutorial/images/embarked_hist.png' width="480px">
 </p>
 
 The following example shows how to create a logistic regression model and evaluate it.
@@ -51,7 +51,7 @@ logit=logistic_reg(model_name="lr_titanic",input_relation="train_titanic067",res
 logit.features_importance()
 ```
 <p align="center">
-<img src='./tutorial/images/logit_fi.png' width="230px">
+<img src='./tutorial/images/logit_fi.png' width="480px">
 </p>
 
 ```
@@ -60,7 +60,7 @@ logit.roc()
 ```
 
 <p align="center">
-<img src='./tutorial/images/titanic_roc.png' width="230px">
+<img src='./tutorial/images/titanic_roc.png' width="480px">
 </p>
 
 Main advantages:
