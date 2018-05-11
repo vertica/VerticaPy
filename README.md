@@ -18,6 +18,10 @@ limitations under the License.
 
 # Vertica-ML-Python
 
+Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Resilient Vertica Dataset), and offers multiple graphical rendering possibilities.
+
+## Why using this Library?
+
 When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, we need a real adaptation when we want to use all our data and do not move it.
 
 Vertica-ML-Python allows users to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without the inconvenient to load data in memory. The user can then explore all the data he has, do all the data preparation and create a model without modifying anything (or even loading the data!). Vertica-ML-Python will help him to generate the SQL pipeline he needs to create the object. 
