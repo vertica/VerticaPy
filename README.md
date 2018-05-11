@@ -124,11 +124,11 @@ Main advantages:
 Disadvantages:
  - Vertica-ML-Python will never replace sql and it will never be as fast as using direct sql (direct vsql for example) as some optimizations can not be generated. It is not as complete as sql but it helps to complete it where sql fails.
 
-/ ! \ Please read the Vertica ML Python Documentation. If you do not have time just read below.
+&#9888; Please read the Vertica ML Python Documentation. If you do not have time just read below.
 
 It is a prototype version (0.1) and it is thanks to all the feedbacks that it can really be improved. 
 
-/ ! \ Some of the functions will drastically change in the next release!
+&#9888; Some of the functions will drastically change in the next release!
 
 If you have any feedback about the library, please contact me: badr.ouali@microfocus.com
 
@@ -140,7 +140,9 @@ Vertica ML Python library is only using the standard Python libraries such as py
 
 Vertica ML Python doesn’t really need installation.
 To import easily the Vertica ML Python library from anywhere in your computer just copy paste the entire vertica_ml_python folder in the site-package folder of the Python framework. In the MAC environment, you can find it in: 
+```
  /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages
+```
 
 ## Easy Start:
 
