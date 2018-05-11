@@ -16,9 +16,52 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-# vertica_ml_python
+# Vertica-ML-Python
 
-Vertica-ML-Python allows user to create  RVD (Resilient Vertica Dataset). RVD  simplifies data exploration, data cleaning and machine learning in  Vertica. It is an object which keeps in it all the actions that the user wants to achieve and execute them when they are needed.   
+When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, if we want to use all our data and do not move it we need to adapt to the DB language.
+
+Vertica-ML-Python allows user to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without loading any data in memory.
+
+It introduces an object called the RVD which is quite similar in the use to pandas.Dataframe in order to make the Python users feel comfortable. The following example shows how to create a RVD from a csv file (the titanic dataset) and draw the 'embarked' feature histogram.
+
+```
+# Creation of the pyodbc cursor
+import pyodbc
+cur=pyodbc.connect("DSN=VerticaDSN").cursor()
+
+# Creation of the RVD from a csv file
+from vertica_ml_python import read_csv
+titanic=read_csv('titanic.csv',cur)
+
+titanic["embarked"].hist()
+```
+<p align="center">
+<img src='./tutorial/images/embarked_hist.png' width="230px">
+</p>
+
+The following example shows how to create a logistic regression model and evaluate it.
+
+```
+# Creation of the logistic regression model
+from vertica_ml_python import logistic_reg
+logit=logistic_reg(model_name="lr_titanic",input_relation="train_titanic067",response_column="survived",
+                   predictor_columns=["age","gender","family_size","embarked","fare","pclass"],cursor=cur)
+
+# Evaluation of the model importance
+logit.features_importance()
+```
+<p align="center">
+<img src='./tutorial/images/logit_fi.png' width="230px">
+</p>
+
+```
+# Drawing the ROC curve
+logit.roc()
+```
+
+<p align="center">
+<img src='./tutorial/images/titanic_roc.png' width="230px">
+</p>
 
 Main advantages:
  - easy data exploration of large dataset using Vertica.
