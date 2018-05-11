@@ -18,9 +18,61 @@ limitations under the License.
 
 # Vertica-ML-Python
 
-When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, if we want to use all our data and do not move it we need to adapt to the DB language.
+When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, we need a real adaptation when we want to use all our data and do not move it.
 
-Vertica-ML-Python allows user to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without the inconvenient to load data in memory. The user can then explore all the data he has, do all the data preparation and create a model without modifying anything. Vertica-ML-Python will help him to generate the SQL pipeline he needs to create the object. 
+Vertica-ML-Python allows users to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without the inconvenient to load data in memory. The user can then explore all the data he has, do all the data preparation and create a model without modifying anything (or even loading the data!). Vertica-ML-Python will help him to generate the SQL pipeline he needs to create the object. 
+
+For example, to describe the titanic dataset Vertica-ML-Python will send to Vertica (using ODBC or JDBC connection) the following query.
+
+```
+select summarize_numcol(age,body,fare,parch,pclass,sibsp,survived) over ()
+from
+  (select *
+   from
+     (select age as age,
+             boat as boat,
+             body as body,
+                     cabin as cabin,
+                     embarked as embarked,
+                     fare as fare,
+                     homedest as homedest,
+                     name as name,
+                     parch as parch,
+                     pclass as pclass,
+                     sex as sex,
+                     sibsp as sibsp,
+                     survived as survived,
+                     ticket as ticket
+      from titanic
+      offset 0) t1) new_table
+```
+
+Everything is generated using a really simple method.
+
+```
+titanic.describe()
+
+# Output
+              count                 mean                  std     min   \\
+age            1046      29.881137667304     14.4134932112713    0.17   \\
+body            121     160.809917355372     97.6969219960031     1.0   \\
+fare           1308     33.2954792813456     51.7586682391741     0.0   \\
+parch          1309    0.385026737967914    0.865560275349515     0.0   \\
+pclass         1309     2.29488158899923    0.837836018970128     1.0   \\
+sibsp          1309    0.498854087089381      1.0416583905961     0.0   \\
+survived       1309    0.381970970206264    0.486055170866483     0.0   \\
+                 25%        50%       75%         max    cardinality  
+age             21.0       28.0      39.0        80.0             98  
+body            72.0      155.0     256.0       328.0            121  
+fare          7.8958    14.4542    31.275    512.3292            281  
+parch            0.0        0.0       0.0         9.0              8  
+pclass           2.0        3.0       3.0         3.0              3  
+sibsp            0.0        0.0       1.0         8.0              7  
+survived         0.0        0.0       1.0         1.0              2 
+```
+
+To impute a column, it will just save inside the object the correct 'coalesce' statement. 
+To encode a feature using a label encoding, it will simply save inside the object the correct 'decode' statement.
 
 It introduces an object called the RVD which is quite similar in the use to pandas.Dataframe in order to make the Python users feel comfortable. The following example shows how to create a RVD from a csv file (the titanic dataset) and draw the 'embarked' feature histogram.
 
