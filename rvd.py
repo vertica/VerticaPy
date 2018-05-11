@@ -979,7 +979,10 @@ class RVD:
 				query="select summarize_numcol("
 				for column in columns:
 					if ((self[column].category()=="float") or (self[column].category()=="int")):
-						query+=column+","
+						if (self[column].transformations[-1][1]=="boolean"):
+							query+=column+"::int,"
+						else:
+							query+=column+","
 				query=query[:-1]
 				query+=") over () from {}".format(self._table_transf_())
 				self._display_query_(query,title="Compute the descriptive statistics of all the numerical columns")
