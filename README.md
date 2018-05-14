@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src='./tutorial/images/vpython.png' width="230px">
+<img src='./notebooks/images/vpython.png' width="230px">
 </p>
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
@@ -92,7 +92,7 @@ titanic=read_csv('titanic.csv',cur)
 titanic["embarked"].hist()
 ```
 <p align="center">
-<img src='./tutorial/images/embarked_hist.png' width="480px">
+<img src='./notebooks/images/embarked_hist.png' width="480px">
 </p>
 
 The following example shows how to create a logistic regression model and evaluate it.
@@ -107,7 +107,7 @@ logit=logistic_reg(model_name="lr_titanic",input_relation="train_titanic067",res
 logit.features_importance()
 ```
 <p align="center">
-<img src='./tutorial/images/logit_fi.png' width="480px">
+<img src='./notebooks/images/logit_fi.png' width="480px">
 </p>
 
 ```
@@ -116,7 +116,7 @@ logit.roc()
 ```
 
 <p align="center">
-<img src='./tutorial/images/titanic_roc.png' width="480px">
+<img src='./notebooks/images/titanic_roc.png' width="480px">
 </p>
 
 Main advantages:
@@ -157,4 +157,4 @@ from vertica_ml_python import RVD
 myRVD = RVD('input_relation', dsn='VerticaDSN')
 ```
 
-You can then see the documentation for the different methods or just enjoy the different tutorials! The titanic and iris tutorials are perfect to understand the library.
+You can then see the documentation for the different methods or just enjoy the different tutorials (see the 'notebooks' folder)! The titanic and iris tutorials are perfect to understand the library.
