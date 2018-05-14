@@ -16,9 +16,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+&#9888; If you want to contribute, you can post your notebook in the 'notebooks' folder! For more information, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
+
 # Vertica-ML-Python
 
 Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Resilient Vertica Dataset), and offers multiple graphical rendering possibilities.
+
+## Features
+
+Everything can be done with only one line of code.
+
+<ul>
+  <li>Use only standard libraries (except for trees drawing)</li>
+  <li>Use JDBC or ODBC connections</li>
+  <li>Data Visualization (Histograms, Pie/Donut Charts, 2D/3D Scatter Plots, Correlation Matrix...)</li>
+  <li>Data Preparation (Normalization, One Hot Encoding, Label Encoding, Imputing Missing Values...)</li>
+  <li>Multiple Machine Learning Algorithms (Logistic Regression, Random Forest, SVM, Naive Bayes, Kmeans...)</li>
+  <li>Models Evaluation (Cross Validation, ROC curve, accuracy, logloss, Lift Table...)</li>
+</ul>
+
 
 ## Why using this Library?
 
@@ -134,7 +150,7 @@ It is a prototype version (0.1) and it is thanks to all the feedbacks that it ca
 
 &#9888; Some of the functions will drastically change in the next release!
 
-If you have any feedback about the library, please contact me: badr.ouali@microfocus.com
+If you have any feedback about the library, please contact me: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 
 ## Prerequires:
 
