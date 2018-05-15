@@ -3,6 +3,7 @@
 <ul>
   <li>You are entering the Weedle's Cave. Many Pokemons having really different characteristics are fighting. The purpose is to build a Machine Learning algorithm to predict which Pokemon will win the different fights. Will you be able to predict the outcome of future matches?</li>
   <br>
+  <li>File: pokemon.ipynb</li>
   <li>Difficulty: Hard</li>
   <li>Estimated Time: 3 days</li>
 </ul>
