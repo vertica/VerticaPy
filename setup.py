@@ -66,6 +66,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     keywords='vertica machine-learning python big-data data-visualization preparation data-science python-library',
+    packages=find_packages(),
     package_dir={'':'vertica_ml_python'},
     install_requires=['numpy','math','matplotlib','random','time','shutil'], 
     project_urls={ 
