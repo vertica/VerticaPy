@@ -9,5 +9,5 @@
 </ul>
 <br>
 <p align="center">
-<img src="./wine.png" width="530px">
+<img src="./wine.png" width="430px">
 </p>
