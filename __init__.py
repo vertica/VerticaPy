@@ -35,7 +35,7 @@ __version__ = "0.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@microfocus.com"
 __description__ = """Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica."""
-__url__ = "https://github.com/..."
+__url__ = "https://github.com/vertica/vertica_ml_python/"
 
 # RVD
 from vertica_ml_python.rvd import RVD
