@@ -18,6 +18,8 @@ limitations under the License.
 
 &#9888; If you want to contribute, you can post your notebook in the 'notebooks' folder! For more information, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 
+To see the available notebooks, please take a look at this link: http://nbviewer.jupyter.org/github/vertica/vertica_ml_python/
+
 # Vertica-ML-Python
 
 Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Resilient Vertica Dataset), and offers multiple graphical rendering possibilities.
