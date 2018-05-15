@@ -10,3 +10,7 @@
   <li>You can also help the community and create your own homework about Vertica-ML-Python. In this case, feel free to contact me. I would be glad to explain you how it can be done.</li>
   <li>Most of all, enjoy! All the homework will help you to understand data science in a really interesting way.</li>
 </ul>
+
+<p align="center">
+<img src="./pokemon/vpython.png" width="230px">
+</p>
