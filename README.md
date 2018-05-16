@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src='./images/vertica-ml-python.png' width="230px">
+<img src='./images/vpython.png' width="230px">
 </p>
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
