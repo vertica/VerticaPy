@@ -110,7 +110,7 @@ titanic=read_csv('titanic.csv',cur)
 titanic["embarked"].hist()
 ```
 <p align="center">
-<img src='./notebooks/images/embarked_hist.png' width="480px">
+<img src='./images/embarked_hist.png' width="480px">
 </p>
 
 The following example shows how to create a logistic regression model and evaluate it.
@@ -125,7 +125,7 @@ logit=logistic_reg(model_name="lr_titanic",input_relation="train_titanic067",res
 logit.features_importance()
 ```
 <p align="center">
-<img src='./notebooks/images/logit_fi.png' width="480px">
+<img src='./images/logit_fi.png' width="480px">
 </p>
 
 ```
@@ -134,7 +134,7 @@ logit.roc()
 ```
 
 <p align="center">
-<img src='./notebooks/images/titanic_roc.png' width="480px">
+<img src='./images/titanic_roc.png' width="480px">
 </p>
 
 Main advantages:
