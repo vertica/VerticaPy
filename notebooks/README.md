@@ -1,5 +1,3 @@
-To see the available notebooks, please take a look at this link: http://nbviewer.jupyter.org/github/vertica/vertica_ml_python/notebooks/ (however, the rendering is better using directly Jupyter)
-
 # You want to share your own Vertica notebook?
 
 <ul>
