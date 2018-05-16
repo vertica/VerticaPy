@@ -1,5 +1,3 @@
-To see the 'pokemon.ipyng' file, please take a look at this link: http://nbviewer.jupyter.org/github/vertica/vertica_ml_python/homework/pokemon/pokemon.ipyng (however, the rendering is better using directly Jupyter)
-
 # Homework2: Pokemon - Weedle's Cave
 
 <ul>
