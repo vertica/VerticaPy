@@ -49,24 +49,21 @@ For example, to describe the titanic dataset Vertica-ML-Python will send to Vert
 ```
 select summarize_numcol(age,body,fare,parch,pclass,sibsp,survived) over ()
 from
-  (select *
-   from
-     (select age as age,
-             boat as boat,
-             body as body,
-                     cabin as cabin,
-                     embarked as embarked,
-                     fare as fare,
-                     homedest as homedest,
-                     name as name,
-                     parch as parch,
-                     pclass as pclass,
-                     sex as sex,
-                     sibsp as sibsp,
-                     survived as survived,
-                     ticket as ticket
-      from titanic
-      offset 0) t1) new_table
+  (select age as age,
+          boat as boat,
+          body as body,
+          cabin as cabin,
+          embarked as embarked,
+          fare as fare,
+          homedest as homedest,
+          name as name,
+          parch as parch,
+          pclass as pclass,
+          sex as sex,
+          sibsp as sibsp,
+          survived as survived,
+          ticket as ticket
+      from titanic) new_table
 ```
 
 Everything is generated using a really simple method.
