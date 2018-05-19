@@ -665,16 +665,19 @@ class RVD:
 		    except:
 		    	pass
 		# add the limit and the offset in the end of the query
-		if (type(self.offset)==int) and (self.offset>=0):
+		if (type(self.offset)==int) and (self.offset>0):
 			table+=" offset "+str(self.offset)
 		if (type(self.limit)==int) and (self.limit>=0):
 			table+=" limit "+str(self.limit)
-		table="("+table+") t"+str(max_len)
 		try:
-			table+=all_where[max_len-1]
+			if (all_where[max_len-1]==""):
+				table="("+table+") new_table"
+			else:
+				table="("+table+") t"+str(max_len)
+				table+=all_where[max_len-1]
+				table="(select * from "+table+") new_table"
 		except:
-			pass
-		table="(select * from "+table+") new_table"
+			table="("+table+") new_table"
 		return table
 	#
 	###########
