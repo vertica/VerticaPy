@@ -47,6 +47,8 @@ from vertica_ml_python.fun import isnotebook
 from vertica_ml_python.fun import run_query
 from vertica_ml_python.fun import column_matrix
 
+import pandas as pd
+
 # Drop Table if it exists
 def drop_table(input_relation,cursor,print_info=True):
 	cursor.execute("select 1;")
@@ -248,7 +250,7 @@ class RVD:
 		schema_input_relation=input_relation.split(".")
 		if (len(schema_input_relation)==1):
 			# Name of the concerned table
-			self.schema=None
+			self.schema="public"
 			self.input_relation=input_relation
 		else:
 			self.input_relation=schema_input_relation[1]
@@ -257,9 +259,7 @@ class RVD:
 		self.cursor=cursor
 		# All the columns of the RVD
 		if (type(columns)!=list):
-			query="select column_name from columns where table_name='{}'".format(self.input_relation)
-			if (self.schema!=None):
-				query+=" and table_schema='{}'".format(self.schema)
+			query="select column_name from columns where table_name='{}' and table_schema='{}'".format(self.input_relation,self.schema)
 			cursor.execute(query)
 			columns=cursor.fetchall()
 			columns=[str(item) for sublist in columns for item in sublist]
@@ -269,9 +269,7 @@ class RVD:
 		else:
 			view=True
 		if (view):
-			query="select * from views where table_name='{}'".format(self.input_relation)
-			if (self.schema!=None):
-				query+=" and table_schema='{}'".format(self.schema)
+			query="select * from views where table_name='{}' and table_schema='{}'".format(self.input_relation,self.schema)
 			cursor.execute(query)
 			columns=cursor.fetchall()
 			if (columns==[]):
@@ -653,7 +651,7 @@ class RVD:
 		first_values=[item[0] for item in all_imputations_grammar]
 		for i in range(0,len(first_values)):
 		    first_values[i]=first_values[i]+" as "+self.columns[i]
-		table="select "+", ".join(first_values)+" from "+self.input_relation+tablesample
+		table="select "+", ".join(first_values)+" from "+self.schema+"."+self.input_relation+tablesample
 		# all the other floors
 		for i in range(1,max_len):
 		    values=[item[i] for item in all_imputations_grammar]
@@ -687,6 +685,23 @@ class RVD:
 	###########
 	# 
 	# add a new RVC to the rvd
+	def to_pandas(self,limit=30,table_info=True):
+		query="select * from {} limit {}".format(self._table_transf_(),limit)
+		self._display_query_(query)
+		start_time = time.time()
+		self.cursor.execute(query)
+		self._display_time_(elapsed_time=time.time()-start_time)
+		column_names=[column[0] for column in self.cursor.description]
+		query_result=self.cursor.fetchall()
+		#print("The value of query_result is {}".format(query_result))
+		#print("----------------------------------------------------")
+		data=[list(item) for item in query_result]
+		#print("The value of data is {}".format(data))
+		df=pd.DataFrame(data)
+		df.columns = column_names
+		return df
+
+
 	def add_feature(self,alias,imputation):
 		if not(isinstance(alias,str)):
 			raise TypeError("The parameter 'alias' must be a varchar")
