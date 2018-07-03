@@ -687,6 +687,23 @@ class RVD:
 	###########
 	# 
 	# add a new RVC to the rvd
+	def to_pandas(self,limit=30,table_info=True):
+		query="select * from {} limit {}".format(self._table_transf_(),limit)
+		self._display_query_(query)
+		start_time = time.time()
+		self.cursor.execute(query)
+		self._display_time_(elapsed_time=time.time()-start_time)
+		column_names=[column[0] for column in self.cursor.description]
+		query_result=self.cursor.fetchall()
+		#print("The value of query_result is {}".format(query_result))
+		#print("----------------------------------------------------")
+		data=[list(item) for item in query_result]
+		#print("The value of data is {}".format(data))
+		df=pd.DataFrame(data)
+		df.columns = column_names
+		return df
+
+
 	def add_feature(self,alias,imputation):
 		if not(isinstance(alias,str)):
 			raise TypeError("The parameter 'alias' must be a varchar")
