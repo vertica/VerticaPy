@@ -180,22 +180,48 @@ def print_table(data_columns,is_finished=True,offset=0,repeat_first_column=False
 		pass
 	return formatted_text
 # Return the column_matrix of a query
-def run_query(query,cursor,limit=1000):
-	query0="select * from ("+str(query)+") new_table_vpython limit "+str(limit)
-	start_time=time.time()
-	cursor.execute(query0)
-	elapsed_time=time.time()-start_time
-	all_columns=[[column[0]] for column in cursor.description]
-	for k in range(limit):
-		raw=cursor.fetchone()
-		try:
-			for i in range(len(raw)):
-				all_columns[i]+=[raw[i]]
-		except:
-			break;
-	query1="select count(*) from ("+str(query)+") new_table_vpython"
-	cursor.execute(query1)
-	count=cursor.fetchone()[0]
-	is_finished=(len(all_columns[0])>=count)
-	table_info="count="+str(count)+" rows, elapsed_time="+str(elapsed_time)
-	return column_matrix(all_columns,repeat_first_column=False,is_finished=is_finished,table_info=table_info)
+def run_query(query,cursor,limit=1000,pandas_rtn=False,table_name=None):
+	if(table_name!=None):
+		query0="create table {} as {}".format(table_name,str(query))
+		start_time=time.time()
+		cursor.execute(query0)
+		elapsed_time=time.time()-start_time
+		from vertica_ml_python import RVD
+		return(RVD(table_name,cursor))
+	else:
+		query0="select * from ("+str(query)+") new_table_vpython limit "+str(limit)
+		start_time=time.time()
+		cursor.execute(query0)
+		elapsed_time=time.time()-start_time
+		all_columns=[[column[0]] for column in cursor.description]
+		row_matrix_column_names=[item[0] for item in all_columns]
+		row_matrix_data=[[]]
+		print("The value of all_columns before for{}".format(all_columns))
+		for k in range(limit):
+			raw=cursor.fetchone()
+			try:
+				if(pandas_rtn):
+					row_matrix_data+=[list(raw)]
+				else:
+					for i in range(len(raw)):
+						all_columns[i]+=[raw[i]]
+				
+			except:
+				break;
+		query1="select count(*) from ("+str(query)+") new_table_vpython"
+		#print(query1)
+		cursor.execute(query1)
+		count=cursor.fetchone()[0]
+		is_finished=(len(all_columns[0])>=count)
+		#print("The value of all_coumns is {}".format(all_columns));
+		#print("The value of len_all_columns[0] is {} , count value is {}".format(len(all_columns[0]),count))
+		table_info="count="+str(count)+" rows, elapsed_time="+str(elapsed_time)
+		if pandas_rtn:
+			#return pd.DataFrame(row_matrix)
+			#print("The value of row_matrix is {}".format(row_matrix))
+			
+			df=pd.DataFrame(row_matrix_data)
+			df.columns = row_matrix_column_names
+			return df
+		else:
+			return column_matrix(all_columns,repeat_first_column=False,is_finished=is_finished,table_info=table_info)
