@@ -32,6 +32,7 @@
 ######################
 
 # Libraries
+import pandas as pd
 import numpy as np
 import os
 import math
@@ -207,7 +208,7 @@ def run_query(query,cursor,limit=1000,pandas_rtn=False,table_name=None):
 						all_columns[i]+=[raw[i]]
 				
 			except:
-				break;
+				break
 		query1="select count(*) from ("+str(query)+") new_table_vpython"
 		#print(query1)
 		cursor.execute(query1)
