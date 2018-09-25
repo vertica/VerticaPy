@@ -187,8 +187,8 @@ class RVC:
 			raise Exception("The best hist interval can only be computed with numerical RVC or dates")
 	# Return the RVC category and the type
 	def _cat_type_(self):
-		query="select data_type from columns where table_name='{}' and column_name='{}';".format(
-			self.parent.input_relation,self.alias)
+		query="select data_type from columns where table_name='{}' and (column_name='{}' or column_name='{}');".format(
+			self.parent.input_relation,self.alias,self.alias[1:-1])
 		self.parent.cursor.execute(query)
 		query_result=self.parent.cursor.fetchall()
 		if not(query_result==[]):
@@ -1601,6 +1601,11 @@ class RVC:
 	# Generates the RVC count per category
 	def value_counts(self,max_cardinality=30):
 		return self.describe(mode="categorical",max_cardinality=max_cardinality)
+
+
+
+
+
 
 
 
