@@ -238,7 +238,7 @@ class RVD:
 	# RVD has 7 main attributes: input_relation, cursor, dsn, columns, where, offset and limit
 	# It has also 7 other attributes to simplify the code and to have easy interaction with
 	# sql and matplotlib. 
-	def  __init__(self,input_relation,cursor=None,dsn=None,columns=None):
+	def  __init__(self,input_relation,cursor=None,dsn=None,columns=None,with_quote=False):
 		if ((isinstance(cursor,type(None))) and (isinstance(dsn,type(None)))):
 			raise Exception("At least one of the two parameters (dsn or cursor) must receive an input for the RVD creation")
 		if ((isinstance(cursor,type(None))) and not(isinstance(dsn,str))):
@@ -263,6 +263,13 @@ class RVD:
 			cursor.execute(query)
 			columns=cursor.fetchall()
 			columns=[str(item) for sublist in columns for item in sublist]
+			for column in columns:
+				if (column.find(' ')!=-1 or column.find('<')!=-1 or column.find('>')!=-1 or column.find('-')!=-1 or column.find('#')!=-1 or column.find('+')!=-1 or column.find('*')!=-1 or column.find('/')!=-1):
+					print("/!\\ Warning: A special char has been detected in a column name. The RVD will work with quotes.") 
+					with_quote=True
+					break
+			if (with_quote):
+				columns=['"' + item + '"' for item in columns]
 		if (columns!=[]):
 			self.columns=columns
 			view=False
@@ -289,6 +296,8 @@ class RVD:
 		for column in self.columns:
 			new_rvc=RVC(column,parent=self)
 			setattr(self,column,new_rvc)
+			if (with_quote):
+				setattr(self,column[1:-1],new_rvc)
 		# Table Limitation
 		self.limit=None 
 		# Table Offset
@@ -1339,18 +1348,19 @@ class RVD:
 	def missing(self):
 		count=self.count()
 		query=[]
-		for column in self.columns:
-			query+=["(select '{}',count(*) as count from {} where {} is null)".format(
-						column,self._table_transf_(),column)]
-		query=" union ".join(query)+" order by count desc"
-		self._display_query_(query,title="Compute all the missing elements for each feature")
+		all_count=["count("+column+")" for column in self.columns]
+		query="select "+",".join(all_count)+" from "+self._table_transf_()
+		self._display_query_(query,title="Compute the number of elements for each feature")
 		start_time = time.time()
 		self.cursor.execute(query)
 		self._display_time_(elapsed_time=time.time()-start_time)
 		query_result=self.cursor.fetchall()
-		missing_values_count=[item[1] for item in query_result]
-		missing_array=[[""]+[item[0] for item in query_result],["total"]+missing_values_count,
-						["percent"]+[round(item/float(count),3) for item in missing_values_count]]
+		missing_values_count=[item for item in query_result[0]]
+		column_and_missing=[(missing_values_count[i],self.columns[i]) for i in range(len(missing_values_count))]
+		column_and_missing.sort()
+		missing_values_count=[item[0] for item in column_and_missing]
+		columns=[item[1] for item in column_and_missing]
+		missing_array=[[""]+columns,["total"]+[count-item for item in missing_values_count],["percent"]+[round((float(count)-item)/float(count),3) for item in missing_values_count]]
 		return column_matrix(missing_array)
 	# Multiple Histograms
 	def multiple_hist(self,columns,method="density",of=None,h=None,color=None):
