@@ -693,7 +693,7 @@ class RVD:
 	#         #
 	###########
 	# 
-	# add a new RVC to the rvd
+	# convert the RVD to a pandas dataframe
 	def to_pandas(self,limit=30,table_info=True):
 		query="select * from {} limit {}".format(self._table_transf_(),limit)
 		self._display_query_(query)
@@ -709,8 +709,7 @@ class RVD:
 		df=pd.DataFrame(data)
 		df.columns = column_names
 		return df
-
-
+	# add a new RVC to the rvd
 	def add_feature(self,alias,imputation):
 		if not(isinstance(alias,str)):
 			raise TypeError("The parameter 'alias' must be a varchar")
@@ -723,8 +722,8 @@ class RVD:
 			start_time = time.time()
 			self.cursor.execute(query)
 			self._display_time_(elapsed_time=time.time()-start_time)
-			query="create temporary table "+name+" as select {} as {} from {} limit 20".format(
-				imputation,alias,self.input_relation)
+			query="create temporary table "+name+" as select {} as {} from {}.{} limit 20".format(
+				imputation,alias,self.schema,self.input_relation)
 			self._display_query_(query,title="Create a temporary table to test if the new feature is correct")
 			start_time = time.time()
 			self.cursor.execute(query)
