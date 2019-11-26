@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src='./img/logo.png' width="230px">
+<img src='./img/logo.png' width="180px">
 </p>
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
@@ -20,21 +20,20 @@ limitations under the License.
 
 # Vertica-ML-Python
 
-Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Resilient Vertica Dataset), and offers multiple graphical rendering possibilities.
+Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
 
 ## Features
 
-Everything can be done with only one line of code.
+Scalability of Vertica and Flexibility of Python:
 
 <ul>
   <li>Use only standard libraries (except for trees drawing)</li>
   <li>Use JDBC or ODBC connections</li>
-  <li>Data Visualization (Histograms, Pie/Donut Charts, 2D/3D Scatter Plots, Correlation Matrix...)</li>
+  <li>Data Exploration (Histograms, Pie/Donut Charts, 2D/3D Scatter Plots, Correlation Matrix...)</li>
   <li>Data Preparation (Normalization, One Hot Encoding, Label Encoding, Imputing Missing Values...)</li>
-  <li>Multiple Machine Learning Algorithms (Logistic Regression, Random Forest, SVM, Naive Bayes, Kmeans...)</li>
+  <li>Multiple Machine Learning Algorithms (Logistic Regression, Random Forest, SVM, Naive Bayes, KMeans...)</li>
   <li>Models Evaluation (Cross Validation, ROC curve, accuracy, logloss, Lift Table...)</li>
 </ul>
-
 
 ## Why using this Library?
 
