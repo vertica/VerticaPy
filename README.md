@@ -6,7 +6,7 @@
 <i>Scalable as Vertica, Flexible as Python</i>
 </p>
 The documentation is available at: 
-https://github.com/vertica/Vertica-ML-Python/blob/master/documentation.pdf 
+https://github.com/vertica/Vertica-ML-Python/blob/master/documentation.pdf <br>
 Or directly in the Wiki at:
 https://github.com/vertica/Vertica-ML-Python/wiki
 <br><br>
