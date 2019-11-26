@@ -2,7 +2,14 @@
 <p align="center">
 <img src='./img/logo.png' width="180px">
 </p>
-
+<p align="center">
+<i>Scalable as Vertica, Flexible as Python</i>
+</p>
+The documentation is available at: 
+https://github.com/vertica/Vertica-ML-Python/blob/master/documentation.pdf 
+Or directly in the Wiki at:
+https://github.com/vertica/Vertica-ML-Python/wiki
+<br><br>
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
 Licensed under the Apache License, Version 2.0 (the "License");
 You may not use this file except in compliance with the License.
