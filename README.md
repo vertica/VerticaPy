@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src='./images/vpython.png' width="230px">
+<img src='./img/logo.png' width="230px">
 </p>
 
 (c) Copyright [2018] Micro Focus or one of its affiliates. 
@@ -16,9 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-&#9888; If you want to contribute, you can post your notebook in the 'notebooks' folder! For more information, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
-
-To see the available notebooks, please take a look at this link: http://nbviewer.jupyter.org/github/vertica/vertica_ml_python/ (however, the rendering is better using directly Jupyter)
+&#9888; If you want to contribute, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 
 # Vertica-ML-Python
 
@@ -40,136 +38,178 @@ Everything can be done with only one line of code.
 
 ## Why using this Library?
 
-When we deal with Big Data, it is quite hard to find an API which can be flexible and easy to use. A lot of platforms offer the possibility to create datasets/dataframes which represent just a sample of our data. Most of the time, the data is loaded in memory which is a quite limited method. However, we need a real adaptation when we want to use all our data and do not move it.
+The 'Big Data' (Tb of data) is now one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
 
-Vertica-ML-Python allows users to use some simple Python methods to solve the problem using Vertica. Many objects having very easy methods are available to make the datascience journey exciting. It looks like a Data Science Studio for programmers in the use but without the inconvenient to load data in memory. The user can then explore all the data he has, do all the data preparation and create a model without modifying anything (or even loading the data!). Vertica-ML-Python will help him to generate the SQL pipeline he needs to create the object. 
+The idea behind VERTICA ML PYTHON is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
 
-For example, to describe the titanic dataset Vertica-ML-Python will send to Vertica (using ODBC or JDBC connection) the following query.
-
-```
-select summarize_numcol(age,body,fare,parch,pclass,sibsp,survived) over ()
-from
-  (select age as age,
-          boat as boat,
-          body as body,
-          cabin as cabin,
-          embarked as embarked,
-          fare as fare,
-          homedest as homedest,
-          name as name,
-          parch as parch,
-          pclass as pclass,
-          sex as sex,
-          sibsp as sibsp,
-          survived as survived,
-          ticket as ticket
-      from titanic) new_table
-```
-
-Everything is generated using a really simple method.
-
-```
-titanic.describe()
-
-# Output
-              count                 mean                  std     min   \\
-age            1046      29.881137667304     14.4134932112713    0.17   \\
-body            121     160.809917355372     97.6969219960031     1.0   \\
-fare           1308     33.2954792813456     51.7586682391741     0.0   \\
-parch          1309    0.385026737967914    0.865560275349515     0.0   \\
-pclass         1309     2.29488158899923    0.837836018970128     1.0   \\
-sibsp          1309    0.498854087089381      1.0416583905961     0.0   \\
-survived       1309    0.381970970206264    0.486055170866483     0.0   \\
-                 25%        50%       75%         max    cardinality  
-age             21.0       28.0      39.0        80.0             98  
-body            72.0      155.0     256.0       328.0            121  
-fare          7.8958    14.4542    31.275    512.3292            281  
-parch            0.0        0.0       0.0         9.0              8  
-pclass           2.0        3.0       3.0         3.0              3  
-sibsp            0.0        0.0       1.0         8.0              7  
-survived         0.0        0.0       1.0         1.0              2 
-```
-
-To impute a column, it will just save inside the object the correct 'coalesce' statement. 
-To encode a feature using a label encoding, it will simply save inside the object the correct 'decode' statement.
-
-It introduces an object called the RVD which is quite similar in the use to pandas.Dataframe in order to make the Python users feel comfortable. The following example shows how to create a RVD from a csv file (the titanic dataset) and draw the 'embarked' feature histogram.
-
-```
-# Creation of the pyodbc cursor
-import pyodbc
-cur=pyodbc.connect("DSN=VerticaDSN").cursor()
-
-# Creation of the RVD from a csv file
-from vertica_ml_python import read_csv
-titanic=read_csv('titanic.csv',cur)
-
-titanic["embarked"].hist()
-```
-<p align="center">
-<img src='./images/embarked_hist.png' width="480px">
-</p>
-
-The following example shows how to create a logistic regression model and evaluate it.
-
-```
-# Creation of the logistic regression model
-from vertica_ml_python import logistic_reg
-logit=logistic_reg(model_name="lr_titanic",input_relation="train_titanic067",response_column="survived",
-                   predictor_columns=["age","gender","family_size","embarked","fare","pclass"],cursor=cur)
-
-# Evaluation of the model importance
-logit.features_importance()
-```
-<p align="center">
-<img src='./images/logit_fi.png' width="480px">
-</p>
-
-```
-# Drawing the ROC curve
-logit.roc()
-```
-
-<p align="center">
-<img src='./images/titanic_roc.png' width="480px">
-</p>
-
-Main advantages:
- - easy data exploration of large dataset using Vertica.
- - easy methods which avoids the call to a huge sql pipeline.
+Main Advantages:
+ - easy Data Exploration.
+ - easy Data Preparation.
+ - easy Data Modeling.
+ - easy Model Evaluation.
+ - easy Model Deployment.
+ - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and sometimes even more)
  - easy ML model creation and evaluation.
- - simplify the new functions creation which are hard to create using only sql.
-
-Disadvantages:
- - Vertica-ML-Python will never replace sql and it will never be as fast as using direct sql (direct vsql for example) as some optimizations can not be generated. It is not as complete as sql but it helps to complete it where sql fails.
+ - many scikit functions and algorithms are available (and scalable!).
 
 &#9888; Please read the Vertica ML Python Documentation. If you do not have time just read below.
 
-It is a prototype version (0.1) and it is thanks to all the feedbacks that it can really be improved. 
-
-&#9888; Some of the functions will drastically change in the next release!
+&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.
 
 If you have any feedback about the library, please contact me: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 
-## Prerequires:
+## Prerequires
 
-Vertica ML Python library is only using the standard Python libraries such as pyodbc, jaydebeapi, matplotlib, time, shutil (only for Python3) and numpy.
+<b>vertica-ml-python</b> works with at least:
+<ul>
+	<li> <b>Vertica: </b> 9.1 (with previous versions, some functions and algorithms may not be available)
+	<li> <b>Python: </b> 3.6 
+</ul>
 
 ## Installation:
 
-Vertica ML Python doesn’t really need installation.
-To import easily the Vertica ML Python library from anywhere in your computer just copy paste the entire vertica_ml_python folder in the site-package folder of the Python framework. In the MAC environment, you can find it in: 
+To install <b>vertica-ml-python</b>, you can use the pip command:
 ```
- /Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages
+root@ubuntu:~$ pip install vertica_ml_python
+```
+You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
+
+Another way is to call the library from where it is located. <br>
+
+You can then import each library element using the usual Python syntax.
+```
+# to import the vDataframe
+from vertica_ml_python import vDataframe
+# to import the Logistic Regression
+from vertica_ml_python.learn.linear_model import LogisticRegression
 ```
 
-## Easy Start:
+## Quick Start
 
-If you have a DSN and pyodbc is already installed in your machine, write the following command.
+Install the library using the <b>pip</b> command:
+```
+root@ubuntu:~$ pip install vertica_ml_python
+```
+Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
+```
+pip install vertica_python
+```
+Create a vertica cursor
+```
+from vertica_ml_python.utilities import vertica_cursor
+cur = vertica_cursor("VerticaDSN")
+```
+Create the Virtual Dataframe of your relation:
+```
+from vertica_ml_python import vDataframe
+vdf = vDataframe("my_relation", cursor = cur)
+```
+If you don't have data to play, you can easily load well known datasets
+```
+from vertica_ml_python.learn.datasets import load_titanic
+vdf = load_titanic(cursor = cur)
+```
+You can now play with the data...
+```
+vdf.describe()
+
+# Output
+               min       25%        50%        75%   <br>
+age           0.33      21.0       28.0       39.0   <br>
+body           1.0     79.25      160.5      257.5   <br>
+fare           0.0    7.8958    14.4542    31.3875   <br>
+parch          0.0       0.0        0.0        0.0   <br>
+pclass         1.0       1.0        3.0        3.0   <br>
+sibsp          0.0       0.0        0.0        1.0   <br>
+survived       0.0       0.0        0.0        1.0   <br>
+                   max    unique  
+age               80.0        96  
+body             328.0       118  
+fare          512.3292       277  
+parch              9.0         8  
+pclass             3.0         3  
+sibsp              8.0         7  
+survived           1.0         2 
+```
+
+You can also print the SQL code generation using the <b>sql_on_off</b> method.
 
 ```
-from vertica_ml_python import RVD
-myRVD = RVD('input_relation', dsn='VerticaDSN')
+vdf.sql_on_off()
+vdf.describe()
+
+# Output
+<i> Compute the descriptive statistics of all the numerical columns </i>
+
+SELECT SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
+FROM
+  (SELECT "age" AS "age",
+          "body" AS "body",
+          "survived" AS "survived",
+          "ticket" AS "ticket",
+          "home.dest" AS "home.dest",
+          "cabin" AS "cabin",
+          "sex" AS "sex",
+          "pclass" AS "pclass",
+          "embarked" AS "embarked",
+          "parch" AS "parch",
+          "fare" AS "fare",
+          "name" AS "name",
+          "boat" AS "boat",
+          "sibsp" AS "sibsp"
+   FROM public.titanic) final_table
 ```
 
-You can then see the documentation for the different methods or just enjoy the different tutorials (see the 'notebooks' folder)! The titanic and iris tutorials are perfect to understand the library.
+With Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).
+
+```
+from vertica_ml_python.learn.model_selection import cross_validate
+from vertica_ml_python.learn.linear_model import LogisticRegression
+
+# Data Preparation
+vdf["sex"].label_encode().parent["boat"].fillna(method = "0ifnull").parent["name"].str_extract(' ([A-Za-z]+)\.').parent.eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().parent.fillna().to_db("titanic_clean")
+
+# Model Evaluation
+cross_validate(RandomForestClassifier("logit_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)
+
+# Output
+                           auc               prc_auc   <br>
+1-fold      0.9877114427860691    0.9530465915039339   <br>
+2-fold      0.9965555014605642    0.7676485351425721   <br>
+3-fold      0.9927239216549301    0.6419135521132449   <br>
+avg             0.992330288634        0.787536226253   <br>
+std           0.00362128464093         0.12779562393   <br>
+                     accuracy              log_loss   <br>
+1-fold      0.971291866028708    0.0502052541223871   <br>
+2-fold      0.983253588516746    0.0298167751798457   <br>
+3-fold      0.964824120603015    0.0392745694400433   <br>
+avg            0.973123191716       0.0397655329141   <br>
+std           0.0076344236729      0.00833079837099   <br>
+                     precision                recall   <br>
+1-fold                    0.96                  0.96   <br>
+2-fold      0.9556962025316456                   1.0   <br>
+3-fold      0.9647887323943662    0.9383561643835616   <br>
+avg             0.960161644975        0.966118721461   <br>
+std           0.00371376912311        0.025535200301   <br>
+                      f1-score                   mcc   <br>
+1-fold      0.9687259282082884    0.9376119402985075   <br>
+2-fold      0.9867172675521821    0.9646971010878469   <br>
+3-fold      0.9588020287309097    0.9240569687684576   <br>
+avg              0.97141507483        0.942122003385   <br>
+std            0.0115538960753       0.0168949813163   <br>
+                  informedness            markedness   <br>
+1-fold      0.9376119402985075    0.9376119402985075   <br>
+2-fold      0.9737827715355807    0.9556962025316456   <br>
+3-fold      0.9185148945422918    0.9296324823943662   <br>
+avg             0.943303202125        0.940980208408   <br>
+std            0.0229190954261       0.0109037699717   <br>
+                           csi  
+1-fold      0.9230769230769231  
+2-fold      0.9556962025316456  
+3-fold      0.9072847682119205  
+avg             0.928685964607  
+std            0.0201579224026
+```
+
+Happy Playing !
+
