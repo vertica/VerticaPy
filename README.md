@@ -230,5 +230,5 @@ avg             0.928685964607
 std            0.0201579224026
 ```
 
-Happy Playing !
+Happy Playing ! &#128540;
 
