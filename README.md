@@ -89,7 +89,7 @@ If you have any feedback about the library, please contact me: <a href="mailto:b
 
 To install <b>vertica-ml-python</b>, you can use the pip command:
 ```
-root@ubuntu:~$ pip3 install vertica-ml-python==1.0
+root@ubuntu:~$ pip3 install vertica_ml_python
 ```
 You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
 
@@ -107,7 +107,7 @@ from vertica_ml_python.learn.linear_model import LogisticRegression
 
 Install the library using the <b>pip</b> command:
 ```
-root@ubuntu:~$ pip3 install vertica-ml-python==1.0
+root@ubuntu:~$ pip3 install vertica_ml_python
 ```
 Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
 ```
