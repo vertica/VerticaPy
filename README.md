@@ -111,7 +111,7 @@ root@ubuntu:~$ pip3 install vertica-ml-python==1.0
 ```
 Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
 ```
-pip install vertica_python
+root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor
 ```
