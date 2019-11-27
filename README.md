@@ -38,13 +38,13 @@ Vertica ML Python is the perfect combination between Vertica and Python. It uses
 </p>
 <br>
 Find patterns that you don't know and Detect Anomalies.
-<br>
+<br><br>
 <p align="center">
 <img src='./img/Slide3.png' width="800px">
 </p>
 <br>
 Prepare your data easily and build a model with Highly Scalable Vertica ML. Evaluate your model and try to create the most efficient and performant one.
-<br>
+<br><br>
 <p align="center">
 <img src='./img/Slide1.png' width="800px">
 </p>
