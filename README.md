@@ -31,16 +31,25 @@ Vertica-ML-Python is a Python library that exposes sci-kit like functionality to
 
 ## Features
 
-Scalability of Vertica and Flexibility of Python:
-
-<ul>
-  <li>Use only standard libraries (except for trees drawing)</li>
-  <li>Use JDBC or ODBC connections</li>
-  <li>Data Exploration (Histograms, Pie/Donut Charts, 2D/3D Scatter Plots, Correlation Matrix...)</li>
-  <li>Data Preparation (Normalization, One Hot Encoding, Label Encoding, Imputing Missing Values...)</li>
-  <li>Multiple Machine Learning Algorithms (Logistic Regression, Random Forest, SVM, Naive Bayes, KMeans...)</li>
-  <li>Models Evaluation (Cross Validation, ROC curve, accuracy, logloss, Lift Table...)</li>
-</ul>
+Vertica ML Python is the perfect combination between Vertica and Python. It uses Vertica Scalability and Python Flexibility to help any Data Scientist achieving his goals by bringing the logic to the data and not the opposite. With VERTICA ML PYTHON, start your journey with easy Data Exploration.
+<br>
+<p align="center">
+<img src='./img/Slide2.png' width="800px">
+</p>
+<br>
+Find patterns that you don't know and Detect Anomalies.
+<br>
+<p align="center">
+<img src='./img/Slide3.png' width="800px">
+</p>
+<br>
+Prepare your data easily and build a model with Highly Scalable Vertica ML. Evaluate your model and try to create the most efficient and performant one.
+<br>
+<p align="center">
+<img src='./img/Slide1.png' width="800px">
+</p>
+<br>
+Everything will happen in one place and where it should be: your Database. Without modifying anything but using the speed of Vertica to aggregate the data.
 
 ## Why using this Library?
 
