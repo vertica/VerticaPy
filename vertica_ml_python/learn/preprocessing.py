@@ -103,7 +103,7 @@ class CountVectorizer:
 		return (self)
 	#
 	def to_vdf(self):
-		from vertica_ml_python.vdataframe import vdf_from_relation
+		from vertica_ml_python.utilities import vdf_from_relation
 		return (vdf_from_relation("({}) x".format(self.deploySQL()), self.name, self.cursor))
 #
 class Normalizer:
@@ -150,7 +150,7 @@ class Normalizer:
 	#
 	def to_vdf(self, reverse = False):
 		func = self.deploySQL() if not(reverse) else self.deployInverseSQL()
-		from vertica_ml_python.vdataframe import vdf_from_relation
+		from vertica_ml_python.utilities import vdf_from_relation
 		return (vdf_from_relation("(SELECT {} FROM {}) {}".format(func, self.input_relation, self.name), self.name, self.cursor))
 #
 class OneHotEncoder:
@@ -202,6 +202,6 @@ class OneHotEncoder:
 		return (self)
 	#
 	def to_vdf(self, reverse = False):
-		from vertica_ml_python.vdataframe import vdf_from_relation
+		from vertica_ml_python.utilities import vdf_from_relation
 		return (vdf_from_relation("(SELECT {} FROM {}) {}".format(self.deploySQL(), self.input_relation, self.name), self.name, self.cursor))
 

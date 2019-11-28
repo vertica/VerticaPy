@@ -55,6 +55,7 @@ def elbow(X: list,
 		model.fit(input_relation, X)
 		all_within_cluster_SS += [model.metrics.values["value"][3]]
 		model.drop()
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F4F4F4'
 	plt.grid()
 	plt.plot(L, all_within_cluster_SS, marker = "s", color = "#214579")
@@ -80,7 +81,7 @@ def lift_chart(y_true: str,
 	try:
 		import matplotlib.pyplot as plt
 		import matplotlib.patches as mpatches
-		plt.figure(facecolor='white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#F5F5F5'
 		plt.xlabel('Cumulative Data Fraction')
 		plt.plot(decision_boundary, lift, color = "#214579")
@@ -110,7 +111,7 @@ def logit_plot(X: list,
 		query  = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize = (7, 5), facecolor = '#F9F9F9')
+		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, x1 = [], []
 		for idx, item in enumerate(all_points):
 			if (item[1] == 0):
@@ -136,7 +137,6 @@ def logit_plot(X: list,
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize=(7, 5), facecolor = '#F9F9F9')
 		x0, x1, y0, y1 = [], [], [], []
 		for idx, item in enumerate(all_points):
 			if (item[2] == 0):
@@ -153,8 +153,7 @@ def logit_plot(X: list,
 		Y_logit = np.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
 		X_logit, Y_logit = np.meshgrid(X_logit, Y_logit)
 		Z_logit = 1 / (1 + np.exp( - (coefficients[0] + coefficients[1] * X_logit + coefficients[2] * Y_logit)))
-		plt.close()
-		fig = plt.figure(facecolor='white')
+		fig = plt.figure(figsize = (10, 8))
 		ax = fig.add_subplot(111, projection = '3d')
 		ax.plot_surface(X_logit, Y_logit, Z_logit, rstride = 1, cstride = 1, alpha = 0.5, color = "gray")
 		all_scatter  = [ax.scatter(x0, y0, [logit(coefficients[0] + coefficients[1] * x0[i] + coefficients[2] * y0[i]) for i in range(len(x0))], alpha = 1, marker = "o", color = "#214579")]
@@ -180,6 +179,7 @@ def lof_plot(input_relation: str,
 		query_result = cursor.execute(query).fetchall()
 		column1, lof = [item[0] for item in query_result], [item[1] for item in query_result]
 		column2 = [0] * len(column1)
+		plt.figure(figsize = (10,2))
 		plt.gca().grid()
 		plt.gca().set_axisbelow(True)
 		plt.title('Local Outlier Factor (LOF)')
@@ -192,6 +192,7 @@ def lof_plot(input_relation: str,
 		query = "SELECT {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(columns[0], columns[1], lof, input_relation, tablesample, columns[0], columns[1])
 		query_result = cursor.execute(query).fetchall()
 		column1, column2, lof = [item[0] for item in query_result], [item[1] for item in query_result], [item[2] for item in query_result]
+		plt.figure(figsize = (10,8))
 		plt.gca().grid()
 		plt.gca().set_axisbelow(True)
 		plt.title('Local Outlier Factor (LOF)')
@@ -206,7 +207,7 @@ def lof_plot(input_relation: str,
 					columns[0], columns[1], columns[2], lof, input_relation, tablesample, columns[0], columns[1], columns[2])
 		query_result = cursor.execute(query).fetchall()
 		column1, column2, column3, lof = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result], [float(item[3]) for item in query_result]
-		fig = plt.figure(facecolor = 'white')
+		fig = plt.figure(figsize = (10,8))
 		ax = fig.add_subplot(111, projection = '3d')
 		plt.title('Local Outlier Factor (LOF)')
 		ax.set_xlabel(columns[0])
@@ -233,7 +234,7 @@ def plot_importance(coeff_importances: dict,
 		importances += [coeff_importances[coeff]]
 		signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
 	importances, coefficients, signs = zip( * sorted(zip(importances, coefficients, signs)))
-	plt.figure()
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	color = []
 	for item in signs:
@@ -242,7 +243,7 @@ def plot_importance(coeff_importances: dict,
 	if (print_legend):
 		orange = mpatches.Patch(color = '#FFCC01', label = 'sign -')
 		blue = mpatches.Patch(color = '#214579', label = 'sign +')
-	plt.legend(handles = [orange,blue], loc = "lower right")
+		plt.legend(handles = [orange,blue], loc = "lower right")
 	plt.ylabel("Features")
 	plt.xlabel("Importance")
 	plt.gca().xaxis.grid()
@@ -309,7 +310,7 @@ def prc_curve(y_true: str,
 		return (auc)
 	try:
 		import matplotlib.pyplot as plt
-		plt.figure(facecolor='white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#F5F5F5'
 		plt.xlabel('Recall')
 		plt.ylabel('Precision')
@@ -335,7 +336,7 @@ def regression_plot(X: list,
 	if (len(X) == 1):
 		query  = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(X[0], y, input_relation, X[0], y, int(max_nb_points))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize = (7, 5), facecolor = '#F9F9F9')
+		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, y0 = [float(item[0]) for item in all_points], [float(item[1]) for item in all_points]
 		min_reg, max_reg  = min(x0), max(x0)
 		x_reg = [min_reg, max_reg]
@@ -352,7 +353,6 @@ def regression_plot(X: list,
 		from mpl_toolkits.mplot3d import Axes3D
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize=(7, 5), facecolor = '#F9F9F9')
 		x0, y0, z0 = [float(item[0]) for item in all_points], [float(item[1]) for item in all_points], [float(item[2]) for item in all_points]
 		min_reg_x, max_reg_x  = min(x0), max(x0)
 		step_x = (max_reg_x - min_reg_x) / 40.0
@@ -362,8 +362,7 @@ def regression_plot(X: list,
 		Y_reg = np.arange(min_reg_y - 5 * step_y, max_reg_y + 5 * step_y, step_y)
 		X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
 		Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
-		plt.close()
-		fig = plt.figure(facecolor='white')
+		fig = plt.figure(figsize=(10, 8))
 		ax = fig.add_subplot(111, projection = '3d')
 		ax.plot_surface(X_reg, Y_reg, Z_reg, rstride = 1, cstride = 1, alpha = 0.5, color = "gray")
 		ax.scatter(x0, y0, z0, alpha = 1, marker = "o", color = "#214579")
@@ -402,7 +401,7 @@ def roc_curve(y_true: str,
 		return (threshold[best_threshold_arg])
 	try:
 		import matplotlib.pyplot as plt
-		plt.figure(facecolor='white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#F5F5F5'
 		plt.xlabel('False Positive Rate (1-Specificity)')
 		plt.ylabel('True Positive Rate (Sensitivity)')
@@ -431,7 +430,7 @@ def svm_classifier_plot(X: list,
 		query  = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize = (7, 5), facecolor = '#F9F9F9')
+		plt.figure(figsize = (10, 2), facecolor = '#F9F9F9')
 		x0, x1 = [], []
 		for idx, item in enumerate(all_points):
 			if (item[1] == 0):
@@ -452,7 +451,7 @@ def svm_classifier_plot(X: list,
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize = (7, 5), facecolor = '#F9F9F9')
+		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, x1, y0, y1 = [], [], [], []
 		for idx, item in enumerate(all_points):
 			if (item[2] == 0):
@@ -478,7 +477,6 @@ def svm_classifier_plot(X: list,
 		query  = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
 		all_points = cursor.execute(query).fetchall()
-		plt.figure(figsize=(7, 5), facecolor = '#F9F9F9')
 		x0, x1, y0, y1, z0, z1 = [], [], [], [], [], []
 		for idx, item in enumerate(all_points):
 			if (item[3] == 0):
@@ -497,8 +495,7 @@ def svm_classifier_plot(X: list,
 		Y_svm = np.arange(min_svm_y - 5 * step_y, max_svm_y + 5 * step_y, step_y)
 		X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
 		Z_svm = coefficients[0] + coefficients[1] * X_svm + coefficients[2] * Y_svm
-		plt.close()
-		fig = plt.figure(facecolor='white')
+		fig = plt.figure(figsize=(10, 8))
 		ax = fig.add_subplot(111, projection = '3d')
 		ax.plot_surface(X_svm, Y_svm, Z_svm, rstride = 1, cstride = 1, alpha = 0.5, color = "gray")
 		all_scatter  = [ax.scatter(x0, y0, z0, alpha = 1, marker = "o", color = "#214579")]
