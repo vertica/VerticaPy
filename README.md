@@ -186,7 +186,7 @@ from vertica_ml_python.learn.model_selection import cross_validate
 from vertica_ml_python.learn.linear_model import LogisticRegression
 
 # Data Preparation
-vdf["sex"].label_encode().parent["boat"].fillna(method = "0ifnull").parent["name"].str_extract(' ([A-Za-z]+)\.').parent.eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().parent.fillna().to_db("titanic_clean")
+vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
 
 # Model Evaluation
 cross_validate(RandomForestClassifier("logit_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)
