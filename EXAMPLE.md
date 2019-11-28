@@ -1,6 +1,5 @@
-
 <p align="center">
-<img src='./documentation/images/logo.png' width="180px">
+<img src='./img/logo.png' width="180px">
 </p>
 
 # Vertica ML Python Example
