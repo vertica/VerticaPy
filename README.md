@@ -89,7 +89,7 @@ If you have any feedback about the library, please contact me: <a href="mailto:b
 ## Installation:
 
 To install <b>vertica-ml-python</b>, you can use the pip command:
-```
+```shell
 root@ubuntu:~$ pip3 install vertica_ml_python
 ```
 You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
@@ -97,7 +97,7 @@ You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-pa
 Another way is to call the library from where it is located. <br>
 
 You can then import each library element using the usual Python syntax.
-```
+```python
 # to import the vDataframe
 from vertica_ml_python import vDataframe
 # to import the Logistic Regression
@@ -107,30 +107,30 @@ from vertica_ml_python.learn.linear_model import LogisticRegression
 ## Quick Start
 
 Install the library using the <b>pip</b> command:
-```
+```shell
 root@ubuntu:~$ pip3 install vertica_ml_python
 ```
 Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
-```
+```shell
 root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor
-```
+```python
 from vertica_ml_python.utilities import vertica_cursor
 cur = vertica_cursor("VerticaDSN")
 ```
 Create the Virtual Dataframe of your relation:
-```
+```python
 from vertica_ml_python import vDataframe
 vdf = vDataframe("my_relation", cursor = cur)
 ```
 If you don't have data to play, you can easily load well known datasets
-```
+```python
 from vertica_ml_python.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
 ```
 You can now play with the data...
-```
+```python
 vdf.describe()
 
 # Output
@@ -154,7 +154,7 @@ survived           1.0         2
 
 You can also print the SQL code generation using the <b>sql_on_off</b> method.
 
-```
+```python
 vdf.sql_on_off()
 vdf.describe()
 
@@ -182,7 +182,7 @@ FROM
 
 With Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).
 
-```
+```python
 from vertica_ml_python.learn.model_selection import cross_validate
 from vertica_ml_python.learn.linear_model import LogisticRegression
 
