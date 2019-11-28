@@ -300,32 +300,113 @@ def print_table(data_columns, is_finished = True, offset = 0, repeat_first_colum
 				data_columns=[[""] + list(range(0 + offset, len(data_columns[0]) - 1 + offset))] + data_columns
 			m = len(data_columns)
 			n = len(data_columns[0])
-			html_table = "<table style=\"border-collapse: collapse; border: 2px solid rgb(200,200,200)\">"
+			html_table = "<table style=\"border-collapse: collapse; border: 2px solid white\">"
 			for i in range(n):
-				html_table += "<tr style=\"{border: 1px solid rgb(200,200,200);}\">"
+				html_table += "<tr style=\"{border: 1px solid white;}\">"
 				for j in range(m):
 					if (j == 0):
-						html_table += "<td style=\"border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#DDD\"><b>" + str(data_columns[j][i]) + "</b></td>"
+						html_table += "<td style=\"border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#214579;color:white\"><b>" + str(data_columns[j][i]) + "</b></td>"
 					elif (i == 0):
-						html_table += "<td style=\"font-size:1.02em;background-color:#DDD\"><b>" + str(data_columns[j][i]) + "</b></td>"
+						html_table += "<td style=\"font-size:1.02em;background-color:#214579;color:white\"><b>" + str(data_columns[j][i]) + "</b></td>"
 					else:
-						html_table += "<td style=\"border: 1px solid rgb(200,200,200);\">" + str(data_columns[j][i]) + "</td>"
+						html_table += "<td style=\"border: 1px solid white;\">" + str(data_columns[j][i]) + "</td>"
 				html_table += "</tr>"
 			if not(is_finished):
 				html_table += "<tr>"
 				for j in range(m):
 					if (j == 0):
-						html_table += "<td style=\"border-top: 1px solid #DDD;background-color:#DDD\"></td>"
+						html_table += "<td style=\"border-top: 1px solid white;background-color:#214579;color:white\"></td>"
 					else:
-						html_table += "<td style=\"border: 1px solid rgb(200,200,200);\">...</td>"
+						html_table += "<td style=\"border: 1px solid white;\">...</td>"
 				html_table += "</tr>"
 			html_table += "</table>"
 			display(HTML(html_table))
-			return ""
+			return "<object>  "
 		else:
 			return formatted_text
 	except:
 		return formatted_text
+def read_csv(path: str, 
+			 cursor, 
+			 schema: str = 'public', 
+			 table_name: str = '', 
+			 delimiter: str = ',', 
+			 header_names: list = [],
+			 dtype: dict = {}, 
+			 null: str = '', 
+			 enclosed_by: str = '"', 
+			 escape: str = '\\', 
+			 skip: int = 1, 
+			 genSQL: bool = False,
+			 return_dlist: bool = False,
+			 parse_n_lines: int = -1):
+	table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
+	query = "SELECT column_name FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
+	result = cursor.execute(query).fetchall()
+	if (result != []):
+		raise Exception("The table {} already exists !".format(table_name))
+	else:
+		input_relation = '{}.{}'.format(schema, table_name)
+		if (len(header_names) == 0):
+			f = open(path,'r')
+			header_names  = f.readline().replace('\n', '').replace('"', '').split(delimiter)
+			f.close()
+			if (parse_n_lines > 0):
+				f = open(path,'r')
+				f2 = open(path[0:-4] + "_vpython_copy.csv",'w')
+				for i in range(parse_n_lines + 1):
+					line = f.readline()
+					f2.write(line)
+				f.close()
+				f2.close()
+				path_test = path[0:-4] + "_vpython_copy.csv"
+			else:
+				path_test = path
+			flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+			cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS".format(flex_name))
+			query = "COPY {} FROM LOCAL '{}' parser fcsvparser(delimiter = '{}', enclosed_by = '{}', escape = '{}') NULL '{}'"
+			cursor.execute(query.format(flex_name, path_test, delimiter, enclosed_by, escape, null))
+			query = "SELECT compute_flextable_keys('{}');".format(flex_name)
+			cursor.execute(query)
+			query = "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name)
+			cursor.execute(query)
+			result = cursor.fetchall()
+			if (return_dlist):
+				return result
+			for column_dtype in result:
+				if column_dtype[0] not in dtype:
+					try:
+						if ("Varchar" not in column_dtype[1]):
+							query='SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
+							cursor.execute(query)
+						dtype[column_dtype[0]] = column_dtype[1]
+					except:
+						dtype[column_dtype[0]] = "Varchar(100)"
+			cursor.execute("DROP TABLE " + flex_name)
+		if (parse_n_lines > 0):
+			os.remove(path[0:-4] + "_vpython_copy.csv")
+		query = "CREATE TABLE {}({})".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
+		if (genSQL):
+			print(query)
+		cursor.execute(query)
+		query="COPY {}({}) FROM LOCAL '{}' DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}' SKIP {};".format(
+			input_relation,", ".join(['"' + column + '"' for column in header_names]), path, delimiter, null, enclosed_by, escape, skip)
+		if (genSQL):
+			print(query)
+		cursor.execute(query)
+		print("The table {} has been successfully created.".format(input_relation))
+		from vertica_ml_python import vDataframe
+		return vDataframe(input_relation, cursor)
+# 
+def read_vdf(path: str, cursor):
+	file = open(path, "r")
+	save =  "from vertica_ml_python import vDataframe\nfrom vertica_ml_python.vcolumn import vColumn\n" + "".join(file.readlines())
+	file.close()
+	vdf = {}
+	exec(save, globals(), vdf)
+	vdf = vdf["vdf_save"]
+	vdf.cursor = cursor
+	return (vdf)
 #
 class tablesample:
 	# Initialization
@@ -400,7 +481,7 @@ class tablesample:
 		sql = " UNION ALL ".join(sql)
 		return (sql)
 	def to_vdf(self, cursor = None, dsn: str = ""):
-		from vertica_ml_python.vdataframe import vdf_from_relation
+		from vertica_ml_python import vdf_from_relation
 		relation = "({}) sql_relation".format(self.to_sql())
 		return (vdf_from_relation(relation, cursor = cursor, dsn = dsn)) 
 #
@@ -443,3 +524,35 @@ def to_vertica_python_format(dsn: str):
 	dsn = read_dsn(dsn)
 	conn_info = {'host': dsn["servername"], 'port': 5433, 'user': dsn["uid"], 'password': dsn["pwd"], 'database': dsn["database"]}
 	return (conn_info)
+#
+def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str = ""):
+	from vertica_ml_python import vDataframe
+	vdf = vDataframe("", empty = True)
+	vdf.dsn = dsn
+	if (cursor == None):
+		from vertica_ml_python import vertica_cursor
+		cursor = vertica_cursor(dsn)
+	vdf.input_relation = name
+	vdf.main_relation = relation
+	vdf.schema = ""
+	vdf.cursor = cursor
+	vdf.query_on = False
+	vdf.time_on = False
+	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_; CREATE TEMPORARY TABLE _vpython_{}_test_ AS SELECT * FROM {} LIMIT 10;".format(name, name, relation))
+	cursor.execute("SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(name))
+	result = cursor.fetchall()
+	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(name))
+	vdf.columns = ['"' + item[0] + '"' for item in result]
+	vdf.where = []
+	vdf.order_by = []
+	vdf.exclude_columns = []
+	vdf.history = []
+	vdf.saving = []
+	for column, ctype in result:
+		column = '"' + column + '"'
+		from vertica_ml_python.vcolumn import vColumn
+		new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
+		setattr(vdf, column, new_vColumn)
+		setattr(vdf, column[1:-1], new_vColumn)
+	return (vdf)
+	

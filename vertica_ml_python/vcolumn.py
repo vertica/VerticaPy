@@ -122,7 +122,7 @@ class vColumn:
 			else:
 				self.transformations += [(func, ctype, category)]
 				self.parent.history += ["{" + time.strftime("%c") + "} " + "[{}]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), self.alias.replace('"', ''), func.replace("{}", "x"))]
-			return (self)
+			return (self.parent)
 		except:
 			raise Exception("Error when applying the func 'x -> {}' to '{}'".format(func.replace("{}", "x"), self.alias.replace('"', '')))
 	# 
@@ -133,7 +133,7 @@ class vColumn:
 			self.executeSQL(query, title = "Data Type Conversion - TEST")
 			self.transformations += [("{}::" + dtype, dtype, category_from_type(ctype = dtype))]
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[AsType]: The vColumn '{}' was converted to {}.".format(self.alias, dtype)]
-			return (self)
+			return (self.parent)
 		except:
 			raise Exception("The column {} can not be converted to '{}'".format(self.alias, dtype))
 	# 
@@ -149,7 +149,7 @@ class vColumn:
 			color: str = '#214579'):
 		from vertica_ml_python.plot import bar
 		bar(self, method, of, max_cardinality, bins, h, color)	
-		return (self)
+		return (self.parent)
 	# 
 	def boxplot(self, 
 				by: str = "", 
@@ -158,7 +158,7 @@ class vColumn:
 				cat_priority: list = []):
 		from vertica_ml_python.plot import boxplot
 		boxplot(self, by, h, max_cardinality, cat_priority)
-		return (self)
+		return (self.parent)
 	# 
 	def category(self):
 		return (self.transformations[-1][2])
@@ -170,7 +170,7 @@ class vColumn:
 		upper_when = "WHEN {} > {} THEN {} ".format("{}", upper, upper) if (type(upper) in (float, int)) else "" 
 		func = "(CASE " + lower_when + upper_when + "ELSE {} END)"
 		self.apply(func = func)
-		return (self)
+		return (self.parent)
 	# 
 	def count(self):
 		query = "SELECT COUNT({}) FROM {}".format(self.alias, self.parent.genSQL())
@@ -208,7 +208,7 @@ class vColumn:
 				color: str = '#214579'):
 		from vertica_ml_python.plot import density
 		density(self, a, kernel, smooth, color)
-		return (self)
+		return (self.parent)
 	# 
 	def describe(self, 
 				 method: str = "auto", 
@@ -279,7 +279,7 @@ class vColumn:
 			  h: float = 0):
 		from vertica_ml_python.plot import pie
 		pie(self, method, of, max_cardinality, h, True)	
-		return (self)
+		return (self.parent)
 	# 
 	def drop(self, add_history: bool = True):
 		try:
@@ -312,14 +312,14 @@ class vColumn:
 			del self.parent.where[-1]
 			if (print_info):
 				print("/!\\ Warning: Nothing was dropped")
-		return (self) 
+		return (self.parent) 
 	# 
 	def drop_outliers(self, alpha: float = 0.05):
 		query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(alpha, self.alias, alpha, self.alias, self.parent.genSQL())
 		self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
 		p_alpha, p_1_alpha = self.parent.cursor.fetchone()
 		self.parent.filter(expr = "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha))
-		return (self)
+		return (self.parent)
 	#
 	def dtype(self):
 		print("col".ljust(6) + self.ctype().rjust(12))
@@ -396,7 +396,7 @@ class vColumn:
 			if (print_info):
 				print("1 element was filled")
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Fillna]: 1 missing value of the vColumn '{}' was filled.".format(self.alias)]
-		return (self)
+		return (self.parent)
 	#
 	def fill_outliers(self, method: str = "winsorize", alpha = 0.05):
 		if (method not in ("winsorize", "null", "mean")):
@@ -415,7 +415,7 @@ class vColumn:
 				self.executeSQL(query = query, title = "Compute the MEAN of the {}'s lower and upper outliers".format(self.alias))
 				mean_alpha, mean_1_alpha = [item[0] for item in self.parent.cursor.fetchall()]
 				self.apply(func = "(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format('{}', p_alpha, mean_alpha, '{}', p_1_alpha, mean_1_alpha, '{}'))
-		return (self)
+		return (self.parent)
 	#
 	def ge(self, x: float):
 		return (self.apply(func = "{} >= ({})".format("{}", x)))
@@ -449,7 +449,7 @@ class vColumn:
 				all_new_features += [name]
 			print("{} new features: {}".format(len(all_new_features), ", ".join(all_new_features)))
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Get Dummies]: One hot encoder was applied to the vColumn '{}' and {} features were created: {}".format(self.alias, len(all_new_features), ", ".join(all_new_features)) + "."]
-		return (self)
+		return (self.parent)
 	#
 	def gt(self, x: float):
 		return (self.apply(func = "{} > ({})".format("{}", x)))
@@ -466,7 +466,7 @@ class vColumn:
 			 color: str = '#214579'):
 		from vertica_ml_python.plot import hist
 		hist(self, method, of, max_cardinality, bins, h, color)	
-		return (self)
+		return (self.parent)
 	#
 	def isdate(self):
 		return(self.category() == "date")
@@ -497,7 +497,7 @@ class vColumn:
 			expr = ", ".join(expr) + ", {})".format(len(distinct_elements))
 			self.transformations += [(expr, 'int', 'int')]
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Label Encoding]: Label Encoding was applied to the vColumn '{}' using the following mapping:{}".format(self.alias, text_info)]
-		return (self)
+		return (self.parent)
 	#
 	def le(self, x: float):
 		return (self.apply(func = "{} <= ({})".format("{}", x)))
@@ -524,7 +524,7 @@ class vColumn:
 			self.transformations += [("AVG({}) OVER (PARTITION BY {})".format(response_column,"{}"), "int", "float")]
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Mean Encode]: The vColumn '{}' was transformed using a mean encoding with as response column '{}'.".format(self.alias, response_column)]
 			print("The mean encoding was successfully done.")
-		return (self)
+		return (self.parent)
 	# 
 	def median(self):
 		return (self.quantile(0.5))
@@ -578,7 +578,7 @@ class vColumn:
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Normalize]: The vColumn '{}' was normalized with the method '{}'.".format(self.alias,method)]
 		else:
 			raise TypeError("The vColumn must be numerical for Normalization")
-		return (self)
+		return (self.parent)
 	# 
 	def numh(self, method: str = "auto"):
 		if (self.category() in ["int","float"]):
@@ -622,7 +622,7 @@ class vColumn:
 			h: float = 0):
 		from vertica_ml_python.plot import pie
 		pie(self, method, of, max_cardinality, h, False)
-		return (self)
+		return (self.parent)
 	# 
 	def plot(self, 
 			 ts: str, 
@@ -633,7 +633,7 @@ class vColumn:
 			 area: bool = False):
 		from vertica_ml_python.plot import ts_plot
 		ts_plot(self, ts, by, start_date, end_date, color, area)
-		return (self)	
+		return (self.parent)	
 	# 
 	def pow(self, x: float):
 		return (self.apply(func = "POWER({}, {})".format("{}", x)))
@@ -678,7 +678,7 @@ class vColumn:
 					self.parent.columns[idx] = old_name
 					break
 			print("/!\\ Warning: The name wasn't change because of some columns dependencies")
-		return (self)
+		return (self.parent)
 	# 
 	def round(self, n: int):
 		return (self.apply(func = "ROUND({}, {})".format("{}", n)))
@@ -779,7 +779,7 @@ class vColumn:
 		else:
 			self.transformations += [trans]
 			self.parent.history += [ "{" + time.strftime("%c") + "} " + "[Enum]: The vColumn '{}' was converted to enum.".format(self.alias)]
-		return (self)
+		return (self.parent)
 	# 
 	def topk(self, k: int = -1, dropna: bool = True):
 		if (k < 1):

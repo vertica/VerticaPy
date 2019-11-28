@@ -57,116 +57,6 @@ from vertica_ml_python.utilities import category_from_type
 #                                                   
 ##
 # 
-def read_csv(path: str, 
-			 cursor, 
-			 schema: str = 'public', 
-			 table_name: str = '', 
-			 delimiter: str = ',', 
-			 header_names: list = [],
-			 dtype: dict = {}, 
-			 null: str = '', 
-			 enclosed_by: str = '"', 
-			 escape: str = '\\', 
-			 skip: int = 1, 
-			 genSQL: bool = False,
-			 return_dlist: bool = False,
-			 parse_n_lines: int = -1):
-	table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
-	query = "SELECT column_name FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
-	result = cursor.execute(query).fetchall()
-	if (result != []):
-		raise Exception("The table {} already exists !".format(table_name))
-	else:
-		input_relation = '{}.{}'.format(schema, table_name)
-		if (len(header_names) == 0):
-			f = open(path,'r')
-			header_names  = f.readline().replace('\n', '').replace('"', '').split(delimiter)
-			f.close()
-			if (parse_n_lines > 0):
-				f = open(path,'r')
-				f2 = open(path[0:-4] + "_vpython_copy.csv",'w')
-				for i in range(parse_n_lines + 1):
-					line = f.readline()
-					f2.write(line)
-				f.close()
-				f2.close()
-				path_test = path[0:-4] + "_vpython_copy.csv"
-			else:
-				path_test = path
-			flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
-			cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS".format(flex_name))
-			query = "COPY {} FROM LOCAL '{}' parser fcsvparser(delimiter = '{}', enclosed_by = '{}', escape = '{}') NULL '{}'"
-			cursor.execute(query.format(flex_name, path_test, delimiter, enclosed_by, escape, null))
-			query = "SELECT compute_flextable_keys('{}');".format(flex_name)
-			cursor.execute(query)
-			query = "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name)
-			cursor.execute(query)
-			result = cursor.fetchall()
-			if (return_dlist):
-				return result
-			for column_dtype in result:
-				if column_dtype[0] not in dtype:
-					try:
-						if ("Varchar" not in column_dtype[1]):
-							query='SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
-							cursor.execute(query)
-						dtype[column_dtype[0]] = column_dtype[1]
-					except:
-						dtype[column_dtype[0]] = "Varchar(100)"
-			cursor.execute("DROP TABLE " + flex_name)
-		if (parse_n_lines > 0):
-			os.remove(path[0:-4] + "_vpython_copy.csv")
-		query = "CREATE TABLE {}({})".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
-		if (genSQL):
-			print(query)
-		cursor.execute(query)
-		query="COPY {}({}) FROM LOCAL '{}' DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}' SKIP {};".format(
-			input_relation,", ".join(['"' + column + '"' for column in header_names]), path, delimiter, null, enclosed_by, escape, skip)
-		if (genSQL):
-			print(query)
-		cursor.execute(query)
-		print("The table {} has been successfully created.".format(input_relation))
-		return vDataframe(input_relation, cursor)
-# 
-def read_vdf(path: str, cursor):
-	file = open(path, "r")
-	save =  "from vertica_ml_python import vDataframe\nfrom vertica_ml_python.vcolumn import vColumn\n" + "".join(file.readlines())
-	file.close()
-	vdf = {}
-	exec(save, globals(), vdf)
-	vdf = vdf["vdf_save"]
-	vdf.cursor = cursor
-	return (vdf)
-#
-def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str = ""):
-	vdf = vDataframe("", empty = True)
-	vdf.dsn = dsn
-	if (cursor == None):
-		from vertica_ml_python import vertica_cursor
-		cursor = vertica_cursor(dsn)
-	vdf.input_relation = name
-	vdf.main_relation = relation
-	vdf.schema = ""
-	vdf.cursor = cursor
-	vdf.query_on = False
-	vdf.time_on = False
-	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_; CREATE TEMPORARY TABLE _vpython_{}_test_ AS SELECT * FROM {} LIMIT 10;".format(name, name, relation))
-	cursor.execute("SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(name))
-	result = cursor.fetchall()
-	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(name))
-	vdf.columns = ['"' + item[0] + '"' for item in result]
-	vdf.where = []
-	vdf.order_by = []
-	vdf.exclude_columns = []
-	vdf.history = []
-	vdf.saving = []
-	for column, ctype in result:
-		column = '"' + column + '"'
-		new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
-		setattr(vdf, column, new_vColumn)
-		setattr(vdf, column[1:-1], new_vColumn)
-	return (vdf)
-#
 class vDataframe:
 	#
 	def  __init__(self,
@@ -1305,6 +1195,8 @@ class vDataframe:
 		save += '\nvdf_save.columns = {}'.format(self.columns)
 		save += '\nvdf_save.exclude_columns = {}'.format(self.exclude_columns)
 		save += '\nvdf_save.where = {}'.format(self.where)
+		save += '\nvdf_save.query_on = {}'.format(self.query_on)
+		save += '\nvdf_save.time_on = {}'.format(self.time_on)
 		save += '\nvdf_save.order_by = {}'.format(self.order_by)
 		save += '\nvdf_save.history = {}'.format(self.history)
 		save += '\nvdf_save.saving = {}'.format(self.saving)
@@ -1486,7 +1378,8 @@ class vDataframe:
 	def to_db(self,
 			  name: str,
 			  usecols: list = [],
-			  relation_type: str = "view"):
+			  relation_type: str = "view",
+			  inplace: bool = False):
 		if (relation_type not in ["view","temporary","table"]):
 			raise ValueError("The parameter mode must be in view|temporary|table\nNothing was saved.")
 		if (relation_type == "temporary"):
@@ -1495,11 +1388,12 @@ class vDataframe:
 		query = "CREATE {} {} AS SELECT {} FROM {}".format(relation_type.upper(), name, usecols, self.genSQL())
 		self.executeSQL(query = query, title = "Create a new " + relation_type + " to save the vDataframe")
 		self.history += ["{" + time.strftime("%c") + "} " + "[Save]: The vDataframe was saved into a {} named '{}'.".format(relation_type, name)]
-		query_on, time_on, history, saving = self.query_on, self.time_on, self.history, self.saving
-		self.__init__(name, self.cursor)
-		self.history = history
-		self.query_on = query_on
-		self.time_on = time_on
+		if (inplace):
+			query_on, time_on, history, saving = self.query_on, self.time_on, self.history, self.saving
+			self.__init__(name, self.cursor)
+			self.history = history
+			self.query_on = query_on
+			self.time_on = time_on
 		return (self)
 	# 
 	def to_pandas(self):

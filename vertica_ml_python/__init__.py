@@ -40,19 +40,19 @@ __license__="Apache License, Version 2.0"
 
 # vDataframe
 from vertica_ml_python.vdataframe import vDataframe
-from vertica_ml_python.vdataframe import read_csv
-from vertica_ml_python.vdataframe import read_vdf
-
 
 # Utilities
 from vertica_ml_python.utilities import drop_table
 from vertica_ml_python.utilities import drop_view
 from vertica_ml_python.utilities import drop_model
 from vertica_ml_python.utilities import drop_text_index
+from vertica_ml_python.utilities import read_csv
+from vertica_ml_python.utilities import read_vdf
+from vertica_ml_python.utilities import read_dsn
 from vertica_ml_python.utilities import tablesample
 from vertica_ml_python.utilities import to_tablesample
-from vertica_ml_python.utilities import read_dsn
 from vertica_ml_python.utilities import vertica_cursor
+from vertica_ml_python.utilities import vdf_from_relation
 
 # Learn
 import vertica_ml_python.learn

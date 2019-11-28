@@ -61,6 +61,7 @@ def bar(vdf,
 		h: float = 0,
 		color: str = '#214579'):
 	x, y, z, h, is_categorical = compute_plot_variables(vdf, method = method, of = of, max_cardinality = max_cardinality, bins = bins, h = h)
+	plt.figure(figsize = (8,10))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.barh(x, y, h, color = color, alpha = 0.86)
 	plt.ylabel(vdf.alias)
@@ -99,7 +100,7 @@ def bar2D(vdf,
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
-	plt.figure(facecolor = 'white')
+	plt.figure(figsize = (8,10))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	n = len(all_columns)
 	m = len(all_columns[0])
@@ -186,6 +187,7 @@ def boxplot(vdf,
 			h: float = 0, 
 			max_cardinality: int = 8, 
 			cat_priority: list = []):
+	plt.figure(figsize = (10,8))
 	# SINGLE BOXPLOT
 	if (by == ""):
 		if not(vdf.isnum()):
@@ -320,6 +322,7 @@ def boxplot2D(vdf, columns: list = []):
 			columns = [column for column in summarize.values]
 			del columns[0]
 			del result[0]
+			plt.figure(figsize = (10,8))
 			plt.rcParams['axes.facecolor'] = '#F8F8F8'
 			plt.xticks(rotation = 90)
 			box = plt.boxplot(result, notch = False, sym = '', whis = np.inf, widths = 0.5, labels = columns, patch_artist = True)
@@ -356,6 +359,7 @@ def cmatrix(matrix,
 					matrix_array[i][j] = matrix[j + 1][i + 1]
 				except:
 					matrix_array[i][j] = None
+		plt.figure(figsize = (8,8))
 		plt.title(title)
 		plt.imshow(matrix_array, cmap = cmap, interpolation = 'nearest', vmax = vmax, vmin = vmin)
 		plt.colorbar().set_label(colorbar)
@@ -421,8 +425,10 @@ def compute_plot_variables(vdf,
 				query = query.format(others_aggregate, aggregate, table, vdf.alias, aggregate, max_cardinality)
 		vdf.executeSQL(query, title = "Compute the histogram heights")
 		query_result = vdf.parent.cursor.fetchall()
+		if (query_result[-1][1] == None):
+			del query_result[-1]
 		z = [item[0] for item in query_result]
-		y = [item[1] / float(count) for item in query_result] if (method == "density") else [item[1] for item in query_result]
+		y = [item[1] / float(count) if item[1] != None else 0 for item in query_result] if (method == "density") else [item[1] if item[1] != None else 0 for item in query_result]
 		x = [0.4 * i + 0.2 for i in range(0, len(y))]
 		h = 0.39
 		is_categorical = True
@@ -503,6 +509,7 @@ def density(vdf,
 	for x0_smooth in x_smooth:
 		K = sum([y[i] * fkernel(((x0_smooth - x[i]) / a) ** 2) / (a * N) for i in range(0, len(x))])
 		y_smooth += [K]
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.plot(x_smooth, y_smooth, color = "#222222")
 	plt.xlim(min(x), max(x))
@@ -564,7 +571,7 @@ def hexbin(vdf,
 				column3 += [float(item[2])] * 2
 			else:
 				column3 += [float(item[2])/2] * 2
-	plt.figure(facecolor='white')
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = 'white'
 	plt.title('Hexbin of {} vs {}'.format(columns[0], columns[1]))
 	plt.ylabel(columns[1])
@@ -586,7 +593,7 @@ def hist(vdf,
 	x, y, z, h, is_categorical = compute_plot_variables(vdf, method, of, max_cardinality, bins, h)
 	is_numeric = vdf.isnum()
 	rotation = 0 if ((is_numeric) and not(is_categorical)) else 90
-	plt.figure(facecolor = 'white')
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.bar(x, y, h, color = color, alpha = 0.86)
 	plt.xlabel(vdf.alias)
@@ -624,7 +631,7 @@ def hist2D(vdf,
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
-	plt.figure(facecolor = 'white')
+	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	n, m = len(all_columns), len(all_columns[0])
 	n_groups = m-1
@@ -712,6 +719,7 @@ def pie(vdf,
 		else:
 			category = None
 		autopct = make_autopct(y,category)
+	plt.figure(figsize = (10,8))
 	if (donut):
 		explode = None
 		centre_circle = plt.Circle((0,0), 0.72, color='#666666', fc='white', linewidth=1.25)
@@ -737,7 +745,7 @@ def multiple_hist(vdf,
 	if (len(columns) > 5):
 		raise Exception("The number of column must be <= 5 to use 'multiple_hist' method")
 	else:
-		plt.figure(facecolor = 'white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#F5F5F5'
 		alpha, all_columns, all_h = 1, [], []
 		if (h <= 0):
@@ -772,7 +780,7 @@ def multi_ts_plot(vdf,
 				  order_by_start: str = "",
 				  order_by_end: str = ""):
 	if (len(columns) == 1):
-		return vdf[columns[0]].plot(order_by = order_by, order_by_start = order_by_start, order_by_end = order_by_end, area = area)
+		return vdf[columns[0]].plot(ts = order_by, start_date = order_by_start, end_date = order_by_end, area = False)
 	if not(columns):
 		columns = vdf.numcol()
 	for column in columns:
@@ -794,6 +802,7 @@ def multi_ts_plot(vdf,
 	query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curves").fetchall()
 	order_by_values = [item[0] for item in query_result]
 	alpha = 0.3
+	plt.figure(figsize = (10,8))
 	plt.gca().grid()
 	for i in range(0, len(columns)):
 		plt.plot(order_by_values, [item[i + 1] for item in query_result], color = colors[i], label = columns[i])
@@ -926,7 +935,7 @@ def scatter_matrix(vdf, columns: list = []):
 	elif (len(columns) == 1):	
 		return vdf[columns[0]].hist()
 	n = len(columns)
-	fig, axes = plt.subplots(nrows = n, ncols = n)
+	fig, axes = plt.subplots(nrows = n, ncols = n, figsize = (11,11))
 	query = "SELECT " + ",".join(columns) + ", random() AS rand FROM {} ".format(vdf.genSQL(tablesample = 50)) + "ORDER BY rand LIMIT 1000"
 	all_scatter_points = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 	all_scatter_columns = []
@@ -973,6 +982,7 @@ def scatter2D(vdf,
 		query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(tablesample), columns[0], columns[1], max_nb_points)
 		query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 		column1, column2 = [item[0] for item in query_result], [item[1] for item in query_result]
+		plt.figure(figsize = (10,8))
 		plt.gca().grid()
 		plt.gca().set_axisbelow(True)
 		plt.title('Scatter Plot of {} vs {}'.format(columns[0], columns[1]))
@@ -991,7 +1001,7 @@ def scatter2D(vdf,
 			query_result = vdf.executeSQL(query = query, title = "Select all the category of the column").fetchall()
 			query_result = [item for sublist in query_result for item in sublist]
 		all_columns, all_scatter, all_categories = [query_result], [], query_result
-		fig = plt.figure(facecolor="white")
+		fig = plt.figure(figsize = (10,8))
 		ax = plt
 		others = []
 		groupby_cardinality = vdf[column_groupby].nunique()
@@ -1050,7 +1060,7 @@ def scatter3D(vdf,
 						columns[0], columns[1], columns[2], vdf.genSQL(tablesample), columns[0], columns[1], columns[2], max_nb_points)
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 			column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
-			fig = plt.figure(facecolor = 'white')
+			fig = plt.figure(figsize = (10,8))
 			ax = fig.add_subplot(111, projection = '3d')
 			plt.title('Scatter Plot of {} vs {} vs {}'.format(columns[0], columns[1], columns[2]))
 			ax.scatter(column1, column2, column3, color = colors[0])
@@ -1072,7 +1082,7 @@ def scatter3D(vdf,
 				query_result = vdf.executeSQL(query = query, title = "Select all the category of the column " + column_groupby).fetchall()
 				query_result = [item for sublist in query_result for item in sublist]
 			all_columns, all_scatter, all_categories = [query_result], [], query_result
-			fig = plt.figure(facecolor="white")
+			fig = plt.figure(figsize = (10,8))
 			ax = fig.add_subplot(111,projection='3d')
 			others = []
 			groupby_cardinality = vdf[column_groupby].nunique()
@@ -1122,7 +1132,7 @@ def ts_plot(vdf,
 		query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curve").fetchall()
 		order_by_values = [item[0] for item in query_result]
 		column_values = [float(item[1]) for item in query_result]
-		plt.figure(facecolor = 'white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#FCFCFC'
 		plt.plot(order_by_values, column_values, color = color)
 		if (area):
@@ -1149,7 +1159,7 @@ def ts_plot(vdf,
 			query += " AND {} = '{}'".format(by, column) 
 			query_result = vdf.executeSQL(query = query, title = "Select the needed category points to draw the curve").fetchall()
 			all_data += [[[item[0] for item in query_result], [float(item[1]) for item in query_result], column]]
-		plt.figure(facecolor = 'white')
+		plt.figure(figsize = (10,8))
 		plt.rcParams['axes.facecolor'] = '#FCFCFC'
 		for idx, elem in enumerate(all_data):
 			plt.plot(elem[0], elem[1], color = colors[idx], label = elem[2])
