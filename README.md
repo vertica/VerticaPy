@@ -158,7 +158,7 @@ vdf.sql_on_off()
 vdf.describe()
 
 # Output
-<i> Compute the descriptive statistics of all the numerical columns </i>
+## Compute the descriptive statistics of all the numerical columns ##
 
 SELECT SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
 FROM
