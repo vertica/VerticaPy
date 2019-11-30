@@ -326,6 +326,7 @@ def print_table(data_columns, is_finished = True, offset = 0, repeat_first_colum
 			return formatted_text
 	except:
 		return formatted_text
+# 
 def read_csv(path: str, 
 			 cursor, 
 			 schema: str = 'public', 
@@ -363,8 +364,8 @@ def read_csv(path: str,
 			else:
 				path_test = path
 			flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
-			cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS".format(flex_name))
-			query = "COPY {} FROM LOCAL '{}' parser fcsvparser(delimiter = '{}', enclosed_by = '{}', escape = '{}') NULL '{}'"
+			cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
+			query = "COPY {} FROM LOCAL '{}' parser fcsvparser(delimiter = '{}', enclosed_by = '{}', escape = '{}') NULL '{}';"
 			cursor.execute(query.format(flex_name, path_test, delimiter, enclosed_by, escape, null))
 			query = "SELECT compute_flextable_keys('{}');".format(flex_name)
 			cursor.execute(query)
@@ -501,12 +502,12 @@ def to_tablesample(query: str, cursor, name = "Sample"):
 #
 def vertica_cursor(dsn: str):
 	try:
-		import vertica_python
-		cursor = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
-	except:
-		print("Failed to connect with vertica_python, try a connection with pyodbc")
 		import pyodbc
-		cursor = pyodbc.connect("DSN=" + dsn).cursor()
+		cursor = pyodbc.connect("DSN=" + dsn, autocommit = True).cursor()
+	except:
+		print("Failed to connect with pyodbc, try a connection with vertica_python")
+		import vertica_python
+		cursor = vertica_python.connect(** to_vertica_python_format(dsn), autocommit = True).cursor()
 	return (cursor)
 def read_dsn(dsn: str):
 	f = open(os.environ['ODBCINI'], "r")

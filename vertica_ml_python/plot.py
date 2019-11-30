@@ -417,11 +417,11 @@ def compute_plot_variables(vdf,
 				if (of):
 					enum_trans += " , " + of
 				table = "(SELECT " + enum_trans + " FROM " + table + ") enum_table"
-			query = "(SELECT {} || '', {} FROM {} GROUP BY {} ORDER BY {} DESC LIMIT {})".format(
-				vdf.alias, aggregate, table, vdf.alias, aggregate, max_cardinality)
+			query = "(SELECT {} || '', {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
+				vdf.alias, aggregate, table, vdf.alias, max_cardinality)
 			if (cardinality > max_cardinality):
 				query += (" UNION (SELECT 'Others', {}(count) FROM (SELECT {} AS count FROM {} " + 
-					"GROUP BY {} ORDER BY {} DESC OFFSET {}) y LIMIT 1) ORDER BY count DESC")
+					"GROUP BY {} ORDER BY {} DESC OFFSET {}) y LIMIT 1) ORDER BY 2 DESC")
 				query = query.format(others_aggregate, aggregate, table, vdf.alias, aggregate, max_cardinality)
 		vdf.executeSQL(query, title = "Compute the histogram heights")
 		query_result = vdf.parent.cursor.fetchall()
