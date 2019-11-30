@@ -324,6 +324,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe[].isdate(...) | vdataframe | Verify if the column is a date | <i>&#11088;</i>|
 |vDataframe[].isnum(...) | vdataframe | Verify if the column is numerical | <i>&#11088;</i>|
 |vDataframe.load(...) | vdataframe | Load a saving | <i>&#11088;&#11088;&#11088;</i>|
+|load_amazon | learn.datasets | Load the Amazon dataset | <i>&#11088;</i>|
 |load_iris | learn.datasets | Load the Iris dataset | <i>&#11088;</i>|
 |load_model | utilities | Load the model | <i>&#11088;&#11088;&#11088;</i>|
 |load_smart_meters | learn.datasets | Load the Smart Meters dataset | <i>&#11088;</i>|
