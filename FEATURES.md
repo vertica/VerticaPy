@@ -250,8 +250,6 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |cross_validate | learn.model_selection | K-Fold Cross Validation | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |elbow | learn.plot | Draw the Elbow curve | <i>&#11088;&#11088;&#11088;</i>|
 |train_test_split | learn.model_selection  | Split the data | <i>&#11088;&#11088;</i>|
-|NearestCentroid | learn.model_selection  | Nearest Centroid | <i>&#11088;&#11088;</i>|
-|RandomForestClassifier | learn.ensemble | Random Forest | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 
 ## Regression
 
