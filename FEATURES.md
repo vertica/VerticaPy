@@ -95,8 +95,8 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe[].head(...) | vdataframe | Print the head | <i>&#11088;</i>|
 |vDataframe.isin(...) | vdataframe | Verify if the elements are in the object | <i>&#11088;</i>|
 |vDataframe[].isin(...) | vdataframe | Verify if the elements are in the column | <i>&#11088;</i>|
-|vDataframe.nlargest(...) | vdataframe | Returns the n smallest column elements | <i>&#11088;</i>|
-|vDataframe.nsmallest(...) | vdataframe | Returns the n largest column elements | <i>&#11088;</i>|
+|vDataframe[].nlargest(...) | vdataframe | Returns the n smallest column elements | <i>&#11088;</i>|
+|vDataframe[].nsmallest(...) | vdataframe | Returns the n largest column elements | <i>&#11088;</i>|
 |vDataframe[].rename(...) | vdataframe | Rename the column | <i>&#11088;</i>|
 |vDataframe.tail(...) | vdataframe | Print a part of the object | <i>&#11088;&#11088;</i>|
 |vDataframe[].tail(...) | vdataframe | Print a part of the object | <i>&#11088;&#11088;</i>|
@@ -197,6 +197,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |DBSCAN | learn.cluster | DBSCAN Algorithm | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |KMeans | learn.cluster | KMeans Algorithm | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |LocalOutlierFactor | learn.neighbors | Local Outlier Factor | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
+|vDataframe.outliers(...) | vdataframe | Outliers of the Gaussian Distribution | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 
 ## Classification
 
