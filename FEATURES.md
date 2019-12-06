@@ -12,7 +12,7 @@ In this document the functions are placed in different categories to help the us
 
 Any Data Scientist will need to follow a part or the entire Data Science cycle to consider solving a data problem. Data Exploration and Business Understanding are very important to realise the most important step which is Data preparation. I decided to group the methods and functions using the Data Science cycle thematics to help any Data Scientist to find fast the proper function. If a function is missing, I'll be very happy to help you code it.
 
-<p align="center"><img src="img/DS-cycle.png" width="400" /></p>
+<p align="center"><img src="img/DS-cycle.png" width="700" /></p>
 
 # Data Exploration and Understanding
 
