@@ -198,6 +198,7 @@ class vColumn:
 			else:
 				new_dict["'" + elem + "'"] = val
 		others = "NULL" if (others == None) else others
+		others = "'{}'".format(others) if (type(others) == str) else others
 		fun = "DECODE({}, " + ", ".join(["{}, {}".format(item, new_dict[item]) for item in new_dict]) + ", {})".format(others)
 		return (self.apply(func = fun))
 	# 
@@ -314,11 +315,15 @@ class vColumn:
 				print("/!\\ Warning: Nothing was dropped")
 		return (self.parent) 
 	# 
-	def drop_outliers(self, alpha: float = 0.05):
-		query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(alpha, self.alias, alpha, self.alias, self.parent.genSQL())
-		self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
-		p_alpha, p_1_alpha = self.parent.cursor.fetchone()
-		self.parent.filter(expr = "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha))
+	def drop_outliers(self, alpha: float = 0.05, use_threshold: bool = True, threshold: float = 4.0):
+		if (use_threshold):
+			result = self.aggregate(func = ["std", "avg"]).transpose().values
+			self.parent.filter(expr = "ABS({} - {}) / {} < {}".format(self.alias, result["avg"][0], result["std"][0], threshold))
+		else:
+			query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(alpha, self.alias, alpha, self.alias, self.parent.genSQL())
+			self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
+			p_alpha, p_1_alpha = self.parent.cursor.fetchone()
+			self.parent.filter(expr = "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha))
 		return (self.parent)
 	#
 	def dtype(self):
@@ -366,7 +371,7 @@ class vColumn:
 					val = self.median()
 				new_column = "COALESCE({}, {})".format("{}", val)
 			else:
-				new_column = "COALESCE({}, {}({}) over (PARTITION BY {}))".format("{}", fun, "{}", ", ".join(by))
+				new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format("{}", fun, "{}", ", ".join(by))
 		elif (method in ('ffill', 'pad', 'bfill', 'backfill')):
 			if not(order_by):
 				raise ValueError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element used to order the data")
@@ -398,13 +403,17 @@ class vColumn:
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Fillna]: 1 missing value of the vColumn '{}' was filled.".format(self.alias)]
 		return (self.parent)
 	#
-	def fill_outliers(self, method: str = "winsorize", alpha = 0.05):
+	def fill_outliers(self, method: str = "winsorize", alpha: float = 0.05, use_threshold: bool = True, threshold: float = 4.0):
 		if (method not in ("winsorize", "null", "mean")):
 			raise ValueError("The parameter 'method' must be in winsorize|null|mean")
 		else:
-			query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(alpha, self.alias, alpha, self.alias, self.parent.genSQL())
-			self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
-			p_alpha, p_1_alpha = self.parent.cursor.fetchone()
+			if (use_threshold):
+				result = self.aggregate(func = ["std", "avg"]).transpose().values
+				p_alpha, p_1_alpha = - threshold * result["std"][0] + result["avg"][0], threshold * result["std"][0] + result["avg"][0]
+			else:
+				query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(alpha, self.alias, alpha, self.alias, self.parent.genSQL())
+				self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
+				p_alpha, p_1_alpha = self.parent.cursor.fetchone()
 			if (method == "winsorize"):
 				self.clip(lower = p_alpha, upper = p_1_alpha)
 			elif (method == "null"):
@@ -425,9 +434,7 @@ class vColumn:
 					prefix_sep: str = "_", 
 					drop_first: bool = False, 
 					use_numbers_as_suffix: bool = False):
-		if (self.category() in ["date","float"]):
-			print("/!\\ Warning: get_dummies is only available for categorical variables.")
-		elif (self.nunique() < 3):
+		if (self.nunique() < 3):
 			print("/!\\ Warning: The column has already a limited number of elements.")
 			print("Please use the label_encode func in order to code the elements if it is needed.")
 		else:
@@ -515,7 +522,6 @@ class vColumn:
 		return (self.aggregate(["avg"]).values[self.alias][0])
 	# 
 	def mean_encode(self, response_column: str):
-		print('"' + response_column.replace('"', '') + '"')
 		if (response_column not in self.parent.get_columns()) and ('"' + response_column.replace('"', '') + '"' not in self.parent.get_columns()):
 			raise NameError("The response column doesn't exist")
 		elif not(self.parent[response_column].isnum()):
@@ -554,6 +560,10 @@ class vColumn:
 		by = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
 		return (self.apply(func = "LEAD({}) OVER ({} ORDER BY {})".format("{}", by, ", ".join(order_by))))
 	# 
+	def nlargest(self, n: int = 10):
+		query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(self.parent.genSQL(), self.alias, self.alias, n)
+		return (to_tablesample(query, self.parent.cursor, name = "nlargest"))
+	# 
 	def normalize(self, method = "zscore"):
 		if (self.category() in ("int","float")):
 			if (method == "zscore"):
@@ -579,6 +589,10 @@ class vColumn:
 		else:
 			raise TypeError("The vColumn must be numerical for Normalization")
 		return (self.parent)
+	# 
+	def nsmallest(self, n: int = 10):
+		query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(self.parent.genSQL(), self.alias, self.alias, n)
+		return (to_tablesample(query, self.parent.cursor, name = "nsmallest"))
 	# 
 	def numh(self, method: str = "auto"):
 		if (self.category() in ["int","float"]):

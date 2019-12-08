@@ -130,15 +130,10 @@ class vDataframe:
 	# SQL GEN = THE MOST IMPORTANT METHOD
 	#
 	def genSQL(self, 
-			   tablesample: float = 100.0, 
+			   split: bool = False, 
 			   transformations: dict = {}, 
 			   force_columns = [],
 			   final_table_name = "final_table"):
-		# TABLESAMPLE
-		if (tablesample == 100.0):
-			tablesample = ""
-		else:
-			tablesample = " TABLESAMPLE({})".format(tablesample)
 		# FINDING MAX FLOOR
 		all_imputations_grammar = []
 		force_columns = self.columns if not(force_columns) else force_columns
@@ -178,7 +173,7 @@ class vDataframe:
 		first_values = [item[0] for item in all_imputations_grammar]
 		for i in range(0, len(first_values)):
 		    first_values[i] = "{} AS {}".format(first_values[i], columns[i]) 
-		table = "SELECT " + ", ".join(first_values) + " FROM " + self.main_relation + tablesample
+		table = "SELECT " + ", ".join(first_values) + " FROM " + self.main_relation
 		# OTHER FLOORS
 		for i in range(1, max_len):
 		    values = [item[i] for item in all_imputations_grammar]
@@ -201,14 +196,18 @@ class vDataframe:
 			order_final = all_order_by[max_len - 1]
 		except:
 			order_final = ""
+		split = ", RANDOM() AS __split_vpython__" if (split) else ""
 		if (where_final == "") and (order_final == ""):
-			table = "(" + table + ") " + final_table_name
+			if (split):
+				table = "(SELECT *{} FROM (".format(split) + table + ") " + final_table_name + ") split_final_table"
+			else:
+				table = "(" + table + ") " + final_table_name
 		else:
 			table = "(" + table + ") t" + str(max_len)
 			table += where_final + order_final
-			table = "(SELECT * FROM " + table + ") " + final_table_name
+			table = "(SELECT *{} FROM " + table + ") ".format(split) + final_table_name
 		if (self.exclude_columns):
-			table = "(SELECT " + ", ".join(self.get_columns()) + " FROM " + table + ") " + final_table_name
+			table = "(SELECT " + ", ".join(self.get_columns()) + split + " FROM " + table + ") " + final_table_name
 		return table
 	#
 	#
@@ -232,6 +231,10 @@ class vDataframe:
 			for fun in func:
 				if (fun.lower() == "median"):
 					expr = "APPROXIMATE_MEDIAN({})".format(column)
+				elif (fun.lower() == "std"):
+					expr = "STDDEV({})".format(column)
+				elif (fun.lower() == "var"):
+					expr = "VARIANCE({})".format(column)
 				elif (fun.lower() == "mean"):
 					expr = "AVG({})".format(column)
 				elif ('%' in fun):
@@ -689,12 +692,8 @@ class vDataframe:
 			self.eval(name = name, expr = "ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)), print_info = False)
 			self.filter(expr = '"{}" = 1'.format(name))
 			self.exclude_columns += ['"{}"'.format(name)]
-			if (count > 1):
-				print("{} duplicates were dropped".format(count))
-			else:
-				print("1 duplicate was dropped")
 		else:
-			print("/!\\ Warning: No duplicate detected")
+			print("/!\\ Warning: No duplicates detected")
 		return (self)
 	# 
 	def dropna(self, columns: list = [], print_info: bool = True):
@@ -897,7 +896,19 @@ class vDataframe:
 		count = self.shape()[0]
 		if not(expr):
 			for condition in conditions:
-				self.filter(expr = condition)
+				self.filter(expr = condition, print_info = False)
+			count -= self.shape()[0]
+			if (count > 1):
+				if (print_info):
+					print("{} elements were filtered".format(count))
+				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} elements were filtered using the filter '{}'".format(count, conditions)]
+			elif (count == 1):
+				if (print_info):
+					print("{} element was filtered".format(count))
+				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} element was filtered using the filter '{}'".format(count, conditions)]
+			else:
+				if (print_info):
+					print("Nothing was filtered.")
 		else:
 			max_pos = 0
 			for column in self.columns:
@@ -921,7 +932,7 @@ class vDataframe:
 				del self.where[-1]
 				if (print_info):
 					print("Nothing was filtered.")
-			return (self)
+		return (self)
 	#
 	def first(self, ts: str, offset: str):
 		ts = '"' + ts.replace('"', '') + '"'
@@ -1012,13 +1023,19 @@ class vDataframe:
 			 input_relation: str = "", 
 			 vdf = None, 
 			 on: dict = {},
-			 how: str = 'natural'):
-		on_join = ["x." + on[elem] + " = y." + elem for elem in on]
+			 how: str = 'natural',
+			 expr1: list = [],
+			 expr2: list = []):
+		on_join = ["x." + elem + " = y." + on[elem] for elem in on]
 		on_join = " AND ".join(on_join)
 		on_join = " ON " + on_join if (on_join) else ""
 		first_relation = self.genSQL(final_table_name = "x")
 		second_relation = input_relation + " AS y" if not(vdf) else vdf.genSQL(final_table_name = "y")
-		table = "SELECT * FROM {} {} JOIN {} {}".format(first_relation, how.upper(), second_relation, on_join)
+		expr1 = ["x.{}".format(elem) for elem in expr1]
+		expr2 = ["y.{}".format(elem) for elem in expr2]
+		expr = expr1 + expr2
+		expr = "*" if not(expr) else ", ".join(expr)
+		table = "SELECT {} FROM {} {} JOIN {} {}".format(expr, first_relation, how.upper(), second_relation, on_join)
 		return (self.vdf_from_relation("(" + table + ") join_table", "join", "[Join]: Two relations were joined together"))
 	#
 	def kurt(self, columns: list = []):
@@ -1076,24 +1093,11 @@ class vDataframe:
 	def min(self, columns = []):
 		return (self.aggregate(func = ["min"], columns = columns))
 	# 
-	def nlargest(self,
-				 column: str,
-				 n: int = 10):
-		column = '"' + column.replace('"', '') + '"'
-		query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(self.genSQL(), column, column, n)
-		return (to_tablesample(query, self.cursor, name = "nlargest"))
-	# 
-	def normalize(self, method = "zscore"):
-		for column in self.numcol():
+	def normalize(self, columns = [], method = "zscore"):
+		columns = self.numcol() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+		for column in columns:
 			self[column].normalize(method = method)
 		return (self)
-	# 
-	def nsmallest(self,
-				  column: str,
-				  n: int = 10):
-		column = '"' + column.replace('"', '') + '"'
-		query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(self.genSQL(), column, column, n)
-		return (to_tablesample(query, self.cursor, name = "nsmallest"))
 	#
 	def numcol(self):
 		columns = []
@@ -1101,6 +1105,18 @@ class vDataframe:
 			if self[column].isnum():
 				columns += [column]
 		return (columns)
+	# 
+	def outliers(self,
+				 columns: list = [],
+				 name: str = "distribution_outliers",
+				 threshold: float = 3.0):
+		columns = ['"' + column.replace('"', '') + '"' for column in columns] if (columns) else self.numcol()
+		result = self.aggregate(func = ["std", "avg"], columns = columns).values
+		conditions = []
+		for idx, elem in enumerate(result["index"]):
+			conditions += ["ABS({} - {}) / {} > {}".format(elem, result["avg"][idx], result["std"][idx], threshold)]
+		self.eval(name, "(CASE WHEN {} THEN 1 ELSE 0 END)".format(" OR ".join(conditions)))
+		return (self)
 	# 
 	def pivot_table(self,
 					columns: list,

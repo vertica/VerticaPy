@@ -359,7 +359,7 @@ def cmatrix(matrix,
 					matrix_array[i][j] = matrix[j + 1][i + 1]
 				except:
 					matrix_array[i][j] = None
-		plt.figure(figsize = (8,8))
+		plt.figure(figsize = (12,12))
 		plt.title(title)
 		plt.imshow(matrix_array, cmap = cmap, interpolation = 'nearest', vmax = vmax, vmin = vmin)
 		plt.colorbar().set_label(colorbar)
@@ -936,7 +936,7 @@ def scatter_matrix(vdf, columns: list = []):
 		return vdf[columns[0]].hist()
 	n = len(columns)
 	fig, axes = plt.subplots(nrows = n, ncols = n, figsize = (11,11))
-	query = "SELECT " + ",".join(columns) + ", random() AS rand FROM {} ".format(vdf.genSQL(tablesample = 50)) + "ORDER BY rand LIMIT 1000"
+	query = "SELECT " + ", ".join(columns) + ", RANDOM() AS rand FROM {} WHERE __split_vpython__ < 0.5 ".format(vdf.genSQL(True)) + "ORDER BY rand LIMIT 1000"
 	all_scatter_points = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 	all_scatter_columns = []
 	all_h = []
@@ -979,7 +979,7 @@ def scatter2D(vdf,
 		raise TypeError("The two first columns of the parameter 'columns' must be numerical")
 	if (len(columns) == 2):
 		tablesample = max_nb_points / vdf.shape()[0]
-		query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(tablesample), columns[0], columns[1], max_nb_points)
+		query = "SELECT {}, {} FROM {} WHERE __split_vpython__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[0], columns[1], max_nb_points)
 		query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 		column1, column2 = [item[0] for item in query_result], [item[1] for item in query_result]
 		plt.figure(figsize = (10,8))
@@ -1006,12 +1006,12 @@ def scatter2D(vdf,
 		others = []
 		groupby_cardinality = vdf[column_groupby].nunique()
 		count = vdf.shape()[0]
-		tablesample = 10 if (count>10000) else 90
+		tablesample = 0.1 if (count>10000) else 0.9
 		for idx, category in enumerate(all_categories):
 			if ((max_cardinality < groupby_cardinality) or (len(cat_priority) < groupby_cardinality)):
 				others += ["{} != '{}'".format(column_groupby, category)]
-			query = "SELECT {},{} FROM {} WHERE {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
-			query = query.format(columns[0], columns[1], vdf.genSQL(tablesample), columns[2], category, columns[0], columns[1], int(max_nb_points / len(all_categories))) 
+			query = "SELECT {},{} FROM {} WHERE  __split_vpython__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+			query = query.format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[2], category, columns[0], columns[1], int(max_nb_points / len(all_categories))) 
 			vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category = '"+str(category)+"')")
 			query_result = vdf.cursor.fetchall()
 			column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
@@ -1019,8 +1019,8 @@ def scatter2D(vdf,
 			all_scatter += [ax.scatter(column1, column2, alpha=0.8, marker = markers[idx], color = colors[idx])]
 		if (with_others and idx + 1 < groupby_cardinality):
 			all_categories += ["others"]
-			query = "SELECT {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
-			query = query.format(columns[0], columns[1], vdf.genSQL(tablesample), " AND ".join(others), columns[0], columns[1], int(max_nb_points / len(all_categories)))
+			query = "SELECT {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND __split_vpython__ < {} LIMIT {}"
+			query = query.format(columns[0], columns[1], vdf.genSQL(True), " AND ".join(others), columns[0], columns[1], tablesample, int(max_nb_points / len(all_categories)))
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category='others')").fetchall()
 			column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
 			all_columns += [[column1, column2]]
@@ -1056,8 +1056,8 @@ def scatter3D(vdf,
 				raise TypeError("The three first columns of the parameter 'columns' must be numerical")
 		if (len(columns) == 3):
 			tablesample = max_nb_points / vdf.shape()[0]
-			query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
-						columns[0], columns[1], columns[2], vdf.genSQL(tablesample), columns[0], columns[1], columns[2], max_nb_points)
+			query = "SELECT {}, {}, {} FROM {} WHERE __split_vpython__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+						columns[0], columns[1], columns[2], vdf.genSQL(True), tablesample, columns[0], columns[1], columns[2], max_nb_points)
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 			column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
 			fig = plt.figure(figsize = (10,8))
@@ -1090,16 +1090,16 @@ def scatter3D(vdf,
 			for idx,category in enumerate(all_categories):
 				if ((max_cardinality < groupby_cardinality) or (len(cat_priority) < groupby_cardinality)):
 					others += ["{} != '{}'".format(column_groupby, category)]
-				query = "SELECT {}, {}, {} FROM {} WHERE {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
-				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(tablesample), columns[3], category, columns[0], columns[1], columns[2], int(max_nb_points / len(all_categories))) 
+				query = "SELECT {}, {}, {} FROM {} WHERE __split_vpython__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
+				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(True), tablesample, columns[3], category, columns[0], columns[1], columns[2], int(max_nb_points / len(all_categories))) 
 				query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category = '"+str(category)+"')").fetchall()
 				column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
 				all_columns += [[column1, column2, column3]]
 				all_scatter += [ax.scatter(column1, column2, column3, alpha=0.8, marker = markers[idx], color = colors[idx])]
 			if (with_others and idx + 1 < groupby_cardinality):
 				all_categories += ["others"]
-				query = "SELECT {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
-				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(tablesample), " and ".join(others), columns[0], columns[1], columns[2], int(max_nb_points / len(all_categories)))
+				query = "SELECT {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND __split_vpython__ < {} LIMIT {}"
+				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(True), " AND ".join(others), columns[0], columns[1], columns[2], tablesample, int(max_nb_points / len(all_categories)))
 				query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category='others')").fetchall()
 				column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
 				all_columns += [[column1, column2]]
