@@ -48,12 +48,12 @@ def elbow(X: list,
 	import matplotlib.pyplot as plt
 	from vertica_ml_python.learn.cluster import KMeans
 	all_within_cluster_SS = []
-	L = range(n_cluster[0], n_cluster[1]) if not(type(n_cluster) == list) else n_cluster
+	L = [i for i in range(n_cluster[0], n_cluster[1])] if not(type(n_cluster) == list) else n_cluster
 	for i in L:
 		cursor.execute("DROP MODEL IF EXISTS _vpython_kmeans_tmp_model")
 		model = KMeans("_vpython_kmeans_tmp_model", cursor, i, init, max_iter, tol)
 		model.fit(input_relation, X)
-		all_within_cluster_SS += [model.metrics.values["value"][3]]
+		all_within_cluster_SS += [float(model.metrics.values["value"][3])]
 		model.drop()
 	plt.figure(figsize = (10,8))
 	plt.rcParams['axes.facecolor'] = '#F4F4F4'
@@ -298,7 +298,7 @@ def prc_curve(y_true: str,
 	query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
 	query = query.format(nbins, y_true, pos_label, y_score, input_relation)
 	query_result = cursor.execute(query).fetchall()
-	threshold, recall, precision = [item[0] for item in query_result], [item[1] for item in query_result], [item[2] for item in query_result]
+	threshold, recall, precision = [0] + [item[0] for item in query_result] + [1], [1] + [item[1] for item in query_result] + [0], [0] +  [item[2] for item in query_result] + [1]
 	auc=0
 	for i in range(len(recall) - 1):
 		if (recall[i + 1] - recall[i] != 0.0):

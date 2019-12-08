@@ -69,8 +69,7 @@ from vertica_ml_python.learn.plot import regression_plot
 from vertica_ml_python.learn.plot import prc_curve
 
 #
-def LinearRegression(self,
-		  			 name: str,
+def LinearRegression(name: str,
 		  			 cursor,
 		  			 tol: float = 1e-4, 
 		  			 C: float = 1.0, 
@@ -199,8 +198,7 @@ class ElasticNet:
 		else:
 			raise ValueError("The parameter 'method' must be in r2|mae|mse|msle|max|median|var")
 #
-def Lasso(self,
-		  name: str,
+def Lasso(name: str,
 		  cursor,
 		  tol: float = 1e-4, 
 		  max_iter: int = 100, 
@@ -358,8 +356,7 @@ class LogisticRegression:
 		else:
 			raise ValueError("The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index")
 #
-def Ridge(self,
-		  name: str,
+def Ridge(name: str,
 		  cursor,
 		  tol: float = 1e-4, 
 		  max_iter: int = 100, 

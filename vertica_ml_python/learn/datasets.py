@@ -89,6 +89,5 @@ def load_winequality(cursor, schema: str = 'public', name = 'winequality'):
 		cursor.execute(query)
 		vdf = vDataframe("{}.{}".format(schema, name), cursor)
 	except:
-		raise
 		vdf = vDataframe("{}.{}".format(schema, name), cursor)
 	return (vdf)

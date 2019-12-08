@@ -130,7 +130,7 @@ class DBSCAN:
 	def plot(self):
 		from vertica_ml_python import vDataframe
 		if (len(self.X) <= 3):
-			vDataframe(self.name, self.cursor).scatter(columns = self.X, catcol = "dbscan_cluster")
+			vDataframe(self.name, self.cursor).scatter(columns = self.X, catcol = "dbscan_cluster", max_cardinality = 100, max_nb_points = 10000)
 		else:
 			raise ValueError("Clustering Plots are only available in 2D or 3D")
 	#
@@ -231,6 +231,6 @@ class KMeans:
 		vdf = vDataframe(self.input_relation, self.cursor)
 		self.add_to_vdf(vdf, "kmeans_cluster")
 		if (len(self.X) <= 3):
-			vdf.scatter(columns = self.X, catcol = "kmeans_cluster")
+			vdf.scatter(columns = self.X, catcol = "kmeans_cluster", max_cardinality = 100, max_nb_points = 10000)
 		else:
 			raise ValueError("Clustering Plots are only available in 2D or 3D")
