@@ -61,7 +61,8 @@ def bar(vdf,
 		h: float = 0,
 		color: str = '#214579'):
 	x, y, z, h, is_categorical = compute_plot_variables(vdf, method = method, of = of, max_cardinality = max_cardinality, bins = bins, h = h)
-	plt.figure(figsize = (8,10))
+	max_size = max(min(int(len(x) / 2), 900), 6)
+	plt.figure(figsize = (12, max_size))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.barh(x, y, h, color = color, alpha = 0.86)
 	plt.ylabel(vdf.alias)
@@ -94,19 +95,20 @@ def bar2D(vdf,
 		  of: str = "",
 		  max_cardinality: tuple = (6,6),
 		  h: tuple = (None, None),
-		  limit_distinct_elements: int = 200,
+		  limit_distinct_elements: int = 1000000,
 		  stacked: bool = False,
 		  fully_stacked: bool = False):
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
-	plt.figure(figsize = (8,10))
-	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	n = len(all_columns)
 	m = len(all_columns[0])
 	n_groups = m - 1
 	index = np.arange(n_groups)
 	bar_width = 0.5
+	max_size = max(min(int(m / 2), 900), 8)
+	plt.figure(figsize = (14, max_size))
+	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	if not(fully_stacked):
 		for i in range(1, n):
 			current_column = all_columns[i][1:m]
@@ -177,7 +179,7 @@ def bar2D(vdf,
 		plt.ylabel(columns[0])
 		plt.xlabel('Density per category')
 		plt.title('Distribution per category of {} group by {}'.format(columns[0], columns[1]))
-	plt.legend(title = columns[1])
+	plt.legend(title = columns[1], loc = 'center left', bbox_to_anchor = [1, 0.5])
 	plt.gca().set_axisbelow(True)
 	plt.gca().xaxis.grid()
 	plt.show()
@@ -187,9 +189,9 @@ def boxplot(vdf,
 			h: float = 0, 
 			max_cardinality: int = 8, 
 			cat_priority: list = []):
-	plt.figure(figsize = (10,8))
 	# SINGLE BOXPLOT
 	if (by == ""):
+		plt.figure(figsize = (12, 10))
 		if not(vdf.isnum()):
 			raise TypeError("The column must be numerical in order to draw a boxplot")
 		summarize = vdf.summarize_numcol().values["value"]
@@ -253,7 +255,9 @@ def boxplot(vdf,
 				for item in cat_priority:
 					labels += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
 			else:
-				labels=cat_priority
+				labels = cat_priority
+			max_size = max(min(int(len(cat_priority) / 2), 900), 8)
+			plt.figure(figsize = (max_size, 10))
 			plt.rcParams['axes.facecolor'] = '#F8F8F8'
 			plt.ylabel(vdf.alias)
 			plt.xlabel(by)
@@ -322,7 +326,8 @@ def boxplot2D(vdf, columns: list = []):
 			columns = [column for column in summarize.values]
 			del columns[0]
 			del result[0]
-			plt.figure(figsize = (10,8))
+			max_size = max(min(int(len(columns) / 2), 900), 8)
+			plt.figure(figsize = (max_size, 10))
 			plt.rcParams['axes.facecolor'] = '#F8F8F8'
 			plt.xticks(rotation = 90)
 			box = plt.boxplot(result, notch = False, sym = '', whis = np.inf, widths = 0.5, labels = columns, patch_artist = True)
@@ -359,7 +364,9 @@ def cmatrix(matrix,
 					matrix_array[i][j] = matrix[j + 1][i + 1]
 				except:
 					matrix_array[i][j] = None
-		plt.figure(figsize = (12,12))
+		max_size_n = max(min(n, 900), 10)
+		max_size_m = max(min(m, 900), 10)
+		plt.figure(figsize = (max_size_m, max_size_n))
 		plt.title(title)
 		plt.imshow(matrix_array, cmap = cmap, interpolation = 'nearest', vmax = vmax, vmin = vmin)
 		plt.colorbar().set_label(colorbar)
@@ -504,12 +511,12 @@ def density(vdf,
 	x = [item - h / 2 / 0.94 for item in x]
 	N = sum(y)
 	y_smooth = []
-	x_smooth = [(max(x) - min(x)) * i / smooth+min(x) for i in range(0, smooth + 1)]
+	x_smooth = [(max(x) - min(x)) * i / smooth + min(x) for i in range(0, smooth + 1)]
 	n = len(y)
 	for x0_smooth in x_smooth:
 		K = sum([y[i] * fkernel(((x0_smooth - x[i]) / a) ** 2) / (a * N) for i in range(0, len(x))])
 		y_smooth += [K]
-	plt.figure(figsize = (10,8))
+	plt.figure(figsize = (12, 7))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.plot(x_smooth, y_smooth, color = "#222222")
 	plt.xlim(min(x), max(x))
@@ -571,7 +578,7 @@ def hexbin(vdf,
 				column3 += [float(item[2])] * 2
 			else:
 				column3 += [float(item[2])/2] * 2
-	plt.figure(figsize = (10,8))
+	plt.figure(figsize = (12, 7))
 	plt.rcParams['axes.facecolor'] = 'white'
 	plt.title('Hexbin of {} vs {}'.format(columns[0], columns[1]))
 	plt.ylabel(columns[1])
@@ -593,7 +600,8 @@ def hist(vdf,
 	x, y, z, h, is_categorical = compute_plot_variables(vdf, method, of, max_cardinality, bins, h)
 	is_numeric = vdf.isnum()
 	rotation = 0 if ((is_numeric) and not(is_categorical)) else 90
-	plt.figure(figsize = (10,8))
+	max_size = max(min(int(len(x) / 2), 900), 6)
+	plt.figure(figsize = (max_size, 8))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	plt.bar(x, y, h, color = color, alpha = 0.86)
 	plt.xlabel(vdf.alias)
@@ -626,17 +634,18 @@ def hist2D(vdf,
 		   of: str = "",
 		   max_cardinality: tuple = (6, 6),
 		   h: tuple = (None, None),
-		   limit_distinct_elements: int = 200,
+		   limit_distinct_elements: int = 1000000,
 		   stacked: bool = False):
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
-	plt.figure(figsize = (10,8))
-	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	n, m = len(all_columns), len(all_columns[0])
 	n_groups = m-1
 	index = np.arange(n_groups)
 	bar_width = 0.5
+	max_size = max(min(int(m / 2), 900), 8)
+	plt.figure(figsize = (max_size, 8))
+	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	for i in range(1, n):
 		current_column = all_columns[i][1:m]
 		for idx, item in enumerate(current_column):
@@ -674,7 +683,7 @@ def hist2D(vdf,
 	else:
 		plt.ylabel('Frequency')
 		plt.title('Count by {} group by {}'.format(columns[0], columns[1]))
-	plt.legend(title = columns[1])
+	plt.legend(title = columns[1], loc = 'center left', bbox_to_anchor = [1, 0.5])
 	plt.gca().set_axisbelow(True)
 	plt.gca().yaxis.grid()
 	plt.show()
@@ -719,10 +728,10 @@ def pie(vdf,
 		else:
 			category = None
 		autopct = make_autopct(y,category)
-	plt.figure(figsize = (10,8))
+	plt.figure(figsize = (14, 12))
 	if (donut):
 		explode = None
-		centre_circle = plt.Circle((0,0), 0.72, color='#666666', fc='white', linewidth=1.25)
+		centre_circle = plt.Circle((0,0), 0.72, color = '#666666', fc = 'white', linewidth = 1.25)
 		fig = plt.gcf()
 		fig.gca().add_artist(centre_circle)
 	plt.pie(y, labels = z, autopct = autopct, colors = colors, shadow = True, startangle = 290, explode = explode)
@@ -745,7 +754,7 @@ def multiple_hist(vdf,
 	if (len(columns) > 5):
 		raise Exception("The number of column must be <= 5 to use 'multiple_hist' method")
 	else:
-		plt.figure(figsize = (10,8))
+		plt.figure(figsize = (12, 7))
 		plt.rcParams['axes.facecolor'] = '#F5F5F5'
 		alpha, all_columns, all_h = 1, [], []
 		if (h <= 0):
@@ -771,7 +780,7 @@ def multiple_hist(vdf,
 		else:
 			plt.ylabel('Frequency')
 		plt.title("Multiple Histograms")
-		plt.legend(title = "columns")
+		plt.legend(title = "columns", loc = 'center left', bbox_to_anchor = [1, 0.5])
 		plt.show()
 #
 def multi_ts_plot(vdf, 
@@ -802,7 +811,7 @@ def multi_ts_plot(vdf,
 	query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curves").fetchall()
 	order_by_values = [item[0] for item in query_result]
 	alpha = 0.3
-	plt.figure(figsize = (10,8))
+	plt.figure(figsize = (14, 10))
 	plt.gca().grid()
 	for i in range(0, len(columns)):
 		plt.plot(order_by_values, [item[i + 1] for item in query_result], color = colors[i], label = columns[i])
@@ -811,7 +820,7 @@ def multi_ts_plot(vdf,
 	plt.xticks(rotation = 90)
 	plt.subplots_adjust(bottom = 0.24)
 	plt.xlabel(order_by)
-	plt.legend(title = "columns")
+	plt.legend(title = "columns", loc = 'center left', bbox_to_anchor = [1, 0.5])
 	plt.show()
 #
 def pivot_table(vdf,
@@ -822,7 +831,7 @@ def pivot_table(vdf,
 				max_cardinality: tuple = (20, 20),
 				show: bool = True,
 				cmap: str = 'Blues',
-				limit_distinct_elements: int = 1000,
+				limit_distinct_elements: int = 1000000,
 				with_numbers: bool = True):
 	# aggregation used for the bins height
 	if (method == "mean"):
@@ -880,7 +889,7 @@ def pivot_table(vdf,
 	is_finished = limit_distinct_elements
 	limit_distinct_elements = " LIMIT " + str(limit_distinct_elements)
 	over = "/" + str(vdf.shape()[0]) if (method=="density") else ""
-	query="SELECT {}, {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(columns[0], columns[1], aggregate, over, subtable, columns[0], columns[1], columns[0], columns[1], columns[0], columns[1]) + limit_distinct_elements
+	query = "SELECT {}, {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(columns[0], columns[1], aggregate, over, subtable, columns[0], columns[1], columns[0], columns[1], columns[0], columns[1]) + limit_distinct_elements
 	vdf.executeSQL(query = query, title = "Group the features to compute the pivot table")
 	query_result = vdf.executeSQL(query = query, title = "Group the features to compute the pivot table").fetchall()
 	# Column0 sorted categories
@@ -935,7 +944,7 @@ def scatter_matrix(vdf, columns: list = []):
 	elif (len(columns) == 1):	
 		return vdf[columns[0]].hist()
 	n = len(columns)
-	fig, axes = plt.subplots(nrows = n, ncols = n, figsize = (11,11))
+	fig, axes = plt.subplots(nrows = n, ncols = n, figsize = (3 * n, 3 * n))
 	query = "SELECT " + ", ".join(columns) + ", RANDOM() AS rand FROM {} WHERE __split_vpython__ < 0.5 ".format(vdf.genSQL(True)) + "ORDER BY rand LIMIT 1000"
 	all_scatter_points = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 	all_scatter_columns = []
@@ -982,7 +991,7 @@ def scatter2D(vdf,
 		query = "SELECT {}, {} FROM {} WHERE __split_vpython__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[0], columns[1], max_nb_points)
 		query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 		column1, column2 = [item[0] for item in query_result], [item[1] for item in query_result]
-		plt.figure(figsize = (10,8))
+		plt.figure(figsize = (14, 10))
 		plt.gca().grid()
 		plt.gca().set_axisbelow(True)
 		plt.title('Scatter Plot of {} vs {}'.format(columns[0], columns[1]))
@@ -1001,7 +1010,7 @@ def scatter2D(vdf,
 			query_result = vdf.executeSQL(query = query, title = "Select all the category of the column").fetchall()
 			query_result = [item for sublist in query_result for item in sublist]
 		all_columns, all_scatter, all_categories = [query_result], [], query_result
-		fig = plt.figure(figsize = (10,8))
+		fig = plt.figure(figsize = (14, 10))
 		ax = plt
 		others = []
 		groupby_cardinality = vdf[column_groupby].nunique()
@@ -1033,7 +1042,7 @@ def scatter2D(vdf,
 		plt.title('Scatter Plot of {} vs {}'.format(columns[0], columns[1]))
 		ax.xlabel(columns[0])
 		ax.ylabel(columns[1])
-		ax.legend(all_scatter, all_categories, title=column_groupby)
+		ax.legend(all_scatter, all_categories, title = column_groupby, loc = 'center left', bbox_to_anchor = [1, 0.5])
 		plt.show()
 #
 def scatter3D(vdf,
@@ -1060,7 +1069,7 @@ def scatter3D(vdf,
 						columns[0], columns[1], columns[2], vdf.genSQL(True), tablesample, columns[0], columns[1], columns[2], max_nb_points)
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 			column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
-			fig = plt.figure(figsize = (10,8))
+			fig = plt.figure(figsize = (14, 12))
 			ax = fig.add_subplot(111, projection = '3d')
 			plt.title('Scatter Plot of {} vs {} vs {}'.format(columns[0], columns[1], columns[2]))
 			ax.scatter(column1, column2, column3, color = colors[0])
@@ -1082,8 +1091,8 @@ def scatter3D(vdf,
 				query_result = vdf.executeSQL(query = query, title = "Select all the category of the column " + column_groupby).fetchall()
 				query_result = [item for sublist in query_result for item in sublist]
 			all_columns, all_scatter, all_categories = [query_result], [], query_result
-			fig = plt.figure(figsize = (10,8))
-			ax = fig.add_subplot(111,projection='3d')
+			fig = plt.figure(figsize = (14, 12))
+			ax = fig.add_subplot(111, projection = '3d')
 			others = []
 			groupby_cardinality = vdf[column_groupby].nunique()
 			tablesample = 10 if (count>10000) else 90
@@ -1114,7 +1123,7 @@ def scatter3D(vdf,
 			ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 			ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
 			ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-			ax.legend(all_scatter, all_categories, scatterpoints = 1, title = column_groupby)
+			ax.legend(all_scatter, all_categories, scatterpoints = 1, title = column_groupby, loc = 'center left', bbox_to_anchor = [1, 0.5])
 			plt.show()
 #
 def ts_plot(vdf, 
@@ -1132,7 +1141,7 @@ def ts_plot(vdf,
 		query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curve").fetchall()
 		order_by_values = [item[0] for item in query_result]
 		column_values = [float(item[1]) for item in query_result]
-		plt.figure(figsize = (10,8))
+		plt.figure(figsize = (14, 12))
 		plt.rcParams['axes.facecolor'] = '#FCFCFC'
 		plt.plot(order_by_values, column_values, color = color)
 		if (area):
@@ -1159,7 +1168,7 @@ def ts_plot(vdf,
 			query += " AND {} = '{}'".format(by, column) 
 			query_result = vdf.executeSQL(query = query, title = "Select the needed category points to draw the curve").fetchall()
 			all_data += [[[item[0] for item in query_result], [float(item[1]) for item in query_result], column]]
-		plt.figure(figsize = (10,8))
+		plt.figure(figsize = (14, 10))
 		plt.rcParams['axes.facecolor'] = '#FCFCFC'
 		for idx, elem in enumerate(all_data):
 			plt.plot(elem[0], elem[1], color = colors[idx], label = elem[2])
@@ -1169,5 +1178,5 @@ def ts_plot(vdf,
 		plt.xlabel(order_by)
 		plt.ylabel(vdf.alias)
 		plt.gca().grid()
-		plt.legend(title = vdf.alias)
+		plt.legend(title = vdf.alias, loc = 'center left', bbox_to_anchor = [1, 0.5])
 		plt.show()

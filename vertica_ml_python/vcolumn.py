@@ -354,7 +354,7 @@ class vColumn:
 			   order_by: list = [],
 			   print_info: bool = True):
 		if (method == "auto"):
-			method = "mean" if (self.category() in ['float','int']) else "mode"
+			method = "mean" if (self.category() in ['float','int'] and self.nunique() > 6) else "mode"
 		total = self.count()
 		if ((method == "mode") and (val == None)):
 			val = self.mode()

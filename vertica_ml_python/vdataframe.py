@@ -544,12 +544,12 @@ class vDataframe:
 		copy_vDataframe.main_relation = self.main_relation
 		copy_vDataframe.schema = self.schema
 		copy_vDataframe.cursor = self.cursor
-		copy_vDataframe.columns = self.columns
-		copy_vDataframe.where = self.where
-		copy_vDataframe.order_by = self.order_by
-		copy_vDataframe.exclude_columns = self.exclude_columns
-		copy_vDataframe.history = self.history
-		copy_vDataframe.saving = self.saving
+		copy_vDataframe.columns = [item for item in self.columns]
+		copy_vDataframe.where = [item for item in self.where]
+		copy_vDataframe.order_by = [item for item in self.order_by]
+		copy_vDataframe.exclude_columns = [item for item in self.exclude_columns]
+		copy_vDataframe.history = [item for item in self.history]
+		copy_vDataframe.saving = [item for item in self.saving]
 		copy_vDataframe.query_on = self.query_on
 		copy_vDataframe.time_on = self.time_on
 		for column in self.columns:
@@ -1178,10 +1178,17 @@ class vDataframe:
 				by: list = [], 
 				order_by: list = [], 
 				method: str = "rows"):
+		rule_p, rule_f = "PRECEDING", "FOLLOWING"
+		if type(preceding) in (tuple, list):
+			rule_p = "FOLLOWING" if (preceding[1] in ("following", "f", 1)) else "PRECEDING"
+			preceding = preceding[0]
+		if type(following) in (tuple, list):
+			rule_f = "PRECEDING" if (following[1] in ("preceding", "p", 1)) else "FOLLOWING"
+			following = following[0]
 		if (method not in ('range', 'rows')):
 			raise ValueError("The parameter 'method' must be in rows|range")
 		column = '"' + column.replace('"', '') + '"'
-		by = "" if not(by) else "PARTITION BY "+", ".join(['"' + col.replace('"', '') + '"' for col in by])
+		by = "" if not(by) else "PARTITION BY " + ", ".join(['"' + col.replace('"', '') + '"' for col in by])
 		order_by = [column] if not(order_by) else ['"' + column.replace('"', '') + '"' for column in order_by]
 		expr = "{}({})".format(aggr.upper(), column) if not(expr) else expr.replace("{}", column)
 		expr = expr + " #" if '#' not in expr else expr
@@ -1191,7 +1198,8 @@ class vDataframe:
 		else:
 			preceding = "'{}'".format(preceding) if (str(preceding).upper() != "UNBOUNDED") else "UNBOUNDED"
 			following = "'{}'".format(following) if (str(following).upper() != "UNBOUNDED") else "UNBOUNDED"
-		expr = expr.replace('#'," OVER ({} ORDER BY {} {} BETWEEN {} PRECEDING AND {} FOLLOWING)".format(by, ", ".join(order_by), method.upper(), preceding, following))
+		preceding, following = "{} {}".format(preceding, rule_p), "{} {}".format(following, rule_f)
+		expr = expr.replace('#'," OVER ({} ORDER BY {} {} BETWEEN {} AND {})".format(by, ", ".join(order_by), method.upper(), preceding, following))
 		return (self.eval(name = name, expr = expr))
 	# 
 	def sample(self, x: float):
@@ -1450,8 +1458,8 @@ class vDataframe:
 		vdf.where = []
 		vdf.order_by = []
 		vdf.exclude_columns = []
-		vdf.history = self.history + [history]
-		vdf.saving = self.saving
+		vdf.history = [item for item in self.history] + [history]
+		vdf.saving = [item for item in self.saving]
 		for column, ctype in result:
 			column = '"' + column + '"'
 			new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
