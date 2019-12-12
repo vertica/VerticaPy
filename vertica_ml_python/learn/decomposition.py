@@ -104,34 +104,13 @@ class PCA:
 		return (self)
 	#
 	def to_vdf(self, n_components: int = 0,  cutoff: float = 1, key_columns: list = [], func: str = 'pca', inverse: bool = False):
-		from vertica_ml_python import vDataframe
-		from vertica_ml_python.vcolumn import vColumn
-		from vertica_ml_python.utilities import category_from_type
-		vdf = vDataframe("", empty = True)
-		vdf.dsn = ""
-		vdf.input_relation = "pca_table_" + self.input_relation
+		from vertica_ml_python.utilities import vdf_from_relation
+		input_relation = "pca_table_" + self.input_relation 
 		if (inverse):
-			vdf.main_relation = "(SELECT {} FROM {}) inverse_pca_table_{}".format(self.deployInverseSQL(key_columns), self.input_relation, self.input_relation)
+			main_relation = "(SELECT {} FROM {}) inverse_pca_table_{}".format(self.deployInverseSQL(key_columns), self.input_relation, self.input_relation)
 		else:
-			vdf.main_relation = "(SELECT {} FROM {}) pca_table_{}".format(self.deploySQL(n_components, cutoff, key_columns), self.input_relation, self.input_relation)
-		vdf.schema = ""
-		vdf.cursor = self.cursor
-		self.cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_; CREATE TEMPORARY TABLE _vpython_{}_test_ AS SELECT * FROM {} LIMIT 10;".format(func, func, vdf.main_relation))
-		self.cursor.execute("SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(func))
-		result = self.cursor.fetchall()
-		self.cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(func))
-		vdf.columns = ['"' + item[0] + '"' for item in result]
-		vdf.where = []
-		vdf.order_by = []
-		vdf.exclude_columns = []
-		vdf.history = []
-		vdf.saving = []
-		for column, ctype in result:
-			column = '"' + column + '"'
-			new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
-			setattr(vdf, column, new_vColumn)
-			setattr(vdf, column[1:-1], new_vColumn)
-		return (vdf)
+			main_relation = "(SELECT {} FROM {}) pca_table_{}".format(self.deploySQL(n_components, cutoff, key_columns), self.input_relation, self.input_relation)
+		return (vdf_from_relation(main_relation, input_relation, self.cursor))
 #
 class SVD:
 	#
@@ -196,31 +175,10 @@ class SVD:
 		return (self)
 	#
 	def to_vdf(self, n_components: int = 0,  cutoff: float = 1, key_columns: list = [], func: str = 'svd', inverse: bool = False):
-		from vertica_ml_python import vDataframe
-		from vertica_ml_python.vcolumn import vColumn
-		from vertica_ml_python.utilities import category_from_type
-		vdf = vDataframe("", empty = True)
-		vdf.dsn = ""
-		vdf.input_relation = "svd_table_" + self.input_relation
+		from vertica_ml_python.utilities import vdf_from_relation
+		input_relation = "svd_table_" + self.input_relation
 		if (inverse):
-			vdf.main_relation = "(SELECT {} FROM {}) inverse_svd_table_{}".format(self.deployInverseSQL(key_columns), self.input_relation, self.input_relation)
+			main_relation = "(SELECT {} FROM {}) inverse_svd_table_{}".format(self.deployInverseSQL(key_columns), self.input_relation, self.input_relation)
 		else:
-			vdf.main_relation = "(SELECT {} FROM {}) svd_table_{}".format(self.deploySQL(n_components, cutoff, key_columns), self.input_relation, self.input_relation)
-		vdf.schema = ""
-		vdf.cursor = self.cursor
-		self.cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_; CREATE TEMPORARY TABLE _vpython_{}_test_ AS SELECT * FROM {} LIMIT 10;".format(func, func, vdf.main_relation))
-		self.cursor.execute("SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(func))
-		result = self.cursor.fetchall()
-		self.cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(func))
-		vdf.columns = ['"' + item[0] + '"' for item in result]
-		vdf.where = []
-		vdf.order_by = []
-		vdf.exclude_columns = []
-		vdf.history = []
-		vdf.saving = []
-		for column, ctype in result:
-			column = '"' + column + '"'
-			new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
-			setattr(vdf, column, new_vColumn)
-			setattr(vdf, column[1:-1], new_vColumn)
-		return (vdf)
+			main_relation = "(SELECT {} FROM {}) svd_table_{}".format(self.deploySQL(n_components, cutoff, key_columns), self.input_relation, self.input_relation)
+		return (vdf_from_relation(main_relation, input_relation, self.cursor))

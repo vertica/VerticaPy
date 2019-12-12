@@ -234,7 +234,7 @@ def plot_importance(coeff_importances: dict,
 		importances += [coeff_importances[coeff]]
 		signs += [coeff_sign[coeff]] if (coeff in coeff_sign) else [1]
 	importances, coefficients, signs = zip( * sorted(zip(importances, coefficients, signs)))
-	plt.figure(figsize = (10,8))
+	plt.figure(figsize = (12, int(len(importances) / 2) + 1))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	color = []
 	for item in signs:
@@ -372,7 +372,6 @@ def regression_plot(X: list,
 		plt.show()
 	else:
 		raise ValueError("The number of predictors is too big.")
-
 # 
 def roc_curve(y_true: str, 
 			  y_score: str, 
