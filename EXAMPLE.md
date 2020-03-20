@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src='../documentation/images/logo.png' width="180px">
+<img src='img/logo.png' width="180px">
 </p>
 
 # Vertica ML Python Example
@@ -188,7 +188,7 @@ x = titanic["age"].hist()
 ```
 
 
-![png](output_18_0.png)
+![png](img/output_18_0.png)
 
 
 The column 'fare' has many outliers (512.33 which is the maximum is much greater than 79.13 which is the 9th decile). Most of the passengers traveled in 3rd class (median of pclass = 3) and much more...
@@ -279,7 +279,7 @@ titanic.corr(method = "spearman")
 ```
 
 
-![png](output_29_0.png)
+![png](img/output_29_0.png)
 
 
 
@@ -616,7 +616,7 @@ model.features_importance()
 ```
 
 
-![png](output_59_0.png)
+![png](img/output_59_0.png)
 
 
 
