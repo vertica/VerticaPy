@@ -87,7 +87,8 @@ class DBSCAN:
 		sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(self.eps, sql)
 		cursor.execute("DROP TABLE IF EXISTS graph_{}_vpython_".format(input_relation))
 		sql = "SELECT node_id, nn_id FROM ({}) x WHERE density > {} AND distance < {} AND node_id != nn_id".format(sql, self.min_samples, self.eps)
-		graph = cursor.execute(sql).fetchall()
+		cursor.execute(sql)
+		graph = cursor.fetchall()
 		main_nodes = list(dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph]))
 		clusters = {}
 		for elem in main_nodes:
@@ -116,7 +117,8 @@ class DBSCAN:
 		os.remove("dbscan_id_cluster_vpython.csv")
 		self.n_cluster = i
 		cursor.execute("CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM {} AS x LEFT JOIN dbscan_clusters AS y ON x.{} = y.node_id".format(self.name, ", ".join(self.X + self.key_columns), main_table, index))
-		self.n_noise = cursor.execute("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)).fetchone()[0]
+		cursor.execute("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name))
+		self.n_noise = cursor.fetchone()[0]
 		cursor.execute("DROP TABLE IF EXISTS main_{}_vpython_".format(input_relation))
 		cursor.execute("DROP TABLE IF EXISTS dbscan_clusters")
 		return (self)
@@ -157,7 +159,8 @@ class KMeans:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<KMeans>"
 	#

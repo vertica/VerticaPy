@@ -95,7 +95,8 @@ class RandomForestClassifier:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<RandomForestClassifier>"
 	#
@@ -164,11 +165,13 @@ class RandomForestClassifier:
 	#
 	def export_graphviz(self, tree_id: int = 0):
 		query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(self.name, tree_id)
-		return (self.cursor.execute(query).fetchone()[1])
+		self.cursor.execute(query)
+		return (self.cursor.fetchone()[1])
 	#
 	def features_importance(self):
 		query  = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) x ORDER BY 2 DESC;".format(self.name)
-		result = self.cursor.execute(query).fetchall()
+		self.cursor.execute(query)
+		result = self.cursor.fetchall()
 		coeff_importances, coeff_sign = {}, {}
 		for elem in result:
 			coeff_importances[elem[0]] = elem[1]
@@ -199,7 +202,8 @@ class RandomForestClassifier:
 		query = query.format(self.name, input_relation, self.y, ", ".join(self.X), self.n_estimators, self.max_features, self.sample)
 		query += ", max_depth = {}, max_breadth = {}, min_leaf_size = {}, min_info_gain = {}, nbins = {})".format(self.max_depth, int(self.max_leaf_nodes), self.min_samples_leaf, self.min_info_gain, self.nbins)
 		self.cursor.execute(query)
-		classes = self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y)).fetchall()
+		self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y))
+		classes = self.cursor.fetchall()
 		self.classes = [item[0] for item in classes]
 		return (self)
 	#
@@ -295,7 +299,8 @@ class RandomForestRegressor:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<RandomForestRegressor>"
 	#
@@ -324,11 +329,13 @@ class RandomForestRegressor:
 	#
 	def export_graphviz(self, tree_id: int = 0):
 		query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(self.name, tree_id)
-		return (self.cursor.execute(query).fetchone()[1])
+		self.cursor.execute(query)
+		return (self.cursor.fetchone()[1])
 	#
 	def features_importance(self):
 		query  = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) x ORDER BY 2 DESC;".format(self.name)
-		result = self.cursor.execute(query).fetchall()
+		self.cursor.execute(query)
+		result = self.cursor.fetchall()
 		coeff_importances, coeff_sign = {}, {}
 		for elem in result:
 			coeff_importances[elem[0]] = elem[1]

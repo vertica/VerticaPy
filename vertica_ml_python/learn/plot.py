@@ -75,7 +75,8 @@ def lift_chart(y_true: str,
 			   nbins: int = 1000):
 	query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
 	query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-	query_result = cursor.execute(query).fetchall()
+	cursor.execute(query)
+	query_result = cursor.fetchall()
 	decision_boundary, positive_prediction_ratio, lift = [item[0] for item in query_result], [item[1] for item in query_result], [item[2] for item in query_result]
 	decision_boundary.reverse()
 	try:
@@ -110,7 +111,8 @@ def logit_plot(X: list,
 	if (len(X) == 1):
 		query  = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, x1 = [], []
 		for idx, item in enumerate(all_points):
@@ -136,7 +138,8 @@ def logit_plot(X: list,
 		from mpl_toolkits.mplot3d import Axes3D
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		x0, x1, y0, y1 = [], [], [], []
 		for idx, item in enumerate(all_points):
 			if (item[2] == 0):
@@ -176,7 +179,8 @@ def lof_plot(input_relation: str,
 	if (len(columns) == 1):
 		column = '"' + columns[0].replace('"', '') + '"'
 		query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(column, lof, input_relation, tablesample, column)
-		query_result = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		query_result = cursor.fetchall()
 		column1, lof = [item[0] for item in query_result], [item[1] for item in query_result]
 		column2 = [0] * len(column1)
 		plt.figure(figsize = (10,2))
@@ -190,7 +194,8 @@ def lof_plot(input_relation: str,
 	elif (len(columns) == 2):
 		columns = ['"' + column.replace('"', '') + '"' for column in columns]
 		query = "SELECT {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(columns[0], columns[1], lof, input_relation, tablesample, columns[0], columns[1])
-		query_result = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		query_result = cursor.fetchall()
 		column1, column2, lof = [item[0] for item in query_result], [item[1] for item in query_result], [item[2] for item in query_result]
 		plt.figure(figsize = (10,8))
 		plt.gca().grid()
@@ -205,7 +210,8 @@ def lof_plot(input_relation: str,
 		from mpl_toolkits.mplot3d import Axes3D
 		query = "SELECT {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
 					columns[0], columns[1], columns[2], lof, input_relation, tablesample, columns[0], columns[1], columns[2])
-		query_result = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		query_result = cursor.fetchall()
 		column1, column2, column3, lof = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result], [float(item[3]) for item in query_result]
 		fig = plt.figure(figsize = (10,8))
 		ax = fig.add_subplot(111, projection = '3d')
@@ -297,7 +303,8 @@ def prc_curve(y_true: str,
 			  auc_prc: bool = False):
 	query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
 	query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-	query_result = cursor.execute(query).fetchall()
+	cursor.execute(query)
+	query_result = cursor.fetchall()
 	threshold, recall, precision = [0] + [item[0] for item in query_result] + [1], [1] + [item[1] for item in query_result] + [0], [0] +  [item[2] for item in query_result] + [1]
 	auc=0
 	for i in range(len(recall) - 1):
@@ -335,7 +342,8 @@ def regression_plot(X: list,
 	import matplotlib.patches as mpatches
 	if (len(X) == 1):
 		query  = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(X[0], y, input_relation, X[0], y, int(max_nb_points))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, y0 = [float(item[0]) for item in all_points], [float(item[1]) for item in all_points]
 		min_reg, max_reg  = min(x0), max(x0)
@@ -352,7 +360,8 @@ def regression_plot(X: list,
 	elif (len(X) == 2):
 		from mpl_toolkits.mplot3d import Axes3D
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		x0, y0, z0 = [float(item[0]) for item in all_points], [float(item[1]) for item in all_points], [float(item[2]) for item in all_points]
 		min_reg_x, max_reg_x  = min(x0), max(x0)
 		step_x = (max_reg_x - min_reg_x) / 40.0
@@ -383,7 +392,8 @@ def roc_curve(y_true: str,
 			  best_threshold: bool = False):
 	query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
 	query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-	query_result = cursor.execute(query).fetchall()
+	cursor.execute(query)
+	query_result = cursor.fetchall()
 	threshold, false_positive, true_positive = [item[0] for item in query_result], [item[1] for item in query_result], [item[2] for item in query_result]
 	auc=0
 	for i in range(len(false_positive) - 1):
@@ -428,7 +438,8 @@ def svm_classifier_plot(X: list,
 	if (len(X) == 1):
 		query  = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
 		query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], y, input_relation, X[0], y, int(max_nb_points / 2))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		plt.figure(figsize = (10, 2), facecolor = '#F9F9F9')
 		x0, x1 = [], []
 		for idx, item in enumerate(all_points):
@@ -449,7 +460,8 @@ def svm_classifier_plot(X: list,
 	elif (len(X) == 2):
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		plt.figure(figsize = (10, 8), facecolor = '#F9F9F9')
 		x0, x1, y0, y1 = [], [], [], []
 		for idx, item in enumerate(all_points):
@@ -475,7 +487,8 @@ def svm_classifier_plot(X: list,
 		from mpl_toolkits.mplot3d import Axes3D
 		query  = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
-		all_points = cursor.execute(query).fetchall()
+		cursor.execute(query)
+		all_points = cursor.fetchall()
 		x0, x1, y0, y1, z0, z1 = [], [], [], [], [], []
 		for idx, item in enumerate(all_points):
 			if (item[3] == 0):

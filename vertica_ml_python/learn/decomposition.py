@@ -54,7 +54,8 @@ class PCA:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<PCA>"
 	#
@@ -127,7 +128,8 @@ class SVD:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<SVD>"
 	#

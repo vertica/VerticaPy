@@ -71,7 +71,8 @@ class MultinomialNB:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<MultinomialNB>"
 	#
@@ -149,7 +150,8 @@ class MultinomialNB:
 		self.y = '"' + y.replace('"', '') + '"'
 		query = "SELECT NAIVE_BAYES('{}', '{}', '{}', '{}' USING PARAMETERS alpha = {})".format(self.name, input_relation, self.y, ", ".join(self.X), self.alpha)
 		self.cursor.execute(query)
-		classes = self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y)).fetchall()
+		self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y))
+		classes = self.cursor.fetchall()
 		self.classes = [item[0] for item in classes]
 		return (self)
 	#

@@ -46,42 +46,48 @@ def explained_variance(y_true: str,
 			  		   input_relation: str,
 			  		   cursor):
 	query  = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {}".format(y_true, y_score, y_true, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def max_error(y_true: str, 
 			  y_score: str, 
 			  input_relation: str,
 			  cursor):
 	query  = "SELECT MAX(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def median_absolute_error(y_true: str, 
 			  			  y_score: str, 
 			  			  input_relation: str,
 			  			  cursor):
 	query  = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def mean_absolute_error(y_true: str, 
 			 			y_score: str, 
 			 			input_relation: str,
 			 			cursor):
 	query  = "SELECT AVG(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def mean_squared_error(y_true: str, 
 			 		   y_score: str, 
 			 		   input_relation: str,
 			 		   cursor):
 	query  = "SELECT MSE({}, {}) OVER () FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def mean_squared_log_error(y_true: str, 
 			 		   	   y_score: str, 
 			 		   	   input_relation: str,
 			 		   	   cursor):
 	query  = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def regression_report(y_true: str, 
 			 		  y_score: str, 
@@ -92,7 +98,8 @@ def regression_report(y_true: str,
 	query += "AVG(POW({} - {}, 2)) FROM {}".format(y_true, y_score, input_relation)
 	r2 = r2_score(y_true, y_score, input_relation, cursor)
 	values = {"index": ["explained_variance", "max_error", "median_absolute_error", "mean_absolute_error", "mean_squared_error", "r2"]}
-	values["value"] = [item for item in cursor.execute(query).fetchone()] + [r2]
+	cursor.execute(query)
+	values["value"] = [item for item in cursor.fetchone()] + [r2]
 	return (tablesample(values, table_info = False))
 #
 def r2_score(y_true: str, 
@@ -100,7 +107,8 @@ def r2_score(y_true: str,
 			 input_relation: str,
 			 cursor):
 	query  = "SELECT RSQUARED({}, {}) OVER() FROM {}".format(y_true, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 ## CLASSIFICATION
 #
@@ -111,11 +119,13 @@ def accuracy_score(y_true: str,
 	try:
 		query = "SELECT AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL"
 		query = query.format(y_true, y_score, input_relation, y_true, y_score)
-		return (cursor.execute(query).fetchone()[0])
+		cursor.execute(query)
+		return (cursor.fetchone()[0])
 	except:
 		query = "SELECT AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL"
 		query = query.format(y_true, y_score, input_relation, y_true, y_score)
-		return (cursor.execute(query).fetchone()[0])
+		cursor.execute(query)
+		return (cursor.fetchone()[0])
 #
 def auc(y_true: str, 
 		y_score: str, 
@@ -242,7 +252,8 @@ def log_loss(y_true: str,
 			 pos_label = 1):
 	query= "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {};"
 	query = query.format(y_true, pos_label, y_score, y_score, input_relation)
-	return (cursor.execute(query).fetchone()[0])
+	cursor.execute(query)
+	return (cursor.fetchone()[0])
 #
 def markedness(y_true: str, 
 			   y_score: str, 

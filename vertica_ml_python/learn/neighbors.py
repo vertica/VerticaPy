@@ -276,7 +276,8 @@ class KNeighborsClassifier:
 		self.test_relation = test_relation if (test_relation) else input_relation
 		self.X = ['"' + column.replace('"', '') + '"' for column in X]
 		self.y = '"' + y.replace('"', '') + '"'
-		classes = self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y)).fetchall()
+		self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y))
+		classes = self.cursor.fetchall()
 		self.classes = [item[0] for item in classes]
 		return (self)
 	#

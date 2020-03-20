@@ -141,7 +141,8 @@ def fast_cv(algorithm: str,
 	if (cutoff <= 1 and cutoff >= 0):
 		sql += ", cv_prediction_cutoff = '{}'".format(cutoff)
 	sql += ')'
-	return(cursor.execute(sql).fetchone()[0])
+	cursor.execute(sql)
+	return (cursor.fetchone()[0])
 #
 def train_test_split(input_relation: str, cursor, test_size: float = 0.33):
 	test_name, train_name = "{}_{}".format(input_relation, int(test_size * 100)), "{}_{}".format(input_relation, int(100 - test_size * 100))

@@ -98,8 +98,10 @@ class CountVectorizer:
 		stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) x) y WHERE not(df BETWEEN {} AND {})".format(self.name, self.min_df, self.max_df)
 		if (self.max_features > 0):
 			stop_words += " OR (rnk > {})".format(self.max_features)
-		self.stop_words = [item[0] for item in self.cursor.execute(stop_words).fetchall()]
-		self.vocabulary = [item[0] for item in self.cursor.execute(self.deploySQL()).fetchall()]
+		self.cursor.execute(stop_words)
+		self.stop_words = [item[0] for item in self.cursor.fetchall()]
+		self.cursor.execute(self.deploySQL())
+		self.vocabulary = [item[0] for item in self.cursor.fetchall()]
 		return (self)
 	#
 	def to_vdf(self):
@@ -119,7 +121,8 @@ class Normalizer:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<Normalizer>"
 	#
@@ -170,7 +173,8 @@ class OneHotEncoder:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<OneHotEncoder>"
 	#

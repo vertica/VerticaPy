@@ -39,8 +39,8 @@ import vertica_ml_python
 #
 def load_amazon(cursor, schema: str = 'public', name = 'amazon'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"year\" Integer, \"number\" Integer, \"date\" Date, \"month\" Varchar(20), \"state\" Varchar(32));" 
-		query += "COPY {}.{}(\"year\", \"number\", \"date\", \"month\", \"state\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
+		query  = "CREATE TABLE {}.{}(\"number\" Integer, \"date\" Date, \"state\" Varchar(32));" 
+		query += "COPY {}.{}(\"number\", \"date\", \"state\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
 		query  = query.format(schema, name, schema, name, os.path.dirname(vertica_ml_python.__file__) + "/learn/data/amazon.csv")
 		cursor.execute(query);
 		vdf = vDataframe("{}.{}".format(schema, name), cursor)

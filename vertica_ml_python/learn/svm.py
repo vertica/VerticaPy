@@ -95,7 +95,8 @@ class LinearSVC:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<LinearSVC>"
 	#
@@ -137,7 +138,8 @@ class LinearSVC:
 		query += "(SELECT LOWER(\"column\") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() ".format(", ".join(self.X))
 		query += " FROM {}) x) stat NATURAL JOIN (SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '{}', ".format(self.input_relation, self.name)
 		query += "attr_name = 'details')) coeff) importance_t ORDER BY 2 DESC;"
-		result = self.cursor.execute(query).fetchall()
+		self.cursor.execute(query)
+		result = self.cursor.fetchall()
 		coeff_importances, coeff_sign = {}, {}
 		for elem in result:
 			coeff_importances[elem[0]] = elem[1]
@@ -241,7 +243,8 @@ class LinearSVR:
 	# 
 	def __repr__(self):
 		try:
-			return (self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')").fetchone()[0])
+			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
+			return (self.cursor.fetchone()[0])
 		except:
 			return "<LinearSVR>"
 	#
@@ -274,7 +277,8 @@ class LinearSVR:
 		query += "(SELECT LOWER(\"column\") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() ".format(", ".join(self.X))
 		query += " FROM {}) x) stat NATURAL JOIN (SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '{}', ".format(self.input_relation, self.name)
 		query += "attr_name = 'details')) coeff) importance_t ORDER BY 2 DESC;"
-		result = self.cursor.execute(query).fetchall()
+		self.cursor.execute(query)
+		result = self.cursor.fetchall()
 		coeff_importances, coeff_sign = {}, {}
 		for elem in result:
 			coeff_importances[elem[0]] = elem[1]
