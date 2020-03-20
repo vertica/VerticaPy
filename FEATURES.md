@@ -137,6 +137,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 | - | - | - | - |
 |vDataframe.astype(...) | vdataframe | Convert to the selected types | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].astype(...) | vdataframe | Convert the column to the selected types | <i>&#11088;&#11088;&#11088;</i>|
+|vDataframe.bool_to_int(...) | vdataframe | Convert all the Booleans to Integers | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].to_enum(...) | vdataframe | Convert the column to categorical | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].to_timestamp(...) | vdataframe | Convert the column to timestamp | <i>&#11088;</i>|
 
@@ -148,6 +149,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe[].decode(...) | vdataframe | User-defined encoding | <i>&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe.drop(...) | vdataframe | Drop the columns | <i>&#11088;&#11088;</i>|
 |vDataframe[].drop(...) | vdataframe | Drop the column | <i>&#11088;&#11088;</i>|
+|vDataframe.get_dummies(...) | vdataframe | One Hot Encoder Encoding | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe[].get_dummies(...) | vdataframe | One Hot Encoder Encoding | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe[].label_encode(...) | vdataframe | Apply a Label Encoding on the column | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].mean_encode(...) | vdataframe | Apply a Mean Encoding on the column | <i>&#11088;&#11088;&#11088;</i>|
@@ -332,6 +334,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe.memory_usage(...) | vdataframe | Returns the object memory usage | <i>&#11088;</i>|
 |vDataframe.numcol(...) | vdataframe | Returns the numerical columns | <i>&#11088;</i>|
 |pandas_to_vertica | utilities | Store a pandas.Dataframe in Vertica | <i>&#11088;</i>|
+|read_json | utilities | Read a json file | <i>&#11088;&#11088;&#11088;</i>|
 |read_csv | utilities | Read a csv file | <i>&#11088;&#11088;&#11088;</i>|
 |read_vdf | utilities | Read a vdf file | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe.set_cursor(...) | vdataframe | Set a new cursor | <i>&#11088;&#11088;</i>|
