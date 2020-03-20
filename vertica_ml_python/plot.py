@@ -529,7 +529,7 @@ def density(vdf,
 	plt.show()
 # 
 def gen_colors():
-	colors = ['#214579', '#FFCC01', 'dimgrey', 'firebrick', 'darkolivegreen', 'black', 'gold', 'tan', 'pink', 'darksalmon', 'lightskyblue', 'lightgreen', 'palevioletred', 'coral']
+	colors = ['#214579', '#FFCC01', 'dimgrey', 'firebrick', 'darkolivegreen', 'black', 'tan', 'pink', 'darksalmon', 'lightskyblue', 'lightgreen', 'coral']
 	all_colors = [item for item in plt_colors.cnames]
 	shuffle(all_colors)
 	for c in all_colors:
@@ -687,63 +687,6 @@ def hist2D(vdf,
 	plt.gca().set_axisbelow(True)
 	plt.gca().yaxis.grid()
 	plt.show()
-#
-def pie(vdf,
-		method: str = "density",
-		of = None,
-		max_cardinality: int = 6,
-		h: float = 0,
-		donut: bool = False):
-	colors = ['#214579', '#FFCC01'] * 100
-	count = vdf.parent.shape()[0]
-	cardinality = vdf.nunique()
-	is_numeric = vdf.isnum()
-	is_categorical = (cardinality <= max_cardinality) or not(is_numeric)
-	x, y, z, h, is_categorical = compute_plot_variables(vdf, max_cardinality = max_cardinality, method = method, of = of, pie = True)
-	z.reverse()
-	y.reverse()
-	explode = [0 for i in y]
-	explode[np.argmax(y)] = 0.13
-	current_explode = 0.15
-	total_count = sum(y)
-	for idx,item in enumerate(y):
-		if ((item < 0.05) or ((item > 1) and (item / float(total_count) < 0.05))):
-			current_explode = min(0.9, current_explode * 1.4) 
-			explode[idx] = current_explode
-	if (method == "density"):
-		autopct = '%1.1f%%'
-	else:
-		def make_autopct(values, category):
-		    def my_autopct(pct):
-		        total = sum(values)
-		        val = pct * total / 100.0
-		        if (category == "int"):
-		        	val = int(round(val))
-		        	return '{v:d}'.format(v = val)
-		        else:
-		        	return '{v:f}'.format(v = val)
-		    return my_autopct
-		if ((method in ["sum", "count"]) or ((method in ["min", "max"]) and (vdf.parent[of].category == "int"))):
-			category = "int"
-		else:
-			category = None
-		autopct = make_autopct(y,category)
-	plt.figure(figsize = (14, 12))
-	if (donut):
-		explode = None
-		centre_circle = plt.Circle((0,0), 0.72, color = '#666666', fc = 'white', linewidth = 1.25)
-		fig = plt.gcf()
-		fig.gca().add_artist(centre_circle)
-	plt.pie(y, labels = z, autopct = autopct, colors = colors, shadow = True, startangle = 290, explode = explode)
-	plt.subplots_adjust(bottom = 0.2)
-	if (method == "density"):
-		plt.title('Distribution of {}'.format(vdf.alias))
-	elif ((method in ["avg","min","max","sum"]) and (of != None)):
-		aggregate = "{}({})".format(method,of)
-		plt.title('{} group by {}'.format(aggregate,vdf.alias))
-	else:
-		plt.title('Count by {}'.format(vdf.alias))
-	plt.show()
 # 
 def multiple_hist(vdf,
 				  columns: list,
@@ -821,6 +764,63 @@ def multi_ts_plot(vdf,
 	plt.subplots_adjust(bottom = 0.24)
 	plt.xlabel(order_by)
 	plt.legend(title = "columns", loc = 'center left', bbox_to_anchor = [1, 0.5])
+	plt.show()
+#
+def pie(vdf,
+		method: str = "density",
+		of = None,
+		max_cardinality: int = 6,
+		h: float = 0,
+		donut: bool = False):
+	colors = ['#214579', '#FFCC01'] * 100
+	count = vdf.parent.shape()[0]
+	cardinality = vdf.nunique()
+	is_numeric = vdf.isnum()
+	is_categorical = (cardinality <= max_cardinality) or not(is_numeric)
+	x, y, z, h, is_categorical = compute_plot_variables(vdf, max_cardinality = max_cardinality, method = method, of = of, pie = True)
+	z.reverse()
+	y.reverse()
+	explode = [0 for i in y]
+	explode[np.argmax(y)] = 0.13
+	current_explode = 0.15
+	total_count = sum(y)
+	for idx,item in enumerate(y):
+		if ((item < 0.05) or ((item > 1) and (item / float(total_count) < 0.05))):
+			current_explode = min(0.9, current_explode * 1.4) 
+			explode[idx] = current_explode
+	if (method == "density"):
+		autopct = '%1.1f%%'
+	else:
+		def make_autopct(values, category):
+		    def my_autopct(pct):
+		        total = sum(values)
+		        val = pct * total / 100.0
+		        if (category == "int"):
+		        	val = int(round(val))
+		        	return '{v:d}'.format(v = val)
+		        else:
+		        	return '{v:f}'.format(v = val)
+		    return my_autopct
+		if ((method in ["sum", "count"]) or ((method in ["min", "max"]) and (vdf.parent[of].category == "int"))):
+			category = "int"
+		else:
+			category = None
+		autopct = make_autopct(y,category)
+	plt.figure(figsize = (14, 12))
+	if (donut):
+		explode = None
+		centre_circle = plt.Circle((0,0), 0.72, color = '#666666', fc = 'white', linewidth = 1.25)
+		fig = plt.gcf()
+		fig.gca().add_artist(centre_circle)
+	plt.pie(y, labels = z, autopct = autopct, colors = colors, shadow = True, startangle = 290, explode = explode)
+	plt.subplots_adjust(bottom = 0.2)
+	if (method == "density"):
+		plt.title('Distribution of {}'.format(vdf.alias))
+	elif ((method in ["avg","min","max","sum"]) and (of != None)):
+		aggregate = "{}({})".format(method,of)
+		plt.title('{} group by {}'.format(aggregate,vdf.alias))
+	else:
+		plt.title('Count by {}'.format(vdf.alias))
 	plt.show()
 #
 def pivot_table(vdf,
@@ -1138,6 +1138,7 @@ def ts_plot(vdf,
 		query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(order_by, vdf.alias, vdf.parent.genSQL(), order_by, vdf.alias)
 		query += " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
 		query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+		query += " ORDER BY {}, {}".format(order_by, vdf.alias)
 		query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curve").fetchall()
 		order_by_values = [item[0] for item in query_result]
 		column_values = [float(item[1]) for item in query_result]
@@ -1166,6 +1167,7 @@ def ts_plot(vdf,
 			query += " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
 			query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
 			query += " AND {} = '{}'".format(by, column) 
+			query += " ORDER BY {}, {}".format(order_by, vdf.alias)
 			query_result = vdf.executeSQL(query = query, title = "Select the needed category points to draw the curve").fetchall()
 			all_data += [[[item[0] for item in query_result], [float(item[1]) for item in query_result], column]]
 		plt.figure(figsize = (14, 10))
@@ -1178,5 +1180,5 @@ def ts_plot(vdf,
 		plt.xlabel(order_by)
 		plt.ylabel(vdf.alias)
 		plt.gca().grid()
-		plt.legend(title = vdf.alias, loc = 'center left', bbox_to_anchor = [1, 0.5])
+		plt.legend(title = by, loc = 'center left', bbox_to_anchor = [1, 0.5])
 		plt.show()

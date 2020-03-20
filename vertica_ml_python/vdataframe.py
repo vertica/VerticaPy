@@ -64,19 +64,24 @@ class vDataframe:
 				  cursor = None,
 				  dsn: str = "",
 				  usecols: list = [],
+				  schema: str = "",
 				  empty: bool = False):
 		if not(empty):
 			if (cursor == None):
 				from vertica_ml_python import vertica_cursor
 				cursor = vertica_cursor(dsn)
 			self.dsn = dsn
-			schema_input_relation = input_relation.split(".")
-			if (len(schema_input_relation) == 1):
-				self.schema = "public"
-				self.input_relation = input_relation
+			if not(schema):
+				schema_input_relation = input_relation.split(".")
+				if (len(schema_input_relation) == 1):
+					self.schema = "public"
+					self.input_relation = input_relation
+				else:
+					self.input_relation = schema_input_relation[1]
+					self.schema = schema_input_relation[0]
 			else:
-				self.input_relation = schema_input_relation[1]
-				self.schema = schema_input_relation[0]
+				self.schema = schema
+				self.input_relation = input_relation
 			# Cursor to the Vertica Database
 			self.cursor = cursor
 			# All the columns of the vDataframe
@@ -114,7 +119,7 @@ class vDataframe:
 			# vDataframe saving
 			self.saving = []
 			# vDataframe main relation
-			self.main_relation = self.schema + "." + self.input_relation
+			self.main_relation = '"{}"."{}"'.format(self.schema, self.input_relation)
 	# 
 	def __getitem__(self, index):
 		return getattr(self, index)
@@ -228,28 +233,29 @@ class vDataframe:
 		columns = self.numcol() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
 		query = []
 		for column in columns:
+			cast = "::int" if (self[column].ctype()[0:4] == "bool") else ""
 			for fun in func:
 				if (fun.lower() == "median"):
-					expr = "APPROXIMATE_MEDIAN({})".format(column)
+					expr = "APPROXIMATE_MEDIAN({}{})".format(column, cast)
 				elif (fun.lower() == "std"):
-					expr = "STDDEV({})".format(column)
+					expr = "STDDEV({}{})".format(column, cast)
 				elif (fun.lower() == "var"):
-					expr = "VARIANCE({})".format(column)
+					expr = "VARIANCE({}{})".format(column, cast)
 				elif (fun.lower() == "mean"):
-					expr = "AVG({})".format(column)
+					expr = "AVG({}{})".format(column, cast)
 				elif ('%' in fun):
-					expr = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(column, float(fun[0:-1]) / 100)
+					expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(column, cast, float(fun[0:-1]) / 100)
 				elif (fun.lower() == "sem"):
-					expr = "STDDEV({}) / SQRT(COUNT({}))".format(column, column)
+					expr = "STDDEV({}{}) / SQRT(COUNT({}))".format(column, cast, column)
 				elif (fun.lower() == "mad"):
 					mean = self[column].mean()
-					expr = "SUM(ABS({} - {})) / COUNT({})".format(column, mean, column)
+					expr = "SUM(ABS({}{} - {})) / COUNT({})".format(column, cast, mean, column)
 				elif (fun.lower() in ("prod", "product")):
-					expr = "DECODE(ABS(MOD(SUM(CASE WHEN {} < 0 THEN 1 ELSE 0 END), 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({}))))".format(column, column)
+					expr = "DECODE(ABS(MOD(SUM(CASE WHEN {}{} < 0 THEN 1 ELSE 0 END), 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({}{}))))".format(column, cast, column, cast)
 				elif (fun.lower() in ("percent", "count_percent")):
 					expr = "ROUND(COUNT({}) / {} * 100, 3)".format(column, self.shape()[0])
 				else:
-					expr = "{}({})".format(fun.upper(), column)
+					expr = "{}({}{})".format(fun.upper(), column, cast)
 				query += [expr]
 		query = "SELECT {} FROM {}".format(', '.join(query), self.genSQL())
 		self.executeSQL(query, title = "COMPUTE AGGREGATION(S)")
@@ -269,10 +275,8 @@ class vDataframe:
 						 method: str = "pearson",
 			 	   		 columns: list = [], 
 			 	   		 cmap: str = "",
-			 	   		 round_nb: int = 3, 
+			 	   		 round_nb: int = 3,
 			 	   		 show: bool = True):
-		if not(method in ("beta", "cov", "pearson", "kendall", "spearman", "biserial", "cramer")):
-			raise ValueError("The parameter 'method' must be in pearson|kendall|spearman|biserial|cramer|beta|cov")
 		columns = ['"' + column.replace('"', '') + '"' for column in columns]
 		for column_name in columns:
 			if not(column_name in self.get_columns()):
@@ -283,26 +287,29 @@ class vDataframe:
 			elif (method == "cov"):
 				return self[columns[0]].var()
 		elif (len(columns) == 2):
+			cast_0 = "::int" if (self[columns[0]].ctype()[0:4] == "bool") else ""
+			cast_1 = "::int" if (self[columns[1]].ctype()[0:4] == "bool") else ""
 			if (method in ("pearson", "spearman")):
 				if (columns[1] == columns[0]):
 					return 1
 				table = self.genSQL() if (method == "pearson") else "(SELECT RANK() OVER (ORDER BY {}) AS {}, RANK() OVER (ORDER BY {}) AS {} FROM {}) rank_spearman_table".format(columns[0], columns[0], columns[1], columns[1], self.genSQL())
-				query = "SELECT CORR({}, {}) FROM {}".format(columns[0], columns[1], table)
+				query = "SELECT CORR({}{}, {}{}) FROM {}".format(columns[0], cast_0, columns[1], cast_1, table)
 				title = "Compute the {} Correlation between the two variables".format(method)
 			elif (method == "biserial"):
 				if (self[columns[1]].nunique() == 2 and self[columns[1]].min() == 0 and self[columns[1]].max() == 1):
 					if (columns[1] == columns[0]):
 						return 1
-					column_b = columns[1]
-					column_n = columns[0]
+					column_b, column_n = columns[1], columns[0]
+					cast_b, cast_n = cast_1, cast_0
 				elif (self[columns[0]].nunique() == 2 and self[columns[0]].min() == 0 and self[columns[0]].max() == 1):
 					if (columns[1] == columns[0]):
 						return 1
-					column_b = columns[0]
-					column_n = columns[1]
+					column_b, column_n = columns[0], columns[1]
+					cast_b, cast_n = cast_0, cast_1
 				else:
 					return None
-				query = "SELECT (AVG(DECODE({}, 1, {}, NULL)) - AVG(DECODE({}, 0, {}, NULL))) / STDDEV({}) * SQRT(SUM({}) * SUM(1 - {}) / COUNT(*) / COUNT(*)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(column_b, column_n, column_b, column_n, column_n, column_b, column_b, self.genSQL(), column_n, column_b)
+				query = "SELECT (AVG(DECODE({}{}, 1, {}{}, NULL)) - AVG(DECODE({}{}, 0, {}{}, NULL))) / STDDEV({}{}) * SQRT(SUM({}{}) * SUM(1 - {}{}) / COUNT(*) / COUNT(*)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+					column_b, cast_b, column_n, cast_n, column_b, cast_b, column_n, cast_n, column_n, cast_n, column_b, cast_b, column_b, cast_b, self.genSQL(), column_n, column_b)
 				title = "Compute the biserial Correlation between the two variables"
 			elif (method == "cramer"):
 				if (columns[1] == columns[0]):
@@ -312,10 +319,12 @@ class vDataframe:
 				table_0 = "SELECT {}, COUNT(*) AS ni FROM {} WHERE {} IS NOT NULL GROUP BY 1".format(columns[0], self.genSQL(), columns[0])
 				table_1 = "SELECT {}, COUNT(*) AS nj FROM {} WHERE {} IS NOT NULL GROUP BY 1".format(columns[1], self.genSQL(), columns[1])
 				query_count = "SELECT COUNT(*) AS n FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(self.genSQL(), columns[0], columns[1])
-				n = self.cursor.execute(query_count).fetchone()[0]
+				self.cursor.execute(query_count)
+				n = self.cursor.fetchone()[0]
 				query = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / (ni * nj)) AS phi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}"
 				query = query.format(n, n, table_0_1, table_0, columns[0], columns[0], table_1, columns[1], columns[1])
-				phi2 = self.cursor.execute(query).fetchone()[0]
+				self.cursor.execute(query)
+				phi2 = self.cursor.fetchone()[0]
 				phi2 = max(0, float(phi2) - (r - 1) * (k - 1) / (n - 1))
 				k = k - (k - 1) * (k - 1) / (n - 1)
 				r = r - (r - 1) * (r - 1) / (n - 1)
@@ -323,16 +332,16 @@ class vDataframe:
 			elif (method == "kendall"):
 				if (columns[1] == columns[0]):
 					return 1
-				query = "SELECT (SUM(((x.{} < y.{} AND x.{} < y.{}) OR (x.{} > y.{} AND x.{} > y.{}))::int) - SUM(((x.{} > y.{} AND x.{} < y.{}) OR (x.{} < y.{} AND x.{} > y.{}))::int)) / SUM((x.{} != y.{} AND x.{} != y.{})::int) FROM (SELECT {}, {} FROM {}) x CROSS JOIN (SELECT {}, {} FROM {}) y"
-				query = query.format(columns[0], columns[0], columns[1], columns[1], columns[0], columns[0], columns[1], columns[1], columns[0], columns[0], columns[1], columns[1], columns[0], columns[0], columns[1], columns[1], columns[0], columns[0], columns[1], columns[1], columns[0], columns[1], self.genSQL(), columns[0], columns[1], self.genSQL())
+				query = "SELECT (SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int) FROM (SELECT {}, {} FROM {}) x CROSS JOIN (SELECT {}, {} FROM {}) y"
+				query = query.format(columns[0], cast_0, columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, columns[0], cast_0, columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, columns[0], cast_0, columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, columns[0], cast_0, columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, columns[0], cast_0, columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, columns[0], columns[1], self.genSQL(), columns[0], columns[1], self.genSQL())
 				title = "Compute the kendall Correlation between the two variables"
 			elif (method == "cov"):
-				query = "SELECT COVAR_POP({}, {}) FROM {}".format(columns[0], columns[1], self.genSQL())
+				query = "SELECT COVAR_POP({}{}, {}{}) FROM {}".format(columns[0], cast_0, columns[1], cast_1, self.genSQL())
 				title = "Compute the Covariance between the two variables"
 			elif (method == "beta"):
 				if (columns[1] == columns[0]):
 					return 1
-				query = "SELECT COVAR_POP({}, {}) / VARIANCE({}) FROM {}".format(columns[0], columns[1], columns[1], self.genSQL())
+				query = "SELECT COVAR_POP({}{}, {}{}) / VARIANCE({}{}) FROM {}".format(columns[0], cast_0, columns[1], cast_1, columns[1], cast_1, self.genSQL())
 				title = "Compute the elasticity Beta between the two variables"
 			try:
 				self.executeSQL(query = query, title = title)
@@ -360,14 +369,17 @@ class vDataframe:
 				n = len(columns)
 				for i in range(i0, n):
 					for j in range(0, i + step):
+						cast_i = "::int" if (self[columns[i]].ctype()[0:4] == "bool") else ""
+						cast_j = "::int" if (self[columns[j]].ctype()[0:4] == "bool") else ""
 						if (method in ("pearson", "spearman")):
-							all_list += ["ROUND(CORR({}, {}), {})".format(columns[i], columns[j], round_nb)]
+							all_list += ["ROUND(CORR({}{}, {}{}), {})".format(columns[i], cast_i, columns[j], cast_j, round_nb)]
 						elif (method == "kendall"):
-							all_list += ["(SUM(((x.{} < y.{} AND x.{} < y.{}) OR (x.{} > y.{} AND x.{} > y.{}))::int) - SUM(((x.{} > y.{} AND x.{} < y.{}) OR (x.{} < y.{} AND x.{} > y.{}))::int)) / NULLIFZERO(SUM((x.{} != y.{} AND x.{} != y.{})::int))".format(columns[i], columns[i], columns[j], columns[j], columns[i], columns[i], columns[j], columns[j], columns[i], columns[i], columns[j], columns[j], columns[i], columns[i], columns[j], columns[j], columns[i], columns[i], columns[j], columns[j])]
+							all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
+								columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
 						elif (method == "cov"):
-							all_list += ["COVAR_POP({}, {})".format(columns[i], columns[j])]
+							all_list += ["COVAR_POP({}{}, {}{})".format(columns[i], cast_i, columns[j], cast_j)]
 						elif (method == "beta"):
-							all_list += ["COVAR_POP({}, {}) / VARIANCE({})".format(columns[i], columns[j], columns[j])]
+							all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
 						else:
 							raise
 				if (method == "spearman"):
@@ -395,7 +407,7 @@ class vDataframe:
 					current = result[k]
 					k += 1
 					if (current == None):
-						current = 0
+						current = ""
 					matrix[i + 1][j + 1] = current
 					matrix[j + 1][i + 1] = 1 / current if ((method == "beta") and (current != 0)) else current
 			if ((show) and (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))):
@@ -422,6 +434,69 @@ class vDataframe:
 				if (len(cols) == 0):
 			 		raise Exception("No numerical column found")
 			return (self.aggregate_matrix(method = method, columns = cols, cmap = cmap, round_nb = round_nb, show = show))
+	# 
+	def aggregate_vector(self, 
+						 focus: str,
+						 method: str = "pearson",
+			 	   		 columns: list = [], 
+			 	   		 cmap: str = "",
+			 	   		 round_nb: int = 3,
+			 	   		 show: bool = True):
+		if (len(columns) == 0):
+			if (method == "cramer"):
+				cols = self.catcol(100)
+				if (len(cols) == 0):
+			 		raise Exception("No categorical column found")
+			else:
+				cols = self.numcol()
+				if (len(cols) == 0):
+			 		raise Exception("No numerical column found")
+		else:
+			cols = [column for column in columns]
+		if (method in ('spearman', 'pearson', 'kendall') and (len(cols) > 1)):
+			cast_i = "::int" if (self[focus].ctype()[0:4] == "bool") else ""
+			all_list, all_cols  = [], [focus]
+			for column in cols:
+				if (column.replace('"', '').lower() != focus.replace('"', '').lower()):
+					all_cols += [column]
+				cast_j = "::int" if (self[column].ctype()[0:4] == "bool") else ""
+				if (method in ("pearson", "spearman")):
+					all_list += ["ROUND(CORR({}{}, {}{}), {})".format(focus, cast_i, column, cast_j, round_nb)]
+				elif (method == "kendall"):
+					all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
+						focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j)]
+				elif (method == "cov"):
+					all_list += ["COVAR_POP({}{}, {}{})".format(focus, cast_i, column, cast_j)]
+				elif (method == "beta"):
+					all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(focus, cast_i, column, cast_j, column, cast_j)]
+			if (method == "spearman"):
+				rank = ["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in all_cols]
+				table = "(SELECT {} FROM {}) rank_spearman_table".format(", ".join(rank), self.genSQL())
+			elif (method == "kendall"):
+				table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(", ".join(all_cols), self.genSQL(), ", ".join(all_cols), self.genSQL())
+			else:
+				table = self.genSQL()
+			self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = "Compute the Correlation Vector")
+			result = self.cursor.fetchone()
+			vector = [elem for elem in result]
+		else: 
+			vector = []
+			for column in cols:
+				if (column.replace('"', '').lower() == focus.replace('"', '').lower()):
+					vector += [1]
+				else:
+					vector += [self.aggregate_matrix(method = method, columns = [column, focus])]
+		if ((show) and (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))):
+			from vertica_ml_python.plot import cmatrix
+			vmin = 0 if (method == "cramer") else -1
+			if not(cmap):
+				from matplotlib.colors import LinearSegmentedColormap
+				cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#214579"], N = 1000)
+				cm2 = LinearSegmentedColormap.from_list("vml", ["#FFCC01", "#FFFFFF", "#214579"], N = 1000)
+				cmap = cm1 if (method == "cramer") else cm2
+			title = "Correlation Vector of {} ({})".format(focus, method)
+			cmatrix([cols, [focus] + vector], cols, [focus], len(cols), 1, vmax = 1, vmin = vmin, cmap = cmap, title = title, mround = round_nb)
+		return tablesample(values = {"index" : cols, focus : vector}, table_info = False)
 	#
 	def append(self, 
 			   vdf = None, 
@@ -514,8 +589,11 @@ class vDataframe:
 			bar2D(self, columns, method, of, max_cardinality, h, limit_distinct_elements, stacked, fully_stacked)
 		return (self)
 	# 
-	def beta(self, columns: list = []):
-		return (self.aggregate_matrix(method = "beta", columns = columns))
+	def beta(self, columns: list = [], focus: str = ""):
+		if (focus == ""):
+			return (self.aggregate_matrix(method = "beta", columns = columns))
+		else:
+			return (self.aggregate_vector(focus, method = "beta", columns = columns))
 	#
 	def between_time(self,
 					 ts: str, 
@@ -523,6 +601,13 @@ class vDataframe:
 					 end_time: str):
 		expr = "{}::time BETWEEN '{}' AND '{}'".format('"' + ts.replace('"', '') + '"', start_time, end_time)
 		self.filter(expr)
+		return (self)
+	#
+	def bool_to_int(self):
+		columns = self.get_columns()
+		for column in columns:
+			if (self[column].ctype()[0:4] == "bool"):
+				self[column].astype("int")
 		return (self)
 	#
 	def boxplot(self, columns: list = []):
@@ -563,11 +648,20 @@ class vDataframe:
 			 method: str = "pearson", 
 			 cmap: str = "",
 			 round_nb: int = 3, 
+			 focus: str = "",
 			 show: bool = True):
-		return (self.aggregate_matrix(method = method, columns = columns, cmap = cmap, round_nb = round_nb, show = show))
+		if not(method in ("pearson", "kendall", "spearman", "biserial", "cramer")):
+			raise ValueError("The parameter 'method' must be in pearson|kendall|spearman|biserial|cramer")
+		if (focus == ""):
+			return (self.aggregate_matrix(method = method, columns = columns, cmap = cmap, round_nb = round_nb, show = show))
+		else:
+			return (self.aggregate_vector(focus, method = method, columns = columns, cmap = cmap, round_nb = round_nb, show = show))
 	# 
-	def cov(self, columns: list = []):
-		return (self.aggregate_matrix(method = "cov", columns = columns))
+	def cov(self, columns: list = [], focus: str = ""):
+		if (focus == ""):
+			return (self.aggregate_matrix(method = "cov", columns = columns))
+		else:
+			return (self.aggregate_vector(focus, method = "cov", columns = columns))
 	# 
 	def count(self, 
 			  columns = [], 
@@ -605,7 +699,11 @@ class vDataframe:
 		return (self.rolling(name = name, aggr = "sum", column = column, preceding = "UNBOUNDED", following = 0, by = by, order_by = order_by))
 	# 
 	def current_relation(self):
-		return (self.genSQL())
+		try:
+			import sqlparse
+			return (sqlparse.format(self.genSQL(), reindent=True))
+		except:
+			return (self.genSQL())
 	#
 	def datecol(self):
 		columns = []
@@ -615,24 +713,35 @@ class vDataframe:
 		return (columns)
 	# 
 	def describe(self, 
-				 method: str = "numerical", 
+				 method: str = "auto", 
 				 columns: list = [], 
 				 unique: bool = True):
-		if (columns == []):
-			columns = self.get_columns()
-		else:
-			for i in range(len(columns)):
-				columns[i] = '"' + columns[i].replace('"', '') + '"'
+		for i in range(len(columns)):
+			columns[i] = '"' + columns[i].replace('"', '') + '"'
+		if (method == "auto"):
+			if not(columns):
+				method = "categorical" if not(self.numcol()) else "numerical"
+			else:
+				method = "numerical"
+				for column in columns:
+					if (column.category() not in ['float','int']):
+						method = "categorical"
+						break
 		if (method == "numerical"):
-			query = "SELECT SUMMARIZE_NUMCOL("
+			if not(columns):
+				columns = self.numcol()
+			query = []
 			for column in columns:
 				if self[column].isnum():
 					if (self[column].transformations[-1][1] == "boolean"):
-						query += column + "::int,"
+						query += [column + "::int"]
 					else:
-						query += column + ","
-			query = query[:-1]
-			query += ") OVER () FROM {}".format(self.genSQL())
+						query += [column]
+				else:
+					print("/!\\ Warning: The column '{}' is not numerical, it was ignored. To get information about all the different variables, please use the parameter method = 'categorical'.".format(column))
+			if not(query):
+				raise ValueError("There is no numerical columns in the vDataframe")
+			query = "SELECT SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(", ".join(query), self.genSQL())
 			self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns")
 			query_result = self.cursor.fetchall()
 			data = [item for item in query_result]
@@ -661,6 +770,8 @@ class vDataframe:
 			for column in matrix:
 				values[column[0]] = column[1:len(column)]
 		elif (method == "categorical"):
+			if not(columns):
+				columns = self.get_columns()
 			values = {"index" : [], "dtype" : [], "unique" : [], "count" : [], "top" : [], "top_percent" : []}
 			for column in columns:
 				values["index"] += [column]
@@ -670,10 +781,14 @@ class vDataframe:
 				query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS TOPK = 1) OVER () FROM {} WHERE {} IS NOT NULL OFFSET 1".format(column, self.genSQL(), column)
 				self.executeSQL(query, title = "Compute the TOP1 feature")
 				result = self.cursor.fetchone()
-				values["top"] += [result[0]]
-				values["top_percent"] += [round(result[2], 3)]
+				if (result == None):
+					values["top"] += [None]
+					values["top_percent"] += [None]
+				else:
+					values["top"] += [result[0]]
+					values["top_percent"] += [round(result[2], 3)]
 		else:
-			raise ValueError("The parameter 'method' must be in numerical|categorical")
+			raise ValueError("The parameter 'method' must be in auto|numerical|categorical")
 		return (tablesample(values, table_info = False))
 	#
 	def drop(self, columns: list = []):
@@ -787,12 +902,12 @@ class vDataframe:
 				screen_rows, screen_columns = os.popen('stty size', 'r').read().split()
 			try:
 				import sqlparse
-				query_print = sqlparse.format(query, reindent=True)
+				query_print = sqlparse.format(query, reindent = True)
 			except:
 				query_print = query
 			if (isnotebook()):
 				from IPython.core.display import HTML, display
-				display(HTML("<h4 style='color:#444444;text-decoration:underline;'>" + title + "</h4>"))
+				display(HTML("<h4 style = 'color : #444444; text-decoration : underline;'>" + title + "</h4>"))
 				query_print = query_print.replace('\n',' <br>').replace('  ',' &emsp; ')
 				display(HTML(query_print))
 				display(HTML("<div style = 'border : 1px dashed black; width : 100%'></div>"))
@@ -811,8 +926,8 @@ class vDataframe:
 				screen_rows, screen_columns = os.popen('stty size', 'r').read().split()
 			if (isnotebook()):
 				from IPython.core.display import HTML,display
-				display(HTML("<div><b>Elapsed Time:</b> " + str(elapsed_time) + "</div>"))
-				display(HTML("<div style='border:1px dashed black;width:100%'></div>"))
+				display(HTML("<div><b>Elapsed Time : </b> " + str(elapsed_time) + "</div>"))
+				display(HTML("<div style = 'border : 1px dashed black; width : 100%'></div>"))
 			else:
 				print("Elapsed Time: " + str(elapsed_time))
 				print("-" * int(screen_columns) + "\n")
@@ -937,7 +1052,8 @@ class vDataframe:
 	def first(self, ts: str, offset: str):
 		ts = '"' + ts.replace('"', '') + '"'
 		query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
-		first_date = self.cursor.execute(query).fetchone()[0]
+		self.cursor.execute(query)
+		first_date = self.cursor.fetchone()[0]
 		expr = "{} <= '{}'".format(ts, first_date)
 		self.filter(expr)
 		return (self)
@@ -948,6 +1064,19 @@ class vDataframe:
 			if column in columns:
 				columns.remove(column)
 		return(columns)
+	# 
+	def get_dummies(self, 
+					columns: list = [],
+					max_cardinality: int = 12,
+					prefix: str = "", 
+					prefix_sep: str = "_", 
+					drop_first: bool = False, 
+					use_numbers_as_suffix: bool = False):
+		columns = self.get_columns() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+		for column in columns:
+			if (self[column].nunique() < max_cardinality):
+				self[column].get_dummies()
+		return (self)
 	# 
 	def groupby(self, columns: list, expr: list = []):
 		columns = ['"' + column.replace('"', '') + '"' for column in columns]
@@ -1016,7 +1145,8 @@ class vDataframe:
 				else:
 					tmp_query += ['"' + column.replace('"', '') + '"' + " = '{}'".format(val[column][i])]
 			query = "SELECT * FROM {} WHERE ".format(self.genSQL()) + " AND ".join(tmp_query) + " LIMIT 1"
-			isin += [self.cursor.execute(query).fetchone() != None] 
+			self.cursor.execute(query)
+			isin += [self.cursor.fetchone() != None] 
 		return (isin)
 	#
 	def join(self, 
@@ -1049,7 +1179,8 @@ class vDataframe:
 	def last(self, ts: str, offset: str):
 		ts = '"' + ts.replace('"', '') + '"'
 		query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
-		last_date = self.cursor.execute(query).fetchone()[0]
+		self.cursor.execute(query)
+		last_date = self.cursor.fetchone()[0]
 		expr = "{} >= '{}'".format(ts, last_date)
 		self.filter(expr)
 		return (self)
@@ -1177,14 +1308,16 @@ class vDataframe:
 				expr: str = "",
 				by: list = [], 
 				order_by: list = [], 
-				method: str = "rows"):
-		rule_p, rule_f = "PRECEDING", "FOLLOWING"
-		if type(preceding) in (tuple, list):
-			rule_p = "FOLLOWING" if (preceding[1] in ("following", "f", 1)) else "PRECEDING"
-			preceding = preceding[0]
-		if type(following) in (tuple, list):
-			rule_f = "PRECEDING" if (following[1] in ("preceding", "p", 1)) else "FOLLOWING"
-			following = following[0]
+				method: str = "rows",
+				rule: str = "auto"):
+		if not(rule.lower() in ("auto", "past", "future")):
+			raise ValueError("The parameter 'rule' must be in auto|past|future\n'auto' will create a moving window from the past to the future (preceding-following)\n'past' will create a moving window in the past (preceding-preceding)\n'future' will create a moving window in the future (following-following)\n")
+		if (rule.lower() == "past"):
+			rule_p, rule_f = "PRECEDING", "PRECEDING"
+		elif (rule.lower() == "future"):
+			rule_p, rule_f = "FOLLOWING", "FOLLOWING"
+		else:
+			rule_p, rule_f = "PRECEDING", "FOLLOWING"
 		if (method not in ('range', 'rows')):
 			raise ValueError("The parameter 'method' must be in rows|range")
 		column = '"' + column.replace('"', '') + '"'
@@ -1212,10 +1345,10 @@ class vDataframe:
 	#
 	def save(self):
 		save = 'vdf_save = vDataframe("", empty = True)'
-		save += '\nvdf_save.dsn = "{}"'.format(self.dsn)
-		save += '\nvdf_save.input_relation = "{}"'.format(self.input_relation)
-		save += '\nvdf_save.main_relation = "{}"'.format(self.main_relation)
-		save += '\nvdf_save.schema = "{}"'.format(self.schema)
+		save += '\nvdf_save.dsn = \'{}\''.format(self.dsn)
+		save += '\nvdf_save.input_relation = \'{}\''.format(self.input_relation)
+		save += '\nvdf_save.main_relation = \'{}\''.format(self.main_relation)
+		save += '\nvdf_save.schema = \'{}\''.format(self.schema)
 		save += '\nvdf_save.columns = {}'.format(self.columns)
 		save += '\nvdf_save.exclude_columns = {}'.format(self.exclude_columns)
 		save += '\nvdf_save.where = {}'.format(self.where)
@@ -1322,11 +1455,21 @@ class vDataframe:
 		else:
 			stats = self.aggregate(func = ["count", "avg", "stddev", "min", "10%", "25%", "median", "75%", "90%", "max"], columns = columns).transpose()
 		for column in columns:
-			for k in range(3, 5):
-				expr = "AVG(POWER(({} - {}) / {}, {}))".format(column, stats.values[column][1], stats.values[column][2], k)
-				count = stats.values[column][0]
-				expr += "* {} - 3 * {}".format(count * count * (count + 1) / (count - 1) / (count - 2) / (count - 3), (count -1) * (count - 1) / (count - 2) / (count - 3)) if (k == 4) else "* {}".format(count * count / (count - 1) / (count - 2))
-				query += [expr]
+			cast = "::int" if (self[column].ctype()[0:4] == "bool") else ""
+			count, avg, std = stats.values[column][0], stats.values[column][1], stats.values[column][2]
+			if (count == 0): 
+				query += ["NULL", "NULL"]
+			elif ((count == 1) or (std == 0)): 
+				query += ["0", "-3"]
+			else:
+				for k in range(3, 5):
+					expr = "AVG(POWER(({}{} - {}) / {}, {}))".format(column, cast, avg, std, k) 
+					if (count > 3):
+						expr += "* {} - 3 * {}".format(count * count * (count + 1) / (count - 1) / (count - 2) / (count - 3), (count -1) * (count - 1) / (count - 2) / (count - 3)) if (k == 4) else "* {}".format(count * count / (count - 1) / (count - 2))
+					else:
+						expr += "* - 3" if (k == 4) else ""
+						expr += "* {}".format(count * count / (count - 1) / (count - 2)) if (count == 3) else ""
+					query += [expr]
 		query = "SELECT {} FROM {}".format(', '.join(query), self.genSQL())
 		self.executeSQL(query, title = "COMPUTE KURTOSIS AND SKEWNESS")
 		result = [item for item in self.cursor.fetchone()]
@@ -1384,7 +1527,8 @@ class vDataframe:
 		current_nb_rows_written = 0
 		limit = total if (nb_row_per_work <= 0) else nb_row_per_work
 		while (current_nb_rows_written < total):
-			result = self.cursor.execute("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(columns), self.genSQL(), limit, current_nb_rows_written)).fetchall()
+			self.cursor.execute("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(columns), self.genSQL(), limit, current_nb_rows_written))
+			result = self.cursor.fetchall()
 			for row in result:
 				tmp_row = []
 				for item in row:
@@ -1495,14 +1639,15 @@ class vDataframe:
 		print("")
 		print("As the vDataframe will try to keep in mind where the transformations occurred in order to use the appropriate query," 
 				+" it is highly recommended to save the vDataframe when the user has done a lot of transformations in order to gain in efficiency" 
-				+" (using the save method). We can also see all the modifications using the history method.")
+				+" (using the to_db method). We can also see all the modifications using the history method.")
 		print("")
 		print("If you find any difficulties using vertica_ml_python, please contact me: badr.ouali@microfocus.com / I'll be glad to help.")
 		print("")
 		print("For more information about the different methods or the entire vDataframe structure, please see the entire documentation")
 	# 
 	def version(self):
-		version = self.cursor.execute("SELECT version();").fetchone()[0]
+		self.cursor.execute("SELECT version();")
+		version = self.cursor.fetchone()[0]
 		print("############################################################################################################") 
 		print("#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #")
 		print("# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #")

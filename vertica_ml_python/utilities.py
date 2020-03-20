@@ -39,7 +39,7 @@ import time
 
 #
 def category_from_type(ctype: str = ""):
-	if not(ctype == ""):
+	if (ctype != ""):
 		if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype[0:8] == "interval"):
 			category = "date"
 		elif ((ctype[0:3] == "int") or (ctype[0:4] == "bool")):
@@ -115,10 +115,12 @@ def isnotebook():
 #
 def load_model(name: str, cursor, test_relation: str = ""):
 	try:
-		info = cursor.execute("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')").fetchone()[0].replace('\n', ' ')
+		cursor.execute("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')")
+		info = cursor.fetchone()[0].replace('\n', ' ')
 	except:
 		try:
-			info = cursor.execute("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')").fetchone()[0].replace('\n', ' ')
+			cursor.execute("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')")
+			info = cursor.fetchone()[0].replace('\n', ' ')
 			info = "kmeans(" + info.split("kmeans(")[1]
 		except:
 			from vertica_ml_python.learn.preprocessing import Normalizer
@@ -225,7 +227,8 @@ def load_model(name: str, cursor, test_relation: str = ""):
 		values["value"] = [float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]), float(result.split("Total Sum of Squares: ")[1].split("\n")[0]), float(result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]), float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]) / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]), result.split("Converged: ")[1].split("\n")[0] == "True"] 
 		model.metrics = tablesample(values, table_info = False)
 	if (model.type == "classifier"):
-		classes = cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(model.y, model.input_relation, model.y)).fetchall()
+		cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(model.y, model.input_relation, model.y))
+		classes = cursor.fetchall()
 		model.classes = [item[0] for item in classes]
 	return (model)
 # 
@@ -326,78 +329,171 @@ def print_table(data_columns, is_finished = True, offset = 0, repeat_first_colum
 			return formatted_text
 	except:
 		return formatted_text
+#
+def pjson(path: str, cursor):
+	flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
+	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path))
+	cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
+	cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
+	result = cursor.fetchall()
+	dtype = {}
+	for column_dtype in result:
+		dtype[column_dtype[0]] = column_dtype[1]
+	cursor.execute("DROP TABLE " + flex_name)
+	return (dtype)
+#
+def pcsv(path: str, 
+		 cursor, 
+		 delimiter: str = ',', 
+		 header: bool = True,
+		 header_names: list = [],
+		 null: str = '', 
+		 enclosed_by: str = '"', 
+		 escape: str = '\\'):
+	flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
+	header_names = '' if not(header_names) else "header_names = '{}',".format(delimiter.join(header_names))
+	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(flex_name, path, delimiter, header, header_names, enclosed_by, escape, null))
+	cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
+	cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
+	result = cursor.fetchall()
+	dtype = {}
+	for column_dtype in result:
+		try:
+			if ("Varchar" not in column_dtype[1]):
+				query = 'SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
+				cursor.execute(query)
+			dtype[column_dtype[0]] = column_dtype[1]
+		except:
+			dtype[column_dtype[0]] = "Varchar(100)"
+	cursor.execute("DROP TABLE " + flex_name)
+	return (dtype)
 # 
 def read_csv(path: str, 
 			 cursor, 
 			 schema: str = 'public', 
 			 table_name: str = '', 
 			 delimiter: str = ',', 
+			 header: bool = True,
 			 header_names: list = [],
-			 dtype: dict = {}, 
 			 null: str = '', 
 			 enclosed_by: str = '"', 
 			 escape: str = '\\', 
-			 skip: int = 1, 
 			 genSQL: bool = False,
-			 return_dlist: bool = False,
-			 parse_n_lines: int = -1):
+			 parse_n_lines: int = -1,
+			 insert: bool = False):
+	file = path.split("/")[-1]
+	file_extension = file[-3:len(file)]
+	if (file_extension != 'csv'):
+		raise ValueError("The file extension is incorrect !")
 	table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
 	query = "SELECT column_name FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
-	result = cursor.execute(query).fetchall()
-	if (result != []):
-		raise Exception("The table {} already exists !".format(table_name))
+	cursor.execute(query)
+	result = cursor.fetchall()
+	if ((result != []) and not(insert)):
+		raise Exception("The table \"{}\".\"{}\" already exists !".format(schema, table_name))
+	elif ((result == []) and (insert)):
+		raise Exception("The table \"{}\".\"{}\" doesn't exist !".format(schema, table_name))
 	else:
-		input_relation = '{}.{}'.format(schema, table_name)
-		if (len(header_names) == 0):
+		input_relation = '"{}"."{}"'.format(schema, table_name)
+		f = open(path,'r')
+		file_header = f.readline().replace('\n', '').replace('"', '').split(delimiter)
+		f.close()
+		if ((header_names == []) and (header)):
+			header_names = file_header
+		elif (len(file_header) > len(header_names)):
+			header_names += ["ucol{}".format(i + len(header_names)) for i in range(len(file_header) - len(header_names))]
+		if ((parse_n_lines > 0) and not(insert)):
 			f = open(path,'r')
-			header_names  = f.readline().replace('\n', '').replace('"', '').split(delimiter)
+			f2 = open(path[0:-4] + "_vpython_copy.csv",'w')
+			for i in range(parse_n_lines + int(header)):
+				line = f.readline()
+				f2.write(line)
 			f.close()
+			f2.close()
+			path_test = path[0:-4] + "_vpython_copy.csv"
+		else:
+			path_test = path
+		query = ""
+		if not(insert):
+			dtype = pcsv(path_test, cursor, delimiter, header, header_names, null, enclosed_by, escape)
 			if (parse_n_lines > 0):
-				f = open(path,'r')
-				f2 = open(path[0:-4] + "_vpython_copy.csv",'w')
-				for i in range(parse_n_lines + 1):
-					line = f.readline()
-					f2.write(line)
-				f.close()
-				f2.close()
-				path_test = path[0:-4] + "_vpython_copy.csv"
-			else:
-				path_test = path
-			flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
-			cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
-			query = "COPY {} FROM LOCAL '{}' parser fcsvparser(delimiter = '{}', enclosed_by = '{}', escape = '{}') NULL '{}';"
-			cursor.execute(query.format(flex_name, path_test, delimiter, enclosed_by, escape, null))
-			query = "SELECT compute_flextable_keys('{}');".format(flex_name)
-			cursor.execute(query)
-			query = "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name)
-			cursor.execute(query)
-			result = cursor.fetchall()
-			if (return_dlist):
-				return result
-			for column_dtype in result:
-				if column_dtype[0] not in dtype:
-					try:
-						if ("Varchar" not in column_dtype[1]):
-							query='SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
-							cursor.execute(query)
-						dtype[column_dtype[0]] = column_dtype[1]
-					except:
-						dtype[column_dtype[0]] = "Varchar(100)"
-			cursor.execute("DROP TABLE " + flex_name)
-		if (parse_n_lines > 0):
-			os.remove(path[0:-4] + "_vpython_copy.csv")
-		query = "CREATE TABLE {}({})".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
+				os.remove(path[0:-4] + "_vpython_copy.csv")
+			query  = "CREATE TABLE {}({});\n".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
+		skip   = " SKIP 1" if (header) else ""
+		query += "COPY {}({}) FROM LOCAL '{}' DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
+					input_relation,", ".join(['"' + column + '"' for column in header_names]), path, delimiter, null, enclosed_by, escape, skip)
 		if (genSQL):
 			print(query)
-		cursor.execute(query)
-		query="COPY {}({}) FROM LOCAL '{}' DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}' SKIP {};".format(
-			input_relation,", ".join(['"' + column + '"' for column in header_names]), path, delimiter, null, enclosed_by, escape, skip)
-		if (genSQL):
-			print(query)
-		cursor.execute(query)
-		print("The table {} has been successfully created.".format(input_relation))
+		else:
+			cursor.execute(query)
+			if not(insert):
+				print("The table {} has been successfully created.".format(input_relation))
+			from vertica_ml_python import vDataframe
+			return vDataframe(table_name, cursor, schema = schema)
+# 
+def read_json(path: str, 
+			  cursor, 
+			  schema: str = 'public', 
+			  table_name: str = '',
+			  usecols: list = [],
+			  new_name: dict = {},
+			  insert: bool = False):
+	file = path.split("/")[-1]
+	file_extension = file[-4:len(file)]
+	if (file_extension != 'json'):
+		raise ValueError("The file extension is incorrect !")
+	table_name = table_name if (table_name) else path.split("/")[-1].split(".json")[0]
+	query = "SELECT column_name, data_type FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
+	cursor.execute(query)
+	column_name = cursor.fetchall()
+	if ((column_name != []) and not(insert)):
+		raise Exception("The table \"{}\".\"{}\" already exists !".format(schema, table_name))
+	elif ((column_name == []) and (insert)):
+		raise Exception("The table \"{}\".\"{}\" doesn't exist !".format(schema, table_name))
+	else:
+		input_relation, flex_name = '"{}"."{}"'.format(schema, table_name), "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+		cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
+		cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path))
+		cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
+		cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
+		result = cursor.fetchall()
+		dtype = {}
+		for column_dtype in result:
+			try:
+				if ("Varchar" not in column_dtype[1]):
+					cursor.execute('SELECT "{}"::{} FROM {} LIMIT 1000'.format(column_dtype[0], column_dtype[1], flex_name))
+				dtype[column_dtype[0]] = column_dtype[1]
+			except:
+				dtype[column_dtype[0]] = "Varchar(100)"
+		if not(insert):
+			cols = [column for column in dtype] if not(usecols) else [column for column in usecols]
+			for i, column in enumerate(cols):
+				cols[i] = '"{}"::{} AS "{}"'.format(column.replace('"', ''), dtype[column], new_name[column]) if (column in new_name) else '"{}"::{}'.format(column.replace('"', ''), dtype[column])
+			cursor.execute("CREATE TABLE {} AS SELECT {} FROM {}".format(input_relation, ", ".join(cols), flex_name))
+			print("The table {} has been successfully created.".format(input_relation))
+		else:
+			column_name_dtype = {}
+			for elem in column_name:
+				column_name_dtype[elem[0]] = elem[1]
+			final_cols = {}
+			for column in column_name_dtype:
+				final_cols[column] = None
+			for column in column_name_dtype:
+				if column in dtype:
+					final_cols[column] = column
+				else:
+					for col in new_name:
+						if (new_name[col] == column):
+							final_cols[column] = col
+			final_transformation = []
+			for column in final_cols:
+				final_transformation += ['NULL AS "{}"'.format(column)] if (final_cols[column] == None) else ['"{}"::{} AS "{}"'.format(final_cols[column], column_name_dtype[column], column)]
+			cursor.execute("INSERT INTO {} SELECT {} FROM {}".format(input_relation, ", ".join(final_transformation), flex_name))
+		cursor.execute("DROP TABLE " + flex_name)
 		from vertica_ml_python import vDataframe
-		return vDataframe(input_relation, cursor)
+		return vDataframe(table_name, cursor, schema = schema)
 # 
 def read_vdf(path: str, cursor):
 	file = open(path, "r")

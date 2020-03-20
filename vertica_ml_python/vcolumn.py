@@ -35,7 +35,6 @@
 import numpy as np
 import math
 import time
-import datetime
 from vertica_ml_python.utilities import tablesample
 from vertica_ml_python.utilities import to_tablesample
 from vertica_ml_python.utilities import category_from_type
@@ -57,7 +56,8 @@ class vColumn:
 			# COLUMN DATA TYPE
 			query = "(SELECT data_type FROM columns WHERE table_name='{}' AND column_name='{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
 			query += " UNION (SELECT data_type FROM view_columns WHERE table_name='{}' AND column_name='{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
-			result = self.parent.cursor.execute(query).fetchone()
+			self.parent.cursor.execute(query)
+			result = self.parent.cursor.fetchone()
 			ctype = str(result[0]) if (result) else "undefined"
 			category = category_from_type(ctype)
 			# TRANSFORMATIONS
@@ -213,9 +213,12 @@ class vColumn:
 	# 
 	def describe(self, 
 				 method: str = "auto", 
-				 max_cardinality: int = 6):
+				 max_cardinality: int = 6,
+				 numcol: str = ""):
 		if (method not in ["auto", "numerical", "categorical", "cat_stats"]):
 			raise ValueError("The parameter 'method' must be in auto|categorical|numerical|cat_stats")
+		elif (method == "cat_stats") and not(numcol):
+			raise ValueError("The parameter 'numcol' must be a vDataframe column if the method is 'cat_stats'")
 		distinct_count = self.nunique()
 		is_numeric = self.isnum()
 		is_date = self.isdate()
@@ -226,15 +229,16 @@ class vColumn:
 			result = self.parent.cursor.fetchall()
 			result = [item for sublist in result for item in sublist]
 			index = ['count', 'min', 'max']
-		elif (method == "cat_stats"):
-			query = []
-			cat = self.distinct()
-			lp = "(" if (len(cat) == 1) else ""
-			rp = ")" if (len(cat) == 1) else ""
+		elif ((method == "cat_stats") and (numcol != "")):
+			cast = "::int" if (self.parent[numcol].ctype()[0:4] == "bool") else ""
+			query, cat = [], self.distinct()
+			if (len(cat) == 1):
+				lp, rp = "(", ")"
+			else:
+				lp, rp = "", ""
 			for category in cat:
-				tmp_query = "SELECT '{}' AS 'index', COUNT({}) AS count, MIN({}) AS min, APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.25) AS '25%', APPROXIMATE_PERCENTILE ({}".format(category, self.alias, self.alias, self.alias, self.alias)
-				tmp_query += " USING PARAMETERS percentile = 0.5) AS '50%', APPROXIMATE_PERCENTILE ({} USING PARAMETERS percentile = 0.75) AS '75%', MAX".format(self.alias)
-				tmp_query += "({}) AS max FROM {}".format(self.alias, self.parent.genSQL())
+				tmp_query = "SELECT '{}' AS 'index', COUNT({}) AS count, 100 * COUNT({}) / {} AS percent, AVG({}{}) AS mean, STDDEV({}{}) AS std, MIN({}{}) AS min, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.1) AS '10%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.25) AS '25%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.5) AS '50%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.75) AS '75%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.9) AS '90%', MAX({}{}) AS max FROM {}"
+				tmp_query = tmp_query.format(category, self.alias, self.alias, self.parent.shape()[0], numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, self.parent.genSQL())
 				tmp_query += " WHERE {} IS NULL".format(self.alias) if (category in ('None', None)) else " WHERE {} = '{}'".format(self.alias, category)
 				query += [lp + tmp_query + rp]
 			query = " UNION ALL ".join(query)
@@ -293,7 +297,6 @@ class vColumn:
 		except:
 			self.parent.exclude_columns += [self.alias]
 		if (add_history):
-			print("vColumn '{}' deleted from the vDataframe.".format(self.alias))
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Drop]: vColumn '{}' was deleted from the vDataframe.".format(self.alias)]
 		return (parent)
 	# 
@@ -432,13 +435,10 @@ class vColumn:
 	def get_dummies(self, 
 					prefix: str = "", 
 					prefix_sep: str = "_", 
-					drop_first: bool = False, 
+					drop_first: bool = True, 
 					use_numbers_as_suffix: bool = False):
-		if (self.nunique() < 3):
-			print("/!\\ Warning: The column has already a limited number of elements.")
-			print("Please use the label_encode func in order to code the elements if it is needed.")
-		else:
-			distinct_elements = self.distinct()
+		distinct_elements = self.distinct()
+		if (distinct_elements not in ([0, 1], [1, 0]) or self.ctype()[0:4] == "bool"):
 			all_new_features = []
 			prefix = self.alias.replace('"', '') + prefix_sep if not(prefix) else prefix.replace('"', '') + prefix_sep
 			n = 1 if drop_first else 0
@@ -454,7 +454,6 @@ class vColumn:
 				setattr(self.parent, name.replace('"', ''), new_vColumn)
 				self.parent.columns += [name]
 				all_new_features += [name]
-			print("{} new features: {}".format(len(all_new_features), ", ".join(all_new_features)))
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Get Dummies]: One hot encoder was applied to the vColumn '{}' and {} features were created: {}".format(self.alias, len(all_new_features), ", ".join(all_new_features)) + "."]
 		return (self.parent)
 	#
@@ -600,12 +599,8 @@ class vColumn:
 			count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result[0], result[3], result[4], result[6], result[7]
 		elif (self.category() in ["date"]):
 			min_date = self.min()
-			table = "(SELECT DATEDIFF('second','" + str(min_date) + "'::timestamp," + self.alias + ") AS " + self.alias + " FROM " + self.parent.genSQL()
-			table += ") best_h_date_table"
-			query = ("SELECT (SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL) AS NAs, MIN({}) AS min, (SELECT PERCENTILE_CONT(0.25)"
-					+ " WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1) AS Q1, (SELECT PERCENTILE_CONT(0.75) WITHIN GROUP" 
-					+ " (ORDER BY {}) OVER () FROM {} LIMIT 1) AS Q3, MAX({}) AS max from {} GROUP BY Q1, Q3, NAs")
-			query = query.format(table, self.alias, self.alias, self.alias, table, self.alias, table, self.alias, table, self.alias, table)
+			table = "(SELECT DATEDIFF('second','{}'::timestamp, {}) AS {} FROM {}) best_h_date_table".format(min_date, self.alias, self.alias, self.parent.genSQL())
+			query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(self.alias, self.alias, self.alias, self.alias, self.alias, table)
 			self.executeSQL(query, title = "AGGR to compute h")
 			result = self.parent.cursor.fetchone()
 			count, vColumn_min, vColumn_025, vColumn_075, vColumn_max  = result
@@ -622,7 +617,7 @@ class vColumn:
 	# 
 	def nunique(self):
 		query = "SELECT COUNT(DISTINCT {}) FROM {} WHERE {} IS NOT NULL".format(self.alias, self.parent.genSQL(), self.alias)
-		self.executeSQL(query = query, title = "Compute the feature "+self.alias+" cardinality")
+		self.executeSQL(query = query, title = "Compute the feature {} cardinality".format(self.alias))
 		return (self.parent.cursor.fetchone()[0])
 	#
 	def pct_change(self, order_by: list, by: list = []):
@@ -664,9 +659,7 @@ class vColumn:
 		return (self.aggregate(func = ["prod"]).values[self.alias][0])
 	# 
 	def quantile(self, x: float):
-		query="SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(x, self.alias, self.parent.genSQL())
-		self.executeSQL(query = query, title = "Compute the PERCENTILE_CONT of " + self.alias)
-		return (self.parent.cursor.fetchone()[0])
+		return (self.aggregate(func = ["{}%".format(x * 100)]).values[self.alias][0])
 	#
 	def rename(self, new_name: str):
 		new_name = new_name.replace('"', '')
@@ -683,7 +676,6 @@ class vColumn:
 			self.parent[new_name] = self
 			self.parent['"' + new_name + '"'] = self
 			self.parent.cursor.execute("SELECT * FROM {} LIMIT 10".format(self.parent.genSQL()))
-			print("vColumn {} was renamed {}".format(old_name, new_name))
 			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Rename]: The vColumn {} was renamed '{}'.".format(old_name, new_name)]
 		except:
 			self.alias = old_name
@@ -711,27 +703,23 @@ class vColumn:
 		return (self.apply(func = "TIME_SLICE({}, {}, '{}', '{}')".format("{}", length, unit.upper(), start_or_end)))
 	#
 	def store_usage(self):
-		return (self.parent.cursor.execute("SELECT SUM(LENGTH({}::varchar)) FROM {}".format(self.alias, self.parent.genSQL())).fetchone()[0])
+		self.parent.cursor.execute("SELECT SUM(LENGTH({}::varchar)) FROM {}".format(self.alias, self.parent.genSQL()))
+		return (self.parent.cursor.fetchone()[0])
 	#
 	def summarize_numcol(self):
+		cast = "::int" if (self.ctype()[0:4] == "bool") else ""
 		# For Vertica 9.0 and higher
 		try:
-			query = "SELECT SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(self.alias, self.parent.genSQL())
-			self.executeSQL(query = query, title = "Compute a direct SUMMARIZE_NUMCOL(" + self.alias + ")")
+			query = "SELECT SUMMARIZE_NUMCOL({}{}) OVER () FROM {}".format(self.alias, cast, self.parent.genSQL())
+			self.executeSQL(query = query, title = "Compute a direct SUMMARIZE_NUMCOL({})".format(self.alias))
 			result = self.parent.cursor.fetchone()
 			val = [float(result[i]) for i in range(1, len(result))]
 		# For all versions of Vertica
 		except:
 			try:
-				query = ("SELECT COUNT({}) AS count, AVG({}) AS mean, STDDEV({}) AS std, MIN({}) AS min, (SELECT " 
-					    + "PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1)"
-						+ " AS Q1, (SELECT PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1) AS Median, "
-						+ "(SELECT PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1) AS Q3, max({}) AS max "
-						+ " FROM {} GROUP BY Q1, Median, Q3")
-				query = query.format(self.alias, self.alias, self.alias, self.alias, self.alias, self.parent.genSQL(),
-								     self.alias, self.parent.genSQL(), self.alias, self.parent.genSQL(), self.alias, 
-								     self.parent.genSQL())
-				self.executeSQL(query = query, title = "Compute a manual SUMMARIZE_NUMCOL(" + self.alias + ")")
+				query = "SELECT COUNT({}) AS count, AVG({}{}) AS mean, STDDEV({}{}) AS std, MIN({}{}) AS min, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.5) AS Median, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}{}) AS max FROM {}"
+				query = query.format(self.alias, self.alias, cast, self.alias, cast, self.alias, cast, self.alias, cast, self.alias, cast, self.alias, cast, self.alias, cast, self.parent.genSQL())
+				self.executeSQL(query = query, title = "Compute a manual SUMMARIZE_NUMCOL({})".format(self.alias))
 				result = self.parent.cursor.fetchone()
 				val = [float(item) for item in result]
 			except:

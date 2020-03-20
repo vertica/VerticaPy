@@ -36,7 +36,7 @@ __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@microfocus.com"
 __description__ = """Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica."""
 __url__ = "https://github.com/vertica/vertica_ml_python/"
-__license__="Apache License, Version 2.0"
+__license__ = "Apache License, Version 2.0"
 
 # vDataframe
 from vertica_ml_python.vdataframe import vDataframe
@@ -47,6 +47,7 @@ from vertica_ml_python.utilities import drop_view
 from vertica_ml_python.utilities import drop_model
 from vertica_ml_python.utilities import drop_text_index
 from vertica_ml_python.utilities import read_csv
+from vertica_ml_python.utilities import read_json
 from vertica_ml_python.utilities import read_vdf
 from vertica_ml_python.utilities import read_dsn
 from vertica_ml_python.utilities import tablesample
