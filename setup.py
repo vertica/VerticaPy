@@ -38,7 +38,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
 	name = 'vertica_ml_python',  
-    version = '1',
+    version = '1.0-3',
     author = "Badr Ouali",
 	author_email = "badr.ouali@microfocus.com",
 	description = "Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica.",
@@ -46,7 +46,8 @@ setuptools.setup(
 	long_description_content_type = "text/markdown",
 	url = "https://github.com/vertica/Vertica-ML-Python",
 	packages = setuptools.find_packages(),
-	package_data={'': ['*.csv']},
+	package_data = {'': ['*.csv']},
+	install_requires = ['numpy', 'math', 'time', 'os'],
 	classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :: Apache Software License", "Operating System :: OS Independent",],
 	include_package_data = True,)
 
