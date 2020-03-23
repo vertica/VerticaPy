@@ -38,6 +38,7 @@ import os
 from vertica_ml_python import drop_model
 from vertica_ml_python import tablesample
 from vertica_ml_python import to_tablesample
+from vertica_ml_python.utilities import str_column
 
 #
 class DBSCAN:
@@ -68,9 +69,9 @@ class DBSCAN:
 	# 
 	#
 	def fit(self, input_relation: str, X: list, key_columns: list = [], index = ""):
-		X = ['"' + column.replace('"', '') + '"' for column in X]
+		X = [str_column(column) for column in X]
 		self.X = X
-		self.key_columns = ['"' + column.replace('"', '') + '"' for column in key_columns]
+		self.key_columns = [str_column(column) for column in key_columns]
 		self.input_relation = input_relation
 		cursor = self.cursor
 		if not(index):
@@ -173,7 +174,7 @@ class KMeans:
 				   vdf,
 				   name: str = ""):
 		name = "KMeans_" + self.name if not (name) else name
-		return (vdf.eval(name, self.deploySQL(), print_info = False))
+		return (vdf.eval(name, self.deploySQL()))
 	#
 	def deploySQL(self):
 		sql = "APPLY_KMEANS({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
@@ -186,7 +187,7 @@ class KMeans:
 			input_relation: str, 
 			X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
+		self.X = [str_column(column) for column in X]
 		query = "SELECT KMEANS('{}', '{}', '{}', {} USING PARAMETERS max_iterations = {}, epsilon = {}".format(self.name, input_relation, ", ".join(self.X), self.n_cluster, self.max_iter, self.tol)
 		name = "_vpython_kmeans_initial_centers_table_" 
 		if (type(self.init) != str):

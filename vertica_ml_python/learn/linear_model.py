@@ -68,6 +68,8 @@ from vertica_ml_python.learn.plot import logit_plot
 from vertica_ml_python.learn.plot import regression_plot
 from vertica_ml_python.learn.plot import prc_curve
 
+from vertica_ml_python.utilities import str_column
+
 #
 def LinearRegression(name: str,
 		  			 cursor,
@@ -162,8 +164,8 @@ class ElasticNet:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT LINEAR_REG('{}', '{}', '{}', '{}' USING PARAMETERS optimizer = '{}', epsilon = {}, max_iterations = {}"
 		query = query.format(self.name, input_relation, self.y, ", ".join(self.X), self.solver, self.tol, self.max_iter)
 		query += ", regularization = '{}', lambda = {}".format(self.penalty, self.C)
@@ -302,8 +304,8 @@ class LogisticRegression:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT LOGISTIC_REG('{}', '{}', '{}', '{}' USING PARAMETERS optimizer = '{}', epsilon = {}, max_iterations = {}"
 		query = query.format(self.name, input_relation, self.y, ", ".join(self.X), self.solver, self.tol, self.max_iter)
 		query += ", regularization = '{}', lambda = {}".format(self.penalty, self.C)

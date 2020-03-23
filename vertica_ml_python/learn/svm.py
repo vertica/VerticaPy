@@ -68,6 +68,8 @@ from vertica_ml_python.learn.plot import svm_classifier_plot
 from vertica_ml_python.learn.plot import roc_curve
 from vertica_ml_python.learn.plot import prc_curve
 
+from vertica_ml_python.utilities import str_column
+
 #
 class LinearSVC:
 	#
@@ -160,8 +162,8 @@ class LinearSVC:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT SVM_CLASSIFIER('{}', '{}', '{}', '{}' USING PARAMETERS C = {}, epsilon = {}, max_iterations = {}"
 		query = query.format(self.name, input_relation, self.y, ", ".join(self.X), self.C, self.tol, self.max_iter)
 		query += ", class_weights = '{}'".format(", ".join([str(item) for item in self.class_weight]))
@@ -299,8 +301,8 @@ class LinearSVR:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT SVM_REGRESSOR('{}', '{}', '{}', '{}' USING PARAMETERS C = {}, epsilon = {}, max_iterations = {}"
 		query = query.format(self.name, input_relation, self.y, ", ".join(self.X), self.C, self.tol, self.max_iter)
 		query += ", error_tolerance = {}".format(self.acceptable_error_margin)

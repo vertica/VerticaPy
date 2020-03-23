@@ -67,6 +67,8 @@ from vertica_ml_python.learn.plot import roc_curve
 from vertica_ml_python.learn.plot import prc_curve
 from vertica_ml_python.learn.plot import plot_tree
 
+from vertica_ml_python.utilities import str_column
+
 #
 class RandomForestClassifier:
 	#
@@ -192,8 +194,8 @@ class RandomForestClassifier:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		if (self.max_features == "auto"):
 			self.max_features = int(len(self.X) / 3 + 1)
 		elif (self.max_features == "max"):
@@ -356,8 +358,8 @@ class RandomForestRegressor:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		if (self.max_features == "auto"):
 			self.max_features = int(len(self.X) / 3 + 1)
 		elif (self.max_features == "max"):

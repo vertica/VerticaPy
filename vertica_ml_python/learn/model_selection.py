@@ -34,6 +34,7 @@
 # Libraries
 from vertica_ml_python import tablesample
 import numpy as np
+from vertica_ml_python.utilities import str_column
 
 #
 def best_k(X: list,
@@ -135,7 +136,7 @@ def fast_cv(algorithm: str,
 			metrics = ["accuracy", "auc_roc", "auc_prc", "fscore"]
 		elif algorithm in ("svm_regressor", "linear_reg"):
 			metrics = ["MSE", "MAE", "rsquared", "explained_variance"]
-	sql = "SELECT CROSS_VALIDATE('{}', '{}', '{}', '{}' USING PARAMETERS cv_fold_count = {}, cv_metrics = '{}'".format(algorithm, input_relation, y, ", ".join(['"' + item.replace('"', '') + '"' for item in X]), cv, ", ".join(metrics))
+	sql = "SELECT CROSS_VALIDATE('{}', '{}', '{}', '{}' USING PARAMETERS cv_fold_count = {}, cv_metrics = '{}'".format(algorithm, input_relation, y, ", ".join([str_column(item) for item in X]), cv, ", ".join(metrics))
 	if (params):
 		sql += ", cv_hyperparams = '{}'".format(params)
 	if (cutoff <= 1 and cutoff >= 0):

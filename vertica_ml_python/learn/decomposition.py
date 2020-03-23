@@ -35,6 +35,7 @@
 from vertica_ml_python import drop_model
 from vertica_ml_python import tablesample
 from vertica_ml_python import to_tablesample
+from vertica_ml_python.utilities import str_column
 
 #
 class PCA:
@@ -67,7 +68,7 @@ class PCA:
 	def deploySQL(self, n_components: int = 0, cutoff: float = 1, key_columns: list = []):
 		sql = "APPLY_PCA({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
 		if (key_columns):
-			sql += ", key_columns = '{}'".format(", ".join(['"' + item.replace('"', '') + '"' for item in key_columns]))
+			sql += ", key_columns = '{}'".format(", ".join([str_column(item) for item in key_columns]))
 		if (n_components):
 			sql += ", num_components = {}".format(n_components)
 		else:
@@ -78,7 +79,7 @@ class PCA:
 	def deployInverseSQL(self, key_columns: list = []):
 		sql = "APPLY_INVERSE_PCA({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
 		if (key_columns):
-			sql += ", key_columns = '{}'".format(", ".join(['"' + item.replace('"', '') + '"' for item in key_columns]))
+			sql += ", key_columns = '{}'".format(", ".join([str_column(item) for item in key_columns]))
 		sql += ")"
 		return (sql.format(", ".join(self.X), self.name))
 	#
@@ -89,7 +90,7 @@ class PCA:
 			input_relation: str, 
 			X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
+		self.X = [str_column(column) for column in X]
 		query = "SELECT PCA('{}', '{}', '{}' USING PARAMETERS scale = {}, method = '{}'"
 		query = query.format(self.name, input_relation, ", ".join(self.X), self.scale, self.method)
 		if (self.n_components):
@@ -141,7 +142,7 @@ class SVD:
 	def deploySQL(self, n_components: int = 0, cutoff: float = 1, key_columns: list = []):
 		sql = "APPLY_SVD({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
 		if (key_columns):
-			sql += ", key_columns = '{}'".format(", ".join(['"' + item.replace('"', '') + '"' for item in key_columns]))
+			sql += ", key_columns = '{}'".format(", ".join([str_column(item) for item in key_columns]))
 		if (n_components):
 			sql += ", num_components = {}".format(n_components)
 		else:
@@ -152,7 +153,7 @@ class SVD:
 	def deployInverseSQL(self, key_columns: list = []):
 		sql = "APPLY_INVERSE_SVD({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
 		if (key_columns):
-			sql += ", key_columns = '{}'".format(", ".join(['"' + item.replace('"', '') + '"' for item in key_columns]))
+			sql += ", key_columns = '{}'".format(", ".join([str_column(item) for item in key_columns]))
 		sql += ")"
 		return (sql.format(", ".join(self.X), self.name))
 	#
@@ -163,7 +164,7 @@ class SVD:
 			input_relation: str, 
 			X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
+		self.X = [str_column(column) for column in X]
 		query = "SELECT SVD('{}', '{}', '{}' USING PARAMETERS method = '{}'"
 		query = query.format(self.name, input_relation, ", ".join(self.X), self.method)
 		if (self.n_components):

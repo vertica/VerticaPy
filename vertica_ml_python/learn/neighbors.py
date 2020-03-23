@@ -65,6 +65,8 @@ from vertica_ml_python.learn.plot import lift_chart
 from vertica_ml_python.learn.plot import roc_curve
 from vertica_ml_python.learn.plot import prc_curve
 
+from vertica_ml_python.utilities import str_column
+
 #
 class NearestCentroid:
 	#
@@ -139,8 +141,8 @@ class NearestCentroid:
 		func = "APPROXIMATE_MEDIAN" if (self.p == 1) else "AVG"
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {}".format(", ".join(["{}({}) AS {}".format(func, column, column) for column in self.X]), self.y, input_relation, self.y, self.y)
 		self.centroids = to_tablesample(query = query, cursor = self.cursor)
 		self.centroids.table_info = False
@@ -274,8 +276,8 @@ class KNeighborsClassifier:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y))
 		classes = self.cursor.fetchall()
 		self.classes = [item[0] for item in classes]
@@ -386,8 +388,8 @@ class KNeighborsRegressor:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		return (self)
 	#
 	def regression_report(self):
@@ -433,9 +435,9 @@ class LocalOutlierFactor:
 	#
 	#
 	def fit(self, input_relation: str, X: list, key_columns: list = [], index = ""):
-		X = ['"' + column.replace('"', '') + '"' for column in X]
+		X = [str_column(column) for column in X]
 		self.X = X
-		self.key_columns = ['"' + column.replace('"', '') + '"' for column in key_columns]
+		self.key_columns = [str_column(column) for column in key_columns]
 		self.input_relation = input_relation
 		cursor = self.cursor
 		n_neighbors = self.n_neighbors

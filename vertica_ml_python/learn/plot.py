@@ -36,6 +36,7 @@ from vertica_ml_python import tablesample
 from vertica_ml_python import to_tablesample
 import math
 import numpy as np
+from vertica_ml_python.utilities import str_column
 
 #
 def elbow(X: list,
@@ -177,7 +178,7 @@ def lof_plot(input_relation: str,
 	import matplotlib.pyplot as plt
 	tablesample = "TABLESAMPLE({})".format(tablesample) if (tablesample > 0 and tablesample < 100) else ""
 	if (len(columns) == 1):
-		column = '"' + columns[0].replace('"', '') + '"'
+		column = str_column(columns[0])
 		query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(column, lof, input_relation, tablesample, column)
 		cursor.execute(query)
 		query_result = cursor.fetchall()
@@ -192,7 +193,7 @@ def lof_plot(input_relation: str,
 		plt.scatter(column1, column2, color = "#214579", s = 14, label = 'Data points')
 		plt.scatter(column1, column2, color = "#FFCC01", s = radius, label = 'Outlier scores', facecolors = 'none')
 	elif (len(columns) == 2):
-		columns = ['"' + column.replace('"', '') + '"' for column in columns]
+		columns = [str_column(column) for column in columns]
 		query = "SELECT {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(columns[0], columns[1], lof, input_relation, tablesample, columns[0], columns[1])
 		cursor.execute(query)
 		query_result = cursor.fetchall()

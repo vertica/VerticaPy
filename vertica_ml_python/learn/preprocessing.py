@@ -34,6 +34,7 @@
 # Libraries
 from vertica_ml_python import to_tablesample
 from vertica_ml_python import drop_text_index
+from vertica_ml_python.utilities import str_column
 
 #
 def Balance(name: str, input_relation: str, cursor, y: str, method: str, ratio = 0.5):
@@ -84,7 +85,7 @@ class CountVectorizer:
 	#
 	def fit(self, input_relation: str, X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + elem.replace('"', '') + '"' for elem in X]
+		self.X = [str_column(elem) for elem in X]
 		self.cursor.execute("DROP TABLE IF EXISTS {}_countvectorizer_vpython CASCADE".format(input_relation))
 		sql = "CREATE TABLE {}_countvectorizer_vpython(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
 		self.cursor.execute(sql.format(input_relation, self.max_text_size))
@@ -144,7 +145,7 @@ class Normalizer:
 	#
 	def fit(self, input_relation: str, X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
+		self.X = [str_column(column) for column in X]
 		query = "SELECT NORMALIZE_FIT('{}', '{}', '{}', '{}')".format(self.name, input_relation, ", ".join(self.X), self.method)
 		self.cursor.execute(query)
 		self.param = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(self.name), cursor = self.cursor)
@@ -192,7 +193,7 @@ class OneHotEncoder:
 	#
 	def fit(self, input_relation: str, X: list):
 		self.input_relation = input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
+		self.X = [str_column(column) for column in X]
 		query = "SELECT ONE_HOT_ENCODER_FIT('{}', '{}', '{}' USING PARAMETERS extra_levels = '{}')".format(self.name, input_relation, ", ".join(self.X), self.extra_levels)
 		self.cursor.execute(query)
 		try:

@@ -57,6 +57,8 @@ from vertica_ml_python.learn.plot import lift_chart
 from vertica_ml_python.learn.plot import roc_curve
 from vertica_ml_python.learn.plot import prc_curve
 
+from vertica_ml_python.utilities import str_column
+
 #
 class MultinomialNB:
 	#
@@ -146,8 +148,8 @@ class MultinomialNB:
 			test_relation: str = ""):
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
-		self.X = ['"' + column.replace('"', '') + '"' for column in X]
-		self.y = '"' + y.replace('"', '') + '"'
+		self.X = [str_column(column) for column in X]
+		self.y = str_column(y)
 		query = "SELECT NAIVE_BAYES('{}', '{}', '{}', '{}' USING PARAMETERS alpha = {})".format(self.name, input_relation, self.y, ", ".join(self.X), self.alpha)
 		self.cursor.execute(query)
 		self.cursor.execute("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y))
