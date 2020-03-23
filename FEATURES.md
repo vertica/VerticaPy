@@ -35,6 +35,8 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe[].kurtosis(...) | vdataframe |  Compute the kurtosis | <i>&#11088;&#11088;</i>|
 |vDataframe.mad(...) | vdataframe | Compute the median absolute deviation | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].mad(...) | vdataframe |  Compute the median absolute deviation | <i>&#11088;&#11088;</i>|
+|vDataframe.mae(...) | vdataframe | Compute the mean absolute deviation | <i>&#11088;&#11088;&#11088;</i>|
+|vDataframe[].mae(...) | vdataframe |  Compute the mean absolute deviation | <i>&#11088;&#11088;</i>|
 |vDataframe.max(...) | vdataframe | Compute the max | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].max(...) | vdataframe |  Compute the max | <i>&#11088;&#11088;</i>|
 |vDataframe[].mode(...) | vdataframe |  Compute the mode | <i>&#11088;&#11088;</i>|
