@@ -42,6 +42,11 @@ from vertica_ml_python.utilities import isnotebook
 from vertica_ml_python.utilities import tablesample
 from vertica_ml_python.utilities import to_tablesample
 from vertica_ml_python.utilities import category_from_type
+from vertica_ml_python.utilities import str_column
+from vertica_ml_python.utilities import column_check_ambiguous
+from vertica_ml_python.utilities import check_types
+from vertica_ml_python.utilities import columns_check
+from vertica_ml_python.utilities import vdf_columns_names
 ##
 #                                           _____    
 #   _______    ______ ____________    ____  \    \   
@@ -66,50 +71,53 @@ class vDataframe:
 				  usecols: list = [],
 				  schema: str = "",
 				  empty: bool = False):
+		check_types([("input_relation", input_relation, [str], False), ("dsn", dsn, [str], False), ("usecols", usecols, [list], False), ("schema", schema, [str], False), ("empty", empty, [bool], False)])
 		if not(empty):
 			if (cursor == None):
 				from vertica_ml_python import vertica_cursor
 				cursor = vertica_cursor(dsn)
 			self.dsn = dsn
 			if not(schema):
-				schema_input_relation = input_relation.split(".")
-				if (len(schema_input_relation) == 1):
-					self.schema = "public"
-					self.input_relation = input_relation
+				quote_nb = input_relation.count('"')
+				if (quote_nb not in (0, 2, 4)):
+					raise ValueError("The format of the input relation is incorrect.")
+				if (quote_nb == 4):
+					schema_input_relation = input_relation.split('"')[1], input_relation.split('"')[3]
+				elif (quote_nb == 4):
+					schema_input_relation = input_relation.split('"')[1], input_relation.split('"')[2][1:] if (input_relation.split('"')[0] == '') else input_relation.split('"')[0][0:-1], input_relation.split('"')[1]
 				else:
-					self.input_relation = schema_input_relation[1]
-					self.schema = schema_input_relation[0]
-			else:
-				self.schema = schema
-				self.input_relation = input_relation
+					schema_input_relation = input_relation.split(".")
+				if (len(schema_input_relation) == 1):
+					schema, input_relation = "public", input_relation
+				else:
+					schema, input_relation = schema_input_relation[0], schema_input_relation[1]
+			self.schema, self.input_relation = schema.replace('"', ''), input_relation.replace('"', '')
 			# Cursor to the Vertica Database
 			self.cursor = cursor
 			# All the columns of the vDataframe
 			if (usecols == []):
-				query = "(SELECT column_name FROM columns WHERE table_name='{}' AND table_schema='{}')".format(self.input_relation, self.schema)
-				query += " UNION (SELECT column_name FROM view_columns WHERE table_name='{}' AND table_schema='{}')".format(self.input_relation, self.schema)
+				query = "(SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}')".format(self.input_relation, self.schema)
+				query += " UNION (SELECT column_name FROM view_columns WHERE table_name = '{}' AND table_schema = '{}')".format(self.input_relation, self.schema)
 				cursor.execute(query)
 				columns = cursor.fetchall()
 				columns = [str(item) for sublist in columns for item in sublist]
-				columns = ['"' + item + '"' for item in columns]
+				columns = ['"{}"'.format(item) for item in columns]
 				if (columns != []):
 					self.columns = columns
 				else:
-					print("/!\\ Warning: No table or views '{}' found.\nNothing was created.".format(self.input_relation))
-					del self
-					return None
+					raise ValueError("No table or views '{}' found.".format(self.input_relation))
 			else:
-				self.columns = usecols
+				self.columns = [str_column(column) for column in usecols]
 			for column in self.columns:
 				new_vColumn = vColumn(column, parent = self)
 				setattr(self, column, new_vColumn)
 				setattr(self, column[1:-1], new_vColumn)
 			# Columns to not consider for the final query
 			self.exclude_columns = []
-			# Rules for the cleaned data
+			# Rules to filter
 			self.where = []
 			# Rules to sort the data
-			self.order_by = []
+			self.order_by = ['' for i in range(100)]
 			# Display the elapsed time during the query
 			self.time_on = False
 			# Display or not the sequal queries that are used during the vDataframe manipulation
@@ -163,16 +171,6 @@ class vDataframe:
 		for i in range(len(all_where)):
 			if (all_where[i] != ''):
 				all_where[i] = " WHERE " + all_where[i]
-		# ORDER BY
-		order_by_positions = [item[1] for item in self.order_by]
-		max_order_by_pos = max(order_by_positions+[0])
-		all_order_by = [[] for item in range(max_order_by_pos+1)]
-		for i in range(0, len(self.order_by)):
-			all_order_by[order_by_positions[i]] += [self.order_by[i][0]]
-		all_order_by = [", ".join(item) for item in all_order_by]
-		for i in range(len(all_order_by)):
-			if (all_order_by[i] != ''):
-				all_order_by[i] = " ORDER BY " + all_order_by[i]
 		# FIRST FLOOR
 		columns = force_columns + [column for column in transformations]
 		first_values = [item[0] for item in all_imputations_grammar]
@@ -190,7 +188,7 @@ class vDataframe:
 		    except:
 		    	pass
 		    try:
-		    	table += all_order_by[i - 1]
+		    	table += self.order_by[i - 1]
 		    except:
 		    	pass
 		try:
@@ -198,21 +196,21 @@ class vDataframe:
 		except:
 			where_final = ""
 		try:
-			order_final = all_order_by[max_len - 1]
+			order_final = self.order_by[max_len - 1]
 		except:
 			order_final = ""
 		split = ", RANDOM() AS __split_vpython__" if (split) else ""
 		if (where_final == "") and (order_final == ""):
 			if (split):
-				table = "(SELECT *{} FROM (".format(split) + table + ") " + final_table_name + ") split_final_table"
+				table = "(SELECT *{} FROM ({}) {}) split_final_table".format(split, table, final_table_name)
 			else:
-				table = "(" + table + ") " + final_table_name
+				table = "({}) {}".format(table, final_table_name)
 		else:
-			table = "(" + table + ") t" + str(max_len)
+			table = "({}) t{}".format(table, max_len)
 			table += where_final + order_final
-			table = "(SELECT *{} FROM " + table + ") ".format(split) + final_table_name
+			table = "(SELECT *{} FROM {}) {}".format(split, table, final_table_name)
 		if (self.exclude_columns):
-			table = "(SELECT " + ", ".join(self.get_columns()) + split + " FROM " + table + ") " + final_table_name
+			table = "(SELECT {}{} FROM {}) {}".format(", ".join(self.get_columns()), split, table, final_table_name)
 		return table
 	#
 	#
@@ -220,20 +218,24 @@ class vDataframe:
 	# METHODS
 	# 
 	def abs(self, columns: list = []):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = self.numcol() if not(columns) else vdf_columns_names(columns, self)
 		func = {}
-		if not(columns):
-			columns = self.numcol()
 		for column in columns:
-			func[column] = "abs({})"
+			if (self[column].ctype() != "boolean"):
+				func[column] = "ABS({})"
 		return (self.apply(func))
 	#
 	def agg(self, func: list, columns: list = []):
 		return (self.aggregate(func = func, columns = columns))
 	def aggregate(self, func: list, columns: list = []):
-		columns = self.numcol() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
-		query = []
-		for column in columns:
-			cast = "::int" if (self[column].ctype()[0:4] == "bool") else ""
+		check_types([("func", func, [list], False), ("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = self.numcol() if not(columns) else vdf_columns_names(columns, self)
+		agg = [[] for i in range(len(columns))]
+		for idx, column in enumerate(columns):
+			cast = "::int" if (self[column].ctype() == "boolean") else ""
 			for fun in func:
 				if (fun.lower() == "median"):
 					expr = "APPROXIMATE_MEDIAN({}{})".format(column, cast)
@@ -247,28 +249,40 @@ class vDataframe:
 					expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(column, cast, float(fun[0:-1]) / 100)
 				elif (fun.lower() == "sem"):
 					expr = "STDDEV({}{}) / SQRT(COUNT({}))".format(column, cast, column)
-				elif (fun.lower() == "mad"):
+				elif (fun.lower() == "mae"):
 					mean = self[column].mean()
 					expr = "SUM(ABS({}{} - {})) / COUNT({})".format(column, cast, mean, column)
+				elif (fun.lower() == "mad"):
+					median = self[column].median()
+					expr = "APPROXIMATE_MEDIAN(ABS({}{} - {}))".format(column, cast, median)
 				elif (fun.lower() in ("prod", "product")):
 					expr = "DECODE(ABS(MOD(SUM(CASE WHEN {}{} < 0 THEN 1 ELSE 0 END), 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({}{}))))".format(column, cast, column, cast)
 				elif (fun.lower() in ("percent", "count_percent")):
 					expr = "ROUND(COUNT({}) / {} * 100, 3)".format(column, self.shape()[0])
 				else:
 					expr = "{}({}{})".format(fun.upper(), column, cast)
-				query += [expr]
-		query = "SELECT {} FROM {}".format(', '.join(query), self.genSQL())
-		self.executeSQL(query, title = "COMPUTE AGGREGATION(S)")
-		result = [item for item in self.cursor.fetchone()]
-		try:
-			result = [float(item) for item in result]
-		except:
-			pass
+				agg[idx] += [expr]
 		values = {"index": func}
-		i = 0
-		for column in columns:
-			values[column] = result[i:i + len(func)]
-			i += len(func)
+		try:
+			self.executeSQL("SELECT {} FROM {}".format(', '.join([item for sublist in agg for item in sublist]), self.genSQL()), title = "COMPUTE AGGREGATION(S)")
+			result = [item for item in self.cursor.fetchone()]
+			try:
+				result = [float(item) for item in result]
+			except:
+				pass
+			values = {"index": func}
+			i = 0
+			for column in columns:
+				values[column] = result[i:i + len(func)]
+				i += len(func)
+		except:
+			query = ["SELECT {} FROM vdf_table".format(', '.join(elem)) for elem in agg]
+			query = " UNION ALL ".join(["({})".format(elem) for elem in query]) if (len(query) != 1) else query[0]
+			query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.genSQL(), query)
+			self.executeSQL(query, title = "COMPUTE AGGREGATION(S) WITH UNION ALL")
+			result = self.cursor.fetchall()
+			for idx, elem in enumerate(result):
+				values[columns[idx]] = [item for item in elem]
 		return (tablesample(values = values, table_info = False).transpose())
 	# 
 	def aggregate_matrix(self, 
@@ -277,18 +291,15 @@ class vDataframe:
 			 	   		 cmap: str = "",
 			 	   		 round_nb: int = 3,
 			 	   		 show: bool = True):
-		columns = ['"' + column.replace('"', '') + '"' for column in columns]
-		for column_name in columns:
-			if not(column_name in self.get_columns()):
-				raise NameError("The parameter 'columns' must be a list of different columns name")
+		columns = vdf_columns_names(columns, self)
 		if (len(columns) == 1):
 			if (method in ("pearson", "beta", "spearman", "kendall", "biserial", "cramer")):
 				return 1.0
 			elif (method == "cov"):
 				return self[columns[0]].var()
 		elif (len(columns) == 2):
-			cast_0 = "::int" if (self[columns[0]].ctype()[0:4] == "bool") else ""
-			cast_1 = "::int" if (self[columns[1]].ctype()[0:4] == "bool") else ""
+			cast_0 = "::int" if (self[columns[0]].ctype() == "boolean") else ""
+			cast_1 = "::int" if (self[columns[1]].ctype() == "boolean") else ""
 			if (method in ("pearson", "spearman")):
 				if (columns[1] == columns[0]):
 					return 1
@@ -369,8 +380,8 @@ class vDataframe:
 				n = len(columns)
 				for i in range(i0, n):
 					for j in range(0, i + step):
-						cast_i = "::int" if (self[columns[i]].ctype()[0:4] == "bool") else ""
-						cast_j = "::int" if (self[columns[j]].ctype()[0:4] == "bool") else ""
+						cast_i = "::int" if (self[columns[i]].ctype() == "boolean") else ""
+						cast_j = "::int" if (self[columns[j]].ctype() == "boolean") else ""
 						if (method in ("pearson", "spearman")):
 							all_list += ["ROUND(CORR({}{}, {}{}), {})".format(columns[i], cast_i, columns[j], cast_j, round_nb)]
 						elif (method == "kendall"):
@@ -414,9 +425,8 @@ class vDataframe:
 				from vertica_ml_python.plot import cmatrix
 				vmin = 0 if (method == "cramer") else -1
 				if not(cmap):
-					from matplotlib.colors import LinearSegmentedColormap
-					cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#214579"], N = 1000)
-					cm2 = LinearSegmentedColormap.from_list("vml", ["#FFCC01", "#FFFFFF", "#214579"], N = 1000)
+					from vertica_ml_python.plot import gen_cmap
+					cm1, cm2 = gen_cmap()
 					cmap = cm1 if (method == "cramer") else cm2
 				cmatrix(matrix, columns, columns, n, n, vmax = 1, vmin = vmin, cmap = cmap, title = title, mround = round_nb)
 			values = {"index" : matrix[0][1:len(matrix[0])]}
@@ -452,14 +462,14 @@ class vDataframe:
 				if (len(cols) == 0):
 			 		raise Exception("No numerical column found")
 		else:
-			cols = [column for column in columns]
+			cols = vdf_columns_names(columns, self)
 		if (method in ('spearman', 'pearson', 'kendall') and (len(cols) > 1)):
-			cast_i = "::int" if (self[focus].ctype()[0:4] == "bool") else ""
+			cast_i = "::int" if (self[focus].ctype() == "boolean") else ""
 			all_list, all_cols  = [], [focus]
 			for column in cols:
 				if (column.replace('"', '').lower() != focus.replace('"', '').lower()):
 					all_cols += [column]
-				cast_j = "::int" if (self[column].ctype()[0:4] == "bool") else ""
+				cast_j = "::int" if (self[column].ctype() == "boolean") else ""
 				if (method in ("pearson", "spearman")):
 					all_list += ["ROUND(CORR({}{}, {}{}), {})".format(focus, cast_i, column, cast_j, round_nb)]
 				elif (method == "kendall"):
@@ -486,13 +496,16 @@ class vDataframe:
 					vector += [1]
 				else:
 					vector += [self.aggregate_matrix(method = method, columns = [column, focus])]
+		vector = [0 if (elem == None) else elem for elem in vector]
+		data = [(cols[i], vector[i]) for i in range(len(vector))]
+		data.sort(key = lambda tup: abs(tup[1]), reverse = True)
+		cols, vector = [elem[0] for elem in data], [elem[1] for elem in data]
 		if ((show) and (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))):
 			from vertica_ml_python.plot import cmatrix
 			vmin = 0 if (method == "cramer") else -1
 			if not(cmap):
-				from matplotlib.colors import LinearSegmentedColormap
-				cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#214579"], N = 1000)
-				cm2 = LinearSegmentedColormap.from_list("vml", ["#FFCC01", "#FFFFFF", "#214579"], N = 1000)
+				from vertica_ml_python.plot import gen_cmap
+				cm1, cm2 = gen_cmap()
 				cmap = cm1 if (method == "cramer") else cm2
 			title = "Correlation Vector of {} ({})".format(focus, method)
 			cmatrix([cols, [focus] + vector], cols, [focus], len(cols), 1, vmax = 1, vmin = vmin, cmap = cmap, title = title, mround = round_nb)
@@ -501,9 +514,11 @@ class vDataframe:
 	def append(self, 
 			   vdf = None, 
 			   input_relation: str = ""):
+		check_types([("vdf", vdf, [type(None), type(self)], False), ("input_relation", input_relation, [str], False)])
 		first_relation = self.genSQL()
 		second_relation = input_relation if not(vdf) else vdf.genSQL()
-		table = "(SELECT * FROM {}) UNION ALL (SELECT * FROM {})".format(first_relation, second_relation)
+		columns = ", ".join(self.get_columns())
+		table = "(SELECT {} FROM {}) UNION ALL (SELECT {} FROM {})".format(columns, first_relation, columns, second_relation)
 		query = "SELECT * FROM ({}) append_table LIMIT 1".format(table)
 		self.executeSQL(query = query, title = "Merging the two relation")
 		self.main_relation = "({}) append_table".format(table)
@@ -516,15 +531,18 @@ class vDataframe:
 		return (self.aggregate(func = ["bool_or"], columns = columns))
 	# 
 	def apply(self, func: dict):
+		check_types([("func", func, [dict], False)])
+		columns_check([elem for elem in func], self)
 		for column in func:
-			self[column].apply(func[column])
+			self[vdf_columns_names([column], self)[0]].apply(func[column])
 		return (self)
 	# 
 	def applymap(self, func: str, numeric_only: bool = True):
+		check_types([("func", func, [str], False), ("numeric_only", numeric_only, [bool], False)])
 		function = {}
 		columns = self.numcol() if numeric_only else self.get_columns()
 		for column in columns:
-			function[column] = func
+			function[column] = func if (self[column].ctype() != "boolean") else func.replace("{}", "{}::int")
 		return (self.apply(function))
 	#
 	def asfreq(self,
@@ -532,6 +550,10 @@ class vDataframe:
 			   rule: str,
 			   method: dict,
 			   by: list = []):
+		check_types([("ts", ts, [str], False), ("rule", rule, [str], False), ("method", method, [dict], False), ("by", by, [list], False)])
+		columns_check(by + [elem for elem in method], self)
+		ts = vdf_columns_names([ts], self)[0]
+		by = vdf_columns_names(by, self)
 		all_elements = []
 		for column in method:
 			if (method[column] not in ('bfill', 'backfill', 'pad', 'ffill', 'linear')):
@@ -545,28 +567,32 @@ class vDataframe:
 			else:
 				func = "TS_FIRST_VALUE"
 				interp = 'linear'
-			all_elements += ["{}({}, '{}') AS {}".format(func, '"' + column.replace('"', '') + '"', interp, '"' + column.replace('"', '') + '"')]
+			all_elements += ["{}({}, '{}') AS {}".format(func, vdf_columns_names([column], self)[0], interp, vdf_columns_names([column], self)[0])]
 		table = "SELECT {} FROM {}".format("{}", self.genSQL())
-		tmp_query = ["slice_time AS {}".format('"' + ts.replace('"', '') + '"')]
-		tmp_query += ['"' + column.replace('"', '') + '"' for column in by]
+		tmp_query = ["slice_time AS {}".format(str_column(ts))]
+		tmp_query += [str_column(column) for column in by]
 		tmp_query += all_elements
 		table = table.format(", ".join(tmp_query))
-		table += " TIMESERIES slice_time AS '{}' OVER (PARTITION BY {} ORDER BY {})".format(rule, ", ".join(['"' + column.replace('"', '') + '"' for column in by]), '"' + ts.replace('"', '') + '"')
+		table += " TIMESERIES slice_time AS '{}' OVER (PARTITION BY {} ORDER BY {})".format(rule, ", ".join([str_column(column) for column in by]), str_column(ts))
 		return (self.vdf_from_relation("(" + table + ') resample_table', "resample", "[Resample]: The data was resampled"))
 	#
 	def astype(self, dtype: dict):
+		check_types([("dtype", dtype, [dict], False)])
+		columns_check([elem for elem in dtype], self)
 		for column in dtype:
-			self[column].astype(dtype = dtype[column])
+			self[vdf_columns_names([column], self)[0]].astype(dtype = dtype[column])
 		return (self)
 	#
 	def at_time(self,
 				ts: str, 
 				time: str):
-		expr = "{}::time = '{}'".format('"' + ts.replace('"', '') + '"', time)
+		check_types([("ts", ts, [str], False), ("time", time, [str], False)])
+		columns_check([ts], self)
+		expr = "{}::time = '{}'".format(str_column(ts), time)
 		self.filter(expr)
 		return (self)
 	#
-	def avg(self, columns = []):
+	def avg(self, columns: list = []):
 		return (self.mean(columns = columns))
 	# 
 	def bar(self,
@@ -577,6 +603,12 @@ class vDataframe:
 			h: tuple = (None, None),
 			limit_distinct_elements: int = 200,
 			hist_type: str = "auto"):
+		check_types([("columns", columns, [list], False), ("method", method, ["density", "count", "avg", "min", "max", "sum"], True), ("of", of, [str], False), ("max_cardinality", max_cardinality, [tuple], False), ("h", h, [tuple], False), ("limit_distinct_elements", limit_distinct_elements, [int, float], False), ("hist_type", hist_type, ["auto", "fully_stacked", "stacked", "fully", "fully stacked"], True)])
+		columns_check(columns, self, [1, 2])
+		columns = vdf_columns_names(columns, self)
+		if (of):
+			columns_check([of], self)
+			of = vdf_columns_names([of], self)[0]
 		if (len(columns) == 1):
 			self[columns[0]].bar(method, of, 6, 0, 0)
 		else:
@@ -590,32 +622,43 @@ class vDataframe:
 		return (self)
 	# 
 	def beta(self, columns: list = [], focus: str = ""):
+		check_types([("columns", columns, [list], False), ("focus", focus, [str], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		if (focus == ""):
 			return (self.aggregate_matrix(method = "beta", columns = columns))
 		else:
+			columns_check([focus], self)
+			focus = vdf_columns_names([focus], self)[0]
 			return (self.aggregate_vector(focus, method = "beta", columns = columns))
 	#
 	def between_time(self,
 					 ts: str, 
 					 start_time: str, 
 					 end_time: str):
-		expr = "{}::time BETWEEN '{}' AND '{}'".format('"' + ts.replace('"', '') + '"', start_time, end_time)
+		check_types([("ts", ts, [str], False), ("start_time", start_time, [str], False), ("end_time", end_time, [str], False)])
+		columns_check([ts], self)
+		expr = "{}::time BETWEEN '{}' AND '{}'".format(str_column(ts), start_time, end_time)
 		self.filter(expr)
 		return (self)
 	#
 	def bool_to_int(self):
 		columns = self.get_columns()
 		for column in columns:
-			if (self[column].ctype()[0:4] == "bool"):
+			if (self[column].ctype() == "boolean"):
 				self[column].astype("int")
 		return (self)
 	#
 	def boxplot(self, columns: list = []):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
 		from vertica_ml_python.plot import boxplot2D
 		boxplot2D(self, columns)
 		return (self)
 	#
 	def catcol(self, max_cardinality: int = 12):
+		check_types([("max_cardinality", max_cardinality, [int, float], False)])
 		columns = []
 		for column in self.get_columns():
 			if (self[column].nunique() <= max_cardinality):
@@ -650,25 +693,51 @@ class vDataframe:
 			 round_nb: int = 3, 
 			 focus: str = "",
 			 show: bool = True):
-		if not(method in ("pearson", "kendall", "spearman", "biserial", "cramer")):
-			raise ValueError("The parameter 'method' must be in pearson|kendall|spearman|biserial|cramer")
+		check_types([("columns", columns, [list], False), ("method", method, ["pearson", "kendall", "spearman", "biserial", "cramer"], True), ("cmap", cmap, [str], False), ("round_nb", round_nb, [int, float], False), ("focus", focus, [str], False), ("show", show, [bool], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		if (focus == ""):
 			return (self.aggregate_matrix(method = method, columns = columns, cmap = cmap, round_nb = round_nb, show = show))
 		else:
+			columns_check([focus], self)
+			focus = vdf_columns_names([focus], self)[0]
 			return (self.aggregate_vector(focus, method = method, columns = columns, cmap = cmap, round_nb = round_nb, show = show))
 	# 
 	def cov(self, columns: list = [], focus: str = ""):
+		check_types([("columns", columns, [list], False), ("focus", focus, [str], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		if (focus == ""):
 			return (self.aggregate_matrix(method = "cov", columns = columns))
 		else:
+			columns_check([focus], self)
+			focus = vdf_columns_names([focus], self)[0]
 			return (self.aggregate_vector(focus, method = "cov", columns = columns))
 	# 
 	def count(self, 
-			  columns = [], 
-			  percent: bool = True):
+			  columns: list = [], 
+			  percent: bool = True,
+			  sort_result: bool = True,
+			  desc: bool = True):
+		check_types([("columns", columns, [list], False), ("percent", percent, [bool], False), ("desc", desc, [bool], False), ("sort_result", sort_result, [bool], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		columns = self.get_columns() if not(columns) else columns
 		func = ["count", "percent"] if (percent) else ["count"]
-		return (self.aggregate(func = func, columns = columns))
+		result = self.aggregate(func = func, columns = columns)
+		if (sort_result):
+			sort = []
+			for i in range(len(result.values["index"])):
+				if percent:
+					sort += [(result.values["index"][i], result.values["count"][i], result.values["percent"][i])] 
+				else:
+					sort += [(result.values["index"][i], result.values["count"][i])] 
+			sort.sort(key = lambda tup: tup[1], reverse = desc)
+			result.values["index"] = [elem[0] for elem in sort]
+			result.values["count"] = [elem[1] for elem in sort]
+			if percent:
+				result.values["percent"] = [elem[2] for elem in sort]
+		return (result)
 	#
 	def cummax(self, 
 			   name: str, 
@@ -707,7 +776,8 @@ class vDataframe:
 	#
 	def datecol(self):
 		columns = []
-		for column in self.get_columns():
+		cols = self.get_columns()
+		for column in cols:
 			if self[column].isdate():
 				columns += [column]
 		return (columns)
@@ -716,15 +786,18 @@ class vDataframe:
 				 method: str = "auto", 
 				 columns: list = [], 
 				 unique: bool = True):
+		check_types([("method", method, ["auto", "numerical", "categorical"], True), ("columns", columns, [list], False), ("unique", unique, [bool], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		for i in range(len(columns)):
-			columns[i] = '"' + columns[i].replace('"', '') + '"'
+			columns[i] = str_column(columns[i])
 		if (method == "auto"):
 			if not(columns):
 				method = "categorical" if not(self.numcol()) else "numerical"
 			else:
 				method = "numerical"
 				for column in columns:
-					if (column.category() not in ['float','int']):
+					if not(self[column].isnum()):
 						method = "categorical"
 						break
 		if (method == "numerical"):
@@ -733,16 +806,27 @@ class vDataframe:
 			query = []
 			for column in columns:
 				if self[column].isnum():
-					if (self[column].transformations[-1][1] == "boolean"):
+					if (self[column].ctype() == "boolean"):
 						query += [column + "::int"]
 					else:
 						query += [column]
 				else:
-					print("/!\\ Warning: The column '{}' is not numerical, it was ignored. To get information about all the different variables, please use the parameter method = 'categorical'.".format(column))
+					print("/!\\ Warning: The Virtual Column '{}' is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(column))
 			if not(query):
-				raise ValueError("There is no numerical columns in the vDataframe")
-			query = "SELECT SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(", ".join(query), self.genSQL())
-			self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns")
+				raise ValueError("There is no numerical Virtual Column in the vDataframe.")
+			try:
+				query = "SELECT SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(", ".join(query), self.genSQL())
+				self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns using SUMMARIZE_NUMCOL")
+			except:
+				query = []
+				for column in columns:
+					if self[column].isnum():
+						cast = "::int" if (self[column].ctype() == "boolean") else ""
+						query += ["SELECT '{}' AS column, COUNT({}) AS count, AVG({}{}) AS mean, STDDEV({}{}) AS std, MIN({}{}) AS min, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.25) AS '25%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.5) AS '50%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.75) AS '75%', MAX({}{}) AS max FROM vdf_table".format(
+									column.replace('"', ''), column, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast)]
+				query = query[0] if (len(query) == 1) else " UNION ALL ".join(["({})".format(elem) for elem in query])
+				query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.genSQL(), query)
+				self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns using standard SQL")
 			query_result = self.cursor.fetchall()
 			data = [item for item in query_result]
 			matrix = [['column'], ['count'], ['mean'], ['std'], ['min'], ['25%'], ['50%'], ['75%'], ['max']]
@@ -753,15 +837,15 @@ class vDataframe:
 				query = []
 				try:
 					for column in matrix[0][1:]:
-						query += ["COUNT(DISTINCT {})".format('"' + column + '"')]
-					query= "SELECT "+",".join(query) + " FROM " + self.genSQL()
+						query += ["COUNT(DISTINCT {})".format('"{}"'.format(column))]
+					query = "SELECT " + ",".join(query) + " FROM " + self.genSQL()
 					self.executeSQL(query, title = "Compute the cardinalities of all the elements in a single query")
 					cardinality=self.cursor.fetchone()
 					cardinality=[item for item in cardinality]
 				except:
 					cardinality = []
 					for column in matrix[0][1:]:
-						query = "SELECT COUNT(DISTINCT {}) FROM {}".format('"' + column + '"',self.genSQL())
+						query = "SELECT COUNT(DISTINCT {}) FROM {}".format('"{}"'.format(column), self.genSQL())
 						self.executeSQL(query, title = "New attempt: Compute one per one all the cardinalities")
 						cardinality += [self.cursor.fetchone()[0]]
 				matrix += [['unique'] + cardinality]
@@ -792,19 +876,21 @@ class vDataframe:
 		return (tablesample(values, table_info = False))
 	#
 	def drop(self, columns: list = []):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		for column in columns:
-			if ('"' + column.replace('"', '') + '"' in self.get_columns()):
-				self[column].drop()
-			else:
-				print("/!\\ Warning: Column '{}' is not in the vDataframe.".format(column))
+			self[column].drop()
 		return (self)
 	#
 	def drop_duplicates(self, columns: list = []):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
 		count = self.duplicated(columns = columns, count = True)
 		if (count):
+			columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
 			name = "_vpython_duplicated_index" + str(np.random.randint(10000000)) + "_"
-			columns = self.get_columns() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
-			self.eval(name = name, expr = "ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)), print_info = False)
+			self.eval(name = name, expr = "ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)))
 			self.filter(expr = '"{}" = 1'.format(name))
 			self.exclude_columns += ['"{}"'.format(name)]
 		else:
@@ -812,8 +898,9 @@ class vDataframe:
 		return (self)
 	# 
 	def dropna(self, columns: list = [], print_info: bool = True):
-		if (columns == []):
-			columns = self.get_columns()
+		check_types([("columns", columns, [list], False), ("print_info", print_info, [bool], False)])
+		columns_check(columns, self)
+		columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
 		total = self.shape()[0]
 		for column in columns:
 			self[column].dropna(print_info = False)
@@ -839,61 +926,67 @@ class vDataframe:
 			values["dtype"] += [self[column].ctype()]
 		return (tablesample(values, table_info = False))
 	#
-	def duplicated(self, columns: list = [], count: bool = False):
-		columns = self.get_columns() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+	def duplicated(self, columns: list = [], count: bool = False, limit: int = 30):
+		check_types([("columns", columns, [list], False), ("count", count, [bool], False)])
+		columns_check(columns, self)
+		columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
 		query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1"
 		query = query.format(", ".join(columns), self.genSQL())
+		self.executeSQL(query = "SELECT COUNT(*) FROM {}".format(query), title = "Computing the Number of duplicates")
+		total = self.cursor.fetchone()[0]
 		if (count):
-			query = "SELECT COUNT(*) FROM " + query
-			self.executeSQL(query = query, title = "Computing the Number of duplicates")
-			return self.cursor.fetchone()[0]
-		else:
-			query = "SELECT {}, MAX(duplicated_index) AS occurrence FROM ".format(", ".join(columns)) + query + " GROUP BY {}".format(", ".join(columns))
-			return (to_tablesample(query, self.cursor, name = "Duplicated Rows"))
+			return total
+		result = to_tablesample("SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(", ".join(columns), query, ", ".join(columns), limit), self.cursor, name = "Duplicated Rows (total = {})".format(total))
+		self.executeSQL(query = "SELECT COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(", ".join(columns), query, ", ".join(columns)), title = "Computing the Number of different duplicates")
+		result.count = self.cursor.fetchone()[0]
+		return (result)
 	#
 	def empty(self):
-		return (self.get_columns() == [])
+		return not(self.get_columns())
 	# 
-	def eval(self, name: str, expr: str, print_info: bool = True):
+	def eval(self, name: str, expr: str):
+		check_types([("name", name, [str], False), ("expr", expr, [str], False)])
+		name = str_column(name)
+		if column_check_ambiguous(name, self.get_columns()):
+			raise ValueError("A Virtual Column has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(name))
+		tmp_name = "_vpython" + str(np.random.randint(10000000)) + "_"
+		self.executeSQL(query = "DROP TABLE IF EXISTS " + tmp_name, title = "Drop the existing generated table")
 		try:
-			name = '"' + name.replace('"', '') + '"'
-			tmp_name = "_vpython" + str(np.random.randint(10000000)) + "_"
-			self.executeSQL(query = "DROP TABLE IF EXISTS " + tmp_name, title = "Drop the existing generated table")
 			query = "CREATE TEMPORARY TABLE {} AS SELECT {} AS {} FROM {} LIMIT 20".format(tmp_name, expr, name, self.genSQL())
 			self.executeSQL(query = query, title = "Create a temporary table to test if the new feature is correct")
-			query = "SELECT data_type FROM columns WHERE column_name='{}' AND table_name='{}'".format(name.replace('"', ''), tmp_name)
-			self.executeSQL(query = query, title = "Catch the new feature's type")
-			ctype = self.cursor.fetchone()[0]
-			self.executeSQL(query = "DROP TABLE IF EXISTS " + tmp_name, title = "Drop the temporary table")
-			ctype = ctype if (ctype) else "undefined"
-			category = category_from_type(ctype = ctype)
-			vDataframe_maxfloor_length = len(max([self[column].transformations for column in self.get_columns()], key = len))
-			vDataframe_minfloor_length = 0
-			for column in self.get_columns():
-				if ((column in expr) or (column.replace('"','') in expr)):
-					vDataframe_minfloor_length = max(len(self[column].transformations), vDataframe_minfloor_length)
-			for eval_floor_length in range(vDataframe_minfloor_length, vDataframe_maxfloor_length):
-				try:
-					self.cursor.execute("SELECT * FROM {} LIMIT 0".format(
-						self.genSQL(transformations = {name : [1 for i in range(eval_floor_length)] + [expr]})))
-					floor_length = eval_floor_length
-					break
-				except:
-					floor_length = vDataframe_maxfloor_length
-			floor_length = vDataframe_maxfloor_length if (vDataframe_minfloor_length >= vDataframe_maxfloor_length) else floor_length
-			transformations = [('0', "undefined", "undefined") for i in range(floor_length)] + [(expr, ctype, category)]
-			new_vColumn = vColumn(name, parent = self, transformations = transformations)
-			setattr(self, name, new_vColumn)
-			setattr(self, name.replace('"', ''), new_vColumn)
-			self.columns += [name]
-			if (print_info):
-				print("The new vColumn {} was added to the vDataframe.".format(name))
-			self.history += ["{" + time.strftime("%c") + "} " + "[Eval]: A new vColumn '{}' was added to the vDataframe.".format(name)]
-			return (self)
 		except:
-			raise Exception("An error occurs during the creation of the new feature")
+			self.executeSQL(query = "DROP TABLE IF EXISTS " + tmp_name, title = "Drop the temporary table")
+			raise ValueError("The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'sql_on_off' method, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(expr))
+		query = "SELECT data_type FROM columns WHERE column_name = '{}' AND table_name = '{}'".format(name.replace('"', ''), tmp_name)
+		self.executeSQL(query = query, title = "Catch the new feature's type")
+		ctype = self.cursor.fetchone()[0]
+		self.executeSQL(query = "DROP TABLE IF EXISTS " + tmp_name, title = "Drop the temporary table")
+		ctype = ctype if (ctype) else "undefined"
+		category = category_from_type(ctype = ctype)
+		vDataframe_maxfloor_length = len(max([self[column].transformations for column in self.get_columns()], key = len))
+		vDataframe_minfloor_length = 0
+		for column in self.get_columns():
+			if ((column in expr) or (column.replace('"', '') in expr)):
+				vDataframe_minfloor_length = max(len(self[column].transformations), vDataframe_minfloor_length)
+		for eval_floor_length in range(vDataframe_minfloor_length, vDataframe_maxfloor_length):
+			try:
+				self.cursor.execute("SELECT * FROM {} LIMIT 0".format(
+					self.genSQL(transformations = {name : [1 for i in range(eval_floor_length)] + [expr]})))
+				floor_length = eval_floor_length
+				break
+			except:
+				floor_length = vDataframe_maxfloor_length
+		floor_length = vDataframe_maxfloor_length if (vDataframe_minfloor_length >= vDataframe_maxfloor_length) else floor_length
+		transformations = [('0', "undefined", "undefined") for i in range(floor_length)] + [(expr, ctype, category)]
+		new_vColumn = vColumn(name, parent = self, transformations = transformations)
+		setattr(self, name, new_vColumn)
+		setattr(self, name.replace('"', ''), new_vColumn)
+		self.columns += [name]
+		self.history += ["{" + time.strftime("%c") + "} " + "[Eval]: A new vColumn '{}' was added to the vDataframe.".format(name)]
+		return (self)
 	# 
 	def executeSQL(self, query: str, title: str = ""):
+		check_types([("query", query, [str], False), ("title", title, [str], False)])
 		if (self.query_on):
 			try:
 				import shutil
@@ -933,7 +1026,8 @@ class vDataframe:
 				print("-" * int(screen_columns) + "\n")
 		return (self.cursor)
 	#
-	def expected_store_usage(self, unit = 'b'):
+	def expected_store_usage(self, unit: str = 'b'):
+		check_types([("unit", unit, [str], False)])
 		if (unit.lower() == 'kb'):
 			div_unit = 1024
 		elif (unit.lower() == 'mb'):
@@ -952,23 +1046,25 @@ class vDataframe:
 		values["index"] = ["expected_size ({})".format(unit), "max_size ({})".format(unit), "type"]
 		for column in columns:
 			ctype = self[column].ctype()
-			if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype[0:8] == "interval"):
+			if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype[0:8] == "interval") or (ctype == "smalldatetime"):
 				maxsize, expsize = 8, 8
-			elif (ctype[0:3] == "int"):
-				maxsize, expsize = 64, self[column].store_usage()
+			elif ("int" in ctype):
+				maxsize, expsize = 8, self[column].store_usage()
 			elif (ctype[0:4] == "bool"):
 				maxsize, expsize = 1, 1
-			elif (ctype[0:5] == "float"):
+			elif (ctype[0:5] == "float") or (ctype[0:6] == "double") or (ctype[0:4] == "real"):
 				maxsize, expsize = 8, 8
-			elif (ctype[0:7] == "numeric"):
+			elif (ctype[0:7] in ("numeric", "decimal")) or (ctype[0:6] == "number") or (ctype[0:5] == "money"):
 				size = sum([int(item) for item in ctype.split("(")[1].split(")")[0].split(",")])
 				maxsize, expsize = size, size
 			elif (ctype[0:7] == "varchar"):
 				size = int(ctype.split("(")[1].split(")")[0])
 				maxsize, expsize = size, self[column].store_usage()
-			elif (ctype[0:4] == "char"):
+			elif (ctype[0:4] == "char") or (ctype[0:3] == "geo") or ("binary" in ctype):
 				size = int(ctype.split("(")[1].split(")")[0])
 				maxsize, expsize = size, size
+			elif (ctype[0:4] == "uuid"):
+				maxsize, expsize = 16, 16
 			else:
 				maxsize, expsize = 80, self[column].store_usage()
 			maxsize /= div_unit
@@ -990,8 +1086,11 @@ class vDataframe:
 			   method: dict = {},
 			   numeric_only: bool = False,
 			   print_info: bool = False):
+		check_types([("val", val, [dict], False), ("method", method, [dict], False), ("numeric_only", numeric_only, [bool], False), ("print_info", print_info, [bool], False)])
+		columns_check([elem for elem in val] + [elem for elem in method], self)
 		if (not(val) and not(method)):
-			for column in self.get_columns():
+			cols = self.get_columns()
+			for column in cols:
 				if (numeric_only):
 					if self[column].isnum():
 						self[column].fillna(method = "auto", print_info = print_info)
@@ -999,15 +1098,16 @@ class vDataframe:
 					self[column].fillna(method = "auto", print_info = print_info)
 		else:
 			for column in val:
-				self[column].fillna(val = val[column], print_info = print_info)
+				self[vdf_columns_names([column], self)[0]].fillna(val = val[column], print_info = print_info)
 			for column in method:
-				self[column].fillna(method = method[column], print_info = print_info)
+				self[vdf_columns_names([column], self)[0]].fillna(method = method[column], print_info = print_info)
 		return (self)
 	# 
 	def filter(self, 
 			   expr: str = "", 
 			   conditions: list = [],
 			   print_info: bool = True):
+		check_types([("expr", expr, [str], False), ("conditions", conditions, [list], False), ("print_info", print_info, [bool], False)])
 		count = self.shape()[0]
 		if not(expr):
 			for condition in conditions:
@@ -1050,7 +1150,8 @@ class vDataframe:
 		return (self)
 	#
 	def first(self, ts: str, offset: str):
-		ts = '"' + ts.replace('"', '') + '"'
+		check_types([("ts", ts, [str], False), ("offset", offset, [str], False)])
+		ts = vdf_columns_names([ts], self)[0]
 		query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
 		self.cursor.execute(query)
 		first_date = self.cursor.fetchone()[0]
@@ -1067,19 +1168,22 @@ class vDataframe:
 	# 
 	def get_dummies(self, 
 					columns: list = [],
-					max_cardinality: int = 12,
-					prefix: str = "", 
+					max_cardinality: int = 12, 
 					prefix_sep: str = "_", 
-					drop_first: bool = False, 
+					drop_first: bool = True, 
 					use_numbers_as_suffix: bool = False):
-		columns = self.get_columns() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+		check_types([("columns", columns, [list], False), ("max_cardinality", max_cardinality, [int, float], False), ("prefix_sep", prefix_sep, [str], False), ("drop_first", drop_first, [bool], False), ("use_numbers_as_suffix", use_numbers_as_suffix, [bool], False)])
+		columns_check(columns, self)
+		columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
 		for column in columns:
 			if (self[column].nunique() < max_cardinality):
-				self[column].get_dummies()
+				self[column].get_dummies("", prefix_sep, drop_first, use_numbers_as_suffix)
 		return (self)
 	# 
 	def groupby(self, columns: list, expr: list = []):
-		columns = ['"' + column.replace('"', '') + '"' for column in columns]
+		check_types([("columns", columns, [list], False), ("expr", expr, [list], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		query = "SELECT {}".format(", ".join(columns + expr)) + " FROM {} GROUP BY {}".format(self.genSQL(), ", ".join(columns))
 		return (self.vdf_from_relation("(" + query + ") groupby_table", "groupby", "[Groupby]: The columns were group by {}".format(", ".join(columns))))
 	# 
@@ -1093,9 +1197,15 @@ class vDataframe:
 		       cmap: str = '',
 		       gridsize: int = 10,
 		       color: str = "white"):
+		check_types([("columns", columns, [list], False), ("method", method, ["density", "count", "avg", "min", "max", "sum"], True), ("of", of, [str], False), ("cmap", cmap, [str], False), ("gridsize", gridsize, [int, float], False), ("color", color, [str], False)])
+		columns_check(columns, self, [2])
+		columns = vdf_columns_names(columns, self)
+		if (of):
+			columns_check([of], self)
+			of = vdf_columns_names([of], self)[0]
 		if not(cmap):
-			from matplotlib.colors import LinearSegmentedColormap
-			cmap = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#214579"], N = 1000)
+			from vertica_ml_python.plot import gen_cmap
+			cmap = gen_cmap()[0]
 		from vertica_ml_python.plot import hexbin
 		hexbin(self, columns, method, of, cmap, gridsize, color)
 		return (self)
@@ -1108,6 +1218,12 @@ class vDataframe:
 			 h: tuple = (None, None),
 			 limit_distinct_elements: int = 200,
 			 hist_type: str = "auto"):
+		check_types([("columns", columns, [list], False), ("method", method, ["density", "count", "avg", "min", "max", "sum"], True), ("of", of, [str], False), ("max_cardinality", max_cardinality, [tuple], False), ("h", h, [tuple], False), ("limit_distinct_elements", limit_distinct_elements, [int, float], False), ("hist_type", hist_type, ["auto", "multi", "stacked"], True)])
+		columns_check(columns, self, [2])
+		columns = vdf_columns_names(columns, self)
+		if (of):
+			columns_check([of], self)
+			of = vdf_columns_names([of], self)[0]
 		stacked = True if (hist_type.lower() == "stacked") else False
 		multi = True if (hist_type.lower() == "multi") else False
 		if (len(columns) == 1):
@@ -1135,15 +1251,17 @@ class vDataframe:
 		return (self)
 	#
 	def isin(self, val: dict):
+		check_types([("val", val, [dict], False)])
+		columns_check([elem for elem in val], self)
 		n = len(val[list(val.keys())[0]])
 		isin = []
 		for i in range(n):
 			tmp_query = []
 			for column in val:
 				if (val[column][i] == None):
-					tmp_query += ['"' + column.replace('"', '') + '"' + " IS NULL"]
+					tmp_query += [str_column(column) + " IS NULL"]
 				else:
-					tmp_query += ['"' + column.replace('"', '') + '"' + " = '{}'".format(val[column][i])]
+					tmp_query += [str_column(column) + " = '{}'".format(val[column][i])]
 			query = "SELECT * FROM {} WHERE ".format(self.genSQL()) + " AND ".join(tmp_query) + " LIMIT 1"
 			self.cursor.execute(query)
 			isin += [self.cursor.fetchone() != None] 
@@ -1156,6 +1274,13 @@ class vDataframe:
 			 how: str = 'natural',
 			 expr1: list = [],
 			 expr2: list = []):
+		check_types([("input_relation", input_relation, [str], False), ("vdf", vdf, [type(None), type(self)], False), ("on", on, [dict], False), ("how", how.lower(), ["left", "right", "cross", "full", "natural", "self", "inner", ""], True), ("expr1", expr1, [list], False), ("expr2", expr2, [list], False)])
+		columns_check([elem for elem in on], self)
+		vdf_cols = []
+		if (vdf):
+			for elem in on:
+				vdf_cols += [on[elem]]
+			columns_check(vdf_cols, vdf)
 		on_join = ["x." + elem + " = y." + on[elem] for elem in on]
 		on_join = " AND ".join(on_join)
 		on_join = " ON " + on_join if (on_join) else ""
@@ -1177,7 +1302,8 @@ class vDataframe:
 		return (stats.transpose())
 	#
 	def last(self, ts: str, offset: str):
-		ts = '"' + ts.replace('"', '') + '"'
+		check_types([("ts", ts, [str], False), ("offset", offset, [str], False)])
+		ts = vdf_columns_names([ts], self)[0]
 		query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
 		self.cursor.execute(query)
 		last_date = self.cursor.fetchone()[0]
@@ -1186,6 +1312,7 @@ class vDataframe:
 		return (self)
 	#
 	def load(self, offset: int = -1):
+		check_types([("offset", offset, [int, float], False)])
 		save =  self.saving[offset]
 		vdf = {}
 		exec(save, globals(), vdf)
@@ -1193,16 +1320,19 @@ class vDataframe:
 		vdf.cursor = self.cursor
 		return (vdf)
 	#
-	def mad(self, columns = []):
+	def mad(self, columns: list = []):
 		return (self.aggregate(func = ["mad"], columns = columns))
 	#
-	def max(self, columns = []):
+	def mae(self, columns: list = []):
+		return (self.aggregate(func = ["mae"], columns = columns))
+	#
+	def max(self, columns: list = []):
 		return (self.aggregate(func = ["max"], columns = columns))
 	#
-	def mean(self, columns = []):
+	def mean(self, columns: list = []):
 		return (self.aggregate(func = ["avg"], columns = columns))
 	#
-	def median(self, columns = []):
+	def median(self, columns: list = []):
 		return (self.aggregate(func = ["median"], columns = columns))
 	#
 	def memory_usage(self):
@@ -1225,14 +1355,16 @@ class vDataframe:
 		return (self.aggregate(func = ["min"], columns = columns))
 	# 
 	def normalize(self, columns = [], method = "zscore"):
-		columns = self.numcol() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+		check_types([("columns", columns, [list], False), ("method", method, ["zscore", "robust_zscore", "minmax"], True)])
+		columns_check(columns, self)
+		columns = self.numcol() if not(columns) else vdf_columns_names(columns, self)
 		for column in columns:
 			self[column].normalize(method = method)
 		return (self)
 	#
 	def numcol(self):
-		columns = []
-		for column in self.get_columns():
+		columns, cols = [], self.get_columns()
+		for column in cols:
 			if self[column].isnum():
 				columns += [column]
 		return (columns)
@@ -1240,12 +1372,21 @@ class vDataframe:
 	def outliers(self,
 				 columns: list = [],
 				 name: str = "distribution_outliers",
-				 threshold: float = 3.0):
-		columns = ['"' + column.replace('"', '') + '"' for column in columns] if (columns) else self.numcol()
-		result = self.aggregate(func = ["std", "avg"], columns = columns).values
+				 threshold: float = 3.0,
+				 robust: bool = False):
+		check_types([("columns", columns, [list], False), ("name", name, [str], False), ("threshold", threshold, [int, float], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
+		if not(robust):
+			result = self.aggregate(func = ["std", "avg"], columns = columns).values
+		else:
+			result = self.aggregate(func = ["mad", "median"], columns = columns).values
 		conditions = []
 		for idx, elem in enumerate(result["index"]):
-			conditions += ["ABS({} - {}) / {} > {}".format(elem, result["avg"][idx], result["std"][idx], threshold)]
+			if not(robust):
+				conditions += ["ABS({} - {}) / NULLIFZERO({}) > {}".format(elem, result["avg"][idx], result["std"][idx], threshold)]
+			else:
+				conditions += ["ABS({} - {}) / NULLIFZERO({} * 1.4826) > {}".format(elem, result["median"][idx], result["mad"][idx], threshold)]
 		self.eval(name, "(CASE WHEN {} THEN 1 ELSE 0 END)".format(" OR ".join(conditions)))
 		return (self)
 	# 
@@ -1259,9 +1400,15 @@ class vDataframe:
 					cmap: str = '',
 					limit_distinct_elements: int = 1000,
 					with_numbers: bool = True):
+		check_types([("columns", columns, [list], False), ("method", method, ["density", "count", "avg", "min", "max", "sum"], True), ("of", of, [str], False), ("max_cardinality", max_cardinality, [tuple], False), ("h", h, [tuple], False), ("cmap", cmap, [str], False), ("show", show, [bool], False), ("limit_distinct_elements", limit_distinct_elements, [int, float], False), ("with_numbers", with_numbers, [bool], False)])
+		columns_check(columns, self, [2])
+		columns = vdf_columns_names(columns, self)
+		if (of):
+			columns_check([of], self)
+			of = vdf_columns_names([of], self)[0]
 		if not(cmap):
-			from matplotlib.colors import LinearSegmentedColormap
-			cmap = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#214579"], N = 1000)
+			from vertica_ml_python.plot import gen_cmap
+			cmap = gen_cmap()[0]
 		from vertica_ml_python.plot import pivot_table
 		return (pivot_table(self, columns, method, of, h, max_cardinality, show, cmap, limit_distinct_elements, with_numbers))
 	#
@@ -1270,6 +1417,9 @@ class vDataframe:
 			 columns: list = [], 
 			 start_date: str = "",
 		     end_date: str = ""):
+		check_types([("columns", columns, [list], False), ("ts", ts, [str], False), ("start_date", start_date, [str], False), ("end_date", end_date, [str], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		from vertica_ml_python.plot import multi_ts_plot
 		multi_ts_plot(self, ts, columns, start_date, end_date)	
 		return (self)
@@ -1282,20 +1432,20 @@ class vDataframe:
 	def quantile(self, q: list, columns = []):
 		return (self.aggregate(func = ["{}%".format(float(item)*100) for item in q], columns = columns))
 	#
-	def rank(self, order_by: list, method: str = "first", by: list = [], name = ""):
-		if (method not in ('first', 'dense', 'percent')):
-			raise ValueError("The parameter 'method' must be in first|dense|percent")
-		elif (method == "first"):
+	def rank(self, order_by: list, method: str = "first", by: list = [], name: str = ""):
+		check_types([("order_by", order_by, [list], False), ("method", method, ["first", "dense", "percent"], True), ("by", by, [list], False), ("name", name, [str], False)])
+		columns_check(order_by + by, self)
+		if (method == "first"):
 			func = "RANK"
 		elif (method == "dense"):
 			func = "DENSE_RANK"
 		elif (method == "percent"):
 			func = "PERCENT_RANK"
-		partition = "" if not(by) else "PARTITION BY " + ", ".join(['"' + column.replace('"', '') + '"' for column in by])
-		name_prefix = "_".join([column.replace('"', '') for column in order_by]) 
-		name_prefix += "_by_" + "_".join([column.replace('"', '') for column in by]) if (by) else ""
+		partition = "" if not(by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self))
+		name_prefix = "_".join([column.replace('"', '') for column in vdf_columns_names(order_by, self)]) 
+		name_prefix += "_by_" + "_".join([column.replace('"', '') for column in vdf_columns_names(by, self)]) if (by) else ""
 		name = name if (name) else method + "_rank_" + name_prefix
-		order = "ORDER BY {}".format(", ".join(['"' + column.replace('"', '') + '"' for column in order_by]))
+		order = "ORDER BY {}".format(", ".join(vdf_columns_names(order_by, self)))
 		expr = "{}() OVER ({} {})".format(func, partition, order)
 		return (self.eval(name = name, expr = expr))
 	#
@@ -1310,19 +1460,17 @@ class vDataframe:
 				order_by: list = [], 
 				method: str = "rows",
 				rule: str = "auto"):
-		if not(rule.lower() in ("auto", "past", "future")):
-			raise ValueError("The parameter 'rule' must be in auto|past|future\n'auto' will create a moving window from the past to the future (preceding-following)\n'past' will create a moving window in the past (preceding-preceding)\n'future' will create a moving window in the future (following-following)\n")
+		check_types([("name", name, [str], False), ("aggr", aggr, [str], False), ("column", column, [str], False), ("preceding", preceding, [str, int], False), ("following", following, [str, int], False), ("expr", expr, [str], False), ("by", by, [list], False), ("order_by", order_by, [list], False), ("method", method, ["rows", "range"], True), ("rule", rule, ["auto", "past", "future"], True)])
+		columns_check([column] + by + order_by, self)
 		if (rule.lower() == "past"):
 			rule_p, rule_f = "PRECEDING", "PRECEDING"
 		elif (rule.lower() == "future"):
 			rule_p, rule_f = "FOLLOWING", "FOLLOWING"
 		else:
 			rule_p, rule_f = "PRECEDING", "FOLLOWING"
-		if (method not in ('range', 'rows')):
-			raise ValueError("The parameter 'method' must be in rows|range")
-		column = '"' + column.replace('"', '') + '"'
-		by = "" if not(by) else "PARTITION BY " + ", ".join(['"' + col.replace('"', '') + '"' for col in by])
-		order_by = [column] if not(order_by) else ['"' + column.replace('"', '') + '"' for column in order_by]
+		column = vdf_columns_names([column], self)[0]
+		by = "" if not(by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self))
+		order_by = [column] if not(order_by) else vdf_columns_names(order_by, self)
 		expr = "{}({})".format(aggr.upper(), column) if not(expr) else expr.replace("{}", column)
 		expr = expr + " #" if '#' not in expr else expr
 		if (method == "rows"):
@@ -1336,6 +1484,7 @@ class vDataframe:
 		return (self.eval(name = name, expr = expr))
 	# 
 	def sample(self, x: float):
+		check_types([("x", x, [int, float], False)])
 		query = "SELECT {} FROM (SELECT *, RANDOM() AS random FROM {}) x WHERE random < {}".format(", ".join(self.get_columns()), self.genSQL(), x)
 		sample = to_tablesample(query, self.cursor)
 		sample.name = "Sample({}) of ".format(x) + self.input_relation
@@ -1371,27 +1520,37 @@ class vDataframe:
 			  	cat_priority: list = [],
 			  	with_others: bool = True,
 			  	max_nb_points: int = 20000):
-		catcol = [catcol] if (catcol) else []
+		check_types([("columns", columns, [list], False), ("catcol", catcol, [str], False), ("max_cardinality", max_cardinality, [int, float], False), ("cat_priority", cat_priority, [list], False), ("with_others", with_others, [bool], False), ("max_nb_points", max_nb_points, [int, float], False)])
+		columns_check(columns, self, [2, 3])
+		columns = vdf_columns_names(columns, self)
+		if (catcol):
+			columns_check([catcol], self)
+			catcol = vdf_columns_names([catcol], self) 
+		else:
+			catcol = []
 		if (len(columns) == 2):
 			from vertica_ml_python.plot import scatter2D
 			scatter2D(self, columns + catcol, max_cardinality, cat_priority, with_others, max_nb_points)	
-		elif (len(columns) == 3):
-			from vertica_ml_python.plot import scatter3D
-			scatter3D(self, columns + catcol, max_cardinality, cat_priority, with_others, max_nb_points)	
 		else:
-			raise ValueError("The parameter 'columns' must be a list of 2 or 3 columns")
+			from vertica_ml_python.plot import scatter3D
+			scatter3D(self, columns + catcol, max_cardinality, cat_priority, with_others, max_nb_points)
 		return (self)
 	# 
 	def scatter_matrix(self, columns: list = []):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		from vertica_ml_python.plot import scatter_matrix
 		scatter_matrix(self, columns)
 		return (self)	
 	#
 	def select(self, columns: list):
+		check_types([("columns", columns, [list], False)])
+		columns_check(columns, self)
+		columns = vdf_columns_names(columns, self)
 		copy_vDataframe = self.copy()
-		columns = ['"' + column.replace('"', '') + '"' for column in columns]
 		for column in copy_vDataframe.get_columns():
-			column_tmp = '"' + column.replace('"', '') + '"'
+			column_tmp = str_column(column)
 			if (column_tmp not in columns):
 				copy_vDataframe[column_tmp].drop(add_history = False) 
 		return (copy_vDataframe)
@@ -1404,15 +1563,24 @@ class vDataframe:
 				   by: list = [],
 				   session_threshold = "30 minutes",
 				   name = "session_id"):
-		partition = "PARTITION BY {}".format(", ".join(['"' + column.replace('"', '') + '"' for column in by])) if (by) else ""
+		check_types([("ts", ts, [str], False), ("by", by, [list], False), ("session_threshold", session_threshold, [str], False), ("name", name, [str], False)])
+		columns_check(by, self)
+		by = vdf_columns_names(by, self)
+		partition = "PARTITION BY {}".format(", ".join([str_column(column) for column in by])) if (by) else ""
 		expr = "CONDITIONAL_TRUE_EVENT({} - LAG({}) > '{}') OVER ({} ORDER BY {})".format(ts, ts, session_threshold, partition, ts)
 		return (self.eval(name = name, expr = expr))
 	# 
 	def set_cursor(self, cursor):
+		try:
+			cursor.execute("SELECT 1;")
+			cursor.fetchone()
+		except:
+			raise TypeError("The parameter 'cursor' must be a DB cursor having the methods fetchall, fetchone, execute.")
 		self.cursor = cursor
 		return (self)
 	# 
 	def set_dsn(self, dsn: str):
+		check_types([("dsn", dsn, [str], False)])
 		self.dsn = dsn
 		return (self)
 	# 
@@ -1429,16 +1597,18 @@ class vDataframe:
 			del(stats.values[column][1])
 		return (stats.transpose())
 	# 
-	def sort(self, columns: list):
-		columns = ['"' + column.replace('"', '') + '"' for column in columns]
-		max_pos = 0
+	def sort(self, columns: list, desc: bool = False):
+		check_types([("columns", columns, [list], False), ("desc", desc, [bool], False)])
+		columns_check(columns, self)
+		columns, max_pos, vdf_columns = vdf_columns_names(columns, self), 0, self.get_columns()
 		for column in columns:
-			if (column not in self.get_columns()):
-				raise NameError("The column {} doesn't exist".format(column))
+			if not(column_check_ambiguous(column, vdf_columns)):
+				raise NameError("The Virtual Column {} doesn't exist".format(column))
 		for column in self.columns:
 			max_pos = max(max_pos, len(self[column].transformations) - 1)
-		for column in columns:
-			self.order_by += [(column, max_pos)]
+		print(max_pos)
+		print(self.order_by)
+		self.order_by[max_pos] = " ORDER BY {} {}".format(", ".join(columns), "DESC" if (desc) else "ASC")
 		return (self)
 	# 
 	def sql_on_off(self):
@@ -1448,14 +1618,16 @@ class vDataframe:
 	def statistics(self, 
 				   columns: list = [], 
 				   skew_kurt_only: bool = False):
-		columns = self.numcol() if not(columns) else ['"' + column.replace('"', '') + '"' for column in columns]
+		check_types([("columns", columns, [list], False), ("skew_kurt_only", skew_kurt_only, [bool], False)])
+		columns_check(columns, self)
+		columns = self.numcol() if not(columns) else vdf_columns_names(columns, self)
 		query = []
 		if (skew_kurt_only):
 			stats = self.aggregate(func = ["count", "avg", "stddev"], columns = columns).transpose()
 		else:
 			stats = self.aggregate(func = ["count", "avg", "stddev", "min", "10%", "25%", "median", "75%", "90%", "max"], columns = columns).transpose()
 		for column in columns:
-			cast = "::int" if (self[column].ctype()[0:4] == "bool") else ""
+			cast = "::int" if (self[column].ctype() == "boolean") else ""
 			count, avg, std = stats.values[column][0], stats.values[column][1], stats.values[column][2]
 			if (count == 0): 
 				query += ["NULL", "NULL"]
@@ -1492,6 +1664,7 @@ class vDataframe:
 		return (self.aggregate(func = ["sum"], columns = columns))
 	# 
 	def tail(self, limit: int = 5, offset: int = 0):
+		check_types([("limit", limit, [int, float], False), ("offset", offset, [int, float], False)])
 		tail = to_tablesample("SELECT * FROM {} LIMIT {} OFFSET {}".format(self.genSQL(), limit, offset), self.cursor)
 		tail.count = self.shape()[0]
 		tail.offset = offset
@@ -1515,8 +1688,9 @@ class vDataframe:
 			   new_header: list = [],
 			   order_by: list = [],
 			   nb_row_per_work: int = 0):
+		check_types([("name", name, [str], False), ("path", path, [str], False), ("sep", sep, [str], False), ("na_rep", na_rep, [str], False), ("quotechar", quotechar, [str], False), ("usecols", usecols, [list], False), ("header", header, [bool], False), ("new_header", new_header, [list], False), ("order_by", order_by, [list], False), ("nb_row_per_work", nb_row_per_work, [int, float], False)])
 		file = open("{}{}.csv".format(path, name), "w+") 
-		columns = self.get_columns() if not(usecols) else ['"' + column.replace('"', '') + '"' for column in usecols]
+		columns = self.get_columns() if not(usecols) else [str_column(column) for column in usecols]
 		if (new_header) and (len(new_header) != len(columns)):
 			raise ValueError("The header has an incorrect number of columns")
 		elif (new_header):
@@ -1548,11 +1722,12 @@ class vDataframe:
 			  usecols: list = [],
 			  relation_type: str = "view",
 			  inplace: bool = False):
-		if (relation_type not in ["view","temporary","table"]):
-			raise ValueError("The parameter mode must be in view|temporary|table\nNothing was saved.")
+		check_types([("name", name, [str], False), ("usecols", usecols, [list], False), ("relation_type", relation_type, ["view", "temporary", "table"], True), ("inplace", inplace, [bool], False)])
+		columns_check(usecols, self)
+		usecols = vdf_columns_names(usecols, self)
 		if (relation_type == "temporary"):
 			relation_type += " table" 
-		usecols = "*" if not(usecols) else ", ".join(['"' + column.replace('"', '') + '"' for column in usecols])
+		usecols = "*" if not(usecols) else ", ".join([str_column(column) for column in usecols])
 		query = "CREATE {} {} AS SELECT {} FROM {}".format(relation_type.upper(), name, usecols, self.genSQL())
 		self.executeSQL(query = query, title = "Create a new " + relation_type + " to save the vDataframe")
 		self.history += ["{" + time.strftime("%c") + "} " + "[Save]: The vDataframe was saved into a {} named '{}'.".format(relation_type, name)]
@@ -1576,6 +1751,7 @@ class vDataframe:
 		return (df)
 	#
 	def to_vdf(self, name: str):
+		check_types([("name", name, [str], False)])
 		self.save()
 		file = open("{}.vdf".format(name), "w+") 
 		file.write(self.saving[-1])
@@ -1586,6 +1762,7 @@ class vDataframe:
 		return (self.aggregate(func = ["variance"], columns = columns))
 	#
 	def vdf_from_relation(self, table: str, func: str, history: str):
+		check_types([("table", table, [str], False), ("func", func, [str], False), ("history", history, [str], False)])
 		vdf = vDataframe("", empty = True)
 		vdf.dsn = self.dsn
 		vdf.input_relation = self.input_relation
@@ -1598,14 +1775,14 @@ class vDataframe:
 		self.executeSQL(query = "SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(func), title = "SELECT NEW DATA TYPE AND THE COLUMNS NAME")
 		result = self.cursor.fetchall()
 		self.executeSQL(query = "DROP TABLE IF EXISTS _vpython_{}_test_;".format(func), title = "DROP TEMPORARY TABLE")
-		vdf.columns = ['"' + item[0] + '"' for item in result]
+		vdf.columns = ['"{}"'.format(item[0]) for item in result]
 		vdf.where = []
-		vdf.order_by = []
+		vdf.order_by = ['' for i in range(100)]
 		vdf.exclude_columns = []
 		vdf.history = [item for item in self.history] + [history]
 		vdf.saving = [item for item in self.saving]
 		for column, ctype in result:
-			column = '"' + column + '"'
+			column = '"{}"'.format(column)
 			new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
 			setattr(vdf, column, new_vColumn)
 			setattr(vdf, column[1:-1], new_vColumn)

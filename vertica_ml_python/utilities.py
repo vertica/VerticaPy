@@ -39,18 +39,50 @@ import time
 
 #
 def category_from_type(ctype: str = ""):
+	ctype = ctype.lower()
 	if (ctype != ""):
-		if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype[0:8] == "interval"):
-			category = "date"
-		elif ((ctype[0:3] == "int") or (ctype[0:4] == "bool")):
-			category = "int"
-		elif ((ctype[0:7] == "numeric") or (ctype[0:5] == "float")):
-			category = "float"
+		if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype == "smalldatetime") or (ctype[0:8] == "interval"):
+			return "date"
+		elif ((ctype[0:3] == "int") or (ctype[0:4] == "bool")  or (ctype in ("tinyint", "smallint", "bigint"))):
+			return "int"
+		elif ((ctype[0:3] == "num") or (ctype[0:5] == "float") or (ctype[0:7] == "decimal") or (ctype == "money") or (ctype[0:6] == "double") or (ctype[0:4] == "real")):
+			return "float"
+		elif (("binary" in ctype) or ("byte" in ctype) or (ctype == "raw")):
+			return "binary"
+		elif ((ctype[0:3] == "geo") or ("uuid" in ctype)):
+			return "spatial"
 		else:
-			category = "text"
+			return "text"
 	else:
-		category = "undefined"
-	return category
+		return "undefined"
+#
+def check_types(types_list: list):
+	for elem in types_list:
+		if (elem[3]):
+			if (elem[1] not in elem[2]):
+				raise TypeError("Parameter '{}' must be in [{}], found '{}'".format(elem[0], "|".join(elem[2]), elem[1]))
+		else:
+			if (type(elem[1]) not in elem[2]):
+				if (len(elem[2]) == 1):
+					raise TypeError("Parameter '{}' must be of type {}, found type {}".format(elem[0], elem[2][0], type(elem[1])))
+				else:
+					raise TypeError("Parameter '{}' must be one of the following types {}, found type {}".format(elem[0], elem[2], type(elem[1])))
+#
+def column_check_ambiguous(column: str, columns: list):
+	column = column.replace('"', '').lower()
+	for col in columns:
+		col = col.replace('"', '').lower()
+		if (column == col):
+			return True
+	return False
+#
+def columns_check(columns: list, vdf, columns_nb = None):
+	vdf_columns = vdf.get_columns()
+	if (columns_nb != None and len(columns) not in columns_nb):
+		raise Exception("The number of Virtual Columns expected is {}, found {}".format("|".join([str(elem) for elem in columns_nb]), len(columns)))
+	for column in columns:
+		if not(column_check_ambiguous(column, vdf_columns)):
+			raise ValueError("The Virtual Column '{}' doesn't exist".format(column.lower().replace('"', '')))
 #
 def drop_model(name: str, 
 			   cursor, 
@@ -494,6 +526,9 @@ def read_json(path: str,
 		cursor.execute("DROP TABLE " + flex_name)
 		from vertica_ml_python import vDataframe
 		return vDataframe(table_name, cursor, schema = schema)
+#
+def str_column(column: str):
+	return ('"{}"'.format(column.replace('"', '')))
 # 
 def read_vdf(path: str, cursor):
 	file = open(path, "r")
@@ -622,6 +657,15 @@ def to_vertica_python_format(dsn: str):
 	conn_info = {'host': dsn["servername"], 'port': 5433, 'user': dsn["uid"], 'password': dsn["pwd"], 'database': dsn["database"]}
 	return (conn_info)
 #
+def vdf_columns_names(columns: list, vdf):
+	vdf_columns = vdf.get_columns()
+	columns_names = []
+	for column in columns:
+		for vdf_column in vdf_columns:
+			if (str_column(column).lower() == str_column(vdf_column).lower()):
+				columns_names += [str_column(vdf_column)]
+	return (columns_names)
+#
 def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str = ""):
 	from vertica_ml_python import vDataframe
 	vdf = vDataframe("", empty = True)
@@ -641,7 +685,7 @@ def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str 
 	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(name))
 	vdf.columns = ['"' + item[0] + '"' for item in result]
 	vdf.where = []
-	vdf.order_by = []
+	vdf.order_by = ['' for i in range(100)]
 	vdf.exclude_columns = []
 	vdf.history = []
 	vdf.saving = []
