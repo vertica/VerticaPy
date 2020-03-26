@@ -94,20 +94,19 @@ def bar2D(vdf,
 		  columns: list,
 		  method: str = "density",
 		  of: str = "",
-		  max_cardinality: tuple = (6,6),
+		  max_cardinality: tuple = (6, 6),
 		  h: tuple = (None, None),
-		  limit_distinct_elements: int = 1000000,
 		  stacked: bool = False,
 		  fully_stacked: bool = False):
 	colors = gen_colors()
-	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
+	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
 	n = len(all_columns)
 	m = len(all_columns[0])
 	n_groups = m - 1
 	index = np.arange(n_groups)
 	bar_width = 0.5
-	plt.figure(figsize = (14, 14)) if isnotebook() else plt.figure(figsize = (10, 6))
+	plt.figure(figsize = (14, m * 3)) if isnotebook() else plt.figure(figsize = (10, 6))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
 	if not(fully_stacked):
 		for i in range(1, n):
@@ -211,18 +210,17 @@ def boxplot(vdf,
 	# MULTI BOXPLOT
 	else:
 		try:
-			by = str_column(by)
 			if (vdf.alias == by):
 				raise NameError("The column and the groupby can not be the same")
 			elif (by not in vdf.parent.get_columns()):
 				raise NameError("The column " + by + " doesn't exist")
 			count = vdf.parent.shape()[0]
 			cardinality = vdf.parent[by].nunique()
-			is_numeric = vdf.isnum()
+			is_numeric = vdf.parent[by].isnum()
 			is_categorical = (cardinality <= max_cardinality) or not(is_numeric)
 			table = vdf.parent.genSQL()
 			if not(is_categorical):
-				enum_trans = vdf.parent[by].to_enum(h = h, return_enum_trans = True)[0].replace("{}", by) + " AS " + by
+				enum_trans = vdf.parent[by].discretize(h = h, return_enum_trans = True)[0].replace("{}", by) + " AS " + by
 				enum_trans += " , " + vdf.alias
 				table = "(SELECT " + enum_trans + " FROM " + table + ") enum_table"
 				query = "SELECT COUNT(DISTINCT {}) FROM {}".format(by, table)
@@ -413,7 +411,7 @@ def compute_plot_variables(vdf,
 		else:
 			table = vdf.parent.genSQL()
 			if ((pie) and (is_numeric)):
-				enum_trans = vdf.to_enum(h = h, return_enum_trans = True)[0].replace("{}", vdf.alias) + " AS " + vdf.alias
+				enum_trans = vdf.discretize(h = h, return_enum_trans = True)[0].replace("{}", vdf.alias) + " AS " + vdf.alias
 				if (of):
 					enum_trans += " , " + of
 				table = "(SELECT " + enum_trans + " FROM " + table + ") enum_table"
@@ -632,10 +630,9 @@ def hist2D(vdf,
 		   of: str = "",
 		   max_cardinality: tuple = (6, 6),
 		   h: tuple = (None, None),
-		   limit_distinct_elements: int = 1000000,
 		   stacked: bool = False):
 	colors = gen_colors()
-	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False, limit_distinct_elements = limit_distinct_elements).values
+	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
 	n, m = len(all_columns), len(all_columns[0])
 	n_groups = m-1
@@ -746,6 +743,7 @@ def multi_ts_plot(vdf,
 	query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(order_by, ", ".join(columns), vdf.genSQL(), order_by)
 	query += " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
 	query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+	query += " ORDER BY {}".format(order_by)
 	query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curves").fetchall()
 	order_by_values = [item[0] for item in query_result]
 	alpha = 0.3
@@ -820,23 +818,19 @@ def pie(vdf,
 #
 def pivot_table(vdf,
 				columns,
-				method="count",
+				method: str = "count",
 				of: str = "",
 				h: tuple = (None, None),
 				max_cardinality: tuple = (20, 20),
 				show: bool = True,
 				cmap: str = 'Blues',
-				limit_distinct_elements: int = 1000000,
 				with_numbers: bool = True):
 	# aggregation used for the bins height
 	if (method == "mean"):
 		method = "avg"
 	if ((method.lower() in ["avg", "min", "max", "sum"]) and (of)):
-		if ((of.replace('"', '') in vdf.get_columns()) or (str_column(of) in vdf.get_columns())):
-			aggregate = "{}({})".format(method.upper(), str_column(of))
-			others_aggregate = method
-		else:
-			raise NameError("the column '" + of + "' doesn't exist")
+		aggregate = "{}({})".format(method.upper(), str_column(of))
+		others_aggregate = method
 	elif (method.lower() in ["density", "count"]):
 		aggregate = "COUNT(*)"
 		others_aggregate = "sum"
@@ -849,6 +843,7 @@ def pivot_table(vdf,
 	for idx, column in enumerate(columns):
 		is_numeric = vdf[column].isnum() and (vdf[column].nunique() > 2)
 		is_date = vdf[column].isdate()
+		where = []
 		if (is_numeric):
 			interval = round(vdf[column].numh(), 2) if (h[idx] == None) else h[idx]
 			if (vdf[column].category() == "int"):
@@ -859,6 +854,7 @@ def pivot_table(vdf,
 			expr = "'[' || FLOOR({} / {}) * {} || ';' || (FLOOR({} / {}) * {} + {}{}) || ']'".format(column, interval, interval, column, interval, interval, interval, floor_end)
 			all_columns += [expr] if (interval > 1) or (vdf[column].category() == "float") else ["FLOOR({}) || ''".format(column)]
 			order_by = "ORDER BY MIN(FLOOR({} / {}) * {}) ASC".format(column, interval, interval)
+			where += ["{} IS NOT NULL".format(column)]
 		elif (is_date):
 			interval = vdf[column].numh() if (h[idx] == None) else max(math.floor(h[idx]),1)
 			min_date = vdf[column].min()
@@ -866,25 +862,30 @@ def pivot_table(vdf,
 			is_column_date[idx] = True
 			timestampadd[idx] = "TIMESTAMPADD('second', "+columns[idx]+"::int, '"+str(min_date)+"'::timestamp)"
 			order_by = "ORDER BY 1 ASC"
+			where += ["{} IS NOT NULL".format(column)]
 		else:
 			all_columns += [column]
 			order_by = "ORDER BY 1 ASC"
+			distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
+			if (len(distinct) < max_cardinality[idx]):
+				where += ["({} IN ({}))".format(column, ",".join(["'{}'".format(elem) for elem in distinct]))]
+			else:
+				where += ["({} IS NOT NULL)".format(column)]
+	where = " WHERE {}".format(" AND ".join(where))
 	if (len(columns) == 1):
-		query = "SELECT {} AS {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 {} LIMIT {}".format(all_columns[-1], columns[0], aggregate, vdf.genSQL(), columns[0], order_by, limit_distinct_elements)
+		query = "SELECT {} AS {}, {} FROM {}{} GROUP BY 1 {}".format(all_columns[-1], columns[0], aggregate, vdf.genSQL(), where, order_by)
 		return to_tablesample(query, vdf.cursor, name = aggregate)
 	alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
 	aggr = ", " + of if (of.replace('"', '') != '') else ""
-	subtable = "(SELECT " + all_columns[0] + " AS " + columns[0] + ", " + all_columns[1] + " AS " + columns[1] + alias + " FROM " + vdf.genSQL() + ") pivot_table"
+	subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table".format(all_columns[0], columns[0], all_columns[1], columns[1], alias, vdf.genSQL(), where)
 	if (is_column_date[0] and not(is_column_date[1])):
-		subtable = "(SELECT " + timestampadd[0] + " AS " + columns[0] + ", " + columns[1] + aggr + " FROM " + subtable + ") pivot_table_date"
+		subtable = "(SELECT {} AS {}, {}{} FROM {}{}) pivot_table_date".format(timestampadd[0], columns[0], columns[1], aggr, subtable, where)
 	elif (is_column_date[1] and not(is_column_date[0])):
-		subtable = ("(SELECT " + columns[0] + ", " + timestampadd[1] + " AS " + columns[1] + aggr + " FROM " + subtable + ") pivot_table_date")
+		subtable = "(SELECT {}, {} AS {}{} FROM {}{}) pivot_table_date".format(columns[0], timestampadd[1], columns[1], aggr, subtable, where)
 	elif (is_column_date[1] and is_column_date[0]):
-		subtable = "(SELECT " + timestampadd[0] + " AS " + columns[0] + ", " + timestampadd[1] + " AS " + columns[1] + aggr + " FROM " + subtable + ") pivot_table_date"
-	is_finished = limit_distinct_elements
-	limit_distinct_elements = " LIMIT " + str(limit_distinct_elements)
+		subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table_date".format(timestampadd[0], columns[0], timestampadd[1], columns[1], aggr, subtable, where)
 	over = "/" + str(vdf.shape()[0]) if (method=="density") else ""
-	query = "SELECT {}, {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(columns[0], columns[1], aggregate, over, subtable, columns[0], columns[1], columns[0], columns[1], columns[0], columns[1]) + limit_distinct_elements
+	query = "SELECT {}, {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(columns[0], columns[1], aggregate, over, subtable, columns[0], columns[1], columns[0], columns[1], columns[0], columns[1])
 	vdf.executeSQL(query = query, title = "Group the features to compute the pivot table")
 	query_result = vdf.executeSQL(query = query, title = "Group the features to compute the pivot table").fetchall()
 	# Column0 sorted categories
@@ -914,7 +915,6 @@ def pivot_table(vdf,
 	except:
 		pass
 	all_columns = [['' for item in all_column0_categories] for item in all_column1_categories]
-	is_finished = (is_finished >= len(all_column0_categories) * len(all_column1_categories))
 	for item in query_result:
 		j = all_column0_categories.index(str(item[0]))
 		i = all_column1_categories.index(str(item[1]))
@@ -923,7 +923,7 @@ def pivot_table(vdf,
 	all_columns = [[columns[0] + "/" + columns[1]] + all_column0_categories] + all_columns
 	if (show):
 		all_count = [item[2] for item in query_result]
-		cmatrix(all_columns, all_column0_categories, all_column1_categories, len(all_column0_categories), len(all_column1_categories), vmax = max(all_count), vmin = min(all_count), cmap = cmap, title = "Pivot Table of " + columns[0] + " vs " + columns[1], colorbar=aggregate, x_label=columns[1], y_label=columns[0], with_numbers=with_numbers)
+		cmatrix(all_columns, all_column0_categories, all_column1_categories, len(all_column0_categories), len(all_column1_categories), vmax = max(all_count), vmin = min(all_count), cmap = cmap, title = "Pivot Table of " + columns[0] + " vs " + columns[1], colorbar = aggregate, x_label = columns[1], y_label = columns[0], with_numbers = with_numbers)
 	values = {all_columns[0][0] : all_columns[0][1:len(all_columns[0])]}
 	del(all_columns[0])
 	for column in all_columns:

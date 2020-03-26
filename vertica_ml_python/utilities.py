@@ -39,6 +39,7 @@ import time
 
 #
 def category_from_type(ctype: str = ""):
+	check_types([("ctype", ctype, [str], False)])
 	ctype = ctype.lower()
 	if (ctype != ""):
 		if (ctype[0:4] == "date") or (ctype[0:4] == "time") or (ctype == "smalldatetime") or (ctype[0:8] == "interval"):
@@ -87,6 +88,7 @@ def columns_check(columns: list, vdf, columns_nb = None):
 def drop_model(name: str, 
 			   cursor, 
 			   print_info: bool = True):
+	check_types([("name", name, [str], False)])
 	cursor.execute("SELECT 1;")
 	try:
 		query = "DROP MODEL {};".format(name)
@@ -99,6 +101,7 @@ def drop_model(name: str,
 def drop_table(name: str, 
 			   cursor, 
 			   print_info: bool = True):
+	check_types([("name", name, [str], False)])
 	cursor.execute("SELECT 1;")
 	try:
 		query="DROP TABLE {};".format(name)
@@ -111,6 +114,7 @@ def drop_table(name: str,
 def drop_text_index(name: str, 
 			   		cursor, 
 			   		print_info: bool = True):
+	check_types([("name", name, [str], False)])
 	cursor.execute("SELECT 1;")
 	try:
 		query="DROP TEXT INDEX {};".format(name)
@@ -123,6 +127,7 @@ def drop_text_index(name: str,
 def drop_view(name: str,
 			  cursor,
 			  print_info: bool = True):
+	check_types([("name", name, [str], False)])
 	cursor.execute("SELECT 1;")
 	try:
 		query="DROP VIEW {};".format(name)
@@ -146,6 +151,7 @@ def isnotebook():
         return False # Probably standard Python interpreter
 #
 def load_model(name: str, cursor, test_relation: str = ""):
+	check_types([("name", name, [str], False), ("test_relation", test_relation, [str], False)])
 	try:
 		cursor.execute("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')")
 		info = cursor.fetchone()[0].replace('\n', ' ')
@@ -264,12 +270,16 @@ def load_model(name: str, cursor, test_relation: str = ""):
 		model.classes = [item[0] for item in classes]
 	return (model)
 # 
-def pandas_to_vertica(df, cur, name: str):
-	path = "{}.csv".format(name)
-	df.to_csv(path, index = False)
-	from vertica_ml_python import read_csv
-	read_csv(path, cur)
-	os.remove(path)
+def pandas_to_vertica(df, cur, name: str, schema: str = "public", insert: bool = False):
+	check_types([("name", name, [str], False), ("schema", schema, [str], False), ("insert", insert, [bool], False)])
+	path = "vertica_ml_python_{}.csv".format(elem for elem in name if elem.isalpha())
+	try:
+		df.to_csv(path, index = False)
+		read_csv(path, cur, table_name = name, schema = schema, insert = insert)
+		os.remove(path)
+	except:
+		os.remove(path)
+		raise
 # 
 def print_table(data_columns, is_finished = True, offset = 0, repeat_first_column = False, first_element = ""):
 	data_columns_rep = [] + data_columns
@@ -415,6 +425,7 @@ def read_csv(path: str,
 			 genSQL: bool = False,
 			 parse_n_lines: int = -1,
 			 insert: bool = False):
+	check_types([("schema", schema, [str], False), ("table_name", table_name, [str], False), ("delimiter", delimiter, [str], False), ("header", header, [bool], False), ("header_names", header_names, [list], False), ("null", null, [str], False), ("enclosed_by", enclosed_by, [str], False), ("escape", escape, [str], False), ("genSQL", genSQL, [bool], False), ("parse_n_lines", parse_n_lines, [int, float], False), ("insert", insert, [bool], False)])
 	file = path.split("/")[-1]
 	file_extension = file[-3:len(file)]
 	if (file_extension != 'csv'):
@@ -472,6 +483,7 @@ def read_json(path: str,
 			  usecols: list = [],
 			  new_name: dict = {},
 			  insert: bool = False):
+	check_types([("schema", schema, [str], False), ("table_name", table_name, [str], False), ("usecols", usecols, [list], False), ("new_name", new_name, [dict], False), ("insert", insert, [bool], False)])
 	file = path.split("/")[-1]
 	file_extension = file[-4:len(file)]
 	if (file_extension != 'json'):
@@ -527,10 +539,27 @@ def read_json(path: str,
 		from vertica_ml_python import vDataframe
 		return vDataframe(table_name, cursor, schema = schema)
 #
+def schema_relation(relation: str):
+	quote_nb = relation.count('"')
+	if (quote_nb not in (0, 2, 4)):
+		raise ValueError("The format of the input relation is incorrect.")
+	if (quote_nb == 4):
+		schema_input_relation = relation.split('"')[1], relation.split('"')[3]
+	elif (quote_nb == 4):
+		schema_input_relation = relation.split('"')[1], relation.split('"')[2][1:] if (relation.split('"')[0] == '') else relation.split('"')[0][0:-1], relation.split('"')[1]
+	else:
+		schema_input_relation = relation.split(".")
+	if (len(schema_input_relation) == 1):
+		schema, relation = "public", relation 
+	else: 
+		schema, relation = schema_input_relation[0], schema_input_relation[1]
+	return (schema, relation)
+#
 def str_column(column: str):
 	return ('"{}"'.format(column.replace('"', '')))
 # 
 def read_vdf(path: str, cursor):
+	check_types([("path", path, [str], False)])
 	file = open(path, "r")
 	save =  "from vertica_ml_python import vDataframe\nfrom vertica_ml_python.vcolumn import vColumn\n" + "".join(file.readlines())
 	file.close()
@@ -549,6 +578,7 @@ class tablesample:
 				  count: int = 0, 
 				  offset: int = 0, 
 				  table_info: bool = True):
+		check_types([("values", values, [dict], False), ("dtype", dtype, [dict], False), ("name", name, [str], False), ("count", count, [int], False), ("offset", offset, [int], False), ("table_info", table_info, [bool], False)])
 		self.values = values
 		self.dtype = dtype
 		self.count = count
@@ -613,11 +643,13 @@ class tablesample:
 		sql = " UNION ALL ".join(sql)
 		return (sql)
 	def to_vdf(self, cursor = None, dsn: str = ""):
+		check_types([("dsn", dsn, [str], False)])
 		from vertica_ml_python import vdf_from_relation
 		relation = "({}) sql_relation".format(self.to_sql())
 		return (vdf_from_relation(relation, cursor = cursor, dsn = dsn)) 
 #
 def to_tablesample(query: str, cursor, name = "Sample"):
+	check_types([("query", query, [str], False), ("name", name, [str], False)])
 	cursor.execute(query)
 	result = cursor.fetchall()
 	columns = [column[0] for column in cursor.description]
@@ -632,15 +664,24 @@ def to_tablesample(query: str, cursor, name = "Sample"):
 	return tablesample(values = values, name = name)
 #
 def vertica_cursor(dsn: str):
+	check_types([("dsn", dsn, [str], False)])
 	try:
 		import pyodbc
-		cursor = pyodbc.connect("DSN=" + dsn, autocommit = True).cursor()
+		success = 1
 	except:
-		print("Failed to connect with pyodbc, try a connection with vertica_python")
-		import vertica_python
+		try:
+			print("Failed to connect with pyodbc, try a connection with vertica_python")
+			import vertica_python
+			success = 0
+		except:
+			raise Exception("Neither pyodbc or vertica_python is installed in your computer\nPlease install one of the Library using the 'pip install' command to be able to create a Vertica Cursor")
+	if (success):
+		cursor = pyodbc.connect("DSN=" + dsn, autocommit = True).cursor()
+	else:
 		cursor = vertica_python.connect(** to_vertica_python_format(dsn), autocommit = True).cursor()
 	return (cursor)
 def read_dsn(dsn: str):
+	check_types([("dsn", dsn, [str], False)])
 	f = open(os.environ['ODBCINI'], "r")
 	odbc = f.read()
 	f.close()
@@ -653,6 +694,7 @@ def read_dsn(dsn: str):
 		dsn[info[0].lower()] = info[1]
 	return (dsn)
 def to_vertica_python_format(dsn: str):
+	check_types([("dsn", dsn, [str], False)])
 	dsn = read_dsn(dsn)
 	conn_info = {'host': dsn["servername"], 'port': 5433, 'user': dsn["uid"], 'password': dsn["pwd"], 'database': dsn["database"]}
 	return (conn_info)
@@ -666,7 +708,9 @@ def vdf_columns_names(columns: list, vdf):
 				columns_names += [str_column(vdf_column)]
 	return (columns_names)
 #
-def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str = ""):
+def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str = "", schema: str = "public"):
+	check_types([("relation", relation, [str], False), ("name", name, [str], False), ("dsn", dsn, [str], False), ("schema", schema, [str], False)])
+	name = ''.join(ch for ch in name if ch.isalnum())
 	from vertica_ml_python import vDataframe
 	vdf = vDataframe("", empty = True)
 	vdf.dsn = dsn
@@ -675,14 +719,15 @@ def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str 
 		cursor = vertica_cursor(dsn)
 	vdf.input_relation = name
 	vdf.main_relation = relation
-	vdf.schema = ""
+	vdf.schema = schema
 	vdf.cursor = cursor
 	vdf.query_on = False
 	vdf.time_on = False
-	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_; CREATE TEMPORARY TABLE _vpython_{}_test_ AS SELECT * FROM {} LIMIT 10;".format(name, name, relation))
-	cursor.execute("SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_'".format(name))
+	cursor.execute("DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(schema), name))
+	cursor.execute("CREATE TEMPORARY TABLE {}._vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(str_column(schema), name, relation))
+	cursor.execute("SELECT column_name, data_type FROM columns WHERE table_name = '_vpython_{}_test_' AND table_schema = '{}'".format(name, schema.replace('"', '')))
 	result = cursor.fetchall()
-	cursor.execute("DROP TABLE IF EXISTS _vpython_{}_test_;".format(name))
+	cursor.execute("DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(schema), name))
 	vdf.columns = ['"' + item[0] + '"' for item in result]
 	vdf.where = []
 	vdf.order_by = ['' for i in range(100)]

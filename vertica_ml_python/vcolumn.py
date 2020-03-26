@@ -59,8 +59,8 @@ class vColumn:
 		self.parent, self.alias = parent, alias
 		if (transformations == None):
 			# COLUMN DATA TYPE
-			query = "(SELECT data_type FROM columns WHERE table_name='{}' AND column_name='{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
-			query += " UNION (SELECT data_type FROM view_columns WHERE table_name='{}' AND column_name='{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
+			query = "(SELECT data_type FROM columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
+			query += " UNION (SELECT data_type FROM view_columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
 			self.parent.cursor.execute(query)
 			result = self.parent.cursor.fetchone()
 			ctype = str(result[0]) if (result) else "undefined"
@@ -118,12 +118,11 @@ class vColumn:
 	def apply(self, func: str, copy: bool = False, copy_name: str = ""):
 		check_types([("func", func, [str], False), ("copy", copy, [bool], False), ("copy_name", copy_name, [str], False)])
 		try:
-			self.executeSQL(query = "DROP TABLE IF EXISTS _vpython_apply_test_;")
-			self.executeSQL(query = "SELECT {} FROM {} WHERE {} IS NOT NULL LIMIT 10;".format(func.replace("{}", self.alias), self.parent.genSQL(), self.alias), title = "TEST FUNC {}".format(func))
-			self.executeSQL(query = "CREATE TEMPORARY TABLE _vpython_apply_test_ AS SELECT {} FROM {} WHERE {} IS NOT NULL LIMIT 10;".format(func.replace("{}", self.alias), self.parent.genSQL(), self.alias), title = "TEST FUNC {}".format(func))
-			self.executeSQL(query = "SELECT data_type FROM columns where table_name = '_vpython_apply_test_'", title = "SELECT NEW DATA TYPE")
+			self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_apply_test_;".format(str_column(self.parent.schema)), title = "Drop the Existing Temp Table")
+			self.executeSQL(query = "CREATE TEMPORARY TABLE {}._vpython_apply_test_ ON COMMIT PRESERVE ROWS AS SELECT {} FROM {} WHERE {} IS NOT NULL LIMIT 10;".format(str_column(self.parent.schema), func.replace("{}", self.alias), self.parent.genSQL(), self.alias), title = "TEST FUNC {}".format(func))
+			self.executeSQL(query = "SELECT data_type FROM columns WHERE table_name = '_vpython_apply_test_' AND table_schema = '{}'".format(self.parent.schema.replace('"', '')), title = "SELECT NEW DATA TYPE")
 			ctype = self.parent.cursor.fetchone()[0]
-			self.executeSQL(query = "DROP TABLE IF EXISTS _vpython_apply_test_;", title = "DROP TEMPORARY TABLE")
+			self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_apply_test_;".format(str_column(self.parent.schema)), title = "Drop the Temp Table")
 			category = category_from_type(ctype = ctype)
 			if (copy):
 				self.add_copy(name = copy_name)
@@ -133,8 +132,8 @@ class vColumn:
 				self.transformations += [(func, ctype, category)]
 				self.parent.history += ["{" + time.strftime("%c") + "} " + "[{}]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), self.alias.replace('"', ''), func.replace("{}", "x"))]
 			return (self.parent)
-		except:
-			raise Exception("Error when applying the func 'x -> {}' to '{}'".format(func.replace("{}", "x"), self.alias.replace('"', '')))
+		except Exception as e:
+			raise Exception("{}\nError when applying the func 'x -> {}' to '{}'".format(e, func.replace("{}", "x"), self.alias.replace('"', '')))
 	# 
 	def astype(self, dtype: str):
 		check_types([("dtype", dtype, [str], False)])
@@ -286,6 +285,82 @@ class vColumn:
 			index = ['unique', 'count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max']
 		values = {"index" : ["name", "dtype"] + index, "value" : [self.alias, self.ctype()] + result}
 		return (tablesample(values, table_info = False))
+	# 
+	def discretize(self, 
+				   method: str = "auto",
+				   h: float = 0, 
+				   bins: int = -1,
+				   k: int = 6,
+				   new_category: str = 'Others',
+				   response: str = "",
+				   temp_information: tuple = ("public.vml_temp_view", "public.vml_temp_model"),
+				   min_bin_size: int = 20,
+				   return_enum_trans: bool = False):
+		check_types([("temp_information", temp_information, [tuple], False),("min_bin_size", min_bin_size, [int, float], False), ("return_enum_trans", return_enum_trans, [bool], False), ("h", h, [int, float], False), ("response", response, [str], False), ("bins", bins, [int, float], False), ("method", method, ["auto", "smart", "same_width", "same_freq", "topk"], True), ("return_enum_trans", return_enum_trans, [bool], False)])
+		if (self.isnum() and method == "smart"):
+			if (bins < 2):
+				raise ValueError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'")
+			columns_check([response], self.parent)
+			response = vdf_columns_names([response], self.parent)[0]
+			self.parent.cursor.execute("DROP VIEW IF EXISTS {}".format(temp_information[0]))
+			self.parent.cursor.execute("DROP MODEL IF EXISTS {}".format(temp_information[1]))
+			self.parent.to_db(temp_information[0])
+			from vertica_ml_python.learn.ensemble import RandomForestClassifier
+			model = RandomForestClassifier(temp_information[1], self.parent.cursor, n_estimators = 20, max_depth = 3, nbins = 100, min_samples_leaf = min_bin_size)
+			model.fit(temp_information[0], [self.alias], response)
+			query = ["(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(temp_information[1], i) for i in range(20)]
+			query = "SELECT split_value FROM (SELECT split_value, COUNT(*) FROM ({}) x WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) y ORDER BY split_value::float".format(" UNION ALL ".join(query), bins - 1)
+			self.executeSQL(query = query, title = "Compute the Optimized Histogram separations using RF")
+			result = self.parent.cursor.fetchall()
+			result = [elem[0] for elem in result]
+			self.parent.cursor.execute("DROP VIEW IF EXISTS {}".format(temp_information[0]))
+			self.parent.cursor.execute("DROP MODEL IF EXISTS {}".format(temp_information[1]))
+			result = [self.min()] + result + [self.max()]
+		elif (method == "topk"):
+			if (k < 2):
+				raise ValueError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
+			distinct = self.topk(k).values["index"]
+			trans = ("(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(self.alias, ', '.join(["'{}'".format(elem) for elem in distinct]), self.alias, new_category), "varchar", "text")
+		elif (self.isnum() and method == "same_freq"):
+			if (bins < 2):
+				raise ValueError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
+			count = self.count()
+			nb = int(float(count / int(bins)))
+			if (nb == 0):
+				raise Exception("Not enough values to compute the Equal Frequency discretization")
+			total, query, nth_elems = nb, [], []
+			while (total < count - 1):
+				nth_elems += [str(total)]
+				total += nb
+			where = "WHERE row_nb IN ({})".format(", ".join(['1'] + nth_elems + [str(count)]))
+			query = "SELECT {} FROM (SELECT {}, ROW_NUMBER() OVER (ORDER BY {}) AS row_nb FROM {} WHERE {} IS NOT NULL) x {}".format(self.alias, self.alias, self.alias, self.parent.genSQL(), self.alias, where)
+			self.executeSQL(query = query, title = "Compute the Equal Frequency Histogram separations")
+			result = self.parent.cursor.fetchall()
+			result = [elem[0] for elem in result]
+		elif (self.isnum() and method in ("same_width", "auto")):
+			h = round(self.numh(), 2) if (h <= 0) else h
+			h = int(max(math.floor(h), 1)) if (self.category() == "int") else h
+			floor_end = - 1 if (self.category() == "int") else ""
+			if (h > 1) or (self.category() == "float"):
+				trans = ("'[' || FLOOR({} / {}) * {} || ';' || (FLOOR({} / {}) * {} + {}{}) || ']'".format(
+					"{}", h, h, "{}", h, h, h, floor_end), "varchar", "text")
+			else:
+				trans = ("FLOOR({}) || ''", "varchar", "text")
+		else:
+			trans = ("{} || ''", "varchar", "text")
+		if ((self.isnum() and method == "same_freq") or (self.isnum() and method == "smart")):
+			n = len(result)
+			trans = "(CASE "
+			for i in range(1, n):
+				trans += "WHEN {} BETWEEN {} AND {} THEN '[{}-{}]' ".format("{}", result[i - 1], result[i], result[i - 1], result[i])
+			trans += " ELSE NULL END)"
+			trans = (trans, "varchar", "text")
+		if (return_enum_trans):
+			return(trans)
+		else:
+			self.transformations += [trans]
+			self.parent.history += [ "{" + time.strftime("%c") + "} " + "[Enum]: The vColumn '{}' was converted to enum.".format(self.alias)]
+		return (self.parent)
 	# 
 	def distinct(self):
 		query="SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
@@ -837,28 +912,6 @@ class vColumn:
 		tail.dtype[self.alias.replace('"', '')] = self.ctype()
 		tail.name = self.alias.replace('"', '')
 		return (tail)
-	# 
-	def to_enum(self, 
-				h: float = 0, 
-				return_enum_trans: bool = False):
-		check_types([("h", h, [int, float], False), ("return_enum_trans", return_enum_trans, [bool], False)])
-		if (self.isnum()):
-			h = round(self.numh(), 2) if (h <= 0) else h
-			h = int(max(math.floor(h), 1)) if (self.category() == "int") else h
-			floor_end = - 1 if (self.category() == "int") else ""
-			if (h > 1) or (self.category() == "float"):
-				trans = ("'[' || FLOOR({} / {}) * {} || ';' || (FLOOR({} / {}) * {} + {}{}) || ']'".format(
-					"{}", h, h, "{}", h, h, h, floor_end), "varchar", "text")
-			else:
-				trans = ("FLOOR({}) || ''", "varchar", "text")
-		else:
-			trans = ("{} || ''", "varchar", "text")
-		if (return_enum_trans):
-			return(trans)
-		else:
-			self.transformations += [trans]
-			self.parent.history += [ "{" + time.strftime("%c") + "} " + "[Enum]: The vColumn '{}' was converted to enum.".format(self.alias)]
-		return (self.parent)
 	# 
 	def topk(self, k: int = -1, dropna: bool = True):
 		check_types([("k", k, [int, float], False), ("dropna", dropna, [bool], False)])
