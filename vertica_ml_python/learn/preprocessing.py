@@ -35,6 +35,8 @@
 from vertica_ml_python import to_tablesample
 from vertica_ml_python import drop_text_index
 from vertica_ml_python.utilities import str_column
+from vertica_ml_python.utilities import schema_relation
+from vertica_ml_python.utilities import schema_relation
 
 #
 def Balance(name: str, input_relation: str, cursor, y: str, method: str, ratio = 0.5):
@@ -86,15 +88,18 @@ class CountVectorizer:
 	def fit(self, input_relation: str, X: list):
 		self.input_relation = input_relation
 		self.X = [str_column(elem) for elem in X]
-		self.cursor.execute("DROP TABLE IF EXISTS {}_countvectorizer_vpython CASCADE".format(input_relation))
-		sql = "CREATE TABLE {}_countvectorizer_vpython(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
-		self.cursor.execute(sql.format(input_relation, self.max_text_size))
+		schema, relation = schema_relation(input_relation)
+		schema = str_column(schema)
+		relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
+		self.cursor.execute("DROP TABLE IF EXISTS {}.{}_countvectorizer_vpython CASCADE".format(schema, relation_alpha))
+		sql = "CREATE TABLE {}.{}_countvectorizer_vpython(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
+		self.cursor.execute(sql.format(schema, relation_alpha, self.max_text_size))
 		text = " || ".join(self.X) if not (self.lowercase) else "LOWER({})".format(" || ".join(self.X))
 		if (self.ignore_special):
 			text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
-		sql = "INSERT INTO {}_countvectorizer_vpython(text) SELECT {} FROM {}".format(input_relation, text, input_relation)
+		sql = "INSERT INTO {}.{}_countvectorizer_vpython(text) SELECT {} FROM {}".format(schema, relation_alpha, text, input_relation)
 		self.cursor.execute(sql)
-		sql = "CREATE TEXT INDEX {} ON {}_countvectorizer_vpython(id, text) stemmer NONE;".format(self.name, input_relation)
+		sql = "CREATE TEXT INDEX {} ON {}.{}_countvectorizer_vpython(id, text) stemmer NONE;".format(self.name, schema, relation_alpha)
 		self.cursor.execute(sql)
 		stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) x) y WHERE not(df BETWEEN {} AND {})".format(self.name, self.min_df, self.max_df)
 		if (self.max_features > 0):

@@ -35,6 +35,7 @@
 from vertica_ml_python import tablesample
 import numpy as np
 from vertica_ml_python.utilities import str_column
+from vertica_ml_python.utilities import schema_relation
 
 #
 def best_k(X: list,
@@ -47,9 +48,12 @@ def best_k(X: list,
 		   elbow_score_stop = 0.8):
 	from vertica_ml_python.learn.cluster import KMeans
 	L = range(n_cluster[0], n_cluster[1]) if not(type(n_cluster) == list) else n_cluster
+	schema, relation = schema_relation(input_relation)
+	schema = str_column(schema)
+	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	for i in L:
-		cursor.execute("DROP MODEL IF EXISTS _vpython_kmeans_tmp_model")
-		model = KMeans("_vpython_kmeans_tmp_model", cursor, i, init, max_iter, tol)
+		cursor.execute("DROP MODEL IF EXISTS {}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha))
+		model = KMeans("{}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
 		model.fit(input_relation, X)
 		score = model.metrics.values["value"][3]
 		if (score > elbow_score_stop):
@@ -71,22 +75,25 @@ def cross_validate(estimator,
 		result = {"index": ["auc", "prc_auc", "accuracy", "log_loss", "precision", "recall", "f1-score", "mcc", "informedness", "markedness", "csi"]}
 	else:
 		raise ValueError("Cross Validation is only possible for Regressors and Classifiers")
-	test_name, train_name = "{}_{}".format(input_relation, int(1 / cv * 100)), "{}_{}".format(input_relation, int(100 - 1 / cv * 100))
-	estimator.cursor.execute("DROP TABLE IF EXISTS vpython_train_test_split_cv_{}".format(input_relation))
-	query = "CREATE TABLE vpython_train_test_split_cv_{} AS SELECT *, RANDOMINT({}) AS test FROM {}".format(input_relation, cv, input_relation)
+	schema, relation = schema_relation(input_relation)
+	schema = str_column(schema)
+	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
+	test_name, train_name = "{}_{}".format(relation_alpha, int(1 / cv * 100)), "{}_{}".format(relation_alpha, int(100 - 1 / cv * 100))
+	estimator.cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, relation_alpha))
+	query = "CREATE TEMPORARY TABLE {}.vpython_train_test_split_cv_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(schema, relation_alpha, cv, input_relation)
 	estimator.cursor.execute(query)
 	for i in range(cv):
 		try:
 			estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
 		except:
 			pass
-		estimator.cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_cv_{}".format(test_name))
-		estimator.cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_cv_{}".format(train_name))
-		query = "CREATE VIEW vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test = {})".format(test_name, "vpython_train_test_split_cv_{}".format(input_relation), i)
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, test_name))
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, train_name))
+		query = "CREATE VIEW {}.vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test = {})".format(schema, test_name, "{}.vpython_train_test_split_cv_{}".format(schema, relation_alpha), i)
 		estimator.cursor.execute(query)
-		query = "CREATE VIEW vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test != {})".format(train_name, "vpython_train_test_split_cv_{}".format(input_relation), i)
+		query = "CREATE VIEW {}.vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test != {})".format(schema, train_name, "{}.vpython_train_test_split_cv_{}".format(schema, relation_alpha), i)
 		estimator.cursor.execute(query)
-		estimator.fit("vpython_train_test_split_cv_{}".format(train_name), X, y, "vpython_train_test_split_cv_{}".format(test_name))
+		estimator.fit("{}.vpython_train_test_split_cv_{}".format(schema, train_name), X, y, "{}.vpython_train_test_split_cv_{}".format(schema, test_name))
 		if (estimator.type == "regressor"):
 			result["{}-fold".format(i + 1)] = estimator.regression_report().values["value"]
 		else:
@@ -107,9 +114,9 @@ def cross_validate(estimator,
 			total[k] += [result["{}-fold".format(i + 1)][k]]
 	result["avg"] = [np.mean(item) for item in total]
 	result["std"] = [np.std(item) for item in total]
-	estimator.cursor.execute("DROP TABLE IF EXISTS vpython_train_test_split_cv_{}".format(input_relation))
-	estimator.cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_cv_{}".format(test_name))
-	estimator.cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_cv_{}".format(train_name))
+	estimator.cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, relation_alpha))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, test_name))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, train_name))
 	return (tablesample(values = result, table_info = False).transpose())
 #
 def fast_cv(algorithm: str, 
@@ -146,14 +153,17 @@ def fast_cv(algorithm: str,
 	return (cursor.fetchone()[0])
 #
 def train_test_split(input_relation: str, cursor, test_size: float = 0.33):
-	test_name, train_name = "{}_{}".format(input_relation, int(test_size * 100)), "{}_{}".format(input_relation, int(100 - test_size * 100))
-	cursor.execute("DROP TABLE IF EXISTS vpython_train_test_split_{}".format(input_relation))
-	cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_{}".format(test_name))
-	cursor.execute("DROP VIEW IF EXISTS vpython_train_test_split_{}".format(train_name))
-	query = "CREATE TABLE vpython_train_test_split_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(input_relation, test_size, input_relation)
+	schema, relation = schema_relation(input_relation)
+	schema = str_column(schema)
+	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
+	test_name, train_name = "{}_{}".format(relation_alpha, int(test_size * 100)), "{}_{}".format(relation_alpha, int(100 - test_size * 100))
+	cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_{}".format(schema, relation_alpha))
+	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}".format(schema, test_name))
+	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}".format(schema, train_name))
+	query = "CREATE TABLE {}.vpython_train_test_split_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(schema, relation_alpha, test_size, input_relation)
 	cursor.execute(query)
-	query = "CREATE VIEW vpython_train_test_split_{} AS SELECT * FROM {} WHERE test".format(test_name, "vpython_train_test_split_{}".format(input_relation))
+	query = "CREATE VIEW {}.vpython_train_test_split_{} AS SELECT * FROM {} WHERE test".format(schema, test_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	query = "CREATE VIEW vpython_train_test_split_{} AS SELECT * FROM {} WHERE NOT(test)".format(train_name, "vpython_train_test_split_{}".format(input_relation))
+	query = "CREATE VIEW {}.vpython_train_test_split_{} AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	return ("vpython_train_test_split_{}".format(train_name), "vpython_train_test_split_{}".format(test_name))
+	return ("{}.vpython_train_test_split_{}".format(schema, train_name), "{}.vpython_train_test_split_{}".format(schema, test_name))

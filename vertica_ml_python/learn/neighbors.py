@@ -66,6 +66,7 @@ from vertica_ml_python.learn.plot import roc_curve
 from vertica_ml_python.learn.plot import prc_curve
 
 from vertica_ml_python.utilities import str_column
+from vertica_ml_python.utilities import schema_relation
 
 #
 class NearestCentroid:
@@ -119,7 +120,7 @@ class NearestCentroid:
 			sql = "(SELECT {}, {}, predict_nc, (1 - DECODE(distance, 0, 0, (distance / SUM(distance) OVER (PARTITION BY {})))) / {} AS proba_predict, ordered_distance FROM {}) nc_table".format(", ".join(self.X), self.y, ", ".join(self.X), len(self.classes) - 1, sql)
 		return sql
 	#
-	def deploy_to_DB(self, name: str, view: bool = True, cutoff = -1, all_classes: bool = False):
+	def deploy_to_DB(self, name: str, view: bool = True, cutoff: float = -1, all_classes: bool = False):
 		relation = "TABLE" if not(view) else "VIEW"
 		if (all_classes):
 			predict = ["ZEROIFNULL(AVG(DECODE(predict_nc, '{}', proba_predict, NULL))) AS \"{}_{}\"".format(elem, self.y.replace('"', ''), elem) for elem in self.classes]
@@ -442,40 +443,44 @@ class LocalOutlierFactor:
 		cursor = self.cursor
 		n_neighbors = self.n_neighbors
 		p = self.p
+		relation_alpha = ''.join(ch for ch in input_relation if ch.isalnum())
+		schema, relation = schema_relation(input_relation)
+		schema = str_column(schema)
 		if not(index):
 			index = "id"
-			main_table = "main_{}_vpython".format(input_relation)
-			cursor.execute("DROP TABLE IF EXISTS {}".format(main_table))
-			sql = "CREATE TABLE {} AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(main_table, ", ".join(X + key_columns), input_relation, " AND ".join(["{} IS NOT NULL".format(item) for item in X]))
+			relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
+			main_table = "main_{}_vpython".format(relation_alpha)
+			cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, main_table))
+			sql = "CREATE TEMPORARY TABLE {}.{} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(schema, main_table, ", ".join(X + key_columns), input_relation, " AND ".join(["{} IS NOT NULL".format(item) for item in X]))
 			cursor.execute(sql)
 		else:
 			main_table = input_relation
 		sql = ["POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], p) for i in range(len(X))] 
 		distance = "POWER({}, 1 / {})".format(" + ".join(sql), p)
-		sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {} AS x CROSS JOIN {} AS y".format(index, index, distance, index, distance, main_table, main_table)
+		sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {}.{} AS x CROSS JOIN {}.{} AS y".format(index, index, distance, index, distance, schema, main_table, schema, main_table)
 		sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
-		cursor.execute("DROP TABLE IF EXISTS distance_{}_vpython".format(input_relation))
-		sql = "CREATE TABLE distance_{}_vpython AS {}".format(input_relation, sql)
+		cursor.execute("DROP TABLE IF EXISTS {}.distance_{}_vpython".format(schema, relation_alpha))
+		sql = "CREATE TEMPORARY TABLE {}.distance_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(schema, relation_alpha, sql)
 		cursor.execute(sql)
-		kdistance = "(SELECT node_id, nn_id, distance AS distance FROM distance_{}_vpython WHERE knn = {}) AS kdistance_table".format(input_relation, n_neighbors + 1)
-		lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (distance_{}_vpython AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, input_relation, kdistance)
-		cursor.execute("DROP TABLE IF EXISTS lrd_{}_vpython".format(input_relation))
-		sql = "CREATE TABLE lrd_{}_vpython AS {}".format(input_relation, lrd)
+		kdistance = "(SELECT node_id, nn_id, distance AS distance FROM {}.distance_{}_vpython WHERE knn = {}) AS kdistance_table".format(schema, relation_alpha, n_neighbors + 1)
+		lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM ({}.distance_{}_vpython AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, schema, relation_alpha, kdistance)
+		cursor.execute("DROP TABLE IF EXISTS {}.lrd_{}_vpython".format(schema, relation_alpha))
+		sql = "CREATE TEMPORARY TABLE {}.lrd_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(schema, relation_alpha, lrd)
 		cursor.execute(sql)
-		sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM distance_{}_vpython AS n_table LEFT JOIN lrd_{}_vpython AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN lrd_{}_vpython AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, input_relation, input_relation, input_relation)
-		cursor.execute("DROP TABLE IF EXISTS lof_{}_vpython".format(input_relation))
-		sql = "CREATE TABLE lof_{}_vpython AS {}".format(input_relation, sql)
+		sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM {}.distance_{}_vpython AS n_table LEFT JOIN {}.lrd_{}_vpython AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN {}.lrd_{}_vpython AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, schema, relation_alpha, schema, relation_alpha, schema, relation_alpha)
+		cursor.execute("DROP TABLE IF EXISTS {}.lof_{}_vpython".format(schema, relation_alpha))
+		sql = "CREATE TEMPORARY TABLE {}.lof_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(schema, relation_alpha, sql)
 		cursor.execute(sql)
-		sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN lof_{}_vpython AS y ON x.{} = y.node_id".format(", ".join(X + self.key_columns), main_table, input_relation, index)
+		sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN {}.lof_{}_vpython AS y ON x.{} = y.node_id".format(", ".join(X + self.key_columns), main_table, schema, relation_alpha, index)
 		sql = "CREATE TABLE {} AS {}".format(self.name, sql)
 		cursor.execute(sql)
-		sql = "SELECT COUNT(*) FROM lof_{}_vpython z WHERE lof > 1e100 OR lof != lof".format(input_relation)
+		sql = "SELECT COUNT(*) FROM {}.lof_{}_vpython z WHERE lof > 1e100 OR lof != lof".format(schema, relation_alpha)
 		cursor.execute(sql)
 		self.n_errors = cursor.fetchone()[0]
-		cursor.execute("DROP TABLE IF EXISTS main_{}_vpython".format(input_relation))
-		cursor.execute("DROP TABLE IF EXISTS distance_{}_vpython".format(input_relation))
-		cursor.execute("DROP TABLE IF EXISTS lrd_{}_vpython".format(input_relation))
-		cursor.execute("DROP TABLE IF EXISTS lof_{}_vpython".format(input_relation))
+		cursor.execute("DROP TABLE IF EXISTS {}.main_{}_vpython".format(schema, relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS {}.distance_{}_vpython".format(schema, relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS {}.lrd_{}_vpython".format(schema, relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS {}.lof_{}_vpython".format(schema, relation_alpha))
 		return (self)
 	#
 	def info(self):

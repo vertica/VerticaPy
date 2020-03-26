@@ -37,6 +37,7 @@ from vertica_ml_python import to_tablesample
 import math
 import numpy as np
 from vertica_ml_python.utilities import str_column
+from vertica_ml_python.utilities import schema_relation
 
 #
 def elbow(X: list,
@@ -48,11 +49,14 @@ def elbow(X: list,
 		  tol: float = 1e-4):
 	import matplotlib.pyplot as plt
 	from vertica_ml_python.learn.cluster import KMeans
+	schema, relation = schema_relation(input_relation)
+	schema = str_column(schema)
+	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	all_within_cluster_SS = []
 	L = [i for i in range(n_cluster[0], n_cluster[1])] if not(type(n_cluster) == list) else n_cluster
 	for i in L:
-		cursor.execute("DROP MODEL IF EXISTS _vpython_kmeans_tmp_model")
-		model = KMeans("_vpython_kmeans_tmp_model", cursor, i, init, max_iter, tol)
+		cursor.execute("DROP MODEL IF EXISTS {}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha))
+		model = KMeans("{}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
 		model.fit(input_relation, X)
 		all_within_cluster_SS += [float(model.metrics.values["value"][3])]
 		model.drop()
