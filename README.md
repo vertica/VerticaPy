@@ -1,3 +1,7 @@
+[![Pypi Package](https://img.shields.io/badge/Pypi%20Package-1.0-yellow)](https://pypi.org/project/vertica-ml-python/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python Version](https://img.shields.io/badge/Python-%3D%3E%203.5-blue)](https://www.python.org/downloads/)
+
 
 <p align="center">
 <img src='./img/logo.png' width="180px">
@@ -10,7 +14,7 @@ https://github.com/vertica/Vertica-ML-Python/blob/master/documentation.pdf <br>
 Or directly in the Wiki at:
 https://github.com/vertica/Vertica-ML-Python/wiki
 <br><br>
-(c) Copyright [2018] Micro Focus or one of its affiliates. 
+(c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 Licensed under the Apache License, Version 2.0 (the "License");
 You may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -28,7 +32,7 @@ limitations under the License.
 
 # Vertica-ML-Python
 
-Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
+:loudspeaker: Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
 
 <p align="center">
 <img src='./img/vertica-ml-python.png' width="500px">
