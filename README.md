@@ -1,6 +1,6 @@
 [![Pypi Package](https://img.shields.io/badge/Pypi%20Package-1.0-yellow)](https://pypi.org/project/vertica-ml-python/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Version](https://img.shields.io/badge/Python-%3D%3E%203.5-blue)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/Python-%3D%3E%203.6-blue)](https://www.python.org/downloads/)
 
 
 <p align="center">
@@ -87,7 +87,9 @@ If you have any feedback about the library, please contact me: <a href="mailto:b
 <b>vertica-ml-python</b> works with at least:
 <ul>
 	<li> <b>Vertica: </b> 9.1 (with previous versions, some functions and algorithms may not be available)
-	<li> <b>Python: </b> 3.6 
+	<li> <b>Python Version: </b> => 3.6 - [version 3.5 may works]
+	<li> <b>Python Modules needed for Rendering Capabilities: </b> matplotlib (=> 3.0) - [other versions of matplotlib may work], numpy (=> 1.9) - [other versions of numpy may work]
+	<li> <b>Other Python Modules: </b> Except to get rendering capabilities, VERTICA ML Python uses only built-in libraries (statistics, random, math, time and os)
 </ul>
 
 ## Installation:
