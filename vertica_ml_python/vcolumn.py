@@ -32,9 +32,7 @@
 #####################################################################################
 #
 # Libraries
-import numpy as np
 import math
-import time
 from vertica_ml_python.utilities import tablesample
 from vertica_ml_python.utilities import to_tablesample
 from vertica_ml_python.utilities import category_from_type
@@ -59,8 +57,8 @@ class vColumn:
 		self.parent, self.alias = parent, alias
 		if (transformations == None):
 			# COLUMN DATA TYPE
-			query = "(SELECT data_type FROM columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
-			query += " UNION (SELECT data_type FROM view_columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation, self.alias.replace('"', ''))
+			query = "(SELECT data_type FROM columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation.replace("'", "''"), self.alias.replace('"', '').replace("'", "''"))
+			query += " UNION (SELECT data_type FROM view_columns WHERE table_name = '{}' AND column_name = '{}')".format(self.parent.input_relation.replace("'", "''"), self.alias.replace('"', '').replace("'", "''"))
 			self.parent.cursor.execute(query)
 			result = self.parent.cursor.fetchone()
 			ctype = str(result[0]) if (result) else "undefined"
@@ -101,14 +99,14 @@ class vColumn:
 		setattr(self.parent, name, new_vColumn)
 		setattr(self.parent, name[1:-1], new_vColumn)
 		self.parent.columns += [name]
-		self.parent.history += ["{" + time.strftime("%c") + "} " + "[ADD COPY]: A copy of the vColumn '{}' named '{}' was added to the vDataframe.".format(self.alias, name)]
+		self.parent.add_to_history("[Add Copy]: A copy of the Virtual Column {} named {} was added to the vDataframe.".format(self.alias, name))
 		return (new_vColumn)
 	# 
 	def add_prefix(self, prefix: str):
-		return (self.apply(func = "'{}' || {}".format(prefix, "{}")))
+		return (self.apply(func = "'{}' || {}".format(prefix.replace("'", "''"), "{}")))
 	#
 	def add_suffix(self, suffix: str):
-		return (self.apply(func = "{} || '{}'".format("{}", suffix)))
+		return (self.apply(func = "{} || '{}'".format("{}", suffix.replace("'", "''"))))
 	#
 	def agg(self, func: list):
 		return (self.aggregate(func = func))
@@ -118,19 +116,19 @@ class vColumn:
 	def apply(self, func: str, copy: bool = False, copy_name: str = ""):
 		check_types([("func", func, [str], False), ("copy", copy, [bool], False), ("copy_name", copy_name, [str], False)])
 		try:
-			self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_apply_test_;".format(str_column(self.parent.schema)), title = "Drop the Existing Temp Table")
-			self.executeSQL(query = "CREATE TEMPORARY TABLE {}._vpython_apply_test_ ON COMMIT PRESERVE ROWS AS SELECT {} FROM {} WHERE {} IS NOT NULL LIMIT 10;".format(str_column(self.parent.schema), func.replace("{}", self.alias), self.parent.genSQL(), self.alias), title = "TEST FUNC {}".format(func))
-			self.executeSQL(query = "SELECT data_type FROM columns WHERE table_name = '_vpython_apply_test_' AND table_schema = '{}'".format(self.parent.schema.replace('"', '')), title = "SELECT NEW DATA TYPE")
+			self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_apply_test_;", title = "Drop the Existing Temp Table")
+			self.executeSQL(query = "CREATE LOCAL TEMPORARY TABLE _vpython_apply_test_ ON COMMIT PRESERVE ROWS AS SELECT {} FROM {} WHERE {} IS NOT NULL LIMIT 10;".format(func.replace("{}", self.alias), self.parent.genSQL(), self.alias), title = "TEST FUNC {}".format(func))
+			self.executeSQL(query = "SELECT data_type FROM columns WHERE table_name = '_vpython_apply_test_' AND table_schema = 'v_temp_schema'", title = "SELECT NEW DATA TYPE")
 			ctype = self.parent.cursor.fetchone()[0]
-			self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_apply_test_;".format(str_column(self.parent.schema)), title = "Drop the Temp Table")
+			self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_apply_test_;", title = "Drop the Temp Table")
 			category = category_from_type(ctype = ctype)
 			if (copy):
 				self.add_copy(name = copy_name)
 				self.parent[copy_name].transformations += [(func, ctype, category)]
-				self.parent.history += ["{" + time.strftime("%c") + "} " + "[{}]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), copy_name.replace('"', ''), func.replace("{}", "x"))]
+				self.parent.add_to_history("[{}]: The Virtual Column '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), copy_name.replace('"', ''), func.replace("{}", "x")))
 			else:
 				self.transformations += [(func, ctype, category)]
-				self.parent.history += ["{" + time.strftime("%c") + "} " + "[{}]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), self.alias.replace('"', ''), func.replace("{}", "x"))]
+				self.parent.add_to_history("[{}]: The Virtual Column '{}' was transformed with the func 'x -> {}'.".format(func.replace("{}", ""), self.alias.replace('"', ''), func.replace("{}", "x")))
 			return (self.parent)
 		except Exception as e:
 			raise Exception("{}\nError when applying the func 'x -> {}' to '{}'".format(e, func.replace("{}", "x"), self.alias.replace('"', '')))
@@ -138,14 +136,13 @@ class vColumn:
 	def astype(self, dtype: str):
 		check_types([("dtype", dtype, [str], False)])
 		try:
-			query = "SELECT {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
-				self.alias, dtype, self.alias, self.parent.genSQL(), self.alias)
+			query = "SELECT {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(self.alias, dtype, self.alias, self.parent.genSQL(), self.alias)
 			self.executeSQL(query, title = "Data Type Conversion - TEST")
-			self.transformations += [("{}::" + dtype, dtype, category_from_type(ctype = dtype))]
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[AsType]: The vColumn '{}' was converted to {}.".format(self.alias, dtype)]
+			self.transformations += [("{}::{}".format('{}', dtype), dtype, category_from_type(ctype = dtype))]
+			self.parent.add_to_history("[AsType]: The Virtual Column {} was converted to {}.".format(self.alias, dtype))
 			return (self.parent)
 		except:
-			raise Exception("The column {} can not be converted to '{}'".format(self.alias, dtype))
+			raise Exception("The Virtual Column {} can not be converted to {}".format(self.alias, dtype))
 	# 
 	def avg(self):
 		return (self.mean())
@@ -193,7 +190,7 @@ class vColumn:
 	# 
 	def count(self):
 		query = "SELECT COUNT({}) FROM {}".format(self.alias, self.parent.genSQL())
-		self.executeSQL(query = query, title = "Compute the vColumn '" + self.alias + "' number of non-missing elements")
+		self.executeSQL(query = query, title = "Compute the vColumn {} number of non-missing elements".format(self.alias))
 		missing_data=self.parent.cursor.fetchone()[0]
 		return (missing_data)
 	#
@@ -208,7 +205,7 @@ class vColumn:
 		new_dict = {}
 		for elem in values:
 			if (type(values[elem]) == str):
-				val = "'" + values[elem] + "'"
+				val = "'{}'".format(values[elem].replace("'", "''"))
 			elif (values[elem] == None):
 				val = "NULL"
 			else:
@@ -217,8 +214,8 @@ class vColumn:
 				new_dict["NULL"] = val
 			else:
 				new_dict["'" + elem + "'"] = val
+		others = "'{}'".format(others.replace("'", "''")) if (type(others) == str) else others
 		others = "NULL" if (others == None) else others
-		others = "'{}'".format(others) if (type(others) == str) else others
 		fun = "DECODE({}, " + ", ".join(["{}, {}".format(item, new_dict[item]) for item in new_dict]) + ", {})".format(others)
 		return (self.apply(func = fun))
 	# 
@@ -253,6 +250,8 @@ class vColumn:
 			index = ['count', 'min', 'max']
 		elif ((method == "cat_stats") and (numcol != "")):
 			numcol = vdf_columns_names([numcol], self.parent)[0]
+			if (self.parent[numcol].category() not in ("float", "int")):
+				raise TypeError("The column 'numcol' must be numerical")
 			cast = "::int" if (self.parent[numcol].ctype() == "boolean") else ""
 			query, cat = [], self.distinct()
 			if (len(cat) == 1):
@@ -264,18 +263,17 @@ class vColumn:
 				tmp_query = tmp_query.format(category, self.alias, self.alias, self.parent.shape()[0], numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast, numcol, cast)
 				tmp_query += " WHERE {} IS NULL".format(self.alias) if (category in ('None', None)) else " WHERE {} = '{}'".format(self.alias, category)
 				query += [lp + tmp_query + rp]
-			query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.parent.genSQL(), " UNION ALL ".join(query))
+			query = "WITH vdf_table AS ({}) {}".format(self.parent.genSQL(return_without_alias = True), " UNION ALL ".join(query))
 			result = to_tablesample(query, self.parent.cursor)
 			result.table_info = False
 			return (result)
 		elif (((distinct_count < max_cardinality + 1) and (method != "numerical")) or not(is_numeric) or (method == "categorical")):
-			query = "(SELECT {}||'', COUNT(*) FROM vdf_table GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {})".format(
-					self.alias, self.alias, max_cardinality)
+			query = "(SELECT {} || '', COUNT(*) FROM vdf_table GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {})".format(self.alias, self.alias, max_cardinality)
 			if (distinct_count > max_cardinality):
 				query += ("UNION ALL (SELECT 'Others', SUM(count) FROM (SELECT COUNT(*) AS count FROM vdf_table WHERE {} IS NOT NULL GROUP BY {}" +
 							" ORDER BY COUNT(*) DESC OFFSET {}) x) ORDER BY count DESC").format(self.alias, self.alias, max_cardinality + 1)
-			query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.parent.genSQL(), query)
-			self.executeSQL(query = query, title = "Compute the descriptive statistics of " + self.alias)
+			query = "WITH vdf_table AS ({}) {}".format(self.parent.genSQL(return_without_alias = True), query)
+			self.executeSQL(query = query, title = "Compute the descriptive statistics of {}".format(self.alias))
 			query_result = self.parent.cursor.fetchall()
 			result = [distinct_count] + [item[1] for item in query_result]
 			index = ['unique'] + [item[0] for item in query_result]
@@ -320,7 +318,13 @@ class vColumn:
 			if (k < 2):
 				raise ValueError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
 			distinct = self.topk(k).values["index"]
-			trans = ("(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(self.alias, ', '.join(["'{}'".format(elem) for elem in distinct]), self.alias, new_category), "varchar", "text")
+			if (self.category() == "binary"):
+				func = 'TO_HEX({})'
+			elif (self.category() == "spatial"):
+				func = 'ST_AsText({})'
+			else:
+				func = self.alias
+			trans = ("(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(func, ', '.join(["'{}'".format(str(elem).replace("'", "''")) for elem in distinct]), func, new_category.replace("'", "''")), "varchar", "text")
 		elif (self.isnum() and method == "same_freq"):
 			if (bins < 2):
 				raise ValueError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
@@ -359,12 +363,11 @@ class vColumn:
 			return(trans)
 		else:
 			self.transformations += [trans]
-			self.parent.history += [ "{" + time.strftime("%c") + "} " + "[Enum]: The vColumn '{}' was converted to enum.".format(self.alias)]
+			self.parent.add_to_history("[Discretize]: The Virtual Column {} was discretized.".format(self.alias))
 		return (self.parent)
 	# 
 	def distinct(self):
-		query="SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
-				self.alias, self.parent.genSQL(), self.alias, self.alias, self.alias)
+		query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(self.alias, self.parent.genSQL(), self.alias, self.alias, self.alias)
 		self.executeSQL(query = query, title = "Compute the distinct categories of {}".format(self.alias))
 		query_result = self.parent.cursor.fetchall()
 		return ([item for sublist in query_result for item in sublist])
@@ -402,7 +405,7 @@ class vColumn:
 		except:
 			self.parent.exclude_columns += [self.alias]
 		if (add_history):
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Drop]: vColumn '{}' was deleted from the vDataframe.".format(self.alias)]
+			self.parent.add_to_history("[Drop]: Virtual Column {} was deleted from the vDataframe.".format(self.alias))
 		return (parent)
 	# 
 	def dropna(self, print_info: bool = True):
@@ -413,11 +416,11 @@ class vColumn:
 		if (total > 1):
 			if (print_info):
 				print("{} elements were dropped".format(total))
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Dropna]: The {} missing elements of column '{}' were dropped from the vDataframe.".format(total, self.alias)]
+			self.parent.add_to_history("[Dropna]: The {} missing elements of Virtual Column {} were dropped from the vDataframe.".format(total, self.alias))
 		elif (total == 1):
 			if (print_info):
 				print("1 element was dropped")
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Dropna]: The only missing element of column '{}' was dropped from the vDataframe.".format(self.alias)]
+			self.parent.add_to_history("[Dropna]: The only missing element of the Virtual Column {} was dropped from the vDataframe.".format(self.alias))
 		else:
 			del self.parent.where[-1]
 			if (print_info):
@@ -468,10 +471,15 @@ class vColumn:
 		columns_check(order_by + by, self.parent)
 		by, order_by = vdf_columns_names(by, self.parent), vdf_columns_names(order_by, self.parent)
 		if (method == "auto"):
-			method = "mean" if (self.isnum() and self.nunique() > 6) else "mode"
+			method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
 		total = self.count()
 		if ((method == "mode") and (val == None)):
 			val = self.mode()
+			if (val == None):
+				print('/!\\ Warning: The Virtual Column {} has no mode (only missing values)\nNothing was filled.'.format(self.alias))
+				return (self.parent)
+		if (type(val) == str):
+			val = val.replace("'", "''")
 		if (val != None):
 			new_column = "COALESCE({}, '{}')".format("{}", val)
 		elif (method == "0ifnull"):
@@ -484,6 +492,19 @@ class vColumn:
 				elif (fun == "MEDIAN"):
 					val = self.median()
 				new_column = "COALESCE({}, {})".format("{}", val)
+			elif (len(by) == 1):
+				try:
+					fun = "APPROXIMATE_MEDIAN" if (fun == "MEDIAN") else fun
+					query = "SELECT {}, {}({}) FROM {} GROUP BY {};".format(by[0], fun, self.alias, self.parent.genSQL(), by[0])
+					self.executeSQL(query, title = "Compute the different agg")
+					result = self.parent.cursor.fetchall()
+					for idx, elem in enumerate(result):
+						result[idx][0] = 'NULL' if (elem[0] == None) else "'{}'".format(str(elem[0]).replace("'", "''"))
+						result[idx][1] = 'NULL' if (elem[1] == None) else str(elem[1])
+					new_column = "COALESCE({}, DECODE({}, {}, NULL))".format("{}", by[0], ", ".join(["{}, {}".format(elem[0], elem[1]) for elem in result]))
+					self.executeSQL("SELECT {} FROM {} LIMIT 1".format(new_column.format(self.alias), self.parent.genSQL()), title = "Test the query")
+				except:
+					new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format("{}", fun, "{}", ", ".join(by))
 			else:
 				new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format("{}", fun, "{}", ", ".join(by))
 		elif (method in ('ffill', 'pad', 'bfill', 'backfill')):
@@ -494,7 +515,7 @@ class vColumn:
 			order_by = ", ".join([str_column(column) for column in order_by])
 			new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}{}))".format("{}", "{}", by, order_by, desc)
 		else:
-			raise ValueError("The method '{}' does not exist or is not available".format(method) + "\nPlease use a method in auto|mean|median|mode|ffill|bfill|0ifnull")
+			raise ValueError("The method '{}' does not exist or is not available\nPlease use a method in auto|mean|median|mode|ffill|bfill|0ifnull".format(method))
 		if (method in ("mean", "median") or (type(val) == float)):
 			category, ctype = "float", "float"
 		elif (method == "0ifnull"):
@@ -502,11 +523,15 @@ class vColumn:
 		else:
 			category, ctype = self.category(), self.ctype()
 		self.transformations += [(new_column, ctype, category)]
-		total = abs(self.count() - total)
+		try:
+			total = abs(self.count() - total)
+		except Exception as e:
+			del self.transformations[-1]
+			raise Exception("{}\nAn Error happened during the filling.".format(e))
 		if (total > 1):
 			if (print_info):
 				print("{} elements were filled".format(total))
-			self.parent.history += ["{" + time.strftime("%c")+"} " + "[Fillna]: {} missing values of the vColumn '{}' were filled.".format(total, self.alias)]
+			self.parent.add_to_history("[Fillna]: {} missing values of the Virtual Column {} were filled.".format(total, self.alias))
 		elif (total == 0):
 			if (print_info):
 				print("Nothing was filled")
@@ -514,7 +539,7 @@ class vColumn:
 		else:
 			if (print_info):
 				print("1 element was filled")
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Fillna]: 1 missing value of the vColumn '{}' was filled.".format(self.alias)]
+			self.parent.add_to_history("[Fillna]: 1 missing value of the Virtual Column {} was filled.".format(self.alias))
 		return (self.parent)
 	#
 	def fill_outliers(self, method: str = "winsorize", alpha: float = 0.05, use_threshold: bool = True, threshold: float = 4.0):
@@ -534,8 +559,8 @@ class vColumn:
 			elif (method == "null"):
 				self.apply(func = "(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format('{}', p_alpha, p_1_alpha, '{}'))
 			elif (method == "mean"):
-				query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
-					self.parent.genSQL(), self.alias, self.alias, p_alpha, self.alias, self.alias, p_1_alpha)
+				query = "WITH vdf_table AS ({}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
+					self.parent.genSQL(return_without_alias = True), self.alias, self.alias, p_alpha, self.alias, self.alias, p_1_alpha)
 				self.executeSQL(query = query, title = "Compute the MEAN of the {}'s lower and upper outliers".format(self.alias))
 				mean_alpha, mean_1_alpha = [item[0] for item in self.parent.cursor.fetchall()]
 				self.apply(func = "(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format('{}', p_alpha, mean_alpha, '{}', p_1_alpha, mean_1_alpha, '{}'))
@@ -563,14 +588,14 @@ class vColumn:
 					raise ValueError("A Virtual Column has already the alias of one of the dummies ({}).\nIt can be the result of using previously the method on the Virtual Column or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.".format(name))
 			for k in range(len(distinct_elements) - n):
 				name = '"{}{}"'.format(prefix, k) if (use_numbers_as_suffix) else '"{}{}"'.format(prefix, distinct_elements[k])
-				expr = "DECODE({}, '{}', 1, 0)".format("{}", distinct_elements[k])
+				expr = "DECODE({}, '{}', 1, 0)".format("{}", str(distinct_elements[k]).replace("'", "''"))
 				transformations = self.transformations + [(expr, "bool", "int")]
 				new_vColumn = vColumn(name, parent = self.parent, transformations = transformations)
 				setattr(self.parent, name, new_vColumn)
 				setattr(self.parent, name.replace('"', ''), new_vColumn)
 				self.parent.columns += [name]
 				all_new_features += [name]
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Get Dummies]: One hot encoder was applied to the vColumn '{}' and {} features were created: {}".format(self.alias, len(all_new_features), ", ".join(all_new_features)) + "."]
+			self.parent.add_to_history("[Get Dummies]: One hot encoder was applied to the Virtual Column {}\n{} features were created: {}".format(self.alias, len(all_new_features), ", ".join(all_new_features)) + ".")
 		return (self.parent)
 	#
 	def gt(self, x: float):
@@ -619,11 +644,11 @@ class vColumn:
 			expr = ["DECODE({}"]
 			text_info = "\n"
 			for k in range(len(distinct_elements)):
-				expr += ["'{}', {}".format(distinct_elements[k], k)]
+				expr += ["'{}', {}".format(str(distinct_elements[k]).replace("'", "''"), k)]
 				text_info += "\t{} => {}".format(distinct_elements[k], k)
 			expr = ", ".join(expr) + ", {})".format(len(distinct_elements))
 			self.transformations += [(expr, 'int', 'int')]
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Label Encoding]: Label Encoding was applied to the vColumn '{}' using the following mapping:{}".format(self.alias, text_info)]
+			self.parent.add_to_history("[Label Encoding]: Label Encoding was applied to the Virtual Column {} using the following mapping:{}".format(self.alias, text_info))
 		return (self.parent)
 	#
 	def le(self, x: float):
@@ -654,7 +679,7 @@ class vColumn:
 			raise TypeError("The response column must be numerical to use a mean encoding")
 		else:
 			self.transformations += [("AVG({}) OVER (PARTITION BY {})".format(response_column,"{}"), "int", "float")]
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Mean Encode]: The vColumn '{}' was transformed using a mean encoding with as response column '{}'.".format(self.alias, response_column)]
+			self.parent.add_to_history("[Mean Encode]: The Virtual Column {} was transformed using a mean encoding with {} as Response Column.".format(self.alias, response_column))
 			print("The mean encoding was successfully done.")
 		return (self.parent)
 	# 
@@ -674,7 +699,9 @@ class vColumn:
 	# 
 	def mode(self, dropna: bool = True):
 		check_types([("dropna", dropna, [bool], False)])
-		return (self.topk(k = 1, dropna = dropna).values["index"][0])
+		mode = self.topk(k = 1, dropna = dropna).values["index"]
+		mode = mode[0] if (mode) else None
+		return (mode)
 	# 
 	def mul(self, x: float):
 		check_types([("x", x, [int, float], False)])
@@ -700,7 +727,7 @@ class vColumn:
 		if (self.isnum()):
 			if (method == "zscore"):
 				query = "SELECT AVG(" + self.alias + "), STDDEV(" + self.alias + ") FROM " + self.parent.genSQL()
-				self.executeSQL(query = query, title = "Compute the AVG and STDDEV of " + self.alias + " for normalization")
+				self.executeSQL(query = query, title = "Compute the AVG and STDDEV of {} for normalization".format(self.alias))
 				avg, stddev = self.parent.cursor.fetchone()
 				if (stddev != 0):
 					self.transformations += [("({} - {}) / ({})".format("{}", avg, stddev), "float", "float")]
@@ -709,7 +736,7 @@ class vColumn:
 			elif (method == "robust_zscore"):
 				med = self.median()
 				query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) AS mad FROM {}".format(self.alias, med, self.parent.genSQL()) 
-				self.executeSQL(query = query, title = "Compute the MAD of " + self.alias + " for normalization")
+				self.executeSQL(query = query, title = "Compute the MAD of {} for normalization".format(self.alias))
 				mad = self.parent.cursor.fetchone()[0]
 				mad *= 1.4826
 				if (mad != 0):
@@ -717,14 +744,14 @@ class vColumn:
 				else:
 					print("/!\\ Warning: Can not normalize {} using a Robust Z-Score - The MAD is null !".format(self.alias))
 			elif (method == "minmax"):
-				query = "SELECT MIN(" + self.alias + "), MAX(" + self.alias + ") FROM " + self.parent.genSQL()
-				self.executeSQL(query = query, title = "Compute the MIN and MAX of " + self.alias + " for normalization")
+				query = "SELECT MIN({}), MAX({}) FROM {}".format(self.alias, self.alias, self.parent.genSQL())
+				self.executeSQL(query = query, title = "Compute the MIN and MAX of {} for normalization".format(self.alias))
 				cmin, cmax = self.parent.cursor.fetchone()
 				if (cmax - cmin != 0):
 					self.transformations+=[("({} - {}) / ({} - {})".format("{}", cmin, cmax, cmin), "float", "float")]
 				else:
 					print("/!\\ Warning: Can not normalize {} using the MIN and the MAX - MAX = MIN !".format(self.alias))
-			self.parent.history += ["{" + time.strftime("%c") + "} " + "[Normalize]: The vColumn '{}' was normalized with the method '{}'.".format(self.alias,method)]
+			self.parent.add_to_history("[Normalize]: The vColumn '{}' was normalized with the method '{}'.".format(self.alias,method))
 		else:
 			raise TypeError("The Virtual Column must be numerical for Normalization")
 		return (self.parent)
@@ -741,15 +768,15 @@ class vColumn:
 			count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result[0], result[3], result[4], result[6], result[7]
 		elif (self.isdate()):
 			min_date = self.min()
-			table = "(SELECT DATEDIFF('second','{}'::timestamp, {}) AS {} FROM {}) best_h_date_table".format(min_date, self.alias, self.alias, self.parent.genSQL())
+			table = "(SELECT DATEDIFF('second', '{}'::timestamp, {}) AS {} FROM {}) best_h_date_table".format(min_date, self.alias, self.alias, self.parent.genSQL())
 			query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(self.alias, self.alias, self.alias, self.alias, self.alias, table)
 			self.executeSQL(query, title = "AGGR to compute h")
 			result = self.parent.cursor.fetchone()
 			count, vColumn_min, vColumn_025, vColumn_075, vColumn_max  = result
 		else:
-			raise TypeError("numh is only available on type float|date")
-		sturges = math.floor(float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 1))) + 1
-		fd = math.floor(2.0 * (vColumn_075 - vColumn_025) / (count) ** (1.0 / 3.0)) + 1
+			raise TypeError("numh is only available on type numeric|date")
+		sturges = max(float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 1)), 1e-99)
+		fd = max(2.0 * (vColumn_075 - vColumn_025) / (count) ** (1.0 / 3.0), 1e-99)
 		if (method.lower() == "sturges"):
 			return (sturges)
 		elif (method.lower() in ("freedman_diaconis", "fd")):
@@ -757,10 +784,12 @@ class vColumn:
 		else:
 			return (max(sturges, fd))
 	# 
-	def nunique(self):
-		query = "SELECT COUNT(DISTINCT {}) FROM {} WHERE {} IS NOT NULL".format(self.alias, self.parent.genSQL(), self.alias)
-		self.executeSQL(query = query, title = "Compute the feature {} cardinality".format(self.alias))
-		return (self.parent.cursor.fetchone()[0])
+	def nunique(self, approx: bool = False):
+		check_types([("approx", approx, [bool], False)])
+		if (approx):
+			return (self.aggregate(func = ["approx_unique"]).values[self.alias][0])
+		else:
+			return (self.aggregate(func = ["unique"]).values[self.alias][0])
 	#
 	def pct_change(self, order_by: list, by: list = []):
 		check_types([("order_by", order_by, [list], False), ("by", by, [list], False)])
@@ -825,7 +854,7 @@ class vColumn:
 			raise ValueError("A Virtual Column has already the alias {}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.".format(new_name))
 		self.add_copy(new_name)
 		parent = self.drop(add_history = False)
-		parent.history += ["{" + time.strftime("%c") + "} " + "[Rename]: The vColumn {} was renamed '{}'.".format(old_name, new_name)]
+		parent.add_to_history("[Rename]: The vColumn {} was renamed '{}'.".format(old_name, new_name))
 		return (parent)
 	# 
 	def round(self, n: int):
@@ -847,7 +876,13 @@ class vColumn:
 		return (self.apply(func = "TIME_SLICE({}, {}, '{}', '{}')".format("{}", length, unit.upper(), start_or_end)))
 	#
 	def store_usage(self):
-		self.parent.cursor.execute("SELECT SUM(LENGTH({}::varchar)) FROM {}".format(self.alias, self.parent.genSQL()))
+		if (self.category() == "binary"):
+			func = "TO_HEX({})".format(self.alias)
+		elif (self.category() == "spatial"):
+			func = "ST_AsText({})".format(self.alias)
+		else:
+			func = self.alias
+		self.parent.cursor.execute("SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(func, self.parent.genSQL()))
 		return (self.parent.cursor.fetchone()[0])
 	#
 	def summarize_numcol(self):
@@ -876,19 +911,19 @@ class vColumn:
 	# 
 	def str_contains(self, pat: str):
 		check_types([("pat", pat, [str], False)])
-		return (self.apply(func = "REGEXP_COUNT({}, '{}') > 0".format("{}", pat))) 
+		return (self.apply(func = "REGEXP_COUNT({}, '{}') > 0".format("{}", pat.replace("'", "''")))) 
 	# 
 	def str_count(self, pat: str):
 		check_types([("pat", pat, [str], False)])
-		return (self.apply(func = "REGEXP_COUNT({}, '{}')".format("{}", pat))) 
+		return (self.apply(func = "REGEXP_COUNT({}, '{}')".format("{}", pat.replace("'", "''")))) 
 	# 
 	def str_extract(self, pat: str):
 		check_types([("pat", pat, [str], False)])
-		return (self.apply(func = "REGEXP_SUBSTR({}, '{}')".format("{}", pat))) 
+		return (self.apply(func = "REGEXP_SUBSTR({}, '{}')".format("{}", pat.replace("'", "''")))) 
 	#
 	def str_replace(self, to_replace: str, value: str = ""):
 		check_types([("to_replace", to_replace, [str], False), ("value", value, [str], False)])
-		return (self.apply(func = "REGEXP_REPLACE({}, '{}', '{}')".format("{}", to_replace, value))) 
+		return (self.apply(func = "REGEXP_REPLACE({}, '{}', '{}')".format("{}", to_replace.replace("'", "''"), value.replace("'", "''")))) 
 	# 
 	def str_slice(self, start: int, step: int):
 		check_types([("start", start, [int, float], False), ("step", step, [int, float], False)])
@@ -906,7 +941,15 @@ class vColumn:
 	# 
 	def tail(self, limit: int = 5, offset: int = 0):
 		check_types([("limit", limit, [int, float], False), ("offset", offset, [int, float], False)])
-		tail = to_tablesample("SELECT {} FROM {} LIMIT {} OFFSET {}".format(self.alias, self.parent.genSQL(), limit, offset), self.parent.cursor)
+		if (self.category() == "binary"):
+			func = 'TO_HEX({}) AS {}'.format(self.alias, self.alias)
+		elif (self.category() == "spatial"):
+			func = 'ST_AsText({}) AS {}'.format(self.alias, self.alias)
+		elif (self.category() == "date"):
+			func = '{}::varchar AS {}'.format(self.alias, self.alias)
+		else:
+			func = self.alias
+		tail = to_tablesample("SELECT {} FROM {} LIMIT {} OFFSET {}".format(func, self.parent.genSQL(), limit, offset), self.parent.cursor)
 		tail.count = self.parent.shape()[0]
 		tail.offset = offset
 		tail.dtype[self.alias.replace('"', '')] = self.ctype()
@@ -915,16 +958,26 @@ class vColumn:
 	# 
 	def topk(self, k: int = -1, dropna: bool = True):
 		check_types([("k", k, [int, float], False), ("dropna", dropna, [bool], False)])
-		if (k < 1):
-			topk = ""
-		else:
-			topk = "TOPK = {},".format(k)
-		query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS {} WITH_TOTALCOUNT = False) OVER () FROM {}".format(self.alias, topk, self.parent.genSQL())
-		if (dropna):
-			query += " WHERE {} IS NOT NULL".format(self.alias)
-		self.executeSQL(query, title = "Compute the TOPK categories of "+self.alias)
+		try:
+			topk = "" if (k < 1) else "TOPK = {},".format(k)
+			query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS {} WITH_TOTALCOUNT = False) OVER () FROM {}".format(self.alias, topk, self.parent.genSQL())
+			if (dropna):
+				query += " WHERE {} IS NOT NULL".format(self.alias)
+			self.executeSQL(query, title = "Compute the TOPK categories of {}".format(self.alias))
+		except:
+			topk = "" if (k < 1) else "LIMIT {}".format(k)
+			if (self.category() == "binary"):
+				func = 'TO_HEX({}) AS {}'.format(self.alias, self.alias)
+			elif (self.category() == "spatial"):
+				func = 'ST_AsText({}) AS {}'.format(self.alias, self.alias)
+			elif (self.category() == "date"):
+				func = '{}::varchar AS {}'.format(self.alias, self.alias)
+			else:
+				func = self.alias
+			query = "SELECT {}, COUNT(*) AS cnt, 100 * COUNT(*) / {} AS percent FROM {} GROUP BY {} ORDER BY cnt DESC {}".format(func, self.parent.shape()[0], self.parent.genSQL(), self.alias, topk)
+			self.executeSQL(query, title = "Compute the TOPK categories of {}".format(self.alias))
 		result = self.parent.cursor.fetchall()
-		values = {"index" : [item[0] for item in result], "count" : [item[1] for item in result], "percent" : [item[2] for item in result]}
+		values = {"index" : [item[0] for item in result], "count" : [item[1] for item in result], "percent" : [round(item[2], 3) for item in result]}
 		return (tablesample(values, table_info = False))
 	#
 	def to_timestamp(self):

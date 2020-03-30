@@ -32,7 +32,7 @@
 #####################################################################################
 #
 # Libraries
-import numpy as np
+import random
 import os
 import math
 import time
@@ -50,8 +50,10 @@ def category_from_type(ctype: str = ""):
 			return "float"
 		elif (("binary" in ctype) or ("byte" in ctype) or (ctype == "raw")):
 			return "binary"
-		elif ((ctype[0:3] == "geo") or ("uuid" in ctype)):
+		elif (ctype[0:3] == "geo"):
 			return "spatial"
+		elif ("uuid" in ctype):
+			return "uuid"
 		else:
 			return "text"
 	else:
@@ -136,7 +138,6 @@ def drop_view(name: str,
 			print("The view {} was successfully dropped.".format(name))
 	except:
 		print("/!\\ Warning: The view {} doesn't exist !".format(name))
-
 # 
 def isnotebook():
     try:
@@ -163,7 +164,7 @@ def load_model(name: str, cursor, test_relation: str = ""):
 		except:
 			from vertica_ml_python.learn.preprocessing import Normalizer
 			model = Normalizer(name, cursor)
-			model.param = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(name), cursor = cursor)
+			model.param = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(name.replace("'", "''")), cursor = cursor)
 			model.param.table_info = False
 			model.X = ['"' + item + '"' for item in model.param.values["column_name"]]
 			if ("avg" in model.param.values):
@@ -234,31 +235,31 @@ def load_model(name: str, cursor, test_relation: str = ""):
 	elif (model_type in ("pca")):
 		model.X = info.split(",")[2:len(info.split(","))]
 		model.X = [item.replace("'", '').replace('\\', '') for item in model.X]
-		model.components = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'principal_components')".format(name), cursor = cursor)
+		model.components = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'principal_components')".format(name.replace("'", "''")), cursor = cursor)
 		model.components.table_info = False
-		model.explained_variance = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(name), cursor = cursor)
+		model.explained_variance = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(name.replace("'", "''")), cursor = cursor)
 		model.explained_variance.table_info = False
-		model.mean = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'columns')".format(name), cursor = cursor)
+		model.mean = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'columns')".format(name.replace("'", "''")), cursor = cursor)
 		model.mean.table_info = False
 	elif (model_type in ("svd")):
 		model.X = info.split(",")[2:len(info.split(","))]
 		model.X = [item.replace("'", '').replace('\\', '') for item in model.X]
-		model.singular_values = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'right_singular_vectors')".format(name), cursor = cursor)
+		model.singular_values = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'right_singular_vectors')".format(name.replace("'", "''")), cursor = cursor)
 		model.singular_values.table_info = False
-		model.explained_variance = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(name), cursor = cursor)
+		model.explained_variance = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(name.replace("'", "''")), cursor = cursor)
 		model.explained_variance.table_info = False
 	elif (model_type in ("one_hot_encoder_fit")):
 		model.X = info.split(",")[2:len(info.split(","))]
 		model.X = [item.replace("'", '').replace('\\', '') for item in model.X]
-		model.param = to_tablesample(query = "SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(name, name), cursor = cursor)
+		model.param = to_tablesample(query = "SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(name.replace("'", "''"), name.replace("'", "''")), cursor = cursor)
 		model.param.table_info = False
 	else:
 		model.X = info.split(",")[2:len(info.split(",")) - 1]
 		model.X = [item.replace("'", '').replace('\\', '') for item in model.X]
 		model.n_cluster = int(info.split(",")[-1])
-		model.cluster_centers = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(name), cursor = cursor)
+		model.cluster_centers = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(name.replace("'", "''")), cursor = cursor)
 		model.cluster_centers.table_info = False
-		query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(name)
+		query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(name.replace("'", "''"))
 		cursor.execute(query)
 		result = cursor.fetchone()[0]
 		values = {"index": ["Between-Cluster Sum of Squares", "Total Sum of Squares", "Total Within-Cluster Sum of Squares", "Between-Cluster SS / Total SS", "converged"]}
@@ -373,9 +374,9 @@ def print_table(data_columns, is_finished = True, offset = 0, repeat_first_colum
 		return formatted_text
 #
 def pjson(path: str, cursor):
-	flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+	flex_name = "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
 	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
-	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path))
+	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path.replace("'", "''")))
 	cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
 	cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
 	result = cursor.fetchall()
@@ -391,21 +392,24 @@ def pcsv(path: str,
 		 header: bool = True,
 		 header_names: list = [],
 		 null: str = '', 
-		 enclosed_by: str = '"', 
+		 enclosed_by: str = '"',
 		 escape: str = '\\'):
-	flex_name = "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+	flex_name = "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
 	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
 	header_names = '' if not(header_names) else "header_names = '{}',".format(delimiter.join(header_names))
-	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(flex_name, path, delimiter, header, header_names, enclosed_by, escape, null))
+	try:
+		with open(path, "r") as fs:
+			cursor.copy("COPY {} FROM STDIN PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(flex_name, delimiter, header, header_names, enclosed_by, escape, null), fs)
+	except:
+		cursor.execute("COPY {} FROM LOCAL '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(flex_name, path, delimiter, header, header_names, enclosed_by, escape, null))
 	cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
 	cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
 	result = cursor.fetchall()
 	dtype = {}
 	for column_dtype in result:
 		try:
-			if ("Varchar" not in column_dtype[1]):
-				query = 'SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
-				cursor.execute(query)
+			query = 'SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(column_dtype[0], null, column_dtype[0], column_dtype[1], column_dtype[0], flex_name, column_dtype[0])
+			cursor.execute(query)
 			dtype[column_dtype[0]] = column_dtype[1]
 		except:
 			dtype[column_dtype[0]] = "Varchar(100)"
@@ -426,12 +430,13 @@ def read_csv(path: str,
 			 parse_n_lines: int = -1,
 			 insert: bool = False):
 	check_types([("schema", schema, [str], False), ("table_name", table_name, [str], False), ("delimiter", delimiter, [str], False), ("header", header, [bool], False), ("header_names", header_names, [list], False), ("null", null, [str], False), ("enclosed_by", enclosed_by, [str], False), ("escape", escape, [str], False), ("genSQL", genSQL, [bool], False), ("parse_n_lines", parse_n_lines, [int, float], False), ("insert", insert, [bool], False)])
+	path, delimiter, header_names, null, enclosed_by, escape = path.replace("'", "''"), delimiter.replace("'", "''"), [str(elem).replace("'", "''") for elem in header_names], null.replace("'", "''"), enclosed_by.replace("'", "''"), escape.replace("'", "''")
 	file = path.split("/")[-1]
 	file_extension = file[-3:len(file)]
 	if (file_extension != 'csv'):
 		raise ValueError("The file extension is incorrect !")
 	table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
-	query = "SELECT column_name FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
+	query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}'".format(table_name.replace("'", "''"), schema.replace("'", "''"))
 	cursor.execute(query)
 	result = cursor.fetchall()
 	if ((result != []) and not(insert)):
@@ -458,20 +463,25 @@ def read_csv(path: str,
 			path_test = path[0:-4] + "_vpython_copy.csv"
 		else:
 			path_test = path
-		query = ""
+		query1 = ""
 		if not(insert):
 			dtype = pcsv(path_test, cursor, delimiter, header, header_names, null, enclosed_by, escape)
 			if (parse_n_lines > 0):
 				os.remove(path[0:-4] + "_vpython_copy.csv")
-			query  = "CREATE TABLE {}({});\n".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
+			query1  = "CREATE TABLE {}({});".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
 		skip   = " SKIP 1" if (header) else ""
-		query += "COPY {}({}) FROM LOCAL '{}' DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
-					input_relation,", ".join(['"' + column + '"' for column in header_names]), path, delimiter, null, enclosed_by, escape, skip)
+		query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(input_relation, ", ".join(['"' + column + '"' for column in header_names]), "{}", delimiter, null, enclosed_by, escape, skip)
 		if (genSQL):
-			print(query)
+			print(query1 + "\n" + query)
 		else:
-			cursor.execute(query)
-			if not(insert):
+			if (query1):
+				cursor.execute(query1)
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+					cursor.copy(query2.format('STDIN'), fs)
+			else:
+				cursor.execute(query2.format("LOCAL '{}'".format(path)))
+			if (query1):
 				print("The table {} has been successfully created.".format(input_relation))
 			from vertica_ml_python import vDataframe
 			return vDataframe(table_name, cursor, schema = schema)
@@ -489,7 +499,7 @@ def read_json(path: str,
 	if (file_extension != 'json'):
 		raise ValueError("The file extension is incorrect !")
 	table_name = table_name if (table_name) else path.split("/")[-1].split(".json")[0]
-	query = "SELECT column_name, data_type FROM columns WHERE table_name='{}' AND table_schema='{}'".format(table_name, schema)
+	query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'".format(table_name.replace("'", "''"), schema.replace("'", "''"))
 	cursor.execute(query)
 	column_name = cursor.fetchall()
 	if ((column_name != []) and not(insert)):
@@ -497,17 +507,20 @@ def read_json(path: str,
 	elif ((column_name == []) and (insert)):
 		raise Exception("The table \"{}\".\"{}\" doesn't exist !".format(schema, table_name))
 	else:
-		input_relation, flex_name = '"{}"."{}"'.format(schema, table_name), "_vpython" + str(np.random.randint(10000000)) + "_flex_"
+		input_relation, flex_name = '"{}"."{}"'.format(schema, table_name), "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
 		cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
-		cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path))
+		if ("vertica_python" in str(type(cursor))):
+			with open(path, "r") as fs:
+				cursor.copy("COPY {} FROM STDIN PARSER FJSONPARSER();".format(flex_name), fs)
+		else:
+			cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path.replace("'", "''")))
 		cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
 		cursor.execute("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name))
 		result = cursor.fetchall()
 		dtype = {}
 		for column_dtype in result:
 			try:
-				if ("Varchar" not in column_dtype[1]):
-					cursor.execute('SELECT "{}"::{} FROM {} LIMIT 1000'.format(column_dtype[0], column_dtype[1], flex_name))
+				cursor.execute('SELECT "{}"::{} FROM {} LIMIT 1000'.format(column_dtype[0], column_dtype[1], flex_name))
 				dtype[column_dtype[0]] = column_dtype[1]
 			except:
 				dtype[column_dtype[0]] = "Varchar(100)"
@@ -666,16 +679,16 @@ def to_tablesample(query: str, cursor, name = "Sample"):
 def vertica_cursor(dsn: str):
 	check_types([("dsn", dsn, [str], False)])
 	try:
-		import pyodbc
+		import vertica_python
 		success = 1
 	except:
 		try:
-			print("Failed to connect with pyodbc, try a connection with vertica_python")
-			import vertica_python
+			print("Failed to import vertica_python, try to import pyodbc")
+			import pyodbc
 			success = 0
 		except:
 			raise Exception("Neither pyodbc or vertica_python is installed in your computer\nPlease install one of the Library using the 'pip install' command to be able to create a Vertica Cursor")
-	if (success):
+	if not(success):
 		cursor = pyodbc.connect("DSN=" + dsn, autocommit = True).cursor()
 	else:
 		cursor = vertica_python.connect(** to_vertica_python_format(dsn), autocommit = True).cursor()
@@ -723,11 +736,11 @@ def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str 
 	vdf.cursor = cursor
 	vdf.query_on = False
 	vdf.time_on = False
-	cursor.execute("DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(schema), name))
-	cursor.execute("CREATE TEMPORARY TABLE {}._vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(str_column(schema), name, relation))
-	cursor.execute("SELECT column_name, data_type FROM columns WHERE table_name = '_vpython_{}_test_' AND table_schema = '{}'".format(name, schema.replace('"', '')))
+	cursor.execute("DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(name))
+	cursor.execute("CREATE LOCAL TEMPORARY TABLE _vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(name, relation))
+	cursor.execute("SELECT column_name, data_type FROM columns WHERE table_name = '_vpython_{}_test_' AND table_schema = 'v_temp_schema'".format(name))
 	result = cursor.fetchall()
-	cursor.execute("DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(schema), name))
+	cursor.execute("DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(name))
 	vdf.columns = ['"' + item[0] + '"' for item in result]
 	vdf.where = []
 	vdf.order_by = ['' for i in range(100)]

@@ -32,7 +32,7 @@
 #####################################################################################
 #
 # Libraries
-import numpy as np
+import random
 import os
 import math
 import time
@@ -84,9 +84,9 @@ class vDataframe:
 			# Cursor to the Vertica Database
 			self.cursor = cursor
 			# All the columns of the vDataframe
-			where = " AND LOWER(column_name) IN ({})".format(", ".join(["'{}'".format(lower(elem)) for elem in usecols])) if (usecols) else ""
-			query = "(SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation, self.schema, where)
-			query += " UNION (SELECT column_name, data_type FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation, self.schema, where)
+			where = " AND LOWER(column_name) IN ({})".format(", ".join(["'{}'".format(elem.lower().replace("'", "''")) for elem in usecols])) if (usecols) else ""
+			query = "(SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation.replace("'", "''"), self.schema.replace("'", "''"), where)
+			query += " UNION (SELECT column_name, data_type FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation.replace("'", "''"), self.schema.replace("'", "''"), where)
 			cursor.execute(query)
 			columns_dtype = cursor.fetchall()
 			columns_dtype = [(str('"{}"'.format(item[0])), str(item[1])) for item in columns_dtype]
@@ -118,7 +118,14 @@ class vDataframe:
 			self.main_relation = '"{}"."{}"'.format(self.schema, self.input_relation)
 	# 
 	def __getitem__(self, index):
-		return getattr(self, index)
+		try:
+			return getattr(self, index)
+		except:
+			new_index = vdf_columns_names([index], self)
+			if (len(new_index) == 1):
+				return getattr(self, new_index[0])
+			else: 
+				raise
 	def __setitem__(self, index, val):
 		setattr(self, index, val)
 	# 
@@ -133,8 +140,9 @@ class vDataframe:
 	def genSQL(self, 
 			   split: bool = False, 
 			   transformations: dict = {}, 
-			   force_columns = [],
-			   final_table_name = "final_table"):
+			   force_columns: list = [],
+			   final_table_name: str = "final_table",
+			   return_without_alias: bool = False):
 		# FINDING MAX FLOOR
 		all_imputations_grammar = []
 		force_columns = self.columns if not(force_columns) else force_columns
@@ -190,12 +198,18 @@ class vDataframe:
 		split = ", RANDOM() AS __split_vpython__" if (split) else ""
 		if (where_final == "") and (order_final == ""):
 			if (split):
+				if (return_without_alias):
+					return "SELECT *{} FROM ({}) {}".format(split, table, final_table_name)
 				table = "(SELECT *{} FROM ({}) {}) split_final_table".format(split, table, final_table_name)
 			else:
+				if (return_without_alias):
+					return table
 				table = "({}) {}".format(table, final_table_name)
 		else:
 			table = "({}) t{}".format(table, max_len)
 			table += where_final + order_final
+			if (return_without_alias):
+					return table
 			table = "(SELECT *{} FROM {}) {}".format(split, table, final_table_name)
 		if (self.exclude_columns):
 			table = "(SELECT {}{} FROM {}) {}".format(", ".join(self.get_columns()), split, table, final_table_name)
@@ -215,6 +229,10 @@ class vDataframe:
 				func[column] = "ABS({})"
 		return (self.apply(func))
 	#
+	def add_to_history(self, message: str):
+		check_types([("message", message, [str], False)])
+		self.history += ["{}{}{} {}".format("{", time.strftime("%c"), "}", message)]
+	#
 	def agg(self, func: list, columns: list = []):
 		return (self.aggregate(func = func, columns = columns))
 	def aggregate(self, func: list, columns: list = []):
@@ -225,13 +243,19 @@ class vDataframe:
 		for idx, column in enumerate(columns):
 			cast = "::int" if (self[column].ctype() == "boolean") else ""
 			for fun in func:
-				if (fun.lower() == "median"):
+				if (fun.lower() == "unique"):
+					expr = "COUNT(DISTINCT {})".format(column)
+				elif (fun.lower() == "approx_unique"):
+					expr = "APPROXIMATE_COUNT_DISTINCT({})".format(column)
+				elif (fun.lower() == "count"):
+					expr = "COUNT({})".format(column)
+				elif (fun.lower() == "median"):
 					expr = "APPROXIMATE_MEDIAN({}{})".format(column, cast)
-				elif (fun.lower() == "std"):
+				elif (fun.lower() in ("std", "stddev")):
 					expr = "STDDEV({}{})".format(column, cast)
-				elif (fun.lower() == "var"):
+				elif (fun.lower() in ("var", "variance")):
 					expr = "VARIANCE({}{})".format(column, cast)
-				elif (fun.lower() == "mean"):
+				elif (fun.lower() in ("mean", "avg")):
 					expr = "AVG({}{})".format(column, cast)
 				elif ('%' in fun):
 					expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(column, cast, float(fun[0:-1]) / 100)
@@ -266,7 +290,7 @@ class vDataframe:
 		except:
 			query = ["SELECT {} FROM vdf_table".format(', '.join(elem)) for elem in agg]
 			query = " UNION ALL ".join(["({})".format(elem) for elem in query]) if (len(query) != 1) else query[0]
-			query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.genSQL(), query)
+			query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), query)
 			self.executeSQL(query, title = "COMPUTE AGGREGATION(S) WITH UNION ALL")
 			result = self.cursor.fetchall()
 			for idx, elem in enumerate(result):
@@ -348,67 +372,88 @@ class vDataframe:
 			except:
 				return None
 		elif (len(columns) >= 2):
-			if (method in ("pearson", "spearman", "kendall", "biserial", "cramer")):
-				title_query = "Compute all the Correlations in a single query"
-				title = 'Correlation Matrix ({})'.format(method)
-				if (method == "biserial"):
-					i0, step = 0, 1
-				else:
-					i0, step = 1, 0 
-			elif (method == "cov"):
-				title_query = "Compute all the Covariances in a single query"
-				title = 'Covariance Matrix'
-				i0, step = 0, 1
-			elif (method == "beta"):
-				title_query = "Compute all the Beta Coefficients in a single query"
-				title = 'Elasticity Matrix'
-				i0, step = 1, 0
 			try:
-				all_list = []
-				n = len(columns)
-				for i in range(i0, n):
-					for j in range(0, i + step):
-						cast_i = "::int" if (self[columns[i]].ctype() == "boolean") else ""
-						cast_j = "::int" if (self[columns[j]].ctype() == "boolean") else ""
-						if (method in ("pearson", "spearman")):
-							all_list += ["ROUND(CORR({}{}, {}{}), {})".format(columns[i], cast_i, columns[j], cast_j, round_nb)]
-						elif (method == "kendall"):
-							all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
-								columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
-						elif (method == "cov"):
-							all_list += ["COVAR_POP({}{}, {}{})".format(columns[i], cast_i, columns[j], cast_j)]
-						elif (method == "beta"):
-							all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
-						else:
-							raise
-				if (method == "spearman"):
-					rank = ["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in columns]
-					table = "(SELECT {} FROM {}) rank_spearman_table".format(", ".join(rank), self.genSQL())
-				elif (method == "kendall"):
-					table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(", ".join(columns), self.genSQL(), ", ".join(columns), self.genSQL())
+				if (method in ("pearson", "spearman")):
+					table = self.genSQL() if (method == "pearson") else "(SELECT {} FROM {}) spearman_table".format(", ".join(["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in columns]), self.genSQL())
+					self.executeSQL(query = "SELECT CORR_MATRIX({}) OVER () FROM {}".format(", ".join(columns), table), title = "Computing the Corr Matrix")
+					result = self.cursor.fetchall()
+					corr_dict = {}
+					for idx, column in enumerate(columns):
+						corr_dict[column] = idx
+					n = len(columns)
+					matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
+					for elem in result:
+						i = corr_dict[str_column(elem[0])]
+						j = corr_dict[str_column(elem[1])]
+						matrix[i + 1][j + 1] = elem[2]
+					matrix[0] = [''] + columns
+					for idx, column in enumerate(columns):
+						matrix[idx + 1][0] = column
+					title = 'Correlation Matrix ({})'.format(method)
 				else:
-					table = self.genSQL()
-				self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = title_query)
-				result = self.cursor.fetchone()
+					raise
 			except:
-				n = len(columns)
-				result = []
+				if (method in ("pearson", "spearman", "kendall", "biserial", "cramer")):
+					title_query = "Compute all the Correlations in a single query"
+					title = 'Correlation Matrix ({})'.format(method)
+					if (method == "biserial"):
+						i0, step = 0, 1
+					else:
+						i0, step = 1, 0 
+				elif (method == "cov"):
+					title_query = "Compute all the Covariances in a single query"
+					title = 'Covariance Matrix'
+					i0, step = 0, 1
+				elif (method == "beta"):
+					title_query = "Compute all the Beta Coefficients in a single query"
+					title = 'Elasticity Matrix'
+					i0, step = 1, 0
+				try:
+					all_list = []
+					n = len(columns)
+					for i in range(i0, n):
+						for j in range(0, i + step):
+							cast_i = "::int" if (self[columns[i]].ctype() == "boolean") else ""
+							cast_j = "::int" if (self[columns[j]].ctype() == "boolean") else ""
+							if (method in ("pearson", "spearman")):
+								all_list += ["ROUND(CORR({}{}, {}{}), {})".format(columns[i], cast_i, columns[j], cast_j, round_nb)]
+							elif (method == "kendall"):
+								all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
+									columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j, columns[i], cast_i, columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
+							elif (method == "cov"):
+								all_list += ["COVAR_POP({}{}, {}{})".format(columns[i], cast_i, columns[j], cast_j)]
+							elif (method == "beta"):
+								all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(columns[i], cast_i, columns[j], cast_j, columns[j], cast_j)]
+							else:
+								raise
+					if (method == "spearman"):
+						rank = ["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in columns]
+						table = "(SELECT {} FROM {}) rank_spearman_table".format(", ".join(rank), self.genSQL())
+					elif (method == "kendall"):
+						table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(", ".join(columns), self.genSQL(), ", ".join(columns), self.genSQL())
+					else:
+						table = self.genSQL()
+					self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = title_query)
+					result = self.cursor.fetchone()
+				except:
+					n = len(columns)
+					result = []
+					for i in range(i0, n):
+						for j in range(0, i + step):
+							result += [self.aggregate_matrix(method, [columns[i], columns[j]])]
+				matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
+				matrix[0] = [""] + columns
+				for i in range(0, n + 1):
+					matrix[i][0] = columns[i - 1]
+				k = 0
 				for i in range(i0, n):
 					for j in range(0, i + step):
-						result += [self.aggregate_matrix(method, [columns[i], columns[j]])]
-			matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
-			matrix[0] = [""] + columns
-			for i in range(0, n + 1):
-				matrix[i][0] = columns[i - 1]
-			k = 0
-			for i in range(i0, n):
-				for j in range(0, i + step):
-					current = result[k]
-					k += 1
-					if (current == None):
-						current = ""
-					matrix[i + 1][j + 1] = current
-					matrix[j + 1][i + 1] = 1 / current if ((method == "beta") and (current != 0)) else current
+						current = result[k]
+						k += 1
+						if (current == None):
+							current = ""
+						matrix[i + 1][j + 1] = current
+						matrix[j + 1][i + 1] = 1 / current if ((method == "beta") and (current != 0)) else current
 			if ((show) and (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))):
 				from vertica_ml_python.plot import cmatrix
 				vmin = 0 if (method == "cramer") else -1
@@ -452,32 +497,36 @@ class vDataframe:
 		else:
 			cols = vdf_columns_names(columns, self)
 		if (method in ('spearman', 'pearson', 'kendall') and (len(cols) > 1)):
-			cast_i = "::int" if (self[focus].ctype() == "boolean") else ""
-			all_list, all_cols  = [], [focus]
-			for column in cols:
-				if (column.replace('"', '').lower() != focus.replace('"', '').lower()):
-					all_cols += [column]
-				cast_j = "::int" if (self[column].ctype() == "boolean") else ""
-				if (method in ("pearson", "spearman")):
-					all_list += ["ROUND(CORR({}{}, {}{}), {})".format(focus, cast_i, column, cast_j, round_nb)]
+			try:
+				fail = 0
+				cast_i = "::int" if (self[focus].ctype() == "boolean") else ""
+				all_list, all_cols  = [], [focus]
+				for column in cols:
+					if (column.replace('"', '').lower() != focus.replace('"', '').lower()):
+						all_cols += [column]
+					cast_j = "::int" if (self[column].ctype() == "boolean") else ""
+					if (method in ("pearson", "spearman")):
+						all_list += ["ROUND(CORR({}{}, {}{}), {})".format(focus, cast_i, column, cast_j, round_nb)]
+					elif (method == "kendall"):
+						all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
+							focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j)]
+					elif (method == "cov"):
+						all_list += ["COVAR_POP({}{}, {}{})".format(focus, cast_i, column, cast_j)]
+					elif (method == "beta"):
+						all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(focus, cast_i, column, cast_j, column, cast_j)]
+				if (method == "spearman"):
+					rank = ["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in all_cols]
+					table = "(SELECT {} FROM {}) rank_spearman_table".format(", ".join(rank), self.genSQL())
 				elif (method == "kendall"):
-					all_list += ["(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int) - SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int)) / NULLIFZERO(SUM((x.{}{} != y.{}{} AND x.{}{} != y.{}{})::int))".format(
-						focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j, focus, cast_i, focus, cast_i, column, cast_j, column, cast_j)]
-				elif (method == "cov"):
-					all_list += ["COVAR_POP({}{}, {}{})".format(focus, cast_i, column, cast_j)]
-				elif (method == "beta"):
-					all_list += ["COVAR_POP({}{}, {}{}) / VARIANCE({}{})".format(focus, cast_i, column, cast_j, column, cast_j)]
-			if (method == "spearman"):
-				rank = ["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in all_cols]
-				table = "(SELECT {} FROM {}) rank_spearman_table".format(", ".join(rank), self.genSQL())
-			elif (method == "kendall"):
-				table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(", ".join(all_cols), self.genSQL(), ", ".join(all_cols), self.genSQL())
-			else:
-				table = self.genSQL()
-			self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = "Compute the Correlation Vector")
-			result = self.cursor.fetchone()
-			vector = [elem for elem in result]
-		else: 
+					table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(", ".join(all_cols), self.genSQL(), ", ".join(all_cols), self.genSQL())
+				else:
+					table = self.genSQL()
+				self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = "Compute the Correlation Vector")
+				result = self.cursor.fetchone()
+				vector = [elem for elem in result]
+			except:
+				fail = 1
+		if not(method in ('spearman', 'pearson', 'kendall') and (len(cols) > 1)) or (fail): 
 			vector = []
 			for column in cols:
 				if (column.replace('"', '').lower() == focus.replace('"', '').lower()):
@@ -648,7 +697,7 @@ class vDataframe:
 		check_types([("max_cardinality", max_cardinality, [int, float], False)])
 		columns = []
 		for column in self.get_columns():
-			if (self[column].nunique() <= max_cardinality):
+			if (self[column].nunique(True) <= max_cardinality):
 				columns += [column]
 		return (columns)
 	#
@@ -798,7 +847,7 @@ class vDataframe:
 					else:
 						query += [column]
 				else:
-					print("/!\\ Warning: The Virtual Column '{}' is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(column))
+					print("/!\\ Warning: The Virtual Column {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(column))
 			if not(query):
 				raise ValueError("There is no numerical Virtual Column in the vDataframe.")
 			try:
@@ -810,9 +859,9 @@ class vDataframe:
 					if self[column].isnum():
 						cast = "::int" if (self[column].ctype() == "boolean") else ""
 						query += ["SELECT '{}' AS column, COUNT({}) AS count, AVG({}{}) AS mean, STDDEV({}{}) AS std, MIN({}{}) AS min, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.25) AS '25%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.5) AS '50%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.75) AS '75%', MAX({}{}) AS max FROM vdf_table".format(
-									column.replace('"', ''), column, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast)]
+									column.replace('"', '').replace("'", "''"), column, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast, column, cast)]
 				query = query[0] if (len(query) == 1) else " UNION ALL ".join(["({})".format(elem) for elem in query])
-				query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(self.genSQL(), query)
+				query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), query)
 				self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns using standard SQL")
 			query_result = self.cursor.fetchall()
 			data = [item for item in query_result]
@@ -823,18 +872,11 @@ class vDataframe:
 			if (unique):
 				query = []
 				try:
-					for column in matrix[0][1:]:
-						query += ["COUNT(DISTINCT {})".format('"{}"'.format(column))]
-					query = "SELECT " + ",".join(query) + " FROM " + self.genSQL()
-					self.executeSQL(query, title = "Compute the cardinalities of all the elements in a single query")
-					cardinality=self.cursor.fetchone()
-					cardinality=[item for item in cardinality]
+					cardinality = self.aggregate(['approx_unique'], matrix[0][1:]).values['approx_unique']
 				except:
 					cardinality = []
 					for column in matrix[0][1:]:
-						query = "SELECT COUNT(DISTINCT {}) FROM {}".format('"{}"'.format(column), self.genSQL())
-						self.executeSQL(query, title = "New attempt: Compute one per one all the cardinalities")
-						cardinality += [self.cursor.fetchone()[0]]
+						cardinality += self.aggregate(['unique'], [column]).values['unique']
 				matrix += [['unique'] + cardinality]
 			values = {"index" : matrix[0][1:len(matrix[0])]}
 			del(matrix[0])
@@ -843,21 +885,45 @@ class vDataframe:
 		elif (method == "categorical"):
 			if not(columns):
 				columns = self.get_columns()
-			values = {"index" : [], "dtype" : [], "unique" : [], "count" : [], "top" : [], "top_percent" : []}
-			for column in columns:
-				values["index"] += [column]
-				values["dtype"] += [self[column].ctype()]
-				values["unique"] += [self[column].nunique()]
-				values["count"] += [self[column].count()]
-				query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS TOPK = 1) OVER () FROM {} WHERE {} IS NOT NULL OFFSET 1".format(column, self.genSQL(), column)
-				self.executeSQL(query, title = "Compute the TOP1 feature")
-				result = self.cursor.fetchone()
-				if (result == None):
-					values["top"] += [None]
-					values["top_percent"] += [None]
-				else:
-					values["top"] += [result[0]]
-					values["top_percent"] += [round(result[2], 3)]
+			try:
+				values = {"index" : [column for column in columns], "dtype" : [self[column].ctype() for column in columns], "unique" : [], "count" : [], "top" : [], "top_percent" : []}
+				information = self.aggregate(["count", "approx_unique"], columns)
+				values["count"], values["unique"]  = information.values["count"], information.values["approx_unique"]
+				try:
+					cnt = self.shape()[0]
+					query = []
+					for column in columns:
+						if (self[column].category() == "binary"):
+							func = "TO_HEX({})".format(column)
+						elif (self[column].category() == "spatial"):
+							func = "ST_AsText({})".format(column)
+						else:
+							func = column
+						query += ["(SELECT {}::varchar, 100 * COUNT(*) / {} AS percent FROM vdf_table GROUP BY {} ORDER BY percent DESC LIMIT 1)".format(func, cnt, column)]
+					query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), " UNION ALL ".join(query))
+					self.executeSQL(query, title = "Compute the MODE of all the selected features")
+					result = self.cursor.fetchall()
+					values["top"], values["top_percent"] = [elem[0] for elem in result], [round(elem[1], 3) for elem in result]
+				except:
+					for column in columns:
+						topk = self[column].topk(1, False).values
+						values["top"] += topk["index"]
+						values["top_percent"] += topk["percent"]
+			except:
+				values = {"index" : [], "dtype" : [], "unique" : [], "count" : [], "top" : [], "top_percent" : []}
+				for column in columns:
+					information = self.aggregate(["count", "unique"], [column])
+					values["index"] += [column]
+					values["dtype"] += [self[column].ctype()]
+					values["unique"] += information.values["unique"]
+					values["count"] += information.values["count"]
+					result = self[column].topk(1, False).values
+					if (len(result["index"]) == 0):
+						values["top"] += [None]
+						values["top_percent"] += [None]
+					else:
+						values["top"] += result["index"]
+						values["top_percent"] += result["percent"]
 		else:
 			raise ValueError("The parameter 'method' must be in auto|numerical|categorical")
 		return (tablesample(values, table_info = False))
@@ -876,7 +942,7 @@ class vDataframe:
 		count = self.duplicated(columns = columns, count = True)
 		if (count):
 			columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
-			name = "_vpython_duplicated_index" + str(np.random.randint(10000000)) + "_"
+			name = "_vpython_duplicated_index" + str(random.randint(0, 10000000)) + "_"
 			self.eval(name = name, expr = "ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)))
 			self.filter(expr = '"{}" = 1'.format(name))
 			self.exclude_columns += ['"{}"'.format(name)]
@@ -936,18 +1002,18 @@ class vDataframe:
 		name = str_column(name)
 		if column_check_ambiguous(name, self.get_columns()):
 			raise ValueError("A Virtual Column has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(name))
-		tmp_name = "_vpython" + str(np.random.randint(10000000)) + "_"
-		self.executeSQL(query = "DROP TABLE IF EXISTS {}.{}".format(str_column(self.schema), tmp_name), title = "Drop the existing generated table")
+		tmp_name = "_vpython" + str(random.randint(0, 10000000)) + "_"
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.{}".format(tmp_name), title = "Drop the existing generated table")
 		try:
-			query = "CREATE TEMPORARY TABLE {}.{} ON COMMIT PRESERVE ROWS AS SELECT {} AS {} FROM {} LIMIT 20".format(str_column(self.schema), tmp_name, expr, name, self.genSQL())
+			query = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT {} AS {} FROM {} LIMIT 20".format(tmp_name, expr, name, self.genSQL())
 			self.executeSQL(query = query, title = "Create a temporary table to test if the new feature is correct")
 		except:
-			self.executeSQL(query = "DROP TABLE IF EXISTS {}.{}".format(str_column(self.schema), tmp_name), title = "Drop the temporary table")
+			self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.{}".format(tmp_name), title = "Drop the temporary table")
 			raise ValueError("The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'sql_on_off' method, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(expr))
-		query = "SELECT data_type FROM columns WHERE column_name = '{}' AND table_name = '{}' AND table_schema = '{}'".format(name.replace('"', ''), tmp_name, self.schema.replace('"', ''))
+		query = "SELECT data_type FROM columns WHERE column_name = '{}' AND table_name = '{}' AND table_schema = 'v_temp_schema'".format(name.replace('"', '').replace("'", "''"), tmp_name)
 		self.executeSQL(query = query, title = "Catch the new feature's type")
 		ctype = self.cursor.fetchone()[0]
-		self.executeSQL(query = "DROP TABLE IF EXISTS {}.{}".format(str_column(self.schema), tmp_name), title = "Drop the temporary table")
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.{}".format(tmp_name), title = "Drop the temporary table")
 		ctype = ctype if (ctype) else "undefined"
 		category = category_from_type(ctype = ctype)
 		vDataframe_maxfloor_length = len(max([self[column].transformations for column in self.get_columns()], key = len))
@@ -969,7 +1035,7 @@ class vDataframe:
 		setattr(self, name, new_vColumn)
 		setattr(self, name.replace('"', ''), new_vColumn)
 		self.columns += [name]
-		self.history += ["{" + time.strftime("%c") + "} " + "[Eval]: A new vColumn '{}' was added to the vDataframe.".format(name)]
+		self.add_to_history("[Eval]: A new Virtual Column {} was added to the vDataframe.".format(name)) 
 		return (self)
 	# 
 	def executeSQL(self, query: str, title: str = ""):
@@ -1048,8 +1114,16 @@ class vDataframe:
 				size = int(ctype.split("(")[1].split(")")[0])
 				maxsize, expsize = size, self[column].store_usage()
 			elif (ctype[0:4] == "char") or (ctype[0:3] == "geo") or ("binary" in ctype):
-				size = int(ctype.split("(")[1].split(")")[0])
-				maxsize, expsize = size, size
+				try:
+					size = int(ctype.split("(")[1].split(")")[0])
+					maxsize, expsize = size, size
+				except:
+					if (ctype[0:3] == "geo"):
+						maxsize, expsize = 10000, 10000000
+					elif ("long" in ctype):
+						maxsize, expsize = 10000, 32000000
+					else:
+						maxsize, expsize = 1000, 65000
 			elif (ctype[0:4] == "uuid"):
 				maxsize, expsize = 16, 16
 			else:
@@ -1103,11 +1177,11 @@ class vDataframe:
 			if (count > 1):
 				if (print_info):
 					print("{} elements were filtered".format(count))
-				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} elements were filtered using the filter '{}'".format(count, conditions)]
+				self.add_to_history("[Filter]: {} elements were filtered using the filter '{}'".format(count, conditions))
 			elif (count == 1):
 				if (print_info):
 					print("{} element was filtered".format(count))
-				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} element was filtered using the filter '{}'".format(count, conditions)]
+				self.add_to_history("[Filter]: {} element was filtered using the filter '{}'".format(count, conditions))
 			else:
 				if (print_info):
 					print("Nothing was filtered.")
@@ -1125,11 +1199,11 @@ class vDataframe:
 			if (count > 1):
 				if (print_info):
 					print("{} elements were filtered".format(count))
-				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} elements were filtered using the filter '{}'".format(count, expr)]
+				self.add_to_history("[Filter]: {} elements were filtered using the filter '{}'".format(count, expr))
 			elif (count == 1):
 				if (print_info):
 					print("{} element was filtered".format(count))
-				self.history += ["{" + time.strftime("%c") + "} " + "[Filter]: {} element was filtered using the filter '{}'".format(count, expr)]
+				self.add_to_history("[Filter]: {} element was filtered using the filter '{}'".format(count, expr))
 			else:
 				del self.where[-1]
 				if (print_info):
@@ -1164,7 +1238,7 @@ class vDataframe:
 		cols_hand = True if (columns) else False
 		columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
 		for column in columns:
-			if (self[column].nunique() < max_cardinality):
+			if (self[column].nunique(True) < max_cardinality):
 				self[column].get_dummies("", prefix_sep, drop_first, use_numbers_as_suffix)
 			elif (cols_hand):
 				print("/!\\ Warning: The Virtual Column {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the Virtual Column get_dummies method".format(column))
@@ -1230,13 +1304,13 @@ class vDataframe:
 	def info(self):
 		if (len(self.history) == 0):
 			print("The vDataframe was never modified.")
-		elif (len(self.history)==1):
+		elif (len(self.history) == 1):
 			print("The vDataframe was modified with only one action: ")
-			print(" * "+self.history[0])
+			print(" * " + self.history[0])
 		else:
 			print("The vDataframe was modified many times: ")
 			for modif in self.history:
-				print(" * "+modif)
+				print(" * " + modif)
 		return (self)
 	#
 	def isin(self, val: dict):
@@ -1250,7 +1324,7 @@ class vDataframe:
 				if (val[column][i] == None):
 					tmp_query += [str_column(column) + " IS NULL"]
 				else:
-					tmp_query += [str_column(column) + " = '{}'".format(val[column][i])]
+					tmp_query += [str_column(column) + " = '{}'".format(str(val[column][i]).replace("'", "''"))]
 			query = "SELECT * FROM {} WHERE ".format(self.genSQL()) + " AND ".join(tmp_query) + " LIMIT 1"
 			self.cursor.execute(query)
 			isin += [self.cursor.fetchone() != None] 
@@ -1265,6 +1339,8 @@ class vDataframe:
 			 expr2: list = []):
 		check_types([("input_relation", input_relation, [str], False), ("vdf", vdf, [type(None), type(self)], False), ("on", on, [dict], False), ("how", how.lower(), ["left", "right", "cross", "full", "natural", "self", "inner", ""], True), ("expr1", expr1, [list], False), ("expr2", expr2, [list], False)])
 		columns_check([elem for elem in on], self)
+		if (vdf != None):
+			columns_check([on[elem] for elem in on], vdf)
 		vdf_cols = []
 		if (vdf):
 			for elem in on:
@@ -1473,12 +1549,13 @@ class vDataframe:
 	# 
 	def sample(self, x: float):
 		check_types([("x", x, [int, float], False)])
-		query = "SELECT {} FROM (SELECT *, RANDOM() AS random FROM {}) x WHERE random < {}".format(", ".join(self.get_columns()), self.genSQL(), x)
-		sample = to_tablesample(query, self.cursor)
-		sample.name = "Sample({}) of ".format(x) + self.input_relation
-		for column in sample.values:
-			sample.dtype[column] = self[column].ctype()
-		return (sample)
+		if ((x <= 0) or (x >= 1)):
+			raise ValueError("Parameter 'x' must be between 0 and 1")
+		name = "vpython_random_nb_" + str(random.randint(0, 10000000))
+		self.eval(name, "RANDOM()")
+		self.filter("{} < {}".format(name, x), print_info = False)
+		self[name].drop()
+		return (self)
 	#
 	def save(self):
 		save = 'vdf_save = vDataframe("", empty = True)'
@@ -1552,9 +1629,10 @@ class vDataframe:
 				   session_threshold = "30 minutes",
 				   name = "session_id"):
 		check_types([("ts", ts, [str], False), ("by", by, [list], False), ("session_threshold", session_threshold, [str], False), ("name", name, [str], False)])
-		columns_check(by, self)
+		columns_check(by + [ts], self)
 		by = vdf_columns_names(by, self)
-		partition = "PARTITION BY {}".format(", ".join([str_column(column) for column in by])) if (by) else ""
+		ts = vdf_columns_names([ts], self)[0]
+		partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
 		expr = "CONDITIONAL_TRUE_EVENT({} - LAG({}) > '{}') OVER ({} ORDER BY {})".format(ts, ts, session_threshold, partition, ts)
 		return (self.eval(name = name, expr = expr))
 	# 
@@ -1651,7 +1729,18 @@ class vDataframe:
 	# 
 	def tail(self, limit: int = 5, offset: int = 0):
 		check_types([("limit", limit, [int, float], False), ("offset", offset, [int, float], False)])
-		tail = to_tablesample("SELECT * FROM {} LIMIT {} OFFSET {}".format(self.genSQL(), limit, offset), self.cursor)
+		columns = self.get_columns()
+		all_columns = []
+		for column in columns:
+			if (self[column].category() == "binary"):
+				all_columns += ['TO_HEX({}) AS {}'.format(column, column)]
+			elif (self[column].category() == "spatial"):
+				all_columns += ['ST_AsText({}) AS {}'.format(column, column)]
+			elif (self[column].category() == "date"):
+				all_columns += ['{}::varchar AS {}'.format(column, column)]
+			else:
+				all_columns += [column]
+		tail = to_tablesample("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(all_columns), self.genSQL(), limit, offset), self.cursor)
 		tail.count = self.shape()[0]
 		tail.offset = offset
 		tail.name = self.input_relation
@@ -1716,7 +1805,7 @@ class vDataframe:
 		usecols = "*" if not(usecols) else ", ".join([str_column(column) for column in usecols])
 		query = "CREATE {} {} AS SELECT {} FROM {}".format(relation_type.upper(), name, usecols, self.genSQL())
 		self.executeSQL(query = query, title = "Create a new " + relation_type + " to save the vDataframe")
-		self.history += ["{" + time.strftime("%c") + "} " + "[Save]: The vDataframe was saved into a {} named '{}'.".format(relation_type, name)]
+		self.add_to_history("[Save]: The vDataframe was saved into a {} named '{}'.".format(relation_type, name))
 		if (inplace):
 			query_on, time_on, history, saving = self.query_on, self.time_on, self.history, self.saving
 			self.__init__(name, self.cursor)
@@ -1757,11 +1846,11 @@ class vDataframe:
 		vdf.cursor = self.cursor
 		vdf.query_on = self.query_on
 		vdf.time_on = self.time_on
-		self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(self.schema), func), title = "Drop the Existing Temp Table")
-		self.executeSQL(query = "CREATE TEMPORARY TABLE {}._vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(str_column(self.schema), func, table))
-		self.executeSQL(query = "SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_' AND table_schema = '{}'".format(func, self.schema.replace('"', '')), title = "SELECT NEW DATA TYPE AND THE COLUMNS NAME")
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(func), title = "Drop the Existing Temp Table")
+		self.executeSQL(query = "CREATE LOCAL TEMPORARY TABLE _vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(func, table))
+		self.executeSQL(query = "SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_' AND table_schema = 'v_temp_schema'".format(func), title = "SELECT NEW DATA TYPE AND THE COLUMNS NAME")
 		result = self.cursor.fetchall()
-		self.executeSQL(query = "DROP TABLE IF EXISTS {}._vpython_{}_test_;".format(str_column(self.schema), func), title = "Drop the Temp Table")
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(func), title = "Drop the Temp Table")
 		vdf.columns = ['"{}"'.format(item[0]) for item in result]
 		vdf.where = []
 		vdf.order_by = ['' for i in range(100)]
@@ -1825,7 +1914,7 @@ class vDataframe:
 		print("#")
 		print("# Author: Badr Ouali, Datascientist at Vertica")
 		print("#")
-		print("# You are currently using "+version)
+		print("# You are currently using {}".format(version))
 		print("#")
 		version = version.split("Database v")
 		version_id = int(version[1][0])
