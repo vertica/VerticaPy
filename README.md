@@ -72,7 +72,7 @@ Main Advantages:
  - easy Data Modeling.
  - easy Model Evaluation.
  - easy Model Deployment.
- - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and sometimes even more)
+ - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and even much more)
  - easy ML model creation and evaluation.
  - many scikit functions and algorithms are available (and scalable!).
 
