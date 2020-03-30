@@ -40,55 +40,95 @@ from vertica_ml_python.utilities import str_column
 #
 def load_amazon(cursor, schema: str = 'public', name = 'amazon'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"number\" Integer, \"date\" Date, \"state\" Varchar(32));" 
-		query += "COPY {}.{}(\"number\", \"date\", \"state\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-		query  = query.format(str_column(schema), str_column(name), str_column(schema), str_column(name), os.path.dirname(vertica_ml_python.__file__) + "/learn/data/amazon.csv")
-		cursor.execute(query);
 		vdf = vDataframe(name, cursor, schema = schema)
 	except:
-		vdf = vDataframe(name, cursor, schema = schema)
+		cursor.execute("CREATE TABLE {}.{}(\"number\" Integer, \"date\" Date, \"state\" Varchar(32));".format(str_column(schema), str_column(name)))
+		try:
+			path = os.path.dirname(vertica_ml_python.__file__) + "/learn/data/amazon.csv"
+			query = "COPY {}.{}(\"number\", \"date\", \"state\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(str_column(schema), str_column(name), "{}")
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+	   				cursor.copy(query.format('STDIN'), fs)
+			else:
+				cursor.execute(query.format("LOCAL '{}'".format(path)))
+			vdf = vDataframe(name, cursor, schema = schema)
+		except:
+			cursor.execute("DROP TABLE {}.{}".format(str_column(schema), str_column(name)))
+			raise
 	return (vdf)
 #
 def load_iris(cursor, schema: str = 'public', name = 'iris'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"SepalLengthCm\" Numeric(5,2), \"SepalWidthCm\" Numeric(5,2), \"PetalLengthCm\" Numeric(5,2), \"PetalWidthCm\" Numeric(5,2), \"Species\" Varchar(30));"
-		query += "COPY {}.{}(\"Id\" FILLER Integer, \"SepalLengthCm\", \"SepalWidthCm\", \"PetalLengthCm\", \"PetalWidthCm\", \"Species\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-		query  = query.format(str_column(schema), str_column(name), str_column(schema), str_column(name), os.path.dirname(vertica_ml_python.__file__) + "/learn/data/iris.csv")
-		cursor.execute(query)
 		vdf = vDataframe(name, cursor, schema = schema)
 	except:
-		vdf = vDataframe(name, cursor, schema = schema)
+		cursor.execute("CREATE TABLE {}.{}(\"SepalLengthCm\" Numeric(5,2), \"SepalWidthCm\" Numeric(5,2), \"PetalLengthCm\" Numeric(5,2), \"PetalWidthCm\" Numeric(5,2), \"Species\" Varchar(30));".format(str_column(schema), str_column(name)))
+		try:
+			path = os.path.dirname(vertica_ml_python.__file__) + "/learn/data/iris.csv"
+			query = "COPY {}.{}(\"Id\" FILLER Integer, \"SepalLengthCm\", \"SepalWidthCm\", \"PetalLengthCm\", \"PetalWidthCm\", \"Species\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(str_column(schema), str_column(name), "{}")
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+	   				cursor.copy(query.format('STDIN'), fs)
+			else:
+				cursor.execute(query.format("LOCAL '{}'".format(path)))
+			vdf = vDataframe(name, cursor, schema = schema)
+		except:
+			cursor.execute("DROP TABLE {}.{}".format(str_column(schema), str_column(name)))
+			raise
 	return (vdf)
 #
 def load_smart_meters(cursor, schema: str = 'public', name = 'smart_meters'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"time\" Timestamp, \"val\" Numeric(11,7), \"id\" Integer);"
-		query += "COPY {}.{}(\"time\", \"val\", \"id\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-		query  = query.format(str_column(schema), str_column(name), str_column(schema), str_column(name), os.path.dirname(vertica_ml_python.__file__) + "/learn/data/smart_meters.csv")
-		cursor.execute(query)
 		vdf = vDataframe(name, cursor, schema = schema)
 	except:
-		vdf = vDataframe(name, cursor, schema = schema)
+		cursor.execute("CREATE TABLE {}.{}(\"time\" Timestamp, \"val\" Numeric(11,7), \"id\" Integer);".format(str_column(schema), str_column(name)))
+		try:
+			path = os.path.dirname(vertica_ml_python.__file__) + "/learn/data/smart_meters.csv"
+			query = "COPY {}.{}(\"time\", \"val\", \"id\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(str_column(schema), str_column(name), "{}")
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+	   				cursor.copy(query.format('STDIN'), fs)
+			else:
+				cursor.execute(query.format("LOCAL '{}'".format(path)))
+			vdf = vDataframe(name, cursor, schema = schema)
+		except:
+			cursor.execute("DROP TABLE {}.{}".format(str_column(schema), str_column(name)))
+			raise
 	return (vdf)
 #
 def load_titanic(cursor, schema: str = 'public', name = 'titanic'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"pclass\" Integer, \"survived\" Integer, \"name\" Varchar(164), \"sex\" Varchar(20), \"age\" Numeric(6,3), \"sibsp\" Integer, \"parch\" Integer, \"ticket\" Varchar(36), \"fare\" Numeric(10,5), \"cabin\" Varchar(30), \"embarked\" Varchar(20), \"boat\" Varchar(100), \"body\" Integer, \"home.dest\" Varchar(100));"
-		query += "COPY {}.{}(\"pclass\", \"survived\", \"name\", \"sex\", \"age\", \"sibsp\", \"parch\", \"ticket\", \"fare\", \"cabin\", \"embarked\", \"boat\", \"body\", \"home.dest\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-		query  = query.format(str_column(schema), str_column(name), str_column(schema), str_column(name), os.path.dirname(vertica_ml_python.__file__) + "/learn/data/titanic.csv")
-		cursor.execute(query)
 		vdf = vDataframe(name, cursor, schema = schema)
 	except:
-		vdf = vDataframe(name, cursor, schema = schema)
+		cursor.execute("CREATE TABLE {}.{}(\"pclass\" Integer, \"survived\" Integer, \"name\" Varchar(164), \"sex\" Varchar(20), \"age\" Numeric(6,3), \"sibsp\" Integer, \"parch\" Integer, \"ticket\" Varchar(36), \"fare\" Numeric(10,5), \"cabin\" Varchar(30), \"embarked\" Varchar(20), \"boat\" Varchar(100), \"body\" Integer, \"home.dest\" Varchar(100));".format(str_column(schema), str_column(name)))
+		try:
+			path = os.path.dirname(vertica_ml_python.__file__) + "/learn/data/titanic.csv"
+			query = "COPY {}.{}(\"pclass\", \"survived\", \"name\", \"sex\", \"age\", \"sibsp\", \"parch\", \"ticket\", \"fare\", \"cabin\", \"embarked\", \"boat\", \"body\", \"home.dest\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(str_column(schema), str_column(name), "{}")
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+	   				cursor.copy(query.format('STDIN'), fs)
+			else:
+				cursor.execute(query.format("LOCAL '{}'".format(path)))
+			vdf = vDataframe(name, cursor, schema = schema)
+		except:
+			cursor.execute("DROP TABLE {}.{}".format(str_column(schema), str_column(name)))
+			raise
 	return (vdf)
 #
 def load_winequality(cursor, schema: str = 'public', name = 'winequality'):
 	try:
-		query  = "CREATE TABLE {}.{}(\"fixed_acidity\" Numeric(6,3), \"volatile_acidity\" Numeric(7,4), \"citric_acid\" Numeric(6,3), \"residual_sugar\" Numeric(7,3), \"chlorides\" Float, \"free_sulfur_dioxide\" Numeric(7,2), \"total_sulfur_dioxide\" Numeric(7,2), \"density\" Float, \"pH\" Numeric(6,3), \"sulphates\" Numeric(6,3), \"alcohol\" Float, \"quality\" Integer, \"good\" Integer, \"color\" Varchar(20));"
-		query += "COPY {}.{}(\"fixed_acidity\", \"volatile_acidity\", \"citric_acid\", \"residual_sugar\", \"chlorides\", \"free_sulfur_dioxide\", \"total_sulfur_dioxide\", \"density\", \"pH\", \"sulphates\", \"alcohol\", \"quality\", \"good\", \"color\") FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;"
-		query  = query.format(str_column(schema), str_column(name), str_column(schema), str_column(name), os.path.dirname(vertica_ml_python.__file__) + "/learn/data/winequality.csv")
-		cursor.execute(query)
 		vdf = vDataframe(name, cursor, schema = schema)
 	except:
-		vdf = vDataframe(name, cursor, schema = schema)
+		cursor.execute("CREATE TABLE {}.{}(\"fixed_acidity\" Numeric(6,3), \"volatile_acidity\" Numeric(7,4), \"citric_acid\" Numeric(6,3), \"residual_sugar\" Numeric(7,3), \"chlorides\" Float, \"free_sulfur_dioxide\" Numeric(7,2), \"total_sulfur_dioxide\" Numeric(7,2), \"density\" Float, \"pH\" Numeric(6,3), \"sulphates\" Numeric(6,3), \"alcohol\" Float, \"quality\" Integer, \"good\" Integer, \"color\" Varchar(20));".format(str_column(schema), str_column(name)))
+		try:
+			path = os.path.dirname(vertica_ml_python.__file__) + "/learn/data/winequality.csv"
+			query = "COPY {}.{}(\"fixed_acidity\", \"volatile_acidity\", \"citric_acid\", \"residual_sugar\", \"chlorides\", \"free_sulfur_dioxide\", \"total_sulfur_dioxide\", \"density\", \"pH\", \"sulphates\", \"alcohol\", \"quality\", \"good\", \"color\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(str_column(schema), str_column(name), "{}")
+			if ("vertica_python" in str(type(cursor))):
+				with open(path, "r") as fs:
+	   				cursor.copy(query.format('STDIN'), fs)
+			else:
+				cursor.execute(query.format("LOCAL '{}'".format(path)))
+			vdf = vDataframe(name, cursor, schema = schema)
+		except:
+			cursor.execute("DROP TABLE {}.{}".format(str_column(schema), str_column(name)))
+			raise
 	return (vdf)

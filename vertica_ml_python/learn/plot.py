@@ -32,10 +32,9 @@
 #####################################################################################
 #
 # Libraries
+import math
 from vertica_ml_python import tablesample
 from vertica_ml_python import to_tablesample
-import math
-import numpy as np
 from vertica_ml_python.utilities import str_column
 from vertica_ml_python.utilities import schema_relation
 
@@ -111,6 +110,7 @@ def logit_plot(X: list,
 		  	   max_nb_points = 50):
 	import matplotlib.pyplot as plt
 	import matplotlib.patches as mpatches
+	import numpy
 	def logit(x):
 		return (1 / (1 + math.exp( - x)))
 	if (len(X) == 1):
@@ -127,7 +127,7 @@ def logit_plot(X: list,
 				x1 += [float(item[0])]
 		min_logit, max_logit  = min(x0 + x1), max(x0 + x1)
 		step = (max_logit - min_logit) / 40.0
-		x_logit = np.arange(min_logit - 5 * step, max_logit + 5 * step, step)
+		x_logit = numpy.arange(min_logit - 5 * step, max_logit + 5 * step, step)
 		y_logit = [logit(coefficients[0] + coefficients[1] * item) for item in x_logit]
 		plt.plot(x_logit, y_logit, alpha = 1, color = "black")
 		all_scatter  = [plt.scatter(x0, [logit(coefficients[0] + coefficients[1] * item) for item in x0], alpha = 1, marker = "o", color = "#214579")]
@@ -157,10 +157,10 @@ def logit_plot(X: list,
 		step_x = (max_logit_x - min_logit_x) / 40.0
 		min_logit_y, max_logit_y  = min(y0 + y1), max(y0 + y1)
 		step_y = (max_logit_y - min_logit_y) / 40.0
-		X_logit = np.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
-		Y_logit = np.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
-		X_logit, Y_logit = np.meshgrid(X_logit, Y_logit)
-		Z_logit = 1 / (1 + np.exp( - (coefficients[0] + coefficients[1] * X_logit + coefficients[2] * Y_logit)))
+		X_logit = numpy.arange(min_logit_x - 5 * step_x, max_logit_x + 5 * step_x, step_x)
+		Y_logit = numpy.arange(min_logit_y - 5 * step_y, max_logit_y + 5 * step_y, step_y)
+		X_logit, Y_logit = numpy.meshgrid(X_logit, Y_logit)
+		Z_logit = 1 / (1 + numpy.exp( - (coefficients[0] + coefficients[1] * X_logit + coefficients[2] * Y_logit)))
 		fig = plt.figure(figsize = (10, 8))
 		ax = fig.add_subplot(111, projection = '3d')
 		ax.plot_surface(X_logit, Y_logit, Z_logit, rstride = 1, cstride = 1, alpha = 0.5, color = "gray")
@@ -364,6 +364,7 @@ def regression_plot(X: list,
 		plt.show()
 	elif (len(X) == 2):
 		from mpl_toolkits.mplot3d import Axes3D
+		import numpy
 		query  = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points))
 		cursor.execute(query)
 		all_points = cursor.fetchall()
@@ -372,9 +373,9 @@ def regression_plot(X: list,
 		step_x = (max_reg_x - min_reg_x) / 40.0
 		min_reg_y, max_reg_y  = min(y0), max(y0)
 		step_y = (max_reg_y - min_reg_y) / 40.0
-		X_reg = np.arange(min_reg_x - 5 * step_x, max_reg_x + 5 * step_x, step_x)
-		Y_reg = np.arange(min_reg_y - 5 * step_y, max_reg_y + 5 * step_y, step_y)
-		X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
+		X_reg = numpy.arange(min_reg_x - 5 * step_x, max_reg_x + 5 * step_x, step_x)
+		Y_reg = numpy.arange(min_reg_y - 5 * step_y, max_reg_y + 5 * step_y, step_y)
+		X_reg, Y_reg = numpy.meshgrid(X_reg, Y_reg)
 		Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
 		fig = plt.figure(figsize=(10, 8))
 		ax = fig.add_subplot(111, projection = '3d')
@@ -411,7 +412,8 @@ def roc_curve(y_true: str,
 	if (auc_roc):
 		return (auc)
 	if (best_threshold):
-		best_threshold_arg = np.argmax([abs(y - x) for x, y in zip(false_positive, true_positive)])
+		import numpy
+		best_threshold_arg = numpy.argmax([abs(y - x) for x, y in zip(false_positive, true_positive)])
 		return (threshold[best_threshold_arg])
 	try:
 		import matplotlib.pyplot as plt
@@ -490,6 +492,7 @@ def svm_classifier_plot(X: list,
 		plt.show()
 	elif (len(X) == 3):
 		from mpl_toolkits.mplot3d import Axes3D
+		import numpy
 		query  = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
 		query += " UNION (SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(X[0], X[1], X[2], y, input_relation, X[0], X[1], X[2], y, int(max_nb_points / 2))
 		cursor.execute(query)
@@ -508,9 +511,9 @@ def svm_classifier_plot(X: list,
 		step_x = (max_svm_x - min_svm_x) / 40.0
 		min_svm_y, max_svm_y  = min(y0 + y1), max(y0 + y1)
 		step_y = (max_svm_y - min_svm_y) / 40.0
-		X_svm = np.arange(min_svm_x - 5 * step_x, max_svm_x + 5 * step_x, step_x)
-		Y_svm = np.arange(min_svm_y - 5 * step_y, max_svm_y + 5 * step_y, step_y)
-		X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
+		X_svm = numpy.arange(min_svm_x - 5 * step_x, max_svm_x + 5 * step_x, step_x)
+		Y_svm = numpy.arange(min_svm_y - 5 * step_y, max_svm_y + 5 * step_y, step_y)
+		X_svm, Y_svm = numpy.meshgrid(X_svm, Y_svm)
 		Z_svm = coefficients[0] + coefficients[1] * X_svm + coefficients[2] * Y_svm
 		fig = plt.figure(figsize=(10, 8))
 		ax = fig.add_subplot(111, projection = '3d')

@@ -33,7 +33,7 @@
 #
 # Libraries
 from vertica_ml_python import tablesample
-import numpy as np
+import statistics
 from vertica_ml_python.utilities import str_column
 from vertica_ml_python.utilities import schema_relation
 
@@ -69,31 +69,34 @@ def cross_validate(estimator,
 				   cv: int = 3, 
 				   pos_label = None, 
 				   cutoff: float = 0.5):
+	if (cv < 2):
+		raise ValueError("Cross Validation is only possible with at least 2 folds")
 	if (estimator.type == "regressor"):
 		result = {"index": ["explained_variance", "max_error", "median_absolute_error", "mean_absolute_error", "mean_squared_error", "r2"]} 
 	elif (estimator.type == "classifier"):
 		result = {"index": ["auc", "prc_auc", "accuracy", "log_loss", "precision", "recall", "f1-score", "mcc", "informedness", "markedness", "csi"]}
 	else:
 		raise ValueError("Cross Validation is only possible for Regressors and Classifiers")
-	schema, relation = schema_relation(input_relation)
+	schema, relation = schema_relation(estimator.name)
 	schema = str_column(schema)
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(1 / cv * 100)), "{}_{}".format(relation_alpha, int(100 - 1 / cv * 100))
+	estimator.name = "{}.temp_model_{}".format(schema, relation_alpha)
 	estimator.cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, relation_alpha))
-	query = "CREATE TEMPORARY TABLE {}.vpython_train_test_split_cv_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(schema, relation_alpha, cv, input_relation)
+	query = "CREATE LOCAL TEMPORARY TABLE vpython_train_test_split_cv_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(relation_alpha, cv, input_relation)
 	estimator.cursor.execute(query)
 	for i in range(cv):
 		try:
 			estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
 		except:
 			pass
-		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, test_name))
-		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, train_name))
-		query = "CREATE VIEW {}.vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test = {})".format(schema, test_name, "{}.vpython_train_test_split_cv_{}".format(schema, relation_alpha), i)
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_train".format(schema, train_name))
+		query = "CREATE VIEW {}.vpython_train_test_split_cv_{}_test AS SELECT * FROM {} WHERE (test = {})".format(schema, test_name, "v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha), i)
 		estimator.cursor.execute(query)
-		query = "CREATE VIEW {}.vpython_train_test_split_cv_{} AS SELECT * FROM {} WHERE (test != {})".format(schema, train_name, "{}.vpython_train_test_split_cv_{}".format(schema, relation_alpha), i)
+		query = "CREATE VIEW {}.vpython_train_test_split_cv_{}_train AS SELECT * FROM {} WHERE (test != {})".format(schema, train_name, "v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha), i)
 		estimator.cursor.execute(query)
-		estimator.fit("{}.vpython_train_test_split_cv_{}".format(schema, train_name), X, y, "{}.vpython_train_test_split_cv_{}".format(schema, test_name))
+		estimator.fit("{}.vpython_train_test_split_cv_{}_train".format(schema, train_name), X, y, "{}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
 		if (estimator.type == "regressor"):
 			result["{}-fold".format(i + 1)] = estimator.regression_report().values["value"]
 		else:
@@ -112,11 +115,11 @@ def cross_validate(estimator,
 	for i in range(cv):
 		for k in range(n):
 			total[k] += [result["{}-fold".format(i + 1)][k]]
-	result["avg"] = [np.mean(item) for item in total]
-	result["std"] = [np.std(item) for item in total]
-	estimator.cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, relation_alpha))
-	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, test_name))
-	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, train_name))
+	result["avg"] = [statistics.mean(item) for item in total]
+	result["std"] = [statistics.stdev(item) for item in total]
+	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_train".format(schema, train_name))
 	return (tablesample(values = result, table_info = False).transpose())
 #
 def fast_cv(algorithm: str, 
@@ -152,18 +155,18 @@ def fast_cv(algorithm: str,
 	cursor.execute(sql)
 	return (cursor.fetchone()[0])
 #
-def train_test_split(input_relation: str, cursor, test_size: float = 0.33):
+def train_test_split(input_relation: str, cursor, test_size: float = 0.33, schema_writing: str = ""):
 	schema, relation = schema_relation(input_relation)
-	schema = str_column(schema)
+	schema = str_column(schema) if not(schema_writing) else schema_writing
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(test_size * 100)), "{}_{}".format(relation_alpha, int(100 - test_size * 100))
 	cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_{}".format(schema, relation_alpha))
-	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}".format(schema, test_name))
-	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}".format(schema, train_name))
+	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}_test".format(schema, test_name))
+	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}_train".format(schema, train_name))
 	query = "CREATE TABLE {}.vpython_train_test_split_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(schema, relation_alpha, test_size, input_relation)
 	cursor.execute(query)
-	query = "CREATE VIEW {}.vpython_train_test_split_{} AS SELECT * FROM {} WHERE test".format(schema, test_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
+	query = "CREATE VIEW {}.vpython_train_test_split_{}_test AS SELECT * FROM {} WHERE test".format(schema, test_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	query = "CREATE VIEW {}.vpython_train_test_split_{} AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
+	query = "CREATE VIEW {}.vpython_train_test_split_{}_train AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	return ("{}.vpython_train_test_split_{}".format(schema, train_name), "{}.vpython_train_test_split_{}".format(schema, test_name))
+	return ("{}.vpython_train_test_split_{}_train".format(schema, train_name), "{}.vpython_train_test_split_{}_test".format(schema, test_name))
