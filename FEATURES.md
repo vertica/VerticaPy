@@ -322,7 +322,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe.empty(...) | vdataframe | Returns if the vDataframe is empty | <i>&#11088;</i>|
 |vDataframe.expected_store_usage(...) | vdataframe | Returns the expected store usage | <i>&#11088;&#11088;</i>|
 |vDataframe.get_columns(...) | vdataframe | Returns the vDataframe columns | <i>&#11088;&#11088;</i>|
-|vDataframe.help(...) | vdataframe | Get info about the API | <i>&#11088;</i>|
+|help | utilities | Get info about the API | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe.info(...) | vdataframe | Get vDataframe history | <i>&#11088;&#11088;</i>|
 |vDataframe[].isdate(...) | vdataframe | Verify if the column is a date | <i>&#11088;</i>|
 |vDataframe[].isnum(...) | vdataframe | Verify if the column is numerical | <i>&#11088;</i>|
@@ -353,14 +353,15 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vertica_cursor | utilities | Create a Vertica cursor | <i>&#11088;&#11088;&#11088;</i>|
 |vdf_from_relation | utilities | Build a vDataframe using a relation | <i>&#11088;&#11088;&#11088;</i>|
 
-## Working with Text
+# Working with Text
 
 |Function / Method|Library|Definition|Importance|
 | - | - | - | - |
 |vDataframe[].add_prefix(...) | vdataframe | Add a prefix to the column | <i>&#11088;</i>|
 |vDataframe[].add_suffix(...) | vdataframe | Add a suffix to the column | <i>&#11088;</i>|
 |CountVectorizer | learn.preprocessing | Compute the Text Dictionary | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
-|vDataframe[].str_contains(...) | vdataframe | Verify if the pattern is in the column | <i>&#11088;</i>|
+|vDataframe[].str_contains(...) | vdataframe | Verify if the pattern is in the column | <i>&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe[].str_count(...) | vdataframe | Count the pattern occurences | <i>&#11088;&#11088;</i>|
-|vDataframe[].str_replace(...) | vdataframe | Replace the pattern | <i>&#11088;&#11088;</i>|
+|vDataframe[].str_extract(...) | vdataframe | Extract a regular expression | <i>&#11088;&#11088;&#11088;&#11088;</i>|
+|vDataframe[].str_replace(...) | vdataframe | Replace the pattern | <i>&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe[].str_slice(...) | vdataframe | Slice the column | <i>&#11088;</i>|
