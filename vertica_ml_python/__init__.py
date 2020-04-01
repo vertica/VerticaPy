@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -42,6 +42,7 @@ __license__ = "Apache License, Version 2.0"
 from vertica_ml_python.vdataframe import vDataframe
 
 # Utilities
+from vertica_ml_python.utilities import vHelp
 from vertica_ml_python.utilities import drop_table
 from vertica_ml_python.utilities import drop_view
 from vertica_ml_python.utilities import drop_model

@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,22 +32,9 @@
 #####################################################################################
 #
 # Libraries
-import random
-import os
-import math
-import time
+import random, time
 from vertica_ml_python.vcolumn import vColumn
-from vertica_ml_python.utilities import print_table
-from vertica_ml_python.utilities import isnotebook
-from vertica_ml_python.utilities import tablesample
-from vertica_ml_python.utilities import to_tablesample
-from vertica_ml_python.utilities import category_from_type
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import column_check_ambiguous
-from vertica_ml_python.utilities import check_types
-from vertica_ml_python.utilities import columns_check
-from vertica_ml_python.utilities import vdf_columns_names
-from vertica_ml_python.utilities import schema_relation
+from vertica_ml_python.utilities import print_table, isnotebook, tablesample, to_tablesample, category_from_type, str_column, column_check_ambiguous, check_types, columns_check, vdf_columns_names, schema_relation, convert_special_type
 ##
 #                                           _____    
 #   _______    ______ ____________    ____  \    \   
@@ -73,49 +60,55 @@ class vDataframe:
 				  schema: str = "",
 				  empty: bool = False):
 		check_types([("input_relation", input_relation, [str], False), ("dsn", dsn, [str], False), ("usecols", usecols, [list], False), ("schema", schema, [str], False), ("empty", empty, [bool], False)])
+		self.VERTICA_ML_PYTHON_VARIABLES = {}
+		self.VERTICA_ML_PYTHON_VARIABLES["*"] = -1
 		if not(empty):
 			if (cursor == None):
 				from vertica_ml_python import vertica_cursor
 				cursor = vertica_cursor(dsn)
-			self.dsn = dsn
+			self.VERTICA_ML_PYTHON_VARIABLES["dsn"] = dsn
 			if not(schema):
 				schema, input_relation = schema_relation(input_relation)
-			self.schema, self.input_relation = schema.replace('"', ''), input_relation.replace('"', '')
+			self.VERTICA_ML_PYTHON_VARIABLES["schema"], self.VERTICA_ML_PYTHON_VARIABLES["input_relation"] = schema.replace('"', ''), input_relation.replace('"', '')
 			# Cursor to the Vertica Database
-			self.cursor = cursor
+			self.VERTICA_ML_PYTHON_VARIABLES["cursor"] = cursor
 			# All the columns of the vDataframe
 			where = " AND LOWER(column_name) IN ({})".format(", ".join(["'{}'".format(elem.lower().replace("'", "''")) for elem in usecols])) if (usecols) else ""
-			query = "(SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation.replace("'", "''"), self.schema.replace("'", "''"), where)
-			query += " UNION (SELECT column_name, data_type FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.input_relation.replace("'", "''"), self.schema.replace("'", "''"), where)
+			query = "(SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.VERTICA_ML_PYTHON_VARIABLES["input_relation"].replace("'", "''"), self.VERTICA_ML_PYTHON_VARIABLES["schema"].replace("'", "''"), where)
+			query += " UNION (SELECT column_name, data_type FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(self.VERTICA_ML_PYTHON_VARIABLES["input_relation"].replace("'", "''"), self.VERTICA_ML_PYTHON_VARIABLES["schema"].replace("'", "''"), where)
 			cursor.execute(query)
 			columns_dtype = cursor.fetchall()
-			columns_dtype = [(str('"{}"'.format(item[0])), str(item[1])) for item in columns_dtype]
-			columns = [elem[0] for elem in columns_dtype]
+			columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
+			columns = ['"{}"'.format(elem[0].replace('"', '_')) for elem in columns_dtype]
 			if (columns != []):
-				self.columns = columns
+				self.VERTICA_ML_PYTHON_VARIABLES["columns"] = columns
 			else:
-				raise ValueError("No table or views '{}' found.".format(self.input_relation))
+				raise ValueError("No table or views '{}' found.".format(self.VERTICA_ML_PYTHON_VARIABLES["input_relation"]))
 			for col_dtype in columns_dtype:
 				column, dtype = col_dtype[0], col_dtype[1]
-				new_vColumn = vColumn(column, parent = self, transformations = [(column, dtype, category_from_type(dtype))])
-				setattr(self, column, new_vColumn)
-				setattr(self, column[1:-1], new_vColumn)
+				if ('"' in column):
+					print("\u26A0 Warning: A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(column, column.replace('"', '_')))
+				new_vColumn = vColumn('"{}"'.format(column.replace('"', '_')), parent = self, transformations = [('"{}"'.format(column.replace('"', '""')), dtype, category_from_type(dtype))])
+				setattr(self, '"{}"'.format(column.replace('"', '_')), new_vColumn)
+				setattr(self, column.replace('"', '_'), new_vColumn)
+			# Number of columns of the main relation To know if the it was never modified
+			self.VERTICA_ML_PYTHON_VARIABLES["*"] = -1 if (usecols) else len(columns_dtype)
 			# Columns to not consider for the final query
-			self.exclude_columns = []
+			self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] = []
 			# Rules to filter
-			self.where = []
+			self.VERTICA_ML_PYTHON_VARIABLES["where"] = []
 			# Rules to sort the data
-			self.order_by = ['' for i in range(100)]
+			self.VERTICA_ML_PYTHON_VARIABLES["order_by"] = ['' for i in range(100)]
 			# Display the elapsed time during the query
-			self.time_on = False
+			self.VERTICA_ML_PYTHON_VARIABLES["time_on"] = False
 			# Display or not the sequal queries that are used during the vDataframe manipulation
-			self.query_on = False
+			self.VERTICA_ML_PYTHON_VARIABLES["query_on"] = False
 			# vDataframe history
-			self.history = []
+			self.VERTICA_ML_PYTHON_VARIABLES["history"] = []
 			# vDataframe saving
-			self.saving = []
+			self.VERTICA_ML_PYTHON_VARIABLES["saving"] = []
 			# vDataframe main relation
-			self.main_relation = '"{}"."{}"'.format(self.schema, self.input_relation)
+			self.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = '"{}"."{}"'.format(self.VERTICA_ML_PYTHON_VARIABLES["schema"], self.VERTICA_ML_PYTHON_VARIABLES["input_relation"])
 	# 
 	def __getitem__(self, index):
 		try:
@@ -134,18 +127,21 @@ class vDataframe:
 	# 
 	def __setattr__(self, attr, val):
 		self.__dict__[attr] = val
-	#
-	# SQL GEN = THE MOST IMPORTANT METHOD
-	#
+	# 
 	def genSQL(self, 
 			   split: bool = False, 
 			   transformations: dict = {}, 
 			   force_columns: list = [],
 			   final_table_name: str = "final_table",
 			   return_without_alias: bool = False):
+		if (self.isintact() and not(split)):
+			if (return_without_alias):
+				return "(SELECT * FROM {})".format(self.VERTICA_ML_PYTHON_VARIABLES["main_relation"])
+			else:
+				return self.VERTICA_ML_PYTHON_VARIABLES["main_relation"]
 		# FINDING MAX FLOOR
 		all_imputations_grammar = []
-		force_columns = self.columns if not(force_columns) else force_columns
+		force_columns = self.VERTICA_ML_PYTHON_VARIABLES["columns"] if not(force_columns) else force_columns
 		for column in force_columns:
 		    all_imputations_grammar += [[item[0] for item in self[column].transformations]]
 		for column in transformations:
@@ -156,35 +152,35 @@ class vDataframe:
 		for imputations in all_imputations_grammar:
 		    diff = max_len - len(imputations)
 		    if diff > 0:
-		        imputations += ["{}"]*diff
+		        imputations += ["{}"] * diff
 		# FILTER
-		where_positions = [item[1] for item in self.where]
-		max_where_pos = max(where_positions+[0])
-		all_where = [[] for item in range(max_where_pos+1)]
-		for i in range(0, len(self.where)):
-			all_where[where_positions[i]] += [self.where[i][0]]
+		where_positions = [item[1] for item in self.VERTICA_ML_PYTHON_VARIABLES["where"]]
+		max_where_pos = max(where_positions + [0])
+		all_where = [[] for item in range(max_where_pos + 1)]
+		for i in range(0, len(self.VERTICA_ML_PYTHON_VARIABLES["where"])):
+			all_where[where_positions[i]] += [self.VERTICA_ML_PYTHON_VARIABLES["where"][i][0]]
 		all_where = [" AND ".join(item) for item in all_where]
 		for i in range(len(all_where)):
 			if (all_where[i] != ''):
-				all_where[i] = " WHERE " + all_where[i]
+				all_where[i] = " WHERE {}".format(all_where[i])
 		# FIRST FLOOR
 		columns = force_columns + [column for column in transformations]
 		first_values = [item[0] for item in all_imputations_grammar]
 		for i in range(0, len(first_values)):
 		    first_values[i] = "{} AS {}".format(first_values[i], columns[i]) 
-		table = "SELECT " + ", ".join(first_values) + " FROM " + self.main_relation
+		table = "SELECT {} FROM {}".format(", ".join(first_values), self.VERTICA_ML_PYTHON_VARIABLES["main_relation"])
 		# OTHER FLOORS
 		for i in range(1, max_len):
 		    values = [item[i] for item in all_imputations_grammar]
 		    for j in range(0, len(values)):
-		        values[j] = values[j].replace("{}", columns[j]) + " AS " + columns[j]
-		    table = "SELECT " + ", ".join(values) + " FROM (" + table + ") t" + str(i)
+		        values[j] = "{} AS {}".format(values[j].replace("{}", columns[j]), columns[j])
+		    table = "SELECT {} FROM ({}) t{}".format(", ".join(values), table, i)
 		    try:
 		    	table += all_where[i - 1]
 		    except:
 		    	pass
 		    try:
-		    	table += self.order_by[i - 1]
+		    	table += self.VERTICA_ML_PYTHON_VARIABLES["order_by"][i - 1]
 		    except:
 		    	pass
 		try:
@@ -192,10 +188,10 @@ class vDataframe:
 		except:
 			where_final = ""
 		try:
-			order_final = self.order_by[max_len - 1]
+			order_final = self.VERTICA_ML_PYTHON_VARIABLES["order_by"][max_len - 1]
 		except:
 			order_final = ""
-		split = ", RANDOM() AS __split_vpython__" if (split) else ""
+		split = ", RANDOM() AS __vertica_ml_python_split__" if (split) else ""
 		if (where_final == "") and (order_final == ""):
 			if (split):
 				if (return_without_alias):
@@ -206,18 +202,13 @@ class vDataframe:
 					return table
 				table = "({}) {}".format(table, final_table_name)
 		else:
-			table = "({}) t{}".format(table, max_len)
-			table += where_final + order_final
+			table = "({}) t{}{}{}".format(table, max_len, where_final, order_final)
 			if (return_without_alias):
-					return table
+				return table
 			table = "(SELECT *{} FROM {}) {}".format(split, table, final_table_name)
-		if (self.exclude_columns):
+		if (self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"]):
 			table = "(SELECT {}{} FROM {}) {}".format(", ".join(self.get_columns()), split, table, final_table_name)
 		return table
-	#
-	#
-	#
-	# METHODS
 	# 
 	def abs(self, columns: list = []):
 		check_types([("columns", columns, [list], False)])
@@ -231,7 +222,8 @@ class vDataframe:
 	#
 	def add_to_history(self, message: str):
 		check_types([("message", message, [str], False)])
-		self.history += ["{}{}{} {}".format("{", time.strftime("%c"), "}", message)]
+		self.VERTICA_ML_PYTHON_VARIABLES["history"] += ["{}{}{} {}".format("{", time.strftime("%c"), "}", message)]
+		return (self)
 	#
 	def agg(self, func: list, columns: list = []):
 		return (self.aggregate(func = func, columns = columns))
@@ -277,7 +269,7 @@ class vDataframe:
 		values = {"index": func}
 		try:
 			self.executeSQL("SELECT {} FROM {}".format(', '.join([item for sublist in agg for item in sublist]), self.genSQL()), title = "COMPUTE AGGREGATION(S)")
-			result = [item for item in self.cursor.fetchone()]
+			result = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()]
 			try:
 				result = [float(item) for item in result]
 			except:
@@ -292,7 +284,7 @@ class vDataframe:
 			query = " UNION ALL ".join(["({})".format(elem) for elem in query]) if (len(query) != 1) else query[0]
 			query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), query)
 			self.executeSQL(query, title = "COMPUTE AGGREGATION(S) WITH UNION ALL")
-			result = self.cursor.fetchall()
+			result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 			for idx, elem in enumerate(result):
 				values[columns[idx]] = [item for item in elem]
 		return (tablesample(values = values, table_info = False).transpose())
@@ -319,39 +311,48 @@ class vDataframe:
 				query = "SELECT CORR({}{}, {}{}) FROM {}".format(columns[0], cast_0, columns[1], cast_1, table)
 				title = "Compute the {} Correlation between the two variables".format(method)
 			elif (method == "biserial"):
-				if (self[columns[1]].nunique() == 2 and self[columns[1]].min() == 0 and self[columns[1]].max() == 1):
-					if (columns[1] == columns[0]):
+				if (columns[1] == columns[0]):
 						return 1
+				elif (self[columns[1]].category() != 'int') and (self[columns[0]].category() != 'int'):
+					return float('nan')
+				elif (self[columns[1]].category() == 'int'):
+					if (self[columns[1]].ctype() != 'boolean'):
+						agg = self[columns[1]].aggregate(['approx_unique', 'min', 'max']).values[columns[1]]
+						if ((agg[0] != 2) or (agg[1] != 0) or (agg[2] != 1)):
+							return float('nan')
 					column_b, column_n = columns[1], columns[0]
 					cast_b, cast_n = cast_1, cast_0
-				elif (self[columns[0]].nunique() == 2 and self[columns[0]].min() == 0 and self[columns[0]].max() == 1):
-					if (columns[1] == columns[0]):
-						return 1
+				elif (self[columns[0]].category() == 'int'):
+					if (self[columns[0]].ctype() != 'boolean'):
+						agg = self[columns[0]].aggregate(['approx_unique', 'min', 'max']).values[columns[0]]
+						if ((agg[0] != 2) or (agg[1] != 0) or (agg[2] != 1)):
+							return float('nan')
 					column_b, column_n = columns[0], columns[1]
 					cast_b, cast_n = cast_0, cast_1
 				else:
-					return None
+					return float('nan')
 				query = "SELECT (AVG(DECODE({}{}, 1, {}{}, NULL)) - AVG(DECODE({}{}, 0, {}{}, NULL))) / STDDEV({}{}) * SQRT(SUM({}{}) * SUM(1 - {}{}) / COUNT(*) / COUNT(*)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
 					column_b, cast_b, column_n, cast_n, column_b, cast_b, column_n, cast_n, column_n, cast_n, column_b, cast_b, column_b, cast_b, self.genSQL(), column_n, column_b)
 				title = "Compute the biserial Correlation between the two variables"
 			elif (method == "cramer"):
 				if (columns[1] == columns[0]):
 					return 1
-				k, r = self[columns[0]].nunique(), self[columns[1]].nunique()
 				table_0_1 = "SELECT {}, {}, COUNT(*) AS nij FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2".format(columns[0], columns[1], self.genSQL(), columns[0], columns[1])
 				table_0 = "SELECT {}, COUNT(*) AS ni FROM {} WHERE {} IS NOT NULL GROUP BY 1".format(columns[0], self.genSQL(), columns[0])
 				table_1 = "SELECT {}, COUNT(*) AS nj FROM {} WHERE {} IS NOT NULL GROUP BY 1".format(columns[1], self.genSQL(), columns[1])
-				query_count = "SELECT COUNT(*) AS n FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(self.genSQL(), columns[0], columns[1])
-				self.cursor.execute(query_count)
-				n = self.cursor.fetchone()[0]
-				query = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / (ni * nj)) AS phi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}"
-				query = query.format(n, n, table_0_1, table_0, columns[0], columns[0], table_1, columns[1], columns[1])
-				self.cursor.execute(query)
-				phi2 = self.cursor.fetchone()[0]
-				phi2 = max(0, float(phi2) - (r - 1) * (k - 1) / (n - 1))
-				k = k - (k - 1) * (k - 1) / (n - 1)
-				r = r - (r - 1) * (r - 1) / (n - 1)
-				return math.sqrt(phi2 / min(k, r))
+				self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute("SELECT COUNT(*) AS n FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(self.genSQL(), columns[0], columns[1]))
+				n = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
+				phi = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / (ni * nj)) AS phi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}".format(n, n, table_0_1, table_0, columns[0], columns[0], table_1, columns[1], columns[1])
+				r_k_n_phi = "WITH cardinality AS (SELECT APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {}), phi2_table AS ({}) ".format(columns[0], columns[1], self.genSQL(), phi)
+				r_k_n_phi += "SELECT SQRT((CASE WHEN phi2_adjusted < 0 THEN 0 ELSE phi2_adjusted END) / NULLIFZERO(CASE WHEN k_adjusted < r_adjusted THEN k_adjusted ELSE r_adjusted END)) AS kendall FROM (SELECT phi2, k, r, phi2 - (r - 1) * (k - 1) / ({} - 1) AS phi2_adjusted, k - (k - 1) * (k - 1) / ({} - 1) AS k_adjusted, r - (r - 1) * (r - 1) / ({} - 1) AS r_adjusted FROM cardinality, phi2_table) x".format(n, n, n)
+				self.executeSQL(r_k_n_phi, title = "Compute the CramerV Correlation between the two variables ({} and {})".format(columns[0], columns[1]))
+				result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
+				try:
+					result = float(result)
+				except:
+					result = float('nan')
+				result = float('nan') if (result > 1 or result < 0) else result
+				return result
 			elif (method == "kendall"):
 				if (columns[1] == columns[0]):
 					return 1
@@ -368,23 +369,22 @@ class vDataframe:
 				title = "Compute the elasticity Beta between the two variables"
 			try:
 				self.executeSQL(query = query, title = title)
-				return self.cursor.fetchone()[0]
+				return self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
 			except:
-				return None
+				return float('nan')
 		elif (len(columns) >= 2):
 			try:
 				if (method in ("pearson", "spearman")):
 					table = self.genSQL() if (method == "pearson") else "(SELECT {} FROM {}) spearman_table".format(", ".join(["RANK() OVER (ORDER BY {}) AS {}".format(column, column) for column in columns]), self.genSQL())
 					self.executeSQL(query = "SELECT CORR_MATRIX({}) OVER () FROM {}".format(", ".join(columns), table), title = "Computing the Corr Matrix")
-					result = self.cursor.fetchall()
+					result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 					corr_dict = {}
 					for idx, column in enumerate(columns):
 						corr_dict[column] = idx
 					n = len(columns)
 					matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
 					for elem in result:
-						i = corr_dict[str_column(elem[0])]
-						j = corr_dict[str_column(elem[1])]
+						i, j = corr_dict[str_column(elem[0])], corr_dict[str_column(elem[1])]
 						matrix[i + 1][j + 1] = elem[2]
 					matrix[0] = [''] + columns
 					for idx, column in enumerate(columns):
@@ -434,7 +434,7 @@ class vDataframe:
 					else:
 						table = self.genSQL()
 					self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = title_query)
-					result = self.cursor.fetchone()
+					result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()
 				except:
 					n = len(columns)
 					result = []
@@ -451,7 +451,7 @@ class vDataframe:
 						current = result[k]
 						k += 1
 						if (current == None):
-							current = ""
+							current = float('nan')
 						matrix[i + 1][j + 1] = current
 						matrix[j + 1][i + 1] = 1 / current if ((method == "beta") and (current != 0)) else current
 			if ((show) and (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))):
@@ -469,7 +469,7 @@ class vDataframe:
 			return tablesample(values = values, table_info = False)
 		else:
 			if (method == "cramer"):
-				cols = self.catcol(100)
+				cols = self.catcol()
 				if (len(cols) == 0):
 			 		raise Exception("No categorical column found")
 			else:
@@ -487,7 +487,7 @@ class vDataframe:
 			 	   		 show: bool = True):
 		if (len(columns) == 0):
 			if (method == "cramer"):
-				cols = self.catcol(100)
+				cols = self.catcol()
 				if (len(cols) == 0):
 			 		raise Exception("No categorical column found")
 			else:
@@ -522,7 +522,7 @@ class vDataframe:
 				else:
 					table = self.genSQL()
 				self.executeSQL(query = "SELECT {} FROM {}".format(", ".join(all_list), table), title = "Compute the Correlation Vector")
-				result = self.cursor.fetchone()
+				result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()
 				vector = [elem for elem in result]
 			except:
 				fail = 1
@@ -558,7 +558,7 @@ class vDataframe:
 		table = "(SELECT {} FROM {}) UNION ALL (SELECT {} FROM {})".format(columns, first_relation, columns, second_relation)
 		query = "SELECT * FROM ({}) append_table LIMIT 1".format(table)
 		self.executeSQL(query = query, title = "Merging the two relation")
-		self.main_relation = "({}) append_table".format(table)
+		self.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = "({}) append_table".format(table)
 		return (self)
 	#
 	def all(self, columns: list):
@@ -589,28 +589,25 @@ class vDataframe:
 			   by: list = []):
 		check_types([("ts", ts, [str], False), ("rule", rule, [str], False), ("method", method, [dict], False), ("by", by, [list], False)])
 		columns_check(by + [elem for elem in method], self)
-		ts = vdf_columns_names([ts], self)[0]
-		by = vdf_columns_names(by, self)
+		ts, by = vdf_columns_names([ts], self)[0], vdf_columns_names(by, self)
 		all_elements = []
 		for column in method:
 			if (method[column] not in ('bfill', 'backfill', 'pad', 'ffill', 'linear')):
 				raise ValueError("Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear")
 			if (method[column] in ('bfill', 'backfill')):
-				func = "TS_FIRST_VALUE"
-				interp = 'const'
+				func, interp = "TS_FIRST_VALUE", 'const'
 			elif (method[column] in ('pad', 'ffill')):
-				func = "TS_LAST_VALUE"
-				interp = 'const'
+				func, interp = "TS_LAST_VALUE", 'const'
 			else:
-				func = "TS_FIRST_VALUE"
-				interp = 'linear'
+				func, interp = "TS_FIRST_VALUE", 'linear'
 			all_elements += ["{}({}, '{}') AS {}".format(func, vdf_columns_names([column], self)[0], interp, vdf_columns_names([column], self)[0])]
 		table = "SELECT {} FROM {}".format("{}", self.genSQL())
 		tmp_query = ["slice_time AS {}".format(str_column(ts))]
 		tmp_query += [str_column(column) for column in by]
 		tmp_query += all_elements
 		table = table.format(", ".join(tmp_query))
-		table += " TIMESERIES slice_time AS '{}' OVER (PARTITION BY {} ORDER BY {})".format(rule, ", ".join([str_column(column) for column in by]), str_column(ts))
+		partition = "PARTITION BY {} ".format(", ".join([str_column(column) for column in by])) if (by) else ""
+		table += " TIMESERIES slice_time AS '{}' OVER ({}ORDER BY {})".format(rule, partition, str_column(ts))
 		return (self.vdf_from_relation("(" + table + ') resample_table', "resample", "[Resample]: The data was resampled"))
 	#
 	def astype(self, dtype: dict):
@@ -625,8 +622,7 @@ class vDataframe:
 				time: str):
 		check_types([("ts", ts, [str], False), ("time", time, [str], False)])
 		columns_check([ts], self)
-		expr = "{}::time = '{}'".format(str_column(ts), time)
-		self.filter(expr)
+		self.filter("{}::time = '{}'".format(str_column(ts), time))
 		return (self)
 	#
 	def avg(self, columns: list = []):
@@ -674,8 +670,7 @@ class vDataframe:
 					 end_time: str):
 		check_types([("ts", ts, [str], False), ("start_time", start_time, [str], False), ("end_time", end_time, [str], False)])
 		columns_check([ts], self)
-		expr = "{}::time BETWEEN '{}' AND '{}'".format(str_column(ts), start_time, end_time)
-		self.filter(expr)
+		self.filter("{}::time BETWEEN '{}' AND '{}'".format(str_column(ts), start_time, end_time))
 		return (self)
 	#
 	def bool_to_int(self):
@@ -697,26 +692,33 @@ class vDataframe:
 		check_types([("max_cardinality", max_cardinality, [int, float], False)])
 		columns = []
 		for column in self.get_columns():
-			if (self[column].nunique(True) <= max_cardinality):
+			if ((self[column].category() == "int") and (self[column].ctype() != "boolean")):
+				self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute("SELECT (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(column, max_cardinality, self.genSQL()))
+				is_cat = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()[0]
+			elif (self[column].category() == "float"):
+				is_cat = False
+			else:
+				is_cat = True
+			if (is_cat):
 				columns += [column]
 		return (columns)
 	#
 	def copy(self):
 		copy_vDataframe = vDataframe("", empty = True)
-		copy_vDataframe.dsn = self.dsn
-		copy_vDataframe.input_relation = self.input_relation
-		copy_vDataframe.main_relation = self.main_relation
-		copy_vDataframe.schema = self.schema
-		copy_vDataframe.cursor = self.cursor
-		copy_vDataframe.columns = [item for item in self.columns]
-		copy_vDataframe.where = [item for item in self.where]
-		copy_vDataframe.order_by = [item for item in self.order_by]
-		copy_vDataframe.exclude_columns = [item for item in self.exclude_columns]
-		copy_vDataframe.history = [item for item in self.history]
-		copy_vDataframe.saving = [item for item in self.saving]
-		copy_vDataframe.query_on = self.query_on
-		copy_vDataframe.time_on = self.time_on
-		for column in self.columns:
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["dsn"] = self.VERTICA_ML_PYTHON_VARIABLES["dsn"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["input_relation"] = self.VERTICA_ML_PYTHON_VARIABLES["input_relation"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = self.VERTICA_ML_PYTHON_VARIABLES["main_relation"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["schema"] = self.VERTICA_ML_PYTHON_VARIABLES["schema"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["cursor"] = self.VERTICA_ML_PYTHON_VARIABLES["cursor"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["columns"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["columns"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["where"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["where"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["order_by"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["order_by"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["history"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["history"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["saving"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["saving"]]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["query_on"] = self.VERTICA_ML_PYTHON_VARIABLES["query_on"]
+		copy_vDataframe.VERTICA_ML_PYTHON_VARIABLES["time_on"] = self.VERTICA_ML_PYTHON_VARIABLES["time_on"]
+		for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]:
 			new_vColumn = vColumn(column, parent = copy_vDataframe, transformations = self[column].transformations)
 			setattr(copy_vDataframe, column, new_vColumn)
 			setattr(copy_vDataframe, column[1:-1], new_vColumn)
@@ -847,7 +849,7 @@ class vDataframe:
 					else:
 						query += [column]
 				else:
-					print("/!\\ Warning: The Virtual Column {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(column))
+					print("\u26A0 Warning: The Virtual Column {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(column))
 			if not(query):
 				raise ValueError("There is no numerical Virtual Column in the vDataframe.")
 			try:
@@ -863,7 +865,7 @@ class vDataframe:
 				query = query[0] if (len(query) == 1) else " UNION ALL ".join(["({})".format(elem) for elem in query])
 				query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), query)
 				self.executeSQL(query, title = "Compute the descriptive statistics of all the numerical columns using standard SQL")
-			query_result = self.cursor.fetchall()
+			query_result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 			data = [item for item in query_result]
 			matrix = [['column'], ['count'], ['mean'], ['std'], ['min'], ['25%'], ['50%'], ['75%'], ['max']]
 			for row in data:
@@ -893,16 +895,10 @@ class vDataframe:
 					cnt = self.shape()[0]
 					query = []
 					for column in columns:
-						if (self[column].category() == "binary"):
-							func = "TO_HEX({})".format(column)
-						elif (self[column].category() == "spatial"):
-							func = "ST_AsText({})".format(column)
-						else:
-							func = column
-						query += ["(SELECT {}::varchar, 100 * COUNT(*) / {} AS percent FROM vdf_table GROUP BY {} ORDER BY percent DESC LIMIT 1)".format(func, cnt, column)]
+						query += ["(SELECT {}::varchar, 100 * COUNT(*) / {} AS percent FROM vdf_table GROUP BY {} ORDER BY percent DESC LIMIT 1)".format(convert_special_type(self[column].category(), False, column), cnt, column)]
 					query = "WITH vdf_table AS ({}) {}".format(self.genSQL(return_without_alias = True), " UNION ALL ".join(query))
 					self.executeSQL(query, title = "Compute the MODE of all the selected features")
-					result = self.cursor.fetchall()
+					result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 					values["top"], values["top_percent"] = [elem[0] for elem in result], [round(elem[1], 3) for elem in result]
 				except:
 					for column in columns:
@@ -942,12 +938,12 @@ class vDataframe:
 		count = self.duplicated(columns = columns, count = True)
 		if (count):
 			columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
-			name = "_vpython_duplicated_index" + str(random.randint(0, 10000000)) + "_"
+			name = "__vertica_ml_python_duplicated_index__" + str(random.randint(0, 10000000)) + "_"
 			self.eval(name = name, expr = "ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)))
 			self.filter(expr = '"{}" = 1'.format(name))
-			self.exclude_columns += ['"{}"'.format(name)]
+			self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] += ['"{}"'.format(name)]
 		else:
-			print("/!\\ Warning: No duplicates detected")
+			print("\u26A0 Warning: No duplicates detected")
 		return (self)
 	# 
 	def dropna(self, columns: list = [], print_info: bool = True):
@@ -960,7 +956,7 @@ class vDataframe:
 		if (print_info):
 			total -= self.shape()[0]
 			if (total == 0):
-				print("/!\\ Warning: Nothing was dropped")
+				print("\u26A0 Warning: Nothing was dropped")
 			elif (total == 1):
 				print("1 element was dropped")
 			else:
@@ -969,7 +965,7 @@ class vDataframe:
 	# 
 	def dsn_restart(self):
 		from vertica_ml_python import vertica_cursor
-		self.cursor = vertica_cursor(self.dsn)
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"] = vertica_cursor(self.VERTICA_ML_PYTHON_VARIABLES["dsn"])
 		return (self)
 	# 
 	def dtypes(self):
@@ -983,15 +979,14 @@ class vDataframe:
 		check_types([("columns", columns, [list], False), ("count", count, [bool], False)])
 		columns_check(columns, self)
 		columns = self.get_columns() if not(columns) else vdf_columns_names(columns, self)
-		query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1"
-		query = query.format(", ".join(columns), self.genSQL())
+		query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1".format(", ".join(columns), self.genSQL())
 		self.executeSQL(query = "SELECT COUNT(*) FROM {}".format(query), title = "Computing the Number of duplicates")
-		total = self.cursor.fetchone()[0]
+		total = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
 		if (count):
 			return total
-		result = to_tablesample("SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(", ".join(columns), query, ", ".join(columns), limit), self.cursor, name = "Duplicated Rows (total = {})".format(total))
+		result = to_tablesample("SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {} ORDER BY occurrence DESC LIMIT {}".format(", ".join(columns), query, ", ".join(columns), limit), self.VERTICA_ML_PYTHON_VARIABLES["cursor"], name = "Duplicated Rows (total = {})".format(total))
 		self.executeSQL(query = "SELECT COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(", ".join(columns), query, ", ".join(columns)), title = "Computing the Number of different duplicates")
-		result.count = self.cursor.fetchone()[0]
+		result.count = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
 		return (result)
 	#
 	def empty(self):
@@ -999,10 +994,10 @@ class vDataframe:
 	# 
 	def eval(self, name: str, expr: str):
 		check_types([("name", name, [str], False), ("expr", expr, [str], False)])
-		name = str_column(name)
+		name = str_column(name.replace('"', '_'))
 		if column_check_ambiguous(name, self.get_columns()):
 			raise ValueError("A Virtual Column has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(name))
-		tmp_name = "_vpython" + str(random.randint(0, 10000000)) + "_"
+		tmp_name = "VERTICA_ML_PYTHON_" + str(random.randint(0, 10000000))
 		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.{}".format(tmp_name), title = "Drop the existing generated table")
 		try:
 			query = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT {} AS {} FROM {} LIMIT 20".format(tmp_name, expr, name, self.genSQL())
@@ -1012,18 +1007,17 @@ class vDataframe:
 			raise ValueError("The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'sql_on_off' method, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(expr))
 		query = "SELECT data_type FROM columns WHERE column_name = '{}' AND table_name = '{}' AND table_schema = 'v_temp_schema'".format(name.replace('"', '').replace("'", "''"), tmp_name)
 		self.executeSQL(query = query, title = "Catch the new feature's type")
-		ctype = self.cursor.fetchone()[0]
+		ctype = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
 		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.{}".format(tmp_name), title = "Drop the temporary table")
 		ctype = ctype if (ctype) else "undefined"
 		category = category_from_type(ctype = ctype)
-		vDataframe_maxfloor_length = len(max([self[column].transformations for column in self.get_columns()], key = len))
-		vDataframe_minfloor_length = 0
+		vDataframe_maxfloor_length, vDataframe_minfloor_length = len(max([self[column].transformations for column in self.get_columns()], key = len)), 0
 		for column in self.get_columns():
 			if ((column in expr) or (column.replace('"', '') in expr)):
 				vDataframe_minfloor_length = max(len(self[column].transformations), vDataframe_minfloor_length)
 		for eval_floor_length in range(vDataframe_minfloor_length, vDataframe_maxfloor_length):
 			try:
-				self.cursor.execute("SELECT * FROM {} LIMIT 0".format(
+				self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute("SELECT * FROM {} LIMIT 0".format(
 					self.genSQL(transformations = {name : [1 for i in range(eval_floor_length)] + [expr]})))
 				floor_length = eval_floor_length
 				break
@@ -1034,17 +1028,18 @@ class vDataframe:
 		new_vColumn = vColumn(name, parent = self, transformations = transformations)
 		setattr(self, name, new_vColumn)
 		setattr(self, name.replace('"', ''), new_vColumn)
-		self.columns += [name]
+		self.VERTICA_ML_PYTHON_VARIABLES["columns"] += [name]
 		self.add_to_history("[Eval]: A new Virtual Column {} was added to the vDataframe.".format(name)) 
 		return (self)
 	# 
 	def executeSQL(self, query: str, title: str = ""):
 		check_types([("query", query, [str], False), ("title", title, [str], False)])
-		if (self.query_on):
+		if (self.VERTICA_ML_PYTHON_VARIABLES["query_on"]):
 			try:
 				import shutil
 				screen_columns = shutil.get_terminal_size().columns
 			except:
+				import os
 				screen_rows, screen_columns = os.popen('stty size', 'r').read().split()
 			try:
 				import sqlparse
@@ -1062,13 +1057,14 @@ class vDataframe:
 				print(query_print)
 				print("-" * int(screen_columns) + "\n")
 		start_time = time.time()
-		self.cursor.execute(query)
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
 		elapsed_time = time.time() - start_time
-		if (self.time_on):
+		if (self.VERTICA_ML_PYTHON_VARIABLES["time_on"]):
 			try:
 				import shutil
-				screen_columns = shutil.get_terminal_size().columns
+				screen_columns = shutil.get_terminal_size().VERTICA_ML_PYTHON_VARIABLES["columns"]
 			except:
+				import os
 				screen_rows, screen_columns = os.popen('stty size', 'r').read().split()
 			if (isnotebook()):
 				from IPython.core.display import HTML,display
@@ -1077,7 +1073,7 @@ class vDataframe:
 			else:
 				print("Elapsed Time: " + str(elapsed_time))
 				print("-" * int(screen_columns) + "\n")
-		return (self.cursor)
+		return (self.VERTICA_ML_PYTHON_VARIABLES["cursor"])
 	#
 	def expected_store_usage(self, unit: str = 'b'):
 		check_types([("unit", unit, [str], False)])
@@ -1090,10 +1086,8 @@ class vDataframe:
 		elif (unit.lower() == 'tb'):
 			div_unit = 1024 * 1024 * 1024 * 1024
 		else:
-			unit = 'b'
-			div_unit = 1
-		total = 0
-		total_expected = 0
+			unit, div_unit = 'b', 1
+		total, total_expected = 0, 0
 		columns = self.get_columns()
 		values = self.aggregate(func = ["count"], columns = columns).transpose().values
 		values["index"] = ["expected_size ({})".format(unit), "max_size ({})".format(unit), "type"]
@@ -1187,15 +1181,15 @@ class vDataframe:
 					print("Nothing was filtered.")
 		else:
 			max_pos = 0
-			for column in self.columns:
+			for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]:
 				max_pos = max(max_pos, len(self[column].transformations) - 1)
-			self.where += [(expr, max_pos)]
+			self.VERTICA_ML_PYTHON_VARIABLES["where"] += [(expr, max_pos)]
 			try:
 				count -= self.shape()[0]
 			except:
-				del self.where[-1]
+				del self.VERTICA_ML_PYTHON_VARIABLES["where"][-1]
 				if (print_info):
-					print("/!\\ Warning: The expression '{}' is incorrect.\nNothing was filtered.".format(expr))
+					print("\u26A0 Warning: The expression '{}' is incorrect.\nNothing was filtered.".format(expr))
 			if (count > 1):
 				if (print_info):
 					print("{} elements were filtered".format(count))
@@ -1205,7 +1199,7 @@ class vDataframe:
 					print("{} element was filtered".format(count))
 				self.add_to_history("[Filter]: {} element was filtered using the filter '{}'".format(count, expr))
 			else:
-				del self.where[-1]
+				del self.VERTICA_ML_PYTHON_VARIABLES["where"][-1]
 				if (print_info):
 					print("Nothing was filtered.")
 		return (self)
@@ -1214,16 +1208,15 @@ class vDataframe:
 		check_types([("ts", ts, [str], False), ("offset", offset, [str], False)])
 		ts = vdf_columns_names([ts], self)[0]
 		query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
-		self.cursor.execute(query)
-		first_date = self.cursor.fetchone()[0]
-		expr = "{} <= '{}'".format(ts, first_date)
-		self.filter(expr)
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+		first_date = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
+		self.filter("{} <= '{}'".format(ts, first_date))
 		return (self)
 	#
-	def get_columns(self):
-		columns = [column for column in self.columns]
-		for column in self.exclude_columns:
-			if column in columns:
+	def get_columns(self, exclude_columns: list = []):
+		columns = [column for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]]
+		for column in columns:
+			if (column in self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] + exclude_columns):
 				columns.remove(column)
 		return(columns)
 	# 
@@ -1241,15 +1234,15 @@ class vDataframe:
 			if (self[column].nunique(True) < max_cardinality):
 				self[column].get_dummies("", prefix_sep, drop_first, use_numbers_as_suffix)
 			elif (cols_hand):
-				print("/!\\ Warning: The Virtual Column {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the Virtual Column get_dummies method".format(column))
+				print("\u26A0 Warning: The Virtual Column {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the Virtual Column get_dummies method".format(column))
 		return (self)
 	# 
 	def groupby(self, columns: list, expr: list = []):
 		check_types([("columns", columns, [list], False), ("expr", expr, [list], False)])
 		columns_check(columns, self)
 		columns = vdf_columns_names(columns, self)
-		query = "SELECT {}".format(", ".join(columns + expr)) + " FROM {} GROUP BY {}".format(self.genSQL(), ", ".join(columns))
-		return (self.vdf_from_relation("(" + query + ") groupby_table", "groupby", "[Groupby]: The columns were group by {}".format(", ".join(columns))))
+		relation = "(SELECT {} FROM {} GROUP BY {}) groupby_table".format(", ".join(columns + expr), self.genSQL(), ", ".join(columns)) 
+		return (self.vdf_from_relation(relation, "groupby", "[Groupby]: The columns were group by {}".format(", ".join(columns))))
 	# 
 	def head(self, limit: int = 5):
 		return (self.tail(limit = limit))
@@ -1302,14 +1295,14 @@ class vDataframe:
 		return (self)
 	# 
 	def info(self):
-		if (len(self.history) == 0):
+		if (len(self.VERTICA_ML_PYTHON_VARIABLES["history"]) == 0):
 			print("The vDataframe was never modified.")
-		elif (len(self.history) == 1):
+		elif (len(self.VERTICA_ML_PYTHON_VARIABLES["history"]) == 1):
 			print("The vDataframe was modified with only one action: ")
-			print(" * " + self.history[0])
+			print(" * " + self.VERTICA_ML_PYTHON_VARIABLES["history"][0])
 		else:
 			print("The vDataframe was modified many times: ")
-			for modif in self.history:
+			for modif in self.VERTICA_ML_PYTHON_VARIABLES["history"]:
 				print(" * " + modif)
 		return (self)
 	#
@@ -1326,9 +1319,22 @@ class vDataframe:
 				else:
 					tmp_query += [str_column(column) + " = '{}'".format(str(val[column][i]).replace("'", "''"))]
 			query = "SELECT * FROM {} WHERE ".format(self.genSQL()) + " AND ".join(tmp_query) + " LIMIT 1"
-			self.cursor.execute(query)
-			isin += [self.cursor.fetchone() != None] 
+			self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+			isin += [self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone() != None] 
 		return (isin)
+	#
+	def isintact(self):
+		if ((self.VERTICA_ML_PYTHON_VARIABLES["*"] < 1) or self.VERTICA_ML_PYTHON_VARIABLES["where"] != [] or self.VERTICA_ML_PYTHON_VARIABLES["order_by"] != ['' for i in range(100)]):
+			return False
+		columns = self.get_columns()
+		if (len(columns) != self.VERTICA_ML_PYTHON_VARIABLES["*"]):
+			return False
+		else:
+			for column in columns:
+				transformations = self[column].transformations
+				if ((len(transformations) != 1) or (transformations[0][0] != '{}'.format(column))):
+					return False
+		return True
 	#
 	def join(self, 
 			 input_relation: str = "", 
@@ -1346,13 +1352,11 @@ class vDataframe:
 			for elem in on:
 				vdf_cols += [on[elem]]
 			columns_check(vdf_cols, vdf)
-		on_join = ["x." + elem + " = y." + on[elem] for elem in on]
-		on_join = " AND ".join(on_join)
-		on_join = " ON " + on_join if (on_join) else ""
+		on_join = " AND ".join(["x." + elem + " = y." + on[elem] for elem in on])
+		on_join = " ON {}".format(on_join) if (on_join) else ""
 		first_relation = self.genSQL(final_table_name = "x")
 		second_relation = input_relation + " AS y" if not(vdf) else vdf.genSQL(final_table_name = "y")
-		expr1 = ["x.{}".format(elem) for elem in expr1]
-		expr2 = ["y.{}".format(elem) for elem in expr2]
+		expr1, expr2 = ["x.{}".format(elem) for elem in expr1], ["y.{}".format(elem) for elem in expr2]
 		expr = expr1 + expr2
 		expr = "*" if not(expr) else ", ".join(expr)
 		table = "SELECT {} FROM {} {} JOIN {} {}".format(expr, first_relation, how.upper(), second_relation, on_join)
@@ -1370,19 +1374,18 @@ class vDataframe:
 		check_types([("ts", ts, [str], False), ("offset", offset, [str], False)])
 		ts = vdf_columns_names([ts], self)[0]
 		query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(ts, offset, self.genSQL())
-		self.cursor.execute(query)
-		last_date = self.cursor.fetchone()[0]
-		expr = "{} >= '{}'".format(ts, last_date)
-		self.filter(expr)
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+		last_date = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]
+		self.filter("{} >= '{}'".format(ts, last_date))
 		return (self)
 	#
 	def load(self, offset: int = -1):
 		check_types([("offset", offset, [int, float], False)])
-		save =  self.saving[offset]
+		save =  self.VERTICA_ML_PYTHON_VARIABLES["saving"][offset]
 		vdf = {}
 		exec(save, globals(), vdf)
 		vdf = vdf["vdf_save"]
-		vdf.cursor = self.cursor
+		vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"] = self.VERTICA_ML_PYTHON_VARIABLES["cursor"]
 		return (vdf)
 	#
 	def mad(self, columns: list = []):
@@ -1402,13 +1405,9 @@ class vDataframe:
 	#
 	def memory_usage(self):
 		import sys
-		total = sys.getsizeof(self.columns) + sys.getsizeof(self.where) + sys.getsizeof(self.history) + sys.getsizeof(self.main_relation)
-		total += sys.getsizeof(self.input_relation) + sys.getsizeof(self.schema) + sys.getsizeof(self.dsn) + sys.getsizeof(self) 
-		total += sys.getsizeof(self.query_on) + sys.getsizeof(self.exclude_columns)
-		values = {"index": [], "value": []}
-		values["index"] += ["object"]
-		values["value"] += [total]
-		for column in self.columns:
+		total =  sum([sys.getsizeof(elem) for elem in self.VERTICA_ML_PYTHON_VARIABLES]) + sys.getsizeof(self) 
+		values = {"index": ["object"], "value": [total]}
+		for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]:
 			values["index"] += [column] 
 			values["value"] += [self[column].memory_usage()]
 			total += self[column].memory_usage()
@@ -1419,12 +1418,18 @@ class vDataframe:
 	def min(self, columns = []):
 		return (self.aggregate(func = ["min"], columns = columns))
 	# 
-	def normalize(self, columns = [], method = "zscore"):
-		check_types([("columns", columns, [list], False), ("method", method, ["zscore", "robust_zscore", "minmax"], True)])
+	def normalize(self, columns: list = [], method = "zscore"):
+		check_types([("columns", columns, [list], False), ("method", method, ["zscore", "robust_zscore", "minmax"], True), ("by", by, [list], False)])
 		columns_check(columns, self)
+		no_cols = True if not(columns) else False
 		columns = self.numcol() if not(columns) else vdf_columns_names(columns, self)
 		for column in columns:
-			self[column].normalize(method = method)
+			if (self[column].isnum() and (self[column].ctype() != "boolean")):
+				self[column].normalize(method = method)
+			elif ((no_cols) and (self[column].ctype() == "boolean")):
+				pass
+			else:
+				print("\u26A0 Warning: The Virtual Column {} was skipped\nNormalize only accept numerical data types".format(column))
 		return (self)
 	#
 	def numcol(self):
@@ -1482,8 +1487,9 @@ class vDataframe:
 			 start_date: str = "",
 		     end_date: str = ""):
 		check_types([("columns", columns, [list], False), ("ts", ts, [str], False), ("start_date", start_date, [str], False), ("end_date", end_date, [str], False)])
-		columns_check(columns, self)
+		columns_check(columns + [ts], self)
 		columns = vdf_columns_names(columns, self)
+		ts = vdf_columns_names([ts], self)[0]
 		from vertica_ml_python.plot import multi_ts_plot
 		multi_ts_plot(self, ts, columns, start_date, end_date)	
 		return (self)
@@ -1551,7 +1557,7 @@ class vDataframe:
 		check_types([("x", x, [int, float], False)])
 		if ((x <= 0) or (x >= 1)):
 			raise ValueError("Parameter 'x' must be between 0 and 1")
-		name = "vpython_random_nb_" + str(random.randint(0, 10000000))
+		name = "__vertica_ml_python_random_" + str(random.randint(0, 10000000)) + "__"
 		self.eval(name, "RANDOM()")
 		self.filter("{} < {}".format(name, x), print_info = False)
 		self[name].drop()
@@ -1559,23 +1565,23 @@ class vDataframe:
 	#
 	def save(self):
 		save = 'vdf_save = vDataframe("", empty = True)'
-		save += '\nvdf_save.dsn = \'{}\''.format(self.dsn)
-		save += '\nvdf_save.input_relation = \'{}\''.format(self.input_relation)
-		save += '\nvdf_save.main_relation = \'{}\''.format(self.main_relation)
-		save += '\nvdf_save.schema = \'{}\''.format(self.schema)
-		save += '\nvdf_save.columns = {}'.format(self.columns)
-		save += '\nvdf_save.exclude_columns = {}'.format(self.exclude_columns)
-		save += '\nvdf_save.where = {}'.format(self.where)
-		save += '\nvdf_save.query_on = {}'.format(self.query_on)
-		save += '\nvdf_save.time_on = {}'.format(self.time_on)
-		save += '\nvdf_save.order_by = {}'.format(self.order_by)
-		save += '\nvdf_save.history = {}'.format(self.history)
-		save += '\nvdf_save.saving = {}'.format(self.saving)
-		for column in self.columns:
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["dsn"] = \'{}\''.format(self.VERTICA_ML_PYTHON_VARIABLES["dsn"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["input_relation"] = \'{}\''.format(self.VERTICA_ML_PYTHON_VARIABLES["input_relation"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = \'{}\''.format(self.VERTICA_ML_PYTHON_VARIABLES["main_relation"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["schema"] = \'{}\''.format(self.VERTICA_ML_PYTHON_VARIABLES["schema"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["columns"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["columns"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["where"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["where"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["query_on"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["query_on"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["time_on"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["time_on"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["order_by"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["order_by"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["history"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["history"])
+		save += '\nvdf_save.VERTICA_ML_PYTHON_VARIABLES["saving"] = {}'.format(self.VERTICA_ML_PYTHON_VARIABLES["saving"])
+		for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]:
 			save += '\nsave_vColumn = vColumn(\'{}\', parent = vdf_save, transformations = {})'.format(column, self[column].transformations)
 			save += '\nsetattr(vdf_save, \'{}\', save_vColumn)'.format(column)
 			save += '\nsetattr(vdf_save, \'{}\', save_vColumn)'.format(column[1:-1])
-		self.saving += [save]
+		self.VERTICA_ML_PYTHON_VARIABLES["saving"] += [save]
 		return (self)
 	# 
 	def scatter(self,
@@ -1640,20 +1646,20 @@ class vDataframe:
 		try:
 			cursor.execute("SELECT 1;")
 			cursor.fetchone()
-		except:
-			raise TypeError("The parameter 'cursor' must be a DB cursor having the methods fetchall, fetchone, execute.")
-		self.cursor = cursor
+		except Exception as e:
+			raise TypeError("{}\nThe parameter 'cursor' must be a DB cursor having the methods fetchall, fetchone and execute.".format(e))
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"] = cursor
 		return (self)
 	# 
 	def set_dsn(self, dsn: str):
 		check_types([("dsn", dsn, [str], False)])
-		self.dsn = dsn
+		self.VERTICA_ML_PYTHON_VARIABLES["dsn"] = dsn
 		return (self)
 	# 
 	def shape(self):
 		query = "SELECT COUNT(*) FROM {}".format(self.genSQL())
-		self.cursor.execute(query)
-		return (self.cursor.fetchone()[0], len(self.get_columns()))
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+		return (self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0], len(self.get_columns()))
 	#
 	def skew(self, columns: list = []):
 		return self.skewness(columns = columns)
@@ -1670,13 +1676,13 @@ class vDataframe:
 		for column in columns:
 			if not(column_check_ambiguous(column, vdf_columns)):
 				raise NameError("The Virtual Column {} doesn't exist".format(column))
-		for column in self.columns:
+		for column in self.VERTICA_ML_PYTHON_VARIABLES["columns"]:
 			max_pos = max(max_pos, len(self[column].transformations) - 1)
-		self.order_by[max_pos] = " ORDER BY {} {}".format(", ".join(columns), "DESC" if (desc) else "ASC")
+		self.VERTICA_ML_PYTHON_VARIABLES["order_by"][max_pos] = " ORDER BY {} {}".format(", ".join(columns), "DESC" if (desc) else "ASC")
 		return (self)
 	# 
 	def sql_on_off(self):
-		self.query_on = not(self.query_on)
+		self.VERTICA_ML_PYTHON_VARIABLES["query_on"] = not(self.VERTICA_ML_PYTHON_VARIABLES["query_on"])
 		return (self)
 	#
 	def statistics(self, 
@@ -1708,7 +1714,7 @@ class vDataframe:
 					query += [expr]
 		query = "SELECT {} FROM {}".format(', '.join(query), self.genSQL())
 		self.executeSQL(query, title = "COMPUTE KURTOSIS AND SKEWNESS")
-		result = [item for item in self.cursor.fetchone()]
+		result = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()]
 		if (skew_kurt_only):
 			values = {"index" : []}
 			for column in columns:
@@ -1732,24 +1738,17 @@ class vDataframe:
 		columns = self.get_columns()
 		all_columns = []
 		for column in columns:
-			if (self[column].category() == "binary"):
-				all_columns += ['TO_HEX({}) AS {}'.format(column, column)]
-			elif (self[column].category() == "spatial"):
-				all_columns += ['ST_AsText({}) AS {}'.format(column, column)]
-			elif (self[column].category() == "date"):
-				all_columns += ['{}::varchar AS {}'.format(column, column)]
-			else:
-				all_columns += [column]
-		tail = to_tablesample("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(all_columns), self.genSQL(), limit, offset), self.cursor)
+			all_columns += ["{} AS {}".format(convert_special_type(self[column].category(), True, column), column)]
+		tail = to_tablesample("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(all_columns), self.genSQL(), limit, offset), self.VERTICA_ML_PYTHON_VARIABLES["cursor"])
 		tail.count = self.shape()[0]
 		tail.offset = offset
-		tail.name = self.input_relation
+		tail.name = self.VERTICA_ML_PYTHON_VARIABLES["input_relation"]
 		for column in tail.values:
 			tail.dtype[column] = self[column].ctype()
 		return (tail)
 	# 
 	def time_on_off(self):
-		self.time_on = not(self.time_on)
+		self.VERTICA_ML_PYTHON_VARIABLES["time_on"] = not(self.VERTICA_ML_PYTHON_VARIABLES["time_on"])
 		return (self)
 	#
 	def to_csv(self, 
@@ -1776,8 +1775,8 @@ class vDataframe:
 		current_nb_rows_written = 0
 		limit = total if (nb_row_per_work <= 0) else nb_row_per_work
 		while (current_nb_rows_written < total):
-			self.cursor.execute("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(columns), self.genSQL(), limit, current_nb_rows_written))
-			result = self.cursor.fetchall()
+			self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute("SELECT {} FROM {} LIMIT {} OFFSET {}".format(", ".join(columns), self.genSQL(), limit, current_nb_rows_written))
+			result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 			for row in result:
 				tmp_row = []
 				for item in row:
@@ -1807,29 +1806,29 @@ class vDataframe:
 		self.executeSQL(query = query, title = "Create a new " + relation_type + " to save the vDataframe")
 		self.add_to_history("[Save]: The vDataframe was saved into a {} named '{}'.".format(relation_type, name))
 		if (inplace):
-			query_on, time_on, history, saving = self.query_on, self.time_on, self.history, self.saving
-			self.__init__(name, self.cursor)
-			self.history = history
-			self.query_on = query_on
-			self.time_on = time_on
+			query_on, time_on, history, saving = self.VERTICA_ML_PYTHON_VARIABLES["query_on"], self.VERTICA_ML_PYTHON_VARIABLES["time_on"], self.VERTICA_ML_PYTHON_VARIABLES["history"], self.VERTICA_ML_PYTHON_VARIABLES["saving"]
+			self.__init__(name, self.VERTICA_ML_PYTHON_VARIABLES["cursor"])
+			self.VERTICA_ML_PYTHON_VARIABLES["history"] = history
+			self.VERTICA_ML_PYTHON_VARIABLES["query_on"] = query_on
+			self.VERTICA_ML_PYTHON_VARIABLES["time_on"] = time_on
 		return (self)
 	# 
 	def to_pandas(self):
 		import pandas as pd
 		query = "SELECT * FROM {}".format(self.genSQL())
-		self.cursor.execute(query)
-		column_names = [column[0] for column in self.cursor.description]
-		query_result = self.cursor.fetchall()
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+		column_names = [column[0] for column in self.VERTICA_ML_PYTHON_VARIABLES["cursor"].description]
+		query_result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 		data = [list(item) for item in query_result]
 		df = pd.DataFrame(data)
-		df.columns = column_names
+		df.VERTICA_ML_PYTHON_VARIABLES["columns"] = column_names
 		return (df)
 	#
 	def to_vdf(self, name: str):
 		check_types([("name", name, [str], False)])
 		self.save()
 		file = open("{}.vdf".format(name), "w+") 
-		file.write(self.saving[-1])
+		file.write(self.VERTICA_ML_PYTHON_VARIABLES["saving"][-1])
 		file.close()
 		return (self)
 	#
@@ -1839,105 +1838,32 @@ class vDataframe:
 	def vdf_from_relation(self, table: str, func: str, history: str):
 		check_types([("table", table, [str], False), ("func", func, [str], False), ("history", history, [str], False)])
 		vdf = vDataframe("", empty = True)
-		vdf.dsn = self.dsn
-		vdf.input_relation = self.input_relation
-		vdf.main_relation = table
-		vdf.schema = self.schema
-		vdf.cursor = self.cursor
-		vdf.query_on = self.query_on
-		vdf.time_on = self.time_on
-		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(func), title = "Drop the Existing Temp Table")
-		self.executeSQL(query = "CREATE LOCAL TEMPORARY TABLE _vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(func, table))
-		self.executeSQL(query = "SELECT column_name, data_type FROM columns where table_name = '_vpython_{}_test_' AND table_schema = 'v_temp_schema'".format(func), title = "SELECT NEW DATA TYPE AND THE COLUMNS NAME")
-		result = self.cursor.fetchall()
-		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(func), title = "Drop the Temp Table")
-		vdf.columns = ['"{}"'.format(item[0]) for item in result]
-		vdf.where = []
-		vdf.order_by = ['' for i in range(100)]
-		vdf.exclude_columns = []
-		vdf.history = [item for item in self.history] + [history]
-		vdf.saving = [item for item in self.saving]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["dsn"] = self.VERTICA_ML_PYTHON_VARIABLES["dsn"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["input_relation"] = self.VERTICA_ML_PYTHON_VARIABLES["input_relation"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = table
+		vdf.VERTICA_ML_PYTHON_VARIABLES["schema"] = self.VERTICA_ML_PYTHON_VARIABLES["schema"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"] = self.VERTICA_ML_PYTHON_VARIABLES["cursor"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["query_on"] = self.VERTICA_ML_PYTHON_VARIABLES["query_on"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["time_on"] = self.VERTICA_ML_PYTHON_VARIABLES["time_on"]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["where"] = []
+		vdf.VERTICA_ML_PYTHON_VARIABLES["order_by"] = ['' for i in range(100)]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] = []
+		vdf.VERTICA_ML_PYTHON_VARIABLES["history"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["history"]] + [history]
+		vdf.VERTICA_ML_PYTHON_VARIABLES["saving"] = [item for item in self.VERTICA_ML_PYTHON_VARIABLES["saving"]]
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_{}_TEST;".format(func), title = "Drop the Existing Temp Table")
+		self.executeSQL(query = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_{}_TEST ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(func, table))
+		self.executeSQL(query = "SELECT column_name, data_type FROM columns where table_name = 'VERTICA_ML_PYTHON_{}_TEST' AND table_schema = 'v_temp_schema'".format(func), title = "SELECT NEW DATA TYPE AND THE COLUMNS NAME")
+		result = self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
+		self.executeSQL(query = "DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_{}_TEST;".format(func), title = "Drop the Temp Table")
+		vdf.VERTICA_ML_PYTHON_VARIABLES["columns"] = ['"{}"'.format(item[0]) for item in result]
 		for column, ctype in result:
-			column = '"{}"'.format(column)
-			new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
-			setattr(vdf, column, new_vColumn)
-			setattr(vdf, column[1:-1], new_vColumn)
+			if ('"' in column):
+				print("\u26A0 Warning: A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(column, column.replace('"', '_')))
+			new_vColumn = vColumn('"{}"'.format(column.replace('"', '_')), parent = self, transformations = [('"{}"'.format(column.replace('"', '""')), ctype, category_from_type(ctype))])
+			setattr(vdf, '"{}"'.format(column.replace('"', '_')), new_vColumn)
+			setattr(vdf, column.replace('"', '_'), new_vColumn)
 		return (vdf)
 	# 
-	#
-	#
-	#
-	#
-	#
-	#
-	def help(self):
-		print("#############################")
-		print("#                           #")
-		print("# Vertica Virtual Dataframe #")
-		print("#                           #")
-		print("#############################")
-		print("")
-		print("The vDataframe is a Python object which will keep in mind all the user modifications in order "
-				+"to use an optimised SQL query. It will send the query to the database which will use its "
-				+"aggregations to compute fast results. It is created using a view or a table stored in the "
-				+"user database and a database cursor. It will create for each column of the table a vColumn (Vertica"
-				+" Virtual Column) which will store for each column its name, its imputations and allows to do easy "
-				+"modifications and explorations.")
-		print("")
-		print("vColumn and vDataframe coexist and one can not live without the other. vColumn will use the vDataframe information and reciprocally." 
-				+" It is imperative to understand both structures to know how to use the entire object.")
-		print("")
-		print("When the user imputes or filters the data, the vDataframe gets in memory all the transformations to select for each query "
-				+"the needed data in the input relation.")
-		print("")
-		print("As the vDataframe will try to keep in mind where the transformations occurred in order to use the appropriate query," 
-				+" it is highly recommended to save the vDataframe when the user has done a lot of transformations in order to gain in efficiency" 
-				+" (using the to_db method). We can also see all the modifications using the history method.")
-		print("")
-		print("If you find any difficulties using vertica_ml_python, please contact me: badr.ouali@microfocus.com / I'll be glad to help.")
-		print("")
-		print("For more information about the different methods or the entire vDataframe structure, please see the entire documentation")
-	# 
 	def version(self):
-		self.cursor.execute("SELECT version();")
-		version = self.cursor.fetchone()[0]
-		print("############################################################################################################") 
-		print("#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #")
-		print("# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #")
-		print("# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #")
-		print("# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #")
-		print("# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #")
-		print("#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #")
-		print("#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #")
-		print("#                                                                                                          #")
-		print("############################################################################################################")
-		print("#")
-		print("# Author: Badr Ouali, Datascientist at Vertica")
-		print("#")
-		print("# You are currently using {}".format(version))
-		print("#")
-		version = version.split("Database v")
-		version_id = int(version[1][0])
-		version_release = int(version[1][2])
-		if (version_id > 8):
-			print("# You have a perfectly adapted version for using vDataframe and Vertica ML")
-		elif (version_id == 8):
-			if (version_release > 0):
-				print("# Your Vertica version is adapted for using vDataframe but you are quite limited for Vertica ML")
-				print("# Go to your Vertica version documentation for more information")
-				print("# /!\\ Some vDataframe queries can be really big because of the unavailability of a lot of functions")
-				print("# /!\\ Some vDataframe functions could not work")
-		else:
-			print("# Your Vertica version is adapted for using vDataframe but you can not use Vertica ML")
-			print("# Go to your Vertica version documentation for more information")
-			print("# /!\\ Some vDataframe queries can be really big because of the unavailability of a lot of functions")
-			print("# /!\\ Some vDataframe functions could not work")
-		print("#")
-		print("# For more information about the vDataframe you can use the help() method")
-		return (version_id, version_release)
-
-		
-
-
-
-
+		self.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute("SELECT version();")
+		return self.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()[0]

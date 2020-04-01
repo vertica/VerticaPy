@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -35,13 +35,9 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as plt_colors
 from mpl_toolkits.mplot3d import Axes3D
-import math
-import statistics
-from vertica_ml_python.utilities import isnotebook
-from vertica_ml_python.utilities import tablesample
-from vertica_ml_python.utilities import to_tablesample
-from vertica_ml_python.utilities import str_column
 from random import shuffle
+import math, statistics
+from vertica_ml_python.utilities import isnotebook, tablesample, to_tablesample, str_column, convert_special_type
 ##
 #   /$$$$$$$  /$$        /$$$$$$  /$$$$$$$$
 #  | $$__  $$| $$       /$$__  $$|__  $$__/
@@ -98,14 +94,12 @@ def bar2D(vdf,
 		  h: tuple = (None, None),
 		  stacked: bool = False,
 		  fully_stacked: bool = False):
-	import numpy
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
 	n = len(all_columns)
 	m = len(all_columns[0])
 	n_groups = m - 1
-	index = numpy.arange(n_groups)
 	bar_width = 0.5
 	plt.figure(figsize = (14, m * 3)) if isnotebook() else plt.figure(figsize = (10, 6))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
@@ -127,13 +121,13 @@ def bar2D(vdf,
 							last_column[idx] += float(item)
 						except:
 							last_column[idx] += 0
-				plt.barh(index, current_column, bar_width, alpha = 0.86, color = colors[i-1], label = current_label, left = last_column)
+				plt.barh([elem for elem in range(n_groups)], current_column, bar_width, alpha = 0.86, color = colors[i - 1], label = current_label, left = last_column)
 			else:
-				plt.barh(index + (i - 1) * bar_width / (n - 1), current_column, bar_width / (n - 1),alpha=0.86, color=colors[i-1], label = current_label)
+				plt.barh([elem + (i - 1) * bar_width / (n - 1) for elem in range(n_groups)], current_column, bar_width / (n - 1), alpha = 0.86, color = colors[i-1], label = current_label)
 		if (stacked):
-			plt.yticks(index, all_columns[0][1:m])
+			plt.yticks([elem for elem in range(n_groups)], all_columns[0][1:m])
 		else:
-			plt.yticks(index + bar_width / 2 - bar_width / 2 / (n - 1),all_columns[0][1:m])
+			plt.yticks([elem + bar_width / 2 - bar_width / 2 / (n - 1) for elem in range(n_groups)], all_columns[0][1:m])
 		plt.subplots_adjust(left = max(0.3, len(max([str(item) for item in all_columns[0][1:m]], key=len)) / 140.0))
 		plt.ylabel(columns[0])
 		if (method == "mean"):
@@ -173,8 +167,8 @@ def bar2D(vdf,
 						last_column[idx] += float(item)
 					except:
 						last_column[idx] += 0
-			plt.barh(index, current_column, bar_width, alpha=0.86, color = colors[i-1], label = current_label, left = last_column)
-		plt.yticks(index,all_columns[0][1:m])
+			plt.barh([elem for elem in range(n_groups)], current_column, bar_width, alpha = 0.86, color = colors[i - 1], label = current_label, left = last_column)
+		plt.yticks([elem for elem in range(n_groups)], all_columns[0][1:m])
 		plt.subplots_adjust(left = max(0.3, len(max([str(item) for item in all_columns[0][1:m]], key = len)) / 140.0))
 		plt.ylabel(columns[0])
 		plt.xlabel('Density per category')
@@ -240,7 +234,7 @@ def boxplot(vdf,
 				query += [lp + tmp_query + rp]
 			query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(table, " UNION ALL ".join(query))
 			vdf.executeSQL(query = query, title = "Compute all the descriptive statistics for each category to draw the box plot")
-			query_result = vdf.parent.cursor.fetchall()
+			query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 			cat_priority = [item[-1] for item in query_result]
 			result = [[float(item[i]) for i in range(0,5)] for item in query_result]
 			result.reverse()
@@ -300,10 +294,10 @@ def boxplot2D(vdf, columns: list = []):
 		columns = vdf.numcol()
 	for column in columns:
 		if (column not in vdf.numcol()):
-			print("/!\\ Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(column))
+			print("\u26A0 Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(column))
 			columns.remove(column)
 	if not(columns):
-		print("/!\\ Warning: No numerical columns found to draw the multi boxplot")
+		print("\u26A0 Warning: No numerical columns found to draw the multi boxplot")
 		raise
 	# SINGLE BOXPLOT	
 	if (len(columns) == 1):
@@ -328,9 +322,8 @@ def boxplot2D(vdf, columns: list = []):
 			for patch,color in zip(box['boxes'], colors):
 				patch.set_facecolor(color)
 			plt.show()
-		except:
-			print("/!\\ Warning: An error occured during the BoxPlot creation")
-			raise
+		except Exception as e:
+			raise Exception("{}\nAn error occured during the BoxPlot creation.".format(e))
 #
 def cmatrix(matrix,
 			columns_x,
@@ -346,14 +339,7 @@ def cmatrix(matrix,
 			y_label: str = "",
 			with_numbers: bool = True,
 			mround: int = 3):
-		import numpy
-		matrix_array = numpy.ndarray(shape = (n, m), dtype = float)
-		for i in range(n):
-			for j in range(m):
-				try:
-					matrix_array[i][j] = matrix[j + 1][i + 1]
-				except:
-					matrix_array[i][j] = None
+		matrix_array = [[round(float(matrix[i][j]), mround) if matrix[i][j] != None else float('nan') for i in range(1, m + 1)] for j in range(1, n + 1)]
 		plt.figure(figsize = (min(m * 1.4, 500), min(n * 1.4, 500))) if isnotebook() else plt.figure(figsize = (min(int(m/1.3) + 2, 500), min(int(n/1.3) + 1, 500)))
 		plt.title(title)
 		plt.imshow(matrix_array, cmap = cmap, interpolation = 'nearest', vmax = vmax, vmin = vmin)
@@ -367,13 +353,11 @@ def cmatrix(matrix,
 		plt.subplots_adjust(bottom = max(0.2, len(max([str(item) for item in columns_y], key = len)) / 90.0))	
 		plt.gca().set_xticklabels(columns_y)
 		plt.gca().set_yticklabels(columns_x)
-		x_positions = numpy.linspace(start = 0, stop = m, num = m, endpoint = False)
-		y_positions = numpy.linspace(start = 0, stop = n, num = n, endpoint = False)
 		if (with_numbers):
-			for y_index, y in enumerate(y_positions):
-			    for x_index, x in enumerate(x_positions):
-			        label=round(matrix_array[y_index, x_index], mround)
-			        plt.gca().text(x, y, label, color = 'black', ha = 'center', va = 'center')
+			for y_index in range(n):
+			    for x_index in range(m):
+			        label = matrix_array[y_index][x_index]
+			        plt.gca().text(x_index, y_index, label, color = 'black', ha = 'center', va = 'center')
 		plt.show()
 #
 def compute_plot_variables(vdf, 
@@ -411,22 +395,14 @@ def compute_plot_variables(vdf,
 				enum_trans = vdf.discretize(h = h, return_enum_trans = True)[0].replace("{}", vdf.alias) + " AS " + vdf.alias
 				if (of):
 					enum_trans += " , " + of
-				table = "(SELECT " + enum_trans + " FROM " + table + ") enum_table"
-			if (vdf.category() == "binary"):
-				func = 'TO_HEX({})'.format(vdf.alias)
-			elif (vdf.category() == "spatial"):
-				func = 'ST_AsText({})'.format(vdf.alias)
-			elif (vdf.category() == "date"):
-				func = '{}::varchar'.format(vdf.alias)
-			else:
-				func = vdf.alias
-			query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(func, vdf.alias, aggregate, table, func, max_cardinality)
+				table = "(SELECT {} FROM {}) enum_table".format(enum_trans, table)
+			query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(convert_special_type(vdf.category(), True, vdf.alias), vdf.alias, aggregate, table, convert_special_type(vdf.category(), True, vdf.alias), max_cardinality)
 			if (cardinality > max_cardinality):
 				query += (" UNION (SELECT 'Others', {}(count) FROM (SELECT {} AS count FROM {} " + 
 					"GROUP BY {} ORDER BY {} DESC OFFSET {}) y LIMIT 1) ORDER BY 2 DESC")
 				query = query.format(others_aggregate, aggregate, table, vdf.alias, aggregate, max_cardinality)
 		vdf.executeSQL(query, title = "Compute the histogram heights")
-		query_result = vdf.parent.cursor.fetchall()
+		query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 		if (query_result[-1][1] == None):
 			del query_result[-1]
 		z = [item[0] for item in query_result]
@@ -439,25 +415,24 @@ def compute_plot_variables(vdf,
 		if ((h <= 0) and (bins <= 0)):
 			h = vdf.numh()
 		elif (bins > 0):
-			query = "SELECT DATEDIFF('second', MIN(" + vdf.alias + "), MAX(" + vdf.alias  + ")) FROM "
+			query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(vdf.alias, vdf.alias)
 			vdf.executeSQL(query = query, title = "Compute the histogram interval")
-			query_result = vdf.parent.cursor.fetchone()
+			query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchone()
 			h = float(query_result[0]) / bins
 		min_date = vdf.min()
-		converted_date = "DATEDIFF('second', '" + str(min_date) + "', "+vdf.alias + ")"
-		query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
-		query = query.format(converted_date, h, h, aggregate, vdf.parent.genSQL(), vdf.alias)
+		converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
+		query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(converted_date, h, h, aggregate, vdf.parent.genSQL(), vdf.alias)
 		vdf.executeSQL(query = query, title = "Compute the histogram heights")
-		query_result = vdf.parent.cursor.fetchall()
+		query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 		x = [float(item[0]) for item in query_result]
 		y = [item[1] / float(count) for item in query_result] if (method == "density") else [item[1] for item in query_result]
 		query = ""
 		for idx, item in enumerate(query_result):
-			query += " UNION (SELECT TIMESTAMPADD('second' , " + str(math.floor(h * idx)) + ", '" + str(min_date) + "'::timestamp))"
+			query += " UNION (SELECT TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(math.floor(h * idx), min_date)
 		query = query[7:-1] + ")"
 		h = 0.94 * h
-		vdf.parent.cursor.execute(query)
-		query_result = vdf.parent.cursor.fetchall()
+		vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].execute(query)
+		query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 		z = [item[0] for item in query_result]
 		z.sort()
 		is_categorical = True
@@ -472,7 +447,7 @@ def compute_plot_variables(vdf,
 		query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
 		query = query.format(vdf.alias, h, h, aggregate, vdf.parent.genSQL(), vdf.alias)
 		vdf.executeSQL(query = query, title = "Compute the histogram heights")
-		query_result = vdf.parent.cursor.fetchall()
+		query_result = vdf.parent.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 		y = [item[1] / float(count) for item in query_result] if (method == "density") else [item[1] for item in query_result]
 		x = [float(item[0]) + h/2 for item in query_result]
 		h = 0.94 * h
@@ -611,7 +586,7 @@ def hist(vdf,
 		if not(is_numeric):
 			new_z = []
 			for item in z:
-				new_z += [item[0:47] + "..."] if (len(str(item))>50) else [item]
+				new_z += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
 		else:
 			new_z = z
 		plt.xticks(x, new_z, rotation = rotation)
@@ -635,13 +610,11 @@ def hist2D(vdf,
 		   max_cardinality: tuple = (6, 6),
 		   h: tuple = (None, None),
 		   stacked: bool = False):
-	import numpy
 	colors = gen_colors()
 	all_columns = vdf.pivot_table(columns, method = method, of = of, h = h, max_cardinality = max_cardinality, show = False).values
 	all_columns = [[column] + all_columns[column] for column in all_columns]
 	n, m = len(all_columns), len(all_columns[0])
-	n_groups = m-1
-	index = numpy.arange(n_groups)
+	n_groups = m - 1
 	bar_width = 0.5
 	plt.figure(figsize = (14, 12)) if isnotebook() else plt.figure(figsize = (10, 6))
 	plt.rcParams['axes.facecolor'] = '#F5F5F5'
@@ -657,18 +630,18 @@ def hist2D(vdf,
 			if (i == 1):
 				last_column = [0 for item in all_columns[i][1:m]]
 			else:
-				for idx,item in enumerate(all_columns[i - 1][1:m]):
+				for idx, item in enumerate(all_columns[i - 1][1:m]):
 					try:
 						last_column[idx] += float(item)
 					except:
 						last_column[idx] += 0
-			plt.bar(index, current_column, bar_width, alpha = 0.86, color = colors[i - 1], label = current_label, bottom = last_column)
+			plt.bar([elem for elem in range(n_groups)], current_column, bar_width, alpha = 0.86, color = colors[i - 1], label = current_label, bottom = last_column)
 		else:
-			plt.bar(index + (i - 1) * bar_width / (n - 1), current_column, bar_width / (n - 1), alpha=0.86, color = colors[i - 1], label = current_label)
+			plt.bar([elem + (i - 1) * bar_width / (n - 1) for elem in range(n_groups)], current_column, bar_width / (n - 1), alpha=0.86, color = colors[i - 1], label = current_label)
 	if (stacked):
-		plt.xticks(index, all_columns[0][1:m], rotation=90)
+		plt.xticks([elem for elem in range(n_groups)], all_columns[0][1:m], rotation = 90)
 	else:
-		plt.xticks(index + bar_width / 2 - bar_width / 2 / (n - 1), all_columns[0][1:m], rotation = 90)
+		plt.xticks([elem + bar_width / 2 - bar_width / 2 / (n - 1) for elem in range(n_groups)], all_columns[0][1:m], rotation = 90)
 	plt.subplots_adjust(bottom = max(0.3, len(max([str(item) for item in all_columns[0][1:m]],key = len)) / 140.0))
 	plt.xlabel(columns[0])
 	if (method.lower() == "mean"):
@@ -711,7 +684,7 @@ def multiple_hist(vdf,
 				alpha -= 0.2
 				all_columns += [columns[idx]]
 			else:
-				print("/!\\ Warning: {} is not numerical. Its histogram will not be draw.".format(column))
+				print("\u26A0 Warning: {} is not numerical. Its histogram will not be draw.".format(column))
 		plt.xlabel(", ".join(all_columns))
 		plt.gca().set_axisbelow(True)
 		plt.gca().yaxis.grid()
@@ -735,21 +708,19 @@ def multi_ts_plot(vdf,
 	if not(columns):
 		columns = vdf.numcol()
 	for column in columns:
-		if column not in vdf.get_columns() and ('"' + column + '"' not in vdf.get_columns()):
-			print("/!\\ Warning: The Virtual Column {} doesn't exist.\nIt will be ignored.".format(column))
-			columns.remove(column)
-		elif (column not in vdf.numcol()) and ('"' + column + '"' not in vdf.numcol()):
-			print("/!\\ Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(column))
+		if not(vdf[column].isnum()):
+			print("\u26A0 Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(column))
 			columns.remove(column)
 	if not(columns):
-		print("/!\\ Warning: No numerical columns found to draw the multi plot")
-		raise
+		raise Exception("No numerical columns found to draw the multi TS plot")
 	colors = gen_colors()
 	query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(order_by, ", ".join(columns), vdf.genSQL(), order_by)
 	query += " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
 	query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+	query += " AND " + " AND ".join(["{} IS NOT NULL".format(column) for column in columns])
 	query += " ORDER BY {}".format(order_by)
-	query_result = vdf.executeSQL(query = query, title = "Select the needed points to draw the curves").fetchall()
+	vdf.executeSQL(query = query, title = "Select the needed points to draw the curves")
+	query_result = vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 	order_by_values = [item[0] for item in query_result]
 	alpha = 0.3
 	plt.figure(figsize = (14, 10)) if isnotebook() else plt.figure(figsize = (10, 6))
@@ -770,13 +741,12 @@ def pie(vdf,
 		max_cardinality: int = 6,
 		h: float = 0,
 		donut: bool = False):
-	import numpy
 	colors = ['#214579', '#FFCC01'] * 100
 	x, y, z, h, is_categorical = compute_plot_variables(vdf, max_cardinality = max_cardinality, method = method, of = of, pie = True)
 	z.reverse()
 	y.reverse()
 	explode = [0 for i in y]
-	explode[numpy.argmax(y)] = 0.13
+	explode[max(zip(y, range(len(y))))[1]] = 0.13
 	current_explode = 0.15
 	total_count = sum(y)
 	for idx,item in enumerate(y):
@@ -870,29 +840,15 @@ def pivot_table(vdf,
 			order_by = "ORDER BY 1 ASC"
 			distinct = vdf[column].topk(max_cardinality[idx]).values["index"]
 			if (len(distinct) < max_cardinality[idx]):
-				if (vdf[column].category() == "binary"):
-					func = 'TO_HEX({})'.format(column)
-				elif (vdf[column].category() == "spatial"):
-					func = 'ST_AsText({})'.format(column)
-				else:
-					func = column
-				where += ["({} IN ({}))".format(func, ", ".join(["'{}'".format(str(elem).replace("'", "''")) for elem in distinct]))]
+				where += ["({} IN ({}))".format(convert_special_type(vdf[column].category(), False, column), ", ".join(["'{}'".format(str(elem).replace("'", "''")) for elem in distinct]))]
 			else:
 				where += ["({} IS NOT NULL)".format(column)]
 	where = " WHERE {}".format(" AND ".join(where))
 	if (len(columns) == 1):
-		if (vdf[columns[0]].category() == "binary"):
-			cast = 'TO_HEX({})'.format(all_columns[-1])
-		elif (vdf[columns[0]].category() == "spatial"):
-			cast = 'ST_AsText({})'.format(all_columns[-1])
-		elif (vdf[columns[0]].category() == "date"):
-			cast = '{}::varchar'.format(all_columns[-1])
-		else:
-			cast = all_columns[-1]
-		query = "SELECT {} AS {}, {} FROM {}{} GROUP BY 1 {}".format(cast, columns[0], aggregate, vdf.genSQL(), where, order_by)
-		return to_tablesample(query, vdf.cursor, name = aggregate)
+		query = "SELECT {} AS {}, {} FROM {}{} GROUP BY 1 {}".format(convert_special_type(vdf[columns[0]].category(), True, all_columns[-1]), columns[0], aggregate, vdf.genSQL(), where, order_by)
+		return to_tablesample(query, vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"], name = aggregate)
 	alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
-	aggr = ", " + of if (of.replace('"', '') != '') else ""
+	aggr = ", " + of if (of) else ""
 	subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table".format(all_columns[0], columns[0], all_columns[1], columns[1], alias, vdf.genSQL(), where)
 	if (is_column_date[0] and not(is_column_date[1])):
 		subtable = "(SELECT {} AS {}, {}{} FROM {}{}) pivot_table_date".format(timestampadd[0], columns[0], columns[1], aggr, subtable, where)
@@ -903,14 +859,7 @@ def pivot_table(vdf,
 	over = "/" + str(vdf.shape()[0]) if (method=="density") else ""
 	cast = []
 	for column in columns:
-		if (vdf[column].category() == "binary"):
-			cast += ['TO_HEX({})'.format(column)]
-		elif (vdf[column].category() == "spatial"):
-			cast += ['ST_AsText({})'.format(column)]
-		elif (vdf[column].category() == "date"):
-			cast += ['{}::varchar'.format(column)]
-		else:
-			cast += [column]
+		cast += [convert_special_type(vdf[column].category(), True, column)]
 	query = "SELECT {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(cast[0], columns[0], cast[1], columns[1], aggregate, over, subtable, columns[0], columns[1], columns[0], columns[1], columns[0], columns[1])
 	vdf.executeSQL(query = query, title = "Group the features to compute the pivot table")
 	query_result = vdf.executeSQL(query = query, title = "Group the features to compute the pivot table").fetchall()
@@ -942,8 +891,7 @@ def pivot_table(vdf,
 		pass
 	all_columns = [['' for item in all_column0_categories] for item in all_column1_categories]
 	for item in query_result:
-		j = all_column0_categories.index(str(item[0]))
-		i = all_column1_categories.index(str(item[1]))
+		j, i = all_column0_categories.index(str(item[0])), all_column1_categories.index(str(item[1]))
 		all_columns[i][j] = item[2]
 	all_columns = [[all_column1_categories[i]] + all_columns[i] for i in range(0, len(all_columns))]
 	all_columns = [[columns[0] + "/" + columns[1]] + all_column0_categories] + all_columns
@@ -966,7 +914,7 @@ def scatter_matrix(vdf, columns: list = []):
 		return vdf[columns[0]].hist()
 	n = len(columns)
 	fig, axes = plt.subplots(nrows = n, ncols = n, figsize = (min(1.5 * n, 500), min(1.5 * n, 500))) if isnotebook() else plt.subplots(nrows = n, ncols = n, figsize = (min(int(n / 1.1, 500)), min(int(n / 1.1, 500))))
-	query = "SELECT " + ", ".join(columns) + ", RANDOM() AS rand FROM {} WHERE __split_vpython__ < 0.5 ".format(vdf.genSQL(True)) + "ORDER BY rand LIMIT 1000"
+	query = "SELECT {}, RANDOM() AS rand FROM {} WHERE __vertica_ml_python_split__ < 0.5 ORDER BY rand LIMIT 1000".format(", ".join(columns), vdf.genSQL(True))
 	all_scatter_points = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 	all_scatter_columns = []
 	all_h = []
@@ -990,7 +938,7 @@ def scatter_matrix(vdf, columns: list = []):
 				axes[i, j].bar(x0, y0, h0 / 0.94, color = '#FFCC01')
 			else:
 				axes[i, j].scatter(all_scatter_columns[j], all_scatter_columns[i], color = '#214579', s = 4, marker = 'o')
-	fig.suptitle('Scatter Plot Matrix of {}'.format(vdf.input_relation))
+	fig.suptitle('Scatter Plot Matrix of {}'.format(vdf.VERTICA_ML_PYTHON_VARIABLES["input_relation"]))
 	plt.show()
 #
 def scatter2D(vdf,
@@ -1009,7 +957,7 @@ def scatter2D(vdf,
 		raise TypeError("The two first columns of the parameter 'columns' must be numerical")
 	if (len(columns) == 2):
 		tablesample = max_nb_points / vdf.shape()[0]
-		query = "SELECT {}, {} FROM {} WHERE __split_vpython__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[0], columns[1], max_nb_points)
+		query = "SELECT {}, {} FROM {} WHERE __vertica_ml_python_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[0], columns[1], max_nb_points)
 		query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 		column1, column2 = [item[0] for item in query_result], [item[1] for item in query_result]
 		plt.figure(figsize = (14, 10)) if isnotebook() else plt.figure(figsize = (10, 6))
@@ -1040,16 +988,16 @@ def scatter2D(vdf,
 		for idx, category in enumerate(all_categories):
 			if ((max_cardinality < groupby_cardinality) or (len(cat_priority) < groupby_cardinality)):
 				others += ["{} != '{}'".format(column_groupby, str(category).replace("'", "''"))]
-			query = "SELECT {}, {} FROM {} WHERE  __split_vpython__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+			query = "SELECT {}, {} FROM {} WHERE  __vertica_ml_python_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
 			query = query.format(columns[0], columns[1], vdf.genSQL(True), tablesample, columns[2], str(category).replace("'", "''"), columns[0], columns[1], int(max_nb_points / len(all_categories))) 
 			vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category = '{}')".format(str(category)))
-			query_result = vdf.cursor.fetchall()
+			query_result = vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"].fetchall()
 			column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
 			all_columns += [[column1, column2]]
 			all_scatter += [ax.scatter(column1, column2, alpha=0.8, marker = markers[idx], color = colors[idx])]
 		if (with_others and idx + 1 < groupby_cardinality):
 			all_categories += ["others"]
-			query = "SELECT {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND __split_vpython__ < {} LIMIT {}"
+			query = "SELECT {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND __vertica_ml_python_split__ < {} LIMIT {}"
 			query = query.format(columns[0], columns[1], vdf.genSQL(True), " AND ".join(others), columns[0], columns[1], tablesample, int(max_nb_points / len(all_categories)))
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category='others')").fetchall()
 			column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
@@ -1086,7 +1034,7 @@ def scatter3D(vdf,
 				raise TypeError("The three first columns of the parameter 'columns' must be numerical")
 		if (len(columns) == 3):
 			tablesample = max_nb_points / vdf.shape()[0]
-			query = "SELECT {}, {}, {} FROM {} WHERE __split_vpython__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+			query = "SELECT {}, {}, {} FROM {} WHERE __vertica_ml_python_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
 						columns[0], columns[1], columns[2], vdf.genSQL(True), tablesample, columns[0], columns[1], columns[2], max_nb_points)
 			query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot").fetchall()
 			column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
@@ -1120,7 +1068,7 @@ def scatter3D(vdf,
 			for idx,category in enumerate(all_categories):
 				if ((max_cardinality < groupby_cardinality) or (len(cat_priority) < groupby_cardinality)):
 					others += ["{} != '{}'".format(column_groupby, str(category).replace("'", "''"))]
-				query = "SELECT {}, {}, {} FROM {} WHERE __split_vpython__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
+				query = "SELECT {}, {}, {} FROM {} WHERE __vertica_ml_python_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL limit {}"
 				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(True), tablesample, columns[3], str(category).replace("'", "''"), columns[0], columns[1], columns[2], int(max_nb_points / len(all_categories))) 
 				query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category = '"+str(category)+"')").fetchall()
 				column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
@@ -1128,7 +1076,7 @@ def scatter3D(vdf,
 				all_scatter += [ax.scatter(column1, column2, column3, alpha=0.8, marker = markers[idx], color = colors[idx])]
 			if (with_others and idx + 1 < groupby_cardinality):
 				all_categories += ["others"]
-				query = "SELECT {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND __split_vpython__ < {} LIMIT {}"
+				query = "SELECT {}, {}, {} FROM {} WHERE {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND __vertica_ml_python_split__ < {} LIMIT {}"
 				query = query.format(columns[0], columns[1], columns[2], vdf.genSQL(True), " AND ".join(others), columns[0], columns[1], columns[2], tablesample, int(max_nb_points / len(all_categories)))
 				query_result = vdf.executeSQL(query = query, title = "Select random points for the scatter plot (category='others')").fetchall()
 				column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
@@ -1170,7 +1118,7 @@ def ts_plot(vdf,
 			plt.fill_between(order_by_values, column_values, facecolor = color)
 		else:
 			area_label = ""
-		plt.title(area_label + 'Plot of {} vs {}'.format(vdf.alias, order_by))
+		plt.title('{}Plot of {} vs {}'.format(area_label, vdf.alias, order_by))
 		plt.xticks(rotation = 90)
 		plt.subplots_adjust(bottom = 0.24)
 		plt.xlabel(order_by)

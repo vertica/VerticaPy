@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,11 +32,7 @@
 #####################################################################################
 #
 # Libraries
-import random
-import os
-import math
-import time
-
+import random, os, math
 #
 def category_from_type(ctype: str = ""):
 	check_types([("ctype", ctype, [str], False)])
@@ -87,6 +83,16 @@ def columns_check(columns: list, vdf, columns_nb = None):
 		if not(column_check_ambiguous(column, vdf_columns)):
 			raise ValueError("The Virtual Column '{}' doesn't exist".format(column.lower().replace('"', '')))
 #
+def convert_special_type(category: str, convert_date: bool = True, column: str = '{}'):
+	if (category == "binary"):
+		return 'TO_HEX({})'.format(column)
+	elif (category == "spatial"):
+		return 'ST_AsText({})'.format(column)
+	elif (category == "date") and (convert_date):
+		return '{}::varchar'.format(column)
+	else:
+		return column
+#
 def drop_model(name: str, 
 			   cursor, 
 			   print_info: bool = True):
@@ -98,7 +104,7 @@ def drop_model(name: str,
 		if (print_info):
 			print("The model {} was successfully dropped.".format(name))
 	except:
-		print("/!\\ Warning: The model {} doesn't exist !".format(name))
+		print("\u26A0 Warning: The model {} doesn't exist !".format(name))
 # 
 def drop_table(name: str, 
 			   cursor, 
@@ -111,7 +117,7 @@ def drop_table(name: str,
 		if (print_info):
 			print("The table {} was successfully dropped.".format(name))
 	except:
-		print("/!\\ Warning: The table {} doesn't exist !".format(name))
+		print("\u26A0 Warning: The table {} doesn't exist !".format(name))
 # 
 def drop_text_index(name: str, 
 			   		cursor, 
@@ -124,7 +130,7 @@ def drop_text_index(name: str,
 		if (print_info):
 			print("The index {} was successfully dropped.".format(name))
 	except:
-		print("/!\\ Warning: The table {} doesn't exist !".format(name))
+		print("\u26A0 Warning: The table {} doesn't exist !".format(name))
 # 
 def drop_view(name: str,
 			  cursor,
@@ -137,7 +143,67 @@ def drop_view(name: str,
 		if (print_info):
 			print("The view {} was successfully dropped.".format(name))
 	except:
-		print("/!\\ Warning: The view {} doesn't exist !".format(name))
+		print("\u26A0 Warning: The view {} doesn't exist !".format(name))
+# 
+def vHelp():
+	import vertica_ml_python
+	try:
+		from IPython.core.display import HTML, display, Markdown
+	except:
+		pass
+	path  = os.path.dirname(vertica_ml_python.__file__)
+	img1  = "<center><img src='https://raw.githubusercontent.com/vertica/Vertica-ML-Python/master/img/logo.png' width=\"180px\"></center>"
+	img2  = "############################################################################################################\n"
+	img2 += "#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #\n"
+	img2 += "# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #\n"
+	img2 += "# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #\n"
+	img2 += "# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #\n"
+	img2 += "# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #\n"
+	img2 += "#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #\n"
+	img2 += "#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #\n"
+	img2 += "#                                                                                                          #\n"
+	img2 += "############################################################################################################"
+	message  = img1 if (isnotebook()) else img2
+	message += "\n\n&#128226; Welcome to the <b>VERTICA ML PYTHON</b> help Module. You are about to use a new fantastic way to analyze your data !\n\nYou can learn quickly how to set up a connection, how to create a Virtual Dataframe and much more.\n\nWhat do you want to know?\n - <b>[Enter  0]</b> Do you want to know why you should use this library ?\n - <b>[Enter  1]</b> Do you want to know how to connect to your Vertica Database using Python and to Create a Virtual Dataframe ?\n - <b>[Enter  2]</b> Do you want to know if your Vertica Version is compatible with the API ?\n - <b>[Enter  3]</b> You don't have data to play with and you want to load an available dataset ?\n - <b>[Enter  4]</b> Do you want to know other modules which can make your Data Science experience more complete ?\n - <b>[Enter  5]</b> Do you want to look at a quick example ?\n - <b>[Enter  6]</b> Do you want to look at the different functions available ?\n - <b>[Enter  7]</b> Do you want to get a link to the VERTICA ML PYTHON wiki ?\n - <b>[Enter  8]</b> Do you want to know how to display the Virtual Dataframe SQL code generation and the time elapsed to run the query ?\n - <b>[Enter  9]</b> Do you want to know how to load your own dataset inside Vertica ?\n - <b>[Enter 10]</b> Do you want to know how you writing direct SQL queries in Jupyter ?\n - <b>[Enter -1]</b> Exit"
+	display(Markdown(message)) if (isnotebook()) else print(message)
+	try:
+		response = int(input())
+	except:
+		print("The choice is incorrect.\nPlease enter a number between 0 and 10.")
+		try:
+			response = int(input())
+		except:
+			print("The choice is still incorrect.\nRerun the help function when you need help.")
+			return
+	if (response == 0):
+		message = "# Vertica-ML-Python\nNowadays, The 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. \nThe idea behind VERTICA ML PYTHON is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.\nMain Advantages:\n - easy Data Exploration.\n - easy Data Preparation.\n - easy Data Modeling.\n - easy Model Evaluation.\n - easy Model Deployment.\n - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and even much more)\n - easy ML model creation and evaluation.\n - many scikit functions and algorithms are available (and scalable!).\n\n&#9888; Please read the Vertica ML Python Documentation. If you do not have time just read below.\n\n&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.\nIf you have any feedback about the library, please contact me: <a href=\"mailto:badr.ouali@microfocus.com\">badr.ouali@microfocus.com</a>"
+	elif (response == 1):
+		message = "## Connection to the Database\nThis step is useless if <b>vertica-python</b> or <b>pyodbc</b> is already installed and you have a DSN in your machine. With this configuration, you do not need to manually create a cursor. It is possible to create a vDataframe using directly the DSN (<b>dsn</b> parameter of the vDataframe).\n### ODBC\nTo connect to the database, the user can use an ODBC connection to the Vertica database. <b>vertica-python</b> and <b>pyodbc</b> provide a cursor that will point to the database. It will be used by the <b>vertica-ml-python</b> to create all the different objects.\n```python\n#\n# vertica_python\n#\nimport vertica_python\n# Connection using all the DSN information\nconn_info = {'host': \"10.211.55.14\", 'port': 5433, 'user': \"dbadmin\", 'password': \"XxX\", 'database': \"testdb\"}\ncur = vertica_python.connect(** conn_info).cursor()\n# Connection using directly the DSN\nfrom vertica_ml_python.utilities import to_vertica_python_format # This function will parse the odbc.ini file\ndsn = \"VerticaDSN\"\ncur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()\n#\n# pyodbc\n#\nimport pyodbc\n# Connection using all the DSN information\ndriver = \"/Library/Vertica/ODBC/lib/libverticaodbc.dylib\"\nserver = \"10.211.55.14\"\ndatabase = \"testdb\"\nport = \"5433\"\nuid = \"dbadmin\"\npwd = \"XxX\"\ndsn = (\"DRIVER={}; SERVER={}; DATABASE={}; PORT={}; UID={}; PWD={};\").format(driver, server, database, port, uid, pwd)\ncur = pyodbc.connect(dsn).cursor()\n# Connection using directly the DSN\ndsn = (\"DSN=VerticaDSN\")\ncur = pyodbc.connect(dsn).cursor()\n```\n### JDBC\nThe user can also use a JDBC connection to the Vertica Database. \n```python\nimport jaydebeapi\n# Vertica Server Details\ndatabase = \"testdb\"\nhostname = \"10.211.55.14\"\nport = \"5433\"\nuid = \"dbadmin\"\npwd = \"XxX\"\n# Vertica JDBC class name\njdbc_driver_name = \"com.vertica.jdbc.Driver\"\n# Vertica JDBC driver path\njdbc_driver_loc = \"/Library/Vertica/JDBC/vertica-jdbc-9.3.1-0.jar\"\n# JDBC connection string\nconnection_string = 'jdbc:vertica://' + hostname + ':' + port + '/' + database\nurl = '{}:user={};password={}'.format(connection_string, uid, pwd)\nconn = jaydebeapi.connect(jdbc_driver_name, connection_string, {'user': uid, 'password': pwd}, jars = jdbc_driver_loc)\ncur = conn.cursor()\n```\nHappy Playing ! &#128540;\n"
+	elif (response == 2):
+		message = "## Vertica Version\n - If your Vertica version is greater or equal to 9.1, everything is well adapted.\n - If your Vertica version is greater or equal to 8.0, some algorithms may not work.\n - If your Vertica version is greater or equal to 7.0, only some algorithms will be available.\n - For other Vertica version, the Virtual Dataframe may work but no ML algorithms will be available."
+	elif (response == 3):
+		message = "In VERTICA ML PYTHON many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic(db_cursor)\n```"
+	elif (response == 4):
+		message = "Some module will help VERTICA ML PYTHON to get more rendering capabilities:\n - <b>matplotlib</b> will help you to get rendering capabilities\n - <b>numpy</b> to enjoy 3D plot\n - <b>sqlparse</b> to indent correctly the SQL of the sql_on_off method\n - <b>anytree</b> to be able to plot trees"
+	elif (response == 5):
+		message = "## Quick Start\nInstall the library using the <b>pip</b> command:\n```\nroot@ubuntu:~$ pip3 install vertica_ml_python\n```\nInstall <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica cursor\n```python\nfrom vertica_ml_python.utilities import vertica_cursor\ncur = vertica_cursor(\"VerticaDSN\")\n```\nCreate the Virtual Dataframe of your relation:\n```python\nfrom vertica_ml_python import vDataframe\nvdf = vDataframe(\"my_relation\", cursor = cur)\n```\nIf you don't have data to play, you can easily load well known datasets\n```python\nfrom vertica_ml_python.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nYou can now play with the data...\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nYou can also print the SQL code generation using the <b>sql_on_off</b> method.\n```python\nvdf.sql_on_off()\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT SUMMARIZE_NUMCOL(\"age\",\"body\",\"survived\",\"pclass\",\"parch\",\"fare\",\"sibsp\") OVER ()\nFROM\n  (SELECT \"age\" AS \"age\",\n          \"body\" AS \"body\",\n          \"survived\" AS \"survived\",\n          \"ticket\" AS \"ticket\",\n          \"home.dest\" AS \"home.dest\",\n          \"cabin\" AS \"cabin\",\n          \"sex\" AS \"sex\",\n          \"pclass\" AS \"pclass\",\n          \"embarked\" AS \"embarked\",\n          \"parch\" AS \"parch\",\n          \"fare\" AS \"fare\",\n          \"name\" AS \"name\",\n          \"boat\" AS \"boat\",\n          \"sibsp\" AS \"sibsp\"\n   FROM public.titanic) final_table\n```\nWith Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).\n```python\nfrom vertica_ml_python.learn.model_selection import cross_validate\nfrom vertica_ml_python.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf[\"sex\"].label_encode()[\"boat\"].fillna(method = \"0ifnull\")[\"name\"].str_extract(' ([A-Za-z]+)\.').eval(\"family_size\", expr = \"parch + sibsp + 1\").drop(columns = [\"cabin\", \"body\", \"ticket\", \"home.dest\"])[\"fare\"].fill_outliers().fillna().to_db(\"titanic_clean\")\n# Model Evaluation\ncross_validate(RandomForestClassifier(\"rf_titanic\", cur, max_leaf_nodes = 100, n_estimators = 30), \"titanic_clean\", [\"age\", \"family_size\", \"sex\", \"pclass\", \"fare\", \"boat\"], \"survived\", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nHappy Playing ! &#128540;"
+	elif (response == 6):
+		message = "Please go to <a href='https://github.com/vertica/Vertica-ML-Python/blob/master/FEATURES.md'>https://github.com/vertica/Vertica-ML-Python/blob/master/FEATURES.md</a>"
+	elif (response == 7):
+		message = "Please go to <a href='https://github.com/vertica/Vertica-ML-Python/wiki'>https://github.com/vertica/Vertica-ML-Python/wiki</a>"
+	elif (response == 8):
+		message = "You can Display the SQL Code generation of the Virtual Dataframe using the <b>sql_on_off</b> method. You can also Display the query elapsed time using the <b>time_on_off</b> method.\nIt is also possible to print the current Virtual Dataframe relation using the <b>current_relation</b> method.\n"
+	elif (response == 9):
+		message = "VERTICA ML PYTHON allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual Dataframe.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom vertica_ml_python import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same for json. Let's now consider the file 'data.json'.\n\n\n```python\nfrom vertica_ml_python import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
+	elif (response == 10):
+		message = "SQL Alchemy and SQL Magic offer you a nice way to interact with Vertica. To install the modules, run the following commands in your Terminal: \n```\npip install pyodbc\npip install sqlalchemy-vertica[pyodbc,vertica-python]\npip install ipython-sql\n```\n\nWhen these modules are installed, you have a nice way to interact with Jupyter.\n```python\n# Creating a Connection\n%load_ext sql\n%sql vertica+pyodbc://VerticaDSN\n# You can run your sql code using the %sql or %%sql command\n%sql SELECT * FROM my_relation;\n```"
+	elif (response == -1):
+		message = "Thank you for using the VERTICA ML PYTHON help."
+	elif (response == 666):
+		message = "Thank you so much for using this library. My only purpose is to solve real Big Data problems in the context of Data Science. I worked years to be able to create this API and give you a real way to analyse your data.\n\nYour devoted Data Scientist: <i>Badr Ouali</i>"
+	else:
+		message = "The choice is incorrect.\nPlease enter a number between 0 and 10."
+	display(Markdown(message)) if (isnotebook()) else print(message)
 # 
 def isnotebook():
     try:
@@ -374,7 +440,7 @@ def print_table(data_columns, is_finished = True, offset = 0, repeat_first_colum
 		return formatted_text
 #
 def pjson(path: str, cursor):
-	flex_name = "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
+	flex_name = "VERTICA_ML_PYTHON_" + str(random.randint(0, 10000000)) + "_FLEX"
 	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
 	cursor.execute("COPY {} FROM LOCAL '{}' PARSER FJSONPARSER();".format(flex_name, path.replace("'", "''")))
 	cursor.execute("SELECT compute_flextable_keys('{}');".format(flex_name))
@@ -394,7 +460,7 @@ def pcsv(path: str,
 		 null: str = '', 
 		 enclosed_by: str = '"',
 		 escape: str = '\\'):
-	flex_name = "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
+	flex_name = "VERTICA_ML_PYTHON_" + str(random.randint(0, 10000000)) + "_FLEX"
 	cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
 	header_names = '' if not(header_names) else "header_names = '{}',".format(delimiter.join(header_names))
 	try:
@@ -454,20 +520,20 @@ def read_csv(path: str,
 			header_names += ["ucol{}".format(i + len(header_names)) for i in range(len(file_header) - len(header_names))]
 		if ((parse_n_lines > 0) and not(insert)):
 			f = open(path,'r')
-			f2 = open(path[0:-4] + "_vpython_copy.csv",'w')
+			f2 = open(path[0:-4] + "VERTICA_ML_PYTHON_COPY.csv",'w')
 			for i in range(parse_n_lines + int(header)):
 				line = f.readline()
 				f2.write(line)
 			f.close()
 			f2.close()
-			path_test = path[0:-4] + "_vpython_copy.csv"
+			path_test = path[0:-4] + "VERTICA_ML_PYTHON_COPY.csv"
 		else:
 			path_test = path
 		query1 = ""
 		if not(insert):
 			dtype = pcsv(path_test, cursor, delimiter, header, header_names, null, enclosed_by, escape)
 			if (parse_n_lines > 0):
-				os.remove(path[0:-4] + "_vpython_copy.csv")
+				os.remove(path[0:-4] + "VERTICA_ML_PYTHON_COPY.csv")
 			query1  = "CREATE TABLE {}({});".format(input_relation, ", ".join(['"{}" {}'.format(column, dtype[column]) for column in header_names]))
 		skip   = " SKIP 1" if (header) else ""
 		query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(input_relation, ", ".join(['"' + column + '"' for column in header_names]), "{}", delimiter, null, enclosed_by, escape, skip)
@@ -507,7 +573,7 @@ def read_json(path: str,
 	elif ((column_name == []) and (insert)):
 		raise Exception("The table \"{}\".\"{}\" doesn't exist !".format(schema, table_name))
 	else:
-		input_relation, flex_name = '"{}"."{}"'.format(schema, table_name), "_vpython" + str(random.randint(0, 10000000)) + "_flex_"
+		input_relation, flex_name = '"{}"."{}"'.format(schema, table_name), "VERTICA_ML_PYTHON_" + str(random.randint(0, 10000000)) + "_FLEX"
 		cursor.execute("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name))
 		if ("vertica_python" in str(type(cursor))):
 			with open(path, "r") as fs:
@@ -548,9 +614,20 @@ def read_json(path: str,
 			for column in final_cols:
 				final_transformation += ['NULL AS "{}"'.format(column)] if (final_cols[column] == None) else ['"{}"::{} AS "{}"'.format(final_cols[column], column_name_dtype[column], column)]
 			cursor.execute("INSERT INTO {} SELECT {} FROM {}".format(input_relation, ", ".join(final_transformation), flex_name))
-		cursor.execute("DROP TABLE " + flex_name)
+		cursor.execute("DROP TABLE {}".format(flex_name))
 		from vertica_ml_python import vDataframe
 		return vDataframe(table_name, cursor, schema = schema)
+# 
+def read_vdf(path: str, cursor):
+	check_types([("path", path, [str], False)])
+	file = open(path, "r")
+	save =  "from vertica_ml_python import vDataframe\nfrom vertica_ml_python.vcolumn import vColumn\n" + "".join(file.readlines())
+	file.close()
+	vdf = {}
+	exec(save, globals(), vdf)
+	vdf = vdf["vdf_save"]
+	vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"] = cursor
+	return (vdf)
 #
 def schema_relation(relation: str):
 	quote_nb = relation.count('"')
@@ -570,17 +647,6 @@ def schema_relation(relation: str):
 #
 def str_column(column: str):
 	return ('"{}"'.format(column.replace('"', '')))
-# 
-def read_vdf(path: str, cursor):
-	check_types([("path", path, [str], False)])
-	file = open(path, "r")
-	save =  "from vertica_ml_python import vDataframe\nfrom vertica_ml_python.vcolumn import vColumn\n" + "".join(file.readlines())
-	file.close()
-	vdf = {}
-	exec(save, globals(), vdf)
-	vdf = vdf["vdf_save"]
-	vdf.cursor = cursor
-	return (vdf)
 #
 class tablesample:
 	# Initialization
@@ -726,32 +792,32 @@ def vdf_from_relation(relation: str, name: str = "VDF", cursor = None, dsn: str 
 	name = ''.join(ch for ch in name if ch.isalnum())
 	from vertica_ml_python import vDataframe
 	vdf = vDataframe("", empty = True)
-	vdf.dsn = dsn
+	vdf.VERTICA_ML_PYTHON_VARIABLES["dsn"] = dsn
 	if (cursor == None):
 		from vertica_ml_python import vertica_cursor
 		cursor = vertica_cursor(dsn)
-	vdf.input_relation = name
-	vdf.main_relation = relation
-	vdf.schema = schema
-	vdf.cursor = cursor
-	vdf.query_on = False
-	vdf.time_on = False
-	cursor.execute("DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(name))
-	cursor.execute("CREATE LOCAL TEMPORARY TABLE _vpython_{}_test_ ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(name, relation))
-	cursor.execute("SELECT column_name, data_type FROM columns WHERE table_name = '_vpython_{}_test_' AND table_schema = 'v_temp_schema'".format(name))
+	vdf.VERTICA_ML_PYTHON_VARIABLES["input_relation"] = name
+	vdf.VERTICA_ML_PYTHON_VARIABLES["main_relation"] = relation
+	vdf.VERTICA_ML_PYTHON_VARIABLES["schema"] = schema
+	vdf.VERTICA_ML_PYTHON_VARIABLES["cursor"] = cursor
+	vdf.VERTICA_ML_PYTHON_VARIABLES["query_on"] = False
+	vdf.VERTICA_ML_PYTHON_VARIABLES["time_on"] = False
+	vdf.VERTICA_ML_PYTHON_VARIABLES["where"] = []
+	vdf.VERTICA_ML_PYTHON_VARIABLES["order_by"] = ['' for i in range(100)]
+	vdf.VERTICA_ML_PYTHON_VARIABLES["exclude_columns"] = []
+	vdf.VERTICA_ML_PYTHON_VARIABLES["history"] = []
+	vdf.VERTICA_ML_PYTHON_VARIABLES["saving"] = []
+	cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_{}_TEST;".format(name))
+	cursor.execute("CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_{}_TEST ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(name, relation))
+	cursor.execute("SELECT column_name, data_type FROM columns WHERE table_name = 'VERTICA_ML_PYTHON_{}_TEST' AND table_schema = 'v_temp_schema'".format(name))
 	result = cursor.fetchall()
-	cursor.execute("DROP TABLE IF EXISTS v_temp_schema._vpython_{}_test_;".format(name))
-	vdf.columns = ['"' + item[0] + '"' for item in result]
-	vdf.where = []
-	vdf.order_by = ['' for i in range(100)]
-	vdf.exclude_columns = []
-	vdf.history = []
-	vdf.saving = []
+	cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_{}_TEST;".format(name))
+	vdf.VERTICA_ML_PYTHON_VARIABLES["columns"] = ['"' + item[0] + '"' for item in result]
 	for column, ctype in result:
-		column = '"' + column + '"'
+		if ('"' in column):
+			print("\u26A0 Warning: A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(column, column.replace('"', '_')))
 		from vertica_ml_python.vcolumn import vColumn
-		new_vColumn = vColumn(column, parent = vdf, transformations = [(column, ctype, category_from_type(ctype = ctype))])
-		setattr(vdf, column, new_vColumn)
-		setattr(vdf, column[1:-1], new_vColumn)
+		new_vColumn = vColumn('"{}"'.format(column.replace('"', '_')), parent = vdf, transformations = [('"{}"'.format(column.replace('"', '""')), ctype, category_from_type(ctype))])
+		setattr(vdf, '"{}"'.format(column.replace('"', '_')), new_vColumn)
+		setattr(vdf, column.replace('"', '_'), new_vColumn)
 	return (vdf)
-	
