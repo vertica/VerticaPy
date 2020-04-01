@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,7 +36,6 @@ from vertica_ml_python import vDataframe
 import os
 import vertica_ml_python
 from vertica_ml_python.utilities import str_column
-
 #
 def load_amazon(cursor, schema: str = 'public', name = 'amazon'):
 	try:

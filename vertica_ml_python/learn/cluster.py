@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -33,13 +33,7 @@
 #
 # Libraries
 import os
-
-from vertica_ml_python import drop_model
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import schema_relation
-
+from vertica_ml_python.utilities import str_column, schema_relation, drop_model, tablesample, to_tablesample
 #
 class DBSCAN:
 	#
@@ -78,7 +72,7 @@ class DBSCAN:
 		cursor = self.cursor
 		if not(index):
 			index = "id"
-			main_table = "main_{}_vpython_".format(relation_alpha)
+			main_table = "VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha)
 			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table))
 			sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(main_table, ", ".join(X + key_columns), input_relation, " AND ".join(["{} IS NOT NULL".format(item) for item in X]))
 			cursor.execute(sql)
@@ -110,28 +104,28 @@ class DBSCAN:
 					clusters[node] = clusters[node_neighbor]
 			del(graph[0])
 		try:
-			f = open("dbscan_id_cluster_vpython.csv", 'w')
+			f = open("VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv", 'w')
 			for elem in clusters:
 				f.write("{}, {}\n".format(elem, clusters[elem]))
 			f.close()
-			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.dbscan_clusters")
-			cursor.execute("CREATE LOCAL TEMPORARY TABLE dbscan_clusters(node_id int, cluster int) ON COMMIT PRESERVE ROWS")
+			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS")
+			cursor.execute("CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS")
 			if ("vertica_python" in str(type(cursor))):
-				with open('./dbscan_id_cluster_vpython.csv', "r") as fs:
-					cursor.copy("COPY v_temp_schema.dbscan_clusters(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';", fs)
+				with open('./VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv', "r") as fs:
+					cursor.copy("COPY v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';", fs)
 			else:
-				cursor.execute("COPY v_temp_schema.dbscan_clusters(node_id, cluster) FROM LOCAL './dbscan_id_cluster_vpython.csv' DELIMITER ',' ESCAPE AS '\\';")
+				cursor.execute("COPY v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';")
 			cursor.execute("COMMIT")
-			os.remove("dbscan_id_cluster_vpython.csv")
+			os.remove("VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv")
 		except:
-			os.remove("dbscan_id_cluster_vpython.csv")
+			os.remove("VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv")
 			raise
 		self.n_cluster = i
-		cursor.execute("CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.dbscan_clusters AS y ON x.{} = y.node_id".format(self.name, ", ".join(self.X + self.key_columns), main_table, index))
+		cursor.execute("CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(self.name, ", ".join(self.X + self.key_columns), main_table, index))
 		cursor.execute("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name))
 		self.n_noise = cursor.fetchone()[0]
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.main_{}_vpython_".format(relation_alpha))
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.dbscan_clusters")
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS")
 		return (self)
 	#
 	def info(self):
@@ -180,9 +174,7 @@ class KMeans:
 	# METHODS
 	# 
 	#
-	def add_to_vdf(self,
-				   vdf,
-				   name: str = ""):
+	def add_to_vdf(self, vdf, name: str = ""):
 		name = "KMeans_" + self.name if not (name) else name
 		return (vdf.eval(name, self.deploySQL()))
 	#
@@ -197,7 +189,7 @@ class KMeans:
 		self.input_relation = input_relation
 		self.X = [str_column(column) for column in X]
 		query = "SELECT KMEANS('{}', '{}', '{}', {} USING PARAMETERS max_iterations = {}, epsilon = {}".format(self.name, input_relation, ", ".join(self.X), self.n_cluster, self.max_iter, self.tol)
-		name = "_vpython_kmeans_initial_centers_table_" 
+		name = "VERTICA_ML_PYTHON_KMEANS_INITIAL" 
 		if (type(self.init) != str):
 			self.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(name))
 			if (len(self.init) != self.n_cluster):

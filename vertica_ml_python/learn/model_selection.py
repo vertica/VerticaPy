@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,11 +32,8 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import tablesample
 import statistics
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import schema_relation
-
+from vertica_ml_python.utilities import str_column, schema_relation, tablesample
 #
 def best_k(X: list,
 		   input_relation: str,
@@ -52,14 +49,14 @@ def best_k(X: list,
 	schema = str_column(schema)
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	for i in L:
-		cursor.execute("DROP MODEL IF EXISTS {}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha))
-		model = KMeans("{}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
+		cursor.execute("DROP MODEL IF EXISTS {}.__vpython_kmeans_tmp_model_{}__".format(schema, relation_alpha))
+		model = KMeans("{}.__vpython_kmeans_tmp_model_{}__".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
 		model.fit(input_relation, X)
 		score = model.metrics.values["value"][3]
 		if (score > elbow_score_stop):
 			return i
 		score_prev = score
-	print("/!\\ The K was not found. The last K (= {}) is returned with an elbow score of {}".format(i, score))
+	print("\u26A0The K was not found. The last K (= {}) is returned with an elbow score of {}".format(i, score))
 	return i
 #
 def cross_validate(estimator, 
@@ -82,21 +79,21 @@ def cross_validate(estimator,
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(1 / cv * 100)), "{}_{}".format(relation_alpha, int(100 - 1 / cv * 100))
 	estimator.name = "{}.temp_model_{}".format(schema, relation_alpha)
-	estimator.cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_cv_{}".format(schema, relation_alpha))
-	query = "CREATE LOCAL TEMPORARY TABLE vpython_train_test_split_cv_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(relation_alpha, cv, input_relation)
+	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha))
+	query = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(relation_alpha, cv, input_relation)
 	estimator.cursor.execute(query)
 	for i in range(cv):
 		try:
 			estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
 		except:
 			pass
-		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
-		estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_train".format(schema, train_name))
-		query = "CREATE VIEW {}.vpython_train_test_split_cv_{}_test AS SELECT * FROM {} WHERE (test = {})".format(schema, test_name, "v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha), i)
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TEST".format(schema, test_name))
+		estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TRAIN".format(schema, train_name))
+		query = "CREATE VIEW {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TEST AS SELECT * FROM {} WHERE (test = {})".format(schema, test_name, "v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha), i)
 		estimator.cursor.execute(query)
-		query = "CREATE VIEW {}.vpython_train_test_split_cv_{}_train AS SELECT * FROM {} WHERE (test != {})".format(schema, train_name, "v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha), i)
+		query = "CREATE VIEW {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE (test != {})".format(schema, train_name, "v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha), i)
 		estimator.cursor.execute(query)
-		estimator.fit("{}.vpython_train_test_split_cv_{}_train".format(schema, train_name), X, y, "{}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
+		estimator.fit("{}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TRAIN".format(schema, train_name), X, y, "{}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TEST".format(schema, test_name))
 		if (estimator.type == "regressor"):
 			result["{}-fold".format(i + 1)] = estimator.regression_report().values["value"]
 		else:
@@ -117,9 +114,9 @@ def cross_validate(estimator,
 			total[k] += [result["{}-fold".format(i + 1)][k]]
 	result["avg"] = [statistics.mean(item) for item in total]
 	result["std"] = [statistics.stdev(item) for item in total]
-	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.vpython_train_test_split_cv_{}".format(relation_alpha))
-	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_test".format(schema, test_name))
-	estimator.cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_cv_{}_train".format(schema, train_name))
+	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TEST".format(schema, test_name))
+	estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TRAIN".format(schema, train_name))
 	return (tablesample(values = result, table_info = False).transpose())
 #
 def fast_cv(algorithm: str, 
@@ -155,18 +152,18 @@ def fast_cv(algorithm: str,
 	cursor.execute(sql)
 	return (cursor.fetchone()[0])
 #
-def train_test_split(input_relation: str, cursor, test_size: float = 0.33, schema_writing: str = ""):
+def train_TEST_split(input_relation: str, cursor, test_size: float = 0.33, schema_writing: str = ""):
 	schema, relation = schema_relation(input_relation)
 	schema = str_column(schema) if not(schema_writing) else schema_writing
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(test_size * 100)), "{}_{}".format(relation_alpha, int(100 - test_size * 100))
-	cursor.execute("DROP TABLE IF EXISTS {}.vpython_train_test_split_{}".format(schema, relation_alpha))
-	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}_test".format(schema, test_name))
-	cursor.execute("DROP VIEW IF EXISTS {}.vpython_train_test_split_{}_train".format(schema, train_name))
-	query = "CREATE TABLE {}.vpython_train_test_split_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(schema, relation_alpha, test_size, input_relation)
+	cursor.execute("DROP TABLE IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
+	cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}_TEST".format(schema, test_name))
+	cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN".format(schema, train_name))
+	query = "CREATE TABLE {}.VERTICA_ML_PYTHON_SPLIT_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(schema, relation_alpha, test_size, input_relation)
 	cursor.execute(query)
-	query = "CREATE VIEW {}.vpython_train_test_split_{}_test AS SELECT * FROM {} WHERE test".format(schema, test_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
+	query = "CREATE VIEW {}.VERTICA_ML_PYTHON_SPLIT_{}_TEST AS SELECT * FROM {} WHERE test".format(schema, test_name, "{}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	query = "CREATE VIEW {}.vpython_train_test_split_{}_train AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.vpython_train_test_split_{}".format(schema, relation_alpha))
+	query = "CREATE VIEW {}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
 	cursor.execute(query)
-	return ("{}.vpython_train_test_split_{}_train".format(schema, train_name), "{}.vpython_train_test_split_{}_test".format(schema, test_name))
+	return ("{}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN".format(schema, train_name), "{}.VERTICA_ML_PYTHON_SPLIT_{}_TEST".format(schema, test_name))

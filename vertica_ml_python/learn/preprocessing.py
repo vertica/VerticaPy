@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,12 +32,7 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import to_tablesample
-from vertica_ml_python import drop_text_index
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import schema_relation
-from vertica_ml_python.utilities import schema_relation
-
+from vertica_ml_python.utilities import schema_relation, str_column, drop_text_index, to_tablesample
 #
 def Balance(name: str, input_relation: str, cursor, y: str, method: str, ratio = 0.5):
 	if (method not in ("hybrid", "over", "under")):
@@ -91,15 +86,15 @@ class CountVectorizer:
 		schema, relation = schema_relation(input_relation)
 		schema = str_column(schema)
 		relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
-		self.cursor.execute("DROP TABLE IF EXISTS {}.{}_countvectorizer_vpython CASCADE".format(schema, relation_alpha))
-		sql = "CREATE TABLE {}.{}_countvectorizer_vpython(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
+		self.cursor.execute("DROP TABLE IF EXISTS {}.VERTICA_ML_PYTHON_COUNT_VECTORIZER_{} CASCADE".format(schema, relation_alpha))
+		sql = "CREATE TABLE {}.VERTICA_ML_PYTHON_COUNT_VECTORIZER_{}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
 		self.cursor.execute(sql.format(schema, relation_alpha, self.max_text_size))
 		text = " || ".join(self.X) if not (self.lowercase) else "LOWER({})".format(" || ".join(self.X))
 		if (self.ignore_special):
 			text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
-		sql = "INSERT INTO {}.{}_countvectorizer_vpython(text) SELECT {} FROM {}".format(schema, relation_alpha, text, input_relation)
+		sql = "INSERT INTO {}.VERTICA_ML_PYTHON_COUNT_VECTORIZER_{}(text) SELECT {} FROM {}".format(schema, relation_alpha, text, input_relation)
 		self.cursor.execute(sql)
-		sql = "CREATE TEXT INDEX {} ON {}.{}_countvectorizer_vpython(id, text) stemmer NONE;".format(self.name, schema, relation_alpha)
+		sql = "CREATE TEXT INDEX {} ON {}.VERTICA_ML_PYTHON_COUNT_VECTORIZER_{}(id, text) stemmer NONE;".format(self.name, schema, relation_alpha)
 		self.cursor.execute(sql)
 		stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) x) y WHERE not(df BETWEEN {} AND {})".format(self.name, self.min_df, self.max_df)
 		if (self.max_features > 0):
@@ -214,4 +209,3 @@ class OneHotEncoder:
 	def to_vdf(self, reverse = False):
 		from vertica_ml_python.utilities import vdf_from_relation
 		return (vdf_from_relation("(SELECT {} FROM {}) {}".format(self.deploySQL(), self.input_relation, self.name), self.name, self.cursor))
-

@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -33,11 +33,7 @@
 #
 # Libraries
 import math
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import schema_relation
-
+from vertica_ml_python.utilities import str_column, schema_relation, to_tablesample, tablesample
 #
 def elbow(X: list,
 		  input_relation: str,
@@ -54,8 +50,8 @@ def elbow(X: list,
 	all_within_cluster_SS = []
 	L = [i for i in range(n_cluster[0], n_cluster[1])] if not(type(n_cluster) == list) else n_cluster
 	for i in L:
-		cursor.execute("DROP MODEL IF EXISTS {}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha))
-		model = KMeans("{}._vpython_kmeans_tmp_model_{}".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
+		cursor.execute("DROP MODEL IF EXISTS {}.VERTICA_ML_PYTHON_KMEANS_TMP_{}".format(schema, relation_alpha))
+		model = KMeans("{}.VERTICA_ML_PYTHON_KMEANS_TMP_{}".format(schema, relation_alpha), cursor, i, init, max_iter, tol)
 		model.fit(input_relation, X)
 		all_within_cluster_SS += [float(model.metrics.values["value"][3])]
 		model.drop()
@@ -412,8 +408,8 @@ def roc_curve(y_true: str,
 	if (auc_roc):
 		return (auc)
 	if (best_threshold):
-		import numpy
-		best_threshold_arg = numpy.argmax([abs(y - x) for x, y in zip(false_positive, true_positive)])
+		l = [abs(y - x) for x, y in zip(false_positive, true_positive)]
+		best_threshold_arg = max(zip(l, range(len(l))))[1]
 		return (threshold[best_threshold_arg])
 	try:
 		import matplotlib.pyplot as plt
@@ -528,6 +524,3 @@ def svm_classifier_plot(X: list,
 		plt.show()
 	else:
 		raise ValueError("The number of predictors is too big.")
-
-
-		

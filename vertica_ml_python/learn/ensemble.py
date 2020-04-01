@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,43 +32,9 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import drop_model
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-
-from vertica_ml_python.learn.metrics import accuracy_score
-from vertica_ml_python.learn.metrics import auc
-from vertica_ml_python.learn.metrics import prc_auc
-from vertica_ml_python.learn.metrics import log_loss
-from vertica_ml_python.learn.metrics import classification_report
-from vertica_ml_python.learn.metrics import confusion_matrix
-from vertica_ml_python.learn.metrics import critical_success_index
-from vertica_ml_python.learn.metrics import f1_score
-from vertica_ml_python.learn.metrics import informedness
-from vertica_ml_python.learn.metrics import markedness
-from vertica_ml_python.learn.metrics import matthews_corrcoef
-from vertica_ml_python.learn.metrics import multilabel_confusion_matrix
-from vertica_ml_python.learn.metrics import negative_predictive_score
-from vertica_ml_python.learn.metrics import precision_score
-from vertica_ml_python.learn.metrics import recall_score
-from vertica_ml_python.learn.metrics import specificity_score
-from vertica_ml_python.learn.metrics import r2_score
-from vertica_ml_python.learn.metrics import mean_absolute_error
-from vertica_ml_python.learn.metrics import mean_squared_error
-from vertica_ml_python.learn.metrics import mean_squared_log_error
-from vertica_ml_python.learn.metrics import median_absolute_error
-from vertica_ml_python.learn.metrics import max_error
-from vertica_ml_python.learn.metrics import explained_variance
-from vertica_ml_python.learn.metrics import regression_report
-
-from vertica_ml_python.learn.plot import lift_chart
-from vertica_ml_python.learn.plot import plot_importance
-from vertica_ml_python.learn.plot import roc_curve
-from vertica_ml_python.learn.plot import prc_curve
-from vertica_ml_python.learn.plot import plot_tree
-
-from vertica_ml_python.utilities import str_column
-
+from vertica_ml_python.learn.metrics import accuracy_score, auc, prc_auc, log_loss, classification_report, confusion_matrix, critical_success_index, f1_score, informedness, negative_predictive_score, precision_score, recall_score, markedness, matthews_corrcoef, multilabel_confusion_matrix, specificity_score, r2_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, max_error, explained_variance, regression_report
+from vertica_ml_python.learn.plot import lift_chart, plot_importance, roc_curve, prc_curve, plot_tree
+from vertica_ml_python.utilities import str_column, drop_model, tablesample, to_tablesample
 #
 class RandomForestClassifier:
 	#

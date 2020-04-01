@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,7 +32,7 @@
 #####################################################################################
 #
 # Libraries
-
+from vertica_ml_python.learn.ensemble import RandomForestClassifier, RandomForestRegressor
 #
 def DecisionTreeClassifier(name: str,
 						   cursor,
@@ -42,7 +42,6 @@ def DecisionTreeClassifier(name: str,
 						   min_samples_leaf: int = 1,
 						   min_info_gain: float = 0.0,
 						   nbins: int = 32):
-	from vertica_ml_python.learn.ensemble import RandomForestClassifier
 	return RandomForestClassifier(name = name, 
 								  cursor = cursor, 
 								  n_estimators = 1, 
@@ -62,7 +61,6 @@ def DecisionTreeRegressor(name: str,
 						  min_samples_leaf: int = 1,
 						  min_info_gain: float = 0.0,
 						  nbins: int = 32):
-	from vertica_ml_python.learn.ensemble import RandomForestRegressor
 	return RandomForestRegressor(name = name, 
 								 cursor = cursor, 
 								 n_estimators = 1, 
@@ -75,7 +73,6 @@ def DecisionTreeRegressor(name: str,
 								 nbins = nbins)
 #
 def DummyTreeClassifier(name: str, cursor):
-	from vertica_ml_python.learn.ensemble import RandomForestClassifier
 	return RandomForestClassifier(name = name, 
 								  cursor = cursor, 
 								  n_estimators = 1, 
@@ -88,7 +85,6 @@ def DummyTreeClassifier(name: str, cursor):
 								  nbins = 1000)
 #
 def DummyTreeRegressor(name: str, cursor):
-	from vertica_ml_python.learn.ensemble import RandomForestRegressor
 	return RandomForestRegressor(name = name, 
 								 cursor = cursor, 
 								 n_estimators = 1, 

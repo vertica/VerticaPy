@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,42 +32,9 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import drop_model
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-
-from vertica_ml_python.learn.metrics import accuracy_score
-from vertica_ml_python.learn.metrics import auc
-from vertica_ml_python.learn.metrics import prc_auc
-from vertica_ml_python.learn.metrics import log_loss
-from vertica_ml_python.learn.metrics import classification_report
-from vertica_ml_python.learn.metrics import confusion_matrix
-from vertica_ml_python.learn.metrics import critical_success_index
-from vertica_ml_python.learn.metrics import f1_score
-from vertica_ml_python.learn.metrics import informedness
-from vertica_ml_python.learn.metrics import markedness
-from vertica_ml_python.learn.metrics import matthews_corrcoef
-from vertica_ml_python.learn.metrics import multilabel_confusion_matrix
-from vertica_ml_python.learn.metrics import negative_predictive_score
-from vertica_ml_python.learn.metrics import precision_score
-from vertica_ml_python.learn.metrics import recall_score
-from vertica_ml_python.learn.metrics import specificity_score
-from vertica_ml_python.learn.metrics import r2_score
-from vertica_ml_python.learn.metrics import mean_absolute_error
-from vertica_ml_python.learn.metrics import mean_squared_error
-from vertica_ml_python.learn.metrics import mean_squared_log_error
-from vertica_ml_python.learn.metrics import median_absolute_error
-from vertica_ml_python.learn.metrics import max_error
-from vertica_ml_python.learn.metrics import explained_variance
-from vertica_ml_python.learn.metrics import regression_report
-
-from vertica_ml_python.learn.plot import lift_chart
-from vertica_ml_python.learn.plot import roc_curve
-from vertica_ml_python.learn.plot import prc_curve
-
-from vertica_ml_python.utilities import str_column
-from vertica_ml_python.utilities import schema_relation
-
+from vertica_ml_python.learn.metrics import accuracy_score, auc, prc_auc, log_loss, classification_report, confusion_matrix, critical_success_index, f1_score, informedness, negative_predictive_score, precision_score, recall_score, markedness, matthews_corrcoef, multilabel_confusion_matrix, specificity_score, r2_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, max_error, explained_variance, regression_report
+from vertica_ml_python.learn.plot import lift_chart, plot_importance, roc_curve, prc_curve, plot_tree
+from vertica_ml_python.utilities import str_column, drop_model, tablesample, to_tablesample, schema_relation
 #
 class NearestCentroid:
 	#
@@ -448,7 +415,7 @@ class LocalOutlierFactor:
 		if not(index):
 			index = "id"
 			relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
-			main_table = "main_{}_vpython".format(relation_alpha)
+			main_table = "VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha)
 			schema = "v_temp_schema"
 			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table))
 			sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(main_table, ", ".join(X + key_columns), input_relation, " AND ".join(["{} IS NOT NULL".format(item) for item in X]))
@@ -459,26 +426,26 @@ class LocalOutlierFactor:
 		distance = "POWER({}, 1 / {})".format(" + ".join(sql), p)
 		sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {}.{} AS x CROSS JOIN {}.{} AS y".format(index, index, distance, index, distance, schema, main_table, schema, main_table)
 		sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.distance_{}_vpython".format(relation_alpha))
-		sql = "CREATE LOCAL TEMPORARY TABLE distance_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, sql)
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DISTANCE_{}".format(relation_alpha))
+		sql = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, sql)
 		cursor.execute(sql)
-		kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.distance_{}_vpython WHERE knn = {}) AS kdistance_table".format(relation_alpha, n_neighbors + 1)
-		lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.distance_{}_vpython AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, relation_alpha, kdistance)
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.lrd_{}_vpython".format(relation_alpha))
-		sql = "CREATE LOCAL TEMPORARY TABLE lrd_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, lrd)
+		kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICA_ML_PYTHON_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(relation_alpha, n_neighbors + 1)
+		lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICA_ML_PYTHON_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, relation_alpha, kdistance)
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_LRD_{}".format(relation_alpha))
+		sql = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, lrd)
 		cursor.execute(sql)
-		sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.distance_{}_vpython AS n_table LEFT JOIN v_temp_schema.lrd_{}_vpython AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.lrd_{}_vpython AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, relation_alpha, relation_alpha, relation_alpha)
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.lof_{}_vpython".format(relation_alpha))
-		sql = "CREATE LOCAL TEMPORARY TABLE lof_{}_vpython ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, sql)
+		sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICA_ML_PYTHON_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICA_ML_PYTHON_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICA_ML_PYTHON_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, relation_alpha, relation_alpha, relation_alpha)
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_LOF_{}".format(relation_alpha))
+		sql = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(relation_alpha, sql)
 		cursor.execute(sql)
-		sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.lof_{}_vpython AS y ON x.{} = y.node_id".format(", ".join(X + self.key_columns), main_table, relation_alpha, index)
+		sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICA_ML_PYTHON_LOF_{} AS y ON x.{} = y.node_id".format(", ".join(X + self.key_columns), main_table, relation_alpha, index)
 		cursor.execute("CREATE TABLE {} AS {}".format(self.name, sql))
-		cursor.execute("SELECT COUNT(*) FROM {}.lof_{}_vpython z WHERE lof > 1e100 OR lof != lof".format(schema, relation_alpha))
+		cursor.execute("SELECT COUNT(*) FROM {}.VERTICA_ML_PYTHON_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(schema, relation_alpha))
 		self.n_errors = cursor.fetchone()[0]
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.main_{}_vpython".format(relation_alpha))
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.distance_{}_vpython".format(relation_alpha))
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.lrd_{}_vpython".format(relation_alpha))
-		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.lof_{}_vpython".format(relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DISTANCE_{}".format(relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_LRD_{}".format(relation_alpha))
+		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_LOF_{}".format(relation_alpha))
 		return (self)
 	#
 	def info(self):
@@ -495,4 +462,3 @@ class LocalOutlierFactor:
 	def to_vdf(self):
 		from vertica_ml_python import vDataframe
 		return (vDataframe(self.name, self.cursor))
-

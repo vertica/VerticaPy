@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,12 +32,9 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-from vertica_ml_python.learn.plot import roc_curve
-from vertica_ml_python.learn.plot import prc_curve
+from vertica_ml_python import tablesample, to_tablesample
+from vertica_ml_python.learn.plot import roc_curve, prc_curve
 import math
-
 #
 ## REGRESSION
 #
@@ -353,4 +350,4 @@ def specificity_score(y_true: str,
 	non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
 	tn, fp, fn, tp = matrix.values[non_pos_label][0], matrix.values[non_pos_label][1], matrix.values[pos_label][0], matrix.values[pos_label][1]
 	tnr = tn / (tn + fp) if (tn + fp != 0) else 0
-	return (tnr)	
+	return (tnr)

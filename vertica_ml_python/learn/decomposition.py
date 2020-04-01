@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -32,11 +32,7 @@
 #####################################################################################
 #
 # Libraries
-from vertica_ml_python import drop_model
-from vertica_ml_python import tablesample
-from vertica_ml_python import to_tablesample
-from vertica_ml_python.utilities import str_column
-
+from vertica_ml_python.utilities import str_column, drop_model, tablesample, to_tablesample
 #
 class PCA:
 	#
