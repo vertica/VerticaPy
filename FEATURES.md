@@ -322,7 +322,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe.empty(...) | vdataframe | Returns if the vDataframe is empty | <i>&#11088;</i>|
 |vDataframe.expected_store_usage(...) | vdataframe | Returns the expected store usage | <i>&#11088;&#11088;</i>|
 |vDataframe.get_columns(...) | vdataframe | Returns the vDataframe columns | <i>&#11088;&#11088;</i>|
-|help | utilities | Get info about the API | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
+|vHelp | utilities | Get info about the API | <i>&#11088;&#11088;&#11088;&#11088;&#11088;</i>|
 |vDataframe.info(...) | vdataframe | Get vDataframe history | <i>&#11088;&#11088;</i>|
 |vDataframe[].isdate(...) | vdataframe | Verify if the column is a date | <i>&#11088;</i>|
 |vDataframe[].isnum(...) | vdataframe | Verify if the column is numerical | <i>&#11088;</i>|
