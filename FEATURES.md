@@ -45,6 +45,7 @@ Any Data Scientist will need to follow a part or the entire Data Science cycle t
 |vDataframe.min(...) | vdataframe | Compute the min | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].min(...) | vdataframe |  Compute the min | <i>&#11088;&#11088;</i>|
 |vDataframe[].numh(...) | vdataframe |  Compute the column best histogram interval | <i>&#11088;</i>|
+|vDataframe.nunique(...) | vdataframe |  Compute the columns cardinality | <i>&#11088;&#11088;</i>|
 |vDataframe[].nunique(...) | vdataframe |  Compute the column cardinality | <i>&#11088;&#11088;</i>|
 |vDataframe.prod(...) | vdataframe | Compute the prod | <i>&#11088;&#11088;&#11088;</i>|
 |vDataframe[].prod(....) | vdataframe |  Compute the prod | <i>&#11088;&#11088;</i>|
