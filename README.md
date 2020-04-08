@@ -167,23 +167,9 @@ vdf.describe()
 # Output
 ## Compute the descriptive statistics of all the numerical columns ##
 
-SELECT SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
-FROM
-  (SELECT "age" AS "age",
-          "body" AS "body",
-          "survived" AS "survived",
-          "ticket" AS "ticket",
-          "home.dest" AS "home.dest",
-          "cabin" AS "cabin",
-          "sex" AS "sex",
-          "pclass" AS "pclass",
-          "embarked" AS "embarked",
-          "parch" AS "parch",
-          "fare" AS "fare",
-          "name" AS "name",
-          "boat" AS "boat",
-          "sibsp" AS "sibsp"
-   FROM public.titanic) final_table
+SELECT 
+   SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
+FROM public.titanic
 ```
 
 With Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).
