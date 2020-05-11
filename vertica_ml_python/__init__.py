@@ -11,50 +11,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             /           `\     /     /
+#            |   O         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
 #
-__version__ = "1.0"
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
+#
+#               
+__version__ = "1.0-beta"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@microfocus.com"
 __description__ = """Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica."""
 __url__ = "https://github.com/vertica/vertica_ml_python/"
 __license__ = "Apache License, Version 2.0"
 
-# vDataframe
-from vertica_ml_python.vdataframe import vDataframe
+# vDataFrame
+from vertica_ml_python.vdataframe import *
 
 # Utilities
-from vertica_ml_python.utilities import vHelp
-from vertica_ml_python.utilities import drop_table
-from vertica_ml_python.utilities import drop_view
-from vertica_ml_python.utilities import drop_model
-from vertica_ml_python.utilities import drop_text_index
-from vertica_ml_python.utilities import read_csv
-from vertica_ml_python.utilities import read_json
-from vertica_ml_python.utilities import read_vdf
-from vertica_ml_python.utilities import read_dsn
-from vertica_ml_python.utilities import tablesample
-from vertica_ml_python.utilities import to_tablesample
-from vertica_ml_python.utilities import vertica_cursor
-from vertica_ml_python.utilities import vdf_from_relation
+from vertica_ml_python.utilities import *
+
+# Connect
+from vertica_ml_python.connections.connect import *
 
 # Learn
 import vertica_ml_python.learn

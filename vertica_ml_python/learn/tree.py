@@ -11,37 +11,87 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             /           `\     /     /
+#            |   O         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
 #
-# Libraries
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
+#
+# 
+# Modules
+#
+# Vertica ML Python Modules
 from vertica_ml_python.learn.ensemble import RandomForestClassifier, RandomForestRegressor
-#
+from vertica_ml_python.connections.connect import read_auto_connect
+#---#
 def DecisionTreeClassifier(name: str,
-						   cursor,
+						   cursor = None,
 						   max_features = "auto",
 						   max_leaf_nodes: int = 1e9, 
 						   max_depth: int = 100,
 						   min_samples_leaf: int = 1,
 						   min_info_gain: float = 0.0,
 						   nbins: int = 32):
+	"""
+---------------------------------------------------------------------------
+Single Decision Tree Classifier.
+ => RandomForestClassifier of one tree using all the data.
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+max_features: str, optional
+	The number of randomly chosen features from which to pick the best feature 
+	to split on a given tree node. It can be an integer or one of the two following
+	methods.
+		auto : square root of the total number of predictors.
+		max  : number of predictors.
+max_leaf_nodes: int, optional
+	The maximum number of leaf nodes a tree in the forest can have, an integer 
+	between 1 and 1e9, inclusive. 
+max_depth: int, optional
+	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+min_samples_leaf: int, optional
+	The minimum number of samples each branch must have after splitting a node, an 
+	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+	is discarded. 
+min_info_gain: float, optional
+	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+	A split with information gain less than this threshold is discarded.
+nbins: int, optional 
+	The number of bins to use for continuous features, an integer between 2 and 1000, 
+	inclusive.
+	"""
 	return RandomForestClassifier(name = name, 
 								  cursor = cursor, 
 								  n_estimators = 1, 
@@ -52,15 +102,48 @@ def DecisionTreeClassifier(name: str,
 								  min_samples_leaf = min_samples_leaf,
 								  min_info_gain = min_info_gain,
 								  nbins = nbins)
-#
+#---#
 def DecisionTreeRegressor(name: str,
-						  cursor,
+						  cursor = None,
 						  max_features = "auto",
 						  max_leaf_nodes: int = 1e9, 
 						  max_depth: int = 100,
 						  min_samples_leaf: int = 1,
 						  min_info_gain: float = 0.0,
 						  nbins: int = 32):
+	"""
+---------------------------------------------------------------------------
+Single Decision Tree Regressor.
+ => RandomForestRegressor of one tree using all the data.
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+max_features: str, optional
+	The number of randomly chosen features from which to pick the best feature 
+	to split on a given tree node. It can be an integer or one of the two following
+	methods.
+		auto : square root of the total number of predictors.
+		max  : number of predictors.
+max_leaf_nodes: int, optional
+	The maximum number of leaf nodes a tree in the forest can have, an integer 
+	between 1 and 1e9, inclusive. 
+max_depth: int, optional
+	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+min_samples_leaf: int, optional
+	The minimum number of samples each branch must have after splitting a node, an 
+	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+	is discarded. 
+min_info_gain: float, optional
+	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+	A split with information gain less than this threshold is discarded.
+nbins: int, optional 
+	The number of bins to use for continuous features, an integer between 2 and 1000, 
+	inclusive.
+	"""
 	return RandomForestRegressor(name = name, 
 								 cursor = cursor, 
 								 n_estimators = 1, 
@@ -71,8 +154,21 @@ def DecisionTreeRegressor(name: str,
 								 min_samples_leaf = min_samples_leaf,
 								 min_info_gain = min_info_gain,
 								 nbins = nbins)
-#
-def DummyTreeClassifier(name: str, cursor):
+#---#
+def DummyTreeClassifier(name: str, 
+						cursor = None):
+	"""
+---------------------------------------------------------------------------
+Dummy Tree Classifier. This classifier learns by heart the training data. 
+ => very depth RandomForestClassifier of one tree using all the data.
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor. 
+	"""
 	return RandomForestClassifier(name = name, 
 								  cursor = cursor, 
 								  n_estimators = 1, 
@@ -83,8 +179,21 @@ def DummyTreeClassifier(name: str, cursor):
 								  min_samples_leaf = 1,
 								  min_info_gain = 0.0,
 								  nbins = 1000)
-#
-def DummyTreeRegressor(name: str, cursor):
+#---#
+def DummyTreeRegressor(name: str, 
+					   cursor = None):
+	"""
+---------------------------------------------------------------------------
+Dummy Tree Regressor. This regressor learns by heart the training data. 
+ => very depth RandomForestRegressor of one tree using all the data.
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor. 
+	"""
 	return RandomForestRegressor(name = name, 
 								 cursor = cursor, 
 								 n_estimators = 1, 

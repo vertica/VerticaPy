@@ -11,40 +11,111 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             /           `\     /     /
+#            |   O         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
 #
-# Libraries
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
+#
+# 
+# Modules
+#
+# Standard Python Modules
 import statistics
-from vertica_ml_python.utilities import str_column, schema_relation, tablesample
-#
+# Vertica ML Python Modules
+from vertica_ml_python.utilities import *
+from vertica_ml_python.toolbox import *
+from vertica_ml_python.learn.cluster import KMeans
+from vertica_ml_python.connections.connect import read_auto_connect
+#---#
 def best_k(X: list,
 		   input_relation: str,
-		   cursor,
+		   cursor = None,
 		   n_cluster = (1, 100),
 		   init = "kmeanspp",
 		   max_iter: int = 50,
 		   tol: float = 1e-4,
-		   elbow_score_stop = 0.8):
-	from vertica_ml_python.learn.cluster import KMeans
-	L = range(n_cluster[0], n_cluster[1]) if not(type(n_cluster) == list) else n_cluster
+		   elbow_score_stop: float = 0.8):
+	"""
+---------------------------------------------------------------------------
+Finds the KMeans K based on a score.
+
+Parameters
+----------
+X: list
+	List of the predictor columns.
+input_relation: str
+	Relation used to train the model.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+n_cluster: int, optional
+	Tuple representing the number of cluster to start with and to end with.
+	It can also be customized list with the different K to test.
+init: str/list, optional
+	The method used to find the initial cluster centers.
+		kmeanspp : Use the KMeans++ method to initialize the centers.
+		random   : The initial centers
+	It can be also a list with the initial cluster centers to use.
+max_iter: int, optional
+	The maximum number of iterations the algorithm performs.
+tol: float, optional
+	Determines whether the algorithm has converged. The algorithm is considered 
+	converged after no center has moved more than a distance of 'tol' from the 
+	previous iteration.
+elbow_score_stop: float, optional
+	Stops the Parameters Search when this Elbow score is reached.
+
+Returns
+-------
+int
+	the KMeans K
+	"""
+	check_types([
+		("X", X, [list], False), 
+		("input_relation", input_relation, [str], False), 
+		("n_cluster", n_cluster, [list, tuple], False),
+		("init", init, ["kmeanspp", "random"], True),
+		("max_iter", max_iter, [int, float], False),
+		("tol", tol, [int, float], False),
+		("elbow_score_stop", elbow_score_stop, [int, float], False)])
+	if not(cursor):
+		conn = read_auto_connect()
+		cursor = conn.cursor()
+	else:
+		conn = False
+		check_cursor(cursor)
+	if not(type(n_cluster) == list):
+		L = range(n_cluster[0], n_cluster[1])
+	else:
+		L = n_cluster
+		L.sort()
 	schema, relation = schema_relation(input_relation)
 	schema = str_column(schema)
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
@@ -56,30 +127,71 @@ def best_k(X: list,
 		if (score > elbow_score_stop):
 			return i
 		score_prev = score
-	print("\u26A0The K was not found. The last K (= {}) is returned with an elbow score of {}".format(i, score))
+	if (conn):
+		conn.close()
+	print("\u26A0 The K was not found. The last K (= {}) is returned with an elbow score of {}".format(i, score))
 	return i
-#
+#---#
 def cross_validate(estimator, 
 				   input_relation: str, 
 				   X: list, 
 				   y: str, 
 				   cv: int = 3, 
 				   pos_label = None, 
-				   cutoff: float = 0.5):
+				   cutoff: float = -1):
+	"""
+---------------------------------------------------------------------------
+Computes the K-Fold cross validation of an estimator.
+
+Parameters
+----------
+estimator: object
+	Vertica estimator having a fit method and a DB cursor.
+input_relation: str
+	Relation used to train the model.
+X: list
+	List of the predictor columns.
+y: str
+	Response Column.
+cv: int, optional
+	Number of folds.
+pos_label: int/float/str, optional
+	The main class to be considered as positive (classification only).
+cutoff: float, optional
+	The model cutoff (classification only).
+
+Returns
+-------
+tablesample
+ 	An object containing the result. For more information, check out
+ 	utilities.tablesample.
+	"""
+	check_types([
+		("X", X, [list], False), 
+		("input_relation", input_relation, [str], False), 
+		("y", y, [str], False),
+		("cv", cv, [int, float], False),
+		("cutoff", cutoff, [int, float], False)])
 	if (cv < 2):
 		raise ValueError("Cross Validation is only possible with at least 2 folds")
 	if (estimator.type == "regressor"):
 		result = {"index": ["explained_variance", "max_error", "median_absolute_error", "mean_absolute_error", "mean_squared_error", "r2"]} 
 	elif (estimator.type == "classifier"):
-		result = {"index": ["auc", "prc_auc", "accuracy", "log_loss", "precision", "recall", "f1-score", "mcc", "informedness", "markedness", "csi"]}
+		result = {"index": ["auc", "prc_auc", "accuracy", "log_loss", "precision", "recall", "f1_score", "mcc", "informedness", "markedness", "csi"]}
 	else:
 		raise ValueError("Cross Validation is only possible for Regressors and Classifiers")
-	schema, relation = schema_relation(estimator.name)
-	schema = str_column(schema)
+	try:
+		schema, relation = schema_relation(estimator.name)
+		schema = str_column(schema)
+	except:
+		schema, relation = schema_relation(input_relation)
+		schema, relation = str_column(schema), "model_{}".format(relation)
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(1 / cv * 100)), "{}_{}".format(relation_alpha, int(100 - 1 / cv * 100))
-	estimator.name = "{}.temp_model_{}".format(schema, relation_alpha)
-	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha))
+	try:
+		estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha))
+	except:
+		pass
 	query = "CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(relation_alpha, cv, input_relation)
 	estimator.cursor.execute(query)
 	for i in range(cv):
@@ -99,10 +211,12 @@ def cross_validate(estimator,
 		else:
 			if (len(estimator.classes) > 2) and (pos_label not in estimator.classes):
 				raise ValueError("'pos_label' must be in the estimator classes, it must be the main class to study for the Cross Validation")
+			elif (len(estimator.classes) == 2) and (pos_label not in estimator.classes):
+				pos_label = estimator.classes[1]
 			try:
-				result["{}-fold".format(i + 1)] = estimator.classification_report(labels = [pos_label], cutoff = cutoff).values["value"]
+				result["{}-fold".format(i + 1)] = estimator.classification_report(labels = [pos_label], cutoff = cutoff).values["value"][0:-1]
 			except:
-				result["{}-fold".format(i + 1)] = estimator.classification_report(cutoff = cutoff).values["value"]
+				result["{}-fold".format(i + 1)] = estimator.classification_report(cutoff = cutoff).values["value"][0:-1]
 		try:
 			estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
 		except:
@@ -112,52 +226,59 @@ def cross_validate(estimator,
 	for i in range(cv):
 		for k in range(n):
 			total[k] += [result["{}-fold".format(i + 1)][k]]
-	result["avg"] = [statistics.mean(item) for item in total]
-	result["std"] = [statistics.stdev(item) for item in total]
+	result["avg"], result["std"] = [], []
+	for item in total:
+		result["avg"] += [statistics.mean([float(elem) for elem in item])] 
+		result["std"] += [statistics.stdev([float(elem) for elem in item])] 
 	estimator.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_CV_SPLIT_{}".format(relation_alpha))
 	estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TEST".format(schema, test_name))
 	estimator.cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_CV_SPLIT_{}_TRAIN".format(schema, train_name))
 	return (tablesample(values = result, table_info = False).transpose())
-#
-def fast_cv(algorithm: str, 
-			input_relation: str, 
-			cursor,
-			X: list, 
-			y: str, 
-			cv: int = 3,
-			metrics: list = [],
-			params: dict = {},
-			cutoff: float = -1):
-	if (algorithm.lower() in ("logistic_reg", "logistic_regression", "logisticregression")):
-		algorithm = "logistic_reg"
-	elif (algorithm.lower() in ("linear_reg", "linear_regression", "linearregression")):
-		algorithm = "linear_reg"
-	elif (algorithm.lower() in ("svm_classifier", "svmclassifier", "linearsvc")):
-		algorithm = "svm_classifier"
-	elif (algorithm.lower() in ("svm_regressor", "svmregressor", "linearsvr")):
-		algorithm = "svm_regressor"
-	elif (algorithm.lower() in ("naive_bayes", "naivebayes", "multinomialnb")):
-		algorithm = "naive_bayes"
-	if not(metrics):
-		if algorithm in ("naive_bayes", "svm_classifier", "logistic_reg"):
-			metrics = ["accuracy", "auc_roc", "auc_prc", "fscore"]
-		elif algorithm in ("svm_regressor", "linear_reg"):
-			metrics = ["MSE", "MAE", "rsquared", "explained_variance"]
-	sql = "SELECT CROSS_VALIDATE('{}', '{}', '{}', '{}' USING PARAMETERS cv_fold_count = {}, cv_metrics = '{}'".format(algorithm, input_relation, y, ", ".join([str_column(item) for item in X]), cv, ", ".join(metrics))
-	if (params):
-		sql += ", cv_hyperparams = '{}'".format(params)
-	if (cutoff <= 1 and cutoff >= 0):
-		sql += ", cv_prediction_cutoff = '{}'".format(cutoff)
-	sql += ')'
-	cursor.execute(sql)
-	return (cursor.fetchone()[0])
-#
-def train_TEST_split(input_relation: str, cursor, test_size: float = 0.33, schema_writing: str = ""):
+#---#
+def train_test_split(input_relation: str, 
+					 cursor = None, 
+					 test_size: float = 0.33, 
+					 schema_writing: str = ""):
+	"""
+---------------------------------------------------------------------------
+Creates a temporary table and 2 views which can be used to evaluate a model. 
+The table will include all the main relation information with a test column 
+(boolean) which represents if the data belong to the test or train set.
+
+Parameters
+----------
+input_relation: str
+	Input Relation.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+test_size: float, optional
+	Proportion of the test set comparint to the training set.
+schema_writing: str, optional
+	Schema used to write the main relation.
+
+Returns
+-------
+tuple
+ 	(name of the train view, name of the test view)
+	"""
+	check_types([
+		("test_size", test_size, [float], False),
+		("schema_writing", schema_writing, [str], False), 
+		("input_relation", input_relation, [str], False)])
+	if not(cursor):
+		conn = read_auto_connect()
+		cursor = conn.cursor()
+	else:
+		conn = False
+		check_cursor(cursor)
 	schema, relation = schema_relation(input_relation)
 	schema = str_column(schema) if not(schema_writing) else schema_writing
 	relation_alpha = ''.join(ch for ch in relation if ch.isalnum())
 	test_name, train_name = "{}_{}".format(relation_alpha, int(test_size * 100)), "{}_{}".format(relation_alpha, int(100 - test_size * 100))
-	cursor.execute("DROP TABLE IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
+	try:
+		cursor.execute("DROP TABLE IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
+	except:
+		pass
 	cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}_TEST".format(schema, test_name))
 	cursor.execute("DROP VIEW IF EXISTS {}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN".format(schema, train_name))
 	query = "CREATE TABLE {}.VERTICA_ML_PYTHON_SPLIT_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(schema, relation_alpha, test_size, input_relation)
@@ -166,4 +287,6 @@ def train_TEST_split(input_relation: str, cursor, test_size: float = 0.33, schem
 	cursor.execute(query)
 	query = "CREATE VIEW {}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE NOT(test)".format(schema, train_name, "{}.VERTICA_ML_PYTHON_SPLIT_{}".format(schema, relation_alpha))
 	cursor.execute(query)
+	if (conn):
+		conn.close()
 	return ("{}.VERTICA_ML_PYTHON_SPLIT_{}_TRAIN".format(schema, train_name), "{}.VERTICA_ML_PYTHON_SPLIT_{}_TEST".format(schema, test_name))

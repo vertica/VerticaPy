@@ -11,45 +11,121 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             /           `\     /     /
+#            |   O         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
 #
-# Libraries
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
+#
+# 
+# Modules
+#
+# Standard Python Modules
 import os
-from vertica_ml_python.utilities import str_column, schema_relation, drop_model, tablesample, to_tablesample
-#
+# Vertica ML Python Modules
+from vertica_ml_python.utilities import *
+from vertica_ml_python.toolbox import *
+from vertica_ml_python import vDataFrame
+from vertica_ml_python.connections.connect import read_auto_connect
+#---#
 class DBSCAN:
+	"""
+---------------------------------------------------------------------------
+Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
+Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu. This object is using 
+pure SQL to compute all the distances and neighbors. It is also using Python 
+to compute the cluster propagation (non scalable phase). This model is using 
+CROSS JOIN and may be really expensive in some cases. It will index all the 
+elements of the table in order to be optimal (the CROSS JOIN will happen only 
+with IDs which are integers). As DBSCAN is using the p-distance, it is highly 
+sensible to un-normalized data. However, DBSCAN is really robust to outliers 
+and can find non-linear clusters. It is a very powerful algorithm for outliers 
+detection and clustering. 
+
+Parameters
+----------
+name: str
+	Name of the the model. As it is not a built in model, this name will be used
+	to build the final table.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+eps: float, optional
+	The radius of a neighborhood with respect to some point.
+min_samples: int, optional
+	Minimum number of points required to form a dense region.
+p: int, optional
+	The p of the p-distance (distance metric used during the model computation).
+
+Attributes
+----------
+After the object creation, all the parameters become attributes. 
+The model will also create extra attributes when fitting the model:
+
+n_cluster: int
+	Number of clusters created during the process.
+n_noise: int
+	Number of points with no clusters.
+input_relation: str
+	Train relation.
+X: list
+	List of the predictors.
+key_columns: list
+	Columns not used during the algorithm computation but which will be used
+	to create the final relation.
+	"""
 	#
+	# Special Methods
+	#
+	#---#
 	def  __init__(self,
 				  name: str,
-				  cursor,
+				  cursor = None,
 				  eps: float = 0.5,
 				  min_samples: int = 5,
 				  p: int = 2):
+		check_types([
+			("name", name, [str], False),
+			("eps", eps, [int, float], False),
+			("min_samples", min_samples, [int, float], False),
+			("p", p, [int, float], False)])
+		if not(cursor):
+			cursor = read_auto_connect().cursor()
+		else:
+			check_cursor(cursor)
 		self.type = "clustering"
 		self.name = name
 		self.cursor = cursor
 		self.eps = eps
 		self.min_samples = min_samples
 		self.p = p 
-	# 
+	#---#
 	def __repr__(self):
 		try:
 			rep = "<DBSCAN>\nNumber of Clusters: {}\nNumber of Outliers: {}".format(self.n_cluster, self.n_noise)
@@ -57,12 +133,41 @@ class DBSCAN:
 		except:
 			return "<DBSCAN>"
 	#
+	# Methods
 	#
-	#
-	# METHODS
-	# 
-	#
-	def fit(self, input_relation: str, X: list, key_columns: list = [], index: str = ""):
+	#---#
+	def fit(self, 
+			input_relation: str, 
+			X: list, 
+			key_columns: list = [], 
+			index: str = ""):
+		"""
+	---------------------------------------------------------------------------
+	Trains the model.
+
+	Parameters
+	----------
+	input_relation: str
+		Train relation.
+	X: list
+		List of the predictors.
+	key_columns: list, optional
+		Columns not used during the algorithm computation but which will be used
+		to create the final relation.
+	index: str, optional
+		Index used to identify each row separately. It is highly recommanded to
+		have one already in the main table to avoid creation of temporary tables.
+
+	Returns
+	-------
+	object
+ 		self
+		"""
+		check_types([
+			("input_relation", input_relation, [str], False),
+			("X", X, [list], False),
+			("key_columns", key_columns, [list], False),
+			("index", index, [str], False)])
 		X = [str_column(column) for column in X]
 		self.X = X
 		self.key_columns = [str_column(column) for column in key_columns]
@@ -73,10 +178,14 @@ class DBSCAN:
 		if not(index):
 			index = "id"
 			main_table = "VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha)
-			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table))
+			try:
+				cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table))
+			except:
+				pass
 			sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(main_table, ", ".join(X + key_columns), input_relation, " AND ".join(["{} IS NOT NULL".format(item) for item in X]))
 			cursor.execute(sql)
 		else:
+			cursor.execute("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), input_relation))
 			main_table = input_relation
 		sql = ["POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.p) for i in range(len(X))] 
 		distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.p)
@@ -98,9 +207,9 @@ class DBSCAN:
 				clusters[node_neighbor] = i
 				i = i + 1
 			else:
-				if (clusters[node] != None):
+				if (clusters[node] != None and clusters[node_neighbor] == None):
 					clusters[node_neighbor] = clusters[node]
-				else:
+				elif (clusters[node_neighbor] != None and clusters[node] == None):
 					clusters[node] = clusters[node_neighbor]
 			del(graph[0])
 		try:
@@ -108,14 +217,20 @@ class DBSCAN:
 			for elem in clusters:
 				f.write("{}, {}\n".format(elem, clusters[elem]))
 			f.close()
-			cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS")
+			try:
+				cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS")
+			except:
+				pass
 			cursor.execute("CREATE LOCAL TEMPORARY TABLE VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS")
 			if ("vertica_python" in str(type(cursor))):
 				with open('./VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv', "r") as fs:
 					cursor.copy("COPY v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';", fs)
 			else:
 				cursor.execute("COPY v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';")
-			cursor.execute("COMMIT")
+			try:
+				cursor.execute("COMMIT")
+			except:
+				pass
 			os.remove("VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv")
 		except:
 			os.remove("VERTICA_ML_PYTHON_DBSCAN_CLUSTERS_ID.csv")
@@ -127,41 +242,110 @@ class DBSCAN:
 		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_MAIN_{}".format(relation_alpha))
 		cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICA_ML_PYTHON_DBSCAN_CLUSTERS")
 		return (self)
-	#
+	#---#
 	def info(self):
+		"""
+	---------------------------------------------------------------------------
+	Displays some information about the model.
+		"""
 		try:
 			print("DBSCAN was successfully achieved by building {} cluster(s) and by identifying {} elements as noise.\nIf you are not happy with the result, do not forget to normalise the data before applying DBSCAN. As this algorithm is using the p-distance, it is really sensible to the data distribution.".format(self.n_cluster, self.n_noise))
 		except:
 			print("Please use the 'fit' method to start the algorithm.")
-	#
+	#---#
 	def plot(self):
-		from vertica_ml_python import vDataframe
-		if (len(self.X) <= 3):
-			vDataframe(self.name, self.cursor).scatter(columns = self.X, catcol = "dbscan_cluster", max_cardinality = 100, max_nb_points = 10000)
+		"""
+	---------------------------------------------------------------------------
+	Draws the model is the number of predictors is 2 or 3.
+		"""
+		if (2 <= len(self.X) <= 3):
+			vDataFrame(self.name, self.cursor).scatter(columns = self.X, catcol = "dbscan_cluster", max_cardinality = 100, max_nb_points = 10000)
 		else:
 			raise ValueError("Clustering Plots are only available in 2D or 3D")
-	#
+	#---#
 	def to_vdf(self):
-		from vertica_ml_python import vDataframe
-		return (vDataframe(self.name, self.cursor))
-#
+		"""
+	---------------------------------------------------------------------------
+	Creates a vDataFrame of the model.
+
+	Returns
+	-------
+	vDataFrame
+ 		model vDataFrame
+		"""
+		return (vDataFrame(self.name, self.cursor))
+#---#
 class KMeans:
-	#
+	"""
+---------------------------------------------------------------------------
+Creates a KMeans object by using the Vertica Highly Distributed and Scalable 
+KMeans on the data. K-means clustering is a method of vector quantization, 
+originally from signal processing, that aims to partition n observations into 
+k clusters in which each observation belongs to the cluster with the nearest 
+mean (cluster centers or cluster centroid), serving as a prototype of the 
+cluster. This results in a partitioning of the data space into Voronoi cells. 
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor.
+n_cluster: int, optional
+	Number of clusters
+init: str/list, optional
+	The method used to find the initial cluster centers.
+		kmeanspp : Uses the KMeans++ method to initialize the centers.
+		random   : The initial centers.
+	It can be also a list with the initial cluster centers to use.
+max_iter: int, optional
+	The maximum number of iterations the algorithm performs.
+tol: float, optional
+	Determines whether the algorithm has converged. The algorithm is considered 
+	converged after no center has moved more than a distance of 'tol' from the 
+	previous iteration. 
+
+Attributes
+----------
+After the object creation, all the parameters become attributes. 
+The model will also create extra attributes when fitting the model:
+
+cluster_centers: tablesample
+	Clusters result of the algorithm.
+metrics: tablesample
+	Different metrics to evaluate the model.
+input_relation: str
+	Train relation.
+X: list
+	List of the predictors.
+	"""
 	def  __init__(self,
 				  name: str,
-				  cursor,
+				  cursor = None,
 				  n_cluster: int = 8,
-				  init = "kmeanspp",
+				  init: str = "kmeanspp",
 				  max_iter: int = 300,
 				  tol: float = 1e-4):
+		check_types([
+			("name", name, [str], False),
+			("n_cluster", n_cluster, [int, float], False),
+			("max_iter", max_iter, [int, float], False),
+			("tol", tol, [int, float], False)])
+		if not(cursor):
+			cursor = read_auto_connect().cursor()
+		else:
+			check_cursor(cursor)
 		self.type = "clustering"
 		self.name = name
 		self.cursor = cursor
 		self.n_cluster = n_cluster
-		self.init = init
+		if (type(init) == str):
+			self.init = init.lower()
+		else:
+			self.init = init
 		self.max_iter = max_iter 
 		self.tol = tol 
-	# 
+	#---#
 	def __repr__(self):
 		try:
 			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
@@ -169,40 +353,67 @@ class KMeans:
 		except:
 			return "<KMeans>"
 	#
+	# Methods
 	#
-	#
-	# METHODS
-	# 
-	#
-	def add_to_vdf(self, vdf, name: str = ""):
-		name = "KMeans_" + self.name if not (name) else name
-		return (vdf.eval(name, self.deploySQL()))
-	#
+	#---#
 	def deploySQL(self):
+		"""
+	---------------------------------------------------------------------------
+	Returns the SQL code needed to deploy the model. 
+
+	Returns
+	-------
+	str
+ 		the SQL code needed to deploy the model.
+		"""
 		sql = "APPLY_KMEANS({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
 		return (sql.format(", ".join(self.X), self.name))
-	#
+	#---#
 	def drop(self):
+		"""
+	---------------------------------------------------------------------------
+	Drops the model from the Vertica DB.
+		"""
 		drop_model(self.name, self.cursor, print_info = False)
-	#
-	def fit(self, input_relation: str, X: list):
+	#---#
+	def fit(self, 
+			input_relation: str, 
+			X: list):
+		"""
+	---------------------------------------------------------------------------
+	Trains the model.
+
+	Parameters
+	----------
+	input_relation: str
+		Train relation.
+	X: list
+		List of the predictors.
+
+	Returns
+	-------
+	object
+ 		self
+		"""
+		check_types([
+			("input_relation", input_relation, [str], False),
+			("X", X, [list], False)])
 		self.input_relation = input_relation
 		self.X = [str_column(column) for column in X]
 		query = "SELECT KMEANS('{}', '{}', '{}', {} USING PARAMETERS max_iterations = {}, epsilon = {}".format(self.name, input_relation, ", ".join(self.X), self.n_cluster, self.max_iter, self.tol)
-		name = "VERTICA_ML_PYTHON_KMEANS_INITIAL" 
+		schema = schema_relation(self.name)[0]
+		name = "VERTICA_ML_PYTHON_KMEANS_INITIAL"
 		if (type(self.init) != str):
-			self.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(name))
+			try:
+				self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
+			except:
+				pass
 			if (len(self.init) != self.n_cluster):
 				raise ValueError("'init' must be a list of 'n_cluster' = {} points".format(self.n_cluster))
 			else:
 				for item in self.init:
 					if (len(X) != len(item)):
 						raise ValueError("Each points of 'init' must be of size len(X) = {}".format(len(self.X)))
-				temp_initial_centers = [item for item in self.init]
-				for item in temp_initial_centers:
-					del temp_initial_centers[0]
-					if (item in temp_initial_centers):
-						raise ValueError("All the points of 'init' must be different")
 				query0 = []
 				for i in range(len(self.init)):
 					line = []
@@ -211,14 +422,17 @@ class KMeans:
 					line = ",".join(line)
 					query0 += ["SELECT " + line]
 				query0 = " UNION ".join(query0)
-				query0 = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name, query0)
+				query0 = "CREATE TABLE {}.{} AS {}".format(schema, name, query0)
 				self.cursor.execute(query0)
-				query += ", initial_centers_table = 'v_temp_schema.{}'".format(name)
+				query += ", initial_centers_table = '{}.{}'".format(schema, name)
 		else:
-			query += ", init_method = '" + self.init + "'"
+			query += ", init_method = '{}'".format(self.init)
 		query += ")"
 		self.cursor.execute(query)
-		self.cursor.execute("DROP TABLE IF EXISTS v_temp_schema.{}".format(name))
+		try:
+			self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
+		except:
+			pass
 		self.cluster_centers = to_tablesample(query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(self.name), cursor = self.cursor)
 		self.cluster_centers.table_info = False
 		query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(self.name)
@@ -228,12 +442,57 @@ class KMeans:
 		values["value"] = [float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]), float(result.split("Total Sum of Squares: ")[1].split("\n")[0]), float(result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]), float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]) / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]), result.split("Converged: ")[1].split("\n")[0] == "True"] 
 		self.metrics = tablesample(values, table_info = False)
 		return (self)
-	#
-	def plot(self):
-		from vertica_ml_python import vDataframe
-		vdf = vDataframe(self.input_relation, self.cursor)
-		self.add_to_vdf(vdf, "kmeans_cluster")
-		if (len(self.X) <= 3):
-			vdf.scatter(columns = self.X, catcol = "kmeans_cluster", max_cardinality = 100, max_nb_points = 10000)
+	#---#
+	def plot(self, 
+			 voronoi: bool = False):
+		"""
+	---------------------------------------------------------------------------
+	Draws the KMeans clusters.
+
+	Parameters
+	----------
+	voronoi: bool, optional
+		If set to true, a voronoi plot will be drawn. It is only available for
+		KMeans using 2 predictors.
+		"""
+		if (voronoi):
+			if (len(self.X) == 2):
+				from vertica_ml_python.learn.plot import voronoi_plot
+				query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(self.name)
+				self.cursor.execute(query)
+				clusters = self.cursor.fetchall()
+				voronoi_plot(clusters = clusters, columns = self.X)
+			else:
+				raise ValueError("Voronoi Plots are only available in 2D")
 		else:
-			raise ValueError("Clustering Plots are only available in 2D or 3D")
+			vdf = vDataFrame(self.input_relation, self.cursor)
+			self.predict(vdf, "kmeans_cluster")
+			if (len(self.X) <= 3):
+				vdf.scatter(columns = self.X, catcol = "kmeans_cluster", max_cardinality = 100, max_nb_points = 10000)
+			else:
+				raise ValueError("Clustering Plots are only available in 2D or 3D")
+	#---#
+	def predict(self, 
+				vdf, 
+				name: str = ""):
+		"""
+	---------------------------------------------------------------------------
+	Adds the prediction in a vDataFrame.
+
+	Parameters
+	----------
+	vdf: vDataFrame
+		Object used to insert the prediction as a vcolumn.
+	name: str, optional
+		Name of the added vcolumn. If empty, a name will be generated.
+
+	Returns
+	-------
+	vDataFrame
+		the input object.
+		"""
+		check_types([
+			("name", name, [str], False)],
+			vdf = ["vdf", vdf])
+		name = "KMeans_" + ''.join(ch for ch in self.name if ch.isalnum()) if not (name) else name
+		return (vdf.eval(name, self.deploySQL()))

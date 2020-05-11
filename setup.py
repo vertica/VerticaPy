@@ -1,4 +1,4 @@
-# (c) Copyright [2018] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -38,15 +38,28 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
 	name = 'vertica_ml_python',  
-    version = '1.0-17',
+    version = '1.0-beta',
     author = "Badr Ouali",
 	author_email = "badr.ouali@microfocus.com",
+	url = "https://github.com/vertica/Vertica-ML-Python",
+	keywords = "vertica python ml data science machine learning statistics database",
 	description = "Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica.",
 	long_description = long_description,
 	long_description_content_type = "text/markdown",
-	url = "https://github.com/vertica/Vertica-ML-Python",
 	packages = setuptools.find_packages(),
-	package_data = {'': ['*.csv', '*.png']},
-	classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :: Apache Software License", "Operating System :: OS Independent",],
+	python_requires = ">=3.6",
+	install_requires = [
+        'matplotlib>=2.0'
+    ],
+	package_data = {'': ['*.csv']},
+	classifiers = [
+		"Intended Audience :: Science/Research",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3",
+		"Programming Language :: Python :: 3.6", 
+		"Programming Language :: Python :: 3.7", 
+		"Programming Language :: Python :: 3.8", 
+		"Topic :: Database",
+		"License :: OSI Approved :: Apache Software License", 
+		"Operating System :: OS Independent",],
 	)
-

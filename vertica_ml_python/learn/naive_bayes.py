@@ -11,42 +11,108 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             /           `\     /     /
+#            |   O         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
 #
-# Libraries
-from vertica_ml_python.learn.metrics import accuracy_score, auc, prc_auc, log_loss, classification_report, confusion_matrix, critical_success_index, f1_score, informedness, negative_predictive_score, precision_score, recall_score, markedness, matthews_corrcoef, multilabel_confusion_matrix, specificity_score, r2_score, mean_absolute_error, mean_squared_error, mean_squared_log_error, median_absolute_error, max_error, explained_variance, regression_report
-from vertica_ml_python.learn.plot import lift_chart, plot_importance, roc_curve, prc_curve, plot_tree
-from vertica_ml_python.utilities import str_column, drop_model, tablesample, to_tablesample
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
 #
+# 
+# Modules
+#
+# Vertica ML Python Modules
+from vertica_ml_python.learn.metrics import *
+from vertica_ml_python.learn.plot import *
+from vertica_ml_python.utilities import *
+from vertica_ml_python.toolbox import *
+from vertica_ml_python import vDataFrame
+from vertica_ml_python.connections.connect import read_auto_connect
+#---#
 class MultinomialNB:
+	"""
+---------------------------------------------------------------------------
+Creates a MultinomialNB object by using the Vertica Highly Distributed 
+and Scalable Naive Bayes on the data. It is a "probabilistic classifiers" 
+based on applying Bayes theorem with strong (naïve) independence assumptions 
+between the features. 
+
+Parameters
+----------
+name: str
+	Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+	Vertica DB cursor. 
+alpha: float, optional
+	A float that specifies use of Laplace smoothing if the event model is 
+	categorical, multinomial, or Bernoulli.
+
+Attributes
+----------
+After the object creation, all the parameters become attributes. 
+The model will also create extra attributes when fitting the model:
+
+classes: list
+	List of all the response classes.
+input_relation: str
+	Train relation.
+X: list
+	List of the predictors.
+y: str
+	Response column.
+test_relation: str
+	Relation used to test the model. All the model methods are abstractions
+	which will simplify the process. The test relation will be used by many
+	methods to evaluate the model. If empty, the train relation will be 
+	used as test. You can change it anytime by changing the test_relation
+	attribute of the object.
+	"""
 	#
+	# Special Methods
+	#
+	#---#
 	def  __init__(self,
 				  name: str,
-				  cursor,
+				  cursor = None,
 				  alpha: float = 1.0):
+		check_types([
+			("name", name, [str], False),
+			("alpha", alpha, [int, float], False)])
+		if not(cursor):
+			cursor = read_auto_connect().cursor()
+		else:
+			check_cursor(cursor)
 		self.type = "classifier"
 		self.cursor = cursor
 		self.name = name
 		self.alpha = alpha
-	# 
+	#---#
 	def __repr__(self):
 		try:
 			self.cursor.execute("SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '" + self.name + "')")
@@ -54,31 +120,97 @@ class MultinomialNB:
 		except:
 			return "<MultinomialNB>"
 	#
+	# Methods
 	#
-	#
-	# METHODS
-	# 
-	#
-	def add_to_vdf(self,
-				   vdf,
-				   name: str = "",
-				   cutoff: float = 0.5):
-		name = "MultinomialNB_" + self.name if not (name) else name
-		pos_label = self.classes[1] if (len(self.classes) == 2) else None
-		return (vdf.eval(name, self.deploySQL(pos_label, cutoff)))
-	#
-	def classification_report(self, cutoff: float = 0.5, labels = []):
-		labels = self.classes if not(labels) else labels
+	#---#
+	def classification_report(self, 
+							  cutoff = [], 
+							  labels: list = []):
+		"""
+	---------------------------------------------------------------------------
+	Computes a classification report using multiple metrics to evaluate the model
+	(AUC, accuracy, PRC AUC, F1...). In case of multiclass classification, it will 
+	consider each category as positive and switch to the next one during the computation.
+
+	Parameters
+	----------
+	cutoff: float/list, optional
+		Cutoff for which the tested category will be accepted as prediction. 
+		In case of multiclass classification, each tested category becomes 
+		the positives and the others are merged into the negatives. The list will 
+		represent the classes threshold. If it is empty, the best cutoff will be used.
+	labels: list, optional
+		List of the different labels to be used during the computation.
+
+	Returns
+	-------
+	tablesample
+ 		An object containing the result. For more information, check out
+ 		utilities.tablesample.
+		"""
+		check_types([
+			("cutoff", cutoff, [int, float, list], False),
+			("labels", labels, [list], False)])
+		if not(labels): labels = self.classes
 		return (classification_report(cutoff = cutoff, estimator = self, labels = labels))
-	#
-	def confusion_matrix(self, pos_label = None, cutoff: float = 0.5):
+	#---#
+	def confusion_matrix(self, 
+						 pos_label = None, 
+						 cutoff: float = -1):
+		"""
+	---------------------------------------------------------------------------
+	Computes the model confusion matrix.
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		Label to consider as positive. All the other classes will be merged and
+		considered as negative in case of multi classification.
+	cutoff: float, optional
+		Cutoff for which the tested category will be accepted as prediction. If the 
+		cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
+
+	Returns
+	-------
+	tablesample
+ 		An object containing the result. For more information, check out
+ 		utilities.tablesample.
+		"""
+		check_types([("cutoff", cutoff, [int, float], False)])
 		pos_label = self.classes[1] if (pos_label == None and len(self.classes) == 2) else pos_label
-		if (pos_label in self.classes and cutoff < 1 and cutoff > 0):
+		if (pos_label in self.classes and cutoff <= 1 and cutoff >= 0):
 			return (confusion_matrix(self.y, self.deploySQL(pos_label, cutoff), self.test_relation, self.cursor, pos_label = pos_label))
 		else:
-			return (multilabel_confusion_matrix(self.y, self.deploySQL(), self.test_relation, self.cursor, self.classes))
-	#
-	def deploySQL(self, pos_label = None, cutoff: float = -1, allSQL: bool = False):
+			return (multilabel_confusion_matrix(self.y, self.deploySQL(), self.test_relation, self.classes, self.cursor))
+	#---#
+	def deploySQL(self, 
+				  pos_label = None, 
+				  cutoff: float = -1, 
+				  allSQL: bool = False):
+		"""
+	---------------------------------------------------------------------------
+	Returns the SQL code needed to deploy the model. 
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		Label to consider as positive. All the other classes will be merged and
+		considered as negative in case of multi classification.
+	cutoff: float, optional
+		Cutoff for which the tested category will be accepted as prediction. If 
+		the cutoff is not between 0 and 1, a probability will be returned.
+	allSQL: bool, optional
+		If set to true, the output will be a list of the different SQL codes 
+		needed to deploy the different categories score.
+
+	Returns
+	-------
+	str/list
+ 		the SQL code needed to deploy the model.
+		"""
+		check_types([
+			("cutoff", cutoff, [int, float], False),
+			("allSQL", allSQL, [bool], False)])
 		if (allSQL):
 			sql = "PREDICT_NAIVE_BAYES({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(", ".join(self.X), self.name, "{}")
 			sql = [sql, "PREDICT_NAIVE_BAYES({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(", ".join(self.X), self.name)]
@@ -96,32 +228,43 @@ class MultinomialNB:
 				sql = "PREDICT_NAIVE_BAYES({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(", ".join(self.X), self.name)
 		return (sql)
 	#
-	def deploy_to_DB(self, name: str, view: bool = True, cutoff = -1, all_classes: bool = False):
-		relation = "TABLE" if not(view) else "VIEW"
-		sql = "CREATE {} {} AS SELECT {}, {} FROM {}".format(relation, name, ", ".join(self.X), "{}", self.test_relation)
-		if (all_classes):
-			predict = []
-			for elem in self.classes:
-				if elem not in (self.classes):
-					raise ValueError("All the elements of 'pos_label' must be in the estimator classes")
-				alias = '"{}_{}"'.format(self.y.replace('"', ''), elem) 
-				predict += ["{} AS {}".format(self.deploySQL(elem), alias)]
-			predict += ["{} AS {}".format(self.deploySQL(), self.y)]
-		else:
-			if (len(self.classes) == 2):
-				predict = ["{} AS {}".format(self.deploySQL(self.classes[1], cutoff), self.y)]
-			else:
-				predict = ["{} AS {}".format(self.deploySQL(), self.y)]
-		self.cursor.execute(sql.format(", ".join(predict)))
-	#
 	def drop(self):
+		"""
+	---------------------------------------------------------------------------
+	Drops the model from the Vertica DB.
+		"""
 		drop_model(self.name, self.cursor, print_info = False)
-	#
+	#---#
 	def fit(self,
 			input_relation: str, 
 			X: list, 
 			y: str,
 			test_relation: str = ""):
+		"""
+	---------------------------------------------------------------------------
+	Train the model.
+
+	Parameters
+	----------
+	input_relation: str
+		Train relation.
+	X: list
+		List of the predictors.
+	y: str
+		Response column.
+	test_relation: str, optional
+		Relation used to test the model.
+
+	Returns
+	-------
+	object
+ 		self
+		"""
+		check_types([
+			("input_relation", input_relation, [str], False),
+			("X", X, [list], False),
+			("y", y, [str], False),
+			("test_relation", test_relation, [str], False)])
 		self.input_relation = input_relation
 		self.test_relation = test_relation if (test_relation) else input_relation
 		self.X = [str_column(column) for column in X]
@@ -132,33 +275,158 @@ class MultinomialNB:
 		classes = self.cursor.fetchall()
 		self.classes = [item[0] for item in classes]
 		return (self)
-	#
-	def lift_chart(self, pos_label = None):
+	#---#
+	def lift_chart(self, 
+				   pos_label = None):
+		"""
+	---------------------------------------------------------------------------
+	Draws the model Lift Chart.
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		To draw a lift chart, one of the response column class has to be the 
+		positive one. The parameter 'pos_label' represents this class.
+
+	Returns
+	-------
+	tablesample
+ 		An object containing the result. For more information, check out
+ 		utilities.tablesample.
+		"""
 		pos_label = self.classes[1] if (pos_label == None and len(self.classes) == 2) else pos_label
 		if (pos_label not in self.classes):
 			raise ValueError("'pos_label' must be one of the response column classes")
 		return (lift_chart(self.y, self.deploySQL(allSQL = True)[0].format(pos_label), self.test_relation, self.cursor, pos_label))
-	#
-	def prc_curve(self, pos_label = None):
+	#---#
+	def prc_curve(self, 
+				  pos_label = None):
+		"""
+	---------------------------------------------------------------------------
+	Draws the model PRC curve.
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		To draw the PRC curve, one of the response column class has to be the 
+		positive one. The parameter 'pos_label' represents this class.
+
+	Returns
+	-------
+	tablesample
+ 		An object containing the result. For more information, check out
+ 		utilities.tablesample.
+		"""
 		pos_label = self.classes[1] if (pos_label == None and len(self.classes) == 2) else pos_label
 		if (pos_label not in self.classes):
 			raise ValueError("'pos_label' must be one of the response column classes")
 		return (prc_curve(self.y, self.deploySQL(allSQL = True)[0].format(pos_label), self.test_relation, self.cursor, pos_label))
-	#
-	def roc_curve(self, pos_label = None):
+	#---# 
+	def predict(self,
+				vdf,
+				name: str = "",
+				cutoff: float = -1,
+				pos_label = None):
+		"""
+	---------------------------------------------------------------------------
+	Predicts using the input relation.
+
+	Parameters
+	----------
+	vdf: vDataFrame
+		Object used to insert the prediction as a vcolumn.
+	name: str, optional
+		Name of the added vcolumn. If empty, a name will be generated.
+	cutoff: float, optional
+		Cutoff for which the tested category will be accepted as prediction. 
+		If the parameter is not between 0 and 1, the class probability will
+		be returned
+	pos_label: int/float/str, optional
+		Class label.
+
+	Returns
+	-------
+	vDataFrame
+		the input object.
+		"""
+		check_types([
+			("name", name, [str], False),
+			("cutoff", cutoff, [int, float], False)],
+			vdf = ["vdf", vdf])
+		if not (name): name = "MultinomialNB_" + ''.join(ch for ch in self.name if ch.isalnum())
+		if (len(self.classes) == 2 and pos_label == None): pos_label = self.classes[1] 
+		return (vdf.eval(name, self.deploySQL(pos_label, cutoff)))
+	#---# 
+	def roc_curve(self, 
+				  pos_label = None):
+		"""
+	---------------------------------------------------------------------------
+	Draws the model ROC curve.
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		To draw the ROC curve, one of the response column class has to be the 
+		positive one. The parameter 'pos_label' represents this class.
+
+	Returns
+	-------
+	tablesample
+ 		An object containing the result. For more information, check out
+ 		utilities.tablesample.
+		"""
 		pos_label = self.classes[1] if (pos_label == None and len(self.classes) == 2) else pos_label
 		if (pos_label not in self.classes):
 			raise ValueError("'pos_label' must be one of the response column classes")
 		return (roc_curve(self.y, self.deploySQL(allSQL = True)[0].format(pos_label), self.test_relation, self.cursor, pos_label))
-	#
-	def score(self, pos_label = None, cutoff: float = 0.5, method: str = "accuracy"):
+	#---#
+	def score(self, 
+			  pos_label = None, 
+			  cutoff: float = 0.5, 
+			  method: str = "accuracy"):
+		"""
+	---------------------------------------------------------------------------
+	Computes the model score.
+
+	Parameters
+	----------
+	pos_label: int/float/str, optional
+		Label to consider as positive. All the other classes will be merged and
+		considered as negative in case of multi classification.
+	cutoff: float, optional
+		Cutoff for which the tested category will be accepted as prediction. 
+	method: str, optional
+		The method used to compute the score.
+			accuracy    : Accuracy
+			auc         : Area Under the Curve (ROC)
+			best_cutoff : Cutoff which optimised the ROC Curve prediction.
+			bm          : Informedness = tpr + tnr - 1
+			csi         : Critical Success Index = tp / (tp + fn + fp)
+			f1          : F1 Score 
+			logloss     : Log Loss
+			mcc         : Matthews Correlation Coefficient 
+			mk          : Markedness = ppv + npv - 1
+			npv         : Negative Predictive Value = tn / (tn + fn)
+			prc_auc     : Area Under the Curve (PRC)
+			precision   : Precision = tp / (tp + fp)
+			recall      : Recall = tp / (tp + fn)
+			specificity : Specificity = tn / (tn + fp) 
+
+	Returns
+	-------
+	float
+ 		score
+		"""
+		check_types([
+			("cutoff", cutoff, [int, float], False),
+			("method", method, [str], False)])
 		pos_label = self.classes[1] if (pos_label == None and len(self.classes) == 2) else pos_label
-		if (pos_label not in self.classes):
+		if (pos_label not in self.classes) and (method != "accuracy"):
 			raise ValueError("'pos_label' must be one of the response column classes")
-		elif (cutoff >= 1 or cutoff <= 0):
-			raise ValueError("'cutoff' must be in ]0;1[")
+		elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
+			cutoff = self.score(pos_label, 0.5, "best_cutoff")
 		if (method in ("accuracy", "acc")):
-			return (accuracy_score(self.y, self.deploySQL(pos_label, cutoff), self.test_relation, self.cursor))
+			return accuracy_score(self.y, self.deploySQL(pos_label, cutoff), self.test_relation, self.cursor, pos_label)
 		elif (method == "auc"):
 			return auc("DECODE({}, '{}', 1, 0)".format(self.y, pos_label), self.deploySQL(allSQL = True)[0].format(pos_label), self.test_relation, self.cursor)
 		elif (method == "prc_auc"):
