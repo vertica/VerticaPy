@@ -122,7 +122,7 @@ root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor
 ```python
-from vertica_ml_python.utilities import vertica_cursor
+from vertica_ml_python import vertica_cursor
 cur = vertica_cursor("VerticaDSN")
 ```
 Create the Virtual Dataframe of your relation:
