@@ -1,0 +1,413 @@
+/*******************************/
+/************ Style ************/
+/*******************************/
+
+
+/*******************************/
+/************ Fonts ************/
+/*******************************/
+@font-face {
+    font-family: 'Entypo';
+    src: url('../fonts/Entypo.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'SF';
+    src: url('../fonts/SF-UI-Display-Regular.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+/* all */
+body {
+    zoom: auto;
+    min-width: 400px;
+    font-family: 'SF';
+    background: #F5F5F5;
+}
+a {
+    text-decoration: none;
+}
+.vml_title {
+    font-size: 1.3em;
+}
+/* Header */
+#header {
+    height: 65px;
+    border-bottom: 1px solid #CCC;
+    position: fixed;
+    width: 100%;
+    right: 0px;
+    background: #1B4379;
+    top: 0px;
+    z-index: 1000;
+}
+#logo_title {
+    color: white;
+    font-family: 'SF';
+}
+#all_options {
+    right: 2px;
+    top: 65px;
+    position: absolute;
+    width: 230px;
+    background: white;
+    list-style: none;
+    border: 1px solid #CCC;
+    display: none;
+}
+#all_options div:hover {
+    background: #FFCD00;
+    opacity: 0.96;
+    color: #1B4379;
+}
+#all_options div {
+    width: 100%;
+    left: 30px;
+    font-size: 1.1em;
+    border-bottom: 1px solid #CCC;
+    color: black;
+    height: 70px;
+}
+#all_options .menu_title {
+    margin-left: 15px;
+}
+#all_options .icon {
+    float: left;
+    font-size: 2.5em;
+    margin-top: -12px;
+    margin-right: 9px;
+}
+#VerticaLogo {
+    height: 35px;
+    margin-left: 10px;
+    margin-top: 14px;
+}
+#GithubLogo {
+    height: 35px;
+    right: 70px;
+    position: absolute;
+    margin-top: 16px;
+}
+#main_menu {
+    position: absolute;
+    right: -50px;
+    color: #214579;
+} 
+.icon {
+    font-family: 'Entypo';
+}
+/* Footer */
+#footer {
+    margin-top: 50px;
+    height: 40px;
+    font-size: 1em;
+}
+#copyright {
+    margin-top: 15px;
+    margin-left: 7px;
+}
+/* Button */
+button {
+    border-radius: 20px;
+    width: 60px;
+}
+button:hover {
+    background: #214579;
+    color: #FFCD00;
+}
+button .icon{
+    font-size: 3em;
+}
+/* Content */
+#content {
+    border: 1px solid #CCC;
+    background: white;
+    position: absolute;
+    top: 80px;
+    left: 1.5%;
+    width: 97%;
+}
+#content .highlight {
+    margin-left: 20px; 
+    margin-right: 20px;
+}
+#content h1 {
+    font-size: 1.8em;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    margin-top: 18px;
+    margin-bottom: 9px;
+    margin-left: 10px;
+    height: 40px;
+    border-bottom: 1px solid #EEE;
+    font-family: Arial;
+}
+#content h2 {
+    font-family: inherit;
+    font-weight: 500;
+    color: inherit;
+    margin-top: 18px;
+    margin-bottom: 9px;
+    margin-left: 10px;
+    height: 40px;
+    border-bottom: 1px solid #EEE;
+}
+#content p {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 1.1em;
+    text-align: justify;
+    line-height: 1.5em;
+}
+#content a {
+    color: #1B4379;
+}
+#content .ul_content {
+    font-size: 1.1em;
+}
+#content .ul_content li {
+    margin: 10px;
+}
+#advantages a {
+    color: black;
+}
+#advantages img {
+    margin-top: 10px;
+    margin-bottom: -5px;
+}
+ul#advantages {
+    margin-left: -40px;
+}
+#advantages li {
+    text-align: center;
+    border: 1px solid #CCC;
+    width: 250px;
+    list-style-type: none;
+    min-height: 300px;
+    display: inline-block;
+    margin: 10px;
+    background: #F5F5F5;
+}
+#advantages li:hover {
+    background: #FFC;
+}
+#advantages li div {
+    font-size: 1em;
+    margin-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+#advantages li i {
+    color: #1B4379;
+    font-size: 0.8em;
+    font-style: normal;
+}
+#advantages h3 {
+    font-style: normal;
+    font-size: 1em;
+}
+#advantages .small {
+    font-size: 0.8em;
+}
+#advantages .icon {
+    font-size: 3em;
+    color: #FFCC01;
+    margin-top: -5px;
+}
+#advantages .algo {
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-family: 'Arial';
+}
+/* table */
+.functions_description {
+    border: medium solid #1B4379;
+    border-collapse: collapse;
+    width: calc(100% - 50px);
+    margin-left: 25px;
+}
+.functions_description th {
+    border: thin solid #1B4379;
+    width: 50%;
+    padding: 5px;
+    background-color: #1B4379;
+    color: white;
+    font-family: Arial;
+}
+.functions_description td {
+    border: thin solid #1B4379;
+    width: 50%;
+    padding: 5px;
+    background-color: #ffffff;
+}
+/* parameters and see also */
+#parameters{
+    margin-left: 25px;
+    margin-right: 25px;
+}
+#parameters th {
+    border: thin solid #214579;
+    padding: 5px;
+    background-color: #214579;
+    color: white;
+    font-family: Arial;
+}
+#parameters td {
+    padding: 5px;
+    background-color: #ffffff;
+}
+#parameters td ul {
+    list-style-type: none;
+    margin-top: 3px;
+}
+b {
+    font-family: Arial;
+}
+#parameters td ul b {
+    font-family: Arial;
+}
+#parameters .yes {
+    color: green;
+    text-align: center;
+    font-size: 1.4em;
+}
+#parameters .no {
+    color: red;
+    text-align: center;
+    font-size: 0.8em;
+}
+#parameters .type {
+    color: #7777FF;
+    text-align: center;
+}
+#parameters .param_name {
+    text-align: center;
+    font-weight: bold;
+    font-family: Arial;
+}
+#seealso{
+    margin-left: 25px;
+    margin-right: 25px;
+}
+/* Backgrounds */
+#booking {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/bruce-mars-ieIY61ZHhs8-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#amazon {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/meritt-thomas-8-ENEa3xPws-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#iris {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/aliona-gumeniuk-1620RYaFv7E-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#pokemon {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/megan-mcclain--vu--HcxN_M-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#winequality {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/zan-WrueFKpTlQs-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#smart_meter {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/thomas-kelley-xVptEZzgVfo-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#titanic {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/library-of-congress-b7MQq3IovwQ-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#football {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/sandro-schuh-HgwY_YQ1m0w-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#africa_education {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/doug-linstedt-jEEYZsaxbH4-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#movies {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/myke-simon-atsUqIm3wxo-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#covid19 {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/cdc-k0KRNtqcjfw-unsplash.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#spam {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/luis-villasmil-4V8uMZx8FYA-unsplash.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+#telco_churn {
+    width: 100%;
+    height: 400px;
+    background: url("../img/examples/hassan-ouajbir-IYU_YmMRm7s-unsplash-min.jpg") no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
