@@ -32,7 +32,7 @@ limitations under the License.
 
 # Vertica-ML-Python
 
-:loudspeaker: Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
+:loudspeaker: Vertica-ML-Python is a Python library that exposes scikit-like functionality to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations (called Virtual Dataframe), and offers several options for graphical rendering.
 
 <p align="center">
 <img src='./img/vertica-ml-python.png' width="500px">
@@ -40,31 +40,39 @@ limitations under the License.
 
 ## Features
 
-Vertica ML Python is the perfect combination between Vertica and Python. It uses Vertica Scalability and Python Flexibility to help any Data Scientist achieving his goals by bringing the logic to the data and not the opposite. With VERTICA ML PYTHON, start your journey with easy Data Exploration.
+Vertica ML Python blends together the scalability of Vertica and the flexibility of Python to bring a unique combination of tools to any data scientist's workflow.
+
+Easily explore your data.
 <br>
 <p align="center">
 <img src='./img/Slide2.png' width="800px">
 </p>
 <br>
-Find patterns that you don't know and Detect Anomalies.
+Find patterns and edtect anomalies.
 <br><br>
 <p align="center">
 <img src='./img/Slide3.png' width="800px">
 </p>
 <br>
-Prepare your data easily and build a model with Highly Scalable Vertica ML. Evaluate your model and try to create the most efficient and performant one.
+Effortlessly build and evaluate models that optimize for efficiency and performance.
 <br><br>
 <p align="center">
 <img src='./img/Slide1.png' width="800px">
 </p>
 <br>
-Everything will happen in one place and where it should be: your Database. Without modifying anything but using the speed of Vertica to aggregate the data.
+This all takes place where it should: your database. By aggregating your data with Vertica, you can build, analyze, and model anything without modifying your data.
 
-## Why using this Library?
+## Why Use this Library?
 
-Nowadays, The 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
+Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 
-The idea behind VERTICA ML PYTHON is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
+Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists. Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists.
+
+However, Python only works in-memory for a single node process. While distributed programming languages have tried to face this challenge, they are still generally in-memory and can never hope to process all of your data, and moving data is expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
+
+**Vertica ML Python aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, Vertica ML Python brings the logic to the data.
+
+3 years in the making, we bring you version 1.0 of Vertica ML Python.
 
 Main Advantages:
  - easy Data Exploration.
