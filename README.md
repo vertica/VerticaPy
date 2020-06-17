@@ -97,7 +97,7 @@ This library includes the key features of pandas.DataFrame and scikit + easy-to-
 ## Installation:
 ### Using pip
 ```shell
-root@ubuntu:~$ pip3 install vertica-ml-python
+$ pip3 install vertica-ml-python
 ```
 
 ### Manual Install
@@ -119,11 +119,11 @@ from vertica_ml_python.learn.linear_model import LogisticRegression
 
 Install the library using the <b>pip</b> command:
 ```shell
-root@ubuntu:~$ pip3 install vertica-ml-python
+$ pip3 install vertica-ml-python
 ```
 Install <b>vertica-python</b> or <b>pyodbc</b> to build a DB cursor:
 ```shell
-root@ubuntu:~$ pip3 install vertica-python
+$ pip3 install vertica-python
 ```
 Create a vertica cursor
 ```python
