@@ -64,7 +64,7 @@ Effortlessly build and evaluate models that optimize for efficiency and performa
 <br>
 This all takes place where it should: your database. By aggregating your data with Vertica, you can build, analyze, and model anything without modifying your data.
 
-## Why Use this Library?
+## Why Vertica ML Python?
 
 Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 
