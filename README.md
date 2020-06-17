@@ -27,18 +27,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-&#9888; If you want to contribute, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a> <br>
-&#9888; Please look at the example (https://github.com/vertica/Vertica-ML-Python/blob/master/EXAMPLE.md) to get in touch with the API.
+&#9888; To contribute: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a> <br>
 
 # Vertica-ML-Python
 
 :loudspeaker: Vertica-ML-Python is a Python library that exposes scikit-like functionality to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations (called Virtual Dataframe), and offers several options for graphical rendering.
 
+&#9888; Usage examples: (https://github.com/vertica/Vertica-ML-Python/blob/master/EXAMPLE.md)
+
 <p align="center">
 <img src='./img/vertica-ml-python.png' width="500px">
 </p>
-
-Send us feedback: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 
 ## Features
 
