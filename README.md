@@ -101,7 +101,9 @@ root@ubuntu:~$ pip3 install vertica-ml-python
 ```
 
 ### Manual Install
-You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. For Mac OS, you it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
+You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework.
+
+<b>Mac OS</b>: <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b>
 
 ### Importing
 After installing, you can import each library element using the usual Python syntax.
