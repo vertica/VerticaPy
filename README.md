@@ -110,9 +110,9 @@ You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-pa
 After installing, you can import each library element using the usual Python syntax.
 ```python
 # to import the vDataframe
-from vertica_ml_python import vDataframe
+from vertica-ml-python import vDataframe
 # to import the Logistic Regression
-from vertica_ml_python.learn.linear_model import LogisticRegression
+from vertica-ml-python.learn.linear_model import LogisticRegression
 ```
 
 ## Quick Start
@@ -180,8 +180,8 @@ FROM public.titanic
 Solving a ML problem with just four lines of code (two if you don't count importing libraries!):
 
 ```python
-from vertica_ml_python.learn.model_selection import cross_validate
-from vertica_ml_python.learn.ensemble import RandomForestClassifier
+from vertica-ml-python.learn.model_selection import cross_validate
+from vertica-ml-python.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
 vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
