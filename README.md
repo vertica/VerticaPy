@@ -38,6 +38,8 @@ limitations under the License.
 <img src='./img/vertica-ml-python.png' width="500px">
 </p>
 
+Send us feedback: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
+
 ## Features
 
 Vertica ML Python blends together the scalability of Vertica and the flexibility of Python to bring a unique combination of tools to any data scientist's workflow.
@@ -74,43 +76,35 @@ However, Python only works in-memory for a single node process. While distribute
 
 3 years in the making, we bring you version 1.0 of Vertica ML Python.
 
-Main Advantages:
- - easy Data Exploration.
- - easy Data Preparation.
- - easy Data Modeling.
- - easy Model Evaluation.
- - easy Model Deployment.
- - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and even much more)
- - easy ML model creation and evaluation.
- - many scikit functions and algorithms are available (and scalable!).
-
-&#9888; Please read the Vertica ML Python Documentation. If you do not have time just read below.
-
-&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.
-
-If you have any feedback about the library, please contact me: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
-
+### Highlights
+This library includes the key features of pandas.DataFrame and scikit + easy-to-use, powerful tools for:
+ - data exploration
+ - data preparation
+ - data/ML modeling
+ - model evaluation
+ - model deployment
+ 
 ## Prerequires
-
-<b>vertica-ml-python</b> works with at least:
 <ul>
-	<li> <b>Vertica: </b> => 9.1 (with previous versions, some functions and algorithms may not be available)
-	<li> <b>Python Version: </b> => 3.6 - [version 3.5 may works]
-	<li> <b>Python Modules needed for Rendering Capabilities: </b> matplotlib (=> 3.0) - [other versions of matplotlib may work], numpy (=> 1.9) - [other versions of numpy may work]
-	<li> <b>Other Python Modules: </b> Except to get rendering capabilities, VERTICA ML Python uses only built-in libraries (statistics, random, math, time and os)
+	<li> <b>Vertica:</b> >= 9.1 (some functions and algorithms may be unavailable in earlier versions)
+	<li> <b>Python Version:</b> >= 3.6 - [version 3.5 may works]
+	<li> <b>Python Modules:</b>
+		<ul><li><b>matplotlib: </b> >= 3.0  - [other versions of matplotlib may work]</li>
+			<li><b>numpy</b> >= 1.9 - [other versions of numpy may work]</li>
+		</ul>
 </ul>
 
 ## Installation:
-
-To install <b>vertica-ml-python</b>, you can use the pip command:
+### Using pip
 ```shell
-root@ubuntu:~$ pip3 install vertica_ml_python
+root@ubuntu:~$ pip3 install vertica-ml-python
 ```
-You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
 
-Another way is to call the library from where it is located. <br>
+### Manual Install
+You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. For Mac OS, you it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
 
-You can then import each library element using the usual Python syntax.
+### Importing
+After installing, you can import each library element using the usual Python syntax.
 ```python
 # to import the vDataframe
 from vertica_ml_python import vDataframe
@@ -122,28 +116,28 @@ from vertica_ml_python.learn.linear_model import LogisticRegression
 
 Install the library using the <b>pip</b> command:
 ```shell
-root@ubuntu:~$ pip3 install vertica_ml_python
+root@ubuntu:~$ pip3 install vertica-ml-python
 ```
-Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
+Install <b>vertica-python</b> or <b>pyodbc</b> to build a DB cursor:
 ```shell
-root@ubuntu:~$ pip3 install vertica_python
+root@ubuntu:~$ pip3 install vertica-python
 ```
 Create a vertica cursor
 ```python
-from vertica_ml_python import vertica_cursor
+from vertica-ml-python import vertica_cursor
 cur = vertica_cursor("VerticaDSN")
 ```
 Create the Virtual Dataframe of your relation:
 ```python
-from vertica_ml_python import vDataframe
+from vertica-ml-python import vDataframe
 vdf = vDataframe("my_relation", cursor = cur)
 ```
 If you don't have data to play, you can easily load well known datasets
 ```python
-from vertica_ml_python.learn.datasets import load_titanic
+from vertica-ml-python.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
 ```
-You can now play with the data...
+Play with the data:
 ```python
 vdf.describe()
 
@@ -166,7 +160,7 @@ sibsp              8.0         7
 survived           1.0         2 
 ```
 
-You can also print the SQL code generation using the <b>sql_on_off</b> method.
+Print the SQL code with the <b>sql_on_off</b> method:
 
 ```python
 vdf.sql_on_off()
@@ -180,7 +174,7 @@ SELECT
 FROM public.titanic
 ```
 
-With Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).
+Solving a ML problem with just four lines of code (two if you don't count importing libraries!):
 
 ```python
 from vertica_ml_python.learn.model_selection import cross_validate
@@ -230,6 +224,5 @@ std            0.0229190954261       0.0109037699717
 avg             0.928685964607  
 std            0.0201579224026
 ```
-
-Happy Playing ! &#128540;
+Enjoy! &#128540;
 
