@@ -5,7 +5,7 @@
 
 # Vertica ML Python Example
 
-This notebook is an example on how to use the Vetica ML Python Library. It will use the Titanic dataset to introduce you the library. The purpose is to predict the passengers survival.
+This example uses the Titanic dataset as an introduction to the library. We can use this to predict passenger survival.
 
 ## Initialization
 
@@ -29,7 +29,7 @@ print(titanic)
 
 ## Data Exploration and Preparation
 
-Let's explore the data by displaying descriptive statistics of all the columns.
+Explore the data by displaying descriptive statistics of all the columns.
 
 
 ```python
@@ -47,8 +47,11 @@ titanic.describe(method = "categorical")
 
 
 
-The column "body" is useless as it is only the ID of the passengers. Besides, it has too much missing values. 
-The column "home.dest" will not influence the survival as it is from where the passengers embarked and where they are going to. We can have the same conclusion with "embarked" which is the port of embarkation. The column 'ticket' which is the ticket ID will also not give us information on the survival. Let's analyze the columns "name" and "cabin to see if we can extract some information. Let's first look at the passengers 'name'.
+The 'body' column doesn't help us here, as it is only the ID of the passengers. Remember: we're looking for data that might impact a person's chances of survival.
+
+Similarly, we don't care about where the passengers are going, which port they left from, or their ticket ID, so we can ignore the 'home.dest,' 'embarked,' and 'ticket' columns.
+
+Let's analyze the 'name' and 'cabin' columns and see if we can extract some information. We begin with 'name':
 
 
 ```python
@@ -67,7 +70,9 @@ CountVectorizer("name_voc", cur).fit("titanic", ["Name"]).to_vdf()
 
 
 
-It is possible to extract from the 'name' the title of the passengers. Let's now look at the 'cabins'.
+We can extract from the 'name' the title of the passengers.
+
+Let's move on to the 'cabins' column.
 
 
 ```python
@@ -85,8 +90,7 @@ CountVectorizer("cabin_voc", cur).fit("titanic", ["cabin"]).to_vdf()
     <object>  Name: cabin_voc, Number of rows: 199, Number of columns: 4
 
 
-
-We can extract the cabin position (the letter which reprent the position in the boat) and look at the number of occurences.
+Notice that we can determine a passenger's cabin position by looking at the letters in the cabin number. Let's look at how the passengers were distributed by looking at the letter occurences:
 
 
 ```python
@@ -105,7 +109,7 @@ CountVectorizer("cabin_voc", cur).fit("titanic", ["cabin"]).to_vdf()["token"].st
 
 
 
-The NULL values possibly represent passengers having no cabin (MNAR = Missing values not at random). The same for the column "boat" NULL values which represent passengers who bought the 'lifeboat' option. We can drop the useless columns and encode the others.
+We don't know what the NULL values represent, so for now, let's assume that they indicate that the passenger doesn't have a cabin (MNAR = Missing values not at random). The NULL values in the 'boat' column represent passengers who bought the 'lifeboat' option. We can drop the useless columns and encode the others.
 
 
 ```python
@@ -144,7 +148,7 @@ titanic["cabin"].str_slice(1, 1)["name"].str_extract(' ([A-Za-z]+)\.')["boat"].f
 
 
 
-We can notice that our assumptions about the cabin is wrong as passengers in first class must have a cabin. This column has missing values at random (MAR) and too much. We can drop it.
+It looks like our earlier assumption about the NULL values in the 'cabin' column representing the absence of a cabin is incorrect: passengers in first class <b>must</b> have a cabin. Also, this column has too many missing values at random (MAR), so we drop it.
 
 
 ```python
@@ -162,7 +166,7 @@ titanic["cabin"].drop()
 
 
 
-Let's look at descriptive statistics of the entire Virtual Dataframe.
+Let's look at descriptive statistics of the entire Virtual DataFrame.
 
 
 ```python
@@ -180,7 +184,7 @@ titanic.statistics()
 
 
 
-We can have with this method many relevant information. We can notice for example that the 'age' of the passengers follows more or less a normal distribution (kurtosis and skewness around 0).
+We can use this method to analyze our data. Notice, for example, that the 'age' of the passengers follows, more or less, a normal distribution (kurtosis and skewness are both around 0).
 
 
 ```python
@@ -191,10 +195,9 @@ x = titanic["age"].hist()
 ![png](img/output_18_0.png)
 
 
-The column 'fare' has many outliers (512.33 which is the maximum is much greater than 79.13 which is the 9th decile). Most of the passengers traveled in 3rd class (median of pclass = 3) and much more...
+The column 'fare' has many outliers, peaking at 512.33. This is much greater the 9th decile at 79.13. Most of the passengers traveled in 3rd class (median of pclass = 3).
 
-'sibsp' represents the number of siblings and parch the number of parents and children, it can be relevant to build a new feature 'family_size'.
-
+'sibsp' represents the number of siblings and parch the number of parents and children. We use this to build a new 'family_size' column.
 
 ```python
 titanic.eval("family_size", "parch + sibsp + 1")
@@ -214,7 +217,7 @@ titanic.eval("family_size", "parch + sibsp + 1")
 
 
 
-Let's deal with the outliers. There are many methods to find them (LocalOutlier Factors, DBSCAN, KMeans...) but we will just winsorize the 'fare' distribution which is the main subject to this anomaly (some passengers could have paid a very expensive fare but outliers could destroy our model prediction). 
+Let's deal with the outliers. There are many methods to find them (LocalOutlier Factors, DBSCAN, KMeans...) but we will just winsorize the 'fare' distribution, which has the most outliers. We would expect this because some passengers could have paid a very expensive fare, but outliers could destroy our model prediction.
 
 
 ```python
@@ -232,7 +235,7 @@ titanic["fare"].fill_outliers(method = "winsorize", alpha = 0.03)
 
 
 
-Let's encode the column 'sex' to be able to use it with numerical methods. 
+Let's encode the column 'sex' so we can use it with numerical methods. 
 
 
 ```python
@@ -250,7 +253,7 @@ titanic["sex"].label_encode()
 
 
 
-The column 'age' has too many missing values and we need to impute them. Let's impute them by the average of passengers having the same 'pclass' and the same 'sex'.
+The column 'age' has too many missing values and we need to impute them. Let's impute them by the average of passengers that have the same 'pclass' and 'sex'.
 
 
 ```python
@@ -271,7 +274,7 @@ titanic["age"].fillna(method = "mean", by = ["pclass", "sex"])
 
 
 
-We can draw the correlation matrix to see different information we could get.
+We can draw the correlation matrix to visualize our information:
 
 
 ```python
@@ -293,12 +296,17 @@ titanic.corr(method = "spearman")
 
 
 
-The fare is very correlated to the family size. It is normal as the bigger the family is, the greater the number of tickets they have to buy will be (so the fare as well). The survival is very correlated to the 'boat'. In case of linear model we will never be able to predict the survival of the passenger having no life boat. To be able to create a real predictive model, we must split the study into 2 use cases: 
+Fare has a strong correlation with family size. This makes sense; a bigger family means more tickets.
+
+Survival has a strong correlation the 'boat' column, which indicates whether the passenger bought a lifeboat. In the case of a linear model, we will never be able to predict the survival of a passenger without a life boat.
+
+To create a real predictive model, we must split the study into 2 use cases: 
 <ul>
-    <li>Passengers having no lifeboat</li>
-    <li>Passengers having a lifeboat</li>
+    <li>Passengers with a lifeboat</li>
+    <li>Passengers without a lifeboat</li>
 </ul>
-We did a lot of operations to clean this table and nothing was saved in the DB ! We can look at the Virtual Dataframe relation to be sure.
+
+But wait, we've done a lot of work to prune this table, but nothing has been saved in the database! We can look at the Virtual Dataframe relation to be sure.
 
 
 ```python
@@ -334,7 +342,7 @@ print(titanic.current_relation())
           FROM "public"."titanic") t1) final_table
 
 
-Let see what's happening when we aggregate and turn on the SQL.
+Let see what's happening when we aggregate and turn on SQL code generation:
 
 
 ```python
@@ -364,7 +372,7 @@ SELECT AVG("age"), <br> &emsp;  &emsp;  &emsp;  AVG("survived"), <br> &emsp;  &e
 
 
 
-VERTICA ML Python will do SQL generation during the entire process and keep in mind all the users modifications.
+Vertica ML Python will do SQL generation during the entire process and remember our modifications to the data.
 
 
 ```python
@@ -399,16 +407,16 @@ titanic.sql_on_off().info()
 
 
 
-You already love the Virtual Dataframe, do you? &#128540;
+There's a lot to love in the Virtual DataFrame, isn't there? &#128540;
 
-If you want to share the object with a member of the team, you can use the following method.
+If you want to share the object with someone, you can use the following method to create a .vdf file.
 
 
 ```python
 x = titanic.to_vdf("titanic")
 ```
 
-We created a .vdf file which can be read with the 'read_vdf' function:
+We can then use 'read_vdf' function to view the Virtual DataFrame
 
 
 ```python
@@ -424,7 +432,7 @@ print(titanic2)
     <object>  Name: titanic, Number of rows: 1234, Number of columns: 10
 
 
-Let's now save the vDataframe in the Database to fulfill the next step: Data Modelling.
+Now, let's save the vDataFrame in the Database to finish our data model.
 
 
 ```python
@@ -445,7 +453,7 @@ x = titanic.save().filter("boat = 1").to_db("titanic_boat").load().filter("boat 
 ### Passengers with a lifeboat
 
 
-First let's look at the number of survivors in this dataset.
+First, let's look at the number of survivors in this dataset.
 
 
 ```python
@@ -465,7 +473,7 @@ titanic_boat["survived"].describe()
 
 
 
-We only have 9 death. Let's try to understand why these passengers died.
+It looks like 9 passengers died. Let's try to understand why.
 
 
 ```python
@@ -490,7 +498,7 @@ These passengers have no reason to die except the ones in third class. Building 
 
 ### Passengers without a lifeboat
 
-Let's now look at passengers without a lifeboat. 
+Next, let's look at passengers without a lifeboat.
 
 
 ```python
@@ -510,7 +518,7 @@ titanic_boat["survived"].describe()
 
 
 
-Only 20 survived. Let's look why.
+Only 20 survived. Let's find out why.
 
 
 ```python
@@ -531,7 +539,9 @@ titanic_boat.filter("survived = 1").head(20)
 
 
 
-They are mostly women. The famous quotation "Women and children first" is then right. Let's build a model to get more insights. As predictors, we have one categorical columns. Besides, we have correlated features as predictors. It is preferable to work with a non-linear classifier which can handle that. Random Forest seems to be perfect for the study. Let's evaluate it with a Cross Validation.
+Notice that most of the casualties were women.
+
+Let's build a model to find out more. As predictors, we have one categorical column. Besides, we have correlated features as predictors. It's best to work with a non-linear classifier to handle that. Random Forest seems to be perfect for the study. Let's evaluate it with a Cross Validation.
 
 
 ```python
@@ -563,7 +573,7 @@ cross_validate(model, relation, predictors, response)
 
 
 As the dataset is unbalanced, the AUC is a good way to evaluate it. <br>
-The model is very good with an average greater than 0.9 ! <br>
+The model is very good with an average greater than 0.9! <br>
 We can now build a model with the entire dataset.
 
 
@@ -630,8 +640,8 @@ model.features_importance()
 
 
 
-As expected, the title and the sex are the most important predictors.
+As expected, a passenger's title and sex are the most important predictors.
 
 ## Conclusion
 
-We have solved this use-case in a pandas-like way but we never loaded the data in memory. This example showed an overview of the library. You can now start your own project by looking at the documentation first &#128521;
+We have solved this problem in a pandas-like way without ever loading the data in memory.
