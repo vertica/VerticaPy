@@ -8,34 +8,34 @@
         <h1>Lessons</h1>
         <center><ul id="advantages">
            <a href="../workshop/introduction/index.php"><li>
-            <img src="../img/icons/Tasks Complated.png" height="200px">
+            <img src="../img/icons/Tasks Complated.png">
             <h3>Introduction</h3>
-            <div><b>Best Practices & Advices</b></div>
+            <div>Best Practices & Advices</div>
           </li></a>
           <a href="../workshop/data_ingestion/index.php"><li>
-            <img src="../img/icons/Web Hosting.png" height="200px">
+            <img src="../img/icons/Web Hosting.png">
             <h3>Data Ingestion</h3>
-            <div><b>Ingesting CSV & JSON</b></div>
+            <div>Ingesting CSV & JSON</div>
           </li></a>
           <a href="../workshop/data_exploration/index.php"><li>
-            <img src="../img/icons/Pie Chart.png" height="200px">
+            <img src="../img/icons/Pie Chart.png">
             <h3>Data Exploration</h3>
-            <div><b>Searches & Charts</b></div>
+            <div>Searches & Charts</div>
           </li></a>
           <a href="../workshop/data_prep/index.php"><li>
-            <img src="../img/icons/SEO Content Management.png" height="200px">
+            <img src="../img/icons/SEO Content Management.png">
             <h3>Data Preparation</h3>
-            <div><b>Features Engineering</b></div>
+            <div>Features Engineering</div>
           </li></a>
           <a href="../workshop/ml/index.php"><li>
-            <img src="../img/icons/Algorithm.png" height="200px">
+            <img src="../img/icons/Algorithm.png">
             <h3>Machine Learning</h3>
-            <div><b>Data Modelling & Evaluation</b></div>
+            <div>Data Modelling & Evaluation</div>
           </li></a>
           <a href="../workshop/full_stack/index.php"><li>
-            <img src="../img/icons/Reputation Management.png" height="200px">
+            <img src="../img/icons/Reputation Management.png">
             <h3>Full Stack</h3>
-            <div><b>Advanced DS Lessons</b></div>
+            <div>Advanced DS Lessons</div>
           </li></a>
         </ul></center>
         <h1>Do you need free training ?</h1>

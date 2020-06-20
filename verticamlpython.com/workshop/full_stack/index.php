@@ -9,9 +9,9 @@
         <p>Here, you'll learn useful tips on different advanced techniques, come back regularly to find new topics !</p>
         <center><ul id="advantages">
           <a href="linear_regression/index.php"><li>
-            <img src="../../img/icons/Analysis.png" height="200px">
+            <img src="../../img/icons/Analysis.png">
             <h3>Linear Regression</h3>
-            <div><i>Understand How to create a Good Linear Regression Model</i></div>
+            <div>Understand How to create a Good Linear Regression Model</div>
           </li></a>
         </ul></center>
       <div><?php include('../../include/footer.php'); ?></div>

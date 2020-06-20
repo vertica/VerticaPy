@@ -18,18 +18,41 @@
     font-weight: normal;
     font-style: normal;
 }
+@font-face {
+    font-family: 'Calibri';
+    src: url('../fonts/Calibri/Calibri Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Calibri_bt';
+    src: url('../fonts/Calibri/Calibri Bold.TTF');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Effra_Std_Lt';
+    src: url('../fonts/Aktiv Grotesk/Effra_Std_Lt.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
 /* all */
 body {
     zoom: auto;
     min-width: 400px;
-    font-family: 'SF';
+    font-family: 'Calibri';
     background: #F5F5F5;
 }
 a {
     text-decoration: none;
 }
 .vml_title {
-    font-size: 1.3em;
+    font-size: 1.4em;
+    font-family: 'Effra_Std_Lt';
+}
+.vml_subtitle {
+    font-size: 1em;
+    font-family: 'Calibri';
 }
 /* Header */
 #header {
@@ -38,13 +61,13 @@ a {
     position: fixed;
     width: 100%;
     right: 0px;
-    background: #1B4379;
+    background: #263133;
     top: 0px;
     z-index: 1000;
 }
 #logo_title {
     color: white;
-    font-family: 'SF';
+    font-family: 'Calibri';
 }
 #all_options {
     right: 2px;
@@ -57,9 +80,8 @@ a {
     display: none;
 }
 #all_options div:hover {
-    background: #FFCD00;
-    opacity: 0.96;
-    color: #1B4379;
+    background: #0073E7;
+    color: #FFFFFF;
 }
 #all_options div {
     width: 100%;
@@ -113,20 +135,19 @@ button {
     width: 60px;
 }
 button:hover {
-    background: #214579;
-    color: #FFCD00;
+    background: #0073E7;
+    color: #FFFFFF;
 }
 button .icon{
     font-size: 3em;
 }
 /* Content */
 #content {
-    border: 1px solid #CCC;
     background: white;
     position: absolute;
-    top: 80px;
-    left: 1.5%;
-    width: 97%;
+    top: 90px;
+    left: 3%;
+    width: 94%;
 }
 #content .highlight {
     margin-left: 20px; 
@@ -140,10 +161,10 @@ button .icon{
     color: inherit;
     margin-top: 18px;
     margin-bottom: 9px;
-    margin-left: 10px;
+    margin-left: 40px;
     height: 40px;
     border-bottom: 1px solid #EEE;
-    font-family: Arial;
+    font-family: 'Effra_Std_Lt';
 }
 #content h2 {
     font-family: inherit;
@@ -151,19 +172,20 @@ button .icon{
     color: inherit;
     margin-top: 18px;
     margin-bottom: 9px;
-    margin-left: 10px;
+    margin-left: 40px;
     height: 40px;
     border-bottom: 1px solid #EEE;
+    font-family: 'Effra_Std_Lt';
 }
 #content p {
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 40px;
+    margin-right: 40px;
     font-size: 1.1em;
     text-align: justify;
     line-height: 1.5em;
 }
 #content a {
-    color: #1B4379;
+    color: #0073E7;
 }
 #content .ul_content {
     font-size: 1.1em;
@@ -171,75 +193,146 @@ button .icon{
 #content .ul_content li {
     margin: 10px;
 }
+/* Regular */
 #advantages a {
     color: black;
 }
 #advantages img {
     margin-top: 10px;
     margin-bottom: -5px;
+    height: 120px;
 }
 ul#advantages {
     margin-left: -40px;
 }
 #advantages li {
     text-align: center;
-    border: 1px solid #CCC;
-    width: 250px;
+    width: 200px;
     list-style-type: none;
-    min-height: 300px;
+    min-height: 200px;
     display: inline-block;
     margin: 10px;
-    background: #F5F5F5;
 }
 #advantages li:hover {
-    background: #FFC;
+    background: #FFFFCC;
 }
 #advantages li div {
     font-size: 1em;
     margin-bottom: 5px;
     margin-left: 10px;
     margin-right: 10px;
-}
-#advantages li i {
-    color: #1B4379;
-    font-size: 0.8em;
-    font-style: normal;
+    font-family: 'Calibri';
 }
 #advantages h3 {
-    font-style: normal;
-    font-size: 1em;
+    font-family: 'Effra_Std_Lt';
+    font-size: 1.2em;
 }
 #advantages .small {
     font-size: 0.8em;
 }
-#advantages .icon {
-    font-size: 3em;
-    color: #FFCC01;
-    margin-top: -5px;
+/* Main */
+#advantages_main a {
+    color: black;
 }
-#advantages .algo {
-    font-size: 0.75em;
-    font-weight: bold;
-    margin-bottom: 20px;
-    font-family: 'Arial';
+#advantages_main img {
+    margin-top: 10px;
+    margin-bottom: -5px;
+    height: 60px;
+}
+ul#advantages_main {
+    margin-left: -40px;
+}
+#advantages_main li {
+    text-align: center;
+    width: 300px;
+    list-style-type: none;
+    display: inline-block;
+    margin: 10px;
+}
+#advantages_main li:hover {
+    background: #FFFFCC;
+}
+#advantages_main li div {
+    font-size: 1em;
+    margin-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-family: 'Calibri';
+}
+#advantages_main h3 {
+    font-family: 'Effra_Std_Lt';
+    font-size: 1.2em;
+}
+/* Examples */
+#examples a {
+    color: black;
+}
+#examples img {
+    margin-top: 10px;
+    margin-bottom: -5px;
+    height: 150px;
+}
+ul#examples {
+    margin-left: -40px;
+}
+#examples li {
+    text-align: center;
+    list-style-type: none;
+    display: inline-block;
+    margin: 10px;
+    width: 240px;
+}
+#examples li div {
+    font-size: 1em;
+    margin-bottom: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-family: 'Calibri';
+}
+#examples h3 {
+    font-family: 'Effra_Std_Lt';
+    font-size: 1.3em;
+}
+#examples .button {
+    text-align: center;
+    font-family: 'Effra_Std_Lt';
+    line-height: 1;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: background-color 0.25s ease-out, color 0.25s ease-out;
+    vertical-align: middle;
+    border: 1px solid transparent;
+    border-radius: 1000px;
+    padding: 0.85em 1em;
+    margin-top: 10px;
+    font-size: 1rem;
+    background-color: #0078EF;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: .75px;
+    width: 200px;
+}
+#examples .button:hover {
+    opacity: 0.8;
 }
 /* table */
 .functions_description {
-    border: medium solid #1B4379;
+    border: medium solid #263133;
     border-collapse: collapse;
     width: calc(100% - 50px);
     margin-left: 25px;
 }
 .functions_description th {
-    border: thin solid #1B4379;
+    border: thin solid #263133;
     width: 50%;
     padding: 5px;
-    background-color: #1B4379;
+    background-color: #263133;
     color: white;
     font-family: Arial;
 }
 .functions_description td {
-    border: thin solid #1B4379;
+    border: thin solid #263133;
     width: 50%;
     padding: 5px;
     background-color: #ffffff;
@@ -250,9 +343,9 @@ ul#advantages {
     margin-right: 25px;
 }
 #parameters th {
-    border: thin solid #214579;
+    border: thin solid #263133;
     padding: 5px;
-    background-color: #214579;
+    background-color: #263133;
     color: white;
     font-family: Arial;
 }

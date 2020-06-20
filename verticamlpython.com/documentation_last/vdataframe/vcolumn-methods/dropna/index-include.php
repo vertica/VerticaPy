@@ -65,7 +65,7 @@
 
 
 <div class="output_html rendered_html output_subarea ">
-<table style="border-collapse: collapse; border: 2px solid white"><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#214579;color:white"><b></b></td><td style="font-size:1.02em;background-color:#214579;color:white"><b>count</b></td><td style="font-size:1.02em;background-color:#214579;color:white"><b>percent</b></td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#214579;color:white"><b>"age"</b></td><td style="border: 1px solid white;">997.0</td><td style="border: 1px solid white;">80.794</td></tr></table>
+<table style="border-collapse: collapse; border: 2px solid white"><tr ><td style="font-size:1.02em;background-color:#263133;color:white"><b></b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>count</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>percent</b></td></tr><tr ><td style="font-size:1.02em;background-color:#263133;color:white"><b>"age"</b></td><td style="border: 1px solid white;">997.0</td><td style="border: 1px solid white;">80.794</td></tr></table>
 </div>
 
 </div>
@@ -122,7 +122,7 @@
 
 
 <div class="output_html rendered_html output_subarea ">
-<table style="border-collapse: collapse; border: 2px solid white"><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#214579;color:white"><b></b></td><td style="font-size:1.02em;background-color:#214579;color:white"><b>count</b></td><td style="font-size:1.02em;background-color:#214579;color:white"><b>percent</b></td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#214579;color:white"><b>"age"</b></td><td style="border: 1px solid white;">997.0</td><td style="border: 1px solid white;">100.0</td></tr></table>
+<table style="border-collapse: collapse; border: 2px solid white"><tr ><td style="font-size:1.02em;background-color:#263133;color:white"><b></b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>count</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>percent</b></td></tr><tr ><td style="font-size:1.02em;background-color:#263133;color:white"><b>"age"</b></td><td style="border: 1px solid white;">997.0</td><td style="border: 1px solid white;">100.0</td></tr></table>
 </div>
 
 </div>
