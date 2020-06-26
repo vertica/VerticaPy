@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="VerticaPy simplifies Data Exploration, Data Cleaning and Machine Learning in Vertica. Bring now the Logic to the Data !">
+    <title>VerticaPy</title>
+    <link rel="icon" href="img/logo_small.png" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/jupyter.css" />
+    <script src="js/jquery.js"></script>
+</head>
+    <body>
+      <div><div id="header">
+  <a href="javascript:void(0);" onclick="toggleMenu()" id="main_menu" class="icon"><img id="GithubLogo" src="img/menu.png"></a>
+  <a href="index.html"><img id="VerticaLogo" src="img/VerticaLogo.png"></a>
+  <a href="https://github.com/vertica/VerticaPy"><img id="GithubLogo" src="img/github.png"></a>
+  <div id="all_options">
+    <a href="installation.html"><div><div class="menu_title"><br><b class="icon">x</b>Installation</div></div></a>
+    <a href="quick-start.html"><div><div class="menu_title"><br><b class="icon">Q</b>Quick Start</div></div></a>
+    <a href="documentation_last/index.html"><div><div class="menu_title"><br><b class="icon">l</b>Documentation</div></div></a>
+    <a href="examples/index.html"><div><div class="menu_title"><br><b class="icon">M</b>Examples</div></div></a>
+    <a href="workshop/index.html"><div><div class="menu_title"><br><b class="icon">B</b>Learn Fast</div></div></a>
+    <a href="about.html"><div><div class="menu_title"><br><b class="icon">a</b>About</div></div></a>
+  <script type="text/javascript">
+    function toggleMenu() {
+      var menuBox = document.getElementById('all_options');    
+      if (menuBox.style.display == "block") { 
+        menuBox.style.display = "none";
+      }
+      else { 
+        menuBox.style.display = "block";
+      }
+    }
+  </script>
+</div></div>
+      <div id="content">
+        <div><center>
+  <br>
+  <img src='http://localhost:666/verticapy.com/img/logo_small.png' width="120px">
+  <div><h3 class="vml_title">VerticaPy</h3></div>
+  <div class="vml_subtitle"><i>Python API for Vertica Data Science at Scale</i></div>
+</center></div>
+        <h1>Why VerticaPy ?</h1>
+        <p>
+          Nowadays, the 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. 
+        </p><br>
+        <p>
+          Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data.
+        </p><br>
+        <p>
+          Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. The idea behind VerticaPy is simple: Combining the Scalability of Vertica with the Flexibility of Python to give to the community what they need: <b>Bringing the logic to the data and not the opposite</b>.
+        </p><br>
+        <center>
+          <img src="img/VerticaPy.png" width="80%">
+        </center>
+        <h1>History</h1>
+        <p>
+          With the arrival of new technologies which made Data Science Possible, optimization was not the first need. Most of the companies didn't thought about the evolution of Data Storage and Ingestion. This fast growth didn't let place for chance, all the companies needed to change their ways to manage data. DataBases were still considered as Data Warehouse. Many in-memory technologies tried to follow the trend but they never succeeded for high data volumes. Indeed, these technologies need powerful Hardwares and time to move the data which is sometimes impossible due to security.
+        </p><br>
+        <p>
+          By seeing all these facts, Vertica decided to help their customers by bringing the logic to the data. Vertica implemented the first in-DB Machine Learning algorithms built to scale. This was in 2015 and since now, all the DataBases are trying to follow the vision.
+        </p><br>
+        <p>
+          SQL is easy to learn but it has a lack of flexibility due to the absence of loops and variables creation. Python is flexible but is not scalable. By creating the combination of both of the technologies, VerticaPy is bringing what Data Scientists need. This idea emerged in 2017 when Badr Ouali was still data scientist intern at Vertica. 
+        </p><br>
+        <p>
+          A first release was made in 2018 in Github. The version was incomplete. VerticaPy needed 2 years of development and technologies expertise to become what it is today. 
+        </p>
+        <h1>First Official Logo</h1>
+        <p>You can see following the first draft of the VerticaPy Logo.</p><br>
+        <center>
+          <img src="img/first-logo.png" width="30%" style="min-width: 300px;">
+        </center>
+        <h1>A Few Words from the Creator</h1>
+        <p>"This Python Module is the result of my passion for Data Science. I love discovering everything possible in the data. I always kept a passion for mathematics and specially for statistics. When I saw the lack of libraries using as back-end the power of columnar MPP Database, I decided to help the Data Science Community by bringing the logic to the data."</p><br>
+        <center>
+          <img src="img/Badr.jpg" width="30%" style="min-width: 300px;">
+        </center>
+        <div><div id="footer">
+  <div id="copyright">(c) Copyright [2020] Vertica - Author: <a href="https://www.linkedin.com/in/badr-ouali/">Badr Ouali</a></div>
+</div></div>
+      </div>
+    </body>
+</html>

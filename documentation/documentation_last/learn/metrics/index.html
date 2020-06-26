@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="VerticaPy simplifies Data Exploration, Data Cleaning and Machine Learning in Vertica. Bring now the Logic to the Data !">
+    <title>VerticaPy</title>
+    <link rel="icon" href="../../../img/logo_small.png" />
+    <link rel="stylesheet" href="../../../css/style.css" />
+    <link rel="stylesheet" href="../../../css/jupyter.css" />
+    <script src="../../../js/jquery.js"></script>
+</head>
+    <body>
+      <div><div id="header">
+  <a href="javascript:void(0);" onclick="toggleMenu()" id="main_menu" class="icon"><img id="GithubLogo" src="../../../img/menu.png"></a>
+  <a href="../../../index.html"><img id="VerticaLogo" src="../../../img/VerticaLogo.png"></a>
+  <a href="https://github.com/vertica/VerticaPy"><img id="GithubLogo" src="../../../img/github.png"></a>
+  <div id="all_options">
+    <a href="../../../installation.html"><div><div class="menu_title"><br><b class="icon">x</b>Installation</div></div></a>
+    <a href="../../../quick-start.html"><div><div class="menu_title"><br><b class="icon">Q</b>Quick Start</div></div></a>
+    <a href="../../../documentation_last/index.html"><div><div class="menu_title"><br><b class="icon">l</b>Documentation</div></div></a>
+    <a href="../../../examples/index.html"><div><div class="menu_title"><br><b class="icon">M</b>Examples</div></div></a>
+    <a href="../../../workshop/index.html"><div><div class="menu_title"><br><b class="icon">B</b>Learn Fast</div></div></a>
+    <a href="../../../about.html"><div><div class="menu_title"><br><b class="icon">a</b>About</div></div></a>
+  <script type="text/javascript">
+    function toggleMenu() {
+      var menuBox = document.getElementById('all_options');    
+      if (menuBox.style.display == "block") { 
+        menuBox.style.display = "none";
+      }
+      else { 
+        menuBox.style.display = "block";
+      }
+    }
+  </script>
+</div></div>
+      <div id="content">
+        <h2>Metrics for Regression</h2>
+        <table class="functions_description">
+          <tr> <th>Function</th> <th>Definition</th> </tr>
+          <tr> <td><a href="explained_variance/index.html">explained_variance</td> <td>Computes the Explained Variance.</td> </tr>
+          <tr> <td><a href="max_error/index.html">max_error</td> <td>Computes the Max Error.</td> </tr>
+          <tr> <td><a href="mean_absolute_error/index.html">mean_absolute_error</td> <td>Computes the Mean Absolute Error.</td> </tr>
+          <tr> <td><a href="mean_squared_error/index.html">mean_squared_error</td> <td>Computes the Mean Squared Error.</td> </tr>
+          <tr> <td><a href="mean_squared_log_error/index.html">mean_squared_log_error</td> <td>Computes the Mean Squared Log Error.</td> </tr>
+          <tr> <td><a href="median_absolute_error/index.html">median_absolute_error</td> <td>Computes the Median Absolute Error.</td> </tr>
+          <tr> <td><a href="r2_score/index.html">r2_score</td> <td>Computes the R2 Score.</td> </tr>
+          <tr> <td><a href="regression_report/index.html">regression_report</td> <td>Computes a regression report using multiple metrics (r2, mse, max error...).</td> </tr>
+        </table>
+        <h2>Metrics for Classification</h2>
+        <table class="functions_description">
+          <tr> <th>Function</th> <th>Definition</th> </tr>
+          <tr> <td><a href="accuracy_score/index.html">accuracy_score</td> <td>Computes the Accuracy Score.</td> </tr>
+          <tr> <td><a href="auc">auc</td> <td>Computes the ROC AUC (Area Under Curve).</td> </tr>
+          <tr> <td><a href="classification_report/index.html">classification_report</td> <td>Computes a classification report using multiple metrics (AUC, accuracy, PRC AUC, F1...).</td> </tr>
+          <tr> <td><a href="confusion_matrix/index.html">confusion_matrix</td> <td>Computes the Confusion Matrix.</td> </tr>
+          <tr> <td><a href="critical_success_index/index.html">critical_success_index</td> <td>Computes the Critical Success Index.</td> </tr>
+          <tr> <td><a href="f1_score/index.html">f1_score</td> <td>Computes the F1 Score.</td> </tr>
+          <tr> <td><a href="informedness/index.html">informedness</td> <td>Computes the Informedness.</td> </tr>
+          <tr> <td><a href="log_loss/index.html">log_loss</td> <td>Computes the Log Loss.</td> </tr>
+          <tr> <td><a href="markedness/index.html">markedness</td> <td>Computes the Markedness.</td> </tr>
+          <tr> <td><a href="matthews_corrcoef/index.html">matthews_corrcoef</td> <td>Computes the Matthews Correlation Coefficient.</td> </tr>
+          <tr> <td><a href="multilabel_confusion_matrix/index.html">multilabel_confusion_matrix</td> <td>Computes the Multi Label Confusion Matrix.</td> </tr>
+          <tr> <td><a href="negative_predictive_score/index.html">negative_predictive_score</td> <td>Computes the Negative Predictive Score.</td> </tr>
+          <tr> <td><a href="prc_auc/index.html">prc_auc</td> <td>Computes the PRC AUC (Area Under Curve).</td> </tr>
+          <tr> <td><a href="precision_score/index.html">precision_score</td> <td>Computes the Precision Score.</td> </tr>
+          <tr> <td><a href="recall_score/index.html">recall_score</td> <td>Computes the Recall Score.</td> </tr>
+          <tr> <td><a href="specificity_score/index.html">specificity_score</td> <td>Computes the Specificity Score.</td> </tr>
+        </table>
+      <div><div id="footer">
+  <div id="copyright">(c) Copyright [2020] Vertica - Author: <a href="https://www.linkedin.com/in/badr-ouali/">Badr Ouali</a></div>
+</div></div>
+      </div>
+    </body>
+</html>

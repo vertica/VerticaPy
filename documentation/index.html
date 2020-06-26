@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="VerticaPy simplifies Data Exploration, Data Cleaning and Machine Learning in Vertica. Bring now the Logic to the Data !">
+    <title>VerticaPy</title>
+    <link rel="icon" href="img/logo_small.png" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/jupyter.css" />
+    <script src="js/jquery.js"></script>
+</head>
+    <body>
+      <div><div id="header">
+  <a href="javascript:void(0);" onclick="toggleMenu()" id="main_menu" class="icon"><img id="GithubLogo" src="img/menu.png"></a>
+  <a href="index.html"><img id="VerticaLogo" src="img/VerticaLogo.png"></a>
+  <a href="https://github.com/vertica/VerticaPy"><img id="GithubLogo" src="img/github.png"></a>
+  <div id="all_options">
+    <a href="installation.html"><div><div class="menu_title"><br><b class="icon">x</b>Installation</div></div></a>
+    <a href="quick-start.html"><div><div class="menu_title"><br><b class="icon">Q</b>Quick Start</div></div></a>
+    <a href="documentation_last/index.html"><div><div class="menu_title"><br><b class="icon">l</b>Documentation</div></div></a>
+    <a href="examples/index.html"><div><div class="menu_title"><br><b class="icon">M</b>Examples</div></div></a>
+    <a href="workshop/index.html"><div><div class="menu_title"><br><b class="icon">B</b>Learn Fast</div></div></a>
+    <a href="about.html"><div><div class="menu_title"><br><b class="icon">a</b>About</div></div></a>
+  <script type="text/javascript">
+    function toggleMenu() {
+      var menuBox = document.getElementById('all_options');    
+      if (menuBox.style.display == "block") { 
+        menuBox.style.display = "none";
+      }
+      else { 
+        menuBox.style.display = "block";
+      }
+    }
+  </script>
+</div></div>
+      <div id="content">
+        <div><center>
+  <br>
+  <img src='http://localhost:666/verticapy.com/img/logo_small.png' width="120px">
+  <div><h3 class="vml_title">VerticaPy</h3></div>
+  <div class="vml_subtitle"><i>Python API for Vertica Data Science at Scale</i></div>
+</center></div>
+        <h1>VerticaPy</h1>
+        <p>
+          VerticaPy is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
+        </p>
+      <h1>Advantages</h1>
+        <center><ul id="advantages_main">
+          <li>
+            <img src="img/VerticaLogo2.png">
+            <h3>Vertica Scalability</h3>
+            <div class="description">All the heavy computations are pushed to Vertica. Get advantages of the columnar MPP infrastructure built for analytics.</div>
+            <center><a href="https://www.vertica.com/"><div class="button">Learn More</div></a></center>
+          </li>
+          <li>
+            <img src="img/pythonLogo.png">
+            <h3>Python Flexibility</h3>
+            <div class="description">The API is entirely coded using Python. It generates SQL code needed to fulfill the process. Implementing new customized functionnalities become easy.</div>
+            <center><a href="about.html"><div class="button">Learn More</div></a></center>
+          </li><br>
+          <li>
+            <img src="img/pandasLogo.png">
+            <h3>Pandas like Functionalities</h3>
+            <div class="description">Uses the advantage of a new object: the vDataFrame which is very similar to pandas DF in the use but push back all the heavy computations to Vertica. vDataFrame is the natural transition from Small to Big Data.</div>
+            <center><a href="documentation_last/vdataframe/index.html"><div class="button">Learn More</div></a></center>
+          </li>
+          <li>
+            <img src="img/inDB.png">
+            <h3>In-Database Data Science</h3>
+            <div class="description">VerticaPy is using Vertica in-DB ML and advanced SQL built-in functionnalities to propose plenty of abstractions to simplify the entire Data Science Process. Bring the Logic to the data and not the opposite.</div>
+            <center><a href="documentation_last/index.html"><div class="button">Learn More</div></a></center>
+          </li>
+        </ul></center>
+      <h1>Features</h1>
+      <p>
+        VerticaPy is the perfect combination between Vertica and Python. It uses Vertica Scalability and Python Flexibility to help any Data Scientist achieving his goals by bringing the logic to the data and not the opposite. With VERTICAPY, start your journey with easy Data Exploration. 
+      </p>
+        <br><center><ul id="advantages">
+          <a href="documentation_last/vdataframe/statistics.html"><li>
+            <img src="img/icons/Budget.png">
+            <h3>Descriptive Statistics</h3>
+            <div>Explore all Statistics</div>
+          </li></a>
+          <a href="documentation_last/vdataframe/plot.html"><li>
+            <img src="img/icons/Pie Chart.png">
+            <h3>Charts</h3>
+            <div>Vizualize your Data</div>
+          </li></a>
+          <a href="documentation_last/vdataframe/corr.html"><li>
+            <img src="img/icons/Co-Working.png">
+            <h3>Correlation & Dependancy</h3>
+            <div>Find Variables Links</div>
+          </li></a>
+        </ul></center><br>
+      <p>
+        Prepare your Data and do advanced Features Engineering using Advanced Analytical Functions and Moving Windows.
+      </p>
+        <br><center><ul id="advantages">
+          <a href="documentation_last/vdataframe/features.html"><li>
+            <img src="img/icons/Fresh Idea.png">
+            <h3>Features Engineering</h3>
+            <div>Advanced Analytical Functions</div>
+          </li></a>
+          <a href="documentation_last/vdataframe/preprocessing.html"><li>
+            <img src="img/icons/SEO Content Management.png">
+            <h3>Data Cleaning</h3>
+            <div>Smart Preprocessing</div>
+          </li></a>
+        </ul></center><br>
+      <p>
+        Create a model with Highly Scalable Vertica ML. Evaluate your model and try to create the most efficient and performant one. Many in-DataBase Machine Learning Algorithms are available built to scale.
+      </p>
+      <br><center><ul id="advantages">
+          <a href="documentation_last/learn/examples/regression/index.html"><li>
+            <img src="img/icons/Analysis.png">
+            <h3>Regression</h3>
+            <div>Forecast sales revenues.</div>
+          </li></a>
+          <a href="documentation_last/learn/examples/binary-classification/index.html"><li>
+            <img src="img/icons/Teamwork Problem Fix.png">
+            <h3>Binary Classification</h3>
+            <div>Predict sensor failure.</div>
+          </li></a>
+          <a href="documentation_last/learn/examples/unsupervised/index.html"><li>
+            <img src="img/icons/Conference.png">
+            <h3>Clustering</h3>
+            <div>Customer segmentation.</div>
+          </li></a>
+          <a href="documentation_last/learn/examples/multiclass-classification/index.html"><li>
+            <img src="img/icons/Business Hierarcy.png">
+            <h3>Multiclass Classification</h3>
+            <div>Classify gene expression data.</div>
+          </li></a>
+          <a href="documentation_last/learn/examples/decomposition/index.html"><li>
+            <img src="img/icons/Management.png">
+            <h3>Decomposition</h3>
+            <div>Keep only Important Information.</div>
+          </li></a>
+        </ul></center><br>
+      <p>
+        Everything will happen in one place and where it should be: <b>your Database</b>.
+      </p>
+      <div><div id="footer">
+  <div id="copyright">(c) Copyright [2020] Vertica - Author: <a href="https://www.linkedin.com/in/badr-ouali/">Badr Ouali</a></div>
+</div></div>
+      </div>
+    </body>
+</html>

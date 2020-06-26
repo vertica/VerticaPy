@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="VerticaPy simplifies Data Exploration, Data Cleaning and Machine Learning in Vertica. Bring now the Logic to the Data !">
+    <title>VerticaPy</title>
+    <link rel="icon" href="../../../../img/logo_small.png" />
+    <link rel="stylesheet" href="../../../../css/style.css" />
+    <link rel="stylesheet" href="../../../../css/jupyter.css" />
+    <script src="../../../../js/jquery.js"></script>
+</head>
+    <body>
+      <div><div id="header">
+  <a href="javascript:void(0);" onclick="toggleMenu()" id="main_menu" class="icon"><img id="GithubLogo" src="../../../../img/menu.png"></a>
+  <a href="../../../../index.html"><img id="VerticaLogo" src="../../../../img/VerticaLogo.png"></a>
+  <a href="https://github.com/vertica/VerticaPy"><img id="GithubLogo" src="../../../../img/github.png"></a>
+  <div id="all_options">
+    <a href="../../../../installation.html"><div><div class="menu_title"><br><b class="icon">x</b>Installation</div></div></a>
+    <a href="../../../../quick-start.html"><div><div class="menu_title"><br><b class="icon">Q</b>Quick Start</div></div></a>
+    <a href="../../../../documentation_last/index.html"><div><div class="menu_title"><br><b class="icon">l</b>Documentation</div></div></a>
+    <a href="../../../../examples/index.html"><div><div class="menu_title"><br><b class="icon">M</b>Examples</div></div></a>
+    <a href="../../../../workshop/index.html"><div><div class="menu_title"><br><b class="icon">B</b>Learn Fast</div></div></a>
+    <a href="../../../../about.html"><div><div class="menu_title"><br><b class="icon">a</b>About</div></div></a>
+  <script type="text/javascript">
+    function toggleMenu() {
+      var menuBox = document.getElementById('all_options');    
+      if (menuBox.style.display == "block") { 
+        menuBox.style.display = "none";
+      }
+      else { 
+        menuBox.style.display = "block";
+      }
+    }
+  </script>
+</div></div>
+      <div id="content">
+      <div><div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="vDataFrame.boxplot">vDataFrame.boxplot<a class="anchor-link" href="#vDataFrame.boxplot">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">vDataFrame</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">columns</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Draws the Box Plot of the input vcolumns.</p>
+<h3 id="Parameters">Parameters<a class="anchor-link" href="#Parameters">&#182;</a></h3><table id="parameters">
+    <tr> <th>Name</th> <th>Type</th> <th>Optional</th> <th>Description</th> </tr>
+    <tr> <td><div class="param_name">columns</div></td> <td><div class="type">list</div></td> <td><div class = "yes">&#10003;</div></td> <td>List of the vcolumns names. If empty, all the numerical vcolumns will be used.</td> </tr>
+</table>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Returns">Returns<a class="anchor-link" href="#Returns">&#182;</a></h3><p><b>vDataFrame</b> : self</p>
+<h3 id="Example">Example<a class="anchor-link" href="#Example">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">verticapy.learn.datasets</span> <span class="k">import</span> <span class="n">load_titanic</span>
+<span class="n">titanic</span> <span class="o">=</span> <span class="n">load_titanic</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">titanic</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<table style="border-collapse: collapse; border: 2px solid white"><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b></b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>survived</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>boat</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>ticket</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>embarked</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>home.dest</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>sibsp</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>fare</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>sex</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>body</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>pclass</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>age</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>name</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>cabin</b></td><td style="font-size:1.02em;background-color:#263133;color:white"><b>parch</b></td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b>0</b></td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">113781</td><td style="border: 1px solid white;">S</td><td style="border: 1px solid white;">Montreal, PQ / Chesterville, ON</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">151.55</td><td style="border: 1px solid white;">female</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">2.0</td><td style="border: 1px solid white;">Allison, Miss. Helen Loraine</td><td style="border: 1px solid white;">C22 C26</td><td style="border: 1px solid white;">2</td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b>1</b></td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">113781</td><td style="border: 1px solid white;">S</td><td style="border: 1px solid white;">Montreal, PQ / Chesterville, ON</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">151.55</td><td style="border: 1px solid white;">male</td><td style="border: 1px solid white;">135</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">30.0</td><td style="border: 1px solid white;">Allison, Mr. Hudson Joshua Creighton</td><td style="border: 1px solid white;">C22 C26</td><td style="border: 1px solid white;">2</td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b>2</b></td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">113781</td><td style="border: 1px solid white;">S</td><td style="border: 1px solid white;">Montreal, PQ / Chesterville, ON</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">151.55</td><td style="border: 1px solid white;">female</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">25.0</td><td style="border: 1px solid white;">Allison, Mrs. Hudson J C (Bessie Waldo Daniels)</td><td style="border: 1px solid white;">C22 C26</td><td style="border: 1px solid white;">2</td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b>3</b></td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">112050</td><td style="border: 1px solid white;">S</td><td style="border: 1px solid white;">Belfast, NI</td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">0.0</td><td style="border: 1px solid white;">male</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">39.0</td><td style="border: 1px solid white;">Andrews, Mr. Thomas Jr</td><td style="border: 1px solid white;">A36</td><td style="border: 1px solid white;">0</td></tr><tr style="{border: 1px solid white;}"><td style="border-bottom: 1px solid #DDD;font-size:1.02em;background-color:#263133;color:white"><b>4</b></td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">PC 17609</td><td style="border: 1px solid white;">C</td><td style="border: 1px solid white;">Montevideo, Uruguay</td><td style="border: 1px solid white;">0</td><td style="border: 1px solid white;">49.5042</td><td style="border: 1px solid white;">male</td><td style="border: 1px solid white;">22</td><td style="border: 1px solid white;">1</td><td style="border: 1px solid white;">71.0</td><td style="border: 1px solid white;">Artagaveytia, Mr. Ramon</td><td style="border: 1px solid white;">None</td><td style="border: 1px solid white;">0</td></tr><tr><td style="border-top: 1px solid white;background-color:#263133;color:white"></td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td><td style="border: 1px solid white;">...</td></tr></table>
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;object&gt;  Name: titanic, Number of rows: 1234, Number of columns: 14
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">titanic</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+<span class="n">titanic</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;fare&quot;</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="See-Also">See Also<a class="anchor-link" href="#See-Also">&#182;</a></h3><table id="seealso">
+    <tr><td><a href="../bar/index.html">vDataFrame.bar</a></td> <td>Draws the Bar Chart of the input vcolumns based on an aggregation.</td></tr>
+    <tr><td><a href="../../vcolumn-methods/boxplot/index.html">vDataFrame[].boxplot</a></td> <td>Draws the vcolumn Box Plot.</td></tr>
+    <tr><td><a href="../hist/index.html">vDataFrame.hist</a></td> <td>Draws the Histogram of the input vcolumns based on an aggregation.</td></tr>
+    <tr><td><a href="../pivot_table/index.html">vDataFrame.pivot_table</a></td> <td>Draws the Pivot Table of vcolumns based on an aggregation.</td></tr>
+</table>
+</div>
+</div>
+</div></div>
+      <div><div id="footer">
+  <div id="copyright">(c) Copyright [2020] Vertica - Author: <a href="https://www.linkedin.com/in/badr-ouali/">Badr Ouali</a></div>
+</div></div>
+      </div>
+    </body>
+</html>
