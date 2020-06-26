@@ -32,12 +32,10 @@
 #                   \    /
 #                    \  /
 #                     \/
-#
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     / 
-# 
+#                     /  
 # VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
 # vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
 # in VERTICA. It is an object which keeps in it all the actions that the user 
@@ -45,36 +43,22 @@
 #																					
 # The purpose is to bring the logic to the data and not the opposite !
 #
-#
-import setuptools
+#               
+__version__ = "1.0"
+__author__ = "Badr Ouali"
+__author_email__ = "badr.ouali@microfocus.com"
+__description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
+__url__ = "https://github.com/vertica/verticapy/"
+__license__ = "Apache License, Version 2.0"
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+# vDataFrame
+from verticapy.vdataframe import *
 
-setuptools.setup(
-	name = 'verticapy',  
-    version = '0.0.1',
-    author = "Badr Ouali",
-	author_email = "badr.ouali@microfocus.com",
-	url = "https://github.com/vertica/VerticaPy",
-	keywords = "vertica python ml data science machine learning statistics database",
-	description = "VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
-	long_description = long_description,
-	long_description_content_type = "text/markdown",
-	packages = setuptools.find_packages(),
-	python_requires = ">=3.6",
-	install_requires = [
-        'matplotlib>=2.0'
-    ],
-	package_data = {'': ['*.csv']},
-	classifiers = [
-		"Intended Audience :: Science/Research",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-		"Programming Language :: Python :: 3.6", 
-		"Programming Language :: Python :: 3.7", 
-		"Programming Language :: Python :: 3.8", 
-		"Topic :: Database",
-		"License :: OSI Approved :: Apache Software License", 
-		"Operating System :: OS Independent",],
-	)
+# Utilities
+from verticapy.utilities import *
+
+# Connect
+from verticapy.connections.connect import *
+
+# Learn
+import verticapy.learn

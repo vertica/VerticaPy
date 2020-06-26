@@ -32,49 +32,13 @@
 #                   \    /
 #                    \  /
 #                     \/
-#
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     / 
-# 
+#                     /  
 # VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
 # vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
 # in VERTICA. It is an object which keeps in it all the actions that the user 
 # wants to achieve and execute them when they are needed.    										
 #																					
 # The purpose is to bring the logic to the data and not the opposite !
-#
-#
-import setuptools
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-setuptools.setup(
-	name = 'verticapy',  
-    version = '0.0.1',
-    author = "Badr Ouali",
-	author_email = "badr.ouali@microfocus.com",
-	url = "https://github.com/vertica/VerticaPy",
-	keywords = "vertica python ml data science machine learning statistics database",
-	description = "VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
-	long_description = long_description,
-	long_description_content_type = "text/markdown",
-	packages = setuptools.find_packages(),
-	python_requires = ">=3.6",
-	install_requires = [
-        'matplotlib>=2.0'
-    ],
-	package_data = {'': ['*.csv']},
-	classifiers = [
-		"Intended Audience :: Science/Research",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-		"Programming Language :: Python :: 3.6", 
-		"Programming Language :: Python :: 3.7", 
-		"Programming Language :: Python :: 3.8", 
-		"Topic :: Database",
-		"License :: OSI Approved :: Apache Software License", 
-		"Operating System :: OS Independent",],
-	)

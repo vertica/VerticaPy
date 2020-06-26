@@ -32,12 +32,10 @@
 #                   \    /
 #                    \  /
 #                     \/
-#
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     / 
-# 
+#                     /  
 # VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
 # vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
 # in VERTICA. It is an object which keeps in it all the actions that the user 
@@ -45,36 +43,59 @@
 #																					
 # The purpose is to bring the logic to the data and not the opposite !
 #
+##
+#  _____  _____ _      ___  ___  ___  _____ _____ _____ 
+# /  ___||  _  | |     |  \/  | / _ \|  __ \_   _/  __ \
+# \ `--. | | | | |     | .  . |/ /_\ \ |  \/ | | | /  \/
+#  `--. \| | | | |     | |\/| ||  _  | | __  | | | |    
+# /\__/ /\ \/' / |____ | |  | || | | | |_\ \_| |_| \__/\
+# \____/  \_/\_\_____/ \_|  |_/\_| |_/\____/\___/ \____/
 #
-import setuptools
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-setuptools.setup(
-	name = 'verticapy',  
-    version = '0.0.1',
-    author = "Badr Ouali",
-	author_email = "badr.ouali@microfocus.com",
-	url = "https://github.com/vertica/VerticaPy",
-	keywords = "vertica python ml data science machine learning statistics database",
-	description = "VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
-	long_description = long_description,
-	long_description_content_type = "text/markdown",
-	packages = setuptools.find_packages(),
-	python_requires = ">=3.6",
-	install_requires = [
-        'matplotlib>=2.0'
-    ],
-	package_data = {'': ['*.csv']},
-	classifiers = [
-		"Intended Audience :: Science/Research",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-		"Programming Language :: Python :: 3.6", 
-		"Programming Language :: Python :: 3.7", 
-		"Programming Language :: Python :: 3.8", 
-		"Topic :: Database",
-		"License :: OSI Approved :: Apache Software License", 
-		"Operating System :: OS Independent",],
-	)
+##
+#
+#---#
+def sql(line, cell = ""):
+	from verticapy.connections.connect import read_auto_connect
+	from verticapy.utilities import vdf_from_relation
+	from verticapy.hchart import hchartSQL
+	conn = read_auto_connect()
+	cursor = conn.cursor()
+	if (not(cell) and (line)):
+		line = line.replace(";", "")
+		try:
+			return vdf_from_relation("({}) x".format(line), cursor = cursor)
+		except:
+			cursor.execute(line)
+			conn.close()
+			return "SUCCESS"
+	elif (not(line) and (cell)):
+		queries = cell.split(";")
+		try:
+			queries.remove("")
+		except:
+			pass
+		n = len(queries)
+		for i in range(n):
+			if i == (n - 1):
+				try:
+					return vdf_from_relation("({}) x".format(queries[i]), cursor = cursor)
+				except:
+					cursor.execute(queries[i])
+					conn.close()
+					return "SUCCESS"
+			else:
+				cursor.execute(queries[i])
+	else:
+		queries = cell.split(";")
+		try:
+			queries.remove("")
+		except:
+			pass
+		queries = queries[-1]
+		chart = hchartSQL(queries, cursor, line)
+		conn.close()
+		return chart
+#---#
+def load_ipython_extension(ipython):
+    ipython.register_magic_function(sql, 'cell')
+    ipython.register_magic_function(sql, 'line')

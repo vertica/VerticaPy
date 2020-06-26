@@ -1,120 +1,162 @@
-[![Pypi Package](https://img.shields.io/badge/Pypi%20Package-1.0-yellow)](https://pypi.org/project/vertica-ml-python/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Version](https://img.shields.io/badge/Python-%3D%3E%203.6-blue)](https://www.python.org/downloads/)
-
-
 <p align="center">
-<img src='./img/logo.png' width="180px">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
-<p align="center">
-<i>Scalable as Vertica, Flexible as Python</i>
-</p>
-The documentation is available at: 
-https://github.com/vertica/Vertica-ML-Python/blob/master/documentation.pdf <br>
-Or directly in the Wiki at:
-https://github.com/vertica/Vertica-ML-Python/wiki
+
+# VerticaPy
+
+The documentation is available at:<br>
+https://github.com/vertica/VerticaPy/blob/master/documentation.pdf <br><br>
+Or directly in the Wiki at:<br>
+https://github.com/vertica/VerticaPy/wiki
 <br><br>
 (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
 Licensed under the Apache License, Version 2.0 (the "License");
 You may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
+<br>
 http://www.apache.org/licenses/LICENSE-2.0
-
+<br>
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-&#9888; If you want to contribute, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a> <br>
-&#9888; Please look at the example (https://github.com/vertica/Vertica-ML-Python/blob/master/EXAMPLE.md) to get in touch with the API.
-
-# Vertica-ML-Python
-
-:loudspeaker: Vertica-ML-Python is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
-
-<p align="center">
-<img src='./img/vertica-ml-python.png' width="500px">
-</p>
-
-## Features
-
-Vertica ML Python is the perfect combination between Vertica and Python. It uses Vertica Scalability and Python Flexibility to help any Data Scientist achieving his goals by bringing the logic to the data and not the opposite. With VERTICA ML PYTHON, start your journey with easy Data Exploration.
-<br>
-<p align="center">
-<img src='./img/Slide2.png' width="800px">
-</p>
-<br>
-Find patterns that you don't know and Detect Anomalies.
 <br><br>
-<p align="center">
-<img src='./img/Slide3.png' width="800px">
-</p>
-<br>
-Prepare your data easily and build a model with Highly Scalable Vertica ML. Evaluate your model and try to create the most efficient and performant one.
+&#9888; If you want to contribute, send a mail to <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
 <br><br>
-<p align="center">
-<img src='./img/Slide1.png' width="800px">
-</p>
-<br>
-Everything will happen in one place and where it should be: your Database. Without modifying anything but using the speed of Vertica to aggregate the data.
-
-## Why using this Library?
-
-Nowadays, The 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
-
-The idea behind VERTICA ML PYTHON is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
-
+VerticaPy is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
+<br><br>
+The 'Big Data' (Tb of data) is now one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
+<br><br>
+The idea behind VERTICAPY is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
+<br><br>
 Main Advantages:
- - easy Data Exploration.
- - easy Data Preparation.
- - easy Data Modeling.
- - easy Model Evaluation.
- - easy Model Deployment.
- - most of what pandas.Dataframe can do, vertica_ml_python.vDataframe can do (and even much more)
- - easy ML model creation and evaluation.
- - many scikit functions and algorithms are available (and scalable!).
+<ul>
+ <li> easy Data Exploration.</li>
+ <li> easy Data Preparation.</li>
+ <li> easy Data Modeling.</li>
+ <li> easy Model Evaluation.</li>
+ <li> easy Model Deployment.</li>
+ <li> most of what pandas.Dataframe can do, verticapy.vDataframe can do (and even much more)</li>
+ <li> easy ML model creation and evaluation.</li>
+ <li> many scikit functions and algorithms are available (and scalable!).</li>
+</ul>
 
-&#9888; Please read the Vertica ML Python Documentation. If you do not have time just read below.
+All information related to the API can be found at: <br>
 
-&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.
+https://github.com/vertica/VerticaPy/
 
-If you have any feedback about the library, please contact me: <a href="mailto:badr.ouali@microfocus.com">badr.ouali@microfocus.com</a>
+## Python Version
 
-## Prerequires
-
-<b>vertica-ml-python</b> works with at least:
+<b>VerticaPy</b> works with at least:
 <ul>
 	<li> <b>Vertica: </b> => 9.1 (with previous versions, some functions and algorithms may not be available)
 	<li> <b>Python Version: </b> => 3.6 - [version 3.5 may works]
-	<li> <b>Python Modules needed for Rendering Capabilities: </b> matplotlib (=> 3.0) - [other versions of matplotlib may work], numpy (=> 1.9) - [other versions of numpy may work]
-	<li> <b>Other Python Modules: </b> Except to get rendering capabilities, VERTICA ML Python uses only built-in libraries (statistics, random, math, time and os)
+	<li> <b>Python Modules needed for Rendering Capabilities: </b> matplotlib (=> 2.0) - [other versions of matplotlib may work], numpy (=> 1.9) - [other versions of numpy may work]
+	<li> <b>Other Python Modules: </b> Except to get rendering capabilities, VerticaPy uses only built-in libraries (statistics, random, math, time and os)
 </ul>
 
-## Installation:
+## Standard Libraries
 
-To install <b>vertica-ml-python</b>, you can use the pip command:
+<b>VerticaPy</b> library is only using the standard Python libraries such as <b>matplotlib</b>, <b>numpy</b>... 
+Other libraries can be used as <b>anytree</b> for tree visualization or <b>sqlparse</b> for SQL indentation but they are optional.
+
+## Installation
+To install <b>VerticaPy</b>, you can use the pip command:
 ```shell
-root@ubuntu:~$ pip3 install vertica_ml_python
+root@ubuntu:~$ pip3 install verticapy
 ```
-You can also drag and drop the <b>vertica_ml_python</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
+Or you can get a copy of the source by cloning from the VerticaPy github project and install with:
+```shell
+root@ubuntu:~$ python3 setup.py install
+```
+You can also drag and drop the <b>verticapy</b> folder in the <b>site-package</b> folder of the Python framework. In the MAC environment, you can find it in: <br> <b>/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages</b> <br>
 
 Another way is to call the library from where it is located. <br>
 
 You can then import each library element using the usual Python syntax.
 ```python
 # to import the vDataframe
-from vertica_ml_python import vDataframe
+from verticapy import vDataframe
 # to import the Logistic Regression
-from vertica_ml_python.learn.linear_model import LogisticRegression
+from verticapy.learn.linear_model import LogisticRegression
+```
+
+Everything is well detailed in the following documentation.
+
+## Connection to the Database
+
+This step is useless if <b>vertica-python</b> or <b>pyodbc</b> is already installed and you have a DSN in your machine. With this configuration, you do not need to manually create a cursor. It is possible to create a vDataframe using directly the DSN (<b>dsn</b> parameter of the vDataframe).
+
+### ODBC
+
+To connect to the database, the user can use an ODBC connection to the Vertica database. <b>vertica-python</b> and <b>pyodbc</b> provide a cursor that will point to the database. It will be used by the <b>VerticaPy</b> to create all the different objects.
+```python
+#
+# vertica_python
+#
+import vertica_python
+
+# Connection using all the DSN information
+conn_info = {'host': "10.211.55.14", 'port': 5433, 'user': "dbadmin", 'password': "XxX", 'database': "testdb"}
+cur = vertica_python.connect(** conn_info).cursor()
+
+# Connection using directly the DSN
+from verticapy.utilities import to_vertica_python_format # This function will parse the odbc.ini file
+dsn = "VerticaDSN"
+cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
+
+#
+# pyodbc
+#
+import pyodbc
+
+# Connection using all the DSN information
+driver = "/Library/Vertica/ODBC/lib/libverticaodbc.dylib"
+server = "10.211.55.14"
+database = "testdb"
+port = "5433"
+uid = "dbadmin"
+pwd = "XxX"
+dsn = ("DRIVER={}; SERVER={}; DATABASE={}; PORT={}; UID={}; PWD={};").format(driver, server, database, port, uid, pwd)
+cur = pyodbc.connect(dsn).cursor()
+
+# Connection using directly the DSN
+dsn = ("DSN=VerticaDSN")
+cur = pyodbc.connect(dsn).cursor()
+```
+
+### JDBC
+
+The user can also use a JDBC connection to the Vertica Database. 
+```python
+import jaydebeapi
+
+# Vertica Server Details
+database = "testdb"
+hostname = "10.211.55.14"
+port = "5433"
+uid = "dbadmin"
+pwd = "XxX"
+
+# Vertica JDBC class name
+jdbc_driver_name = "com.vertica.jdbc.Driver"
+
+# Vertica JDBC driver path
+jdbc_driver_loc = "/Library/Vertica/JDBC/vertica-jdbc-9.3.1-0.jar"
+
+# JDBC connection string
+connection_string = 'jdbc:vertica://' + hostname + ':' + port + '/' + database
+url = '{}:user={};password={}'.format(connection_string, uid, pwd)
+conn = jaydebeapi.connect(jdbc_driver_name, connection_string, {'user': uid, 'password': pwd}, jars = jdbc_driver_loc)
+cur = conn.cursor()
 ```
 
 ## Quick Start
 
 Install the library using the <b>pip</b> command:
 ```shell
-root@ubuntu:~$ pip3 install vertica_ml_python
+root@ubuntu:~$ pip3 install verticapy
 ```
 Install <b>vertica_python</b> or <b>pyodbc</b> to build a DB cursor:
 ```shell
@@ -122,17 +164,17 @@ root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor
 ```python
-from vertica_ml_python import vertica_cursor
+from verticapy.utilities import vertica_cursor
 cur = vertica_cursor("VerticaDSN")
 ```
 Create the Virtual Dataframe of your relation:
 ```python
-from vertica_ml_python import vDataframe
+from verticapy import vDataframe
 vdf = vDataframe("my_relation", cursor = cur)
 ```
 If you don't have data to play, you can easily load well known datasets
 ```python
-from vertica_ml_python.learn.datasets import load_titanic
+from verticapy.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
 ```
 You can now play with the data...
@@ -168,15 +210,15 @@ vdf.describe()
 ## Compute the descriptive statistics of all the numerical columns ##
 
 SELECT 
-   SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
+  SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
 FROM public.titanic
 ```
 
-With Vertica ML Python, it is now possible to solve a ML problem with four lines of code (two if we don't consider the libraries loading).
+With VerticaPy, it is now possible to solve a ML problem with few lines of code.
 
 ```python
-from vertica_ml_python.learn.model_selection import cross_validate
-from vertica_ml_python.learn.ensemble import RandomForestClassifier
+from verticapy.learn.model_selection import cross_validate
+from verticapy.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
 vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
@@ -223,5 +265,5 @@ avg             0.928685964607
 std            0.0201579224026
 ```
 
-Happy Playing ! &#128540;
+Happy Coding !
 

@@ -32,49 +32,38 @@
 #                   \    /
 #                    \  /
 #                     \/
-#
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     / 
-# 
+#                     /  
 # VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
 # vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
 # in VERTICA. It is an object which keeps in it all the actions that the user 
 # wants to achieve and execute them when they are needed.    										
 #																					
 # The purpose is to bring the logic to the data and not the opposite !
+# 
+##
+#        _____ _                _        ___  ___            _      
+#       /  __ \ |              | |       |  \/  |           (_)     
+# __   _| /  \/ |__   __ _ _ __| |_ ___  | .  . | __ _  __ _ _  ___ 
+# \ \ / / |   | '_ \ / _` | '__| __/ __| | |\/| |/ _` |/ _` | |/ __|
+#  \ V /| \__/\ | | | (_| | |  | |_\__ \ | |  | | (_| | (_| | | (__ 
+#   \_/  \____/_| |_|\__,_|_|   \__|___/ \_|  |_/\__,_|\__, |_|\___|
+#                                                       __/ |       
+#                                                      |___/        
+##
 #
-#
-import setuptools
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
-
-setuptools.setup(
-	name = 'verticapy',  
-    version = '0.0.1',
-    author = "Badr Ouali",
-	author_email = "badr.ouali@microfocus.com",
-	url = "https://github.com/vertica/VerticaPy",
-	keywords = "vertica python ml data science machine learning statistics database",
-	description = "VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
-	long_description = long_description,
-	long_description_content_type = "text/markdown",
-	packages = setuptools.find_packages(),
-	python_requires = ">=3.6",
-	install_requires = [
-        'matplotlib>=2.0'
-    ],
-	package_data = {'': ['*.csv']},
-	classifiers = [
-		"Intended Audience :: Science/Research",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
-		"Programming Language :: Python :: 3.6", 
-		"Programming Language :: Python :: 3.7", 
-		"Programming Language :: Python :: 3.8", 
-		"Topic :: Database",
-		"License :: OSI Approved :: Apache Software License", 
-		"Operating System :: OS Independent",],
-	)
+#---#
+def vCharts(line, cell):
+	from verticapy.connections.connect import read_auto_connect
+	from verticapy.hchart import hchartSQL
+	conn = read_auto_connect()
+	cursor = conn.cursor()
+	if (line == ""): line = "auto"
+	chart = hchartSQL(cell, cursor, line)
+	conn.close()
+	return chart
+#---#
+def load_ipython_extension(ipython):
+    ipython.register_magic_function(vCharts, 'cell')
