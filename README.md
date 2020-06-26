@@ -1,4 +1,3 @@
-
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
