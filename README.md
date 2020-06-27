@@ -26,9 +26,9 @@ Main Advantages:
  <li> Easy ML Model Creation and Evaluation.</li>
 </ul>
 
-All information related to the API can be found at: <br>
-
-https://github.com/vertica/VerticaPy/
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="400px">
+</p>
 
 ## Installation
 To install <b>VerticaPy</b>, you can use the following pip command.
