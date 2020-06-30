@@ -2,7 +2,7 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
 
-:loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed VerticaPy.
+:loudspeaker: 2020-06-27: VerticaPy is the new name for Vertica-ML-Python.
 
 # VerticaPy
 
@@ -10,24 +10,23 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/pypi/pyversions/verticapy.svg)](https://www.python.org/downloads/)
 
-VerticaPy is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual Dataframe), and offers multiple graphical rendering possibilities.
+VerticaPy is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual DataFrame), and offers multiple graphical rendering possibilities.
 <br><br>
-The 'Big Data' (Tb of data) is now one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
+The 'Big Data' (+100 Tb of data) is now one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
 <br><br>
-The idea behind VERTICAPY is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
+The idea behind VerticaPy is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
 <br><br>
 Main Advantages:
 <ul>
  <li> Easy Data Exploration.</li>
- <li> Easy Data Preparation.</li>
- <li> Easy Data Modeling.</li>
+ <li> Fast Data Preparation.</li>
+ <li> In DataBase Machine Learning.</li>
  <li> Easy Model Evaluation.</li>
  <li> Easy Model Deployment.</li>
- <li> Easy ML Model Creation and Evaluation.</li>
 </ul>
 
 <p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="400px">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="80%">
 </p>
 
 ## Installation
@@ -125,10 +124,10 @@ Create a vertica cursor.
 from verticapy import vertica_cursor
 cur = vertica_cursor("VerticaDSN")
 ```
-Create the Virtual Dataframe of your relation.
+Create the Virtual DataFrame of your relation.
 ```python
-from verticapy import vDataframe
-vdf = vDataframe("my_relation", cursor = cur)
+from verticapy import vDataFrame
+vdf = vDataFrame("my_relation", cursor = cur)
 ```
 If you don't have data to play, you can easily load well known datasets.
 ```python
