@@ -28,7 +28,7 @@
         <h2>Features Transformations</h2>
         <table class="functions_description">
           <tr> <th>Method</th> <th>Definition</th> </tr>
-          <tr> <td>vDataFrame.<a href="main-methods/abs/index.php">abs</td> <td>Applies the absolute value function to all the input vcolumns.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/abs/index.php">abs</td> <td>Applies the absolute value function to the input vcolumns.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/abs/index.php">abs</td> <td>Applies the absolute value function to the input vcolumn.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/apply/index.php">apply</td> <td>Applies each function of the dictionary to the input vcolumns.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/apply/index.php">apply</td> <td>Applies a function to the vcolumn.</td> </tr>
