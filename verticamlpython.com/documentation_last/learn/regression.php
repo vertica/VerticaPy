@@ -10,7 +10,7 @@
           <tr> <td><a href="DecisionTreeRegressor/index.php">DecisionTreeRegressor</td> <td>Single Decision Tree Regressor.</td> </tr>
           <tr> <td><a href="DummyTreeRegressor/index.php">DummyTreeRegressor</td> <td>This regressor learns by heart the training data.</td> </tr>
           <tr> <td><a href="ElasticNet/index.php">ElasticNet</td> <td>Creates a ElasticNet object by using the Vertica Highly Distributed and Scalable Linear Regression on the data.</td> </tr>
-          <tr> <td><a href="KNeighborsRegressor/index.php">KNeighborsRegressor</td> <td>Creates a KNeighborsRegressor object by using the K Nearest Neighbors Algorithm.</td> </tr>
+          <tr> <td><a href="KNeighborsRegressor/index.php">KNeighborsRegressor</td> <td>Creates a KNeighborsRegressor object by using the k-nearest neighbors algorithm.</td> </tr>
           <tr> <td><a href="Lasso/index.php">Lasso</td> <td>Creates a Lasso object by using the Vertica Highly Distributed and Scalable Linear Regression on the data.</td> </tr>
           <tr> <td><a href="LinearRegression/index.php">LinearRegression</td> <td>Creates a LinearRegression object by using the Vertica Highly Distributed and Scalable Linear Regression on the data.</td> </tr>
           <tr> <td><a href="LinearSVR/index.php">LinearSVR</td> <td>Creates a LinearSVR object by using the Vertica Highly Distributed and Scalable SVM on the data.</td> </tr>
