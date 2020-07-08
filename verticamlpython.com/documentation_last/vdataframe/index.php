@@ -15,7 +15,7 @@
            <a href="statistics.php"><li>
             <img src="../../img/icons/Budget.png" height="200px">
             <h3>Descriptive Statistics</h3>
-            <div><i>Understand your data</i></div>
+            <div><i>Understand your Data</i></div>
           </li></a>
           <a href="tests.php"><li>
             <img src="../../img/icons/Market Research.png" height="200px">
@@ -25,7 +25,7 @@
           <a href="link.php"><li>
             <img src="../../img/icons/Co-Working.png" height="200px">
             <h3>Correlation & Dependancy</h3>
-            <div><i>Understand statistical relationships</i></div>
+            <div><i>Understand Statistical Relationships</i></div>
           </li></a>
           <a href="plot.php"><li>
             <img src="../../img/icons/Pie Chart.png" height="200px">
