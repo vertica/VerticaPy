@@ -30,7 +30,7 @@
           <a href="top.php"><li>
             <img src="../img/icons/Business Achievement.png" height="200px">
             <h3>Main Features</h3>
-            <div>Aggregates, Auto Correlation, and more</div>
+            <div>Aggregates, Autocorrelation, and more</div>
           </li></a>
         </ul></center>
       <div><?php include('../include/footer.php'); ?></div>
