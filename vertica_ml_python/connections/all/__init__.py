@@ -37,9 +37,8 @@
 # \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
 #  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
 #                               /            
-# Vertica-ML-Python allows user to create vDataFrames (Virtual Dataframes). 
-# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
-# in VERTICA. It is an object which keeps in it all the actions that the user 
-# wants to achieve and execute them when they are needed.    										
+# Vertica-ML-Python allows user to create vDataFrames (Virtual DataFrames). 
+# vDataFrames simplify data exploration, data cleaning and machine learning     
+# in Vertica.   										
 #																					
-# The purpose is to bring the logic to the data and not the opposite !
+# Bring the logic to the data!
