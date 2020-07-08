@@ -17,7 +17,7 @@
           <tr> <td><a href="CountVectorizer/index.php">CountVectorizer</td> <td>Creates a Text Index which will count the occurences of each word in the 
 data.</td> </tr>
           <tr> <td><a href="Normalizer/index.php">Normalizer</td> <td>Creates a Vertica Normalizer object.</td> </tr>
-          <tr> <td><a href="OneHotEncoder/index.php">OneHotEncoder</td> <td>Create a Vertica One Hot Encoder object.</td> </tr>
+          <tr> <td><a href="OneHotEncoder/index.php">OneHotEncoder</td> <td>Creates a Vertica OneHotEncoder object.</td> </tr>
         </table>
       <div><?php include('../../include/footer.php'); ?></div>
       </div>
