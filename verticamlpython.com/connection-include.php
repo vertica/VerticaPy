@@ -11,11 +11,11 @@
 <li><b>pyodbc</b> (ODBC) </li>
 <li><b>jaydebeapi</b> (JDBC)</li>
 </ul>
-<p>These modules will give you the possibility to create DataBase cursor which will be used to communicate with your Vertica DataBase.</p>
+<p>These modules allow you to communicate with your Vertica Database with a Database Cursor.</p>
 <p>For example, use the following command to install the <b>vertica_python</b> module.</p>
 <div class="highlight"><pre><span></span>root@ubuntu:~$ pip3 install vertica_python
 </pre></div>
-<p>If you have created a DSN, you can easily set-up a connection using the following command.</p>
+<p>If you have created a DSN, you can set-up a connection using the following command.</p>
 
 </div>
 </div>
@@ -42,7 +42,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The Vertica Native Python Client <b>vertica_python</b> is the easiest one to set-up.</p>
+    <p>The connect with the native Vertica-Python client <b>vertica_python</b>, you can either use DSN credentials or the DSN itself.</p>
 
 </div>
 </div>
@@ -58,7 +58,7 @@
 <span class="c1">#</span>
 <span class="kn">import</span> <span class="nn">vertica_python</span>
 
-<span class="c1"># Connection using all the DSN information</span>
+<span class="c1"># Connecting with DSN credentials</span>
 <span class="n">conn_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="s2">&quot;10.211.55.14&quot;</span><span class="p">,</span> 
              <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="mi">5433</span><span class="p">,</span> 
              <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="s2">&quot;dbadmin&quot;</span><span class="p">,</span> 
@@ -66,7 +66,7 @@
              <span class="s1">&#39;database&#39;</span><span class="p">:</span> <span class="s2">&quot;testdb&quot;</span><span class="p">}</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">vertica_python</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="o">**</span> <span class="n">conn_info</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
-<span class="c1"># Connection using directly the DSN</span>
+<span class="c1"># Connecting with the DSN</span>
 <span class="kn">from</span> <span class="nn">vertica_ml_python.utilities</span> <span class="k">import</span> <span class="n">to_vertica_python_format</span> 
 <span class="n">dsn</span> <span class="o">=</span> <span class="s2">&quot;VerticaDSN&quot;</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">vertica_python</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="o">**</span> <span class="n">to_vertica_python_format</span><span class="p">(</span><span class="n">dsn</span><span class="p">),</span> <span class="n">autocommit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
@@ -81,7 +81,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>To create an ODBC connection, <b>pyodbc</b> offers you two possibilities (one with the DSN and one with all the credentials).</p>
+<p>To create an ODBC connection with <b>pyodbc</b>, you can either provide the full set of credentials or the DSN."</p>
 
 </div>
 </div>
@@ -126,7 +126,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The <b>jaydebeapi</b> module offers you the possibility to set-up a JDBC connection.</p>
+<p>You can set up a JDBC connection with <b>jaydebeapi</b>.</p>
 
 </div>
 </div>
@@ -174,7 +174,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>You can also, save your credentials in Vertica ML Python to avoid redundant cursors creations.</p>
+<p>You can save your credentials in VerticaPy to prevent the creation of redundant cursors.</p>
 
 </div>
 </div>
@@ -193,7 +193,7 @@
                      <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;dbadmin&quot;</span><span class="p">},</span>
                     <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;vertica_python&quot;</span><span class="p">,</span> 
                     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;VerticaDSN&quot;</span><span class="p">)</span>
-<span class="c1"># Set the main auto connection</span>
+<span class="c1"># Set the primary auto-connection</span>
 <span class="n">change_auto_connection</span><span class="p">(</span><span class="s2">&quot;VerticaDSN&quot;</span><span class="p">)</span>
 </pre></div>
 
