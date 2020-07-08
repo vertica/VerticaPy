@@ -55,8 +55,8 @@
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/std/index.php">std</td> <td>Aggregates the vcolumn using 'std' (Standard Deviation).</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/sum/index.php">sum</td> <td>Aggregates the vDataFrame using 'sum'.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/sum/index.php">sum</td> <td>Aggregates the vcolumn using 'sum'.</td> </tr>
-          <tr> <td>vDataFrame[].<a href="vcolumn-methods/topk/index.php">topk</td> <td>Returns the K most occurent elements and their respective percent of the distribution.</td> </tr>
-          <tr> <td>vDataFrame[].<a href="vcolumn-methods/value_counts/index.php">value_counts</td> <td>Returns the K most occurent elements and their respective count.</td> </tr>
+          <tr> <td>vDataFrame[].<a href="vcolumn-methods/topk/index.php">topk</td> <td>Returns the top-k most occurent elements and their percentages of the distribution.</td> </tr>
+          <tr> <td>vDataFrame[].<a href="vcolumn-methods/value_counts/index.php">value_counts</td> <td>Returns the top-k most frequent elements and how often they appear.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/var/index.php">var</td> <td>Aggregates the vDataFrame using 'variance'.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/var/index.php">var</td> <td>Aggregates the vcolumn using 'variance'.</td> </tr>
         </table>
