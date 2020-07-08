@@ -14,11 +14,11 @@
 <li><b>pyodbc</b> (ODBC) </li>
 <li><b>jaydebeapi</b> (JDBC)</li>
 </ul>
-<p>These modules will give you the possibility to create DataBase cursor which will be used to communicate with your Vertica DataBase.</p>
+<p>These modules allow you to communicate with your Vertica Database with a Database Cursor.</p>
 <p>For example, use the following command to install the <b>vertica_python</b> module.</p>
 <div class="highlight"><pre><span></span>root@ubuntu:~$ pip3 install vertica_python
 </pre></div>
-<p>If you already have a DataBase DSN, you can easily create a DB cursor.</p>
+<p>If you already have a Database DSN, you can use it to create a cursor.</p>
 
 </div>
 </div>
@@ -41,7 +41,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Otherwise, you can set-up a permanent auto-connection in few seconds.</p>
+<p>Otherwise, you can set-up a permanent auto-connection.</p>
 
 </div>
 </div>
@@ -71,7 +71,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>You can start playing with the data in your Vertica DataBase.</p>
+<p>You can start experimenting with the data in your Vertica Database.</p>
 
 </div>
 </div>
@@ -125,7 +125,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>If you don't have data to start using the API, you can easily load well known datasets.</p>
+<p>If you don't have any data, you can load well-known datasets.</p>
 
 </div>
 </div>
@@ -148,7 +148,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We can start discovering the data.</p>
+<p>We can start exploring our data.</p>
 
 </div>
 </div>
@@ -202,7 +202,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>As everything is happening in the DataBase and nothing is loaded in memory (except the aggregations), you can display the SQL code generation using the <b>sql_on_off</b> method.</p>
+<p>With the exception of aggregations, everything is happening in the database and nothing is loaded in memory. You can view the generated SQL code using the <b>sql_on_off</b> method.</p>
 
 </div>
 </div>
@@ -329,7 +329,7 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Vertica ML Python is smart enough to not re-compute twice the same aggregation. Each Virtual Column has its own catalog which will be updated depending on the user modifications.</p>
+<p>VerticaPy is smart enough to not recompute the same aggregation twice. Each virtual column has its own catalog which will be updated as the user modifies it.</p>
 
 </div>
 </div>
@@ -486,9 +486,8 @@
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Vertica ML Python helps you to bring the logic to the data with few lines of codes.<br>
-Instead of finding a way to deploy your work, use your time for more useful purposes.<br><br>
-Happy Playing ! &#128540;</p>
+<p>VerticaPy helps you to bring the logic to the data with just a few lines of code.<br>
+Enjoy!</p>
 
 </div>
 </div>
