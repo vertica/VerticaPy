@@ -8,7 +8,7 @@
         <table class="functions_description">
           <tr> <th>Method</th> <th>Definition</th> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/to_csv/index.php">to_csv</td> <td>Creates a CSV file of the current vDataFrame relation.</td> </tr>
-          <tr> <td>vDataFrame.<a href="main-methods/to_db/index.php">to_db</td> <td>Saves the vDataFrame current relation to the Vertica Database.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/to_db/index.php">to_db</td> <td>Saves the vDataFrame current relation to the Vertica database.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/to_json/index.php">to_json</td> <td>Creates a JSON file of the current vDataFrame relation.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/to_pandas/index.php">to_pandas</td> <td>Converts the vDataFrame to a pandas DataFrame.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/to_vdf/index.php">to_vdf</td> <td>Saves the vDataFrame to a .vdf text file.</td> </tr>
