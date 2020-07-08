@@ -14,23 +14,23 @@
           </li></a>
           <a href="learn/index.php"><li>
             <img src="../img/icons/Algorithm.png" height="200px">
-            <h3>learn</h3>
-            <div>Create and optimize ML models</div>
+            <h3>Machine Learning</h3>
+            <div>Create and Optimize ML models</div>
           </li></a>
           <a href="utilities/index.php"><li>
             <img src="../img/icons/Support.png" height="200px">
-            <h3>utilities</h3>
-            <div>Functions to simplify the process</div>
+            <h3>Utilities</h3>
+            <div>Injest, Read, and Drop Data</div>
           </li></a>
           <a href="connect/index.php"><li>
             <img src="../img/icons/Connectivity.png" height="200px">
             <h3>connections.connect</h3>
-            <div>Simplify DB connections</div>
+            <div>View and Modify Database connections</div>
           </li></a>
           <a href="top.php"><li>
             <img src="../img/icons/Business Achievement.png" height="200px">
-            <h3>Top Features</h3>
-            <div>Look at the Best Sellers</div>
+            <h3>Main Features</h3>
+            <div>The Best Features of the Library</div>
           </li></a>
         </ul></center>
       <div><?php include('../include/footer.php'); ?></div>
