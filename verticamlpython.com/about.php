@@ -5,34 +5,32 @@
       <div><?php include('include/header.php'); ?></div>
       <div id="content">
         <div><?php include('include/logo.php'); ?></div>
-        <h1>Why Vertica ML Python ?</h1>
+        <h1>Why VerticaPy ?</h1>
         <p>
-          Nowadays, the 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. 
+          Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
         </p><br>
         <p>
-          Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data.
+          Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists. Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists.
         </p><br>
+          <p>However, Python only works in-memory for a single node process. While distributed programming languages have tried to face this challenge, they are still generally in-memory and can never hope to process all of your data, and moving data is expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.</p><br>
         <p>
-          Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. The idea behind Vertica ML Python is simple: Combining the Scalability of Vertica with the Flexibility of Python to give to the community what they need: <b>Bringing the logic to the data and not the opposite</b>.
+          Vertica ML Python aims to solve all of these problems. The idea is simple: instead of moving data to your tools, Vertica ML Python brings your tools to the data.</b>
         </p><br>
         <center>
-          <img src="img/vertica-ml-python.png" width="80%">
+          <img src="img/VerticaPy.png" width="80%">
         </center>
         <h1>History</h1>
         <p>
-          With the arrival of new technologies which made Data Science Possible, optimization was not the first need. Most of the companies didn't thought about the evolution of Data Storage and Ingestion. This fast growth didn't let place for chance, all the companies needed to change their ways to manage data. DataBases were still considered as Data Warehouse. Many in-memory technologies tried to follow the trend but they never succeeded for high data volumes. Indeed, these technologies need powerful Hardwares and time to move the data which is sometimes impossible due to security.
+            When the first data science technologies and tools came onto the scene, optimization wasn't a high priority. Companies didn't pay much mind to how the needs of data storage and ingestion might change. Back then, databases were still used as data warehouses, and moving data around was often impossible without making compromises in security.
         </p><br>
         <p>
-          By seeing all these facts, Vertica decided to help their customers by bringing the logic to the data. Vertica implemented the first in-DB Machine Learning algorithms built to scale. This was in 2015 and since now, all the DataBases are trying to follow the vision.
+          To address these problems, Vertica implemented the first in-database, scalable machine learning algorithms. That was back in 2015, and other databases have been trying to catch up ever since.
         </p><br>
         <p>
-          SQL is easy to learn but it has a lack of flexibility due to the absence of loops and variables creation. Python is flexible but is not scalable. By creating the combination of both of the technologies, Vertica ML Python is bringing what Data Scientists need. This idea emerged in 2017 when Badr Ouali was still data scientist intern at Vertica. 
-        </p><br>
-        <p>
-          A first release was made in 2018 in Github. The version was incomplete. Vertica ML Python needed 2 years of development and technologies expertise to become what it is today. 
-        </p>
+          However, what SQL has in scalability, it lacks in flexibility. Python has the opposite problem: it's highly flexible, but not scalable. The idea of combining the strengths of these technologies came about in 2017 by Vertica data scientist Badr Quali and, after 3 years of development, became unique and powerful library, VerticaPy.
+    </p>
         <h1>First Official Logo</h1>
-        <p>You can see following the first draft of the Vertica ML Python Logo.</p><br>
+        <p>The first of the VerticaPy logo:</p><br>
         <center>
           <img src="img/first-logo.png" width="30%" style="min-width: 300px;">
         </center>
