@@ -7,8 +7,8 @@
         <h2>Clustering</h2>
         <table class="functions_description">
           <tr> <th>Class</th> <th>Definition</th> </tr>
-          <tr> <td><a href="DBSCAN/index.php">DBSCAN</td> <td>Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu..</td> </tr>
-          <tr> <td><a href="KMeans/index.php">KMeans</td> <td>Creates a KMeans object by using the Vertica Highly Distributed and Scalable KMeans on the data.</td> </tr>
+          <tr> <td><a href="DBSCAN/index.php">DBSCAN</td> <td>Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu.</td> </tr>
+          <tr> <td><a href="KMeans/index.php">KMeans</td> <td>Creates a k-means object by using the Vertica Highly Distributed and Scalable k-means on the data.</td> </tr>
         </table>
         <h2>Anomaly Detection</h2>
         <table class="functions_description">
