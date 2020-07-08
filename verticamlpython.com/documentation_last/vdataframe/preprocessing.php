@@ -9,8 +9,8 @@
           <tr> <th>Method</th> <th>Definition</th> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/decode/index.php">decode</td> <td>Encodes the vcolumn using a User Defined Encoding.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/discretize/index.php">discretize</td> <td>Discretizes the vcolumn using the input method.</td> </tr>
-          <tr> <td>vDataFrame.<a href="main-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumns using the One Hot Encoding algorithm.</td> </tr>
-          <tr> <td>vDataFrame[].<a href="vcolumn-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumn using the One Hot Encoding algorithm.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumns using the One-Hot Encoding algorithm.</td> </tr>
+          <tr> <td>vDataFrame[].<a href="vcolumn-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumn using the One-Hot Encoding algorithm.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/label_encode/index.php">label_encode</td> <td>Encodes the vcolumn using a bijection from the different categories to [0, n - 1]</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/mean_encode/index.php">mean_encode</td> <td>Encode the vcolumn using the average of the response partitioned by the different vcolumn categories.</td> </tr>
         </table>
