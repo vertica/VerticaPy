@@ -22,7 +22,7 @@
         </table>
         <h2>Customized Features Creation</h2>
         <table class="functions_description">
-          <tr> <td>vDataFrame.<a href="main-methods/case_when/index.php">case_when</td> <td>Creates a new feature by evaluating some conditions.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/case_when/index.php">case_when</td> <td>Creates a new feature by evaluating the specified conditions.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/eval/index.php">eval</td> <td>Evaluates a customized expression.</td> </tr>
         </table>
         <h2>Features Transformations</h2>

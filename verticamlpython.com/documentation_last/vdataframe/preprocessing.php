@@ -7,7 +7,7 @@
         <h2>Encoding</h2>
         <table class="functions_description">
           <tr> <th>Method</th> <th>Definition</th> </tr>
-          <tr> <td>vDataFrame[].<a href="vcolumn-methods/decode/index.php">decode</td> <td>Encodes the vcolumn using a User Defined Encoding.</td> </tr>
+          <tr> <td>vDataFrame[].<a href="vcolumn-methods/decode/index.php">decode</td> <td>Encodes the vcolumn using a user-defined encoding.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/discretize/index.php">discretize</td> <td>Discretizes the vcolumn using the input method.</td> </tr>
           <tr> <td>vDataFrame.<a href="main-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumns using the One-Hot Encoding algorithm.</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/get_dummies/index.php">get_dummies</td> <td>Encodes the vcolumn using the One-Hot Encoding algorithm.</td> </tr>

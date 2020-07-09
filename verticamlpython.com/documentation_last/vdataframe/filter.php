@@ -7,7 +7,7 @@
         <h2>Search</h2>
         <table class="functions_description">
           <tr> <th>Method</th> <th>Definition</th> </tr>
-          <tr> <td>vDataFrame.<a href="main-methods/search/index.php">search</td> <td>Searches the elements which matches with the input conditions.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/search/index.php">search</td> <td>Searches for elements that match the input conditions.</td> </tr>
         </table>
         <h2>Filter Records</h2>
         <table class="functions_description">

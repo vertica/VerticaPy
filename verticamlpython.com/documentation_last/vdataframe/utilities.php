@@ -49,7 +49,7 @@
           <tr> <td>vDataFrame.<a href="main-methods/tail/index.php">tail</td> <td>Returns a part of the vDataFrame tail (delimited by an offset and a limit).</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/tail/index.php">tail</td> <td>Returns a part of the vcolumn tail (delimited by an offset and a limit).</td> </tr>
           <tr> <td>vDataFrame[].<a href="vcolumn-methods/store_usage/index.php">store_usage</td> <td>Returns the vcolumn expected store usage (unit: b).</td> </tr>
-          <tr> <td>vDataFrame.<a href="main-methods/version/index.php">version</td> <td>Returns the Vertica Version.</td> </tr>
+          <tr> <td>vDataFrame.<a href="main-methods/version/index.php">version</td> <td>Returns the Vertica version.</td> </tr>
         </table>
       <div><?php include('../../include/footer.php'); ?></div>
       </div>
