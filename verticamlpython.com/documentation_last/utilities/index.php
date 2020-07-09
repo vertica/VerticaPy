@@ -17,7 +17,7 @@
         <h2>Read Data</h2>
         <table class="functions_description">
           <tr> <th>Function</th> <th>Definition</th> </tr>
-          <tr> <td><a href="get_data_types/index.php">get_data_types</a></td> <td>Returns customized relation columns and the respective data types. Creates a temporary table during the process.</td></tr>
+          <tr> <td><a href="get_data_types/index.php">get_data_types</a></td> <td>Returns a customized relation with columns and their respective data types. Creates a temporary table during the process.</td></tr>
           <tr> <td><a href="load_model/index.php">load_model</a></td> <td>Loads a Vertica model and returns the associated object.</td> </tr>
           <tr> <td><a href="readSQL/index.php">readSQL</a></td> <td>Returns the result of a SQL query as a tablesample object.</td> </tr>
           <tr> <td><a href="tablesample/index.php">tablesample</a></td><td>Displays query results. This object does not have dependencies with any other module.</td> </tr>
