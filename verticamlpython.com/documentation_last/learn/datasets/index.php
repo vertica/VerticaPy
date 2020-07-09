@@ -7,8 +7,8 @@
         <h2>Datasets</h2>
         <table class="functions_description">
           <tr> <th>Function</th> <th>Definition</th> </tr>
-          <tr> <td><a href="load_amazon/index.php">load_amazon</td> <td>Ingests the amazon dataset in the Vertica DB (Dataset ideal for TS and Regression).</td> </tr>
-          <tr> <td><a href="load_iris/index.php">load_iris</td> <td>Ingests the iris dataset in the Vertica DB (Dataset ideal for Classification and Clustering).</td> </tr>
+          <tr> <td><a href="load_amazon/index.php">load_amazon</td> <td>Ingests the Amazon dataset in the Vertica DB (Dataset ideal for TS and Regression).</td> </tr>
+          <tr> <td><a href="load_iris/index.php">load_iris</td> <td>Ingests the Iris dataset in the Vertica DB (Dataset ideal for Classification and Clustering).</td> </tr>
           <tr> <td><a href="load_market/index.php">load_market</td> <td>Ingests the market dataset in the Vertica DB (Dataset ideal for easy exploration).</td> </tr>
           <tr> <td><a href="load_smart_meters/index.php">load_smart_meters</td> <td>Ingests the smart meters dataset in the Vertica DB (Dataset ideal for TS and Regression).</td> </tr>
           <tr> <td><a href="load_titanic/index.php">load_titanic</td> <td>Ingests the titanic dataset in the Vertica DB (Dataset ideal for Classification).</td> </tr>
