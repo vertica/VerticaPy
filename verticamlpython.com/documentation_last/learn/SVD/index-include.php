@@ -29,7 +29,7 @@
 <p>Creates a SVD (Singular Value Decomposition) object by using the Vertica Highly Distributed and Scalable SVD on the data.</p>
 <h3 id="Parameters">Parameters<a class="anchor-link" href="#Parameters">&#182;</a></h3><table id="parameters">
     <tr> <th>Name</th> <th>Type</th> <th>Optional</th> <th>Description</th> </tr>
-    <tr> <td><div class="param_name">name</div></td> <td><div class="type">str</div></td> <td><div class = "no">&#10060;</div></td> <td>Name of the the model. The model will be stored in the DB.</td> </tr>
+    <tr> <td><div class="param_name">name</div></td> <td><div class="type">str</div></td> <td><div class = "no">&#10060;</div></td> <td>Name of the model to be stored in the database.</td> </tr>
     <tr> <td><div class="param_name">cursor</div></td> <td><div class="type">DBcursor</div></td> <td><div class = "yes">&#10003;</div></td> <td>Vertica DB cursor.</td> </tr>
     <tr> <td><div class="param_name">n_components</div></td> <td><div class="type">int</div></td> <td><div class = "yes">&#10003;</div></td> <td>The number of components to keep in the model. If this value is not provided, all components are kept. The maximum number of components is the number of non-zero singular values returned by the internal call to SVD. This number is less than or equal to SVD (number of columns, number of rows). </td> </tr>
     <tr> <td><div class="param_name">method</div></td> <td><div class="type">str</div></td> <td><div class = "yes">&#10003;</div></td> <td>The method used to calculate PCA. <br><ul><li><b>method</b> : Lapack definition.</li></ul></td> </tr>

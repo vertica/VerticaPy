@@ -276,7 +276,7 @@ accepted_row_count| 150 </pre>
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>In our case, we did not write the test relation when fitting the model. The model will then consider the train relation as test. These attributes will be used when invoking the different model abstractions. For example, let's compute the accuracy of the model.</p>
+<p>In our case, we did not write the test relation when fitting the model. The model will then consider the training relation as test. These attributes will be used when invoking the different model abstractions. For example, let's compute the accuracy of the model.</p>
 
 </div>
 </div>

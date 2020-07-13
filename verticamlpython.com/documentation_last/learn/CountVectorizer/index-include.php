@@ -33,7 +33,7 @@
 <p>Creates a Text Index which will count the occurences of each word in the data.</p>
 <h3 id="Parameters">Parameters<a class="anchor-link" href="#Parameters">&#182;</a></h3><table id="parameters">
     <tr> <th>Name</th> <th>Type</th> <th>Optional</th> <th>Description</th> </tr>
-    <tr> <td><div class="param_name">name</div></td> <td><div class="type">str</div></td> <td><div class = "no">&#10060;</div></td> <td>Name of the the model. The model will be stored in the DB.</td> </tr>
+    <tr> <td><div class="param_name">name</div></td> <td><div class="type">str</div></td> <td><div class = "no">&#10060;</div></td> <td>Name of the model to be stored in the database.</td> </tr>
     <tr> <td><div class="param_name">cursor</div></td> <td><div class="type">DBcursor</div></td> <td><div class = "yes">&#10003;</div></td> <td>Vertica DB cursor.</td> </tr>
     <tr> <td><div class="param_name">lowercase</div></td> <td><div class="type">bool</div></td> <td><div class = "yes">&#10003;</div></td> <td>Converts all the elements to lowercase before processing.</td> </tr>
     <tr> <td><div class="param_name">max_df</div></td> <td><div class="type">float</div></td> <td><div class = "yes">&#10003;</div></td> <td>Keeps the words which represent less than this float in the total dictionary distribution.</td> </tr>
