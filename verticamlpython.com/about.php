@@ -14,7 +14,7 @@
         </p><br>
           <p>However, Python only works in-memory for a single node process. While distributed programming languages have tried to face this challenge, they are still generally in-memory and can never hope to process all of your data, and moving data is expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.</p><br>
         <p>
-          Vertica ML Python aims to solve all of these problems. The idea is simple: instead of moving data to your tools, Vertica ML Python brings your tools to the data.</b>
+          VerticaPy aims to solve all of these problems. The idea is simple: instead of moving data to your tools, VerticaPy brings your tools to the data.</b>
         </p><br>
         <center>
           <img src="img/VerticaPy.png" width="80%">
