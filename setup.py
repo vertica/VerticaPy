@@ -11,25 +11,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# AUTHOR: BADR OUALI
+# |_     |~) _  _| _  /~\    _ |.
+# |_)\/  |_)(_|(_||   \_/|_|(_|||
+#    /                           
+#              ____________       ______
+#             / __        `\     /     /
+#            |  \/         /    /     /
+#            |______      /    /     /
+#                   |____/    /     /
+#          _____________     /     /
+#          \           /    /     /
+#           \         /    /     /
+#            \_______/    /     /
+#             ______     /     /
+#             \    /    /     /
+#              \  /    /     /
+#               \/    /     /
+#                    /     /
+#                   /     /
+#                   \    /
+#                    \  /
+#                     \/
 #
-############################################################################################################ 
-#  __ __   ___ ____  ______ ____   __  ____      ___ ___ _          ____  __ __ ______ __ __  ___  ____    #
-# |  |  | /  _|    \|      |    | /  ]/    |    |   |   | |        |    \|  |  |      |  |  |/   \|    \   #
-# |  |  |/  [_|  D  |      ||  | /  /|  o  |    | _   _ | |        |  o  |  |  |      |  |  |     |  _  |  #
-# |  |  |    _|    /|_|  |_||  |/  / |     |    |  \_/  | |___     |   _/|  ~  |_|  |_|  _  |  O  |  |  |  #
-# |  :  |   [_|    \  |  |  |  /   \_|  _  |    |   |   |     |    |  |  |___, | |  | |  |  |     |  |  |  #
-#  \   /|     |  .  \ |  |  |  \     |  |  |    |   |   |     |    |  |  |     | |  | |  |  |     |  |  |  #
-#   \_/ |_____|__|\_| |__| |____\____|__|__|    |___|___|_____|    |__|  |____/  |__| |__|__|\___/|__|__|  #
-#                                                                                                          #
-############################################################################################################
-# Vertica-ML-Python allows user to create Virtual Dataframe. vDataframes simplify   #
-# data exploration,   data cleaning   and   machine   learning   in    Vertica.     #
-# It is an object which keeps in it all the actions that the user wants to achieve  # 
-# and execute them when they are needed.    										#
-#																					#
-# The purpose is to bring the logic to the data and not the opposite                #
-#####################################################################################
+#                    _
+# \  / _  __|_. _ _ |_)
+#  \/ (/_|  | |(_(_|| \/
+#                     / 
+# 
+# VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
+# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
+# in VERTICA. It is an object which keeps in it all the actions that the user 
+# wants to achieve and execute them when they are needed.    										
+#																					
+# The purpose is to bring the logic to the data and not the opposite !
+#
 #
 import setuptools
 
@@ -37,13 +52,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-	name = 'vertica_ml_python',  
-    version = '1.0-beta',
+	name = 'verticapy',  
+    version = '0.0.1',
     author = "Badr Ouali",
 	author_email = "badr.ouali@microfocus.com",
-	url = "https://github.com/vertica/Vertica-ML-Python",
+	url = "https://github.com/vertica/VerticaPy",
 	keywords = "vertica python ml data science machine learning statistics database",
-	description = "Vertica-ML-Python simplifies data exploration, data cleaning and machine learning in Vertica.",
+	description = "VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
 	long_description = long_description,
 	long_description_content_type = "text/markdown",
 	packages = setuptools.find_packages(),
