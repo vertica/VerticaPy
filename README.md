@@ -18,9 +18,9 @@ Vertica was the first real analytic columnar database and is still the fastest i
 <br><br>
 Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists. Unfortunately, Python only works in-memory as a single-node process. This problem has led to the rise of distributed programming languages, but they too, are limited as in-memory processes and, as such, will never be able to process all of your data in this era, and moving data for processing is prohobitively expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
 <br><br>
-**Vertica ML Python aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, VerticaPy brings the logic to the data.
+**VerticaPy aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, VerticaPy brings the logic to the data.
 <br><br>
-3 years in the making, we're proud to bring you version 1.0 of VerticaPy.
+3 years in the making, we're proud to bring you VerticaPy.
 <br><br>
 Main Advantages:
 <ul>
@@ -36,13 +36,13 @@ Main Advantages:
 </p>
 
 ## Installation
-You can install <b>VerticaPy</b> with pip:
+To install <b>VerticaPy</b> with pip:
 ```shell
-$ pip3 install verticapy
+root@ubuntu:~$ pip3 install verticapy
 ```
 You can also clone the VerticaPy repository and then run the installation script:
 ```shell
-$ python3 setup.py install
+root@ubuntu:~$ python3 setup.py install
 ```
 
 ## Documentation
@@ -73,10 +73,6 @@ cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
 ### ODBC
 
 ```python
-# to import the vDataframe
-from vertica-ml-python import vDataframe
-# to import the Logistic Regression
-from vertica-ml-python.learn.linear_model import LogisticRegression
 import pyodbc
 
 # Connection using all the DSN information
@@ -123,11 +119,11 @@ cur = conn.cursor()
 
 Install the library using the <b>pip</b> command.
 ```shell
-$ pip3 install verticapy
+root@ubuntu:~$ pip3 install verticapy
 ```
 Install <b>vertica_python</b> or <b>pyodbc</b> to create a database cursor.
 ```shell
-$ pip3 install vertica_python
+root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor.
 ```python
@@ -139,7 +135,7 @@ Create the Virtual DataFrame of your relation.
 from verticapy import vDataFrame
 vdf = vDataFrame("my_relation", cursor = cur)
 ```
-If you don't have any data, you can easily import well-known datasets.
+If you don't have data on hand, you can easily import well-known datasets.
 ```python
 from verticapy.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
@@ -166,9 +162,7 @@ pclass             3.0         3
 sibsp              8.0         7  
 survived           1.0         2 
 ```
-
 Print the SQL query with the <b>sql_on_off</b> method:
-
 ```python
 vdf.sql_on_off()
 vdf.describe()
@@ -180,12 +174,10 @@ SELECT
   SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
 FROM public.titanic
 ```
-
-With VerticaPy, you can solve a machine learning problem with just four lines of code:
-
+With VerticaPy, it is now possible to solve a ML problem with few lines of code.
 ```python
-from vertica-ml-python.learn.model_selection import cross_validate
-from vertica-ml-python.learn.ensemble import RandomForestClassifier
+from verticapy.learn.model_selection import cross_validate
+from verticapy.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
 vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
