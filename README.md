@@ -10,17 +10,23 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/pypi/pyversions/verticapy.svg)](https://www.python.org/downloads/)
 
-VerticaPy is a Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica, thus taking advantage Vertica’s speed and built-in analytics and machine learning capabilities. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operation (called Virtual DataFrame), and offers multiple graphical rendering possibilities.
+VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
-The 'Big Data' (+100 Tb of data) is now one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. 
+Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 <br><br>
-The idea behind VerticaPy is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.
+Vertica was the first real analytic columnar database and is still the fastest in the market. However, SQL alone isn't flexible enough to meet the needs of data scientists.
+<br><br>
+Python has quickly become the most popular tool in this domain, owing much of its flexibility to its high-level of abstraction and impressively large and ever-growing set of libraries. Its accessibility has led to the development of popular and perfomant APIs, like pandas and scikit-learn, and a dedicated community of data scientists. Unfortunately, Python only works in-memory as a single-node process. This problem has led to the rise of distributed programming languages, but they too, are limited as in-memory processes and, as such, will never be able to process all of your data in this era, and moving data for processing is prohobitively expensive. On top of all of this, data scientists must also find convenient ways to deploy their data and models. The whole process is time consuming.
+<br><br>
+**VerticaPy aims to solve all of these problems**. The idea is simple: instead of moving data around for processing, VerticaPy brings the logic to the data.
+<br><br>
+3 years in the making, we're proud to bring you VerticaPy.
 <br><br>
 Main Advantages:
 <ul>
  <li> Easy Data Exploration.</li>
  <li> Fast Data Preparation.</li>
- <li> In DataBase Machine Learning.</li>
+ <li> In-Database Machine Learning.</li>
  <li> Easy Model Evaluation.</li>
  <li> Easy Model Deployment.</li>
 </ul>
@@ -30,11 +36,11 @@ Main Advantages:
 </p>
 
 ## Installation
-To install <b>VerticaPy</b>, you can use the following pip command.
+To install <b>VerticaPy</b> with pip:
 ```shell
 root@ubuntu:~$ pip3 install verticapy
 ```
-Or you can get a copy of the source by cloning from the VerticaPy github project and install it using the following command.
+You can also clone the VerticaPy repository and then run the installation script:
 ```shell
 root@ubuntu:~$ python3 setup.py install
 ```
@@ -45,9 +51,9 @@ A well-detailed HTML documentation is available by downloading the zip file at: 
 
 https://github.com/vertica/VerticaPy/blob/master/documentation.zip
 
-## Connection to the Database
+## Connecting to the Database
 
-To connect to the database, many options are available.
+VerticaPy is compatible with several clients.
 
 ### Native Client
 
@@ -115,7 +121,7 @@ Install the library using the <b>pip</b> command.
 ```shell
 root@ubuntu:~$ pip3 install verticapy
 ```
-Install <b>vertica_python</b> or <b>pyodbc</b> to create a DB cursor.
+Install <b>vertica_python</b> or <b>pyodbc</b> to create a database cursor.
 ```shell
 root@ubuntu:~$ pip3 install vertica_python
 ```
@@ -129,12 +135,12 @@ Create the Virtual DataFrame of your relation.
 from verticapy import vDataFrame
 vdf = vDataFrame("my_relation", cursor = cur)
 ```
-If you don't have data to play, you can easily load well known datasets.
+If you don't have data on hand, you can easily import well-known datasets.
 ```python
 from verticapy.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
 ```
-You can play with the data...
+Examine your data:
 ```python
 vdf.describe()
 
@@ -156,7 +162,7 @@ pclass             3.0         3
 sibsp              8.0         7  
 survived           1.0         2 
 ```
-It is also possible to print the SQL code generation using the <b>sql_on_off</b> method.
+Print the SQL query with the <b>sql_on_off</b> method:
 ```python
 vdf.sql_on_off()
 vdf.describe()
@@ -221,4 +227,4 @@ std            0.0229190954261       0.0109037699717
 avg             0.928685964607  
 std            0.0201579224026
 ```
-Happy Coding !
+Enjoy!

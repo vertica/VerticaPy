@@ -32,13 +32,12 @@
 #                   \    /
 #                    \  /
 #                     \/
-#                    _
-# \  / _  __|_. _ _ |_)
-#  \/ (/_|  | |(_(_|| \/
-#                     /  
-# VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
-# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
-# in VERTICA. It is an object which keeps in it all the actions that the user 
-# wants to achieve and execute them when they are needed.    										
+#
+#
+# \  / _  __|_. _ _   |\/||   |~)_|_|_  _  _ 
+#  \/ (/_|  | |(_(_|  |  ||_  |~\/| | |(_)| |
+#                               /            
+# VerticaPy allows user to create vDataFrames (Virtual DataFrames) to
+# simplify data exploration, data cleaning, and machine learning in Vertica.   										
 #																					
-# The purpose is to bring the logic to the data and not the opposite !
+# Bring the logic to the data!
