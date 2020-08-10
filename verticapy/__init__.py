@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,7 +13,7 @@
 #
 # |_     |~) _  _| _  /~\    _ |.
 # |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /                           
+#    /
 #              ____________       ______
 #             / __        `\     /     /
 #            |  \/         /    /     /
@@ -35,16 +35,18 @@
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     /  
-# VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
-# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
-# in VERTICA. It is an object which keeps in it all the actions that the user 
-# wants to achieve and execute them when they are needed.    										
-#																					
-# The purpose is to bring the logic to the data and not the opposite !
+#                     /
+# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# data science projects on data stored in Vertica, taking advantage Vertica’s
+# speed and built-in analytics and machine learning features. It supports the
+# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
+# data transformation operations, and offers beautiful graphical options.
 #
-#               
-__version__ = "1.0"
+# VerticaPy aims to solve all of these problems. The idea is simple: instead
+# of moving data around for processing, VerticaPy brings the logic to the data.
+#
+#
+__version__ = "0.1-beta2"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@microfocus.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
