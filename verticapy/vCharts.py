@@ -60,12 +60,47 @@
 def vCharts(line, cell):
     from verticapy.connections.connect import read_auto_connect
     from verticapy.hchart import hchartSQL
+    from IPython.core.display import HTML, display
+    import time
+    import re
 
     conn = read_auto_connect()
     cursor = conn.cursor()
+    options = {"type": "auto"}
+    query = cell
     if line == "":
-        line = "auto"
-    chart = hchartSQL(cell, cursor, line)
+        option = "auto"
+    else:
+        line = re.sub(" +", " ", line)
+        all_options_tmp = line.split(" ")
+        all_options = []
+        for elem in all_options_tmp:
+            if elem != "":
+                all_options += [elem]
+        n, i, all_options_dict = len(all_options), 0, {}
+        while i < n:
+            all_options_dict[all_options[i]] = all_options[i + 1]
+            i += 2
+        for option in all_options_dict:
+            if option.lower() == "-type":
+                options["type"] = all_options_dict[option]
+            else:
+                print(
+                    "\u26A0 Warning : option '{}' doesn't exist, it was skipped.".format(
+                        option
+                    )
+                )
+    query = query.replace("\t", " ")
+    query = query.replace("\n", " ")
+    query = re.sub(" +", " ", query)
+    while len(query) > 0 and (query[-1] in (";", " ")):
+        query = query[0:-1]
+    while len(query) > 0 and (query[0] in (";", " ")):
+        query = query[1:]
+    start_time = time.time()
+    chart = hchartSQL(query, cursor, options["type"])
+    elapsed_time = time.time() - start_time
+    display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
     conn.close()
     return chart
 

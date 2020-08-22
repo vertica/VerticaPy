@@ -55,6 +55,7 @@ from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
 from verticapy.connections.connect import read_auto_connect
 from verticapy.toolbox import *
+from verticapy.errors import *
 
 ##
 #                                           _____
@@ -120,6 +121,7 @@ _VERTICAPY_VARIABLES_: dict
 		columns, list         : List of the vcolumns names.
 		count, int            : Number of elements of the vDataFrame (catalog).
 		cursor, DBcursor      : Vertica Database cursor.
+        display, dict         : Dictionary to use to format the vDataFrame.
 		dsn, str              : Vertica Database DSN.
 		exclude_columns, list : vcolumns to exclude from the final relation.
 		history, list         : vDataFrame history (user modifications).
@@ -160,7 +162,11 @@ vcolumns : vcolumn
             ]
         )
         self._VERTICAPY_VARIABLES_ = {}
-        self._VERTICAPY_VARIABLES_["display"] = {"rows": 100}
+        self._VERTICAPY_VARIABLES_["display"] = {
+            "rows": 100,
+            "columns": 50,
+            "percent_bar": "auto",
+        }
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
         if not (empty):
@@ -192,12 +198,12 @@ vcolumns : vcolumn
                 if (usecols)
                 else ""
             )
-            query = "(SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(
+            query = "SELECT column_name, data_type FROM ((SELECT column_name, data_type, ordinal_position FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
             )
-            query += " UNION (SELECT column_name, data_type FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(
+            query += " UNION (SELECT column_name, data_type, ordinal_position FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})) x ORDER BY ordinal_position".format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
@@ -213,7 +219,7 @@ vcolumns : vcolumn
             if columns != []:
                 self._VERTICAPY_VARIABLES_["columns"] = columns
             else:
-                raise ValueError(
+                raise MissingRelation(
                     "No table or views '{}' found.".format(
                         self._VERTICAPY_VARIABLES_["input_relation"]
                     )
@@ -222,7 +228,7 @@ vcolumns : vcolumn
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
                     print(
-                        "\u26A0 Warning: A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
+                        "\u26A0 Warning : A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
                             column, column.replace('"', "_")
                         )
                     )
@@ -300,7 +306,7 @@ vcolumns : vcolumn
     ):
         """
 	---------------------------------------------------------------------------
-	Global method to use to compute the Correlation/Cov/Beta Matrix.
+	Global method to use to compute the Correlation/Cov/Regr Matrix.
 
 	See Also
 	--------
@@ -309,6 +315,19 @@ vcolumns : vcolumn
 	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
 		"""
         columns = vdf_columns_names(columns, self)
+        if method != "cramer":
+            for column in columns:
+                if not (self[column].isnum()):
+                    method_name = "Correlation"
+                    method_type = " using the method = '{}'".format(method)
+                    if method == "cov":
+                        method_name = "Covariance"
+                        method_type = ""
+                    raise TypeError(
+                        "vcolumn {} must be numerical to compute the {} Matrix{}.".format(
+                            column, method_name, method_type
+                        )
+                    )
         if len(columns) == 1:
             if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
                 return 1.0
@@ -763,11 +782,13 @@ vcolumns : vcolumn
             if method == "cramer":
                 cols = self.catcol()
                 if len(cols) == 0:
-                    raise Exception("No categorical column found")
+                    raise EmptyParameter(
+                        "No categorical column found in the vDataFrame."
+                    )
             else:
                 cols = self.numcol()
                 if len(cols) == 0:
-                    raise Exception("No numerical column found")
+                    raise EmptyParameter("No numerical column found in the vDataFrame.")
             return self.__aggregate_matrix__(
                 method=method, columns=cols, cmap=cmap, round_nb=round_nb, show=show
             )
@@ -792,17 +813,32 @@ vcolumns : vcolumn
 	vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
 	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
 		"""
-        if len(columns) == 0:
+        if not (columns):
             if method == "cramer":
                 cols = self.catcol()
-                if len(cols) == 0:
-                    raise Exception("No categorical column found")
+                if not (cols):
+                    raise EmptyParameter(
+                        "No categorical column found in the vDataFrame."
+                    )
             else:
                 cols = self.numcol()
-                if len(cols) == 0:
-                    raise Exception("No numerical column found")
+                if not (cols):
+                    raise EmptyParameter("No numerical column found in the vDataFrame.")
         else:
             cols = vdf_columns_names(columns, self)
+        if method != "cramer":
+            for column in cols:
+                if not (self[column].isnum()):
+                    method_name = "Correlation"
+                    method_type = " using the method = '{}'".format(method)
+                    if method == "cov":
+                        method_name = "Covariance"
+                        method_type = ""
+                    raise TypeError(
+                        "vcolumn {} must be numerical to compute the {} Vector{}.".format(
+                            column, method_name, method_type
+                        )
+                    )
         if method in ("spearman", "pearson", "kendall") and (len(cols) >= 1):
             try:
                 fail = 0
@@ -1299,6 +1335,30 @@ vcolumns : vcolumn
     # Methods
     #
     # ---#
+    def aad(self, columns: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
+        return self.aggregate(func=["aad"], columns=columns)
+
+    # ---#
     def abs(self, columns: list = []):
         """
 	---------------------------------------------------------------------------
@@ -1375,7 +1435,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
  	See Also
@@ -1396,6 +1456,7 @@ vcolumns : vcolumn
                     "approx_unique",
                     "approximate_count_distinct",
                     "dtype",
+                    "percent",
                 ]
                 if ("top" not in fun) and (fun not in cat_agg):
                     columns = self.numcol()
@@ -1424,7 +1485,7 @@ vcolumns : vcolumn
                         if n < 1:
                             raise
                     except:
-                        raise ValueError(
+                        raise FunctionError(
                             "The aggregation '{}' doesn't exist. If you want to compute the frequence of the nth most occurent element please write 'topn_percent' with n > 0. Example: top2_percent for the frequency of the second most occurent element.".format(
                                 fun
                             )
@@ -1444,7 +1505,7 @@ vcolumns : vcolumn
                         if n < 1:
                             raise
                     except:
-                        raise ValueError(
+                        raise FunctionError(
                             "The aggregation '{}' doesn't exist. If you want to compute the nth most occurent element please write 'topn' with n > 0. Example: top2 for the second most occurent element.".format(
                                 fun
                             )
@@ -1563,7 +1624,7 @@ vcolumns : vcolumn
                             column, cast, float(fun[0:-1]) / 100
                         )
                     except:
-                        raise ValueError(
+                        raise FunctionError(
                             "The aggregation '{}' doesn't exist. If you want to compute the percentile x of the element please write 'x%' with x > 0. Example: 50% for the median.".format(
                                 fun
                             )
@@ -1723,7 +1784,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -1749,6 +1810,12 @@ vcolumns : vcolumn
 	---------------------------------------------------------------------------
 	Adds a new vcolumn to the vDataFrame by using an advanced analytical function 
 	on one or two specific vcolumns.
+
+    \u26A0 Warning : Some analytical functions can make the vDataFrame structure 
+                     heavier. It is recommended to always check the current structure 
+                     using the 'current_relation' method and to save it using the 
+                     'to_db' method with the parameters 'inplace = True' and 
+                     'relation_type = table'
 
 	Parameters
  	----------
@@ -1876,7 +1943,7 @@ vcolumns : vcolumn
                     )
                 )
             elif not (column):
-                raise ValueError(
+                raise MissingColumn(
                     "The parameter 'column' must be a vDataFrame Column when using analytic function '{}'".format(
                         func
                     )
@@ -2000,7 +2067,7 @@ vcolumns : vcolumn
                 try:
                     x = float(func[0:-1]) / 100
                 except:
-                    raise ValueError(
+                    raise FunctionError(
                         "The aggregate function '{}' doesn't exist. If you want to compute the percentile x of the element please write 'x%' with x > 0. Example: 50% for the median.".format(
                             func
                         )
@@ -2046,7 +2113,7 @@ vcolumns : vcolumn
                 "last_value",
                 "pct_change",
             ):
-                raise ValueError(
+                raise ParameterError(
                     "The parameter 'column' must be a vDataFrame Column when using analytic function '{}'".format(
                         func
                     )
@@ -2058,7 +2125,7 @@ vcolumns : vcolumn
                 "last_value",
                 "pct_change",
             ):
-                raise ValueError(
+                raise ParameterError(
                     "The parameter 'column' must be empty when using analytic function '{}'".format(
                         func
                     )
@@ -2093,13 +2160,13 @@ vcolumns : vcolumn
                     )
                 )
             if not (column):
-                raise ValueError(
+                raise MissingColumn(
                     "The parameter 'column' must be a vcolumn when using analytic function '{}'".format(
                         func
                     )
                 )
             elif not (column2):
-                raise ValueError(
+                raise MissingColumn(
                     "The parameter 'column2' must be a vcolumn when using analytic function '{}'".format(
                         func
                     )
@@ -2134,7 +2201,7 @@ vcolumns : vcolumn
                     ),
                 )
             except:
-                raise ValueError(
+                raise FunctionError(
                     "The aggregate function '{}' doesn't exist or is not managed by the analytic function. If you want more flexibility use the 'eval' function".format(
                         func
                     )
@@ -2155,7 +2222,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2353,7 +2420,7 @@ vcolumns : vcolumn
         all_elements = []
         for column in method:
             if method[column] not in ("bfill", "backfill", "pad", "ffill", "linear"):
-                raise ValueError(
+                raise ParameterError(
                     "Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear"
                 )
             if method[column] in ("bfill", "backfill"):
@@ -2485,6 +2552,10 @@ vcolumns : vcolumn
  			pearson   : Pearson correlation coefficient (linear).
  			spearmann : Spearmann correlation coefficient (monotonic - rank based).
  			kendall   : Kendall correlation coefficient (similar trends).
+                        \u26A0 Warning : This method is computationally expensive. 
+                                         It is using a CROSS JOIN during the computation.
+                                         The complexity is O(n * n), n being the total
+                                         count of the vDataFrame.
  			cramer    : Cramer's V (correlation between categories).
  			biserial  : Biserial Point (correlation between binaries and a numericals).
  	cmap: str, optional
@@ -2503,7 +2574,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2596,7 +2667,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2650,8 +2721,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -2681,7 +2752,7 @@ vcolumns : vcolumn
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
         if len(columns) == 1:
-            self[columns[0]].bar(method, of, 6, 0, 0)
+            return self[columns[0]].bar(method, of, 6, 0, 0)
         else:
             stacked, fully_stacked = False, False
             if hist_type.lower() in ("fully", "fully stacked", "fully_stacked"):
@@ -2690,8 +2761,9 @@ vcolumns : vcolumn
                 stacked = True
             from verticapy.plot import bar2D
 
-            bar2D(self, columns, method, of, max_cardinality, h, stacked, fully_stacked)
-        return self
+            return bar2D(
+                self, columns, method, of, max_cardinality, h, stacked, fully_stacked
+            )
 
     # ---#
     def between_time(self, ts: str, start_time: str, end_time: str):
@@ -2773,8 +2845,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
 	See Also
 	--------
@@ -2788,8 +2860,7 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
         from verticapy.plot import boxplot2D
 
-        boxplot2D(self, columns)
-        return self
+        return boxplot2D(self, columns)
 
     # ---#
     def bubble(
@@ -2823,8 +2894,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -2848,8 +2919,9 @@ vcolumns : vcolumn
         size_bubble_col = vdf_columns_names([size_bubble_col], self)[0]
         from verticapy.plot import bubble
 
-        bubble(self, columns + [size_bubble_col], catcol, max_nb_points, bbox, img)
-        return self
+        return bubble(
+            self, columns + [size_bubble_col], catcol, max_nb_points, bbox, img
+        )
 
     # ---#
     def catcol(self, max_cardinality: int = 12):
@@ -3033,6 +3105,10 @@ vcolumns : vcolumn
  			pearson   : Pearson correlation coefficient (linear).
  			spearmann : Spearmann correlation coefficient (monotonic - rank based).
  			kendall   : Kendall correlation coefficient (similar trends).
+                        \u26A0 Warning : This method is computationally expensive. 
+                                         It is using a CROSS JOIN during the computation.
+                                         The complexity is O(n * n), n being the total
+                                         count of the vDataFrame.
  			cramer    : Cramer's V (correlation between categories).
  			biserial  : Biserial Point (correlation between binaries and a numericals).
  	cmap: str, optional
@@ -3047,7 +3123,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3116,7 +3192,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3180,7 +3256,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3411,9 +3487,7 @@ vcolumns : vcolumn
         return columns
 
     # ---#
-    def describe(
-        self, method: str = "numerical", columns: list = [], unique: bool = True
-    ):
+    def describe(self, method: str = "auto", columns: list = [], unique: bool = True):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vDataFrame using multiple statistical aggregations: 
@@ -3426,6 +3500,8 @@ vcolumns : vcolumn
             all         : Aggregates all the selected vDataFrame vcolumns different 
                 methods depending on the vcolumn type (numerical dtype: numerical; 
                 timestamp dtype: range; categorical dtype: length)
+            auto        : Sets the method to 'numerical' if at least one vcolumn 
+                of the vDataFrame is numerical, 'categorical' otherwise.
 			categorical : Uses only categorical aggregations.
             length      : Aggregates the vDataFrame using numerical aggregation 
                 on the length of all the selected vcolumns.
@@ -3444,7 +3520,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3463,6 +3539,7 @@ vcolumns : vcolumn
                         "length",
                         "range",
                         "all",
+                        "auto",
                     ],
                     True,
                 ),
@@ -3471,6 +3548,8 @@ vcolumns : vcolumn
             ]
         )
         method = method.lower()
+        if method == "auto":
+            method = "numerical" if (self.numcol()) else "categorical"
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
         for i in range(len(columns)):
@@ -3478,6 +3557,18 @@ vcolumns : vcolumn
         if method == "numerical":
             if not (columns):
                 columns = self.numcol()
+            else:
+                for column in columns:
+                    if not (self[column].isnum()):
+                        raise TypeError(
+                            "vcolumn {} is not numerical to run describe using parameter method = 'numerical'".format(
+                                column
+                            )
+                        )
+            if not (columns):
+                raise EmptyParameter(
+                    "No Numerical Columns found to run describe using parameter method = 'numerical'."
+                )
             try:
                 idx = [
                     "index",
@@ -3503,7 +3594,7 @@ vcolumns : vcolumn
                                 break
                     else:
                         print(
-                            "\u26A0 Warning: The vcolumn {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(
+                            "\u26A0 Warning : The vcolumn {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(
                                 column
                             )
                         )
@@ -3710,7 +3801,7 @@ vcolumns : vcolumn
                     values, table_info=False, percent=percent, dtype=dtype
                 ).transpose()
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in all|numerical|categorical|statistics|length|range"
             )
         self.__update_catalog__(
@@ -3750,6 +3841,12 @@ vcolumns : vcolumn
 	---------------------------------------------------------------------------
 	Filters the duplicated using a partition by the input vcolumns.
 
+    \u26A0 Warning : Dropping duplicates will make the vDataFrame structure 
+                     heavier. It is recommended to always check the current structure 
+                     using the 'current_relation' method and to save it using the 
+                     'to_db' method with the parameters 'inplace = True' and 
+                     'relation_type = table'
+
 	Parameters
  	----------
  	columns: list, optional
@@ -3781,7 +3878,7 @@ vcolumns : vcolumn
             self.filter(expr='"{}" = 1'.format(name))
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
         else:
-            print("\u26A0 Warning: No duplicates detected")
+            print("\u26A0 Warning : No duplicates detected")
         return self
 
     # ---#
@@ -3822,7 +3919,7 @@ vcolumns : vcolumn
         if print_info:
             total -= self.shape()[0]
             if total == 0:
-                print("\u26A0 Warning: Nothing was dropped")
+                print("\u26A0 Warning : Nothing was dropped")
             else:
                 print("{} element(s) was/were dropped".format(total))
         return self
@@ -3836,7 +3933,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         values = {"index": [], "dtype": []}
@@ -3863,7 +3960,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
  	See Also
@@ -3948,7 +4045,7 @@ vcolumns : vcolumn
         check_types([("name", name, [str], False), ("expr", expr, [str], False)])
         name = str_column(name.replace('"', "_"))
         if column_check_ambiguous(name, self.get_columns()):
-            raise ValueError(
+            raise NameError(
                 "A vcolumn has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(
                     name
                 )
@@ -3970,7 +4067,7 @@ vcolumns : vcolumn
                     self._VERTICAPY_VARIABLES_["schema_writing"],
                 )
             except:
-                raise ValueError(
+                raise QueryError(
                     "The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'sql_on_off' method, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(
                         expr
                     )
@@ -4018,7 +4115,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -4297,7 +4394,7 @@ vcolumns : vcolumn
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if print_info:
                     print(
-                        "\u26A0 Warning: The expression '{}' is incorrect.\nNothing was filtered.".format(
+                        "\u26A0 Warning : The expression '{}' is incorrect.\nNothing was filtered.".format(
                             expr
                         )
                     )
@@ -4315,7 +4412,7 @@ vcolumns : vcolumn
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if print_info:
-                    print("\u26A0 Warning: Nothing was filtered.")
+                    print("\u26A0 Warning : Nothing was filtered.")
         return self
 
     # ---#
@@ -4452,7 +4549,7 @@ vcolumns : vcolumn
                 )
             elif cols_hand:
                 print(
-                    "\u26A0 Warning: The vcolumn {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vcolumn get_dummies method".format(
+                    "\u26A0 Warning : The vcolumn {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vcolumn get_dummies method".format(
                         column
                     )
                 )
@@ -4528,60 +4625,64 @@ vcolumns : vcolumn
     ):
         """
 	---------------------------------------------------------------------------
-	Draws Responsive Charts using the High Chart API.
-	https://api.highcharts.com/highcharts/
-	The object returned can be customized using the API parameters and the
-	set_dict_options method.
+	[Beta Version]
+    Draws responsive charts using the High Chart API: 
+    https://api.highcharts.com/highcharts/
+
+    The returned object can be customized using the API parameters and the 
+    'set_dict_options' method.
+
+    \u26A0 Warning : This function uses the unsupported HighChart Python API. 
+                     For more information, see python-hicharts repository:
+                     https://github.com/kyper-data/python-highcharts
 
 	Parameters
  	----------
  	x / y / z / c: str / list
- 		vcolumns and aggregations to use to draw the Chart. They will depend on the 
- 		Chart type. An expression must be written entirely in SQL. For example: 
- 		AVG(column1) + SUM(column2) AS new_name will work.
+ 		The vcolumns and aggregations used to draw the chart. These will depend 
+        on the chart type. You can also specify an expression, but it must be a SQL 
+        statement. For example: AVG(column1) + SUM(column2) AS new_name.
+
  			area / area_ts / line / spline
  				x: numerical or type date like vcolumn
- 				y: Can be => list of the expressions to use to draw the Plot
- 						  => single expression
-			    z: [OPTIONAL] vcolumn representing the different categories (only 
-			    			  if y is a single vcolumn)
+ 				y: a single expression or list of expressions used to draw the plot
+			    z: [OPTIONAL] vcolumn representing the different categories 
+                    (only if y is a single vcolumn)
  			area_range
- 				x: numerical or type date like vcolumn
- 				y: list of 3 expressions [expression, lower bound, upper bound]
+ 				x: numerical or date type vcolumn
+ 				y: list of three expressions [expression, lower bound, upper bound]
  			bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
- 				x: vcolumn to use to compute the categories.
- 				y: [OPTIONAL] numerical expression representing the categories values.
- 							  If empty, COUNT(*) is used as default aggregation.
+ 				x: vcolumn used to compute the categories.
+ 				y: [OPTIONAL] numerical expression representing the categories values. 
+                    If empty, COUNT(*) is used as the default aggregation.
  			bar (double / drilldown) / donut (drilldown) / donut3d (drilldown)
  			hist (double / drilldown) / pie (drilldown) / pie_half (drilldown)
  			pie3d (drilldown) / stacked_bar / stacked_hist
- 				x: vcolumn to use to compute the first category.
-				y: vcolumn to use to compute the second category.
-				z: [OPTIONAL] numerical expression representing the different categories 
-							  values. If empty, COUNT(*) is used as default aggregation.
+ 				x: vcolumn used to compute the first category.
+				y: vcolumn used to compute the second category.
+				z: [OPTIONAL] numerical expression representing the different categories values. 
+                    If empty, COUNT(*) is used as the default aggregation.
  			biserial / boxplot / pearson / kendall / pearson / spearman
- 				x: list of the vcolumns to use to draw the Chart.
+ 				x: list of the vcolumns used to draw the Chart.
  			bubble / scatter
  				x: numerical vcolumn.
  				y: numerical vcolumn.
  				z: numerical vcolumn (bubble size in case of bubble plot, third 
  					dimension in case of scatter plot)
- 				c: [OPTIONAL] vcolumn to use to compute the different categories.
+ 				c: [OPTIONAL] [OPTIONAL] vcolumn used to compute the different categories.
  			candlestick
- 				x: date type like vcolumn.
-				y: Can be => numerical vcolumn 
-						  => list of 5 expressions [last quantile, maximum, minimum, 
-						  							first quantile, volume]
+ 				x: date type vcolumn.
+				y: Can be a numerical vcolumn or list of 5 expressions 
+                    [last quantile, maximum, minimum, first quantile, volume]
  			negative_bar
- 				x: binary vcolumn to use to compute the first category.
- 				y: vcolumn to use to compute the second category.
- 				z: [OPTIONAL] numerical expression representing the categories values.
- 							  If empty, COUNT(*) is used as default aggregation.
+ 				x: binary vcolumn used to compute the first category.
+ 				y: vcolumn used to compute the second category.
+ 				z: [OPTIONAL] numerical expression representing the categories values. 
+                    If empty, COUNT(*) is used as the default aggregation.
  			spider
- 				x: vcolumn to use to compute the different categories.
- 				y: [OPTIONAL] Can be => list of the expressions to use to draw the Plot
- 						  			 => single expression. 
- 						  	  If empty, COUNT(*) is used as default aggregation.
+ 				x: vcolumn used to compute the different categories.
+ 				y: [OPTIONAL] Can be a list of the expressions used to draw the Plot or a single expression. 
+                    If empty, COUNT(*) is used as the default aggregation.
  	aggregate: bool, optional
  		If set to True, the input vcolumns will be aggregated.
  	kind: str, optional
@@ -4601,6 +4702,10 @@ vcolumns : vcolumn
 			heatmap      : Heatmap
 			hist         : Histogram
 			kendall      : Kendall Correlation Matrix
+                           \u26A0 Warning : This method is computationally expensive. 
+                                            It is using a CROSS JOIN during the computation.
+                                            The complexity is O(n * n), n being the total
+                                            count of the vDataFrame.
 			line         : Line Plot
 			negative_bar : Multi Bar Chart for binary classes
 			pearson      : Pearson Correlation Matrix
@@ -4621,7 +4726,7 @@ vcolumns : vcolumn
  		High Chart Dictionary to use to customize the Chart. Look at the API 
  		documentation to know the different options.
  	h: float, optional
- 		Interval width of the bar. If empty, an optimized h will be computed.
+ 		Interval width of the bar. If empty, an optimized value will be used.
  	max_cardinality: int, optional
 		Maximum number of the vcolumn distinct elements.
  	limit: int, optional
@@ -4634,8 +4739,8 @@ vcolumns : vcolumn
  		Stock Chart: Only possible for Time Series. The design of the Time
  					 Series is dragable and have multiple options.
  	alpha: float, optional
- 		Float to use to determine the position of the upper and lower quantile
- 		(Used when kind is set to 'candlestick')
+ 		Value used to determine the position of the upper and lower quantile 
+        (Used when kind is set to 'candlestick')
 
  	Returns
  	-------
@@ -4726,7 +4831,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -4779,8 +4884,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -4815,8 +4920,7 @@ vcolumns : vcolumn
             cmap = gen_cmap()[0]
         from verticapy.plot import hexbin
 
-        hexbin(self, columns, method, of, cmap, gridsize, color, bbox, img)
-        return self
+        return hexbin(self, columns, method, of, cmap, gridsize, color, bbox, img)
 
     # ---#
     def hist(
@@ -4862,8 +4966,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -4890,18 +4994,17 @@ vcolumns : vcolumn
         stacked = True if (hist_type.lower() == "stacked") else False
         multi = True if (hist_type.lower() == "multi") else False
         if len(columns) == 1:
-            self[columns[0]].hist(method, of, 6, 0, 0)
+            return self[columns[0]].hist(method, of, 6, 0, 0)
         else:
             if multi:
                 from verticapy.plot import multiple_hist
 
                 h_0 = h[0] if (h[0]) else 0
-                multiple_hist(self, columns, method, of, h_0)
+                return multiple_hist(self, columns, method, of, h_0)
             else:
                 from verticapy.plot import hist2D
 
-                hist2D(self, columns, method, of, max_cardinality, h, stacked)
-        return self
+                return hist2D(self, columns, method, of, max_cardinality, h, stacked)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0, columns: list = []):
@@ -4916,13 +5019,14 @@ vcolumns : vcolumn
  	offset: int, optional
  		Number of elements to skip.
     columns: list, optional
-        List of the vcolumns names. If empty, all the vcolumns will be selected.
+        A list containing the names of the vcolumns to include in the result. 
+        If empty, all the vcolumns will be selected.
 
 
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -4968,11 +5072,16 @@ vcolumns : vcolumn
         result.count = self.shape()[0]
         result.offset = offset
         result.name = self._VERTICAPY_VARIABLES_["input_relation"]
+        result.display_ncols = self._VERTICAPY_VARIABLES_["display"]["columns"]
         columns = self.get_columns()
         all_percent = True
         for column in columns:
             if not ("percent" in self[column].catalog):
                 all_percent = False
+        all_percent = (
+            all_percent
+            or (self._VERTICAPY_VARIABLES_["display"]["percent_bar"] == True)
+        ) and (self._VERTICAPY_VARIABLES_["display"]["percent_bar"] != False)
         if all_percent:
             percent = self.agg(["percent"], columns).transpose().values
         for column in result.values:
@@ -5057,6 +5166,12 @@ vcolumns : vcolumn
         """
 	---------------------------------------------------------------------------
 	Joins the vDataFrame with another one or an input relation.
+
+    \u26A0 Warning : Joins can make the vDataFrame structure heavier. It is 
+                     recommended to always check the current structure 
+                     using the 'current_relation' method and to save it using the 
+                     'to_db' method with the parameters 'inplace = True' and 
+                     'relation_type = table'
 
 	Parameters
  	----------
@@ -5171,7 +5286,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5261,7 +5376,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5269,30 +5384,6 @@ vcolumns : vcolumn
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
         return self.aggregate(func=["mad"], columns=columns)
-
-    # ---#
-    def aad(self, columns: list = []):
-        """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
-
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, check out
- 		utilities.tablesample.
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.aggregate(func=["aad"], columns=columns)
 
     # ---#
     def max(self, columns: list = []):
@@ -5309,7 +5400,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5333,7 +5424,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5351,7 +5442,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5387,7 +5478,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5444,7 +5535,7 @@ vcolumns : vcolumn
                 pass
             else:
                 print(
-                    "\u26A0 Warning: The vcolumn {} was skipped\nNormalize only accept numerical data types".format(
+                    "\u26A0 Warning : The vcolumn {} was skipped\nNormalize only accept numerical data types".format(
                         column
                     )
                 )
@@ -5491,7 +5582,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5580,21 +5671,21 @@ vcolumns : vcolumn
     index: str
         vcolumn to use to group the elements.
     columns: str
-        vcolumn to use to compute the different categories. These categories will
-        represent the new columns.
+        The vcolumn used to compute the different categories, which then act 
+        as the columns in the pivot table.
     values: str
-        vcolumn to use for populating new vDataFrame's values.
+        The vcolumn whose values populate the new vDataFrame.
     aggr: str, optional
-        Aggregation to use on 'values'. To use complex aggregations, it must be 
-        composed of two flower brackets {}. For example to aggregate using the 
+        Aggregation to use on 'values'. To use complex aggregations, 
+        you must use braces: {}. For example, to aggregate using the 
         aggregation: x -> MAX(x) - MIN(x), write "MAX({}) - MIN({})".
     prefix: str, optional
-        Prefix to use on 'columns' when creating the new columns.
+        The prefix for the pivot table's column names.
 
     Returns
     -------
     vDataFrame
-        object result of the pivot.
+        the pivot table object.
 
     See Also
     --------
@@ -5697,8 +5788,9 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
   	See Also
  	--------
@@ -5758,8 +5850,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
 	See Also
 	--------
@@ -5778,32 +5870,7 @@ vcolumns : vcolumn
         ts = vdf_columns_names([ts], self)[0]
         from verticapy.plot import multi_ts_plot
 
-        multi_ts_plot(self, ts, columns, start_date, end_date)
-        return self
-
-    # ---#
-    def prod(self, columns: list = []):
-        """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'product'.
-
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
-
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, check out
- 		utilities.tablesample.
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.product(columns=columns)
+        return multi_ts_plot(self, ts, columns, start_date, end_date)
 
     # ---#
     def product(self, columns=[]):
@@ -5820,7 +5887,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5828,6 +5895,8 @@ vcolumns : vcolumn
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
         return self.aggregate(func=["prod"], columns=columns)
+
+    prod = product
 
     # ---#
     def quantile(self, q: list, columns: list = []):
@@ -5847,7 +5916,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -5999,7 +6068,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -6040,9 +6109,18 @@ vcolumns : vcolumn
         method = "regr_{}".format(method)
         if not (columns):
             columns = self.numcol()
+            if not (columns):
+                raise EmptyParameter("No numerical column found in the vDataFrame.")
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
         columns = vdf_columns_names(columns, self)
+        for column in columns:
+            if not (self[column].isnum()):
+                raise TypeError(
+                    "vcolumn {} must be numerical to compute the Regression Matrix.".format(
+                        column
+                    )
+                )
         n = len(columns)
         all_list, nb_precomputed = [], 0
         for i in range(0, n):
@@ -6163,6 +6241,12 @@ vcolumns : vcolumn
 	---------------------------------------------------------------------------
 	Adds a new vcolumn to the vDataFrame by using an advanced analytical window 
 	function on one or two specific vcolumns.
+
+    \u26A0 Warning : Some window functions can make the vDataFrame structure 
+                     heavier. It is recommended to always check the current structure 
+                     using the 'current_relation' method and to save it using the 
+                     'to_db' method with the parameters 'inplace = True' and 
+                     'relation_type = table'
 
 	Parameters
  	----------
@@ -6385,9 +6469,10 @@ vcolumns : vcolumn
         """
 	---------------------------------------------------------------------------
 	Downsamples the vDataFrame by filtering using a random vcolumn.
-	Be Careful: the result will change for each SQL code generation as the 
-	random numbers are not memorized. You can use this method to downsample 
-	before saving the final relation to the DataBase.
+
+    \u26A0 Warning : The result will change for each SQL code generation as the 
+                     random numbers are not memorized. You can use this method to 
+                     downsample before saving the final relation to the DataBase.
 
 	Parameters
  	----------
@@ -6402,7 +6487,7 @@ vcolumns : vcolumn
 		"""
         check_types([("x", x, [int, float], False)])
         if (x <= 0) or (x >= 1):
-            raise ValueError("Parameter 'x' must be between 0 and 1")
+            raise ParameterError("Parameter 'x' must be between 0 and 1")
         name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
         self.eval(name, "RANDOM()")
         self.filter("{} < {}".format(name, x), print_info=False)
@@ -6523,8 +6608,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -6553,7 +6638,7 @@ vcolumns : vcolumn
         if len(columns) == 2:
             from verticapy.plot import scatter2D
 
-            scatter2D(
+            return scatter2D(
                 self,
                 columns + catcol,
                 max_cardinality,
@@ -6563,10 +6648,10 @@ vcolumns : vcolumn
                 bbox,
                 img,
             )
-        else:
+        elif len(columns) == 3:
             from verticapy.plot import scatter3D
 
-            scatter3D(
+            return scatter3D(
                 self,
                 columns + catcol,
                 max_cardinality,
@@ -6574,7 +6659,12 @@ vcolumns : vcolumn
                 with_others,
                 max_nb_points,
             )
-        return self
+        else:
+            raise ParameterError(
+                "Only 2D/3D Scatter Plots are available. Found {} columns.".format(
+                    len(columns)
+                )
+            )
 
     # ---#
     def scatter_matrix(self, columns: list = []):
@@ -6590,8 +6680,8 @@ vcolumns : vcolumn
 
  	Returns
  	-------
- 	vDataFrame
-		self
+ 	Figure
+		Matplotlib Figure
 
  	See Also
  	--------
@@ -6602,8 +6692,7 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         from verticapy.plot import scatter_matrix
 
-        scatter_matrix(self, columns)
-        return self
+        return scatter_matrix(self, columns)
 
     # ---#
     def search(self, conditions="", usecols: list = [], expr: list = [], order_by=[]):
@@ -6707,7 +6796,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -6798,6 +6887,52 @@ vcolumns : vcolumn
         return self
 
     # ---#
+    def set_display_parameters(
+        self, rows: int = -1, columns: int = -1, percent_bar="auto"
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Sets new parameters for displaying the vDataFrame.
+
+    Parameters
+    ----------
+    rows: int, optional
+        Number of rows to display. If the parameter is incorrect, nothing will
+        be changed.
+    columns: int, optional
+        Number of columns to display. If the parameter is incorrect, nothing 
+        will be changed.
+    percent_bar: bool/"auto"
+        If set to True or if set to 'auto' and the percent of missing values are
+        already computed, displays the percent of non-missing values.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        check_types(
+            [
+                ("rows", rows, [int, float], False),
+                ("columns", columns, [int, float], False),
+                ("percent_bar", percent_bar, [bool, str], False),
+            ]
+        )
+        if rows >= 0:
+            self._VERTICAPY_VARIABLES_["display"]["rows"] = int(rows)
+        if columns > 0:
+            self._VERTICAPY_VARIABLES_["display"]["columns"] = int(columns)
+        if percent_bar in (True, False, "auto"):
+            self._VERTICAPY_VARIABLES_["display"]["percent_bar"] = percent_bar
+        else:
+            raise ParameterError(
+                "Parameter 'percent_bar' must be a boolean or equal to 'auto', found {}.".format(
+                    percent_bar
+                )
+            )
+        return self
+
+    # ---#
     def set_schema_writing(self, schema_writing: str):
         """
 	---------------------------------------------------------------------------
@@ -6831,7 +6966,7 @@ vcolumns : vcolumn
         ):
             self._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
         else:
-            raise ValueError(
+            raise MissingSchema(
                 "The schema '{}' doesn't exist or is not accessible.\nThe attribute of the vDataFrame 'schema_writing' did not change.".format(
                     schema_writing
                 )
@@ -7052,7 +7187,7 @@ vcolumns : vcolumn
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in roc|prc|lift|accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|r2|mae|mse|msle|max|median|var"
             )
 
@@ -7095,7 +7230,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -7172,7 +7307,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -7197,7 +7332,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -7205,6 +7340,59 @@ vcolumns : vcolumn
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
         return self.aggregate(func=["sum"], columns=columns)
+
+    # ---#
+    def swap(self, column1, column2):
+        """
+    ---------------------------------------------------------------------------
+    Swap the two input vcolumns.
+
+    Parameters
+    ----------
+    column1: str/int
+        The first vcolumn to swap or index of the first vcolumn to swap.
+    column2: str/int
+        The second vcolumn to swap or index of the second vcolumn to swap.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        check_types(
+            [
+                ("column1", column1, [str, int], False),
+                ("column2", column2, [str, int], False),
+            ]
+        )
+        if type(column1) == int:
+            if column1 >= self.shape()[1]:
+                raise ParameterError(
+                    "The parameter 'column1' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
+                        column1, self.shape()[1]
+                    )
+                )
+            column1 = self.get_columns()[column1]
+        if type(column2) == int:
+            if column2 >= self.shape()[1]:
+                raise ParameterError(
+                    "The parameter 'column2' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
+                        column2, self.shape()[1]
+                    )
+                )
+            column2 = self.get_columns()[column2]
+        columns_check([column1, column2], self)
+        column1 = vdf_columns_names([column1], self)[0]
+        column2 = vdf_columns_names([column2], self)[0]
+        columns = self._VERTICAPY_VARIABLES_["columns"]
+        all_cols = {}
+        for idx, elem in enumerate(columns):
+            all_cols[elem] = idx
+        columns[all_cols[column1]], columns[all_cols[column2]] = (
+            columns[all_cols[column2]],
+            columns[all_cols[column1]],
+        )
+        return self
 
     # ---#
     def tail(self, limit: int = 5):
@@ -7220,7 +7408,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -7561,7 +7749,12 @@ vcolumns : vcolumn
     ):
         """
 	---------------------------------------------------------------------------
-	Mann Kendall test (Time Series trend).
+    Mann Kendall test (Time Series trend).
+
+    \u26A0 Warning : This Test is computationally expensive. It is using a CROSS 
+                     JOIN during the computation. The complexity is O(n * k), n 
+                     being the total count of the vDataFrame and k the number
+                     of rows to use to do the test.
 
 	Parameters
  	----------
@@ -7779,7 +7972,7 @@ vcolumns : vcolumn
             else [str_column(column) for column in usecols]
         )
         if (new_header) and (len(new_header) != len(columns)):
-            raise ValueError("The header has an incorrect number of columns")
+            raise ParsingError("The header has an incorrect number of columns")
         elif new_header:
             file.write(sep.join(new_header))
         elif header:
@@ -8014,8 +8207,9 @@ vcolumns : vcolumn
     def to_list(self):
         """
 	---------------------------------------------------------------------------
-	Converts the vDataFrame to a Python list. Be careful as you'll move data 
-	in memory.
+	Converts the vDataFrame to a Python list.
+
+    \u26A0 Warning : The data will be loaded in memory.
 
  	Returns
  	-------
@@ -8030,8 +8224,9 @@ vcolumns : vcolumn
     def to_pandas(self):
         """
 	---------------------------------------------------------------------------
-	Converts the vDataFrame to a pandas DataFrame. Be careful as you'll move data 
-	in memory.
+	Converts the vDataFrame to a pandas DataFrame.
+
+    \u26A0 Warning : The data will be loaded in memory.
 
  	Returns
  	-------
@@ -8098,7 +8293,7 @@ vcolumns : vcolumn
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also

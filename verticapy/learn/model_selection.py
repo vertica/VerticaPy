@@ -56,6 +56,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.cluster import KMeans
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 def best_k(
@@ -190,7 +191,7 @@ cutoff: float, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -203,7 +204,7 @@ tablesample
         ]
     )
     if cv < 2:
-        raise ValueError("Cross Validation is only possible with at least 2 folds")
+        raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if estimator.type == "regressor":
         result = {
             "index": [
@@ -232,7 +233,7 @@ tablesample
             ]
         }
     else:
-        raise ValueError(
+        raise Exception(
             "Cross Validation is only possible for Regressors and Classifiers"
         )
     try:
@@ -299,7 +300,7 @@ tablesample
             ]
         else:
             if (len(estimator.classes) > 2) and (pos_label not in estimator.classes):
-                raise ValueError(
+                raise ParameterError(
                     "'pos_label' must be in the estimator classes, it must be the main class to study for the Cross Validation"
                 )
             elif (len(estimator.classes) == 2) and (pos_label not in estimator.classes):

@@ -55,6 +55,7 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 class ElasticNet:
@@ -201,7 +202,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
@@ -292,6 +293,11 @@ test_relation: str
 	---------------------------------------------------------------------------
 	Draws the Linear Regression if the number of predictors is equal to 1 or 2.
 
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
+
 	Parameters
 	----------
 	max_nb_points: int
@@ -299,7 +305,7 @@ test_relation: str
 		"""
         check_types([("max_nb_points", max_nb_points, [int, float], False)])
         coefficients = self.coef.values["coefficient"]
-        regression_plot(
+        return regression_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -347,7 +353,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
 
@@ -400,7 +406,7 @@ test_relation: str
                 self.y, self.deploySQL(), self.test_relation, self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
             )
 
@@ -629,7 +635,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -656,7 +662,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -710,7 +716,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
@@ -804,7 +810,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return lift_chart(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -814,6 +820,11 @@ test_relation: str
         """
 	---------------------------------------------------------------------------
 	Draws the Logistic Regression if the number of predictors is equal to 1 or 2.
+    
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
 
 	Parameters
 	----------
@@ -822,7 +833,7 @@ test_relation: str
 		"""
         check_types([("max_nb_points", max_nb_points, [int, float], False)])
         coefficients = self.coef.values["coefficient"]
-        logit_plot(
+        return logit_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -840,7 +851,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -885,7 +896,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -980,7 +991,7 @@ test_relation: str
                 self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
 

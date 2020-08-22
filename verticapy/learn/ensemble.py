@@ -55,6 +55,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 class RandomForestClassifier:
@@ -201,7 +202,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types(
@@ -232,7 +233,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -358,7 +359,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) x ORDER BY 2 DESC;".format(
@@ -458,7 +459,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("tree_id", tree_id, [int, float], False)])
@@ -484,7 +485,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -493,7 +494,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         return lift_chart(
             self.y,
             self.deploySQL(allSQL=True)[0].format(pos_label),
@@ -542,7 +545,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -551,7 +554,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         return prc_curve(
             self.y,
             self.deploySQL(allSQL=True)[0].format(pos_label),
@@ -612,7 +617,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -621,7 +626,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         return roc_curve(
             self.y,
             self.deploySQL(allSQL=True)[0].format(pos_label),
@@ -676,7 +683,9 @@ test_relation: str
             else pos_label
         )
         if (pos_label not in self.classes) and (method != "accuracy"):
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
             cutoff = self.score(pos_label, 0.5, "best_cutoff")
         if method in ("accuracy", "acc"):
@@ -780,7 +789,7 @@ test_relation: str
                 self.cursor,
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
 
@@ -961,7 +970,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) x ORDER BY 2 DESC;".format(
@@ -1054,7 +1063,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("tree_id", tree_id, [int, float], False)])
@@ -1124,7 +1133,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return regression_report(
@@ -1180,6 +1189,6 @@ test_relation: str
                 self.y, self.deploySQL(), self.test_relation, self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
             )

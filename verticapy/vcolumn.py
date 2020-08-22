@@ -54,6 +54,7 @@ import math, re
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.errors import *
 
 ##
 #
@@ -230,9 +231,9 @@ Attributes
         check_types([("name", name, [str], False)])
         name = str_column(name.replace('"', "_"))
         if not (name.replace('"', "")):
-            raise ValueError("The parameter 'name' must not be empty")
+            raise EmptyParameter("The parameter 'name' must not be empty")
         elif column_check_ambiguous(name, self.parent.get_columns()):
-            raise ValueError(
+            raise NameError(
                 "A vcolumn has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(
                     name
                 )
@@ -295,7 +296,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
  	See Also
@@ -403,7 +404,7 @@ Attributes
                 )
             return self.parent
         except Exception as e:
-            raise Exception(
+            raise QueryError(
                 "{}\nError when applying the func 'x -> {}' to '{}'".format(
                     e, func.replace("{}", "x"), self.alias.replace('"', "")
                 )
@@ -532,7 +533,7 @@ Attributes
             )
             return self.parent
         except Exception as e:
-            raise Exception(
+            raise ConversionError(
                 "{}\nThe vcolumn {} can not be converted to {}".format(
                     e, self.alias, dtype
                 )
@@ -595,8 +596,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -618,8 +619,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import bar
 
-        bar(self, method, of, max_cardinality, bins, h, color)
-        return self.parent
+        return bar(self, method, of, max_cardinality, bins, h, color)
 
     # ---#
     def boxplot(
@@ -650,8 +650,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -670,8 +670,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import boxplot
 
-        boxplot(self, by, h, max_cardinality, cat_priority)
-        return self.parent
+        return boxplot(self, by, h, max_cardinality, cat_priority)
 
     # ---#
     def category(self):
@@ -722,7 +721,9 @@ Attributes
             ]
         )
         if (lower == None) and (upper == None):
-            raise ValueError("At least 'lower' or 'upper' must have a numerical value")
+            raise ParameterError(
+                "At least 'lower' or 'upper' must have a numerical value"
+            )
         lower_when = (
             "WHEN {} < {} THEN {} ".format("{}", lower, lower)
             if (type(lower) in (float, int))
@@ -875,8 +876,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
 	See Also
 	--------
@@ -898,8 +899,7 @@ Attributes
         kernel = kernel.lower()
         from verticapy.plot import density
 
-        density(self, a, kernel, smooth, color)
-        return self.parent
+        return density(self, a, kernel, smooth, color)
 
     # ---#
     def describe(
@@ -929,7 +929,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -950,11 +950,11 @@ Attributes
         )
         method = method.lower()
         if method not in ["auto", "numerical", "categorical", "cat_stats"]:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in auto|categorical|numerical|cat_stats"
             )
         elif (method == "cat_stats") and not (numcol):
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
             )
         distinct_count, is_numeric, is_date = (
@@ -1165,7 +1165,7 @@ Attributes
                 "{}.VERTICAPY_TEMP_MODEL_{}".format(schema, rand_int),
             )
             if bins < 2:
-                raise ValueError(
+                raise ParameterError(
                     "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'"
                 )
             columns_check([response], self.parent)
@@ -1217,7 +1217,7 @@ Attributes
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             if k < 2:
-                raise ValueError(
+                raise ParameterError(
                     "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
                 )
             distinct = self.topk(k).values["index"]
@@ -1238,7 +1238,7 @@ Attributes
             )
         elif self.isnum() and method == "same_freq":
             if bins < 2:
-                raise ValueError(
+                raise ParameterError(
                     "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
                 )
             count = self.count()
@@ -1412,8 +1412,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -1433,8 +1433,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        pie(self, method, of, max_cardinality, h, True)
-        return self.parent
+        return pie(self, method, of, max_cardinality, h, True)
 
     # ---#
     def drop(self, add_history: bool = True):
@@ -1629,7 +1628,9 @@ Attributes
         )
         method = method.lower()
         if method not in ("winsorize", "null", "mean"):
-            raise ValueError("The parameter 'method' must be in winsorize|null|mean")
+            raise ParameterError(
+                "The parameter 'method' must be in winsorize|null|mean"
+            )
         else:
             if use_threshold:
                 result = self.aggregate(func=["std", "avg"]).transpose().values
@@ -1758,7 +1759,7 @@ Attributes
             val = self.mode(dropna=True)
             if val == None:
                 print(
-                    "\u26A0 Warning: The vcolumn {} has no mode (only missing values)\nNothing was filled.".format(
+                    "\u26A0 Warning : The vcolumn {} has no mode (only missing values)\nNothing was filled.".format(
                         self.alias
                     )
                 )
@@ -1817,7 +1818,7 @@ Attributes
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
             if not (order_by):
-                raise ValueError(
+                raise ParameterError(
                     "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
                 )
             desc = " DESC" if (method in ("ffill", "pad")) else ""
@@ -1833,7 +1834,7 @@ Attributes
                 "{}", "{}", partition_by, order_by_ts
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The method '{}' does not exist or is not available\nPlease use a method in auto|mean|median|mode|ffill|bfill|0ifnull".format(
                     method
                 )
@@ -1866,7 +1867,7 @@ Attributes
             total = abs(self.count() - total)
         except Exception as e:
             self.transformations = [elem for elem in copy_trans]
-            raise Exception("{}\nAn Error happened during the filling.".format(e))
+            raise QueryError("{}\nAn Error happened during the filling.".format(e))
         if total > 0:
             try:
                 if "count" in sauv:
@@ -1953,7 +1954,7 @@ Attributes
                     )
                 )
                 if column_check_ambiguous(name, columns):
-                    raise ValueError(
+                    raise NameError(
                         "A vcolumn has already the alias of one of the dummies ({}).\nIt can be the result of using previously the method on the vcolumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.".format(
                             name
                         )
@@ -2016,7 +2017,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2064,8 +2065,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -2087,8 +2088,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import hist
 
-        hist(self, method, of, max_cardinality, bins, h, color)
-        return self.parent
+        return hist(self, method, of, max_cardinality, bins, h, color)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -2106,7 +2106,7 @@ Attributes
     Returns
     -------
     tablesample
-        An object containing the result. For more information, check out
+        An object containing the result. For more information, see
         utilities.tablesample.
 
     See Also
@@ -2244,7 +2244,7 @@ Attributes
 		"""
         if self.category() in ["date", "float"]:
             print(
-                "\u26A0 Warning: label_encode is only available for categorical variables."
+                "\u26A0 Warning : label_encode is only available for categorical variables."
             )
         else:
             distinct_elements = self.distinct()
@@ -2445,7 +2445,7 @@ Attributes
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
         if n < 1:
-            raise ValueError("Parameter 'n' must be greater or equal to 1")
+            raise ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         self.parent.__executeSQL__(
             "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) x ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
@@ -2501,7 +2501,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2572,7 +2572,7 @@ Attributes
         nullifzero, n = 1, len(by)
         if self.ctype() == "boolean":
             print(
-                "\u26A0 Warning: Normalize doesn't work on booleans".format(self.alias)
+                "\u26A0 Warning : Normalize doesn't work on booleans".format(self.alias)
             )
         elif self.isnum():
             if method == "zscore":
@@ -2581,7 +2581,7 @@ Attributes
                     avg, stddev = self.aggregate(["avg", "std"]).values[self.alias]
                     if stddev == 0:
                         print(
-                            "\u26A0 Warning: Can not normalize {} using a Z-Score - The Standard Deviation is null !".format(
+                            "\u26A0 Warning : Can not normalize {} using a Z-Score - The Standard Deviation is null !".format(
                                 self.alias
                             )
                         )
@@ -2674,7 +2674,7 @@ Attributes
             elif method == "robust_zscore":
                 if n > 0:
                     print(
-                        "\u26A0 Warning: the method 'robust_zscore' is available only if the parameter 'by' is empty\nIf you want to normalize by grouping by elements, please use a method in zscore|minmax"
+                        "\u26A0 Warning : the method 'robust_zscore' is available only if the parameter 'by' is empty\nIf you want to normalize by grouping by elements, please use a method in zscore|minmax"
                     )
                     return self
                 mad, med = self.aggregate(["mad", "median"]).values[self.alias]
@@ -2692,7 +2692,7 @@ Attributes
                         ]
                 else:
                     print(
-                        "\u26A0 Warning: Can not normalize {} using a Robust Z-Score - The MAD is null !".format(
+                        "\u26A0 Warning : Can not normalize {} using a Robust Z-Score - The MAD is null !".format(
                             self.alias
                         )
                     )
@@ -2703,7 +2703,7 @@ Attributes
                     cmin, cmax = self.aggregate(["min", "max"]).values[self.alias]
                     if cmax - cmin == 0:
                         print(
-                            "\u26A0 Warning: Can not normalize {} using the MIN and the MAX. MAX = MIN !".format(
+                            "\u26A0 Warning : Can not normalize {} using the MIN and the MAX. MAX = MIN !".format(
                                 self.alias
                             )
                         )
@@ -2869,7 +2869,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -2950,7 +2950,7 @@ Attributes
             result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         else:
-            raise TypeError("numh is only available on type numeric|date")
+            raise ParameterError("numh is only available on type numeric|date")
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
             1e-99,
@@ -3027,8 +3027,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
  	See Also
  	--------
@@ -3048,8 +3048,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        pie(self, method, of, max_cardinality, h, False)
-        return self.parent
+        return pie(self, method, of, max_cardinality, h, False)
 
     # ---#
     def plot(
@@ -3085,8 +3084,8 @@ Attributes
 
  	Returns
  	-------
- 	vDataFrame
-		self.parent
+ 	Figure
+        Matplotlib Figure
 
 	See Also
 	--------
@@ -3107,25 +3106,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import ts_plot
 
-        ts_plot(self, ts, by, start_date, end_date, color, area)
-        return self.parent
-
-    # ---#
-    def prod(self):
-        """
-	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'product'.
-
- 	Returns
- 	-------
- 	float
- 		product
-
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
-        return self.product()
+        return ts_plot(self, ts, by, start_date, end_date, color, area)
 
     # ---#
     def product(self):
@@ -3143,6 +3124,8 @@ Attributes
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
         return self.aggregate(func=["prod"]).values[self.alias][0]
+
+    prod = product
 
     # ---#
     def quantile(self, x: float):
@@ -3172,10 +3155,12 @@ Attributes
     def rename(self, new_name: str):
         """
 	---------------------------------------------------------------------------
-	Renames the vcolumn. It will drop the current vcolumn and create a copy with
-	the new name. It is well recommanded to do it at the beginning of the data
-	preparations. If the vDataFrame was transformed multiple time, it will make
-	the SQL code generation heavier. 
+	Renames the vcolumn by dropping the current vcolumn and creating a copy with 
+    the specified name.
+
+    \u26A0 Warning : SQL code generation will be slower if the vDataFrame has been 
+                     transformed multiple times, so it's better practice to use 
+                     this method when first preparing your data.
 
 	Parameters
  	----------
@@ -3195,7 +3180,7 @@ Attributes
         old_name = str_column(self.alias)
         new_name = new_name.replace('"', "")
         if column_check_ambiguous(new_name, self.parent.get_columns()):
-            raise ValueError(
+            raise NameError(
                 "A vcolumn has already the alias {}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.".format(
                     new_name
                 )
@@ -3579,7 +3564,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3605,7 +3590,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also
@@ -3665,7 +3650,7 @@ Attributes
  	Returns
  	-------
  	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 
 	See Also

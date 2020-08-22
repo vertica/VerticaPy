@@ -56,6 +56,7 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.plot import lof_plot
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 class NearestCentroid:
@@ -64,8 +65,9 @@ class NearestCentroid:
 [Beta Version]
 Creates a NearestCentroid object by using the K Nearest Centroid Algorithm. 
 This object is using pure SQL to compute all the distances and final score. 
-As NearestCentroid is using the p-distance, it is highly sensible to 
-un-normalized data.  
+
+\u26A0 Warning : As NearestCentroid is using the p-distance, it is highly 
+                 sensible to un-normalized data.  
 
 Parameters
 ----------
@@ -148,7 +150,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types(
@@ -179,7 +181,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -326,7 +328,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -335,7 +337,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_nc = '{}'".format(pos_label)
         y_proba = "proba_predict"
         return lift_chart(self.y, y_proba, input_relation, self.cursor, pos_label)
@@ -355,7 +359,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -364,7 +368,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_nc = '{}'".format(pos_label)
         y_proba = "proba_predict"
         return prc_curve(self.y, y_proba, input_relation, self.cursor, pos_label)
@@ -384,7 +390,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -393,7 +399,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_nc = '{}'".format(pos_label)
         y_proba = "proba_predict"
         return roc_curve(self.y, y_proba, input_relation, self.cursor, pos_label)
@@ -448,7 +456,9 @@ test_relation: str
         y_proba = "proba_predict"
         y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
         if (pos_label not in self.classes) and (method != "accuracy"):
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
             cutoff = self.score(pos_label, 0.5, "best_cutoff")
         if method in ("accuracy", "acc"):
@@ -491,7 +501,7 @@ test_relation: str
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(y_true, y_score, input_relation, self.cursor)
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
 
@@ -565,10 +575,13 @@ class KNeighborsClassifier:
 ---------------------------------------------------------------------------
 [Beta Version]
 Creates a KNeighborsClassifier object by using the K Nearest Neighbors Algorithm. 
-This object is using pure SQL to compute all the distances and final score. 
-It is using CROSS JOIN and may be really expensive in some cases. As 
-KNeighborsClassifier is using the p-distance, it is highly sensible to 
-un-normalized data. 
+This object is using pure SQL to compute all the distances and final score.
+
+\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
+                 JOIN during the computation. The complexity is O(n * n), n 
+                 being the total number of elements. As KNeighborsClassifier 
+                 is using the p-distance, it is highly sensible to un-normalized 
+                 data. 
 
 Parameters
 ----------
@@ -649,7 +662,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types(
@@ -680,7 +693,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -829,7 +842,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -838,7 +851,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_knc = '{}'".format(
             pos_label
         )
@@ -860,7 +875,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -869,7 +884,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_knc = '{}'".format(
             pos_label
         )
@@ -891,7 +908,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         pos_label = (
@@ -900,7 +917,9 @@ test_relation: str
             else pos_label
         )
         if pos_label not in self.classes:
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         input_relation = self.deploySQL() + " WHERE predict_knc = '{}'".format(
             pos_label
         )
@@ -957,7 +976,9 @@ test_relation: str
         y_proba = "proba_predict"
         y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
         if (pos_label not in self.classes) and (method != "accuracy"):
-            raise ValueError("'pos_label' must be one of the response column classes")
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
         elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
             cutoff = self.score(pos_label, 0.5, "best_cutoff")
         if method in ("accuracy", "acc"):
@@ -1000,7 +1021,7 @@ test_relation: str
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(y_true, y_score, input_relation, self.cursor)
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
 
@@ -1073,9 +1094,12 @@ class KNeighborsRegressor:
 [Beta Version]
 Creates a KNeighborsRegressor object by using the K Nearest Neighbors Algorithm. 
 This object is using pure SQL to compute all the distances and final score. 
-It is using CROSS JOIN and may be really expensive in some cases. As 
-KNeighborsRegressor is using the p-distance, it is highly sensible to 
-un-normalized data. 
+
+\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
+                 JOIN during the computation. The complexity is O(n * n), n 
+                 being the total number of elements. As KNeighborsRegressor 
+                 is using the p-distance, it is highly sensible to un-normalized 
+                 data.
 
 Parameters
 ----------
@@ -1214,7 +1238,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return regression_report(self.y, "predict_knr", self.deploySQL(), self.cursor)
@@ -1268,7 +1292,7 @@ test_relation: str
                 self.y, "predict_knr", self.deploySQL(), self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
             )
 
@@ -1299,10 +1323,13 @@ class LocalOutlierFactor:
 Creates a LocalOutlierFactor object by using the Local Outlier Factor algorithm 
 as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg 
 Sander. This object is using pure SQL to compute all the distances and final 
-score. It is using CROSS JOIN and may be really expensive in some cases. It 
-will index all the elements of the table in order to be optimal (the CROSS 
-JOIN will happen only with IDs which are integers). As LocalOutlierFactor 
-is using the p-distance, it is highly sensible to un-normalized data. 
+score.
+
+\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
+                 JOIN during the computation. The complexity is O(n * n), n 
+                 being the total number of elements. As LocalOutlierFactor 
+                 is using the p-distance, it is highly sensible to un-normalized 
+                 data. A table will be created at the end of the learning phase.
 
 Parameters
 ----------
@@ -1543,12 +1570,17 @@ key_columns: list
 	tablesample: float, optional
 		Sample of data to display. If this number is not between 0 and 1 all
 		the data points will be displayed.
+
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
 		"""
         check_types(
             [("X", X, [list], False), ("tablesample", tablesample, [int, float], False)]
         )
         X = self.X if not (X) else X
-        lof_plot(self.name, X, "lof_score", self.cursor, tablesample)
+        return lof_plot(self.name, X, "lof_score", self.cursor, tablesample)
 
     # ---#
     def to_vdf(self):

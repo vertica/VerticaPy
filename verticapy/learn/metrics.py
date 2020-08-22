@@ -414,7 +414,7 @@ cursor: DBcursor, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -607,7 +607,7 @@ estimator: object, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -780,7 +780,7 @@ pos_label: int/float/str, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -1195,7 +1195,7 @@ cursor: DBcursor, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(

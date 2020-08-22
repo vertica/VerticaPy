@@ -61,6 +61,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.cluster import KMeans
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 def elbow(
@@ -102,7 +103,7 @@ tol: float, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -197,7 +198,7 @@ nbins: int, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -287,7 +288,7 @@ auc_prc: bool, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -390,7 +391,7 @@ best_threshold: bool, optional
 Returns
 -------
 tablesample
- 	An object containing the result. For more information, check out
+ 	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
     check_types(
@@ -551,12 +552,6 @@ def logit_plot(
         plt.legend(all_scatter, [0, 1], scatterpoints=1)
         plt.title(y + " = logit(" + X[0] + ")")
     elif len(X) == 2:
-        try:
-            import numpy
-        except:
-            raise Exception(
-                "You must install the numpy module to be able to plot 3D surfaces."
-            )
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
@@ -651,10 +646,10 @@ def logit_plot(
             fontsize=8,
         )
     else:
-        raise ValueError("The number of predictors is too big.")
+        raise ParameterError("The number of predictors is too big.")
     if conn:
         conn.close()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -774,12 +769,12 @@ def lof_plot(
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     else:
-        raise ValueError(
+        raise Exception(
             "LocalOutlierFactor Plot is available for a maximum of 3 columns"
         )
     if conn:
         conn.close()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -816,7 +811,7 @@ def plot_importance(
     plt.gca().xaxis.grid()
     plt.gca().set_axisbelow(True)
     plt.yticks(range(0, len(importances)), coefficients)
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -935,12 +930,6 @@ def regression_plot(
         plt.ylabel(y)
         plt.title(y + " = f(" + X[0] + ")")
     elif len(X) == 2:
-        try:
-            import numpy
-        except:
-            raise Exception(
-                "You must install the numpy module to be able to plot 3D surfaces."
-            )
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
         )
@@ -977,10 +966,10 @@ def regression_plot(
         ax.set_ylabel(X[1])
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
     else:
-        raise ValueError("The number of predictors is too big.")
+        raise ParameterError("The number of predictors is too big.")
     if conn:
         conn.close()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1073,12 +1062,6 @@ def svm_classifier_plot(
         plt.legend(all_scatter, [0, 1], scatterpoints=1)
         plt.title("svm(" + X[0] + ", " + X[1] + ")")
     elif len(X) == 3:
-        try:
-            import numpy
-        except:
-            raise Exception(
-                "You must install the numpy module to be able to plot 3D surfaces."
-            )
         query = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0],
             X[1],
@@ -1153,10 +1136,10 @@ def svm_classifier_plot(
             fontsize=8,
         )
     else:
-        raise ValueError("The number of predictors is too big.")
+        raise ParameterError("The number of predictors is too big.")
     if conn:
         conn.close()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1170,4 +1153,4 @@ def voronoi_plot(clusters: list, columns: list):
     voronoi_plot_2d(v, show_vertices=0)
     plt.xlabel(columns[0])
     plt.ylabel(columns[1])
-    plt.show()
+    return plt.gcf()

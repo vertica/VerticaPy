@@ -54,6 +54,7 @@ import os
 # VerticaPy Modules
 from verticapy.utilities import check_types
 import verticapy
+from verticapy.errors import *
 
 # Vertica Modules
 import vertica_python
@@ -172,7 +173,7 @@ vertica_conn           : Creates a Vertica Database connection.
         )
         dsn["user"] = "dbadmin"
     if ("password" not in dsn) or ("database" not in dsn) or ("host" not in dsn):
-        raise ValueError(
+        raise ParameterError(
             'The dictionary \'dsn\' is incomplete. It must include all the needed credentitals to set up the connection.\nExample: dsn = { "host": "10.211.55.14", "port": "5433", "database": "testdb", "password": "XxX", "user": "dbadmin"}"'
         )
     path = os.path.dirname(verticapy.__file__) + "/connections/all/{}.verticapy".format(
@@ -219,27 +220,27 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
         raise NameError(
             "No auto connection is available. To create an auto connection, use the new_auto_connection function of the verticapy.connections.connect module."
         )
-    dsn = file.read()
-    dsn = dsn.split("\n")
-    dsn[1] = dsn[1][6:]
-    dsn[2] = dsn[2][6:]
-    dsn[3] = dsn[3][10:]
-    dsn[4] = dsn[4][6:]
-    dsn[5] = dsn[5][10:]
     try:
-        conn = vertica_python.connect(
-            **{
-                "host": dsn[1],
-                "port": dsn[2],
-                "database": dsn[3],
-                "user": dsn[4],
-                "password": dsn[5],
-            }
-        )
+        dsn = file.read()
+        dsn = dsn.split("\n")
+        dsn[1] = dsn[1][6:]
+        dsn[2] = dsn[2][6:]
+        dsn[3] = dsn[3][10:]
+        dsn[4] = dsn[4][6:]
+        dsn[5] = dsn[5][10:]
     except:
-        raise ValueError(
-            "The auto connection format is incorrect. To create a new auto connection, use the new_auto_connection function of the verticapy.connections.connect module."
+        raise ParsingError(
+            "The auto connection format seems to be incorrect. To create a new auto connection, use the new_auto_connection function of the verticapy.connections.connect module."
         )
+    conn = vertica_python.connect(
+        **{
+            "host": dsn[1],
+            "port": dsn[2],
+            "database": dsn[3],
+            "user": dsn[4],
+            "password": dsn[5],
+        }
+    )
     return conn
 
 
@@ -264,7 +265,7 @@ dict
     odbc = f.read()
     f.close()
     if "[{}]".format(dsn) not in odbc:
-        raise ValueError("The DSN '{}' doesn't exist".format(dsn))
+        raise NameError("The DSN '{}' doesn't exist.".format(dsn))
     odbc = odbc.split("[{}]\n".format(dsn))[1].split("\n\n")[0].split("\n")
     dsn = {}
     for elem in odbc:

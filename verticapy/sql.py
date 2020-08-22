@@ -59,23 +59,48 @@
 def sql(line, cell=""):
     from verticapy.connections.connect import read_auto_connect
     from verticapy.utilities import readSQL
+    from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
     import time
     import re
     import vertica_python
+    from verticapy.errors import QueryError
 
     version = vertica_python.__version__.split(".")
     version = [int(elem) for elem in version]
     conn = read_auto_connect()
     cursor = conn.cursor()
     queries = line if (not (cell) and (line)) else cell
-    options = {"limit": 100}
+    options = {"limit": 100, "columns": 100, "percent_bar": False, "vdf": False}
     queries = queries.replace("\t", " ")
     queries = queries.replace("\n", " ")
     queries = re.sub(" +", " ", queries)
     if (cell) and (line):
-        all_options = line.split(" ")
-        options["limit"] = int(all_options[0])
+        line = re.sub(" +", " ", line)
+        all_options_tmp = line.split(" ")
+        all_options = []
+        for elem in all_options_tmp:
+            if elem != "":
+                all_options += [elem]
+        n, i, all_options_dict = len(all_options), 0, {}
+        while i < n:
+            all_options_dict[all_options[i]] = all_options[i + 1]
+            i += 2
+        for option in all_options_dict:
+            if option.lower() == "-limit":
+                options["limit"] = int(all_options_dict[option])
+            elif option.lower() == "-ncols":
+                options["columns"] = int(all_options_dict[option])
+            elif option.lower() == "-percent":
+                options["percent_bar"] = bool(all_options_dict[option])
+            elif option.lower() == "-vdf":
+                options["vdf"] = bool(all_options_dict[option])
+            else:
+                print(
+                    "\u26A0 Warning : The option '{}' doesn't exist, it was skipped.".format(
+                        option
+                    )
+                )
     n, i, all_split = len(queries), 0, []
     while i < n and queries[n - i - 1] in (";", " ", "\n"):
         i += 1
@@ -96,12 +121,27 @@ def sql(line, cell=""):
     all_split = [0] + all_split + [n]
     m = len(all_split)
     start_time = time.time()
-    for i in range(m - 2):
-        query = queries[all_split[i] : all_split[i + 1]]
-        if query[-1] in (";", " "):
+    queries = [queries[all_split[i] : all_split[i + 1]] for i in range(m - 1)]
+    n = len(queries)
+    for i in range(n):
+        query = queries[i]
+        while len(query) > 0 and (query[-1] in (";", " ")):
             query = query[0:-1]
-        if query[0] in (";", " "):
+        while len(query) > 0 and (query[0] in (";", " ")):
             query = query[1:]
+        queries[i] = query
+    queries_tmp, i = [], 0
+    while i < n:
+        query = queries[i]
+        if (i < n - 1) and (queries[i + 1].lower() == "end"):
+            query += "; {}".format(queries[i + 1])
+            i += 1
+        queries_tmp += [query]
+        i += 1
+    queries, n = queries_tmp, len(queries_tmp)
+    result = None
+    for i in range(n):
+        query = queries[i]
         query_type = (
             query.split(" ")[0].upper()
             if (query.split(" ")[0])
@@ -128,48 +168,38 @@ def sql(line, cell=""):
                 file_name = file_name[1:-1]
             with open(file_name, "r") as fs:
                 cursor.copy(query, fs)
-        else:
+        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() != "select")):
             cursor.execute(query)
-        print(query_type)
-    query = queries[all_split[m - 2] : all_split[m - 1]]
-    if query[-1] in (";", " "):
-        query = query[0:-1]
-    if query[0] in (";", " "):
-        query = query[1:]
-    query_type = (
-        query.split(" ")[0].upper()
-        if (query.split(" ")[0])
-        else query.split(" ")[1].upper()
-    )
-    try:
-        result = readSQL(query, cursor=cursor, limit=options["limit"])
-    except:
-        if (
-            (query_type == "COPY")
-            and ("from local" in query.lower())
-            and (version[0] == 0)
-            and (version[1] < 11)
-        ):
-            query = re.split("from local", query, flags=re.IGNORECASE)
-            file_name = (
-                query[1].split(" ")[0]
-                if (query[1].split(" ")[0])
-                else query[1].split(" ")[1]
-            )
-            query = (
-                "".join(query[0])
-                + "FROM"
-                + "".join(query[1]).replace(file_name, "STDIN")
-            )
-            if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
-                file_name = file_name[1:-1]
-            with open(file_name, "r") as fs:
-                cursor.copy(query, fs)
+            print(query_type)
         else:
-            cursor.execute(query)
-        print(query_type)
-        result = None
-    conn.close()
+            error = ""
+            try:
+                if options["vdf"]:
+                    result = vdf_from_relation("({}) x".format(query), cursor=cursor)
+                    result.set_display_parameters(
+                        rows=options["limit"],
+                        columns=options["columns"],
+                        percent_bar=options["percent_bar"],
+                    )
+                else:
+                    result = readSQL(
+                        query,
+                        cursor=cursor,
+                        limit=options["limit"],
+                        display_ncols=options["columns"],
+                        percent_bar=options["percent_bar"],
+                    )
+            except:
+                raise
+                try:
+                    cursor.execute(query)
+                    print(query_type)
+                except Exception as e:
+                    error = e
+            if error:
+                raise QueryError(error)
+    if not (options["vdf"]):
+        conn.close()
     elapsed_time = time.time() - start_time
     display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
     return result

@@ -55,6 +55,7 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 class LinearSVC:
@@ -195,7 +196,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -222,7 +223,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
@@ -311,7 +312,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
@@ -409,7 +410,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return lift_chart(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -424,10 +425,15 @@ test_relation: str
 	----------
 	max_nb_points: int
 		Maximum number of points to display.
+
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
 		"""
         check_types([("max_nb_points", max_nb_points, [int, float], False)])
         coefficients = self.coef.values["coefficient"]
-        svm_classifier_plot(
+        return svm_classifier_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -445,7 +451,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -490,7 +496,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
@@ -585,7 +591,7 @@ test_relation: str
                 self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
 
@@ -747,7 +753,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
@@ -844,10 +850,15 @@ test_relation: str
 	----------
 	max_nb_points: int
 		Maximum number of points to display.
+
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
 		"""
         check_types([("max_nb_points", max_nb_points, [int, float], False)])
         coefficients = self.coef.values["coefficient"]
-        regression_plot(
+        return regression_plot(
             self.X,
             self.y,
             self.input_relation,
@@ -892,7 +903,7 @@ test_relation: str
 	Returns
 	-------
 	tablesample
- 		An object containing the result. For more information, check out
+ 		An object containing the result. For more information, see
  		utilities.tablesample.
 		"""
         return regression_report(
@@ -948,6 +959,6 @@ test_relation: str
                 self.y, self.deploySQL(), self.test_relation, self.cursor
             )
         else:
-            raise ValueError(
+            raise ParameterError(
                 "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
             )

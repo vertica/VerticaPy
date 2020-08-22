@@ -53,6 +53,7 @@ import random, os, math, shutil, re
 
 # VerticaPy Modules
 from verticapy.utilities import *
+from verticapy.errors import *
 
 #
 #
@@ -68,7 +69,7 @@ def arange(start: float, stop: float, step: float):
         ]
     )
     if step < 0:
-        raise Exception("Parameter 'step' must be greater than 0")
+        raise ParameterError("Parameter 'step' must be greater than 0")
     L_final = []
     tmp = start
     while tmp < stop:
@@ -179,8 +180,8 @@ def column_check_ambiguous(column: str, columns: list):
 def columns_check(columns: list, vdf, columns_nb=None):
     vdf_columns = vdf.get_columns()
     if columns_nb != None and len(columns) not in columns_nb:
-        raise Exception(
-            "The number of Virtual Columns expected is {}, found {}".format(
+        raise ParameterError(
+            "The number of Virtual Columns expected is {}, found {}.".format(
                 "|".join([str(elem) for elem in columns_nb]), len(columns)
             )
         )
@@ -193,8 +194,8 @@ def columns_check(columns: list, vdf, columns_nb=None):
                     e = "\nDid you mean {} ?".format(nearestcol[0])
             except:
                 e = ""
-            raise ValueError(
-                "The Virtual Column '{}' doesn't exist{}".format(
+            raise MissingColumn(
+                "The Virtual Column '{}' doesn't exist{}.".format(
                     column.lower().replace('"', ""), e
                 )
             )
@@ -576,10 +577,14 @@ def print_table(
                                     )
                                 elif category == "date":
                                     category = '<div style="margin-bottom: 6px;">&#128197;</div>'
+                            else:
+                                category = '<div style="margin-bottom: 6px;"></div>'
                         if type_val != "":
                             ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;">{}</div>'.format(
                                 dtype[data_columns[j][0]].capitalize()
                             )
+                        else:
+                            ctype = '<div style="color: #FE5016; margin-top: 6px; font-size: 0.95em;"></div>'
                         if data_columns[j][0] in percent:
                             per = int(float(percent[data_columns[j][0]]))
                             try:
@@ -628,7 +633,7 @@ def print_table(
 def schema_relation(relation: str):
     quote_nb = relation.count('"')
     if quote_nb not in (0, 2, 4):
-        raise ValueError("The format of the input relation is incorrect.")
+        raise ParsingError("The format of the input relation is incorrect.")
     if quote_nb == 4:
         schema_input_relation = relation.split('"')[1], relation.split('"')[3]
     elif quote_nb == 4:

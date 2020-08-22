@@ -54,6 +54,7 @@ import random, os, math, shutil, re, time
 # VerticaPy Modules
 from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 #
 # ---#
@@ -270,7 +271,13 @@ raise_error: bool, optional
 
 # ---#
 def readSQL(
-    query: str, cursor=None, dsn: str = "", time_on: bool = False, limit: int = 100
+    query: str,
+    cursor=None,
+    dsn: str = "",
+    time_on: bool = False,
+    limit: int = 100,
+    display_ncols: int = 100,
+    percent_bar: bool = False,
 ):
     """
 	---------------------------------------------------------------------------
@@ -288,6 +295,10 @@ def readSQL(
 		If set to True, displays the query elapsed time.
 	limit: int, optional
 		Number maximum of elements to display.
+    display_ncols: int, optional
+        Number maximum of columns to display.
+    percent_bar: bool, optional
+        If set to True, displays the percent of missing values.
 
  	Returns
  	-------
@@ -300,6 +311,8 @@ def readSQL(
             ("dsn", dsn, [str], False),
             ("time_on", time_on, [bool], False),
             ("limit", limit, [int, float], False),
+            ("display_ncols", display_ncols, [int, float], False),
+            ("percent_bar", percent_bar, [bool], False),
         ]
     )
     conn = False
@@ -318,6 +331,13 @@ def readSQL(
         time_on,
     )
     result.count = count
+    result.display_ncols = display_ncols
+    if percent_bar:
+        vdf = vdf_from_relation("({}) x".format(query), cursor=cursor)
+        percent = vdf.agg(["percent"]).transpose().values
+        for column in result.values:
+            result.dtype[column] = vdf[column].ctype()
+            result.percent[column] = percent[vdf_columns_names([column], vdf)[0]][0]
     return result
 
 
@@ -405,7 +425,7 @@ list of tuples
     except:
         cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, tmp_name))
         raise
-    query = "SELECT column_name, data_type FROM columns WHERE {}table_name = '{}' AND table_schema = '{}'".format(
+    query = "SELECT column_name, data_type FROM columns WHERE {}table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         "column_name = '{}' AND ".format(column_name) if (column_name) else "",
         tmp_name,
         schema,
@@ -1042,19 +1062,19 @@ read_json : Ingests a JSON file in the Vertica DB.
     file = path.split("/")[-1]
     file_extension = file[-3 : len(file)]
     if file_extension != "csv":
-        raise ValueError("The file extension is incorrect !")
+        raise ExtensionError("The file extension is incorrect !")
     table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
-    query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}'".format(
+    query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
     )
     cursor.execute(query)
     result = cursor.fetchall()
     if (result != []) and not (insert):
-        raise Exception(
+        raise NameError(
             'The table "{}"."{}" already exists !'.format(schema, table_name)
         )
     elif (result == []) and (insert):
-        raise Exception(
+        raise MissingRelation(
             'The table "{}"."{}" doesn\'t exist !'.format(schema, table_name)
         )
     else:
@@ -1187,20 +1207,20 @@ read_csv : Ingests a CSV file in the Vertica DB.
     file = path.split("/")[-1]
     file_extension = file[-4 : len(file)]
     if file_extension != "json":
-        raise ValueError("The file extension is incorrect !")
+        raise ExtensionError("The file extension is incorrect !")
     if not (table_name):
         table_name = path.split("/")[-1].split(".json")[0]
-    query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}'".format(
+    query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
     )
     cursor.execute(query)
     column_name = cursor.fetchall()
     if (column_name != []) and not (insert):
-        raise Exception(
+        raise NameError(
             'The table "{}"."{}" already exists !'.format(schema, table_name)
         )
     elif (column_name == []) and (insert):
-        raise Exception(
+        raise MissingRelation(
             'The table "{}"."{}" doesn\'t exist !'.format(schema, table_name)
         )
     else:
@@ -1365,6 +1385,10 @@ offset: int, optional
 	dataset. It is used only for rendering purposes.
 table_info: bool, optional
 	If set to True, the tablesample informations will be displayed.
+percent: dict, optional
+    Dictionary of missing values (Used to display the percent bars)
+display_ncols: int, optional
+    Number maximum of columns to display.
 
 Attributes
 ----------
@@ -1384,6 +1408,7 @@ The tablesample attributes are the same than the parameters.
         offset: int = 0,
         table_info: bool = True,
         percent: dict = {},
+        display_ncols: int = 50,
     ):
         check_types(
             [
@@ -1402,6 +1427,7 @@ The tablesample attributes are the same than the parameters.
         self.table_info = table_info
         self.name = name
         self.percent = percent
+        self.display_ncols = display_ncols
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
@@ -1411,14 +1437,28 @@ The tablesample attributes are the same than the parameters.
         if len(self.values) == 0:
             return ""
         return_html = True if (isnotebook()) else False
-        data_columns = [[column] + self.values[column] for column in self.values]
+        n = len(self.values)
+        dtype = self.dtype
+        if n < self.display_ncols:
+            data_columns = [[column] + self.values[column] for column in self.values]
+        else:
+            k = int(self.display_ncols / 2)
+            columns = [elem for elem in self.values]
+            values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
+            values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
+            values2 = [
+                [columns[i]] + self.values[columns[i]]
+                for i in range(n - self.display_ncols + k, n)
+            ]
+            data_columns = values0 + values1 + values2
+            dtype["..."] = "undefined"
         formatted_text = print_table(
             data_columns,
             is_finished=(self.count <= len(data_columns[0]) + self.offset),
             offset=self.offset,
             repeat_first_column=("index" in self.values),
             return_html=return_html,
-            dtype=self.dtype,
+            dtype=dtype,
             percent=self.percent,
         )
         if isnotebook():
@@ -1447,11 +1487,9 @@ The tablesample attributes are the same than the parameters.
                     )
             else:
                 if self.offset > self.count:
-                    formatted_text += "Columns: {}".format(len(data_columns))
+                    formatted_text += "Columns: {}".format(n)
                 else:
-                    formatted_text += "Rows: {} | Columns: {}".format(
-                        rows, len(data_columns)
-                    )
+                    formatted_text += "Rows: {} | Columns: {}".format(rows, n)
         else:
             formatted_text = formatted_text[0:-2]
         return formatted_text
@@ -1757,7 +1795,7 @@ vDataFrame
         )
     )
     cursor.execute(
-        "SELECT column_name, data_type FROM columns WHERE table_name = 'VERTICAPY_{}_TEST' AND table_schema = 'v_temp_schema'".format(
+        "SELECT column_name, data_type FROM columns WHERE table_name = 'VERTICAPY_{}_TEST' AND table_schema = 'v_temp_schema' ORDER BY ordinal_position".format(
             name
         )
     )
