@@ -56,6 +56,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.connections.connect import read_auto_connect
+from verticapy.errors import *
 
 # ---#
 class DBSCAN:
@@ -65,13 +66,18 @@ class DBSCAN:
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
 Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu. This object is using 
 pure SQL to compute all the distances and neighbors. It is also using Python 
-to compute the cluster propagation (non scalable phase). This model is using 
-CROSS JOIN and may be really expensive in some cases. It will index all the 
-elements of the table in order to be optimal (the CROSS JOIN will happen only 
-with IDs which are integers). As DBSCAN is using the p-distance, it is highly 
-sensible to un-normalized data. However, DBSCAN is really robust to outliers 
-and can find non-linear clusters. It is a very powerful algorithm for outliers 
-detection and clustering. 
+to compute the cluster propagation (non scalable phase).
+
+\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
+                 JOIN during the computation. The complexity is O(n * n), n 
+                 being the total number of elements.
+                 It will index all the elements of the table in order to be optimal 
+                 (the CROSS JOIN will happen only with IDs which are integers). 
+                 As DBSCAN is using the p-distance, it is highly sensible to 
+                 un-normalized data. However, DBSCAN is really robust to outliers 
+                 and can find non-linear clusters. It is a very powerful algorithm 
+                 for outliers detection and clustering. A table will be created 
+                 at the end of the learning phase.
 
 Parameters
 ----------
@@ -299,7 +305,7 @@ key_columns: list
         """
 	---------------------------------------------------------------------------
 	Displays some information about the model.
-		"""
+	"""
         try:
             print(
                 "DBSCAN was successfully achieved by building {} cluster(s) and by identifying {} elements as noise.\nIf you are not happy with the result, do not forget to normalise the data before applying DBSCAN. As this algorithm is using the p-distance, it is really sensible to the data distribution.".format(
@@ -314,16 +320,21 @@ key_columns: list
         """
 	---------------------------------------------------------------------------
 	Draws the model is the number of predictors is 2 or 3.
-		"""
+
+        Returns
+        -------
+        Figure
+                Matplotlib Figure
+	"""
         if 2 <= len(self.X) <= 3:
-            vDataFrame(self.name, self.cursor).scatter(
+            return vDataFrame(self.name, self.cursor).scatter(
                 columns=self.X,
                 catcol="dbscan_cluster",
                 max_cardinality=100,
                 max_nb_points=10000,
             )
         else:
-            raise ValueError("Clustering Plots are only available in 2D or 3D")
+            raise Exception("Clustering Plots are only available in 2D or 3D")
 
     # ---#
     def to_vdf(self):
@@ -473,7 +484,7 @@ X: list
 	-------
 	object
  		self
-		"""
+	"""
         check_types(
             [("input_relation", input_relation, [str], False), ("X", X, [list], False)]
         )
@@ -495,7 +506,7 @@ X: list
             except:
                 pass
             if len(self.init) != self.n_cluster:
-                raise ValueError(
+                raise ParameterError(
                     "'init' must be a list of 'n_cluster' = {} points".format(
                         self.n_cluster
                     )
@@ -503,7 +514,7 @@ X: list
             else:
                 for item in self.init:
                     if len(X) != len(item):
-                        raise ValueError(
+                        raise ParameterError(
                             "Each points of 'init' must be of size len(X) = {}".format(
                                 len(self.X)
                             )
@@ -572,6 +583,11 @@ X: list
 	voronoi: bool, optional
 		If set to true, a voronoi plot will be drawn. It is only available for
 		KMeans using 2 predictors.
+
+        Returns
+        -------
+        Figure
+                Matplotlib Figure
 		"""
         if voronoi:
             if len(self.X) == 2:
@@ -582,21 +598,21 @@ X: list
                 )
                 self.cursor.execute(query)
                 clusters = self.cursor.fetchall()
-                voronoi_plot(clusters=clusters, columns=self.X)
+                return voronoi_plot(clusters=clusters, columns=self.X)
             else:
-                raise ValueError("Voronoi Plots are only available in 2D")
+                raise Exception("Voronoi Plots are only available in 2D")
         else:
             vdf = vDataFrame(self.input_relation, self.cursor)
             self.predict(vdf, "kmeans_cluster")
             if len(self.X) <= 3:
-                vdf.scatter(
+                return vdf.scatter(
                     columns=self.X,
                     catcol="kmeans_cluster",
                     max_cardinality=100,
                     max_nb_points=10000,
                 )
             else:
-                raise ValueError("Clustering Plots are only available in 2D or 3D")
+                raise Exception("Clustering Plots are only available in 2D or 3D")
 
     # ---#
     def predict(self, vdf, name: str = ""):
@@ -615,7 +631,7 @@ X: list
 	-------
 	vDataFrame
 		the input object.
-		"""
+	"""
         check_types([("name", name, [str], False)], vdf=["vdf", vdf])
         name = (
             "KMeans_" + "".join(ch for ch in self.name if ch.isalnum())

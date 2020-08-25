@@ -61,6 +61,7 @@ from matplotlib.colors import LinearSegmentedColormap
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.errors import *
 
 #
 ##
@@ -88,7 +89,7 @@ def autocorr_plot(x: list, y: list, color="#FE5016", title=""):
     plt.xlabel("lag")
     plt.ylabel("Autocorrelation")
     plt.gca().grid()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -123,6 +124,8 @@ def bar(
         plt.subplots_adjust(
             left=max(0.1, min(len(max([str(item) for item in z], key=len)), 20) / 80.0)
         )
+    else:
+        plt.yticks([elem - h / 2 / 0.94 for elem in x])
     if method == "density":
         plt.xlabel("Density")
         plt.title("Distribution of {}".format(vdf.alias))
@@ -133,7 +136,7 @@ def bar(
     else:
         plt.xlabel("Frequency")
         plt.title("Count by {}".format(vdf.alias))
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -286,7 +289,7 @@ def bar2D(
     plt.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     plt.gca().set_axisbelow(True)
     plt.gca().xaxis.grid()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -326,14 +329,14 @@ def boxplot(
         plt.gca().xaxis.grid()
         plt.gca().set_axisbelow(True)
         plt.title("BoxPlot of {}".format(vdf.alias))
-        plt.show()
+        return plt.gcf()
     # MULTI BOXPLOT
     else:
         try:
             if vdf.alias == by:
                 raise NameError("The column and the groupby can not be the same")
             elif by not in vdf.parent.get_columns():
-                raise NameError("The column " + by + " doesn't exist")
+                raise MissingColumn("The column " + by + " doesn't exist")
             count = vdf.parent.shape()[0]
             is_numeric = vdf.parent[by].isnum()
             is_categorical = (vdf.parent[by].nunique(True) <= max_cardinality) or not (
@@ -498,7 +501,7 @@ def boxplot(
                 )
             for patch, color in zip(box["boxes"], colors):
                 patch.set_facecolor(color)
-            plt.show()
+            return plt.gcf()
         except Exception as e:
             raise Exception(
                 "{}\nAn error occured during the BoxPlot creation.".format(e)
@@ -556,7 +559,7 @@ def boxplot2D(vdf, columns: list = []):
                 )
             for patch, color in zip(box["boxes"], colors):
                 patch.set_facecolor(color)
-            plt.show()
+            return plt.gcf()
         except Exception as e:
             raise Exception(
                 "{}\nAn error occured during the BoxPlot creation.".format(e)
@@ -729,7 +732,7 @@ def bubble(
             bbox_to_anchor=[-0.06, 0.5],
         )
         fig.add_artist(leg1)
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -792,7 +795,7 @@ def cmatrix(
                 plt.gca().text(
                     x_index, y_index, label, color="black", ha="center", va="center"
                 )
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -821,12 +824,12 @@ def compute_plot_variables(
             )
             others_aggregate = method
         else:
-            raise NameError("The column '" + of + "' doesn't exist")
+            raise MissingColumn("The column '" + of + "' doesn't exist")
     elif method in ["density", "count"]:
         aggregate = "count(*)"
         others_aggregate = "sum"
     else:
-        raise ValueError(
+        raise ParameterError(
             "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
         )
     # depending on the cardinality, the type, the vColumn can be treated as categorical or not
@@ -998,7 +1001,7 @@ def density(
             )
 
     else:
-        raise ValueError(
+        raise ParameterError(
             "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]"
         )
     if a == None:
@@ -1031,7 +1034,7 @@ def density(
     plt.fill_between(x_smooth, y_smooth, facecolor=color, alpha=0.7)
     plt.ylabel("density")
     plt.title("Distribution of {} ({} kernel)".format(vdf.alias, kernel))
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1079,7 +1082,7 @@ def hexbin(
     img: str = "",
 ):
     if len(columns) != 2:
-        raise ValueError(
+        raise ParameterError(
             "The parameter 'columns' must be exactly of size 2 to draw the hexbin"
         )
     if method == "mean":
@@ -1103,7 +1106,7 @@ def hexbin(
         aggregate = "count(*)"
         reduce_C_function = sum
     else:
-        raise ValueError(
+        raise ParameterError(
             "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
         )
     count = vdf.shape()[0]
@@ -1161,7 +1164,7 @@ def hexbin(
         plt.colorbar().set_label(method)
     else:
         plt.colorbar().set_label(aggregate)
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1198,6 +1201,8 @@ def hist(
         plt.subplots_adjust(
             bottom=max(0.3, len(max([str(item) for item in z], key=len)) / 140.0)
         )
+    else:
+        plt.xticks([elem - h / 2 / 0.94 for elem in x], rotation=rotation)
     if method == "density":
         plt.ylabel("Density")
         plt.title("Distribution of {}".format(vdf.alias))
@@ -1210,7 +1215,7 @@ def hist(
     else:
         plt.ylabel("Frequency")
         plt.title("Count by {}".format(vdf.alias))
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1301,7 +1306,7 @@ def hist2D(
     plt.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid()
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1310,7 +1315,7 @@ def multiple_hist(
 ):
     colors = gen_colors()
     if len(columns) > 5:
-        raise Exception(
+        raise ParameterError(
             "The number of column must be <= 5 to use 'multiple_hist' method"
         )
     else:
@@ -1351,7 +1356,7 @@ def multiple_hist(
             plt.ylabel("Frequency")
         plt.title("Multiple Histograms")
         plt.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-        plt.show()
+        return plt.gcf()
 
 
 # ---#
@@ -1377,7 +1382,7 @@ def multi_ts_plot(
             )
             columns.remove(column)
     if not (columns):
-        raise Exception("No numerical columns found to draw the multi TS plot")
+        raise EmptyParameter("No numerical columns found to draw the multi TS plot")
     colors = gen_colors()
     query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
         order_by, ", ".join(columns), vdf.__genSQL__(), order_by
@@ -1416,7 +1421,7 @@ def multi_ts_plot(
     plt.subplots_adjust(bottom=0.24)
     plt.xlabel(order_by)
     plt.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1490,7 +1495,7 @@ def pie(
         plt.title("{} group by {}".format(aggregate, vdf.alias))
     else:
         plt.title("Count by {}".format(vdf.alias))
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1520,7 +1525,7 @@ def pivot_table(
         aggregate = "COUNT(*)"
         others_aggregate = "sum"
     else:
-        raise ValueError(
+        raise ParameterError(
             "The parameter 'method' must be in [count|density|avg|mean|min|max|sum|q%]"
         )
     columns = [str_column(column) for column in columns]
@@ -1760,7 +1765,7 @@ def scatter_matrix(vdf, columns: list = []):
         if (column not in vdf.get_columns()) and (
             str_column(column) not in vdf.get_columns()
         ):
-            raise NameError("The Virtual Column {} doesn't exist".format(column))
+            raise MissingColumn("The Virtual Column {} doesn't exist".format(column))
     if not (columns):
         columns = vdf.numcol()
     elif len(columns) == 1:
@@ -1812,7 +1817,7 @@ def scatter_matrix(vdf, columns: list = []):
     fig.suptitle(
         "Scatter Plot Matrix of {}".format(vdf._VERTICAPY_VARIABLES_["input_relation"])
     )
-    plt.show()
+    return plt.gcf()
 
 
 # ---#
@@ -1836,7 +1841,7 @@ def scatter2D(
         bbox = []
     for column in columns:
         if column not in vdf.get_columns():
-            raise NameError("The Virtual Column {} doesn't exist".format(column))
+            raise MissingColumn("The Virtual Column {} doesn't exist".format(column))
     if not (vdf[columns[0]].isnum()) or not (vdf[columns[1]].isnum()):
         raise TypeError(
             "The two first columns of the parameter 'columns' must be numerical"
@@ -1876,7 +1881,7 @@ def scatter2D(
         plt.ylabel(columns[1])
         plt.xlabel(columns[0])
         plt.scatter(column1, column2, color=colors[0], s=14)
-        plt.show()
+        return plt.gcf()
     else:
         column_groupby = columns[2]
         count = vdf.shape()[0]
@@ -2009,7 +2014,7 @@ def scatter2D(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
-        plt.show()
+        return plt.gcf()
 
 
 # ---#
@@ -2025,13 +2030,15 @@ def scatter3D(
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
     if (len(columns) < 3) or (len(columns) > 4):
-        raise Exception(
+        raise ParameterError(
             "3D Scatter plot can only be done with at least two columns and maximum with four columns"
         )
     else:
         for column in columns:
             if column not in vdf.get_columns():
-                raise NameError("The Virtual Column {} doesn't exist".format(column))
+                raise MissingColumn(
+                    "The Virtual Column {} doesn't exist".format(column)
+                )
         for i in range(3):
             if not (vdf[columns[i]].isnum()):
                 raise TypeError(
@@ -2076,7 +2083,7 @@ def scatter3D(
             ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            plt.show()
+            return plt.gcf()
         else:
             column_groupby = columns[3]
             count = vdf.shape()[0]
@@ -2207,7 +2214,7 @@ def scatter3D(
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
-            plt.show()
+            return plt.gcf()
 
 
 # ---#
@@ -2259,7 +2266,7 @@ def ts_plot(
         plt.xlabel(order_by)
         plt.ylabel(vdf.alias)
         plt.gca().grid()
-        plt.show()
+        return plt.gcf()
     else:
         colors = gen_colors()
         by = str_column(by)
@@ -2309,4 +2316,4 @@ def ts_plot(
         plt.ylabel(vdf.alias)
         plt.gca().grid()
         plt.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
-        plt.show()
+        return plt.gcf()
