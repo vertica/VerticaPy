@@ -57,6 +57,7 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
+from verticapy.learn.vmodel import *
 
 # ---#
 class DBSCAN:
@@ -130,7 +131,8 @@ key_columns: list
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "clustering"
+        self.type = "DBSCAN"
+        self.category = "clustering"
         self.name = name
         self.cursor = cursor
         self.eps = eps
@@ -417,225 +419,22 @@ X: list
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "clustering"
-        self.name = name
-        self.cursor = cursor
-        self.n_cluster = n_cluster
-        if type(init) == str:
-            self.init = init.lower()
-        else:
-            self.init = init
-        self.max_iter = max_iter
-        self.tol = tol
-
-    # ---#
-    def __repr__(self):
-        try:
-            self.cursor.execute(
-                "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '"
-                + self.name
-                + "')"
-            )
-            return self.cursor.fetchone()[0]
-        except:
-            return "<KMeans>"
-
-    #
-    # Methods
-    #
-    # ---#
-    def deploySQL(self):
-        """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model. 
-
-	Returns
-	-------
-	str
- 		the SQL code needed to deploy the model.
-		"""
-        sql = (
-            "APPLY_KMEANS({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
-        )
-        return sql.format(", ".join(self.X), self.name)
-
-    # ---#
-    def drop(self):
-        """
-	---------------------------------------------------------------------------
-	Drops the model from the Vertica DB.
-		"""
-        drop_model(self.name, self.cursor, print_info=False)
-
-    # ---#
-    def fit(self, input_relation: str, X: list):
-        """
-	---------------------------------------------------------------------------
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str
-		Train relation.
-	X: list
-		List of the predictors.
-
-	Returns
-	-------
-	object
- 		self
-	"""
-        check_types(
-            [("input_relation", input_relation, [str], False), ("X", X, [list], False)]
-        )
-        self.input_relation = input_relation
-        self.X = [str_column(column) for column in X]
-        query = "SELECT KMEANS('{}', '{}', '{}', {} USING PARAMETERS max_iterations = {}, epsilon = {}".format(
-            self.name,
-            input_relation,
-            ", ".join(self.X),
-            self.n_cluster,
-            self.max_iter,
-            self.tol,
-        )
-        schema = schema_relation(self.name)[0]
-        name = "VERTICAPY_KMEANS_INITIAL"
-        if type(self.init) != str:
-            try:
-                self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
-            except:
-                pass
-            if len(self.init) != self.n_cluster:
-                raise ParameterError(
-                    "'init' must be a list of 'n_cluster' = {} points".format(
-                        self.n_cluster
-                    )
-                )
-            else:
-                for item in self.init:
-                    if len(X) != len(item):
-                        raise ParameterError(
-                            "Each points of 'init' must be of size len(X) = {}".format(
-                                len(self.X)
-                            )
-                        )
-                query0 = []
-                for i in range(len(self.init)):
-                    line = []
-                    for j in range(len(self.init[0])):
-                        line += [str(self.init[i][j]) + " AS " + X[j]]
-                    line = ",".join(line)
-                    query0 += ["SELECT " + line]
-                query0 = " UNION ".join(query0)
-                query0 = "CREATE TABLE {}.{} AS {}".format(schema, name, query0)
-                self.cursor.execute(query0)
-                query += ", initial_centers_table = '{}.{}'".format(schema, name)
-        else:
-            query += ", init_method = '{}'".format(self.init)
-        query += ")"
-        self.cursor.execute(query)
-        try:
-            self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
-        except:
-            pass
-        self.cluster_centers = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
-                self.name
-            ),
-            cursor=self.cursor,
-        )
-        self.cluster_centers.table_info = False
-        query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(
-            self.name
-        )
-        self.cursor.execute(query)
-        result = self.cursor.fetchone()[0]
-        values = {
-            "index": [
-                "Between-Cluster Sum of Squares",
-                "Total Sum of Squares",
-                "Total Within-Cluster Sum of Squares",
-                "Between-Cluster SS / Total SS",
-                "converged",
-            ]
+        self.type, self.category = "KMeans", "clustering"
+        self.name, self.cursor = name, cursor
+        self.parameters = {
+            "n_cluster": n_cluster,
+            "init": init.lower() if type(init) == str else init,
+            "max_iter": max_iter,
+            "tol": tol,
         }
-        values["value"] = [
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]),
-            float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            float(
-                result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]
-            ),
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0])
-            / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            result.split("Converged: ")[1].split("\n")[0] == "True",
-        ]
-        self.metrics = tablesample(values, table_info=False)
-        return self
 
     # ---#
-    def plot(self, voronoi: bool = False):
-        """
-	---------------------------------------------------------------------------
-	Draws the KMeans clusters.
-
-	Parameters
-	----------
-	voronoi: bool, optional
-		If set to true, a voronoi plot will be drawn. It is only available for
-		KMeans using 2 predictors.
-
-        Returns
-        -------
-        Figure
-                Matplotlib Figure
-		"""
-        if voronoi:
-            if len(self.X) == 2:
-                from verticapy.learn.plot import voronoi_plot
-
-                query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
-                    self.name
-                )
-                self.cursor.execute(query)
-                clusters = self.cursor.fetchall()
-                return voronoi_plot(clusters=clusters, columns=self.X)
-            else:
-                raise Exception("Voronoi Plots are only available in 2D")
-        else:
-            vdf = vDataFrame(self.input_relation, self.cursor)
-            self.predict(vdf, "kmeans_cluster")
-            if len(self.X) <= 3:
-                return vdf.scatter(
-                    columns=self.X,
-                    catcol="kmeans_cluster",
-                    max_cardinality=100,
-                    max_nb_points=10000,
-                )
-            else:
-                raise Exception("Clustering Plots are only available in 2D or 3D")
-
-    # ---#
-    def predict(self, vdf, name: str = ""):
-        """
-	---------------------------------------------------------------------------
-	Adds the prediction in a vDataFrame.
-
-	Parameters
-	----------
-	vdf: vDataFrame
-		Object to use to insert the prediction as a vcolumn.
-	name: str, optional
-		Name of the added vcolumn. If empty, a name will be generated.
-
-	Returns
-	-------
-	vDataFrame
-		the input object.
-	"""
-        check_types([("name", name, [str], False)], vdf=["vdf", vdf])
-        name = (
-            "KMeans_" + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
-        return vdf.eval(name, self.deploySQL())
+    __repr__ = get_model_repr
+    deploySQL = deploySQL
+    drop = drop
+    fit = fit_unsupervised
+    get_params = get_params
+    plot = plot_model
+    plot_voronoi = plot_model_voronoi
+    predict = predict
+    set_params = set_params

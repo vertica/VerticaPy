@@ -190,7 +190,6 @@ def sql(line, cell=""):
                         percent_bar=options["percent_bar"],
                     )
             except:
-                raise
                 try:
                     cursor.execute(query)
                     print(query_type)

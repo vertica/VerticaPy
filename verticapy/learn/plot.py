@@ -59,7 +59,6 @@ from mpl_toolkits.mplot3d import Axes3D
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.learn.cluster import KMeans
 from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 
@@ -137,6 +136,8 @@ tablesample
                 schema, relation_alpha
             )
         )
+        from verticapy.learn.cluster import KMeans
+
         model = KMeans(
             "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, relation_alpha),
             cursor,
