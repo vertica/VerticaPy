@@ -3487,6 +3487,20 @@ vcolumns : vcolumn
         return columns
 
     # ---#
+    def del_catalog(self):
+        """
+    ---------------------------------------------------------------------------
+    Delete the current vDataFrame catalog.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        titanic.__update_catalog__(erase=True)
+        return self
+
+    # ---#
     def describe(self, method: str = "auto", columns: list = [], unique: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -5488,6 +5502,83 @@ vcolumns : vcolumn
         return self.aggregate(func=["min"], columns=columns)
 
     # ---#
+    def narrow(
+        self,
+        index,
+        columns: list = [],
+        col_name: str = "column",
+        val_name: str = "value",
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Narrow Table of the vDataFrame using the input vcolumns.
+
+    Parameters
+    ----------
+    index: str/list
+        Index(es) used to identify the Row.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns except the index(es)
+        will be used.
+    col_name: str, optional
+        Alias of the vcolumn representing the different input vcolumns names as 
+        categories.
+    val_name: str, optional
+        Alias of the vcolumn representing the different input vcolumns values.
+
+    Returns
+    -------
+    vDataFrame
+        the narrow table object.
+
+    See Also
+    --------
+    vDataFrame.pivot : Returns the Pivot Table of the vDataFrame.
+        """
+        check_types(
+            [("index", index, [str, list], False), ("columns", columns, [list], False),]
+        )
+        if type(index) == str:
+            index = vdf_columns_names([index], self)
+        else:
+            index = vdf_columns_names(index, self)
+        columns = vdf_columns_names(columns, self)
+        if not (columns):
+            columns = self.numcol()
+        for idx in index:
+            if idx in columns:
+                columns.remove(idx)
+        query = []
+        all_are_num, all_are_date = True, True
+        for column in columns:
+            if not (self[column].isnum()):
+                all_are_num = False
+            if not (self[column].isdate()):
+                all_are_date = False
+        for column in columns:
+            conv = ""
+            if not (all_are_num) and not (all_are_num):
+                conv = "::varchar"
+            elif self[column].category() == "int":
+                conv = "::int"
+            query += [
+                "(SELECT {}, '{}' AS {}, {}{} AS {} FROM {})".format(
+                    ", ".join(index),
+                    column.replace("'", "''")[1:-1],
+                    col_name,
+                    column,
+                    conv,
+                    val_name,
+                    self.__genSQL__(),
+                )
+            ]
+        query = " UNION ALL ".join(query)
+        query = "({}) x".format(query)
+        return self.__vdf_from_relation__(
+            query, "narrow", "[Narrow]: Narrow table using index = {}".format(index),
+        )
+
+    # ---#
     def normalize(self, columns: list = [], method: str = "zscore"):
         """
 	---------------------------------------------------------------------------
@@ -5689,6 +5780,7 @@ vcolumns : vcolumn
 
     See Also
     --------
+    vDataFrame.narrow      : Returns the Narrow table of the vDataFrame.
     vDataFrame.pivot_table : Draws the Pivot Table of one or two columns based on an 
         aggregation.
         """
