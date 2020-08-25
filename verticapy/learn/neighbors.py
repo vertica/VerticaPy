@@ -57,6 +57,7 @@ from verticapy import vDataFrame
 from verticapy.learn.plot import lof_plot
 from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
+from verticapy.learn.vmodel import *
 
 # ---#
 class NearestCentroid:
@@ -110,7 +111,8 @@ test_relation: str
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "classifier"
+        self.type = "NearestCentroid"
+        self.category = "classifier"
         self.cursor = cursor
         self.p = p
 
@@ -629,7 +631,8 @@ test_relation: str
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "classifier"
+        self.type = "KNeighborsClassifier"
+        self.category = "classifier"
         self.cursor = cursor
         self.n_neighbors = n_neighbors
         self.p = p
@@ -1145,7 +1148,8 @@ test_relation: str
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "regressor"
+        self.type = "KNeighborsRegressor"
+        self.category = "regressor"
         self.cursor = cursor
         self.n_neighbors = n_neighbors
         self.p = p
@@ -1375,7 +1379,8 @@ key_columns: list
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "anomaly_detection"
+        self.type = "LocalOutlierFactor"
+        self.category = "anomaly_detection"
         self.name = name
         self.cursor = cursor
         self.n_neighbors = n_neighbors

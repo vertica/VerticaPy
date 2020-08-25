@@ -3101,6 +3101,7 @@ Attributes
                 ("area", area, [bool], False),
             ]
         )
+        ts = vdf_columns_names([ts], self.parent)[0]
         if by:
             columns_check([by], self.parent)
             by = vdf_columns_names([by], self.parent)[0]

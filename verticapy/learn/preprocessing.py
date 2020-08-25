@@ -53,6 +53,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.connections.connect import read_auto_connect
+from verticapy.learn.vmodel import *
 
 # ---#
 def Balance(
@@ -351,112 +352,21 @@ X: list
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "preprocessing"
+        self.type, self.category = "Normalizer", "preprocessing"
         self.name = name
         self.cursor = cursor
-        self.method = method.lower()
+        self.parameters = {"method": method.lower()}
 
     # ---#
-    def __repr__(self):
-        try:
-            self.cursor.execute(
-                "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                    self.name
-                )
-            )
-            return self.cursor.fetchone()[0]
-        except:
-            return "<Normalizer>"
-
-    #
-    # Methods
-    #
-    # ---#
-    def deploySQL(self):
-        """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model.
-
-	Returns
-	-------
-	str/list
- 		the SQL code needed to deploy the model.
-		"""
-        sql = "APPLY_NORMALIZE({} USING PARAMETERS model_name = '{}')"
-        return sql.format(", ".join(self.X), self.name)
-
-    #
-    def deployInverseSQL(self):
-        sql = "REVERSE_NORMALIZE({} USING PARAMETERS model_name = '{}')"
-        return sql.format(", ".join(self.X), self.name)
-
-    # ---#
-    def drop(self):
-        """
-	---------------------------------------------------------------------------
-	Drops the model from the Vertica DB.
-		"""
-        drop_model(self.name, self.cursor, print_info=False)
-
-    #
-    def fit(self, input_relation: str, X: list):
-        """
-	---------------------------------------------------------------------------
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str
-		Train relation.
-	X: list
-		List of the predictors.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        check_types(
-            [("input_relation", input_relation, [str], False), ("X", X, [list], False)]
-        )
-        self.input_relation = input_relation
-        self.X = [str_column(column) for column in X]
-        query = "SELECT NORMALIZE_FIT('{}', '{}', '{}', '{}')".format(
-            self.name, input_relation, ", ".join(self.X), self.method
-        )
-        self.cursor.execute(query)
-        self.param = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(
-                self.name
-            ),
-            cursor=self.cursor,
-        )
-        self.param.table_info = False
-        return self
-
-    # ---#
-    def to_vdf(self, inverse: bool = False):
-        """
-	---------------------------------------------------------------------------
-	Creates a vDataFrame of the model.
-
-	Parameters
-	----------
-	inverse: bool, optional
-		If set to true, the inverse model will be deployed.
-
-	Returns
-	-------
-	vDataFrame
- 		model vDataFrame
-		"""
-        check_types([("inverse", inverse, [bool], False)])
-        func = self.deploySQL() if not (inverse) else self.deployInverseSQL()
-        return vdf_from_relation(
-            "(SELECT {} FROM {}) x".format(func, self.input_relation),
-            self.name,
-            self.cursor,
-        )
+    __repr__ = get_model_repr
+    deploySQL = deploySQL
+    deployInverseSQL = deployInverseSQL
+    drop = drop
+    fit = fit_unsupervised
+    get_params = get_params
+    inverse_transform = inverse_transform_preprocessing
+    set_params = set_params
+    transform = transform_preprocessing
 
 
 # ---#
@@ -473,11 +383,6 @@ cursor: DBcursor, optional
 	Vertica DB cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
-drop_first: bool, optional
-	If set to True, treat the first level of the categorical variable as 
-	the reference level.
-ignore_null: bool, optional
-	If false, Null values in input columns are treated as a categorical level.
 
 Attributes
 ----------
@@ -497,143 +402,27 @@ X: list
     #
     # ---#
     def __init__(
-        self,
-        name: str,
-        cursor=None,
-        extra_levels: dict = {},
-        drop_first: bool = True,
-        ignore_null: bool = True,
+        self, name: str, cursor=None, extra_levels: dict = {},
     ):
         check_types(
             [
                 ("name", name, [str], False),
                 ("extra_levels", extra_levels, [dict], False),
-                ("drop_first", drop_first, [bool], False),
-                ("ignore_null", ignore_null, [bool], False),
             ]
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "preprocessing"
-        self.name = name
-        self.cursor = cursor
-        self.drop_first = drop_first
-        self.ignore_null = ignore_null
-        self.extra_levels = extra_levels
+        self.type, self.category = "OneHotEncoder", "preprocessing"
+        self.name, self.cursor = name, cursor
+        self.parameters = {"extra_levels": extra_levels}
 
     # ---#
-    def __repr__(self):
-        try:
-            self.cursor.execute(
-                "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '"
-                + self.name
-                + "')"
-            )
-            return self.cursor.fetchone()[0]
-        except:
-            return "<OneHotEncoder>"
-
-    #
-    # Methods
-    #
-    # ---#
-    def deploySQL(self):
-        """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model.
-
-	Returns
-	-------
-	str/list
- 		the SQL code needed to deploy the model.
-		"""
-        sql = "APPLY_ONE_HOT_ENCODER({} USING PARAMETERS model_name = '{}', column_naming = 'values_relaxed', drop_first = {}, ignore_null = {})"
-        return sql.format(
-            ", ".join(self.X), self.name, self.drop_first, self.ignore_null
-        )
-
-    # ---#
-    def drop(self):
-        """
-	---------------------------------------------------------------------------
-	Drops the model from the Vertica DB.
-		"""
-        drop_model(self.name, self.cursor, print_info=False)
-
-    # ---#
-    def fit(self, input_relation: str, X: list):
-        """
-	---------------------------------------------------------------------------
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str
-		Train relation.
-	X: list
-		List of the predictors.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        check_types(
-            [("input_relation", input_relation, [str], False), ("X", X, [list], False)]
-        )
-        self.input_relation = input_relation
-        self.X = [str_column(column) for column in X]
-        query = "SELECT ONE_HOT_ENCODER_FIT('{}', '{}', '{}' USING PARAMETERS extra_levels = '{}')".format(
-            self.name, input_relation, ", ".join(self.X), self.extra_levels
-        )
-        self.cursor.execute(query)
-        try:
-            self.param = to_tablesample(
-                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                    self.name, self.name
-                ),
-                cursor=self.cursor,
-            )
-        except:
-            try:
-                self.param = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x".format(
-                        self.name
-                    ),
-                    cursor=self.cursor,
-                )
-            except:
-                self.param = to_tablesample(
-                    query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                        self.name
-                    ),
-                    cursor=self.cursor,
-                )
-        self.param.table_info = False
-        return self
-
-    # ---#
-    def to_vdf(self, inverse: bool = False):
-        """
-	---------------------------------------------------------------------------
-	Creates a vDataFrame of the model.
-
-	Parameters
-	----------
-	inverse: bool, optional
-		If set to True, the inverse model will be deployed.
-
-	Returns
-	-------
-	vDataFrame
- 		model vDataFrame
-		"""
-        check_types([("inverse", inverse, [bool], False)])
-        func = self.deploySQL() if not (inverse) else self.deployInverseSQL()
-        return vdf_from_relation(
-            "(SELECT {} FROM {}) x".format(func, self.input_relation),
-            self.name,
-            self.cursor,
-        )
+    __repr__ = get_model_repr
+    deploySQL = deploySQL
+    drop = drop
+    fit = fit_unsupervised
+    get_params = get_params
+    set_params = set_params
+    transform = transform_preprocessing

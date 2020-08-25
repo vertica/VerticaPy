@@ -652,7 +652,9 @@ tablesample
         non_pos_label = 0 if (elem == 1) else "Non-{}".format(elem)
         if estimator:
             if not (cutoff):
-                current_cutoff = estimator.score(pos_label, method="best_cutoff")
+                current_cutoff = estimator.score(
+                    method="best_cutoff", pos_label=pos_label
+                )
             elif type(cutoff) == list:
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
