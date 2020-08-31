@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates. 
+# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,7 +13,7 @@
 #
 # |_     |~) _  _| _  /~\    _ |.
 # |_)\/  |_)(_|(_||   \_/|_|(_|||
-#    /                           
+#    /
 #              ____________       ______
 #             / __        `\     /     /
 #            |  \/         /    /     /
@@ -35,30 +35,35 @@
 #                    _
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
-#                     /  
-# VerticaPy allows user to create vDataFrames (Virtual Dataframes). 
-# vDataFrames simplify data exploration, data cleaning and MACHINE LEARNING     
-# in VERTICA. It is an object which keeps in it all the actions that the user 
-# wants to achieve and execute them when they are needed.    										
-#																					
-# The purpose is to bring the logic to the data and not the opposite !
+#                     /
+# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# data science projects on data stored in Vertica, taking advantage Vertica’s
+# speed and built-in analytics and machine learning features. It supports the
+# entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
+# data transformation operations, and offers beautiful graphical options.
 #
-# 
+# VerticaPy aims to solve all of these problems. The idea is simple: instead
+# of moving data around for processing, VerticaPy brings the logic to the data.
+#
+#
 # Modules
 #
 # VerticaPy Modules
 from verticapy.learn.ensemble import RandomForestClassifier, RandomForestRegressor
 from verticapy.connections.connect import read_auto_connect
-#---#
-def DecisionTreeClassifier(name: str,
-						   cursor = None,
-						   max_features = "auto",
-						   max_leaf_nodes: int = 1e9, 
-						   max_depth: int = 100,
-						   min_samples_leaf: int = 1,
-						   min_info_gain: float = 0.0,
-						   nbins: int = 32):
-	"""
+
+# ---#
+def DecisionTreeClassifier(
+    name: str,
+    cursor=None,
+    max_features="auto",
+    max_leaf_nodes: int = 1e9,
+    max_depth: int = 100,
+    min_samples_leaf: int = 1,
+    min_info_gain: float = 0.0,
+    nbins: int = 32,
+):
+    """
 ---------------------------------------------------------------------------
 Single Decision Tree Classifier.
  => RandomForestClassifier of one tree using all the data.
@@ -91,26 +96,32 @@ nbins: int, optional
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
 	"""
-	return RandomForestClassifier(name = name, 
-								  cursor = cursor, 
-								  n_estimators = 1, 
-								  max_features = max_features, 
-								  max_leaf_nodes = max_leaf_nodes,
-								  sample = 1.0,
-								  max_depth = max_depth,
-								  min_samples_leaf = min_samples_leaf,
-								  min_info_gain = min_info_gain,
-								  nbins = nbins)
-#---#
-def DecisionTreeRegressor(name: str,
-						  cursor = None,
-						  max_features = "auto",
-						  max_leaf_nodes: int = 1e9, 
-						  max_depth: int = 100,
-						  min_samples_leaf: int = 1,
-						  min_info_gain: float = 0.0,
-						  nbins: int = 32):
-	"""
+    return RandomForestClassifier(
+        name=name,
+        cursor=cursor,
+        n_estimators=1,
+        max_features=max_features,
+        max_leaf_nodes=max_leaf_nodes,
+        sample=1.0,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        min_info_gain=min_info_gain,
+        nbins=nbins,
+    )
+
+
+# ---#
+def DecisionTreeRegressor(
+    name: str,
+    cursor=None,
+    max_features="auto",
+    max_leaf_nodes: int = 1e9,
+    max_depth: int = 100,
+    min_samples_leaf: int = 1,
+    min_info_gain: float = 0.0,
+    nbins: int = 32,
+):
+    """
 ---------------------------------------------------------------------------
 Single Decision Tree Regressor.
  => RandomForestRegressor of one tree using all the data.
@@ -143,20 +154,23 @@ nbins: int, optional
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
 	"""
-	return RandomForestRegressor(name = name, 
-								 cursor = cursor, 
-								 n_estimators = 1, 
-								 max_features = max_features, 
-								 max_leaf_nodes = max_leaf_nodes,
-								 sample = 1.0,
-								 max_depth = max_depth,
-								 min_samples_leaf = min_samples_leaf,
-								 min_info_gain = min_info_gain,
-								 nbins = nbins)
-#---#
-def DummyTreeClassifier(name: str, 
-						cursor = None):
-	"""
+    return RandomForestRegressor(
+        name=name,
+        cursor=cursor,
+        n_estimators=1,
+        max_features=max_features,
+        max_leaf_nodes=max_leaf_nodes,
+        sample=1.0,
+        max_depth=max_depth,
+        min_samples_leaf=min_samples_leaf,
+        min_info_gain=min_info_gain,
+        nbins=nbins,
+    )
+
+
+# ---#
+def DummyTreeClassifier(name: str, cursor=None):
+    """
 ---------------------------------------------------------------------------
 Dummy Tree Classifier. This classifier learns by heart the training data. 
  => very depth RandomForestClassifier of one tree using all the data.
@@ -168,20 +182,23 @@ name: str
 cursor: DBcursor, optional
 	Vertica DB cursor. 
 	"""
-	return RandomForestClassifier(name = name, 
-								  cursor = cursor, 
-								  n_estimators = 1, 
-								  max_features = "max", 
-								  max_leaf_nodes = 1e9,
-								  sample = 1.0,
-								  max_depth = 100,
-								  min_samples_leaf = 1,
-								  min_info_gain = 0.0,
-								  nbins = 1000)
-#---#
-def DummyTreeRegressor(name: str, 
-					   cursor = None):
-	"""
+    return RandomForestClassifier(
+        name=name,
+        cursor=cursor,
+        n_estimators=1,
+        max_features="max",
+        max_leaf_nodes=1e9,
+        sample=1.0,
+        max_depth=100,
+        min_samples_leaf=1,
+        min_info_gain=0.0,
+        nbins=1000,
+    )
+
+
+# ---#
+def DummyTreeRegressor(name: str, cursor=None):
+    """
 ---------------------------------------------------------------------------
 Dummy Tree Regressor. This regressor learns by heart the training data. 
  => very depth RandomForestRegressor of one tree using all the data.
@@ -193,13 +210,15 @@ name: str
 cursor: DBcursor, optional
 	Vertica DB cursor. 
 	"""
-	return RandomForestRegressor(name = name, 
-								 cursor = cursor, 
-								 n_estimators = 1, 
-								 max_features = "max", 
-								 max_leaf_nodes = 1e9,
-								 sample = 1.0,
-								 max_depth = 100,
-								 min_samples_leaf = 1,
-								 min_info_gain = 0.0,
-								 nbins = 1000)
+    return RandomForestRegressor(
+        name=name,
+        cursor=cursor,
+        n_estimators=1,
+        max_features="max",
+        max_leaf_nodes=1e9,
+        sample=1.0,
+        max_depth=100,
+        min_samples_leaf=1,
+        min_info_gain=0.0,
+        nbins=1000,
+    )

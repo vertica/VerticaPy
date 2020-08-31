@@ -32,7 +32,7 @@ Main Advantages:
 </ul>
 
 <p align="center">
-<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="80%">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/architecture.png' width="92%">
 </p>
 
 ## Installation
@@ -55,7 +55,7 @@ https://github.com/vertica/VerticaPy/blob/master/documentation.zip
 
 VerticaPy is compatible with several clients.
 
-### Native Client
+### Native Client (Recommended)
 
 ```python
 import vertica_python
@@ -127,8 +127,8 @@ root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor.
 ```python
-from verticapy import vertica_cursor
-cur = vertica_cursor("VerticaDSN")
+from verticapy import vertica_conn
+cur = vertica_conn("VerticaDSN").cursor()
 ```
 Create the Virtual DataFrame of your relation.
 ```python
