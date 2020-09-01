@@ -205,7 +205,12 @@ tablesample
     )
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if estimator.type == "regressor":
+    if estimator.type in (
+        "RandomForestRegressor",
+        "LinearSVR",
+        "LinearRegression",
+        "KNeighborsRegressor",
+    ):
         result = {
             "index": [
                 "explained_variance",
@@ -216,7 +221,14 @@ tablesample
                 "r2",
             ]
         }
-    elif estimator.type == "classifier":
+    elif estimator.type in (
+        "MultinomialNB",
+        "RandomForestClassifier",
+        "LinearSVC",
+        "LogisticRegression",
+        "KNeighborsClassifier",
+        "NearestCentroid",
+    ):
         result = {
             "index": [
                 "auc",
@@ -261,7 +273,7 @@ tablesample
     estimator.cursor.execute(query)
     for i in range(cv):
         try:
-            estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
+            estimator.drop()
         except:
             pass
         estimator.cursor.execute(
@@ -294,17 +306,24 @@ tablesample
             y,
             "{}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name),
         )
-        if estimator.type == "regressor":
+        if estimator.type in (
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearRegression",
+            "KNeighborsRegressor",
+        ):
             result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                 "value"
             ]
         else:
-            if (len(estimator.classes) > 2) and (pos_label not in estimator.classes):
+            if (len(estimator.classes_) > 2) and (pos_label not in estimator.classes_):
                 raise ParameterError(
                     "'pos_label' must be in the estimator classes, it must be the main class to study for the Cross Validation"
                 )
-            elif (len(estimator.classes) == 2) and (pos_label not in estimator.classes):
-                pos_label = estimator.classes[1]
+            elif (len(estimator.classes_) == 2) and (
+                pos_label not in estimator.classes_
+            ):
+                pos_label = estimator.classes_[1]
             try:
                 result["{}-fold".format(i + 1)] = estimator.classification_report(
                     labels=[pos_label], cutoff=cutoff
@@ -314,10 +333,22 @@ tablesample
                     cutoff=cutoff
                 ).values["value"][0:-1]
         try:
-            estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
+            estimator.drop()
         except:
             pass
-    n = 6 if (estimator.type == "regressor") else 11
+    n = (
+        6
+        if (
+            estimator.type
+            in (
+                "RandomForestRegressor",
+                "LinearSVR",
+                "LinearRegression",
+                "KNeighborsRegressor",
+            )
+        )
+        else 11
+    )
     total = [[] for item in range(n)]
     for i in range(cv):
         for k in range(n):

@@ -55,7 +55,7 @@ from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.vmodel import *
 
 # ---#
-class PCA:
+class PCA(Decomposition):
     """
 ---------------------------------------------------------------------------
 Creates a PCA (Principal Component Analysis) object by using the Vertica 
@@ -78,29 +78,8 @@ scale: bool, optional
 method: str, optional
 	The method to use to calculate PCA.
 		lapack: Lapack definition.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-components: tablesample
-	The principal components.
-explained_variance: tablesample
-	The singular values explained variance.
-mean: tablesample
-	The information about columns from the input relation used for creating 
-	the PCA model.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -109,40 +88,20 @@ X: list
         scale: bool = False,
         method: str = "lapack",
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("n_components", n_components, [int, float], False),
-                ("scale", scale, [bool], False),
-                ("method", method, ["lapack"], True),
-            ]
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "PCA", name
+        self.set_params(
+            {"n_components": n_components, "scale": scale, "method": method.lower()}
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "PCA", "decomposition"
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "n_components": n_components,
-            "scale": scale,
-            "method": method.lower(),
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL_decomposition
-    deployInverseSQL = deployInverseSQL_decomposition
-    drop = drop
-    fit = fit_unsupervised
-    get_params = get_params
-    inverse_transform = inverse_transform
-    set_params = set_params
-    transform = transform
+        self.cursor = cursor
 
 
 # ---#
-class SVD:
+class SVD(Decomposition):
     """
 ---------------------------------------------------------------------------
 Creates a SVD (Singular Value Decomposition) object by using the Vertica 
@@ -162,51 +121,16 @@ n_components: int, optional
 method: str, optional
 	The method to use to calculate SVD.
 		lapack: Lapack definition.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-singular_values: tablesample
-	The singular values.
-explained_variance: tablesample
-	The singular values explained variance.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self, name: str, cursor=None, n_components: int = 0, method: str = "lapack"
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("n_components", n_components, [int, float], False),
-                ("method", method, ["lapack"], True),
-            ]
-        )
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "SVD", name
+        self.set_params({"n_components": n_components, "method": method.lower()})
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "SVD", "decomposition"
-        self.cursor, self.name = cursor, name
-        self.parameters = {"n_components": n_components, "method": method.lower()}
-
-    # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL_decomposition
-    deployInverseSQL = deployInverseSQL_decomposition
-    drop = drop
-    fit = fit_unsupervised
-    get_params = get_params
-    inverse_transform = inverse_transform
-    set_params = set_params
-    transform = transform
+        self.cursor = cursor

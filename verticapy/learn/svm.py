@@ -59,7 +59,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class LinearSVC:
+class LinearSVC(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
 Creates a LinearSVC object by using the Vertica Highly Distributed and 
@@ -97,32 +97,8 @@ class_weight: list, optional
 		none : No weights are used.
 max_iter: int, optional
 	The maximum number of iterations that the algorithm performs.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-coef: tablesample
-	Coefficients and their mathematical information (pvalue, std, value...)
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -135,58 +111,28 @@ test_relation: str
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("tol", tol, [int, float], False),
-                ("C", C, [int, float], False),
-                ("fit_intercept", fit_intercept, [bool], False),
-                ("intercept_scaling", intercept_scaling, [int, float], False),
-                (
-                    "intercept_mode",
-                    intercept_mode,
-                    ["unregularized", "regularized"],
-                    True,
-                ),
-                ("max_iter", max_iter, [int, float], False),
-            ]
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "LinearSVC", name
+        self.set_params(
+            {
+                "tol": tol,
+                "C": C,
+                "fit_intercept": fit_intercept,
+                "intercept_scaling": intercept_scaling,
+                "intercept_mode": intercept_mode,
+                "class_weight": class_weight,
+                "max_iter": max_iter,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category, self.classes = "LinearSVC", "classifier", [0, 1]
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "tol": tol,
-            "C": C,
-            "fit_intercept": fit_intercept,
-            "intercept_scaling": intercept_scaling,
-            "intercept_mode": intercept_mode,
-            "class_weight": class_weight,
-            "max_iter": max_iter,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    classification_report = classification_report_binary
-    confusion_matrix = confusion_matrix_binary
-    deploySQL = deploySQL_binary
-    drop = drop
-    features_importance = features_importance
-    fit = fit
-    lift_chart = lift_chart_binary
-    get_params = get_params
-    plot = plot_model
-    prc_curve = prc_curve_binary
-    predict = predict_binary
-    roc_curve = roc_curve_binary
-    score = binary_classification_score
-    set_params = set_params
+        self.cursor = cursor
 
 
 # ---#
-class LinearSVR:
+class LinearSVR(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a LinearSVR object by using the Vertica Highly Distributed and Scalable 
@@ -242,10 +188,6 @@ test_relation: str
 	attribute of the object.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -258,53 +200,21 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("tol", tol, [int, float], False),
-                ("C", C, [int, float], False),
-                ("fit_intercept", fit_intercept, [bool], False),
-                ("intercept_scaling", intercept_scaling, [int, float], False),
-                (
-                    "intercept_mode",
-                    intercept_mode,
-                    ["unregularized", "regularized"],
-                    True,
-                ),
-                (
-                    "acceptable_error_margin",
-                    acceptable_error_margin,
-                    [int, float],
-                    False,
-                ),
-                ("max_iter", max_iter, [int, float], False),
-            ]
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "LinearSVR", name
+        self.set_params(
+            {
+                "tol": tol,
+                "C": C,
+                "fit_intercept": fit_intercept,
+                "intercept_scaling": intercept_scaling,
+                "intercept_mode": intercept_mode,
+                "acceptable_error_margin": acceptable_error_margin,
+                "max_iter": max_iter,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "LinearSVR", "regressor"
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "tol": tol,
-            "C": C,
-            "fit_intercept": fit_intercept,
-            "intercept_scaling": intercept_scaling,
-            "intercept_mode": intercept_mode,
-            "acceptable_error_margin": acceptable_error_margin,
-            "max_iter": max_iter,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL
-    drop = drop
-    features_importance = features_importance
-    fit = fit
-    get_params = get_params
-    plot = plot_model
-    predict = predict
-    regression_report = regression_metrics_report
-    score = regression_score
-    set_params = set_params
+        self.cursor = cursor
