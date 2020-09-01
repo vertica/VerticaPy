@@ -85,11 +85,17 @@ Main Class for Vertica Model
 		"""
         try:
             if self.type not in ("DBSCAN", "NearestCentroid"):
-                self.cursor.execute(
-                    "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                        self.name
+                try:
+                    version(cursor=self.cursor, condition=[9, 0, 0])
+                    self.cursor.execute(
+                        "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
+                            self.name
+                        )
                     )
-                )
+                except:
+                    self.cursor.execute(
+                        "SELECT SUMMARIZE_MODEL('{}')".format(self.name)
+                    )
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
                 rep = "<DBSCAN>\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
@@ -179,6 +185,7 @@ Main Class for Vertica Model
 			utilities.tablesample.
 		"""
         if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+            version(cursor=self.cursor, condition=[9, 1, 1])
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) x ORDER BY 2 DESC;".format(
                 self.name
             )
@@ -189,6 +196,7 @@ Main Class for Vertica Model
             "LinearSVC",
             "LinearSVR",
         ):
+            version(cursor=self.cursor, condition=[8, 1, 1])
             query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
             query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min)) AS importance, SIGN(coefficient) AS sign FROM "
             query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
@@ -235,6 +243,7 @@ Main Class for Vertica Model
 		model attribute
 		"""
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
+            version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
                     self.name,
@@ -1091,6 +1100,7 @@ class Tree:
 		graphviz formatted tree.
 		"""
         check_types([("tree_id", tree_id, [int, float], False)])
+        version(cursor=self.cursor, condition=[9, 1, 1])
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(
             self.name, tree_id
         )
@@ -1115,6 +1125,7 @@ class Tree:
 		utilities.tablesample.
 		"""
         check_types([("tree_id", tree_id, [int, float], False)])
+        version(cursor=self.cursor, condition=[9, 1, 1])
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular');".format(
             self.name, tree_id
         )
@@ -1459,19 +1470,19 @@ class NeighborsClassifier:
 		Cutoff for which the tested category will be accepted as prediction. 
 	method: str, optional
 		The method to use to compute the score.
-			accuracy : Accuracy
-			auc   : Area Under the Curve (ROC)
+			accuracy    : Accuracy
+			auc         : Area Under the Curve (ROC)
 			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-			bm	: Informedness = tpr + tnr - 1
-			csi   : Critical Success Index = tp / (tp + fn + fp)
-			f1	: F1 Score 
-			logloss   : Log Loss
-			mcc   : Matthews Correlation Coefficient 
-			mk	: Markedness = ppv + npv - 1
-			npv   : Negative Predictive Value = tn / (tn + fn)
-			prc_auc   : Area Under the Curve (PRC)
+			bm	        : Informedness = tpr + tnr - 1
+			csi         : Critical Success Index = tp / (tp + fn + fp)
+			f1	        : F1 Score 
+			logloss     : Log Loss
+			mcc         : Matthews Correlation Coefficient 
+			mk	        : Markedness = ppv + npv - 1
+			npv         : Negative Predictive Value = tn / (tn + fn)
+			prc_auc     : Area Under the Curve (PRC)
 			precision   : Precision = tp / (tp + fp)
-			recall   : Recall = tp / (tp + fn)
+			recall      : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp) 
 
 	Returns
@@ -1613,13 +1624,13 @@ class NeighborsRegressor:
 	----------
 	method: str, optional
 		The method to use to compute the score.
-			max  : Max Error
-			mae  : Mean Absolute Error
+			max    : Max Error
+			mae    : Mean Absolute Error
 			median : Median Absolute Error
-			mse  : Mean Squared Error
+			mse    : Mean Squared Error
 			msle   : Mean Squared Log Error
-			r2   : R squared coefficient
-			var  : Explained Variance 
+			r2     : R squared coefficient
+			var    : Explained Variance 
 
 	Returns
 	-------
@@ -1754,8 +1765,8 @@ class BinaryClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         return lift_chart(self.y, self.deploySQL(), self.test_relation, self.cursor)
 
@@ -1768,8 +1779,8 @@ class BinaryClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
 
@@ -1833,8 +1844,8 @@ class BinaryClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
 
@@ -1849,18 +1860,18 @@ class BinaryClassifier(Classifier):
 	method: str, optional
 		The method to use to compute the score.
 			accuracy	: Accuracy
-			auc		 : Area Under the Curve (ROC)
+			auc		    : Area Under the Curve (ROC)
 			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-			bm		  : Informedness = tpr + tnr - 1
-			csi		 : Critical Success Index = tp / (tp + fn + fp)
-			f1		  : F1 Score 
-			logloss	 : Log Loss
-			mcc		 : Matthews Correlation Coefficient 
-			mk		  : Markedness = ppv + npv - 1
-			npv		 : Negative Predictive Value = tn / (tn + fn)
-			prc_auc	 : Area Under the Curve (PRC)
+			bm		    : Informedness = tpr + tnr - 1
+			csi		    : Critical Success Index = tp / (tp + fn + fp)
+			f1		    : F1 Score 
+			logloss	    : Log Loss
+			mcc		    : Matthews Correlation Coefficient 
+			mk		    : Markedness = ppv + npv - 1
+			npv		    : Negative Predictive Value = tn / (tn + fn)
+			prc_auc	    : Area Under the Curve (PRC)
 			precision   : Precision = tp / (tp + fp)
-			recall	  : Recall = tp / (tp + fn)
+			recall	    : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp)
 
 	cutoff: float, optional
@@ -1958,8 +1969,8 @@ class MulticlassClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         check_types(
             [
@@ -1989,8 +2000,8 @@ class MulticlassClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float], False)])
         pos_label = (
@@ -2101,8 +2112,8 @@ class MulticlassClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         pos_label = (
             self.classes_[1]
@@ -2136,8 +2147,8 @@ class MulticlassClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         pos_label = (
             self.classes_[1]
@@ -2233,8 +2244,8 @@ class MulticlassClassifier(Classifier):
 	Returns
 	-------
 	tablesample
-			An object containing the result. For more information, see
-			utilities.tablesample.
+		An object containing the result. For more information, see
+		utilities.tablesample.
 		"""
         pos_label = (
             self.classes_[1]
@@ -2271,18 +2282,18 @@ class MulticlassClassifier(Classifier):
 	method: str, optional
 		The method to use to compute the score.
 			accuracy	: Accuracy
-			auc		 : Area Under the Curve (ROC)
+			auc		    : Area Under the Curve (ROC)
 			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-			bm		  : Informedness = tpr + tnr - 1
-			csi		 : Critical Success Index = tp / (tp + fn + fp)
-			f1		  : F1 Score 
-			logloss	 : Log Loss
-			mcc		 : Matthews Correlation Coefficient 
-			mk		  : Markedness = ppv + npv - 1
-			npv		 : Negative Predictive Value = tn / (tn + fn)
-			prc_auc	 : Area Under the Curve (PRC)
+			bm		    : Informedness = tpr + tnr - 1
+			csi		    : Critical Success Index = tp / (tp + fn + fp)
+			f1		    : F1 Score 
+			logloss	    : Log Loss
+			mcc		    : Matthews Correlation Coefficient 
+			mk		    : Markedness = ppv + npv - 1
+			npv		    : Negative Predictive Value = tn / (tn + fn)
+			prc_auc	    : Area Under the Curve (PRC)
 			precision   : Precision = tp / (tp + fp)
-			recall	  : Recall = tp / (tp + fn)
+			recall	    : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp) 
 
 	Returns
@@ -2477,13 +2488,13 @@ class Regressor(Supervised):
 	----------
 	method: str, optional
 		The method to use to compute the score.
-			max	: Max Error
-			mae	: Mean Absolute Error
+			max	   : Max Error
+			mae	   : Mean Absolute Error
 			median : Median Absolute Error
-			mse	: Mean Squared Error
+			mse	   : Mean Squared Error
 			msle   : Mean Squared Log Error
-			r2	 : R squared coefficient
-			var	: Explained Variance 
+			r2	   : R squared coefficient
+			var	   : Explained Variance 
 
 	Returns
 	-------

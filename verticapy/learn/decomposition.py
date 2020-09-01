@@ -98,6 +98,7 @@ method: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 1, 0])
 
 
 # ---#
@@ -134,3 +135,4 @@ method: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 1, 0])

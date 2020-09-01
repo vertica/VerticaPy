@@ -1587,9 +1587,15 @@ The tablesample attributes are the same than the parameters.
                 rows = self.count
             else:
                 if start > end:
-                    rows = "0 of {}".format(self.count)
+                    rows = "0{}".format(
+                        " of {}".format(self.count) if (self.count > 0) else ""
+                    )
                 else:
-                    rows = "{}-{} of {}".format(start, end, self.count)
+                    rows = "{}-{}{}".format(
+                        start,
+                        end,
+                        " of {}".format(self.count) if (self.count > 0) else "",
+                    )
             if len(self.values) == 1:
                 column = list(self.values.keys())[0]
                 if self.offset > self.count:
@@ -1940,6 +1946,78 @@ vDataFrame
         setattr(vdf, '"{}"'.format(column.replace('"', "_")), new_vColumn)
         setattr(vdf, column.replace('"', "_"), new_vColumn)
     return vdf
+
+
+# ---#
+def version(cursor=None, condition: list = []):
+    """
+---------------------------------------------------------------------------
+Returns the Vertica Version.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+condition: list, optional
+    List of the minimal version information. If the current version is not
+    greater or equal to this one, it will raise an error.
+
+Returns
+-------
+list
+    List containing the version information.
+    [MAJOR, MINOR, PATCH, POST]
+    """
+    check_types(
+        [("condition", condition, [list], False),]
+    )
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    if condition:
+        condition = condition + [0 for elem in range(4 - len(condition))]
+    version = (
+        cursor.execute("SELECT version();")
+        .fetchone()[0]
+        .split("Vertica Analytic Database v")[1]
+    )
+    version = version.split(".")
+    result = []
+    try:
+        result += [int(version[0])]
+        result += [int(version[1])]
+        result += [int(version[2].split("-")[0])]
+        result += [int(version[2].split("-")[1])]
+    except:
+        pass
+    if conn:
+        conn.close()
+    if condition:
+        if condition[0] < result[0]:
+            test = True
+        elif condition[0] == result[0]:
+            if condition[1] < result[1]:
+                test = True
+            elif condition[1] == result[1]:
+                if condition[2] <= result[2]:
+                    test = True
+                else:
+                    test = False
+            else:
+                test = False
+        else:
+            test = False
+        if not (test):
+            raise VersionError(
+                "This Function is not available for Vertica version {}.\nPlease upgrade your Vertica version to at least {} to get this functionality.".format(
+                    version[0] + "." + version[1] + "." + version[2].split("-")[0],
+                    ".".join([str(elem) for elem in condition[:3]]),
+                )
+            )
+    return result
 
 
 # ---#

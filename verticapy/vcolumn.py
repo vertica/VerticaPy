@@ -3600,6 +3600,7 @@ Attributes
 		"""
         check_types([("k", k, [int, float], False), ("dropna", dropna, [bool], False)])
         try:
+            version(cursor=cursor, condition=[9, 0, 1])
             topk = "" if (k < 1) else "TOPK = {},".format(k)
             query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS {} WITH_TOTALCOUNT = False) OVER () FROM {}".format(
                 self.alias, topk, self.parent.__genSQL__()

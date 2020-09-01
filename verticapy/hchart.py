@@ -138,9 +138,18 @@ def hchart_from_vdf(
                     "{}", x
                 ) + " AS {}".format(x)
             else:
-                x = vdf[x].discretize(
-                    k=max_cardinality, method="topk", return_enum_trans=True
-                )[0].replace("{}", x) + " AS {}".format(x)
+                query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
+                    x, y, vdf.__genSQL__(), max_cardinality
+                )
+                vdf._VERTICAPY_VARIABLES_["cursor"].execute(query)
+                result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                result = [elem[0] for elem in result]
+                result = [
+                    "NULL" if elem == None else "'{}'".format(elem) for elem in result
+                ]
+                x = "(CASE WHEN {} IN ({}) THEN {} ELSE 'Others' END) AS {}".format(
+                    x, ", ".join(result), x, x
+                )
         query = "SELECT {}, {} FROM {}{}{}LIMIT {}".format(
             x,
             y,
@@ -294,28 +303,37 @@ def hchart_from_vdf(
             )
         elif not (c) and (z):
             check_types([("z", z, [str, list], False)])
-            z = (
-                vdf_columns_names([z], vdf)[0]
-                if (type(z) == str)
-                else vdf_columns_names(z, vdf)[0]
-            )
+            try:
+                z = (
+                    vdf_columns_names([z], vdf)[0]
+                    if (type(z) == str)
+                    else vdf_columns_names(z, vdf)[0]
+                )
+            except:
+                pass
             query = "SELECT {}{}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
                 x, cast, y, z, vdf.__genSQL__(), x, y, z, limit
             )
         else:
             if z:
                 check_types([("z", z, [str, list], False)])
-                z = (
-                    vdf_columns_names([z], vdf)[0]
-                    if (type(z) == str)
-                    else vdf_columns_names(z, vdf)[0]
-                )
+                try:
+                    z = (
+                        vdf_columns_names([z], vdf)[0]
+                        if (type(z) == str)
+                        else vdf_columns_names(z, vdf)[0]
+                    )
+                except:
+                    pass
             check_types([("c", c, [str, list], False)])
-            c = (
-                vdf_columns_names([c], vdf)[0]
-                if (type(c) == str)
-                else vdf_columns_names(c, vdf)[0]
-            )
+            try:
+                c = (
+                    vdf_columns_names([c], vdf)[0]
+                    if (type(c) == str)
+                    else vdf_columns_names(c, vdf)[0]
+                )
+            except:
+                pass
             # c
             unique = vdf[c].nunique()
             is_num = vdf[c].isnum()
@@ -377,9 +395,24 @@ def hchart_from_vdf(
                     "{}", x
                 ) + " AS {}".format(x)
             else:
-                x = vdf[x].discretize(
-                    k=max_cardinality, method="topk", return_enum_trans=True
-                )[0].replace("{}", x) + " AS {}".format(x)
+                if len(y) == 1:
+                    query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
+                        x, y[0], vdf.__genSQL__(), max_cardinality
+                    )
+                    vdf._VERTICAPY_VARIABLES_["cursor"].execute(query)
+                    result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                    result = [elem[0] for elem in result]
+                    result = [
+                        "NULL" if elem == None else "'{}'".format(elem)
+                        for elem in result
+                    ]
+                    x = "(CASE WHEN {} IN ({}) THEN {} ELSE 'Others' END) AS {}".format(
+                        x, ", ".join(result), x, x
+                    )
+                else:
+                    x = vdf[x].discretize(
+                        k=max_cardinality, method="topk", return_enum_trans=True
+                    )[0].replace("{}", x) + " AS {}".format(x)
         query = "SELECT {}, {} FROM {}{} LIMIT {}".format(
             x,
             ", ".join(y),
@@ -698,7 +731,12 @@ def bar(
         for i in range(len(columns[0])):
             if columns[0][i] == None:
                 columns[0][i] = "None"
-        chart.set_dict_options({"xAxis": {"categories": columns[0]}})
+        chart.set_dict_options(
+            {
+                "xAxis": {"categories": columns[0]},
+                "yAxis": {"title": {"text": names[1]}},
+            }
+        )
         chart.set_dict_options(
             {"tooltip": {"headerFormat": "", "pointFormat": "{point.y}"}}
         )
@@ -722,6 +760,7 @@ def bar(
         chart.set_dict_options(
             {
                 "xAxis": {"categories": all_subcategories},
+                "yAxis": {"title": {"text": names[2]}},
                 "legend": {"enabled": True, "title": {"text": names[0]}},
                 "plotOptions": {"bar": {"dataLabels": {"enabled": True}}},
             }
@@ -1068,7 +1107,7 @@ def line(
                 "endOnTick": True,
                 "showLastLabel": True,
             },
-            "yAxis": {"title": {"text": names[1]}},
+            "yAxis": {"title": {"text": names[1] if len(names) == 2 else ""}},
             "legend": {"enabled": False},
             "plotOptions": {
                 "scatter": {
@@ -1470,7 +1509,7 @@ def scatter(
                     + ": <b>{point.y}</b><br>"
                     + str(names[2])
                     + ": <b>{point.z}</b>",
-                }
+                },
             }
         )
     elif (n == 3) and (chart_type == "3d"):

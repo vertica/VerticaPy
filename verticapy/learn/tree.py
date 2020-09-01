@@ -119,6 +119,7 @@ nbins: int, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 1])
 
 
 # ---#
@@ -187,6 +188,7 @@ nbins: int, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 0, 1])
 
 
 # ---#
@@ -224,6 +226,7 @@ cursor: DBcursor, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 1])
 
 
 # ---#
@@ -261,3 +264,4 @@ cursor: DBcursor, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 0, 1])

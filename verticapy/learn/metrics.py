@@ -798,6 +798,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
         y_true
     )
@@ -1214,6 +1215,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {}) OVER() FROM (SELECT DECODE({}".format(
         num_classes, y_true
