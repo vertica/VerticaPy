@@ -61,7 +61,7 @@ from verticapy.errors import *
 def check_model(name: str, cursor=None):
     """
 ---------------------------------------------------------------------------
-Check if the model already exists.
+Checks if the model already exists.
 
 Parameters
 ----------
