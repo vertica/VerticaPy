@@ -58,6 +58,51 @@ from verticapy.errors import *
 
 #
 # ---#
+def check_model(name: str, cursor=None):
+    """
+---------------------------------------------------------------------------
+Check if the model already exists.
+
+Parameters
+----------
+name: str
+    Model name.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    check_types([("name", name, [str], False)])
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    cursor.execute("SELECT * FROM MODELS WHERE model_name='{}'".format(name))
+    result = cursor.fetchone()
+    if result:
+        if conn:
+            conn.close()
+        raise NameError("The model '{}' already exists !".format(name))
+    else:
+        import verticapy
+
+        path = os.path.dirname(
+            verticapy.__file__
+        ) + "/learn/models/{}.verticapy".format(name)
+        try:
+            file = open(path, "r")
+            file_exist = True
+        except:
+            file_exist = False
+        if file_exist:
+            if conn:
+                conn.close()
+            raise NameError("The model '{}' already exists !".format(name))
+    if conn:
+        conn.close()
+
+
+# ---#
 def drop_model(
     name: str, cursor=None, print_info: bool = True, raise_error: bool = False
 ):
@@ -102,7 +147,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -155,7 +200,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -208,7 +253,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -261,7 +306,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -470,6 +515,11 @@ model
     else:
         check_cursor(cursor)
     try:
+        check_model(name=name, cursor=cursor)
+        raise NameError("The model '{}' doesn't exist.".format(name))
+    except:
+        pass
+    try:
         cursor.execute(
             "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
             + name
@@ -486,24 +536,98 @@ model
             info = cursor.fetchone()[0].replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         except:
-            from verticapy.learn.preprocessing import Normalizer
+            try:
+                from verticapy.learn.preprocessing import Normalizer
 
-            model = Normalizer(name, cursor)
-            model.param = to_tablesample(
-                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(
-                    name.replace("'", "''")
-                ),
-                cursor=cursor,
-            )
-            model.param.table_info = False
-            model.X = ['"' + item + '"' for item in model.param.values["column_name"]]
-            if "avg" in model.param.values:
-                model.method = "zscore"
-            elif "max" in model.param.values:
-                model.method = "minmax"
-            else:
-                model.method = "robust_zscore"
-            return model
+                model = Normalizer(name, cursor)
+                model.param_ = self.get_model_attribute("details")
+                model.X = [
+                    '"' + item + '"' for item in model.param_.values["column_name"]
+                ]
+                if "avg" in model.param_.values:
+                    model.parameters["method"] = "zscore"
+                elif "max" in model.param_.values:
+                    model.parameters["method"] = "minmax"
+                else:
+                    model.parameters["method"] = "robust_zscore"
+                return model
+            except:
+                import verticapy
+
+                path = os.path.dirname(
+                    verticapy.__file__
+                ) + "/learn/models/{}.verticapy".format(name)
+                file = open(path, "r")
+                ldic = locals()
+                exec(file.read(), globals(), ldic)
+                model_save = ldic["model_save"]
+                if model_save["type"] == "NearestCentroid":
+                    from verticapy.learn.neighbors import NearestCentroid
+
+                    model = NearestCentroid(name, cursor, model_save["p"])
+                    model.centroids_ = tablesample(
+                        model_save["centroids"], table_info=False
+                    )
+                    model.classes_ = model_save["classes"]
+                elif model_save["type"] == "KNeighborsClassifier":
+                    from verticapy.learn.neighbors import KNeighborsClassifier
+
+                    model = KNeighborsClassifier(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                    model.classes_ = model_save["classes"]
+                elif model_save["type"] == "KNeighborsRegressor":
+                    from verticapy.learn.neighbors import KNeighborsRegressor
+
+                    model = KNeighborsRegressor(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                elif model_save["type"] == "LocalOutlierFactor":
+                    from verticapy.learn.neighbors import LocalOutlierFactor
+
+                    model = LocalOutlierFactor(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                    model.n_errors_ = model_save["n_errors"]
+                elif model_save["type"] == "DBSCAN":
+                    from verticapy.learn.cluster import DBSCAN
+
+                    model = DBSCAN(
+                        name,
+                        cursor,
+                        model_save["eps"],
+                        model_save["min_samples"],
+                        model_save["p"],
+                    )
+                    model.n_cluster_ = model_save["n_cluster"]
+                    model.n_noise_ = model_save["n_noise"]
+                elif model_save["type"] == "CountVectorizer":
+                    from verticapy.learn.preprocessing import CountVectorizer
+
+                    model = CountVectorizer(
+                        name,
+                        cursor,
+                        model_save["lowercase"],
+                        model_save["max_df"],
+                        model_save["min_df"],
+                        model_save["max_features"],
+                        model_save["ignore_special"],
+                        model_save["max_text_size"],
+                    )
+                    model.vocabulary_ = model_save["vocabulary"]
+                    model.stop_words_ = model_save["stop_words"]
+                model.input_relation = model_save["input_relation"]
+                model.X = model_save["X"]
+                if model_save["type"] in (
+                    "KNeighborsRegressor",
+                    "KNeighborsClassifier",
+                    "NearestCentroid",
+                ):
+                    model.y = model_save["y"]
+                    model.test_relation = model_save["test_relation"]
+                elif model_save["type"] not in ("CountVectorizer"):
+                    model.key_columns = model_save["key_columns"]
+                return model
     try:
         info = info.split("SELECT ")[1].split("(")
     except:
@@ -627,91 +751,9 @@ model
             int(parameters_dict["max_iterations"]),
             float(parameters_dict["epsilon"]),
         )
-    elif model_type == "pca":
-        from verticapy.learn.decomposition import PCA
-
-        model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
-    elif model_type == "svd":
-        from verticapy.learn.decomposition import SVD
-
-        model = SVD(name, cursor)
-    elif model_type == "one_hot_encoder_fit":
-        from verticapy.learn.preprocessing import OneHotEncoder
-
-        model = OneHotEncoder(name, cursor)
-    model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
-    model.test_relation = test_relation if (test_relation) else model.input_relation
-    if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
-        model.X = info.split(",")[3 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
-    elif model_type in ("pca"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.components = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'principal_components')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.components.table_info = False
-        model.explained_variance = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.explained_variance.table_info = False
-        model.mean = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'columns')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.mean.table_info = False
-    elif model_type in ("svd"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.singular_values = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'right_singular_vectors')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.singular_values.table_info = False
-        model.explained_variance = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.explained_variance.table_info = False
-    elif model_type in ("one_hot_encoder_fit"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.param = to_tablesample(
-            query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                name.replace("'", "''"), name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.param.table_info = False
-    else:
-        model.X = info.split(",")[2 : len(info.split(",")) - 1]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.n_cluster = int(info.split(",")[-1])
-        model.cluster_centers = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.cluster_centers.table_info = False
-        query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(
-            name.replace("'", "''")
-        )
-        cursor.execute(query)
-        result = cursor.fetchone()[0]
+        model.parameters["n_cluster"] = int(info.split(",")[-1])
+        model.cluster_centers_ = model.get_model_attribute("centers")
+        result = model.get_model_attribute("metrics").values["metrics"][0]
         values = {
             "index": [
                 "Between-Cluster Sum of Squares",
@@ -731,15 +773,88 @@ model
             / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
             result.split("Converged: ")[1].split("\n")[0] == "True",
         ]
-        model.metrics = tablesample(values, table_info=False)
-    if model.type == "classifier":
+        model.metrics_ = tablesample(values, table_info=False)
+    elif model_type == "bisectingkmeans":
+        from verticapy.learn.cluster import BisectingKMeans
+
+        model = BisectingKMeans(
+            name,
+            cursor,
+            -1,
+            int(parameters_dict["bisection_iterations"]),
+            parameters_dict["split_method"],
+            int(parameters_dict["min_divisible_cluster_size"]),
+            parameters_dict["distance_method"],
+            parameters_dict["init_method"],
+            int(parameters_dict["max_iterations"]),
+            float(parameters_dict["epsilon"]),
+        )
+        model.parameters["n_cluster"] = int(info.split(",")[-1])
+        self.metrics_ = self.get_model_attribute("Metrics")
+        self.cluster_centers_ = self.get_model_attribute("BKTree")
+    elif model_type == "pca":
+        from verticapy.learn.decomposition import PCA
+
+        model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
+        model.components_ = model.get_model_attribute("principal_components")
+        model.explained_variance_ = model.get_model_attribute("singular_values")
+        model.mean_ = model.get_model_attribute("columns")
+    elif model_type == "svd":
+        from verticapy.learn.decomposition import SVD
+
+        model = SVD(name, cursor)
+        model.singular_values_ = model.get_model_attribute("right_singular_vectors")
+        model.explained_variance_ = model.get_model_attribute("singular_values")
+    elif model_type == "one_hot_encoder_fit":
+        from verticapy.learn.preprocessing import OneHotEncoder
+
+        model = OneHotEncoder(name, cursor)
+        try:
+            model.param_ = to_tablesample(
+                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
+                    model.name, model.name
+                ),
+                cursor=model.cursor,
+            )
+        except:
+            try:
+                model.param_ = to_tablesample(
+                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x".format(
+                        model.name
+                    ),
+                    cursor=model.cursor,
+                )
+            except:
+                model.param_ = model.get_model_attribute("varchar_categories")
+        model.param_.table_info = False
+    model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
+    model.test_relation = test_relation if (test_relation) else model.input_relation
+    if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
+        model.X = info.split(",")[3 : len(info.split(","))]
+        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
+    elif model_type in (
+        "svd",
+        "pca",
+        "one_hot_encoder_fit",
+        "normalizer",
+        "kmeans",
+        "bisectingkmeans",
+    ):
+        model.X = info.split(",")[2 : len(info.split(","))]
+        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+    if model_type in ("naive_bayes", "rf_classifier"):
         cursor.execute(
             "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
                 model.y, model.input_relation, model.y
             )
         )
         classes = cursor.fetchall()
-        model.classes = [item[0] for item in classes]
+        model.classes_ = [item[0] for item in classes]
+    elif model_type in ("svm_classifier", "logistic_reg"):
+        model.classes_ = [0, 1]
+    if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
+        model.coef_ = model.get_model_attribute("details")
     return model
 
 

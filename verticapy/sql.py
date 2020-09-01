@@ -192,7 +192,11 @@ def sql(line, cell=""):
             except:
                 try:
                     cursor.execute(query)
-                    print(query_type)
+                    final_result = cursor.fetchone()
+                    if final_result:
+                        print(final_result[0])
+                    else:
+                        print(query_type)
                 except Exception as e:
                     error = e
             if error:

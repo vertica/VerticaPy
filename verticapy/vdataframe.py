@@ -6832,13 +6832,11 @@ vcolumns : vcolumn
         if type(conditions) == list:
             conditions = " AND ".join(["({})".format(elem) for elem in conditions])
         conditions = " WHERE {}".format(conditions) if conditions else ""
-        order_by = sort_str(order_by, self)
         all_cols = ", ".join(usecols + expr)
-        conditions += order_by
         table = "(SELECT {} FROM {}{}) x".format(
             all_cols, self.__genSQL__(), conditions
         )
-        return self.__vdf_from_relation__(table, "search", "")
+        return self.__vdf_from_relation__(table, "search", "").sort(order_by)
 
     # ---#
     def select(self, columns: list, check: bool = True):
@@ -6995,8 +6993,8 @@ vcolumns : vcolumn
         Number of columns to display. If the parameter is incorrect, nothing 
         will be changed.
     percent_bar: bool/"auto"
-        If set to True or if set to 'auto' and the percent of missing values are
-        already computed, displays the percent of non-missing values.
+        If set to True or 'auto' (and the percent of missing values are already 
+        computed), displays the percent of non-missing values.
 
     Returns
     -------
@@ -7610,7 +7608,7 @@ vcolumns : vcolumn
             ["lag{}".format(i) for i in range(1, p + 1)] + ["ts"],
             "delta",
         )
-        coef = model.coef.transpose()
+        coef = model.coef_.transpose()
         gamma = coef.values["lag1"][0]
         p_value = coef.values["lag1"][3]
         self._VERTICAPY_VARIABLES_["cursor"].execute(
