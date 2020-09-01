@@ -1,0 +1,315 @@
+Form,Name,Price
+"Fresh","Acorn squash",1.1722478842
+"Fresh","Apples",1.56751539145
+"Frozen","Apples",0.537867915537
+"Ready to drink","Apples",0.727287713105
+"Dried","Apricots",7.73397208999
+"Fresh","Apricots",3.0400719671
+"Packed in juice","Apricots",1.64748926094
+"Packed in syrup, syrup discarded","Apricots",1.55204253208
+"Canned","Artichoke",3.38561047493
+"Fresh","Artichoke",2.21305047929
+"Frozen","Artichoke",6.22141832776
+"Canned","Asparagus",2.5802971683
+"Fresh","Asparagus",3.21349409304
+"Frozen","Asparagus",5.85731991397
+"Fresh","Avocado",2.23587438158
+"Fresh","Bananas",0.566983414531
+"Canned","Beets",1.01727546324
+"Frozen","Berries, mixed",3.41021478336
+"Canned","Black beans",0.980579717755
+"Dried","Black beans",1.48978420263
+"Fresh","Blackberries",5.77470825035
+"Frozen","Blackberries",3.38850085426
+"Canned","Blackeye peas",0.910440813422
+"Dried","Blackeye peas",1.58990085218
+"Fresh","Blueberries",4.73462168973
+"Frozen","Blueberries",3.64325041591
+"Florets","Broccoli",2.56847143403
+"Frozen","Broccoli",1.86970036313
+"Heads","Broccoli",1.63609690647
+"Fresh","Brussels sprouts",2.76355337151
+"Frozen","Brussels sprouts",2.13825366618
+"Fresh","Butternut squash",1.24473670387
+"Fresh green cabbage","Cabbage",0.579208394258
+"Fresh red cabbage","Cabbage",1.05644972791
+"Sauerkraut","Cabbage",1.26463509211
+"Fresh","Cantaloupe",0.535873776106
+"Canned","Carrots",1.06049032785
+"Cooked whole","Carrots",0.741539992379
+"Frozen","Carrots",1.46051272856
+"Raw baby","Carrots",1.44745804876
+"Raw whole","Carrots",0.741539992379
+"Florets","Cauliflower",3.27064843515
+"Frozen","Cauliflower",1.716444729
+"Heads","Cauliflower",1.22881085623
+"Sticks","Celery",2.2049694293
+"Trimmed bunches","Celery",1.11365395418
+"Canned, packed in syrup or water","Cherries",3.51874337733
+"Fresh","Cherries",3.59298975549
+"Canned","Collard greens",0.902593822572
+"Fresh","Collard greens",2.63083790515
+"Frozen","Collard greens",1.48055610021
+"Canned","Corn",0.903905336945
+"Fresh","Corn",2.69062315903
+"Frozen","Corn",1.61907283226
+"Dried","Cranberries",4.78674137766
+"Fresh, consumed with peel","Cucumbers",1.29593136814
+"Fresh, peeled","Cucumbers",1.29593136814
+"Dried","Dates",4.79135143479
+"Dried","Figs",5.7483176391
+"Packed in juice","Fruit cocktail",1.49015356917
+"Packed in syrup or water","Fruit cocktail",1.23945809447
+"Fresh","Grapefruit",0.89780204118
+"Frozen","Grapefruit",0.674839678618
+"Ready to drink","Grapefruit",0.824989780378
+"Fresh","Grapes",2.093827412
+"Frozen","Grapes",0.720026097396
+"Raisins","Grapes",3.50091463439
+"Ready to drink","Grapes",0.913535086138
+"Canned","Great northern beans",0.923915876218
+"Dried","Great northern beans",1.53402874163
+"Canned","Green beans",0.826939082717
+"Fresh","Green beans",2.13997225241
+"Frozen","Green beans",1.66929497324
+"Canned","Green peas",1.01306918204
+"Frozen","Green peas",1.64557267532
+"Fresh","Green peppers",1.4103626315
+"Fresh","Honeydew melon",0.79665620543
+"Canned","Kale",1.0686461381
+"Fresh","Kale",2.8073017758
+"Frozen","Kale",1.71622542952
+"Fresh","Kiwi",2.04468340797
+"Dried","Lentils",1.3850358051
+"Fresh","Lettuce, Iceberg",1.21303942953
+"Full Heads","Lettuce, Romaine",1.83609831617
+"Hearts","Lettuce, Romaine",2.75300289757
+"Canned","Lima beans",1.3835692655
+"Dried","Lima beans",1.73065564313
+"Frozen","Lima beans",1.83572456732
+"Dried","Mangoes",8.50464930168
+"Fresh","Mangoes",1.37756344703
+"Canned","Mixed Vegetables",1.10743317098
+"Canned","Mixed Vegetables",1.32442847693
+"Frozen","Mixed Vegetables",1.38869195156
+"Frozen","Mixed Vegetables",1.80159269637
+"Sliced","Mushrooms",3.82158437966
+"Whole","Mushrooms",3.41198535117
+"Canned","Mustard greens",0.976791582056
+"Fresh","Mustard greens",2.56923501629
+"Frozen","Mustard greens",1.45594273557
+"Canned","Navy beans",0.970423315186
+"Dried","Navy beans",1.50577973442
+"Fresh","Nectarines",1.7611484828
+"Fresh","Okra",3.21355231
+"Frozen","Okra",1.56288627362
+"Canned,","Olives",4.18683171458
+"Fresh","Onions",1.03810715335
+"Fresh","Oranges",1.03517273024
+"Frozen","Oranges",0.689934119435
+"Ready to drink","Oranges",0.796288571647
+"Dried","Papaya",4.56591253937
+"Fresh","Papaya",1.2980115892
+"Fresh","Peaches",1.59118685325
+"Frozen","Peaches",2.89463728066
+"Packed in juice","Peaches",1.96460660811
+"Packed in syrup or water","Peaches",1.50618264883
+"Fresh","Pears",1.4615746044
+"Packed in juice","Pears",1.84786803485
+"Packed in syrup or water","Pears",1.63007957295
+"Dried","Pineapple",5.49708634567
+"Fresh","Pineapple",0.627661945936
+"Frozen","Pineapple",0.590752357725
+"Packed in juice","Pineapple",1.14342311575
+"Packed in syrup or water","Pineapple",1.12844843614
+"Ready to drink","Pineapple",0.909642229515
+"Canned","Pinto beans",0.866189704098
+"Dried","Pinto beans",1.20380752717
+"Dried (Prunes)","Plums",4.03634516164
+"Fresh","Plums",1.82741600781
+"Juice, ready to drink","Plums",1.15544927185
+"Fresh","Pomegranate",2.17359041186
+"Juice, ready to drink","Pomegranate",2.94278510731
+"Canned","Potatoes",0.965992955381
+"Fresh","Potatoes",0.564319813929
+"Frozen french fries","Potatoes",1.17673673184
+"Canned","Pumpkin",1.35228040942
+"Fresh","Radish",1.31162875031
+"Fresh","Raspberries",6.97581079886
+"Frozen","Raspberries",4.44946467155
+"Canned","Red Kidney Beans",0.901679904473
+"Dried","Red Kidney Beans",1.67188888931
+"Fresh","Red peppers",2.27793973772
+"Boiled","Spinach",3.83371571139
+"Canned","Spinach",1.1471519614
+"Frozen","Spinach",1.90292014782
+"Raw","Spinach",3.83371571139
+"Fresh","Strawberries",2.35880848311
+"Frozen","Strawberries",2.37781330402
+"Fresh","Summer squash",1.63947703201
+"Fresh","Sweet potatoes",0.918896549599
+"Fresh","Tangerines",1.37796187723
+"Beefsteak,","Tomatoes",3.15921213872
+"Canned","Tomatoes",0.924836358886
+"Grape and cherry,","Tomatoes",3.28896020367
+"Roma,","Tomatoes",1.24341736034
+"Canned","Turnip greens",0.965253514158
+"Fresh","Turnip greens",2.47174882117
+"Frozen","Turnip greens",1.47304331307
+"Fresh","Watermelon",0.333412035323
+"Fresh","Acorn squash",1.1193087167
+"Fresh","Apples",1.6155336441
+"Frozen","Apples",0.5104657455
+"Ready to drink","Apples",0.6311325278
+"Dried","Apricots",7.3309645323
+"Fresh","Apricots",3.087137817
+"Packed in juice","Apricots",1.4742760156
+"Packed in syrup, syrup discarded","Apricots",1.8552908088
+"Canned","Artichoke",3.3174627313
+"Fresh","Artichoke",2.3637333814
+"Frozen","Artichoke",5.7683252728
+"Canned","Asparagus",2.7200086787
+"Fresh","Asparagus",3.0756105724
+"Frozen","Asparagus",6.0657860935
+"Fresh","Avocado",2.225544076
+"Fresh","Bananas",0.5494172928
+"Canned","Beets",0.9427311158
+"Frozen","Berries, mixed",3.63694066
+"Canned","Black beans",0.945681045
+"Dried","Black beans",1.4038762924
+"Fresh","Blackberries",5.661671336
+"Frozen","Blackberries",3.6920108696
+"Canned","Blackeye peas",0.9310398825
+"Dried","Blackeye peas",1.613022434
+"Fresh","Blueberries",4.3911083709
+"Frozen","Blueberries",3.471925452
+"Florets","Broccoli",2.3624557989
+"Frozen","Broccoli",1.8227837671
+"Heads","Broccoli",1.9191171292
+"Fresh","Brussels sprouts",2.9620929796
+"Frozen","Brussels sprouts",2.0397358015
+"Fresh","Butternut squash",1.2920110231
+"Fresh green cabbage","Cabbage",0.6238712291
+"Fresh red cabbage","Cabbage",1.0241250285
+"Sauerkraut","Cabbage",1.153095782
+"Fresh","Cantaloupe",0.520793672
+"Canned","Carrots",0.9231914223
+"Cooked whole","Carrots",0.7737514155
+"Frozen","Carrots",1.3965860252
+"Raw baby","Carrots",1.4373172338
+"Raw whole","Carrots",0.7737514155
+"Florets","Cauliflower",3.1279734694
+"Frozen","Cauliflower",1.6814349408
+"Heads","Cauliflower",1.416972077
+"Sticks","Celery",2.1340528999
+"Trimmed bunches","Celery",1.0928457916
+"Canned, packed in syrup or water","Cherries",3.7259182628
+"Fresh","Cherries",3.2130681107
+"Canned","Collard greens",0.8534190293
+"Fresh","Collard greens",2.6294683753
+"Frozen","Collard greens",1.5921257034
+"Canned","Corn",0.8537281609
+"Fresh","Corn",3.2649279391
+"Frozen","Corn",1.5981945708
+"Dried","Cranberries",4.6894038279
+"Fresh, consumed with peel","Cucumbers",1.2555855801
+"Fresh, peeled","Cucumbers",1.2555855801
+"Dried","Dates",5.5117046698
+"Dried","Figs",6.1253708776
+"Packed in juice","Fruit cocktail",1.4088850314
+"Packed in syrup or water","Fruit cocktail",1.2608441698
+"Fresh","Grapefruit",1.0097972268
+"Juice, ready to drink","Grapefruit",0.8494909232
+"Fresh","Grapes",2.2358731965
+"Frozen","Grapes",0.736368506
+"Raisins","Grapes",3.5756654326
+"Ready to drink","Grapes",0.8455769036
+"Canned","Great northern beans",0.8733322508
+"Dried","Great northern beans",1.5891818482
+"Canned","Green beans",0.824040727
+"Fresh","Green beans",2.12627646
+"Frozen","Green beans",1.7005120001
+"Canned","Green peas",0.9870138533
+"Frozen","Green peas",1.6584330893
+"Fresh","Green peppers",1.4949708543
+"Fresh","Honeydew melon",0.8259912143
+"Fresh","Kale",2.8772903388
+"Frozen","Kale",2.0735489578
+"Fresh","Kiwi",2.1813276789
+"Dried","Lentils",1.5614348422
+"Fresh","Lettuce, Iceberg",1.0892555457
+"Full Heads","Lettuce, Romaine",1.484034868
+"Hearts","Lettuce, Romaine",2.5536262705
+"Canned","Lima beans",1.3282126206
+"Dried","Lima beans",2.2195369395
+"Frozen","Lima beans",1.8991829826
+"Dried","Mangoes",10.1637125484
+"Fresh","Mangoes",1.3235173013
+"Canned","Mixed Vegetables",1.1153572418
+"Canned","Mixed Vegetables",1.1300407331
+"Frozen","Mixed Vegetables",1.3437574298
+"Frozen","Mixed Vegetables",1.7915725255
+"Sliced","Mushrooms",3.81042465
+"Whole","Mushrooms",3.5482533263
+"Canned","Mustard greens",0.8227393425
+"Fresh","Mustard greens",2.6792685486
+"Frozen","Mustard greens",1.5551743896
+"Canned","Navy beans",0.9462506636
+"Dried","Navy beans",1.4787507743
+"Fresh","Nectarines",1.8812472916
+"Fresh","Okra",3.8208242449
+"Frozen","Okra",1.5662807702
+"Canned,","Olives",5.0861220216
+"Fresh","Onions",1.047381815
+"Fresh","Oranges",1.0971216003
+"Frozen","Oranges",0.658986796
+"Ready to drink","Oranges",0.8467005261
+"Dried","Papaya",5.2722599372
+"Fresh","Papaya",1.2935317791
+"Fresh","Peaches",1.6779315817
+"Frozen","Peaches",3.1870806846
+"Packed in juice","Peaches",1.8800453698
+"Packed in syrup or water","Peaches",1.5862877905
+"Fresh","Pears",1.5175920102
+"Packed in juice","Pears",1.7876110202
+"Packed in syrup or water","Pears",1.5716448655
+"Dried","Pineapple",5.8687608122
+"Fresh","Pineapple",0.6527945474
+"Frozen","Pineapple",0.6203795725
+"Packed in juice","Pineapple",1.2761153689
+"Packed in syrup or water","Pineapple",1.3584426252
+"Ready to drink","Pineapple",0.9717956757
+"Canned","Pinto beans",0.8013951325
+"Dried","Pinto beans",1.085109083
+"Dried (Prunes)","Plums",4.7339261696
+"Fresh","Plums",1.987998844
+"Juice, ready to drink","Plums",1.4452477587
+"Fresh","Pomegranate",2.0784300245
+"Juice, ready to drink","Pomegranate",3.0102739423
+"Canned","Potatoes",0.9031082713
+"Fresh","Potatoes",0.6037360906
+"Frozen french fries","Potatoes",1.2177194503
+"Canned","Pumpkin",1.3781292617
+"Fresh","Radish",1.4621044098
+"Fresh","Raspberries",6.8777023246
+"Frozen","Raspberries",4.7628660377
+"Canned","Red Kidney Beans",0.861913772
+"Dried","Red Kidney Beans",1.6865123081
+"Fresh","Red peppers",2.3206705319
+"Boiled","Spinach",3.8265942203
+"Canned","Spinach",1.1345923224
+"Frozen","Spinach",1.760213418
+"Raw","Spinach",3.8265942203
+"Fresh","Strawberries",2.5084496439
+"Frozen","Strawberries",2.6115889333
+"Fresh","Summer squash",1.6400455025
+"Fresh","Sweet potatoes",1.0544093414
+"Fresh","Tangerines",1.4803961727
+"Canned","Tomatoes",0.912876896
+"Grape and cherry,","Tomatoes",3.4831293942
+"Large round,","Tomatoes",2.0066199543
+"Roma and plum,","Tomatoes",1.2921776573
+"Canned","Turnip greens",0.7843472032
+"Fresh","Turnip greens",2.5084130277
+"Frozen","Turnip greens",1.5800204468
+"Fresh","Watermelon",0.3166387792
