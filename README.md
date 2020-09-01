@@ -47,9 +47,9 @@ root@ubuntu:~$ python3 setup.py install
 
 ## Documentation
 
-A well-detailed HTML documentation is available by downloading the zip file at: <br>
+A well-detailed HTML documentation is available at: <br>
 
-https://github.com/vertica/VerticaPy/blob/master/documentation.zip
+https://www.vertica.com/python/
 
 ## Connecting to the Database
 
@@ -120,10 +120,6 @@ cur = conn.cursor()
 Install the library using the <b>pip</b> command.
 ```shell
 root@ubuntu:~$ pip3 install verticapy
-```
-Install <b>vertica_python</b> or <b>pyodbc</b> to create a database cursor.
-```shell
-root@ubuntu:~$ pip3 install vertica_python
 ```
 Create a vertica cursor.
 ```python
