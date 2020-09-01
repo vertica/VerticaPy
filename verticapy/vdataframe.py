@@ -565,6 +565,7 @@ vcolumns : vcolumn
                             self.__genSQL__(),
                         )
                     )
+                    version(cursor=cursor, condition=[9, 2, 1])
                     self.__executeSQL__(
                         query="SELECT CORR_MATRIX({}) OVER () FROM {}".format(
                             ", ".join(columns), table
@@ -994,6 +995,7 @@ vcolumns : vcolumn
                 cmap=cmap,
                 title=title,
                 mround=round_nb,
+                is_vector=True,
             )
         for idx, column in enumerate(cols):
             self.__update_catalog__(
@@ -3584,6 +3586,7 @@ vcolumns : vcolumn
                     "No Numerical Columns found to run describe using parameter method = 'numerical'."
                 )
             try:
+                version(cursor=cursor, condition=[9, 0, 0])
                 idx = [
                     "index",
                     "count",
@@ -4812,24 +4815,44 @@ vcolumns : vcolumn
         )
         from verticapy.hchart import hchart_from_vdf
 
-        return hchart_from_vdf(
-            self,
-            x,
-            y,
-            z,
-            c,
-            aggregate,
-            kind,
-            width,
-            height,
-            options,
-            h,
-            max_cardinality,
-            limit,
-            drilldown,
-            stock,
-            alpha,
-        )
+        try:
+            return hchart_from_vdf(
+                self,
+                x,
+                y,
+                z,
+                c,
+                aggregate,
+                kind,
+                width,
+                height,
+                options,
+                h,
+                max_cardinality,
+                limit,
+                drilldown,
+                stock,
+                alpha,
+            )
+        except:
+            return hchart_from_vdf(
+                self,
+                x,
+                y,
+                z,
+                c,
+                not (aggregate),
+                kind,
+                width,
+                height,
+                options,
+                h,
+                max_cardinality,
+                limit,
+                drilldown,
+                stock,
+                alpha,
+            )
 
     # ---#
     def head(self, limit: int = 5):
@@ -5083,7 +5106,9 @@ vcolumns : vcolumn
             time_on=time_on,
             title=title,
         )
-        result.count = self.shape()[0]
+        pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
+        if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
+            result.count = pre_comp
         result.offset = offset
         result.name = self._VERTICAPY_VARIABLES_["input_relation"]
         result.display_ncols = self._VERTICAPY_VARIABLES_["display"]["columns"]

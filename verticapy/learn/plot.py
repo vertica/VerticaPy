@@ -122,6 +122,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     schema, relation = schema_relation(input_relation)
     schema = str_column(schema)
     relation_alpha = "".join(ch for ch in relation if ch.isalnum())
@@ -217,6 +218,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)
@@ -308,6 +310,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)
@@ -412,6 +415,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)

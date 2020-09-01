@@ -129,6 +129,7 @@ max_iter: int, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 0])
 
 
 # ---#
@@ -218,3 +219,4 @@ test_relation: str
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 1])

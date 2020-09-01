@@ -122,6 +122,7 @@ l1_ratio: float, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
@@ -173,6 +174,7 @@ solver: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
@@ -223,6 +225,7 @@ solver: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
@@ -289,6 +292,7 @@ l1_ratio: float, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
@@ -340,3 +344,4 @@ solver: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])

@@ -751,6 +751,7 @@ def cmatrix(
     y_label: str = "",
     with_numbers: bool = True,
     mround: int = 3,
+    is_vector: bool = False,
 ):
     matrix_array = [
         [
@@ -761,6 +762,19 @@ def cmatrix(
         ]
         for j in range(1, n + 1)
     ]
+    if is_vector:
+        is_vector = True
+        vector = []
+        for elem in matrix_array:
+            if len(elem) == 1:
+                vector += elem
+            else:
+                raise
+        vector = [vector]
+        matrix_array = vector
+        m, n = n, m
+        x_label, y_label = y_label, x_label
+        columns_x, columns_y = columns_y, columns_x
     plt.figure(
         figsize=(min(m * 1.4, 500), min(n * 1.4, 500))
     ) if isnotebook() else plt.figure(

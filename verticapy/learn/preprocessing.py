@@ -109,6 +109,7 @@ vDataFrame
         cursor = read_auto_connect().cursor()
     else:
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 1, 1])
     method = method.lower()
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
@@ -323,6 +324,7 @@ method: str, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 0])
 
     # ---#
     def deployInverseSQL(self, X: list = []):
@@ -419,3 +421,4 @@ X: list
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 0, 0])

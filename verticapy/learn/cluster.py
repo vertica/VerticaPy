@@ -143,6 +143,7 @@ tol: float, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[9, 3, 1])
 
     # ---#
     def plot_tree(self, pic_path: str = ""):
@@ -446,6 +447,7 @@ tol: float, optional
         else:
             check_cursor(cursor)
         self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
     def plot_voronoi(self):

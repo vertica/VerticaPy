@@ -49,7 +49,7 @@ root@ubuntu:~$ python3 setup.py install
 
 A well-detailed HTML documentation is available at: <br>
 
-https://www.vertica.com/python/
+https://www.vertica.com/python/documentation_last/
 
 ## Connecting to the Database
 
