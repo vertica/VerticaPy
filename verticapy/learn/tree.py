@@ -49,20 +49,12 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.learn.ensemble import RandomForestClassifier, RandomForestRegressor
+from verticapy.learn.vmodel import *
 from verticapy.connections.connect import read_auto_connect
 
+
 # ---#
-def DecisionTreeClassifier(
-    name: str,
-    cursor=None,
-    max_features="auto",
-    max_leaf_nodes: int = 1e9,
-    max_depth: int = 100,
-    min_samples_leaf: int = 1,
-    min_info_gain: float = 0.0,
-    nbins: int = 32,
-):
+class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
 Single Decision Tree Classifier.
@@ -96,31 +88,41 @@ nbins: int, optional
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
 	"""
-    return RandomForestClassifier(
-        name=name,
-        cursor=cursor,
-        n_estimators=1,
-        max_features=max_features,
-        max_leaf_nodes=max_leaf_nodes,
-        sample=1.0,
-        max_depth=max_depth,
-        min_samples_leaf=min_samples_leaf,
-        min_info_gain=min_info_gain,
-        nbins=nbins,
-    )
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        max_features="auto",
+        max_leaf_nodes: int = 1e9,
+        max_depth: int = 100,
+        min_samples_leaf: int = 1,
+        min_info_gain: float = 0.0,
+        nbins: int = 32,
+    ):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestClassifier", name
+        self.set_params(
+            {
+                "n_estimators": 1,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": 1.0,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
 
 
 # ---#
-def DecisionTreeRegressor(
-    name: str,
-    cursor=None,
-    max_features="auto",
-    max_leaf_nodes: int = 1e9,
-    max_depth: int = 100,
-    min_samples_leaf: int = 1,
-    min_info_gain: float = 0.0,
-    nbins: int = 32,
-):
+class DecisionTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
 Single Decision Tree Regressor.
@@ -154,22 +156,41 @@ nbins: int, optional
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
 	"""
-    return RandomForestRegressor(
-        name=name,
-        cursor=cursor,
-        n_estimators=1,
-        max_features=max_features,
-        max_leaf_nodes=max_leaf_nodes,
-        sample=1.0,
-        max_depth=max_depth,
-        min_samples_leaf=min_samples_leaf,
-        min_info_gain=min_info_gain,
-        nbins=nbins,
-    )
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        max_features="auto",
+        max_leaf_nodes: int = 1e9,
+        max_depth: int = 100,
+        min_samples_leaf: int = 1,
+        min_info_gain: float = 0.0,
+        nbins: int = 32,
+    ):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestRegressor", name
+        self.set_params(
+            {
+                "n_estimators": 1,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": 1.0,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
 
 
 # ---#
-def DummyTreeClassifier(name: str, cursor=None):
+class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
 Dummy Tree Classifier. This classifier learns by heart the training data. 
@@ -182,22 +203,31 @@ name: str
 cursor: DBcursor, optional
 	Vertica DB cursor. 
 	"""
-    return RandomForestClassifier(
-        name=name,
-        cursor=cursor,
-        n_estimators=1,
-        max_features="max",
-        max_leaf_nodes=1e9,
-        sample=1.0,
-        max_depth=100,
-        min_samples_leaf=1,
-        min_info_gain=0.0,
-        nbins=1000,
-    )
+
+    def __init__(self, name: str, cursor=None):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestClassifier", name
+        self.set_params(
+            {
+                "n_estimators": 1,
+                "max_features": "max",
+                "max_leaf_nodes": 1e9,
+                "sample": 1.0,
+                "max_depth": 100,
+                "min_samples_leaf": 1,
+                "min_info_gain": 0.0,
+                "nbins": 1000,
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
 
 
 # ---#
-def DummyTreeRegressor(name: str, cursor=None):
+class DummyTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
 Dummy Tree Regressor. This regressor learns by heart the training data. 
@@ -210,15 +240,24 @@ name: str
 cursor: DBcursor, optional
 	Vertica DB cursor. 
 	"""
-    return RandomForestRegressor(
-        name=name,
-        cursor=cursor,
-        n_estimators=1,
-        max_features="max",
-        max_leaf_nodes=1e9,
-        sample=1.0,
-        max_depth=100,
-        min_samples_leaf=1,
-        min_info_gain=0.0,
-        nbins=1000,
-    )
+
+    def __init__(self, name: str, cursor=None):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestRegressor", name
+        self.set_params(
+            {
+                "n_estimators": 1,
+                "max_features": "max",
+                "max_leaf_nodes": 1e9,
+                "sample": 1.0,
+                "max_depth": 100,
+                "min_samples_leaf": 1,
+                "min_info_gain": 0.0,
+                "nbins": 1000,
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor

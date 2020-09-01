@@ -620,8 +620,8 @@ tablesample
         ]
     )
     if estimator:
-        num_classes = len(estimator.classes)
-        labels = labels if (num_classes > 2) else [estimator.classes[1]]
+        num_classes = len(estimator.classes_)
+        labels = labels if (num_classes > 2) else [estimator.classes_[1]]
     else:
         if not (cursor):
             conn = read_auto_connect()
