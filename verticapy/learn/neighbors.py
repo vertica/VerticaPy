@@ -60,7 +60,396 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class NearestCentroid(vModel, NeighborsClassifier):
+class NeighborsClassifier(vModel):
+
+    # ---#
+    def classification_report(self, cutoff=[], labels: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Computes a classification report using multiple metrics to evaluate the model
+    (AUC, accuracy, PRC AUC, F1...). In case of multiclass classification, it will 
+    consider each category as positive and switch to the next one during the computation.
+
+    Parameters
+    ----------
+    cutoff: float/list, optional
+        Cutoff for which the tested category will be accepted as prediction. 
+        In case of multiclass classification, each tested category becomes 
+        the positives and the others are merged into the negatives. The list will 
+        represent the classes threshold. If it is empty, the best cutoff will be used.
+    labels: list, optional
+        List of the different labels to be used during the computation.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        check_types(
+            [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
+        )
+        if not (labels):
+            labels = self.classes_
+        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+
+    # ---#
+    def confusion_matrix(self, pos_label=None, cutoff: float = -1):
+        """
+    ---------------------------------------------------------------------------
+    Computes the model confusion matrix.
+
+    Parameters
+    ----------
+    pos_label: int/float/str, optional
+        Label to consider as positive. All the other classes will be merged and
+        considered as negative in case of multi classification.
+    cutoff: float, optional
+        Cutoff for which the tested category will be accepted as prediction. If the 
+        cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        check_types([("cutoff", cutoff, [int, float],)])
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+            input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+                pos_label
+            )
+            y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
+            y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+            result = confusion_matrix(y_true, y_score, input_relation, self.cursor)
+            if pos_label == 1:
+                return result
+            else:
+                return tablesample(
+                    values={
+                        "index": ["Non-{}".format(pos_label), "{}".format(pos_label)],
+                        "Non-{}".format(pos_label): result.values[0],
+                        "{}".format(pos_label): result.values[1],
+                    },
+                )
+        else:
+            input_relation = "(SELECT *, ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY proba_predict DESC) AS pos FROM {}) neighbors_table WHERE pos = 1".format(
+                ", ".join(self.X), self.deploySQL()
+            )
+            return multilabel_confusion_matrix(
+                self.y, "predict_neighbors", input_relation, self.classes_, self.cursor
+            )
+
+    # ---#
+    def lift_chart(self, pos_label=None):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model Lift Chart.
+
+    Parameters
+    ----------
+    pos_label: int/float/str
+        To draw a lift chart, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+            pos_label
+        )
+        return lift_chart(
+            self.y, "proba_predict", input_relation, self.cursor, pos_label
+        )
+
+    # ---#
+    def prc_curve(self, pos_label=None):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model PRC curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str
+        To draw the PRC curve, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+            pos_label
+        )
+        return prc_curve(
+            self.y, "proba_predict", input_relation, self.cursor, pos_label
+        )
+
+    # ---#
+    def predict(
+        self,
+        vdf,
+        X: list = [],
+        name: str = "",
+        cutoff: float = -1,
+        all_classes: bool = False,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Predicts using the input relation.
+
+    Parameters
+    ----------
+    vdf: vDataFrame
+        Object to use to run the prediction.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    cutoff: float, optional
+        Cutoff used in case of binary classification. It is the probability to
+        accept the category 1.
+    all_classes: bool, optional
+        If set to True, all the classes probabilities will be generated (one 
+        column per category).
+
+    Returns
+    -------
+    vDataFrame
+        the vDataFrame of the prediction
+        """
+        check_types(
+            [
+                ("cutoff", cutoff, [int, float],),
+                ("all_classes", all_classes, [bool],),
+                ("name", name, [str],),
+                ("cutoff", cutoff, [int, float],),
+                ("X", X, [list],),
+                ("vdf", vdf, [vDataFrame],),
+            ],
+        )
+        X = [str_column(elem) for elem in X] if (X) else self.X
+        key_columns = vdf.get_columns(exclude_columns=X)
+        name = (
+            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
+            if not (name)
+            else name
+        )
+        if all_classes:
+            predict = [
+                "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{}', proba_predict, NULL))) AS \"{}_{}\"".format(
+                    elem, name, elem
+                )
+                for elem in self.classes_
+            ]
+            sql = "SELECT {}{}, {} FROM {} GROUP BY {}".format(
+                ", ".join(X),
+                ", " + ", ".join(key_columns) if key_columns else "",
+                ", ".join(predict),
+                self.deploySQL(
+                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                ),
+                ", ".join(X + key_columns),
+            )
+        else:
+            if (len(self.classes_) == 2) and (cutoff <= 1 and cutoff >= 0):
+                sql = "SELECT {}{}, (CASE WHEN proba_predict > {} THEN '{}' ELSE '{}' END) AS {} FROM {} WHERE predict_neighbors = '{}'".format(
+                    ", ".join(X),
+                    ", " + ", ".join(key_columns) if key_columns else "",
+                    cutoff,
+                    self.classes_[1],
+                    self.classes_[0],
+                    name,
+                    self.deploySQL(
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                    ),
+                    self.classes_[1],
+                )
+            elif len(self.classes_) == 2:
+                sql = "SELECT {}{}, proba_predict AS {} FROM {} WHERE predict_neighbors = '{}'".format(
+                    ", ".join(X),
+                    ", " + ", ".join(key_columns) if key_columns else "",
+                    name,
+                    self.deploySQL(
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                    ),
+                    self.classes_[1],
+                )
+            else:
+                sql = "SELECT {}{}, predict_neighbors AS {} FROM {}".format(
+                    ", ".join(X),
+                    ", " + ", ".join(key_columns) if key_columns else "",
+                    name,
+                    self.deploySQL(
+                        X=X,
+                        test_relation=vdf.__genSQL__(),
+                        key_columns=key_columns,
+                        predict=True,
+                    ),
+                )
+        sql = "({}) VERTICAPY_SUBTABLE".format(sql)
+        return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
+
+    # ---#
+    def roc_curve(self, pos_label=None):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model ROC curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str
+        To draw the ROC curve, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+            pos_label
+        )
+        return roc_curve(
+            self.y, "proba_predict", input_relation, self.cursor, pos_label
+        )
+
+    # ---#
+    def score(self, method: str = "accuracy", pos_label=None, cutoff: float = -1):
+        """
+    ---------------------------------------------------------------------------
+    Computes the model score.
+
+    Parameters
+    ----------
+    pos_label: int/float/str, optional
+        Label to consider as positive. All the other classes will be merged and
+        considered as negative in case of multi classification.
+    cutoff: float, optional
+        Cutoff for which the tested category will be accepted as prediction. 
+    method: str, optional
+        The method to use to compute the score.
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            best_cutoff : Cutoff which optimised the ROC Curve prediction.
+            bm          : Informedness = tpr + tnr - 1
+            csi         : Critical Success Index = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness = ppv + npv - 1
+            npv         : Negative Predictive Value = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision = tp / (tp + fp)
+            recall      : Recall = tp / (tp + fn)
+            specificity : Specificity = tn / (tn + fp) 
+
+    Returns
+    -------
+    float
+        score
+        """
+        check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
+        if pos_label == None and len(self.classes_) == 2:
+            pos_label = self.classes_[1]
+        input_relation = "(SELECT * FROM {} WHERE predict_neighbors = '{}') final_centroids_relation".format(
+            self.deploySQL(), pos_label
+        )
+        y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
+        y_proba = "proba_predict"
+        y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
+        if (pos_label not in self.classes_) and (method != "accuracy"):
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
+            cutoff = self.score(pos_label=pos_label, cutoff=0.5, method="best_cutoff")
+        if method in ("accuracy", "acc"):
+            if pos_label not in self.classes_:
+                return accuracy_score(
+                    self.y,
+                    "predict_neighbors",
+                    self.deploySQL(predict=True),
+                    self.cursor,
+                    pos_label=None,
+                )
+            else:
+                return accuracy_score(y_true, y_score, input_relation, self.cursor)
+        elif method == "auc":
+            return auc(y_true, y_proba, input_relation, self.cursor)
+        elif method == "prc_auc":
+            return prc_auc(y_true, y_proba, input_relation, self.cursor)
+        elif method in ("best_cutoff", "best_threshold"):
+            return roc_curve(
+                y_true, y_proba, input_relation, self.cursor, best_threshold=True
+            )
+        elif method in ("recall", "tpr"):
+            return recall_score(y_true, y_score, input_relation, self.cursor)
+        elif method in ("precision", "ppv"):
+            return precision_score(y_true, y_score, input_relation, self.cursor)
+        elif method in ("specificity", "tnr"):
+            return specificity_score(y_true, y_score, input_relation, self.cursor)
+        elif method in ("negative_predictive_value", "npv"):
+            return precision_score(y_true, y_score, input_relation, self.cursor)
+        elif method in ("log_loss", "logloss"):
+            return log_loss(y_true, y_proba, input_relation, self.cursor)
+        elif method == "f1":
+            return f1_score(y_true, y_score, input_relation, self.cursor)
+        elif method == "mcc":
+            return matthews_corrcoef(y_true, y_score, input_relation, self.cursor)
+        elif method in ("bm", "informedness"):
+            return informedness(y_true, y_score, input_relation, self.cursor)
+        elif method in ("mk", "markedness"):
+            return markedness(y_true, y_score, input_relation, self.cursor)
+        elif method in ("csi", "critical_success_index"):
+            return critical_success_index(y_true, y_score, input_relation, self.cursor)
+        else:
+            raise ParameterError(
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
+            )
+
+
+# ---#
+class NearestCentroid(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
@@ -239,7 +628,7 @@ p: int, optional
 
 
 # ---#
-class KNeighborsClassifier(vModel, NeighborsClassifier):
+class KNeighborsClassifier(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
@@ -348,7 +737,7 @@ p: int, optional
             else "",
         )
         if predict:
-            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) x WHERE order_prediction = 1) predict_neighbors_table".format(
+            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
                 ", ".join(X),
                 ", " + ", ".join([str_column(elem) for elem in key_columns])
                 if (key_columns)
@@ -423,7 +812,7 @@ p: int, optional
 
 
 # ---#
-class KNeighborsRegressor(vModel, NeighborsRegressor):
+class KNeighborsRegressor(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
@@ -573,6 +962,48 @@ p: int, optional
         file = open(path, "x")
         file.write("model_save = " + str(model_save))
         return self
+
+    # ---#
+    def predict(self, vdf, X: list = [], name: str = ""):
+        """
+    ---------------------------------------------------------------------------
+    Predicts using the input relation.
+
+    Parameters
+    ----------
+    vdf: vDataFrame
+        Object to use to run the prediction.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+
+    Returns
+    -------
+    vDataFrame
+        the vDataFrame of the prediction
+        """
+        check_types(
+            [("name", name, [str], False), ("X", X, [list], False),], vdf=["vdf", vdf],
+        )
+        X = [str_column(elem) for elem in X] if (X) else self.X
+        key_columns = vdf.get_columns(exclude_columns=X)
+        name = (
+            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
+            if not (name)
+            else name
+        )
+        sql = "(SELECT {}{}, {} AS {} FROM {}) VERTICAPY_SUBTABLE".format(
+            ", ".join(X),
+            ", " + ", ".join(key_columns) if key_columns else "",
+            "predict_neighbors",
+            name,
+            self.deploySQL(
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+            ),
+        )
+        return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
 
 # ---#

@@ -100,7 +100,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -169,7 +169,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {
@@ -207,7 +207,7 @@ cursor: DBcursor, optional
 	"""
 
     def __init__(self, name: str, cursor=None):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -245,7 +245,7 @@ cursor: DBcursor, optional
 	"""
 
     def __init__(self, name: str, cursor=None):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {

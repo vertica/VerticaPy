@@ -61,7 +61,7 @@ from verticapy.errors import *
 def check_model(name: str, cursor=None):
     """
 ---------------------------------------------------------------------------
-Checks if the model already exists.
+Check if the model already exists.
 
 Parameters
 ----------
@@ -70,7 +70,7 @@ name: str
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    check_types([("name", name, [str], False)])
+    check_types([("name", name, [str],)])
     if not (cursor):
         conn = read_auto_connect()
         cursor = conn.cursor()
@@ -124,9 +124,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -177,9 +177,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -230,9 +230,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -283,9 +283,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -352,12 +352,12 @@ def readSQL(
 	"""
     check_types(
         [
-            ("query", query, [str], False),
-            ("dsn", dsn, [str], False),
-            ("time_on", time_on, [bool], False),
-            ("limit", limit, [int, float], False),
-            ("display_ncols", display_ncols, [int, float], False),
-            ("percent_bar", percent_bar, [bool], False),
+            ("query", query, [str],),
+            ("dsn", dsn, [str],),
+            ("time_on", time_on, [bool],),
+            ("limit", limit, [int, float],),
+            ("display_ncols", display_ncols, [int, float],),
+            ("percent_bar", percent_bar, [bool],),
         ]
     )
     conn = False
@@ -366,19 +366,18 @@ def readSQL(
         cursor = conn.cursor()
     elif not (cursor):
         cursor = vertica_cursor(dsn)
-    cursor.execute("SELECT COUNT(*) FROM ({}) x".format(query))
+    cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
     result = to_tablesample(
-        "SELECT * FROM ({}) x LIMIT {}".format(query, limit),
+        "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT {}".format(query, limit),
         cursor,
-        "readSQL",
         False,
         time_on,
     )
     result.count = count
     result.display_ncols = display_ncols
     if percent_bar:
-        vdf = vdf_from_relation("({}) x".format(query), cursor=cursor)
+        vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query), cursor=cursor)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
@@ -507,9 +506,7 @@ Returns
 model
 	The model.
 	"""
-    check_types(
-        [("name", name, [str], False), ("test_relation", test_relation, [str], False)]
-    )
+    check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -565,9 +562,7 @@ model
                     from verticapy.learn.neighbors import NearestCentroid
 
                     model = NearestCentroid(name, cursor, model_save["p"])
-                    model.centroids_ = tablesample(
-                        model_save["centroids"], table_info=False
-                    )
+                    model.centroids_ = tablesample(model_save["centroids"])
                     model.classes_ = model_save["classes"]
                 elif model_save["type"] == "KNeighborsClassifier":
                     from verticapy.learn.neighbors import KNeighborsClassifier
@@ -650,7 +645,7 @@ model
             parameters_dict[item[0]] = item[1]
     info = info[0]
     for elem in parameters_dict:
-        if type(parameters_dict[elem]) == str:
+        if isinstance(parameters_dict[elem], str):
             parameters_dict[elem] = parameters_dict[elem].replace("'", "")
     if model_type == "rf_regressor":
         from verticapy.learn.ensemble import RandomForestRegressor
@@ -773,7 +768,7 @@ model
             / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
             result.split("Converged: ")[1].split("\n")[0] == "True",
         ]
-        model.metrics_ = tablesample(values, table_info=False)
+        model.metrics_ = tablesample(values)
     elif model_type == "bisectingkmeans":
         from verticapy.learn.cluster import BisectingKMeans
 
@@ -811,7 +806,7 @@ model
         model = OneHotEncoder(name, cursor)
         try:
             model.param_ = to_tablesample(
-                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
+                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
                     model.name, model.name
                 ),
                 cursor=model.cursor,
@@ -819,14 +814,13 @@ model
         except:
             try:
                 model.param_ = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x".format(
+                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
                         model.name
                     ),
                     cursor=model.cursor,
                 )
             except:
                 model.param_ = model.get_model_attribute("varchar_categories")
-        model.param_.table_info = False
     model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
     model.test_relation = test_relation if (test_relation) else model.input_relation
     if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
@@ -895,9 +889,9 @@ read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("schema", schema, [str], False),
-            ("insert", insert, [bool], False),
+            ("name", name, [str],),
+            ("schema", schema, [str],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -1081,6 +1075,38 @@ read_json : Ingests a JSON file in the Vertica DB.
 
 
 # ---#
+def print_html(x):
+    """
+---------------------------------------------------------------------------
+Print the HTML representation of the object.
+
+Parameters
+----------
+x: object
+    Object having an HTML representation.
+    """
+    from IPython.core.display import HTML, display
+
+    try:
+        if isinstance(x, (list, tuple)):
+            if isinstance(x, (list)):
+                print("[")
+            else:
+                print("(")
+            for elem in x:
+                display(HTML(elem._repr_html_()))
+                print(",")
+            if isinstance(x, (list)):
+                print("]")
+            else:
+                print(")")
+        else:
+            display(HTML(x._repr_html_()))
+    except:
+        print(x)
+
+
+# ---#
 def read_csv(
     path: str,
     cursor=None,
@@ -1149,17 +1175,17 @@ read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
-            ("schema", schema, [str], False),
-            ("table_name", table_name, [str], False),
-            ("sep", sep, [str], False),
-            ("header", header, [bool], False),
-            ("header_names", header_names, [list], False),
-            ("na_rep", na_rep, [str], False),
-            ("quotechar", quotechar, [str], False),
-            ("escape", escape, [str], False),
-            ("genSQL", genSQL, [bool], False),
-            ("parse_n_lines", parse_n_lines, [int, float], False),
-            ("insert", insert, [bool], False),
+            ("schema", schema, [str],),
+            ("table_name", table_name, [str],),
+            ("sep", sep, [str],),
+            ("header", header, [bool],),
+            ("header_names", header_names, [list],),
+            ("na_rep", na_rep, [str],),
+            ("quotechar", quotechar, [str],),
+            ("escape", escape, [str],),
+            ("genSQL", genSQL, [bool],),
+            ("parse_n_lines", parse_n_lines, [int, float],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -1308,11 +1334,11 @@ read_csv : Ingests a CSV file in the Vertica DB.
 	"""
     check_types(
         [
-            ("schema", schema, [str], False),
-            ("table_name", table_name, [str], False),
-            ("usecols", usecols, [list], False),
-            ("new_name", new_name, [dict], False),
-            ("insert", insert, [bool], False),
+            ("schema", schema, [str],),
+            ("table_name", table_name, [str],),
+            ("usecols", usecols, [list],),
+            ("new_name", new_name, [dict],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -1454,7 +1480,7 @@ See Also
 vDataFrame.to_vdf : Saves the vDataFrame to a .vdf text file.
 vdf_from_relation : Creates a vDataFrame based on a customized relation.
 	"""
-    check_types([("path", path, [str], False)])
+    check_types([("path", path, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -1489,17 +1515,13 @@ values: dict, optional
 	similar to the following one:
 	{"column1": [val1, ..., valm], ... "columnk": [val1, ..., valm]}
 dtype: dict, optional
-	Columns data types. 
-name: str, optional
-	Name of the object. It is used only for rendering purposes.
+	Columns data types.
 count: int, optional
 	Number of elements if we had to load the entire dataset. It is used 
 	only for rendering purposes.
 offset: int, optional
 	Number of elements which had been skipped if we had to load the entire 
 	dataset. It is used only for rendering purposes.
-table_info: bool, optional
-	If set to True, the tablesample informations will be displayed.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
 display_ncols: int, optional
@@ -1518,29 +1540,23 @@ The tablesample attributes are the same than the parameters.
         self,
         values: dict = {},
         dtype: dict = {},
-        name: str = "Sample",
         count: int = 0,
         offset: int = 0,
-        table_info: bool = True,
         percent: dict = {},
         display_ncols: int = 50,
     ):
         check_types(
             [
-                ("values", values, [dict], False),
-                ("dtype", dtype, [dict], False),
-                ("name", name, [str], False),
-                ("count", count, [int], False),
-                ("offset", offset, [int], False),
-                ("table_info", table_info, [bool], False),
+                ("values", values, [dict],),
+                ("dtype", dtype, [dict],),
+                ("count", count, [int],),
+                ("offset", offset, [int],),
             ]
         )
         self.values = values
         self.dtype = dtype
         self.count = count
         self.offset = offset
-        self.table_info = table_info
-        self.name = name
         self.percent = percent
         self.display_ncols = display_ncols
         for column in values:
@@ -1548,7 +1564,7 @@ The tablesample attributes are the same than the parameters.
                 self.dtype[column] = "undefined"
 
     # ---#
-    def __repr__(self):
+    def _repr_html_(self):
         if len(self.values) == 0:
             return ""
         return_html = True if (isnotebook()) else False
@@ -1576,43 +1592,92 @@ The tablesample attributes are the same than the parameters.
             dtype=dtype,
             percent=self.percent,
         )
-        if isnotebook():
-            from IPython.core.display import HTML, display
-
-            display(HTML(formatted_text))
-            formatted_text = ""
-        if self.table_info:
-            start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
-            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
-                rows = self.count
-            else:
-                if start > end:
-                    rows = "0{}".format(
-                        " of {}".format(self.count) if (self.count > 0) else ""
-                    )
-                else:
-                    rows = "{}-{}{}".format(
-                        start,
-                        end,
-                        " of {}".format(self.count) if (self.count > 0) else "",
-                    )
-            if len(self.values) == 1:
-                column = list(self.values.keys())[0]
-                if self.offset > self.count:
-                    formatted_text += "Column: {} | Type: {}".format(
-                        column, self.dtype[column]
-                    )
-                else:
-                    formatted_text += "Rows: {} | Column: {} | Type: {}".format(
-                        rows, column, self.dtype[column]
-                    )
-            else:
-                if self.offset > self.count:
-                    formatted_text += "Columns: {}".format(n)
-                else:
-                    formatted_text += "Rows: {} | Columns: {}".format(rows, n)
+        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+        formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
+        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+            rows = self.count
         else:
-            formatted_text = formatted_text[0:-2]
+            if start > end:
+                rows = "0{}".format(
+                    " of {}".format(self.count) if (self.count > 0) else ""
+                )
+            else:
+                rows = "{}-{}{}".format(
+                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                )
+        if len(self.values) == 1:
+            column = list(self.values.keys())[0]
+            if self.offset > self.count:
+                formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
+                    column, self.dtype[column]
+                )
+            else:
+                formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
+                    rows, column, self.dtype[column]
+                )
+        else:
+            if self.offset > self.count:
+                formatted_text += "<b>Columns:</b> {}".format(n)
+            else:
+                formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+        formatted_text += "</div>"
+        return formatted_text
+
+    # ---#
+    def __repr__(self):
+        if len(self.values) == 0:
+            return ""
+        n = len(self.values)
+        dtype = self.dtype
+        if n < self.display_ncols:
+            data_columns = [[column] + self.values[column] for column in self.values]
+        else:
+            k = int(self.display_ncols / 2)
+            columns = [elem for elem in self.values]
+            values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
+            values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
+            values2 = [
+                [columns[i]] + self.values[columns[i]]
+                for i in range(n - self.display_ncols + k, n)
+            ]
+            data_columns = values0 + values1 + values2
+            dtype["..."] = "undefined"
+        formatted_text = print_table(
+            data_columns,
+            is_finished=(self.count <= len(data_columns[0]) + self.offset),
+            offset=self.offset,
+            repeat_first_column=("index" in self.values),
+            return_html=False,
+            dtype=dtype,
+            percent=self.percent,
+        )
+        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+            rows = self.count
+        else:
+            if start > end:
+                rows = "0{}".format(
+                    " of {}".format(self.count) if (self.count > 0) else ""
+                )
+            else:
+                rows = "{}-{}{}".format(
+                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                )
+        if len(self.values) == 1:
+            column = list(self.values.keys())[0]
+            if self.offset > self.count:
+                formatted_text += "Column: {} | Type: {}".format(
+                    column, self.dtype[column]
+                )
+            else:
+                formatted_text += "Rows: {} | Column: {} | Type: {}".format(
+                    rows, column, self.dtype[column]
+                )
+        else:
+            if self.offset > self.count:
+                formatted_text += "Columns: {}".format(n)
+            else:
+                formatted_text += "Rows: {} | Columns: {}".format(rows, n)
         return formatted_text
 
     #
@@ -1692,7 +1757,7 @@ The tablesample attributes are the same than the parameters.
             row = []
             for column in self.values:
                 val = self.values[column][i]
-                if type(val) == str:
+                if isinstance(val, str):
                     val = "'" + val.replace("'", "''") + "'"
                 elif val == None:
                     val = "NULL"
@@ -1726,7 +1791,7 @@ The tablesample attributes are the same than the parameters.
 	tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
 	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
 		"""
-        check_types([("dsn", dsn, [str], False)])
+        check_types([("dsn", dsn, [str],)])
         if not (cursor) and not (dsn):
             cursor = read_auto_connect().cursor()
         elif not (cursor):
@@ -1743,7 +1808,6 @@ The tablesample attributes are the same than the parameters.
 def to_tablesample(
     query: str,
     cursor=None,
-    name: str = "Sample",
     query_on: bool = False,
     time_on: bool = False,
     title: str = "",
@@ -1757,9 +1821,7 @@ def to_tablesample(
 	query: str, optional
 		SQL Query. 
 	cursor: DBcursor, optional
-		Vertica DB cursor. 
-	name: str, optional
-		Name of the object. It is used only for rendering purposes.
+		Vertica DB cursor.
 	query_on: bool, optional
 		If set to True, display the query.
 	time_on: bool, optional
@@ -1776,7 +1838,7 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str], False), ("name", name, [str], False)])
+    check_types([("query", query, [str],)])
     if not (cursor):
         conn = read_auto_connect()
         cursor = conn.cursor()
@@ -1807,7 +1869,7 @@ def to_tablesample(
         values[column[0]] = column[1 : len(column)]
     if conn:
         conn.close()
-    return tablesample(values=values, name=name, dtype=dtype)
+    return tablesample(values=values, dtype=dtype)
 
 
 # ---#
@@ -1869,14 +1931,14 @@ vDataFrame
 	"""
     check_types(
         [
-            ("relation", relation, [str], False),
-            ("name", name, [str], False),
-            ("dsn", dsn, [str], False),
-            ("schema", schema, [str], False),
-            ("history", history, [list], False),
-            ("saving", saving, [list], False),
-            ("query_on", query_on, [bool], False),
-            ("time_on", time_on, [bool], False),
+            ("relation", relation, [str],),
+            ("name", name, [str],),
+            ("dsn", dsn, [str],),
+            ("schema", schema, [str],),
+            ("history", history, [list],),
+            ("saving", saving, [list],),
+            ("query_on", query_on, [bool],),
+            ("time_on", time_on, [bool],),
         ]
     )
     name = gen_name([name])
@@ -1969,7 +2031,7 @@ list
     [MAJOR, MINOR, PATCH, POST]
     """
     check_types(
-        [("condition", condition, [list], False),]
+        [("condition", condition, [list],),]
     )
     if not (cursor):
         conn = read_auto_connect()

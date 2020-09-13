@@ -124,7 +124,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
             {
@@ -157,7 +157,7 @@ tol: float, optional
         Absolute path to save the image of the tree.
         """
         check_types(
-            [("pic_path", pic_path, [str], False),]
+            [("pic_path", pic_path, [str],),]
         )
         plot_BKtree(self.centers_.values, pic_path=pic_path)
 
@@ -201,7 +201,7 @@ p: int, optional
     def __init__(
         self, name: str, cursor=None, eps: float = 0.5, min_samples: int = 5, p: int = 2
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
         if not (cursor):
@@ -238,10 +238,10 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-                ("index", index, [str], False),
+                ("input_relation", input_relation, [str],),
+                ("X", X, [list],),
+                ("key_columns", key_columns, [list],),
+                ("index", index, [str],),
             ]
         )
         check_model(name=self.name, cursor=self.cursor)
@@ -286,7 +286,7 @@ p: int, optional
         sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
             self.parameters["eps"], sql
         )
-        sql = "SELECT node_id, nn_id FROM ({}) x WHERE density > {} AND distance < {} AND node_id != nn_id".format(
+        sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
             sql, self.parameters["min_samples"], self.parameters["eps"]
         )
         cursor.execute(sql)
@@ -432,12 +432,12 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "KMeans", name
         self.set_params(
             {
                 "n_cluster": n_cluster,
-                "init": init.lower() if type(init) == str else init,
+                "init": init.lower() if isinstance(init, str) else init,
                 "max_iter": max_iter,
                 "tol": tol,
             }

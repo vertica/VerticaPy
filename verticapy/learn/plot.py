@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math
+import math, collections
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -108,12 +108,12 @@ tablesample
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("n_cluster", n_cluster, [list, tuple], False),
-            ("init", init, ["kmeanspp", "random"], True),
-            ("max_iter", max_iter, [int, float], False),
-            ("tol", tol, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("n_cluster", n_cluster, [list],),
+            ("init", init, ["kmeanspp", "random"],),
+            ("max_iter", max_iter, [int, float],),
+            ("tol", tol, [int, float],),
         ]
     )
     if not (cursor):
@@ -127,7 +127,7 @@ tablesample
     schema = str_column(schema)
     relation_alpha = "".join(ch for ch in relation if ch.isalnum())
     all_within_cluster_SS = []
-    if not (type(n_cluster) == list):
+    if not (isinstance(n_cluster, collections.Iterable)):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
         L = n_cluster
@@ -163,7 +163,7 @@ tablesample
     plt.subplots_adjust(left=0.2)
     plt.show()
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
-    return tablesample(values=values, table_info=False)
+    return tablesample(values=values)
 
 
 # ---#
@@ -206,10 +206,10 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
         ]
     )
     if not (cursor):
@@ -249,7 +249,6 @@ tablesample
             "positive_prediction_ratio": positive_prediction_ratio,
             "lift": lift,
         },
-        table_info=False,
     )
 
 
@@ -297,11 +296,11 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
-            ("auc_prc", auc_prc, [bool], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
+            ("auc_prc", auc_prc, [bool],),
         ]
     )
     if not (cursor):
@@ -348,7 +347,6 @@ tablesample
     plt.show()
     return tablesample(
         values={"threshold": threshold, "recall": recall, "precision": precision},
-        table_info=False,
     )
 
 
@@ -401,12 +399,12 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
-            ("auc_roc", auc_roc, [bool], False),
-            ("best_threshold", best_threshold, [bool], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
+            ("auc_roc", auc_roc, [bool],),
+            ("best_threshold", best_threshold, [bool],),
         ]
     )
     if not (cursor):
@@ -472,7 +470,6 @@ tablesample
             "false_positive": false_positive,
             "true_positive": true_positive,
         },
-        table_info=False,
     )
 
 
@@ -491,11 +488,11 @@ def logit_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -664,10 +661,10 @@ def lof_plot(
 ):
     check_types(
         [
-            ("input_relation", input_relation, [str], False),
-            ("columns", columns, [list], False),
-            ("lof", lof, [str], False),
-            ("tablesample", tablesample, [int, float], False),
+            ("input_relation", input_relation, [str],),
+            ("columns", columns, [list],),
+            ("lof", lof, [str],),
+            ("tablesample", tablesample, [int, float],),
         ]
     )
     if not (cursor):
@@ -789,9 +786,9 @@ def plot_importance(
 ):
     check_types(
         [
-            ("coeff_importances", coeff_importances, [dict], False),
-            ("coeff_sign", coeff_sign, [dict], False),
-            ("print_legend", print_legend, [bool], False),
+            ("coeff_importances", coeff_importances, [dict],),
+            ("coeff_sign", coeff_sign, [dict],),
+            ("print_legend", print_legend, [bool],),
         ]
     )
     coefficients, importances, signs = [], [], []
@@ -828,7 +825,7 @@ def plot_BKtree(tree, pic_path: str = ""):
         raise ImportError(
             "The anytree module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
         )
-    check_types([("pic_path", pic_path, [str], False)])
+    check_types([("pic_path", pic_path, [str],)])
     try:
         import shutil
 
@@ -880,9 +877,7 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
         raise ImportError(
             "The anytree module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
         )
-    check_types(
-        [("metric", metric, [str], False), ("pic_path", pic_path, [str], False)]
-    )
+    check_types([("metric", metric, [str],), ("pic_path", pic_path, [str],)])
     try:
         import shutil
 
@@ -953,11 +948,11 @@ def regression_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -1041,11 +1036,11 @@ def svm_classifier_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -1202,9 +1197,7 @@ def svm_classifier_plot(
 
 # ---#
 def voronoi_plot(clusters: list, columns: list):
-    check_types(
-        [("clusters", clusters, [list], False), ("columns", columns, [list], False)]
-    )
+    check_types([("clusters", clusters, [list],), ("columns", columns, [list],)])
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     v = Voronoi(clusters)

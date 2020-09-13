@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math
+import math, collections
 
 # VerticaPy Modules
 from verticapy import *
@@ -88,9 +88,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -136,9 +136,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -182,9 +182,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -228,9 +228,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -274,9 +274,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -322,9 +322,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -335,6 +335,59 @@ float
         check_cursor(cursor)
     query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {}".format(
         y_true, y_score, input_relation
+    )
+    cursor.execute(query)
+    result = cursor.fetchone()[0]
+    if conn:
+        conn.close()
+    return result
+
+
+# ---#
+def quantile_error(
+    q: float, y_true: str, y_score: str, input_relation: str, cursor=None
+):
+    """
+---------------------------------------------------------------------------
+Computes the input Quantile of the Error.
+
+Parameters
+----------
+q: float
+    Input Quantile
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+
+Returns
+-------
+float
+    score
+    """
+    check_types(
+        [
+            ("q", q, [int, float],),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+        ]
+    )
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {}".format(
+        y_true, y_score, q, input_relation
     )
     cursor.execute(query)
     result = cursor.fetchone()[0]
@@ -370,9 +423,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -419,9 +472,9 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -452,7 +505,7 @@ tablesample
     values["value"] = [item for item in cursor.fetchone()] + [r2]
     if conn:
         conn.close()
-    return tablesample(values, table_info=False)
+    return tablesample(values)
 
 
 #
@@ -490,9 +543,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -556,9 +609,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     return roc_curve(
@@ -612,11 +665,11 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("labels", labels, [list], False),
-            ("cutoff", cutoff, [int, float, list], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [list],),
+            ("input_relation", input_relation, [str],),
+            ("labels", labels, [list],),
+            ("cutoff", cutoff, [int, float, list],),
         ]
     )
     if estimator:
@@ -655,7 +708,7 @@ tablesample
                 current_cutoff = estimator.score(
                     method="best_cutoff", pos_label=pos_label
                 )
-            elif type(cutoff) == list:
+            elif isinstance(cutoff, collections.Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
                 else:
@@ -725,7 +778,7 @@ tablesample
                 current_cutoff = roc_curve(
                     y_t, y_p, input_relation, cursor, best_threshold=True
                 )
-            elif type(cutoff) == list:
+            elif isinstance(cutoff, collections.Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
                 else:
@@ -750,7 +803,7 @@ tablesample
     if not (estimator):
         if conn:
             conn.close()
-    return tablesample(values, table_info=False)
+    return tablesample(values)
 
 
 # ---#
@@ -787,9 +840,9 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -802,7 +855,7 @@ tablesample
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
         y_true
     )
-    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) x".format(
+    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE".format(
         pos_label, y_score, pos_label, input_relation
     )
     result = to_tablesample(query, cursor)
@@ -812,7 +865,6 @@ tablesample
         labels = [0, 1]
     else:
         labels = ["Non-{}".format(pos_label), pos_label]
-    result.table_info = False
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -857,9 +909,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -912,9 +964,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -975,9 +1027,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1031,9 +1083,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1083,9 +1135,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1142,9 +1194,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1203,10 +1255,10 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("labels", labels, [list], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("labels", labels, [list],),
         ]
     )
     if not (cursor):
@@ -1225,11 +1277,10 @@ tablesample
     query += ") AS obs, DECODE({}".format(y_score)
     for idx, item in enumerate(labels):
         query += ", '{}', {}".format(item, idx)
-    query += ") AS response FROM {}) x".format(input_relation)
+    query += ") AS response FROM {}) VERTICAPY_SUBTABLE".format(input_relation)
     result = to_tablesample(query, cursor)
     if conn:
         conn.close()
-    result.table_info = False
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -1274,9 +1325,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1329,9 +1380,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     return prc_curve(
@@ -1371,9 +1422,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1428,9 +1479,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):
@@ -1485,9 +1536,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):

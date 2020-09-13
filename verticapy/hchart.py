@@ -48,6 +48,9 @@
 #
 # Modules
 #
+# Standard Python Modules
+import collections
+
 # High Chart
 from highcharts import Highchart, Highstock
 
@@ -93,7 +96,7 @@ def hchart_from_vdf(
         x = vdf.numcol()
     x = (
         vdf_columns_names([x], vdf)[0]
-        if (type(x) == str)
+        if (isinstance(x, str))
         else vdf_columns_names(x, vdf)
     )
     cursor = vdf._VERTICAPY_VARIABLES_["cursor"]
@@ -102,11 +105,11 @@ def hchart_from_vdf(
             z = "COUNT(*)"
         if kind == "hist":
             kind = "column"
-        check_types([("y", y, [str, list], False)])
-        if type(x) == list:
+        check_types([("y", y, [str, list],)])
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
-        if type(y) == str:
+        if isinstance(y, str):
             columns_check([y], vdf)
             y = vdf_columns_names([y], vdf)[0]
         else:
@@ -125,7 +128,7 @@ def hchart_from_vdf(
     ):
         if not (y):
             y = "COUNT(*)"
-        if type(x) == list:
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
         unique = vdf[x].nunique()
@@ -175,11 +178,11 @@ def hchart_from_vdf(
         else:
             if not (z):
                 z = "COUNT(*)"
-            check_types([("y", y, [str, list], False)])
-            if type(x) == list:
+            check_types([("y", y, [str, list],)])
+            if isinstance(x, collections.Iterable):
                 x = x[0]
             columns_check([x], vdf)
-            if type(y) == str:
+            if isinstance(y, str):
                 columns_check([y], vdf)
                 y = vdf_columns_names([y], vdf)[0]
             else:
@@ -220,20 +223,20 @@ def hchart_from_vdf(
             limit,
         )
     elif kind in ("area", "area_ts", "line", "spline"):
-        check_types([("y", y, [str, list], False)])
-        if type(x) == list:
+        check_types([("y", y, [str, list],)])
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z):
             if not (aggregate):
-                if type(y) == str:
+                if isinstance(y, str):
                     columns_check([y], vdf)
                     y = vdf_columns_names([y], vdf)[0]
                 else:
                     columns_check(y, vdf)
                     y = vdf_columns_names(y, vdf)
-            if type(y) != str:
+            if not (isinstance(y, str)):
                 y = ", ".join(y)
                 kind = "multi_" + kind
             query = "SELECT {}{}, {} FROM {} WHERE {} IS NOT NULL{}{} LIMIT {}".format(
@@ -247,15 +250,15 @@ def hchart_from_vdf(
                 limit,
             )
         else:
-            check_types([("y", y, [str, list], False)])
-            check_types([("z", z, [str, list], False)])
-            if type(y) == str:
+            check_types([("y", y, [str, list],)])
+            check_types([("z", z, [str, list],)])
+            if isinstance(y, str):
                 columns_check([y], vdf)
                 y = vdf_columns_names([y], vdf)[0]
             else:
                 columns_check(y, vdf)
                 y = vdf_columns_names(y, vdf)[0]
-            if type(z) == str:
+            if isinstance(z, str):
                 columns_check([z], vdf)
                 z = vdf_columns_names([z], vdf)[0]
             else:
@@ -287,14 +290,14 @@ def hchart_from_vdf(
                 x,
             )
     elif kind in ("scatter", "bubble"):
-        check_types([("y", y, [str, list], False)])
-        if type(y) == str:
+        check_types([("y", y, [str, list],)])
+        if isinstance(y, str):
             columns_check([y], vdf)
             y = vdf_columns_names([y], vdf)[0]
         else:
             columns_check(y, vdf)
             y = vdf_columns_names(y, vdf)[0]
-        if type(x) == list:
+        if isinstance(x, collections.Iterable):
             x = x[0]
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z) and not (c) and (kind == "scatter"):
@@ -302,11 +305,11 @@ def hchart_from_vdf(
                 x, cast, y, vdf.__genSQL__(), x, y, limit
             )
         elif not (c) and (z):
-            check_types([("z", z, [str, list], False)])
+            check_types([("z", z, [str, list],)])
             try:
                 z = (
                     vdf_columns_names([z], vdf)[0]
-                    if (type(z) == str)
+                    if (isinstance(z, str))
                     else vdf_columns_names(z, vdf)[0]
                 )
             except:
@@ -316,20 +319,20 @@ def hchart_from_vdf(
             )
         else:
             if z:
-                check_types([("z", z, [str, list], False)])
+                check_types([("z", z, [str, list],)])
                 try:
                     z = (
                         vdf_columns_names([z], vdf)[0]
-                        if (type(z) == str)
+                        if (isinstance(z, str))
                         else vdf_columns_names(z, vdf)[0]
                     )
                 except:
                     pass
-            check_types([("c", c, [str, list], False)])
+            check_types([("c", c, [str, list],)])
             try:
                 c = (
                     vdf_columns_names([c], vdf)[0]
-                    if (type(c) == str)
+                    if (isinstance(c, str))
                     else vdf_columns_names(c, vdf)[0]
                 )
             except:
@@ -362,8 +365,8 @@ def hchart_from_vdf(
                 c_copy,
             )
     elif kind == "area_range":
-        check_types([("y", y, [str, list], False)])
-        if type(x) == list:
+        check_types([("y", y, [str, list],)])
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
@@ -380,10 +383,10 @@ def hchart_from_vdf(
     elif kind == "spider":
         if not (y):
             y = "COUNT(*)"
-        check_types([("y", y, [str, list], False)])
-        if type(y) == str:
+        check_types([("y", y, [str, list],)])
+        if isinstance(y, str):
             y = [y]
-        if type(x) == list:
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
         # x
@@ -421,11 +424,11 @@ def hchart_from_vdf(
             limit,
         )
     elif kind == "candlestick":
-        if type(x) == list:
+        if isinstance(x, collections.Iterable):
             x = x[0]
         columns_check([x], vdf)
         if aggregate:
-            if type(y) == str:
+            if isinstance(y, str):
                 query = """SELECT {}::timestamp, 
 			                      APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) AS open,
 			                      MAX({}) AS high,
@@ -437,7 +440,7 @@ def hchart_from_vdf(
                     x, y, 1 - alpha, y, y, y, alpha, y, vdf.__genSQL__()
                 )
             else:
-                check_types([("y", y, [list], False)])
+                check_types([("y", y, [list],)])
                 query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
                     x, ", ".join(y), vdf.__genSQL__()
                 )
@@ -487,7 +490,7 @@ def hchart_from_vdf(
             chart_type=kind,
         )
     elif kind == "boxplot":
-        if type(x) == str:
+        if isinstance(x, str):
             x = [x]
         return boxplot(
             options=options, width=width, height=height, vdf=vdf, columns=x, by=y
@@ -530,7 +533,7 @@ def hchart_from_vdf(
             query=query, cursor=cursor, options=options, width=width, height=height
         )
     elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman"):
-        check_types([("x", x, [list], False)])
+        check_types([("x", x, [list],)])
         x = vdf_columns_names(x, vdf)
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)
@@ -588,10 +591,10 @@ def hchartSQL(
     options: dict = {},
 ):
     aggregate, stock = False, False
-    cursor.execute("SELECT * FROM ({}) x LIMIT 0".format(query))
+    cursor.execute("SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query))
     data = cursor.fetchall()
     names = [desc[0] for desc in cursor.description]
-    vdf = vdf_from_relation("({}) x".format(query), cursor=cursor)
+    vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query), cursor=cursor)
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:

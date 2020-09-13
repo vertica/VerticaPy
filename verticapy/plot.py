@@ -79,15 +79,32 @@ from verticapy.errors import *
 # Functions used by vDataFrames to draw graphics which are not useful independantly.
 #
 # ---#
-def autocorr_plot(x: list, y: list, color="#FE5016", title=""):
-    plt.figure(figsize=(12, 9)) if isnotebook() else plt.figure(figsize=(10, 6))
+def acf_plot(
+    x: list, y: list, color="#444444", title="", confidence=None, type_bar: bool = True
+):
+    plt.figure(figsize=(9, 7)) if isnotebook() else plt.figure(figsize=(9, 7))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    plt.plot(x, y, color=color)
+    if type_bar:
+        plt.bar(x, y, width=0.007 * len(x), color=color, zorder=1, linewidth=0)
+        plt.scatter(
+            x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
+        )
+        plt.plot(
+            [-1] + x + [x[-1] + 1],
+            [0 for elem in range(len(x) + 2)],
+            color="#FE5016",
+            zorder=0,
+        )
+        plt.xlim(-1, x[-1] + 1)
+    else:
+        plt.plot(x, y, color=color)
     plt.title(title)
     plt.xticks(rotation=90)
     plt.subplots_adjust(bottom=0.24)
+    if confidence:
+        plt.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+        plt.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
     plt.xlabel("lag")
-    plt.ylabel("Autocorrelation")
     plt.gca().grid()
     return plt.gcf()
 
@@ -233,13 +250,13 @@ def bar2D(
         total = [0 for item in range(1, m)]
         for i in range(1, n):
             for j in range(1, m):
-                if not (type(all_columns[i][j]) in [str]):
+                if not (isinstance(all_columns[i][j], str)):
                     total[j - 1] += float(
                         all_columns[i][j] if (all_columns[i][j] != None) else 0
                     )
         for i in range(1, n):
             for j in range(1, m):
-                if not (type(all_columns[i][j]) in [str]):
+                if not (isinstance(all_columns[i][j], str)):
                     if total[j - 1] != 0:
                         all_columns[i][j] = (
                             float(
@@ -304,7 +321,7 @@ def boxplot(
         summarize = (
             vdf.parent.describe(method="numerical", columns=[vdf.alias], unique=False)
             .transpose()
-            .values[vdf.alias.replace('"', "")]
+            .values[vdf.alias]
         )
         for i in range(0, 2):
             del summarize[0]
@@ -1413,7 +1430,7 @@ def multi_ts_plot(
     query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
     order_by_values = [item[0] for item in query_result]
     try:
-        if type(order_by_values[0]) == str:
+        if isinstance(order_by_values[0], str):
             from dateutil.parser import parse
 
             order_by_values = [parse(elem) for elem in order_by_values]
@@ -1643,9 +1660,7 @@ def pivot_table(
             where,
             order_by,
         )
-        return to_tablesample(
-            query, vdf._VERTICAPY_VARIABLES_["cursor"], name=aggregate
-        )
+        return to_tablesample(query, vdf._VERTICAPY_VARIABLES_["cursor"])
     alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
     aggr = ", " + of if (of) else ""
     subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table".format(
@@ -1766,11 +1781,7 @@ def pivot_table(
     del all_columns[0]
     for column in all_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(
-        values=values,
-        name="Pivot Table of {} vs {}".format(columns[0], columns[1]),
-        table_info=False,
-    )
+    return tablesample(values=values,)
 
 
 # ---#
@@ -2259,7 +2270,7 @@ def ts_plot(
         ).fetchall()
         order_by_values = [item[0] for item in query_result]
         try:
-            if type(order_by_values[0]) == str:
+            if isinstance(order_by_values[0], str):
                 from dateutil.parser import parse
 
                 order_by_values = [parse(elem) for elem in order_by_values]
@@ -2313,7 +2324,7 @@ def ts_plot(
                 ]
             ]
             try:
-                if type(all_data[-1][0][0]) == str:
+                if isinstance(all_data[-1][0][0], str):
                     from dateutil.parser import parse
 
                     all_data[-1][0] = [parse(elem) for elem in all_data[-1][0]]

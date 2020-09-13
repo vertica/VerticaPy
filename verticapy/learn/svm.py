@@ -111,7 +111,7 @@ max_iter: int, optional
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearSVC", name
         self.set_params(
             {
@@ -201,7 +201,7 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearSVR", name
         self.set_params(
             {

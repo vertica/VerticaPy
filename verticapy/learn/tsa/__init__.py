@@ -44,24 +44,3 @@
 #
 # VerticaPy aims to solve all of these problems. The idea is simple: instead
 # of moving data around for processing, VerticaPy brings the logic to the data.
-#
-#
-__version__ = "0.2.0"
-__author__ = "Badr Ouali"
-__author_email__ = "badr.ouali@vertica.com"
-__description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
-__url__ = "https://github.com/vertica/verticapy/"
-__license__ = "Apache License, Version 2.0"
-
-# vDataFrame
-from verticapy.vdataframe import *
-
-# Utilities
-from verticapy.utilities import *
-
-# Connect
-from verticapy.connections.connect import *
-
-# Learn
-import verticapy.learn
-import verticapy.learn.tsa

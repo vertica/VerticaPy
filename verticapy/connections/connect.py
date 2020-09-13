@@ -161,7 +161,7 @@ change_auto_connection : Changes the current auto creation.
 read_auto_connect      : Automatically creates a connection.
 vertica_conn           : Creates a Vertica Database connection.
 	"""
-    check_types([("dsn", dsn, [dict], False)])
+    check_types([("dsn", dsn, [dict],)])
     if "port" not in dsn:
         print(
             "\u26A0 Warning: No port found in the 'dsn' dictionary. The default port is 5433."
@@ -260,7 +260,7 @@ Returns
 dict
 	dictionary with all the credentials
 	"""
-    check_types([("dsn", dsn, [str], False)])
+    check_types([("dsn", dsn, [str],)])
     f = open(os.environ["ODBCINI"], "r")
     odbc = f.read()
     f.close()
@@ -269,8 +269,11 @@ dict
     odbc = odbc.split("[{}]\n".format(dsn))[1].split("\n\n")[0].split("\n")
     dsn = {}
     for elem in odbc:
-        info = elem.replace(" ", "").split("=")
-        dsn[info[0].lower()] = info[1]
+        try:
+            info = elem.replace(" ", "").split("=")
+            dsn[info[0].lower()] = info[1]
+        except:
+            pass
     return dsn
 
 
@@ -291,15 +294,26 @@ Returns
 dict
 	dictionary with all the credentials
 	"""
-    check_types([("dsn", dsn, [str], False)])
+    check_types([("dsn", dsn, [str],)])
     dsn = read_dsn(dsn)
-    conn_info = {
-        "host": dsn["servername"],
-        "port": 5433,
-        "user": dsn["uid"],
-        "password": dsn["pwd"],
-        "database": dsn["database"],
-    }
+    conn_info = {}
+    for elem in dsn:
+        if elem.lower() == "servername":
+            conn_info["host"] = dsn[elem]
+        elif elem.lower() == "uid":
+            conn_info["user"] = dsn[elem]
+        elif elem.lower() == "pwd":
+            conn_info["password"] = dsn[elem]
+        elif elem.lower() == "kerberosservicename":
+            conn_info["kerberos_service_name"] = dsn[elem]
+        elif elem.lower() == "kerberoshostname":
+            conn_info["kerberos_host_name"] = dsn[elem]
+        else:
+            conn_info[elem.lower()] = dsn[elem]
+    if "port" not in [elem.lower() for elem in dsn]:
+        conn_info["password"] = 5433
+    if "connection_timeout" not in [elem.lower() for elem in dsn]:
+        conn_info["connection_timeout"] = 9999
     return conn_info
 
 
@@ -325,7 +339,7 @@ See Also
 new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 	"""
-    check_types([("dsn", dsn, [str], False)])
+    check_types([("dsn", dsn, [str],)])
     conn = vertica_python.connect(**to_vertica_python_format(dsn))
     return conn
 

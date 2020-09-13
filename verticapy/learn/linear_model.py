@@ -105,7 +105,7 @@ l1_ratio: float, optional
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -159,7 +159,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "CGD",
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -210,7 +210,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "CGD",
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -275,7 +275,7 @@ l1_ratio: float, optional
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LogisticRegression", name
         self.set_params(
             {
@@ -329,7 +329,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "CGD",
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {

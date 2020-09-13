@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import statistics
+import statistics, collections
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -105,13 +105,13 @@ int
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("n_cluster", n_cluster, [list, tuple], False),
-            ("init", init, ["kmeanspp", "random"], True),
-            ("max_iter", max_iter, [int, float], False),
-            ("tol", tol, [int, float], False),
-            ("elbow_score_stop", elbow_score_stop, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("n_cluster", n_cluster, [list],),
+            ("init", init, ["kmeanspp", "random"],),
+            ("max_iter", max_iter, [int, float],),
+            ("tol", tol, [int, float],),
+            ("elbow_score_stop", elbow_score_stop, [int, float],),
         ]
     )
     if not (cursor):
@@ -120,7 +120,7 @@ int
     else:
         conn = False
         check_cursor(cursor)
-    if not (type(n_cluster) == list):
+    if not (isinstance(n_cluster, collections.Iterable)):
         L = range(n_cluster[0], n_cluster[1])
     else:
         L = n_cluster
@@ -196,11 +196,11 @@ tablesample
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("y", y, [str], False),
-            ("cv", cv, [int, float], False),
-            ("cutoff", cutoff, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("y", y, [str],),
+            ("cv", cv, [int, float],),
+            ("cutoff", cutoff, [int, float],),
         ]
     )
     if cv < 2:
@@ -368,7 +368,7 @@ tablesample
     estimator.cursor.execute(
         "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name)
     )
-    return tablesample(values=result, table_info=False).transpose()
+    return tablesample(values=result).transpose()
 
 
 # ---#
@@ -399,9 +399,9 @@ tuple
 	"""
     check_types(
         [
-            ("test_size", test_size, [float], False),
-            ("schema_writing", schema_writing, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("test_size", test_size, [float],),
+            ("schema_writing", schema_writing, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):

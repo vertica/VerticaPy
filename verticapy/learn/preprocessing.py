@@ -98,11 +98,11 @@ vDataFrame
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("y", y, [str], False),
-            ("method", method, ["hybrid", "over", "under"], True),
-            ("ratio", ratio, [float], False),
+            ("name", name, [str],),
+            ("input_relation", input_relation, [str],),
+            ("y", y, [str],),
+            ("method", method, ["hybrid", "over", "under"],),
+            ("ratio", ratio, [float],),
         ]
     )
     if not (cursor):
@@ -159,7 +159,7 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "CountVectorizer", name
         self.set_params(
             {
@@ -188,7 +188,7 @@ max_text_size: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        sql = "SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) x) y WHERE (df BETWEEN {} AND {})".format(
+        sql = "SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN {} AND {})".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
         if self.parameters["max_features"] > 0:
@@ -213,9 +213,7 @@ max_text_size: int, optional
 	object
  		self
 		"""
-        check_types(
-            [("input_relation", input_relation, [str], False), ("X", X, [list], False)]
-        )
+        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
         self.input_relation = input_relation
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(input_relation)
@@ -248,7 +246,7 @@ max_text_size: int, optional
             self.name, schema, relation_alpha
         )
         self.cursor.execute(sql)
-        stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) x) y WHERE not(df BETWEEN {} AND {})".format(
+        stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
         if self.parameters["max_features"] > 0:
@@ -289,7 +287,7 @@ max_text_size: int, optional
  		object result of the model transformation.
 		"""
         return vdf_from_relation(
-            "({}) x".format(self.deploySQL()), self.name, self.cursor
+            "({}) VERTICAPY_SUBTABLE".format(self.deploySQL()), self.name, self.cursor
         )
 
 
@@ -316,7 +314,7 @@ method: str, optional
 	"""
 
     def __init__(self, name: str, cursor=None, method: str = "zscore"):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
         if not (cursor):
@@ -343,7 +341,7 @@ method: str, optional
     str
         the SQL code needed to deploy the inverse self.
         """
-        check_types([("X", X, [list], False)])
+        check_types([("X", X, [list],)])
         X = [str_column(elem) for elem in X]
         fun = self.get_model_fun()[2]
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
@@ -367,16 +365,16 @@ method: str, optional
     vDataFrame
         object result of the model transformation.
         """
-        check_types([("X", X, [list], False)])
+        check_types([("X", X, [list],)])
         if vdf:
-            check_types(vdf=["vdf", vdf])
+            check_types([("vdf", vdf, [vDataFrame],)])
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
             relation = self.input_relation
             X = [str_column(elem) for elem in X]
         return vdf_from_relation(
-            "(SELECT {} FROM {}) x".format(
+            "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
                 self.deployInverseSQL(self.X if not (X) else X), relation
             ),
             self.name,
@@ -413,7 +411,7 @@ X: list
 	"""
 
     def __init__(self, name: str, cursor=None, extra_levels: dict = {}):
-        check_types([("name", name, [str], False)])
+        check_types([("name", name, [str],)])
         self.type, self.name = "OneHotEncoder", name
         self.set_params({"extra_levels": extra_levels})
         if not (cursor):

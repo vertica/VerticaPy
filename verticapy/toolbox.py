@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re
+import random, os, math, shutil, re, collections
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -63,9 +63,9 @@ from verticapy.errors import *
 def arange(start: float, stop: float, step: float):
     check_types(
         [
-            ("start", start, [int, float], False),
-            ("stop", stop, [int, float], False),
-            ("step", step, [int, float], False),
+            ("start", start, [int, float],),
+            ("stop", stop, [int, float],),
+            ("step", step, [int, float],),
         ]
     )
     if step < 0:
@@ -108,7 +108,7 @@ def category_from_model_type(model_type: str):
 
 # ---#
 def category_from_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str], False)])
+    check_types([("ctype", ctype, [str],)])
     ctype = ctype.lower()
     if ctype != "":
         if (
@@ -148,25 +148,25 @@ def category_from_type(ctype: str = ""):
 # ---#
 def check_cursor(cursor):
     if "cursor" not in (str(type(cursor))).lower():
-        raise TypeError(
-            "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
-                type(cursor)
+        try:
+            cursor.execute("SELECT 1;")
+        except:
+            raise TypeError(
+                "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
+                    type(cursor)
+                )
             )
-        )
 
 
 # ---#
 def check_types(types_list: list = [], vdf: list = []):
-    if vdf:
-        if "vdataframe" not in (str(type(vdf[1]))).lower():
-            print(
-                "\u26A0 Warning: Parameter '{}' must be a Virtual DataFrame, found '{}'".format(
-                    vdf[0], type(vdf[1])
-                )
-            )
     for elem in types_list:
-        if elem[3]:
-            if type(elem[1]) != str:
+        list_check = False
+        for sub_elem in elem[2]:
+            if not (isinstance(sub_elem, type)):
+                list_check = True
+        if list_check:
+            if not (isinstance(elem[1], str)):
                 print(
                     "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
                         elem[0], str, type(elem[1])
@@ -179,8 +179,14 @@ def check_types(types_list: list = [], vdf: list = []):
                     )
                 )
         else:
-            if type(elem[1]) not in elem[2]:
-                if len(elem[2]) == 1:
+            if not (isinstance(elem[1], tuple(elem[2]))):
+                if (
+                    (list in elem[2])
+                    and isinstance(elem[1], collections.Iterable)
+                    and not (isinstance(elem[1], (dict)))
+                ):
+                    pass
+                elif len(elem[2]) == 1:
                     print(
                         "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
                             elem[0], elem[2][0], type(elem[1])
@@ -272,6 +278,34 @@ def default_model_parameters(model_type: str):
             "max_iter": 100,
             "solver": "Newton",
             "l1_ratio": 0.5,
+        }
+    elif model_type in ("SARIMAX"):
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+            "d": 0,
+            "q": 0,
+            "P": 0,
+            "D": 0,
+            "Q": 0,
+            "s": 0,
+            "max_pik": 100,
+            "papprox_ma": 200,
+        }
+    elif model_type in ("VAR"):
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
         }
     elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
         return {
@@ -614,13 +648,13 @@ def print_table(
             html_table += "<tr>"
             for j in range(m):
                 val = data_columns[j][i]
-                if type(val) == str:
+                if isinstance(val, str):
                     val = val.replace('"', "&quot;")
                 if val == None:
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if type(val) == bool:
+                    if isinstance(val, bool):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -763,7 +797,7 @@ def schema_relation(relation: str):
 def sort_str(columns, vdf):
     if not (columns):
         return ""
-    if type(columns) == dict:
+    if isinstance(columns, dict):
         order_by = []
         for elem in columns:
             column_name = vdf_columns_names([elem], vdf)[0]
@@ -873,7 +907,9 @@ def type_code_dtype(
 
 # ---#
 def vdf_columns_names(columns: list, vdf):
-    check_types([("columns", columns, [list], False)], vdf=["vdf", vdf])
+    from verticapy import vDataFrame
+
+    check_types([("columns", columns, [list],), ("vdf", vdf, [vDataFrame],),],)
     vdf_columns = vdf.get_columns()
     columns_names = []
     for column in columns:
@@ -936,7 +972,7 @@ def vertica_param_dict(model):
             parameters[param] = "'{}'".format(
                 ", ".join([str(item) for item in model.parameters[param]])
             )
-        elif type(model.parameters[param]) in (str, dict):
+        elif isinstance(model.parameters[param], (str, dict)):
             parameters[vertica_param_name(param)] = "'{}'".format(
                 model.parameters[param]
             )
