@@ -93,7 +93,7 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -160,7 +160,7 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -227,7 +227,7 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -294,7 +294,7 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -361,7 +361,7 @@ load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -428,7 +428,7 @@ load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
 load_titanic      : Ingests the titanic dataset in the Vertica DB.
 	(Classification).
 	"""
-    check_types([("schema", schema, [str], False), ("name", name, [str], False)])
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:

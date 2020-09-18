@@ -59,7 +59,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class MultinomialNB:
+class MultinomialNB(MulticlassClassifier):
     """
 ---------------------------------------------------------------------------
 Creates a MultinomialNB object by using the Vertica Highly Distributed 
@@ -76,55 +76,17 @@ cursor: DBcursor, optional
 alpha: float, optional
 	A float that specifies use of Laplace smoothing if the event model is 
 	categorical, multinomial, or Bernoulli.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-classes: list
-	List of all the response classes.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
-    def __init__(self, name: str, cursor=None, alpha: float = 1.0):
-        check_types(
-            [("name", name, [str], False), ("alpha", alpha, [int, float], False)]
-        )
+    def __init__(
+        self, name: str, cursor=None, alpha: float = 1.0,
+    ):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "MultinomialNB", name
+        self.set_params({"alpha": alpha})
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "MultinomialNB", "classifier"
-        self.cursor, self.name = cursor, name
-        self.parameters = {"alpha": alpha}
-
-    # ---#
-    __repr__ = get_model_repr
-    classification_report = classification_report_multiclass
-    confusion_matrix = confusion_matrix_multiclass
-    deploySQL = deploySQL_multiclass
-    drop = drop
-    fit = fit
-    get_params = get_params
-    lift_chart = lift_chart_multiclass
-    prc_curve = prc_curve_multiclass
-    predict = predict_multiclass
-    roc_curve = roc_curve_multiclass
-    score = multiclass_classification_score
-    set_params = set_params
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])

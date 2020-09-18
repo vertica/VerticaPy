@@ -60,7 +60,110 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class DBSCAN:
+class BisectingKMeans(Clustering):
+    """
+---------------------------------------------------------------------------
+Creates a Bisecting KMeans object by using the Vertica Highly Distributed and 
+Scalable Bisecting KMeans on the data. KMeans clustering is a method of vector 
+quantization, originally from signal processing, that aims to partition n 
+observations into k clusters in which each observation belongs to the cluster 
+with the nearest mean (cluster centers or cluster centroid), serving as a 
+prototype of the cluster. This results in a partitioning of the data space into 
+Voronoi cells. Bisecting KMeans combines KMeans and Hierarchical clustering.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+n_cluster: int, optional
+    Number of clusters
+bisection_iterations: int, optional
+    The number of iterations the bisecting KMeans algorithm performs for each 
+    bisection step. This corresponds to how many times a standalone KMeans 
+    algorithm runs in each bisection step. Setting to more than 1 allows 
+    the algorithm to run and choose the best KMeans run within each bisection 
+    step. Note that if you are using kmeanspp the bisection_iterations value is 
+    always 1, because kmeanspp is more costly to run but also better than the 
+    alternatives, so it does not require multiple runs.
+split_method: str, optional
+    The method used to choose a cluster to bisect/split.
+        size        : Choose the largest cluster to bisect.
+        sum_squares : Choose the cluster with the largest withInSS to bisect.
+min_divisible_cluster_size: int, optional
+    The minimum number of points of a divisible cluster. Must be greater than or 
+    equal to 2.
+distance_method: str, optional
+    The measure for distance between two data points. Only Euclidean distance 
+    is supported at this time.
+init: str/list, optional
+    The method to use to find the initial KMeans cluster centers.
+        kmeanspp : Uses the KMeans++ method to initialize the centers.
+        pseudo   : Uses "pseudo center" approach used by Spark, bisects given 
+            center without iterating over points.
+    It can be also a list with the initial cluster centers to use.
+max_iter: int, optional
+    The maximum number of iterations the KMeans algorithm performs.
+tol: float, optional
+    Determines whether the KMeans algorithm has converged. The algorithm is 
+    considered converged after no center has moved more than a distance of 
+    'tol' from the previous iteration.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        n_cluster: int = 8,
+        bisection_iterations: int = 1,
+        split_method: str = "sum_squares",
+        min_divisible_cluster_size: int = 2,
+        distance_method: str = "euclidean",
+        init: str = "kmeanspp",
+        max_iter: int = 300,
+        tol: float = 1e-4,
+    ):
+        check_types([("name", name, [str],)])
+        self.type, self.name = "BisectingKMeans", name
+        self.set_params(
+            {
+                "n_cluster": n_cluster,
+                "bisection_iterations": bisection_iterations,
+                "split_method": split_method,
+                "min_divisible_cluster_size": min_divisible_cluster_size,
+                "distance_method": distance_method,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
+        version(cursor=cursor, condition=[9, 3, 1])
+
+    # ---#
+    def plot_tree(self, pic_path: str = ""):
+        """
+    ---------------------------------------------------------------------------
+    Draws the input BKtree. The module anytree must be installed in the machine.
+
+    Parameters
+    ----------
+    pic_path: str, optional
+        Absolute path to save the image of the tree.
+        """
+        check_types(
+            [("pic_path", pic_path, [str],),]
+        )
+        plot_BKtree(self.centers_.values, pic_path=pic_path)
+
+
+# ---#
+class DBSCAN(vModel):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
@@ -93,65 +196,20 @@ min_samples: int, optional
 	Minimum number of points required to form a dense region.
 p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-n_cluster: int
-	Number of clusters created during the process.
-n_noise: int
-	Number of points with no clusters.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-key_columns: list
-	Columns not used during the algorithm computation but which will be used
-	to create the final relation.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self, name: str, cursor=None, eps: float = 0.5, min_samples: int = 5, p: int = 2
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("eps", eps, [int, float], False),
-                ("min_samples", min_samples, [int, float], False),
-                ("p", p, [int, float], False),
-            ]
-        )
+        check_types([("name", name, [str],)])
+        self.type, self.name = "DBSCAN", name
+        self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type = "DBSCAN"
-        self.category = "clustering"
-        self.name = name
         self.cursor = cursor
-        self.eps = eps
-        self.min_samples = min_samples
-        self.p = p
 
-    # ---#
-    def __repr__(self):
-        try:
-            rep = "<DBSCAN>\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
-                self.n_cluster, self.n_noise
-            )
-            return rep
-        except:
-            return "<DBSCAN>"
-
-    #
-    # Methods
-    #
     # ---#
     def fit(
         self, input_relation: str, X: list, key_columns: list = [], index: str = ""
@@ -180,12 +238,13 @@ key_columns: list
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-                ("index", index, [str], False),
+                ("input_relation", input_relation, [str],),
+                ("X", X, [list],),
+                ("key_columns", key_columns, [list],),
+                ("index", index, [str],),
             ]
         )
+        check_model(name=self.name, cursor=self.cursor)
         X = [str_column(column) for column in X]
         self.X = X
         self.key_columns = [str_column(column) for column in key_columns]
@@ -217,18 +276,18 @@ key_columns: list
             )
             main_table = input_relation
         sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.p)
+            "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
             for i in range(len(X))
         ]
-        distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.p)
+        distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
         sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
             index, index, distance, main_table, main_table
         )
         sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
-            self.eps, sql
+            self.parameters["eps"], sql
         )
-        sql = "SELECT node_id, nn_id FROM ({}) x WHERE density > {} AND distance < {} AND node_id != nn_id".format(
-            sql, self.min_samples, self.eps
+        sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
+            sql, self.parameters["min_samples"], self.parameters["eps"]
         )
         cursor.execute(sql)
         graph = cursor.fetchall()
@@ -284,7 +343,7 @@ key_columns: list
         except:
             os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
             raise
-        self.n_cluster = i
+        self.n_cluster_ = i
         cursor.execute(
             "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
                 self.name, ", ".join(self.X + self.key_columns), main_table, index
@@ -293,53 +352,33 @@ key_columns: list
         cursor.execute(
             "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
         )
-        self.n_noise = cursor.fetchone()[0]
+        self.n_noise_ = cursor.fetchone()[0]
         cursor.execute(
             "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
                 relation_alpha
             )
         )
         cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS")
+        model_save = {
+            "type": "DBSCAN",
+            "input_relation": self.input_relation,
+            "key_columns": self.key_columns,
+            "X": self.X,
+            "p": self.parameters["p"],
+            "eps": self.parameters["eps"],
+            "min_samples": self.parameters["min_samples"],
+            "n_cluster": self.n_cluster_,
+            "n_noise": self.n_noise_,
+        }
+        path = os.path.dirname(
+            verticapy.__file__
+        ) + "/learn/models/{}.verticapy".format(self.name)
+        file = open(path, "x")
+        file.write("model_save = " + str(model_save))
         return self
 
     # ---#
-    def info(self):
-        """
-	---------------------------------------------------------------------------
-	Displays some information about the model.
-	"""
-        try:
-            print(
-                "DBSCAN was successfully achieved by building {} cluster(s) and by identifying {} elements as noise.\nIf you are not happy with the result, do not forget to normalise the data before applying DBSCAN. As this algorithm is using the p-distance, it is really sensible to the data distribution.".format(
-                    self.n_cluster, self.n_noise
-                )
-            )
-        except:
-            print("Please use the 'fit' method to start the algorithm.")
-
-    # ---#
-    def plot(self):
-        """
-	---------------------------------------------------------------------------
-	Draws the model is the number of predictors is 2 or 3.
-
-        Returns
-        -------
-        Figure
-                Matplotlib Figure
-	"""
-        if 2 <= len(self.X) <= 3:
-            return vDataFrame(self.name, self.cursor).scatter(
-                columns=self.X,
-                catcol="dbscan_cluster",
-                max_cardinality=100,
-                max_nb_points=10000,
-            )
-        else:
-            raise Exception("Clustering Plots are only available in 2D or 3D")
-
-    # ---#
-    def to_vdf(self):
+    def predict(self):
         """
 	---------------------------------------------------------------------------
 	Creates a vDataFrame of the model.
@@ -347,13 +386,13 @@ key_columns: list
 	Returns
 	-------
 	vDataFrame
- 		model vDataFrame
+ 		the vDataFrame including the prediction.
 		"""
         return vDataFrame(self.name, self.cursor)
 
 
 # ---#
-class KMeans:
+class KMeans(Clustering):
     """
 ---------------------------------------------------------------------------
 Creates a KMeans object by using the Vertica Highly Distributed and Scalable 
@@ -381,21 +420,7 @@ max_iter: int, optional
 tol: float, optional
 	Determines whether the algorithm has converged. The algorithm is considered 
 	converged after no center has moved more than a distance of 'tol' from the 
-	previous iteration. 
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-cluster_centers: tablesample
-	Clusters result of the algorithm.
-metrics: tablesample
-	Different metrics to evaluate the model.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
+	previous iteration.
 	"""
 
     def __init__(
@@ -407,34 +432,42 @@ X: list
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("n_cluster", n_cluster, [int, float], False),
-                ("max_iter", max_iter, [int, float], False),
-                ("tol", tol, [int, float], False),
-            ]
+        check_types([("name", name, [str],)])
+        self.type, self.name = "KMeans", name
+        self.set_params(
+            {
+                "n_cluster": n_cluster,
+                "init": init.lower() if isinstance(init, str) else init,
+                "max_iter": max_iter,
+                "tol": tol,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "KMeans", "clustering"
-        self.name, self.cursor = name, cursor
-        self.parameters = {
-            "n_cluster": n_cluster,
-            "init": init.lower() if type(init) == str else init,
-            "max_iter": max_iter,
-            "tol": tol,
-        }
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL
-    drop = drop
-    fit = fit_unsupervised
-    get_params = get_params
-    plot = plot_model
-    plot_voronoi = plot_model_voronoi
-    predict = predict
-    set_params = set_params
+    def plot_voronoi(self):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Voronoi Graph of the model.
+
+    Returns
+    -------
+    Figure
+        Matplotlib Figure
+        """
+        if len(self.X) == 2:
+            from verticapy.learn.plot import voronoi_plot
+
+            query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
+                self.name
+            )
+            self.cursor.execute(query)
+            clusters = self.cursor.fetchall()
+            return voronoi_plot(clusters=clusters, columns=self.X)
+        else:
+            raise Exception("Voronoi Plots are only available in 2D")

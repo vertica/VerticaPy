@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import statistics
+import statistics, collections
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -105,13 +105,13 @@ int
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("n_cluster", n_cluster, [list, tuple], False),
-            ("init", init, ["kmeanspp", "random"], True),
-            ("max_iter", max_iter, [int, float], False),
-            ("tol", tol, [int, float], False),
-            ("elbow_score_stop", elbow_score_stop, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("n_cluster", n_cluster, [list],),
+            ("init", init, ["kmeanspp", "random"],),
+            ("max_iter", max_iter, [int, float],),
+            ("tol", tol, [int, float],),
+            ("elbow_score_stop", elbow_score_stop, [int, float],),
         ]
     )
     if not (cursor):
@@ -120,7 +120,7 @@ int
     else:
         conn = False
         check_cursor(cursor)
-    if not (type(n_cluster) == list):
+    if not (isinstance(n_cluster, collections.Iterable)):
         L = range(n_cluster[0], n_cluster[1])
     else:
         L = n_cluster
@@ -196,16 +196,21 @@ tablesample
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("y", y, [str], False),
-            ("cv", cv, [int, float], False),
-            ("cutoff", cutoff, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("y", y, [str],),
+            ("cv", cv, [int, float],),
+            ("cutoff", cutoff, [int, float],),
         ]
     )
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if estimator.type == "regressor":
+    if estimator.type in (
+        "RandomForestRegressor",
+        "LinearSVR",
+        "LinearRegression",
+        "KNeighborsRegressor",
+    ):
         result = {
             "index": [
                 "explained_variance",
@@ -216,7 +221,14 @@ tablesample
                 "r2",
             ]
         }
-    elif estimator.type == "classifier":
+    elif estimator.type in (
+        "MultinomialNB",
+        "RandomForestClassifier",
+        "LinearSVC",
+        "LogisticRegression",
+        "KNeighborsClassifier",
+        "NearestCentroid",
+    ):
         result = {
             "index": [
                 "auc",
@@ -261,7 +273,7 @@ tablesample
     estimator.cursor.execute(query)
     for i in range(cv):
         try:
-            estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
+            estimator.drop()
         except:
             pass
         estimator.cursor.execute(
@@ -294,17 +306,24 @@ tablesample
             y,
             "{}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name),
         )
-        if estimator.type == "regressor":
+        if estimator.type in (
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearRegression",
+            "KNeighborsRegressor",
+        ):
             result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                 "value"
             ]
         else:
-            if (len(estimator.classes) > 2) and (pos_label not in estimator.classes):
+            if (len(estimator.classes_) > 2) and (pos_label not in estimator.classes_):
                 raise ParameterError(
                     "'pos_label' must be in the estimator classes, it must be the main class to study for the Cross Validation"
                 )
-            elif (len(estimator.classes) == 2) and (pos_label not in estimator.classes):
-                pos_label = estimator.classes[1]
+            elif (len(estimator.classes_) == 2) and (
+                pos_label not in estimator.classes_
+            ):
+                pos_label = estimator.classes_[1]
             try:
                 result["{}-fold".format(i + 1)] = estimator.classification_report(
                     labels=[pos_label], cutoff=cutoff
@@ -314,10 +333,22 @@ tablesample
                     cutoff=cutoff
                 ).values["value"][0:-1]
         try:
-            estimator.cursor.execute("DROP MODEL IF EXISTS {}".format(estimator.name))
+            estimator.drop()
         except:
             pass
-    n = 6 if (estimator.type == "regressor") else 11
+    n = (
+        6
+        if (
+            estimator.type
+            in (
+                "RandomForestRegressor",
+                "LinearSVR",
+                "LinearRegression",
+                "KNeighborsRegressor",
+            )
+        )
+        else 11
+    )
     total = [[] for item in range(n)]
     for i in range(cv):
         for k in range(n):
@@ -337,7 +368,7 @@ tablesample
     estimator.cursor.execute(
         "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name)
     )
-    return tablesample(values=result, table_info=False).transpose()
+    return tablesample(values=result).transpose()
 
 
 # ---#
@@ -368,9 +399,9 @@ tuple
 	"""
     check_types(
         [
-            ("test_size", test_size, [float], False),
-            ("schema_writing", schema_writing, [str], False),
-            ("input_relation", input_relation, [str], False),
+            ("test_size", test_size, [float],),
+            ("schema_writing", schema_writing, [str],),
+            ("input_relation", input_relation, [str],),
         ]
     )
     if not (cursor):

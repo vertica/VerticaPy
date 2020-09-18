@@ -57,7 +57,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class ElasticNet:
+class ElasticNet(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a ElasticNet object by using the Vertica Highly Distributed and 
@@ -91,33 +91,9 @@ solver: str, optional
 		CGD    : Coordinate Gradient Descent
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 regularization 
-	to provide. 
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-coef: tablesample
-	Coefficients and their mathematical information (pvalue, std, value...)
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
+	to provide.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -129,50 +105,28 @@ test_relation: str
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("solver", solver, ["newton", "bfgs", "cgd"], True),
-                ("tol", tol, [int, float], False),
-                ("C", C, [int, float], False),
-                ("max_iter", max_iter, [int, float], False),
-                ("penalty", penalty, ["enet", "l1", "l2", "none"], True),
-                ("l1_ratio", l1_ratio, [int, float], False),
-            ]
+        check_types([("name", name, [str],)])
+        self.type, self.name = "LinearRegression", name
+        self.set_params(
+            {
+                "penalty": str(penalty).lower(),
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": str(solver).lower(),
+                "l1_ratio": l1_ratio,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "LinearRegression", "regressor"
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "penalty": penalty.lower(),
-            "tol": tol,
-            "C": C,
-            "max_iter": max_iter,
-            "solver": solver.lower(),
-            "l1_ratio": l1_ratio,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL
-    drop = drop
-    features_importance = features_importance
-    fit = fit
-    get_params = get_params
-    plot = plot_model
-    predict = predict
-    regression_report = regression_metrics_report
-    score = regression_score
-    set_params = set_params
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
-def Lasso(
-    name: str, cursor=None, tol: float = 1e-4, max_iter: int = 100, solver: str = "CGD"
-):
+class Lasso(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a Lasso object by using the Vertica Highly Distributed and Scalable 
@@ -196,24 +150,35 @@ solver: str, optional
 		BFGS   : Broyden Fletcher Goldfarb Shanno
 		CGD    : Coordinate Gradient Descent
 	"""
-    return ElasticNet(
-        name=name,
-        cursor=cursor,
-        penalty="L1",
-        tol=tol,
-        max_iter=max_iter,
-        solver=solver,
-    )
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        tol: float = 1e-4,
+        max_iter: int = 100,
+        solver: str = "CGD",
+    ):
+        check_types([("name", name, [str],)])
+        self.type, self.name = "LinearRegression", name
+        self.set_params(
+            {
+                "penalty": "L1",
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": str(solver).lower(),
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
-def LinearRegression(
-    name: str,
-    cursor=None,
-    tol: float = 1e-4,
-    max_iter: int = 100,
-    solver: str = "Newton",
-):
+class LinearRegression(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a LinearRegression object by using the Vertica Highly Distributed and 
@@ -235,39 +200,36 @@ solver: str, optional
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
 		CGD    : Coordinate Gradient Descent
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-coef: tablesample
-	Coefficients and their mathematical information (pvalue, std, value...)
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
 	"""
-    return ElasticNet(
-        name=name,
-        cursor=cursor,
-        penalty="None",
-        tol=tol,
-        max_iter=max_iter,
-        solver=solver,
-    )
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        tol: float = 1e-4,
+        max_iter: int = 100,
+        solver: str = "CGD",
+    ):
+        check_types([("name", name, [str],)])
+        self.type, self.name = "LinearRegression", name
+        self.set_params(
+            {
+                "penalty": "None",
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": str(solver).lower(),
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
-class LogisticRegression:
+class LogisticRegression(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
 Creates a LogisticRegression object by using the Vertica Highly Distributed 
@@ -299,33 +261,9 @@ solver: str, optional
 		CGD    : Coordinate Gradient Descent
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 regularization 
-	to provide. 
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-coef: tablesample
-	Coefficients and their mathematical information (pvalue, std, value...)
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
+	to provide.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -337,62 +275,28 @@ test_relation: str
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("solver", solver, ["newton", "bfgs", "cgd"], True),
-                ("tol", tol, [int, float], False),
-                ("C", C, [int, float], False),
-                ("max_iter", max_iter, [int, float], False),
-                ("penalty", penalty, ["enet", "l1", "l2", "none"], True),
-                ("l1_ratio", l1_ratio, [int, float], False),
-            ]
+        check_types([("name", name, [str],)])
+        self.type, self.name = "LogisticRegression", name
+        self.set_params(
+            {
+                "penalty": str(penalty).lower(),
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": str(solver).lower(),
+                "l1_ratio": l1_ratio,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category, self.classes = (
-            "LogisticRegression",
-            "classifier",
-            [0, 1],
-        )
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "penalty": penalty.lower(),
-            "tol": tol,
-            "C": C,
-            "max_iter": max_iter,
-            "solver": solver.lower(),
-            "l1_ratio": l1_ratio,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    classification_report = classification_report_binary
-    confusion_matrix = confusion_matrix_binary
-    deploySQL = deploySQL_binary
-    drop = drop
-    features_importance = features_importance
-    fit = fit
-    get_params = get_params
-    lift_chart = lift_chart_binary
-    plot = plot_model
-    prc_curve = prc_curve_binary
-    predict = predict_binary
-    roc_curve = roc_curve_binary
-    score = binary_classification_score
-    set_params = set_params
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])
 
 
 # ---#
-def Ridge(
-    name: str,
-    cursor=None,
-    tol: float = 1e-4,
-    max_iter: int = 100,
-    solver: str = "Newton",
-):
+class Ridge(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a Ridge object by using the Vertica Highly Distributed and Scalable 
@@ -416,11 +320,28 @@ solver: str, optional
 		BFGS   : Broyden Fletcher Goldfarb Shanno
 		CGD    : Coordinate Gradient Descent
 	"""
-    return ElasticNet(
-        name=name,
-        cursor=cursor,
-        penalty="L2",
-        tol=tol,
-        max_iter=max_iter,
-        solver=solver,
-    )
+
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        tol: float = 1e-4,
+        max_iter: int = 100,
+        solver: str = "CGD",
+    ):
+        check_types([("name", name, [str],)])
+        self.type, self.name = "LinearRegression", name
+        self.set_params(
+            {
+                "penalty": "L2",
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": str(solver).lower(),
+            }
+        )
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 0, 0])

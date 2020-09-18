@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re
+import random, os, math, shutil, re, collections
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -63,9 +63,9 @@ from verticapy.errors import *
 def arange(start: float, stop: float, step: float):
     check_types(
         [
-            ("start", start, [int, float], False),
-            ("stop", stop, [int, float], False),
-            ("step", step, [int, float], False),
+            ("start", start, [int, float],),
+            ("stop", stop, [int, float],),
+            ("step", step, [int, float],),
         ]
     )
     if step < 0:
@@ -79,8 +79,36 @@ def arange(start: float, stop: float, step: float):
 
 
 # ---#
+def category_from_model_type(model_type: str):
+    if model_type in ["LogisticRegression", "LinearSVC"]:
+        return ("classifier", "binary")
+    elif model_type in [
+        "MultinomialNB",
+        "RandomForestClassifier",
+        "KNeighborsClassifier",
+        "NearestCentroid",
+    ]:
+        return ("classifier", "multiclass")
+    elif model_type in [
+        "LinearRegression",
+        "LinearSVR",
+        "RandomForestRegressor",
+        "KNeighborsRegressor",
+    ]:
+        return ("regressor", "")
+    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
+        return ("unsupervised", "clustering")
+    elif model_type in ["PCA", "SVD"]:
+        return ("unsupervised", "decomposition")
+    elif model_type in ["Normalizer", "OneHotEncoder"]:
+        return ("unsupervised", "preprocessing")
+    elif model_type in ["LocalOutlierFactor"]:
+        return ("unsupervised", "anomaly_detection")
+
+
+# ---#
 def category_from_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str], False)])
+    check_types([("ctype", ctype, [str],)])
     ctype = ctype.lower()
     if ctype != "":
         if (
@@ -120,39 +148,45 @@ def category_from_type(ctype: str = ""):
 # ---#
 def check_cursor(cursor):
     if "cursor" not in (str(type(cursor))).lower():
-        raise TypeError(
-            "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
-                type(cursor)
+        try:
+            cursor.execute("SELECT 1;")
+        except:
+            raise TypeError(
+                "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
+                    type(cursor)
+                )
             )
-        )
 
 
 # ---#
 def check_types(types_list: list = [], vdf: list = []):
-    if vdf:
-        if "vdataframe" not in (str(type(vdf[1]))).lower():
-            print(
-                "\u26A0 Warning: Parameter '{}' must be a Virtual DataFrame, found '{}'".format(
-                    vdf[0], type(vdf[1])
-                )
-            )
     for elem in types_list:
-        if elem[3]:
-            if type(elem[1]) != str:
+        list_check = False
+        for sub_elem in elem[2]:
+            if not (isinstance(sub_elem, type)):
+                list_check = True
+        if list_check:
+            if not (isinstance(elem[1], str)):
                 print(
                     "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
                         elem[0], str, type(elem[1])
                     )
                 )
-            if elem[1].lower() not in elem[2]:
+            if elem[1].lower() not in elem[2] and elem[1] not in elem[2]:
                 print(
                     "\u26A0 Warning: Parameter '{}' must be in [{}], found '{}'".format(
                         elem[0], "|".join(elem[2]), elem[1]
                     )
                 )
         else:
-            if type(elem[1]) not in elem[2]:
-                if len(elem[2]) == 1:
+            if not (isinstance(elem[1], tuple(elem[2]))):
+                if (
+                    (list in elem[2])
+                    and isinstance(elem[1], collections.Iterable)
+                    and not (isinstance(elem[1], (dict)))
+                ):
+                    pass
+                elif len(elem[2]) == 1:
                     print(
                         "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
                             elem[0], elem[2][0], type(elem[1])
@@ -223,6 +257,112 @@ def data_to_columns(data: list, n: int):
             except:
                 columns[i] = columns[i] + [elem[i]]
     return columns
+
+
+# ---#
+def default_model_parameters(model_type: str):
+    if model_type in ("LogisticRegression"):
+        return {
+            "penalty": "L2",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "CGD",
+            "l1_ratio": 0.5,
+        }
+    elif model_type in ("LinearRegression"):
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+        }
+    elif model_type in ("SARIMAX"):
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+            "d": 0,
+            "q": 0,
+            "P": 0,
+            "D": 0,
+            "Q": 0,
+            "s": 0,
+            "max_pik": 100,
+            "papprox_ma": 200,
+        }
+    elif model_type in ("VAR"):
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+        }
+    elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
+        return {
+            "n_estimators": 10,
+            "max_features": "auto",
+            "max_leaf_nodes": 1e9,
+            "sample": 0.632,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 32,
+        }
+    elif model_type in ("SVD"):
+        return {"n_components": 0, "method": "lapack"}
+    elif model_type in ("PCA"):
+        return {"n_components": 0, "scale": False, "method": "lapack"}
+    elif model_type in ("OneHotEncoder"):
+        return {"extra_levels": {}}
+    elif model_type in ("Normalizer"):
+        return {"method": "zscore"}
+    elif model_type in ("LinearSVR"):
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "acceptable_error_margin": 0.1,
+            "max_iter": 100,
+        }
+    elif model_type in ("LinearSVC"):
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "class_weight": [1, 1],
+            "max_iter": 100,
+        }
+    elif model_type in ("MultinomialNB"):
+        return {"alpha": 1.0}
+    elif model_type in ("KMeans"):
+        return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
+    elif model_type in ("BisectingKMeans"):
+        return {
+            "n_cluster": 8,
+            "bisection_iterations": 1,
+            "split_method": "sum_squares",
+            "min_divisible_cluster_size": 2,
+            "distance_method": "euclidean",
+            "init": "kmeanspp",
+            "max_iter": 300,
+            "tol": 1e-4,
+        }
+    elif model_type in ("DBSCAN"):
+        return {"eps": 0.5, "min_samples": 5, "p": 2}
 
 
 # ---#
@@ -508,13 +648,13 @@ def print_table(
             html_table += "<tr>"
             for j in range(m):
                 val = data_columns[j][i]
-                if type(val) == str:
+                if isinstance(val, str):
                     val = val.replace('"', "&quot;")
                 if val == None:
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if type(val) == bool:
+                    if isinstance(val, bool):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -657,7 +797,7 @@ def schema_relation(relation: str):
 def sort_str(columns, vdf):
     if not (columns):
         return ""
-    if type(columns) == dict:
+    if isinstance(columns, dict):
         order_by = []
         for elem in columns:
             column_name = vdf_columns_names([elem], vdf)[0]
@@ -767,7 +907,9 @@ def type_code_dtype(
 
 # ---#
 def vdf_columns_names(columns: list, vdf):
-    check_types([("columns", columns, [list], False)], vdf=["vdf", vdf])
+    from verticapy import vDataFrame
+
+    check_types([("columns", columns, [list],), ("vdf", vdf, [vDataFrame],),],)
     vdf_columns = vdf.get_columns()
     columns_names = []
     for column in columns:
@@ -775,3 +917,65 @@ def vdf_columns_names(columns: list, vdf):
             if str_column(column).lower() == str_column(vdf_column).lower():
                 columns_names += [str_column(vdf_column)]
     return columns_names
+
+
+# ---#
+def vertica_param_name(param: str):
+    if param.lower() == "solver":
+        return "optimizer"
+    elif param.lower() == "tol":
+        return "epsilon"
+    elif param.lower() == "max_iter":
+        return "max_iterations"
+    elif param.lower() == "penalty":
+        return "regularization"
+    elif param.lower() == "C":
+        return "lambda"
+    elif param.lower() == "l1_ratio":
+        return "alpha"
+    elif param.lower() == "n_estimators":
+        return "ntree"
+    elif param.lower() == "max_features":
+        return "mtry"
+    elif param.lower() == "sample":
+        return "sampling_size"
+    elif param.lower() == "max_leaf_nodes":
+        return "max_breadth"
+    elif param.lower() == "min_samples_leaf":
+        return "min_samples_leaf"
+    elif param.lower() == "n_components":
+        return "num_components"
+    elif param.lower() == "init":
+        return "init_method"
+    else:
+        return param
+
+
+# ---#
+def vertica_param_dict(model):
+    parameters = {}
+    for param in model.parameters:
+        if model.type in ("LinearSVC", "LinearSVR") and param == "C":
+            parameters[param] = model.parameters[param]
+        elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
+            if param == "init":
+                parameters["kmeans_center_init_method"] = (
+                    "'" + model.parameters[param] + "'"
+                )
+            elif param == "max_iter":
+                parameters["kmeans_max_iterations"] = model.parameters[param]
+            elif param == "tol":
+                parameters["kmeans_epsilon"] = model.parameters[param]
+        elif param == "max_leaf_nodes":
+            parameters[vertica_param_name(param)] = int(model.parameters[param])
+        elif param == "class_weight":
+            parameters[param] = "'{}'".format(
+                ", ".join([str(item) for item in model.parameters[param]])
+            )
+        elif isinstance(model.parameters[param], (str, dict)):
+            parameters[vertica_param_name(param)] = "'{}'".format(
+                model.parameters[param]
+            )
+        else:
+            parameters[vertica_param_name(param)] = model.parameters[param]
+    return parameters
