@@ -59,7 +59,7 @@ from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
-class RandomForestClassifier:
+class RandomForestClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
 Creates a RandomForestClassifier object by using the Vertica Highly Distributed 
@@ -99,32 +99,8 @@ min_info_gain: float, optional
 nbins: int, optional 
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-classes: list
-	List of all the response classes.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -138,58 +114,30 @@ test_relation: str
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("n_estimators", n_estimators, [int, float], False),
-                ("max_features", max_features, [str, int, float], False),
-                ("max_leaf_nodes", max_leaf_nodes, [int, float], False),
-                ("sample", sample, [int, float], False),
-                ("max_depth", max_depth, [int, float], False),
-                ("min_samples_leaf", min_samples_leaf, [int, float], False),
-                ("min_info_gain", min_info_gain, [int, float], False),
-                ("nbins", nbins, [int, float], False),
-            ]
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestClassifier", name
+        self.set_params(
+            {
+                "n_estimators": n_estimators,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": sample,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "RandomForestClassifier", "classifier"
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "n_estimators": n_estimators,
-            "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
-            "sample": sample,
-            "max_depth": max_depth,
-            "min_samples_leaf": min_samples_leaf,
-            "min_info_gain": min_info_gain,
-            "nbins": nbins,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    classification_report = classification_report_multiclass
-    confusion_matrix = confusion_matrix_multiclass
-    deploySQL = deploySQL_multiclass
-    drop = drop
-    export_graphviz = export_graphviz
-    features_importance = features_importance
-    fit = fit
-    get_params = get_params
-    get_tree = get_tree
-    lift_chart = lift_chart_multiclass
-    plot_tree = plot_rf_tree
-    prc_curve = prc_curve_multiclass
-    predict = predict_multiclass
-    roc_curve = roc_curve_multiclass
-    score = multiclass_classification_score
-    set_params = set_params
+        self.cursor = cursor
+        version(cursor=cursor, condition=[8, 1, 1])
 
 
 # ---#
-class RandomForestRegressor:
+class RandomForestRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
 Creates a RandomForestRegressor object by using the Vertica Highly Distributed 
@@ -229,30 +177,8 @@ min_info_gain: float, optional
 nbins: int, optional 
 	The number of bins to use for continuous features, an integer between 2 and 1000, 
 	inclusive.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
-y: str
-	Response column.
-test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
-	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
-	used as test. You can change it anytime by changing the test_relation
-	attribute of the object.
 	"""
 
-    #
-    # Special Methods
-    #
-    # ---#
     def __init__(
         self,
         name: str,
@@ -266,47 +192,23 @@ test_relation: str
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types(
-            [
-                ("name", name, [str], False),
-                ("n_estimators", n_estimators, [int, float], False),
-                ("max_features", max_features, [str, int, float], False),
-                ("max_leaf_nodes", max_leaf_nodes, [int, float], False),
-                ("sample", sample, [int, float], False),
-                ("max_depth", max_depth, [int, float], False),
-                ("min_samples_leaf", min_samples_leaf, [int, float], False),
-                ("min_info_gain", min_info_gain, [int, float], False),
-                ("nbins", nbins, [int, float], False),
-            ]
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "RandomForestRegressor", name
+        self.set_params(
+            {
+                "n_estimators": n_estimators,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": sample,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            }
         )
         if not (cursor):
             cursor = read_auto_connect().cursor()
         else:
             check_cursor(cursor)
-        self.type, self.category = "RandomForestRegressor", "regressor"
-        self.cursor, self.name = cursor, name
-        self.parameters = {
-            "n_estimators": n_estimators,
-            "max_features": max_features,
-            "max_leaf_nodes": max_leaf_nodes,
-            "sample": sample,
-            "max_depth": max_depth,
-            "min_samples_leaf": min_samples_leaf,
-            "min_info_gain": min_info_gain,
-            "nbins": nbins,
-        }
-
-    # ---#
-    __repr__ = get_model_repr
-    deploySQL = deploySQL
-    drop = drop
-    export_graphviz = export_graphviz
-    features_importance = features_importance
-    fit = fit
-    get_params = get_params
-    get_tree = get_tree
-    plot_tree = plot_rf_tree
-    predict = predict
-    regression_report = regression_metrics_report
-    score = regression_score
-    set_params = set_params
+        self.cursor = cursor
+        version(cursor=cursor, condition=[9, 0, 1])

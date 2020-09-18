@@ -58,6 +58,51 @@ from verticapy.errors import *
 
 #
 # ---#
+def check_model(name: str, cursor=None):
+    """
+---------------------------------------------------------------------------
+Check if the model already exists.
+
+Parameters
+----------
+name: str
+    Model name.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    check_types([("name", name, [str],)])
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    cursor.execute("SELECT * FROM MODELS WHERE model_name='{}'".format(name))
+    result = cursor.fetchone()
+    if result:
+        if conn:
+            conn.close()
+        raise NameError("The model '{}' already exists !".format(name))
+    else:
+        import verticapy
+
+        path = os.path.dirname(
+            verticapy.__file__
+        ) + "/learn/models/{}.verticapy".format(name)
+        try:
+            file = open(path, "r")
+            file_exist = True
+        except:
+            file_exist = False
+        if file_exist:
+            if conn:
+                conn.close()
+            raise NameError("The model '{}' already exists !".format(name))
+    if conn:
+        conn.close()
+
+
+# ---#
 def drop_model(
     name: str, cursor=None, print_info: bool = True, raise_error: bool = False
 ):
@@ -79,9 +124,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -102,7 +147,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -132,9 +177,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -155,7 +200,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -185,9 +230,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -208,7 +253,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -238,9 +283,9 @@ raise_error: bool, optional
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("print_info", print_info, [bool], False),
-            ("raise_error", raise_error, [bool], False),
+            ("name", name, [str],),
+            ("print_info", print_info, [bool],),
+            ("raise_error", raise_error, [bool],),
         ]
     )
     if not (cursor):
@@ -261,7 +306,7 @@ raise_error: bool, optional
             conn.close()
         if raise_error:
             raise
-        else:
+        elif print_info:
             print(
                 "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
                     name
@@ -307,12 +352,12 @@ def readSQL(
 	"""
     check_types(
         [
-            ("query", query, [str], False),
-            ("dsn", dsn, [str], False),
-            ("time_on", time_on, [bool], False),
-            ("limit", limit, [int, float], False),
-            ("display_ncols", display_ncols, [int, float], False),
-            ("percent_bar", percent_bar, [bool], False),
+            ("query", query, [str],),
+            ("dsn", dsn, [str],),
+            ("time_on", time_on, [bool],),
+            ("limit", limit, [int, float],),
+            ("display_ncols", display_ncols, [int, float],),
+            ("percent_bar", percent_bar, [bool],),
         ]
     )
     conn = False
@@ -321,19 +366,18 @@ def readSQL(
         cursor = conn.cursor()
     elif not (cursor):
         cursor = vertica_cursor(dsn)
-    cursor.execute("SELECT COUNT(*) FROM ({}) x".format(query))
+    cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
     result = to_tablesample(
-        "SELECT * FROM ({}) x LIMIT {}".format(query, limit),
+        "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT {}".format(query, limit),
         cursor,
-        "readSQL",
         False,
         time_on,
     )
     result.count = count
     result.display_ncols = display_ncols
     if percent_bar:
-        vdf = vdf_from_relation("({}) x".format(query), cursor=cursor)
+        vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query), cursor=cursor)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
@@ -462,13 +506,16 @@ Returns
 model
 	The model.
 	"""
-    check_types(
-        [("name", name, [str], False), ("test_relation", test_relation, [str], False)]
-    )
+    check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
         check_cursor(cursor)
+    try:
+        check_model(name=name, cursor=cursor)
+        raise NameError("The model '{}' doesn't exist.".format(name))
+    except:
+        pass
     try:
         cursor.execute(
             "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
@@ -486,24 +533,96 @@ model
             info = cursor.fetchone()[0].replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         except:
-            from verticapy.learn.preprocessing import Normalizer
+            try:
+                from verticapy.learn.preprocessing import Normalizer
 
-            model = Normalizer(name, cursor)
-            model.param = to_tablesample(
-                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'details')".format(
-                    name.replace("'", "''")
-                ),
-                cursor=cursor,
-            )
-            model.param.table_info = False
-            model.X = ['"' + item + '"' for item in model.param.values["column_name"]]
-            if "avg" in model.param.values:
-                model.method = "zscore"
-            elif "max" in model.param.values:
-                model.method = "minmax"
-            else:
-                model.method = "robust_zscore"
-            return model
+                model = Normalizer(name, cursor)
+                model.param_ = self.get_model_attribute("details")
+                model.X = [
+                    '"' + item + '"' for item in model.param_.values["column_name"]
+                ]
+                if "avg" in model.param_.values:
+                    model.parameters["method"] = "zscore"
+                elif "max" in model.param_.values:
+                    model.parameters["method"] = "minmax"
+                else:
+                    model.parameters["method"] = "robust_zscore"
+                return model
+            except:
+                import verticapy
+
+                path = os.path.dirname(
+                    verticapy.__file__
+                ) + "/learn/models/{}.verticapy".format(name)
+                file = open(path, "r")
+                ldic = locals()
+                exec(file.read(), globals(), ldic)
+                model_save = ldic["model_save"]
+                if model_save["type"] == "NearestCentroid":
+                    from verticapy.learn.neighbors import NearestCentroid
+
+                    model = NearestCentroid(name, cursor, model_save["p"])
+                    model.centroids_ = tablesample(model_save["centroids"])
+                    model.classes_ = model_save["classes"]
+                elif model_save["type"] == "KNeighborsClassifier":
+                    from verticapy.learn.neighbors import KNeighborsClassifier
+
+                    model = KNeighborsClassifier(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                    model.classes_ = model_save["classes"]
+                elif model_save["type"] == "KNeighborsRegressor":
+                    from verticapy.learn.neighbors import KNeighborsRegressor
+
+                    model = KNeighborsRegressor(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                elif model_save["type"] == "LocalOutlierFactor":
+                    from verticapy.learn.neighbors import LocalOutlierFactor
+
+                    model = LocalOutlierFactor(
+                        name, cursor, model_save["n_neighbors"], model_save["p"]
+                    )
+                    model.n_errors_ = model_save["n_errors"]
+                elif model_save["type"] == "DBSCAN":
+                    from verticapy.learn.cluster import DBSCAN
+
+                    model = DBSCAN(
+                        name,
+                        cursor,
+                        model_save["eps"],
+                        model_save["min_samples"],
+                        model_save["p"],
+                    )
+                    model.n_cluster_ = model_save["n_cluster"]
+                    model.n_noise_ = model_save["n_noise"]
+                elif model_save["type"] == "CountVectorizer":
+                    from verticapy.learn.preprocessing import CountVectorizer
+
+                    model = CountVectorizer(
+                        name,
+                        cursor,
+                        model_save["lowercase"],
+                        model_save["max_df"],
+                        model_save["min_df"],
+                        model_save["max_features"],
+                        model_save["ignore_special"],
+                        model_save["max_text_size"],
+                    )
+                    model.vocabulary_ = model_save["vocabulary"]
+                    model.stop_words_ = model_save["stop_words"]
+                model.input_relation = model_save["input_relation"]
+                model.X = model_save["X"]
+                if model_save["type"] in (
+                    "KNeighborsRegressor",
+                    "KNeighborsClassifier",
+                    "NearestCentroid",
+                ):
+                    model.y = model_save["y"]
+                    model.test_relation = model_save["test_relation"]
+                elif model_save["type"] not in ("CountVectorizer"):
+                    model.key_columns = model_save["key_columns"]
+                return model
     try:
         info = info.split("SELECT ")[1].split("(")
     except:
@@ -526,7 +645,7 @@ model
             parameters_dict[item[0]] = item[1]
     info = info[0]
     for elem in parameters_dict:
-        if type(parameters_dict[elem]) == str:
+        if isinstance(parameters_dict[elem], str):
             parameters_dict[elem] = parameters_dict[elem].replace("'", "")
     if model_type == "rf_regressor":
         from verticapy.learn.ensemble import RandomForestRegressor
@@ -627,91 +746,9 @@ model
             int(parameters_dict["max_iterations"]),
             float(parameters_dict["epsilon"]),
         )
-    elif model_type == "pca":
-        from verticapy.learn.decomposition import PCA
-
-        model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
-    elif model_type == "svd":
-        from verticapy.learn.decomposition import SVD
-
-        model = SVD(name, cursor)
-    elif model_type == "one_hot_encoder_fit":
-        from verticapy.learn.preprocessing import OneHotEncoder
-
-        model = OneHotEncoder(name, cursor)
-    model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
-    model.test_relation = test_relation if (test_relation) else model.input_relation
-    if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
-        model.X = info.split(",")[3 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
-    elif model_type in ("pca"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.components = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'principal_components')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.components.table_info = False
-        model.explained_variance = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.explained_variance.table_info = False
-        model.mean = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'columns')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.mean.table_info = False
-    elif model_type in ("svd"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.singular_values = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'right_singular_vectors')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.singular_values.table_info = False
-        model.explained_variance = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'singular_values')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.explained_variance.table_info = False
-    elif model_type in ("one_hot_encoder_fit"):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.param = to_tablesample(
-            query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) x UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                name.replace("'", "''"), name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.param.table_info = False
-    else:
-        model.X = info.split(",")[2 : len(info.split(",")) - 1]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.n_cluster = int(info.split(",")[-1])
-        model.cluster_centers = to_tablesample(
-            query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
-                name.replace("'", "''")
-            ),
-            cursor=cursor,
-        )
-        model.cluster_centers.table_info = False
-        query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'metrics')".format(
-            name.replace("'", "''")
-        )
-        cursor.execute(query)
-        result = cursor.fetchone()[0]
+        model.parameters["n_cluster"] = int(info.split(",")[-1])
+        model.cluster_centers_ = model.get_model_attribute("centers")
+        result = model.get_model_attribute("metrics").values["metrics"][0]
         values = {
             "index": [
                 "Between-Cluster Sum of Squares",
@@ -731,15 +768,87 @@ model
             / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
             result.split("Converged: ")[1].split("\n")[0] == "True",
         ]
-        model.metrics = tablesample(values, table_info=False)
-    if model.type == "classifier":
+        model.metrics_ = tablesample(values)
+    elif model_type == "bisectingkmeans":
+        from verticapy.learn.cluster import BisectingKMeans
+
+        model = BisectingKMeans(
+            name,
+            cursor,
+            -1,
+            int(parameters_dict["bisection_iterations"]),
+            parameters_dict["split_method"],
+            int(parameters_dict["min_divisible_cluster_size"]),
+            parameters_dict["distance_method"],
+            parameters_dict["init_method"],
+            int(parameters_dict["max_iterations"]),
+            float(parameters_dict["epsilon"]),
+        )
+        model.parameters["n_cluster"] = int(info.split(",")[-1])
+        self.metrics_ = self.get_model_attribute("Metrics")
+        self.cluster_centers_ = self.get_model_attribute("BKTree")
+    elif model_type == "pca":
+        from verticapy.learn.decomposition import PCA
+
+        model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
+        model.components_ = model.get_model_attribute("principal_components")
+        model.explained_variance_ = model.get_model_attribute("singular_values")
+        model.mean_ = model.get_model_attribute("columns")
+    elif model_type == "svd":
+        from verticapy.learn.decomposition import SVD
+
+        model = SVD(name, cursor)
+        model.singular_values_ = model.get_model_attribute("right_singular_vectors")
+        model.explained_variance_ = model.get_model_attribute("singular_values")
+    elif model_type == "one_hot_encoder_fit":
+        from verticapy.learn.preprocessing import OneHotEncoder
+
+        model = OneHotEncoder(name, cursor)
+        try:
+            model.param_ = to_tablesample(
+                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
+                    model.name, model.name
+                ),
+                cursor=model.cursor,
+            )
+        except:
+            try:
+                model.param_ = to_tablesample(
+                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
+                        model.name
+                    ),
+                    cursor=model.cursor,
+                )
+            except:
+                model.param_ = model.get_model_attribute("varchar_categories")
+    model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
+    model.test_relation = test_relation if (test_relation) else model.input_relation
+    if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
+        model.X = info.split(",")[3 : len(info.split(","))]
+        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
+    elif model_type in (
+        "svd",
+        "pca",
+        "one_hot_encoder_fit",
+        "normalizer",
+        "kmeans",
+        "bisectingkmeans",
+    ):
+        model.X = info.split(",")[2 : len(info.split(","))]
+        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+    if model_type in ("naive_bayes", "rf_classifier"):
         cursor.execute(
             "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
                 model.y, model.input_relation, model.y
             )
         )
         classes = cursor.fetchall()
-        model.classes = [item[0] for item in classes]
+        model.classes_ = [item[0] for item in classes]
+    elif model_type in ("svm_classifier", "logistic_reg"):
+        model.classes_ = [0, 1]
+    if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
+        model.coef_ = model.get_model_attribute("details")
     return model
 
 
@@ -780,9 +889,9 @@ read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
-            ("name", name, [str], False),
-            ("schema", schema, [str], False),
-            ("insert", insert, [bool], False),
+            ("name", name, [str],),
+            ("schema", schema, [str],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -966,6 +1075,38 @@ read_json : Ingests a JSON file in the Vertica DB.
 
 
 # ---#
+def print_html(x):
+    """
+---------------------------------------------------------------------------
+Print the HTML representation of the object.
+
+Parameters
+----------
+x: object
+    Object having an HTML representation.
+    """
+    from IPython.core.display import HTML, display
+
+    try:
+        if isinstance(x, (list, tuple)):
+            if isinstance(x, (list)):
+                print("[")
+            else:
+                print("(")
+            for elem in x:
+                display(HTML(elem._repr_html_()))
+                print(",")
+            if isinstance(x, (list)):
+                print("]")
+            else:
+                print(")")
+        else:
+            display(HTML(x._repr_html_()))
+    except:
+        print(x)
+
+
+# ---#
 def read_csv(
     path: str,
     cursor=None,
@@ -1034,17 +1175,17 @@ read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
-            ("schema", schema, [str], False),
-            ("table_name", table_name, [str], False),
-            ("sep", sep, [str], False),
-            ("header", header, [bool], False),
-            ("header_names", header_names, [list], False),
-            ("na_rep", na_rep, [str], False),
-            ("quotechar", quotechar, [str], False),
-            ("escape", escape, [str], False),
-            ("genSQL", genSQL, [bool], False),
-            ("parse_n_lines", parse_n_lines, [int, float], False),
-            ("insert", insert, [bool], False),
+            ("schema", schema, [str],),
+            ("table_name", table_name, [str],),
+            ("sep", sep, [str],),
+            ("header", header, [bool],),
+            ("header_names", header_names, [list],),
+            ("na_rep", na_rep, [str],),
+            ("quotechar", quotechar, [str],),
+            ("escape", escape, [str],),
+            ("genSQL", genSQL, [bool],),
+            ("parse_n_lines", parse_n_lines, [int, float],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -1193,11 +1334,11 @@ read_csv : Ingests a CSV file in the Vertica DB.
 	"""
     check_types(
         [
-            ("schema", schema, [str], False),
-            ("table_name", table_name, [str], False),
-            ("usecols", usecols, [list], False),
-            ("new_name", new_name, [dict], False),
-            ("insert", insert, [bool], False),
+            ("schema", schema, [str],),
+            ("table_name", table_name, [str],),
+            ("usecols", usecols, [list],),
+            ("new_name", new_name, [dict],),
+            ("insert", insert, [bool],),
         ]
     )
     if not (cursor):
@@ -1339,7 +1480,7 @@ See Also
 vDataFrame.to_vdf : Saves the vDataFrame to a .vdf text file.
 vdf_from_relation : Creates a vDataFrame based on a customized relation.
 	"""
-    check_types([("path", path, [str], False)])
+    check_types([("path", path, [str],)])
     if not (cursor):
         cursor = read_auto_connect().cursor()
     else:
@@ -1374,17 +1515,13 @@ values: dict, optional
 	similar to the following one:
 	{"column1": [val1, ..., valm], ... "columnk": [val1, ..., valm]}
 dtype: dict, optional
-	Columns data types. 
-name: str, optional
-	Name of the object. It is used only for rendering purposes.
+	Columns data types.
 count: int, optional
 	Number of elements if we had to load the entire dataset. It is used 
 	only for rendering purposes.
 offset: int, optional
 	Number of elements which had been skipped if we had to load the entire 
 	dataset. It is used only for rendering purposes.
-table_info: bool, optional
-	If set to True, the tablesample informations will be displayed.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
 display_ncols: int, optional
@@ -1403,29 +1540,23 @@ The tablesample attributes are the same than the parameters.
         self,
         values: dict = {},
         dtype: dict = {},
-        name: str = "Sample",
         count: int = 0,
         offset: int = 0,
-        table_info: bool = True,
         percent: dict = {},
         display_ncols: int = 50,
     ):
         check_types(
             [
-                ("values", values, [dict], False),
-                ("dtype", dtype, [dict], False),
-                ("name", name, [str], False),
-                ("count", count, [int], False),
-                ("offset", offset, [int], False),
-                ("table_info", table_info, [bool], False),
+                ("values", values, [dict],),
+                ("dtype", dtype, [dict],),
+                ("count", count, [int],),
+                ("offset", offset, [int],),
             ]
         )
         self.values = values
         self.dtype = dtype
         self.count = count
         self.offset = offset
-        self.table_info = table_info
-        self.name = name
         self.percent = percent
         self.display_ncols = display_ncols
         for column in values:
@@ -1433,7 +1564,7 @@ The tablesample attributes are the same than the parameters.
                 self.dtype[column] = "undefined"
 
     # ---#
-    def __repr__(self):
+    def _repr_html_(self):
         if len(self.values) == 0:
             return ""
         return_html = True if (isnotebook()) else False
@@ -1461,37 +1592,92 @@ The tablesample attributes are the same than the parameters.
             dtype=dtype,
             percent=self.percent,
         )
-        if isnotebook():
-            from IPython.core.display import HTML, display
-
-            display(HTML(formatted_text))
-            formatted_text = ""
-        if self.table_info:
-            start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
-            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
-                rows = self.count
-            else:
-                if start > end:
-                    rows = "0 of {}".format(self.count)
-                else:
-                    rows = "{}-{} of {}".format(start, end, self.count)
-            if len(self.values) == 1:
-                column = list(self.values.keys())[0]
-                if self.offset > self.count:
-                    formatted_text += "Column: {} | Type: {}".format(
-                        column, self.dtype[column]
-                    )
-                else:
-                    formatted_text += "Rows: {} | Column: {} | Type: {}".format(
-                        rows, column, self.dtype[column]
-                    )
-            else:
-                if self.offset > self.count:
-                    formatted_text += "Columns: {}".format(n)
-                else:
-                    formatted_text += "Rows: {} | Columns: {}".format(rows, n)
+        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+        formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
+        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+            rows = self.count
         else:
-            formatted_text = formatted_text[0:-2]
+            if start > end:
+                rows = "0{}".format(
+                    " of {}".format(self.count) if (self.count > 0) else ""
+                )
+            else:
+                rows = "{}-{}{}".format(
+                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                )
+        if len(self.values) == 1:
+            column = list(self.values.keys())[0]
+            if self.offset > self.count:
+                formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
+                    column, self.dtype[column]
+                )
+            else:
+                formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
+                    rows, column, self.dtype[column]
+                )
+        else:
+            if self.offset > self.count:
+                formatted_text += "<b>Columns:</b> {}".format(n)
+            else:
+                formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+        formatted_text += "</div>"
+        return formatted_text
+
+    # ---#
+    def __repr__(self):
+        if len(self.values) == 0:
+            return ""
+        n = len(self.values)
+        dtype = self.dtype
+        if n < self.display_ncols:
+            data_columns = [[column] + self.values[column] for column in self.values]
+        else:
+            k = int(self.display_ncols / 2)
+            columns = [elem for elem in self.values]
+            values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
+            values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
+            values2 = [
+                [columns[i]] + self.values[columns[i]]
+                for i in range(n - self.display_ncols + k, n)
+            ]
+            data_columns = values0 + values1 + values2
+            dtype["..."] = "undefined"
+        formatted_text = print_table(
+            data_columns,
+            is_finished=(self.count <= len(data_columns[0]) + self.offset),
+            offset=self.offset,
+            repeat_first_column=("index" in self.values),
+            return_html=False,
+            dtype=dtype,
+            percent=self.percent,
+        )
+        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+            rows = self.count
+        else:
+            if start > end:
+                rows = "0{}".format(
+                    " of {}".format(self.count) if (self.count > 0) else ""
+                )
+            else:
+                rows = "{}-{}{}".format(
+                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                )
+        if len(self.values) == 1:
+            column = list(self.values.keys())[0]
+            if self.offset > self.count:
+                formatted_text += "Column: {} | Type: {}".format(
+                    column, self.dtype[column]
+                )
+            else:
+                formatted_text += "Rows: {} | Column: {} | Type: {}".format(
+                    rows, column, self.dtype[column]
+                )
+        else:
+            if self.offset > self.count:
+                formatted_text += "Columns: {}".format(n)
+            else:
+                formatted_text += "Rows: {} | Columns: {}".format(rows, n)
         return formatted_text
 
     #
@@ -1571,7 +1757,7 @@ The tablesample attributes are the same than the parameters.
             row = []
             for column in self.values:
                 val = self.values[column][i]
-                if type(val) == str:
+                if isinstance(val, str):
                     val = "'" + val.replace("'", "''") + "'"
                 elif val == None:
                     val = "NULL"
@@ -1605,7 +1791,7 @@ The tablesample attributes are the same than the parameters.
 	tablesample.to_pandas : Converts the tablesample to a pandas DataFrame.
 	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
 		"""
-        check_types([("dsn", dsn, [str], False)])
+        check_types([("dsn", dsn, [str],)])
         if not (cursor) and not (dsn):
             cursor = read_auto_connect().cursor()
         elif not (cursor):
@@ -1622,7 +1808,6 @@ The tablesample attributes are the same than the parameters.
 def to_tablesample(
     query: str,
     cursor=None,
-    name: str = "Sample",
     query_on: bool = False,
     time_on: bool = False,
     title: str = "",
@@ -1636,9 +1821,7 @@ def to_tablesample(
 	query: str, optional
 		SQL Query. 
 	cursor: DBcursor, optional
-		Vertica DB cursor. 
-	name: str, optional
-		Name of the object. It is used only for rendering purposes.
+		Vertica DB cursor.
 	query_on: bool, optional
 		If set to True, display the query.
 	time_on: bool, optional
@@ -1655,7 +1838,7 @@ def to_tablesample(
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str], False), ("name", name, [str], False)])
+    check_types([("query", query, [str],)])
     if not (cursor):
         conn = read_auto_connect()
         cursor = conn.cursor()
@@ -1686,7 +1869,7 @@ def to_tablesample(
         values[column[0]] = column[1 : len(column)]
     if conn:
         conn.close()
-    return tablesample(values=values, name=name, dtype=dtype)
+    return tablesample(values=values, dtype=dtype)
 
 
 # ---#
@@ -1748,14 +1931,14 @@ vDataFrame
 	"""
     check_types(
         [
-            ("relation", relation, [str], False),
-            ("name", name, [str], False),
-            ("dsn", dsn, [str], False),
-            ("schema", schema, [str], False),
-            ("history", history, [list], False),
-            ("saving", saving, [list], False),
-            ("query_on", query_on, [bool], False),
-            ("time_on", time_on, [bool], False),
+            ("relation", relation, [str],),
+            ("name", name, [str],),
+            ("dsn", dsn, [str],),
+            ("schema", schema, [str],),
+            ("history", history, [list],),
+            ("saving", saving, [list],),
+            ("query_on", query_on, [bool],),
+            ("time_on", time_on, [bool],),
         ]
     )
     name = gen_name([name])
@@ -1825,6 +2008,78 @@ vDataFrame
         setattr(vdf, '"{}"'.format(column.replace('"', "_")), new_vColumn)
         setattr(vdf, column.replace('"', "_"), new_vColumn)
     return vdf
+
+
+# ---#
+def version(cursor=None, condition: list = []):
+    """
+---------------------------------------------------------------------------
+Returns the Vertica Version.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+condition: list, optional
+    List of the minimal version information. If the current version is not
+    greater or equal to this one, it will raise an error.
+
+Returns
+-------
+list
+    List containing the version information.
+    [MAJOR, MINOR, PATCH, POST]
+    """
+    check_types(
+        [("condition", condition, [list],),]
+    )
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    if condition:
+        condition = condition + [0 for elem in range(4 - len(condition))]
+    version = (
+        cursor.execute("SELECT version();")
+        .fetchone()[0]
+        .split("Vertica Analytic Database v")[1]
+    )
+    version = version.split(".")
+    result = []
+    try:
+        result += [int(version[0])]
+        result += [int(version[1])]
+        result += [int(version[2].split("-")[0])]
+        result += [int(version[2].split("-")[1])]
+    except:
+        pass
+    if conn:
+        conn.close()
+    if condition:
+        if condition[0] < result[0]:
+            test = True
+        elif condition[0] == result[0]:
+            if condition[1] < result[1]:
+                test = True
+            elif condition[1] == result[1]:
+                if condition[2] <= result[2]:
+                    test = True
+                else:
+                    test = False
+            else:
+                test = False
+        else:
+            test = False
+        if not (test):
+            raise VersionError(
+                "This Function is not available for Vertica version {}.\nPlease upgrade your Vertica version to at least {} to get this functionality.".format(
+                    version[0] + "." + version[1] + "." + version[2].split("-")[0],
+                    ".".join([str(elem) for elem in condition[:3]]),
+                )
+            )
+    return result
 
 
 # ---#

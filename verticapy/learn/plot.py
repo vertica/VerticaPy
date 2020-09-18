@@ -49,12 +49,13 @@
 # Modules
 #
 # Standard Python Modules
-import math
+import math, collections
 
 # Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
+import numpy
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -107,12 +108,12 @@ tablesample
 	"""
     check_types(
         [
-            ("X", X, [list], False),
-            ("input_relation", input_relation, [str], False),
-            ("n_cluster", n_cluster, [list, tuple], False),
-            ("init", init, ["kmeanspp", "random"], True),
-            ("max_iter", max_iter, [int, float], False),
-            ("tol", tol, [int, float], False),
+            ("X", X, [list],),
+            ("input_relation", input_relation, [str],),
+            ("n_cluster", n_cluster, [list],),
+            ("init", init, ["kmeanspp", "random"],),
+            ("max_iter", max_iter, [int, float],),
+            ("tol", tol, [int, float],),
         ]
     )
     if not (cursor):
@@ -121,11 +122,12 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     schema, relation = schema_relation(input_relation)
     schema = str_column(schema)
     relation_alpha = "".join(ch for ch in relation if ch.isalnum())
     all_within_cluster_SS = []
-    if not (type(n_cluster) == list):
+    if not (isinstance(n_cluster, collections.Iterable)):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
         L = n_cluster
@@ -147,7 +149,7 @@ tablesample
             tol,
         )
         model.fit(input_relation, X)
-        all_within_cluster_SS += [float(model.metrics.values["value"][3])]
+        all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
         model.drop()
     if conn:
         conn.close()
@@ -161,7 +163,7 @@ tablesample
     plt.subplots_adjust(left=0.2)
     plt.show()
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
-    return tablesample(values=values, table_info=False)
+    return tablesample(values=values)
 
 
 # ---#
@@ -204,10 +206,10 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
         ]
     )
     if not (cursor):
@@ -216,6 +218,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)
@@ -246,7 +249,6 @@ tablesample
             "positive_prediction_ratio": positive_prediction_ratio,
             "lift": lift,
         },
-        table_info=False,
     )
 
 
@@ -294,11 +296,11 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
-            ("auc_prc", auc_prc, [bool], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
+            ("auc_prc", auc_prc, [bool],),
         ]
     )
     if not (cursor):
@@ -307,6 +309,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)
@@ -344,7 +347,6 @@ tablesample
     plt.show()
     return tablesample(
         values={"threshold": threshold, "recall": recall, "precision": precision},
-        table_info=False,
     )
 
 
@@ -397,12 +399,12 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str], False),
-            ("y_score", y_score, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("nbins", nbins, [int, float], False),
-            ("auc_roc", auc_roc, [bool], False),
-            ("best_threshold", best_threshold, [bool], False),
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str],),
+            ("nbins", nbins, [int, float],),
+            ("auc_roc", auc_roc, [bool],),
+            ("best_threshold", best_threshold, [bool],),
         ]
     )
     if not (cursor):
@@ -411,6 +413,7 @@ tablesample
     else:
         conn = False
         check_cursor(cursor)
+    version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
     cursor.execute(query)
@@ -467,7 +470,6 @@ tablesample
             "false_positive": false_positive,
             "true_positive": true_positive,
         },
-        table_info=False,
     )
 
 
@@ -486,11 +488,11 @@ def logit_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -659,10 +661,10 @@ def lof_plot(
 ):
     check_types(
         [
-            ("input_relation", input_relation, [str], False),
-            ("columns", columns, [list], False),
-            ("lof", lof, [str], False),
-            ("tablesample", tablesample, [int, float], False),
+            ("input_relation", input_relation, [str],),
+            ("columns", columns, [list],),
+            ("lof", lof, [str],),
+            ("tablesample", tablesample, [int, float],),
         ]
     )
     if not (cursor):
@@ -784,9 +786,9 @@ def plot_importance(
 ):
     check_types(
         [
-            ("coeff_importances", coeff_importances, [dict], False),
-            ("coeff_sign", coeff_sign, [dict], False),
-            ("print_legend", print_legend, [bool], False),
+            ("coeff_importances", coeff_importances, [dict],),
+            ("coeff_sign", coeff_sign, [dict],),
+            ("print_legend", print_legend, [bool],),
         ]
     )
     coefficients, importances, signs = [], [], []
@@ -816,6 +818,58 @@ def plot_importance(
 
 
 # ---#
+def plot_BKtree(tree, pic_path: str = ""):
+    try:
+        from anytree import Node, RenderTree
+    except:
+        raise ImportError(
+            "The anytree module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
+        )
+    check_types([("pic_path", pic_path, [str],)])
+    try:
+        import shutil
+
+        screen_columns = shutil.get_terminal_size().columns
+    except:
+        import os
+
+        screen_rows, screen_columns = os.popen("stty size", "r").read().split()
+    print("-" * int(screen_columns))
+    print("Bisection Levels: {}".format(max(tree["bisection_level"])))
+    print("Number of Centers: {}".format(len(tree["center_id"])))
+    print("Total Size: {}".format(max(tree["cluster_size"])))
+    print("-" * int(screen_columns))
+    tree_nodes = {}
+    for idx in range(len(tree["center_id"])):
+        tree_nodes[tree["center_id"][idx]] = Node(
+            "[{}] (Size = {} | Score = {})".format(
+                tree["center_id"][idx],
+                tree["cluster_size"][idx],
+                round(tree["withinss"][idx] / tree["totWithinss"][idx], 2),
+            )
+        )
+    for idx, node_id in enumerate(tree["center_id"]):
+        if (
+            tree["left_child"][idx] in tree_nodes
+            and tree["right_child"][idx] in tree_nodes
+        ):
+            tree_nodes[node_id].children = [
+                tree_nodes[tree["left_child"][idx]],
+                tree_nodes[tree["right_child"][idx]],
+            ]
+    for pre, fill, node in RenderTree(tree_nodes[0]):
+        print("%s%s" % (pre, node.name))
+    if pic_path:
+        from anytree.dotexport import RenderTreeGraph
+
+        RenderTreeGraph(tree_nodes[0]).to_picture(pic_path)
+        if isnotebook():
+            from IPython.core.display import HTML, display
+
+            display(HTML("<img src='{}'>".format(pic_path)))
+
+
+# ---#
 def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
     try:
         from anytree import Node, RenderTree
@@ -823,9 +877,7 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
         raise ImportError(
             "The anytree module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
         )
-    check_types(
-        [("metric", metric, [str], False), ("pic_path", pic_path, [str], False)]
-    )
+    check_types([("metric", metric, [str],), ("pic_path", pic_path, [str],)])
     try:
         import shutil
 
@@ -896,11 +948,11 @@ def regression_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -984,11 +1036,11 @@ def svm_classifier_plot(
 ):
     check_types(
         [
-            ("X", X, [list], False),
-            ("y", y, [str], False),
-            ("input_relation", input_relation, [str], False),
-            ("coefficients", coefficients, [list], False),
-            ("max_nb_points", max_nb_points, [int, float], False),
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("coefficients", coefficients, [list],),
+            ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
     if not (cursor):
@@ -1145,9 +1197,7 @@ def svm_classifier_plot(
 
 # ---#
 def voronoi_plot(clusters: list, columns: list):
-    check_types(
-        [("clusters", clusters, [list], False), ("columns", columns, [list], False)]
-    )
+    check_types([("clusters", clusters, [list],), ("columns", columns, [list],)])
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     v = Voronoi(clusters)
