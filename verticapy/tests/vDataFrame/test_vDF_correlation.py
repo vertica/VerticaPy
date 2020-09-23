@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFCorrelation():
 
+class TestvDFCorrelation:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_autocorr(self):
         pass

@@ -14,13 +14,14 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFDescriptiveStat():
 
+class TestvDFDescriptiveStat:
     def test_vDF_aad(self, base):
         from verticapy.learn.datasets import load_titanic
-        titanic = load_titanic(cursor = base.cursor)
 
-        result = titanic.aad(columns = ["age", "fare", "parch"])
+        titanic = load_titanic(cursor=base.cursor)
+
+        result = titanic.aad(columns=["age", "fare", "parch"])
         assert result.values["aad"][0] == pytest.approx(11.254785419447906)
         assert result.values["aad"][1] == pytest.approx(30.625865942462237)
         assert result.values["aad"][2] == pytest.approx(0.5820801231451393)

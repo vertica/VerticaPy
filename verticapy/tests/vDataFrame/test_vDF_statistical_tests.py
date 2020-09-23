@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFStatisticalTests():
 
+class TestvDFStatisticalTests:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_testdf(self):
         pass

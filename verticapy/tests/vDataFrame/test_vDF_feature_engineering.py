@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFFeatureEngineering():
 
+class TestvDFFeatureEngineering:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_cummax(self):
         pass

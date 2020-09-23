@@ -27,12 +27,12 @@ from ..util.log import VerticaLogging
 
 
 default_configs = {
-    'log_dir': 'vp_test_log',
-    'log_level': logging.WARNING,
-    'host': 'localhost',
-    'port': 5433,
-    'user': getpass.getuser(),
-    'password': '',
+    "log_dir": "vp_test_log",
+    "log_level": logging.WARNING,
+    "host": "localhost",
+    "port": 5433,
+    "user": getpass.getuser(),
+    "password": "",
 }
 
 
@@ -47,43 +47,50 @@ class VerticaPyTestBase(unittest.TestCase):
 
         # load default configurations
         for key in config_list:
-            if key != 'database':
+            if key != "database":
                 test_config[key] = default_configs[key]
 
         # override with the configuration file
         confparser = ConfigParser()
         confparser.optionxform = str
-        SECTION = 'vp_test_config'  # section name in the configuration file
+        SECTION = "vp_test_config"  # section name in the configuration file
         # the configuration file is placed in the same directory as this file
-        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 'verticaPy_test.conf')
+        conf_file = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "verticaPy_test.conf"
+        )
         confparser.read(conf_file)
         for k in config_list:
-            option = 'VP_TEST_' + k.upper()
+            option = "VP_TEST_" + k.upper()
             if confparser.has_option(SECTION, option):
                 test_config[k] = confparser.get(SECTION, option)
 
         # override again with VP_TEST_* environment variables
         for k in config_list:
-            env = 'VP_TEST_' + k.upper()
+            env = "VP_TEST_" + k.upper()
             if env in os.environ:
                 test_config[k] = os.environ[env]
 
         # data preprocessing
         # value is string when loaded from configuration file and environment variable
-        if 'port' in test_config:
-            test_config['port'] = int(test_config['port'])
-        if 'database' in config_list and 'user' in test_config:
-            test_config.setdefault('database', test_config['user'])
-        if 'log_level' in test_config:
-            levels = ['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-            if isinstance(test_config['log_level'], str):
-                if test_config['log_level'] not in levels:
-                    raise ValueError("Invalid value for VP_TEST_LOG_LEVEL: '{}'".format(test_config['log_level']))
-                test_config['log_level'] = eval('logging.' + test_config['log_level'])
-        if 'log_dir' in test_config:
-            test_config['log_dir'] = os.path.join(test_config['log_dir'],
-                                     'py{0}{1}'.format(sys.version_info.major, sys.version_info.minor))
+        if "port" in test_config:
+            test_config["port"] = int(test_config["port"])
+        if "database" in config_list and "user" in test_config:
+            test_config.setdefault("database", test_config["user"])
+        if "log_level" in test_config:
+            levels = ["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            if isinstance(test_config["log_level"], str):
+                if test_config["log_level"] not in levels:
+                    raise ValueError(
+                        "Invalid value for VP_TEST_LOG_LEVEL: '{}'".format(
+                            test_config["log_level"]
+                        )
+                    )
+                test_config["log_level"] = eval("logging." + test_config["log_level"])
+        if "log_dir" in test_config:
+            test_config["log_dir"] = os.path.join(
+                test_config["log_dir"],
+                "py{0}{1}".format(sys.version_info.major, sys.version_info.minor),
+            )
 
         return test_config
 
@@ -95,40 +102,52 @@ class VerticaPyTestBase(unittest.TestCase):
         #      the log would write to $VP_TEST_LOG_DIR/py37/learn/test_dates.log
 
         testfile = os.path.splitext(os.path.basename(inspect.getsourcefile(cls)))[0]
-        logfile = os.path.join(log_dir, tag, testfile + '.log')
+        logfile = os.path.join(log_dir, tag, testfile + ".log")
         VerticaLogging.setup_logging(cls.__name__, logfile, log_level, cls.__name__)
         cls.logger = logging.getLogger(cls.__name__)
         return logfile
 
     def setUp(self):
         self.setUpClass()
-        self.logger.info('\n\n'+'-'*50+'\n Begin '+self.__class__.__name__+'\n'+'-'*50)
+        self.logger.info(
+            "\n\n" + "-" * 50 + "\n Begin " + self.__class__.__name__ + "\n" + "-" * 50
+        )
         self._connection = vertica_python.connect(**self._conn_info)
         self.cursor = self._connection.cursor()
 
     def tearDown(self):
         self._connection.close()
-        self.logger.info('\n'+'-'*10+' End '+self.__class__.__name__+' '+'-'*10+'\n')
+        self.logger.info(
+            "\n" + "-" * 10 + " End " + self.__class__.__name__ + " " + "-" * 10 + "\n"
+        )
 
     @classmethod
     def setUpClass(cls):
-        config_list = ['log_dir', 'log_level', 'host', 'port',
-                       'user', 'password', 'database']
+        config_list = [
+            "log_dir",
+            "log_level",
+            "host",
+            "port",
+            "user",
+            "password",
+            "database",
+        ]
         cls.test_config = cls._load_test_config(config_list)
 
         # Test logger
-        logfile = cls._setup_logger('tests',
-                                    cls.test_config['log_dir'], cls.test_config['log_level'])
+        logfile = cls._setup_logger(
+            "tests", cls.test_config["log_dir"], cls.test_config["log_level"]
+        )
 
         # Connection info
         cls._conn_info = {
-            'host': cls.test_config['host'],
-            'port': cls.test_config['port'],
-            'database': cls.test_config['database'],
-            'user': cls.test_config['user'],
-            'password': cls.test_config['password'],
-            'log_level': cls.test_config['log_level'],
-            'log_path': logfile,
+            "host": cls.test_config["host"],
+            "port": cls.test_config["port"],
+            "database": cls.test_config["database"],
+            "user": cls.test_config["user"],
+            "password": cls.test_config["password"],
+            "log_level": cls.test_config["log_level"],
+            "log_path": logfile,
         }
 
         cls.db_node_num = cls._get_node_num()
@@ -160,16 +179,19 @@ class VerticaPyTestBase(unittest.TestCase):
     # Tests that depend on the server-setup should call these methods to express requirements
     def require_DB_nodes_at_least(self, min_node_num):
         if not isinstance(min_node_num, int):
-            err_msg = "Node number '{0}' must be an instance of 'int'".format(min_node_num)
+            err_msg = "Node number '{0}' must be an instance of 'int'".format(
+                min_node_num
+            )
             raise TypeError(err_msg)
         if min_node_num <= 0:
             err_msg = "Node number {0} must be a positive integer".format(min_node_num)
             raise ValueError(err_msg)
 
         if self.db_node_num < min_node_num:
-            msg = ("The test requires a database that has at least {0} node(s), "
-                   "but this database has only {1} available node(s).").format(
-                   min_node_num, self.db_node_num)
+            msg = (
+                "The test requires a database that has at least {0} node(s), "
+                "but this database has only {1} available node(s)."
+            ).format(min_node_num, self.db_node_num)
             self.skipTest(msg)
 
     @classmethod

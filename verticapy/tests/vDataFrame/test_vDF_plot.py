@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFPlot():
 
+class TestvDFPlot:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_bar(self):
         pass

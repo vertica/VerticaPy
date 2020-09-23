@@ -15,6 +15,7 @@ import vertica_python
 import pytest
 from .base import VerticaPyTestBase
 
+
 @pytest.fixture(scope="session")
 def base():
     base_class = VerticaPyTestBase()

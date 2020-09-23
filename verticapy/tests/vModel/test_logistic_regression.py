@@ -14,19 +14,21 @@
 import pytest
 from verticapy.learn.linear_model import LogisticRegression
 
+
 @pytest.fixture(scope="module")
 def model(base):
     from verticapy.learn.datasets import load_titanic
-    titanic = load_titanic(cursor = base.cursor)
+
+    titanic = load_titanic(cursor=base.cursor)
 
     base.cursor.execute("DROP MODEL IF EXISTS logreg_model_test")
-    model_class = LogisticRegression("logreg_model_test", cursor = base.cursor)
+    model_class = LogisticRegression("logreg_model_test", cursor=base.cursor)
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
 
-class TestLogisticRegression():
 
+class TestLogisticRegression:
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_LOGISTIC_REG(\"age\", \"fare\" USING PARAMETERS model_name = 'logreg_model_test', type = 'probability', match_by_pos = 'true')"
         result_sql = model.deploySQL()
@@ -35,14 +37,18 @@ class TestLogisticRegression():
 
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS logreg_model_test_drop")
-        model_test = LogisticRegression("logreg_model_test_drop", cursor = base.cursor)
+        model_test = LogisticRegression("logreg_model_test_drop", cursor=base.cursor)
         model_test.fit("public.titanic", ["age", "fare"], "survived")
 
-        base.cursor.execute("SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'")
+        base.cursor.execute(
+            "SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'"
+        )
         assert base.cursor.fetchone()[0] == "logreg_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute("SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'")
+        base.cursor.execute(
+            "SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'"
+        )
         assert base.cursor.fetchone() is None
 
     @pytest.mark.skip(reason="test not implemented")

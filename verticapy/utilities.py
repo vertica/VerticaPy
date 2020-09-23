@@ -84,20 +84,66 @@ cursor: DBcursor, optional
             conn.close()
         raise NameError("The model '{}' already exists !".format(name))
     else:
-        import verticapy
-
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(name)
         try:
-            file = open(path, "r")
-            file_exist = True
+            cursor.execute(
+                "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                    str_column(name)
+                )
+            )
+            result = cursor.fetchone()
         except:
-            file_exist = False
-        if file_exist:
-            if conn:
-                conn.close()
+            result = []
+        if result:
             raise NameError("The model '{}' already exists !".format(name))
+    if conn:
+        conn.close()
+
+
+# ---#
+def create_verticapy_schema(cursor=None):
+    """
+---------------------------------------------------------------------------
+Create a schema named verticapy which will be used to store VerticaPy 
+extended models.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    sql = "CREATE SCHEMA verticapy;"
+    cursor.execute(sql)
+    sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT, value VARCHAR(24000));"
+    cursor.execute(sql)
+    if conn:
+        conn.close()
+
+
+# ---#
+def drop_verticapy_schema(cursor=None):
+    """
+---------------------------------------------------------------------------
+Drop the VerticaPy schema which is used to store extended models.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    sql = "DROP SCHEMA verticapy CASCADE;"
+    cursor.execute(sql)
     if conn:
         conn.close()
 
@@ -143,16 +189,40 @@ raise_error: bool, optional
         if print_info:
             print("The model {} was successfully dropped.".format(name))
     except:
-        if conn:
-            conn.close()
-        if raise_error:
-            raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
+        try:
+            sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                str_column(name).lower()
             )
+            cursor.execute(sql)
+            result = cursor.fetchone()
+        except:
+            result = []
+        if result:
+            model_type = result[0]
+            if model_type in ("DBSCAN", "LocalOutlierFactor"):
+                drop_table(self.name, self.cursor, print_info=False)
+            elif model_type in ("CountVectorizer"):
+                drop_text_index(self.name, self.cursor, print_info=False)
+            sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
+                str_column(name).lower()
+            )
+            cursor.execute(sql)
+            cursor.execute("COMMIT;")
+            if print_info:
+                print("The model {} was successfully dropped.".format(name))
+            if conn:
+                conn.close()
+        else:
+            if conn:
+                conn.close()
+            if raise_error:
+                raise
+            elif print_info:
+                print(
+                    "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+                        name
+                    )
+                )
 
 
 # ---#
@@ -549,14 +619,19 @@ model
                     model.parameters["method"] = "robust_zscore"
                 return model
             except:
-                import verticapy
-
-                path = os.path.dirname(
-                    verticapy.__file__
-                ) + "/learn/models/{}.verticapy".format(name)
-                file = open(path, "r")
-                ldic = locals()
-                exec(file.read(), globals(), ldic)
+                try:
+                    cursor.execute(
+                        "SELECT value FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                            str_column(name.lower())
+                        )
+                    )
+                    result = cursor.fetchone()
+                except:
+                    result = []
+                if not (result):
+                    raise NameError("The model named {} doesn't exist.".format(name))
+                ldic = {}
+                exec("model_save = {}".format(result[0]), globals(), ldic)
                 model_save = ldic["model_save"]
                 if model_save["type"] == "NearestCentroid":
                     from verticapy.learn.neighbors import NearestCentroid
@@ -611,16 +686,63 @@ model
                     )
                     model.vocabulary_ = model_save["vocabulary"]
                     model.stop_words_ = model_save["stop_words"]
+                elif model_save["type"] == "SARIMAX":
+                    from verticapy.learn.tsa.models import SARIMAX
+
+                    model = SARIMAX(
+                        name,
+                        cursor,
+                        model_save["p"],
+                        model_save["d"],
+                        model_save["q"],
+                        model_save["P"],
+                        model_save["D"],
+                        model_save["Q"],
+                        model_save["s"],
+                        model_save["penalty"],
+                        model_save["tol"],
+                        model_save["C"],
+                        model_save["max_iter"],
+                        model_save["solver"],
+                        model_save["l1_ratio"],
+                        model_save["max_pik"],
+                        model_save["papprox_ma"],
+                    )
+                    model.transform_relation = model_save["transform_relation"]
+                    model.coef_ = tablesample(model_save["coef"])
+                    model.ts = model_save["ts"]
+                    model.exogenous = model_save["exogenous"]
+                    model.deploy_predict_ = model_save["deploy_predict"]
+                elif model_save["type"] == "VAR":
+                    from verticapy.learn.tsa.models import VAR
+
+                    model = VAR(
+                        name,
+                        cursor,
+                        model_save["p"],
+                        model_save["penalty"],
+                        model_save["tol"],
+                        model_save["C"],
+                        model_save["max_iter"],
+                        model_save["solver"],
+                        model_save["l1_ratio"],
+                    )
+                    model.transform_relation = model_save["transform_relation"]
+                    model.coef_ = [tablesample(elem) for elem in model_save["coef"]]
+                    model.ts = model_save["ts"]
+                    model.deploy_predict_ = model_save["deploy_predict"]
+                    model.X = model_save["X"]
                 model.input_relation = model_save["input_relation"]
                 model.X = model_save["X"]
                 if model_save["type"] in (
                     "KNeighborsRegressor",
                     "KNeighborsClassifier",
                     "NearestCentroid",
+                    "SARIMAX",
                 ):
                     model.y = model_save["y"]
                     model.test_relation = model_save["test_relation"]
-                elif model_save["type"] not in ("CountVectorizer"):
+                elif model_save["type"] not in ("CountVectorizer", "VAR"):
                     model.key_columns = model_save["key_columns"]
                 return model
     try:
@@ -1567,7 +1689,6 @@ The tablesample attributes are the same than the parameters.
     def _repr_html_(self):
         if len(self.values) == 0:
             return ""
-        return_html = True if (isnotebook()) else False
         n = len(self.values)
         dtype = self.dtype
         if n < self.display_ncols:
@@ -1588,7 +1709,7 @@ The tablesample attributes are the same than the parameters.
             is_finished=(self.count <= len(data_columns[0]) + self.offset),
             offset=self.offset,
             repeat_first_column=("index" in self.values),
-            return_html=return_html,
+            return_html=True,
             dtype=dtype,
             percent=self.percent,
         )

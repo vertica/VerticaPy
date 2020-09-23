@@ -80,33 +80,41 @@ from verticapy.errors import *
 #
 # ---#
 def acf_plot(
-    x: list, y: list, color="#444444", title="", confidence=None, type_bar: bool = True
+    x: list,
+    y: list,
+    color="#444444",
+    title="",
+    confidence=None,
+    type_bar: bool = True,
+    ax=None,
 ):
-    plt.figure(figsize=(9, 7)) if isnotebook() else plt.figure(figsize=(9, 7))
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(10, 3)
+        ax.set_facecolor("#F5F5F5")
     if type_bar:
-        plt.bar(x, y, width=0.007 * len(x), color=color, zorder=1, linewidth=0)
-        plt.scatter(
+        ax.bar(x, y, width=0.007 * len(x), color=color, zorder=1, linewidth=0)
+        ax.scatter(
             x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
         )
-        plt.plot(
+        ax.plot(
             [-1] + x + [x[-1] + 1],
             [0 for elem in range(len(x) + 2)],
             color="#FE5016",
             zorder=0,
         )
-        plt.xlim(-1, x[-1] + 1)
+        ax.set_xlim(-1, x[-1] + 1)
     else:
-        plt.plot(x, y, color=color)
-    plt.title(title)
-    plt.xticks(rotation=90)
-    plt.subplots_adjust(bottom=0.24)
+        ax.plot(x, y, color=color)
+    ax.set_title(title)
+    ax.set_xticks(x)
+    ax.set_xticklabels(x, rotation=90)
     if confidence:
-        plt.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-        plt.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    plt.xlabel("lag")
-    plt.gca().grid()
-    return plt.gcf()
+        ax.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+        ax.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax.set_xlabel("lag")
+    return ax
 
 
 # ---#
@@ -118,18 +126,20 @@ def bar(
     bins: int = 0,
     h: float = 0,
     color: str = "#FE5016",
+    ax=None,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method=method, of=of, max_cardinality=max_cardinality, bins=bins, h=h
     )
-    plt.figure(figsize=(14, min(len(x), 600))) if isnotebook() else plt.figure(
-        figsize=(10, 6)
-    )
-    plt.rcParams["axes.facecolor"] = "#F5F5F5"
-    plt.barh(x, y, h, color=color, alpha=0.86)
-    plt.ylabel(vdf.alias)
-    plt.gca().xaxis.grid()
-    plt.gca().set_axisbelow(True)
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
+        ax.set_facecolor("#F5F5F5")
+        ax.xaxis.grid()
+        ax.set_axisbelow(True)
+    ax.barh(x, y, h, color=color, alpha=0.86)
+    ax.set_ylabel(vdf.alias)
     if is_categorical:
         if vdf.category() == "text":
             new_z = []
@@ -137,23 +147,21 @@ def bar(
                 new_z += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
         else:
             new_z = z
-        plt.yticks(x, new_z)
-        plt.subplots_adjust(
-            left=max(0.1, min(len(max([str(item) for item in z], key=len)), 20) / 80.0)
-        )
+        ax.set_yticks(x)
+        ax.set_yticklabels(new_z, rotation=0)
     else:
-        plt.yticks([elem - h / 2 / 0.94 for elem in x])
+        ax.set_yticks([elem - h / 2 / 0.94 for elem in x])
     if method == "density":
-        plt.xlabel("Density")
-        plt.title("Distribution of {}".format(vdf.alias))
+        ax.set_xlabel("Density")
+        ax.set_title("Distribution of {}".format(vdf.alias))
     elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
         aggregate = "{}({})".format(method.upper(), of)
-        plt.ylabel(aggregate)
-        plt.title("{} group by {}".format(aggregate, vdf.alias))
+        ax.set_xlabel(aggregate)
+        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
     else:
-        plt.xlabel("Frequency")
-        plt.title("Count by {}".format(vdf.alias))
-    return plt.gcf()
+        ax.set_xlabel("Frequency")
+        ax.set_title("Count by {}".format(vdf.alias))
+    return ax
 
 
 # ---#
@@ -166,6 +174,7 @@ def bar2D(
     h: tuple = (None, None),
     stacked: bool = False,
     fully_stacked: bool = False,
+    ax=None,
 ):
     colors = gen_colors()
     all_columns = vdf.pivot_table(
@@ -176,10 +185,13 @@ def bar2D(
     m = len(all_columns[0])
     n_groups = m - 1
     bar_width = 0.5
-    plt.figure(figsize=(14, min(m * 3, 600))) if isnotebook() else plt.figure(
-        figsize=(10, 6)
-    )
-    plt.rcParams["axes.facecolor"] = "#F5F5F5"
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
+        ax.set_facecolor("#F5F5F5")
+        ax.set_axisbelow(True)
+        ax.xaxis.grid()
     if not (fully_stacked):
         for i in range(1, n):
             current_column = all_columns[i][1:m]
@@ -198,7 +210,7 @@ def bar2D(
                             last_column[idx] += float(item)
                         except:
                             last_column[idx] += 0
-                plt.barh(
+                ax.barh(
                     [elem for elem in range(n_groups)],
                     current_column,
                     bar_width,
@@ -208,7 +220,7 @@ def bar2D(
                     left=last_column,
                 )
             else:
-                plt.barh(
+                ax.barh(
                     [elem + (i - 1) * bar_width / (n - 1) for elem in range(n_groups)],
                     current_column,
                     bar_width / (n - 1),
@@ -217,35 +229,32 @@ def bar2D(
                     label=current_label,
                 )
         if stacked:
-            plt.yticks([elem for elem in range(n_groups)], all_columns[0][1:m])
+            ax.set_yticks([elem for elem in range(n_groups)])
+            ax.set_yticklabels(all_columns[0][1:m])
         else:
-            plt.yticks(
+            ax.set_yticks(
                 [
                     elem + bar_width / 2 - bar_width / 2 / (n - 1)
                     for elem in range(n_groups)
                 ],
-                all_columns[0][1:m],
             )
-        plt.subplots_adjust(
-            left=max(
-                0.3,
-                len(max([str(item) for item in all_columns[0][1:m]], key=len)) / 140.0,
-            )
-        )
-        plt.ylabel(columns[0])
+            ax.set_yticklabels(all_columns[0][1:m])
+        ax.set_ylabel(columns[0])
         if method == "mean":
             method = "avg"
         if method == "density":
-            plt.xlabel("Density")
-            plt.title("Distribution of {} group by {}".format(columns[0], columns[1]))
+            ax.set_xlabel("Density")
+            ax.set_title(
+                "Distribution of {} group by {}".format(columns[0], columns[1])
+            )
         elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
-            plt.xlabel("{}({})".format(method, of))
-            plt.title(
+            ax.set_xlabel("{}({})".format(method, of))
+            ax.set_title(
                 "{}({}) of {} group by {}".format(method, of, columns[0], columns[1])
             )
         else:
-            plt.xlabel("Frequency")
-            plt.title("Count by {} group by {}".format(columns[0], columns[1]))
+            ax.set_xlabel("Frequency")
+            ax.set_title("Count by {} group by {}".format(columns[0], columns[1]))
     else:
         total = [0 for item in range(1, m)]
         for i in range(1, n):
@@ -282,7 +291,7 @@ def bar2D(
                         last_column[idx] += float(item)
                     except:
                         last_column[idx] += 0
-            plt.barh(
+            ax.barh(
                 [elem for elem in range(n_groups)],
                 current_column,
                 bar_width,
@@ -291,31 +300,34 @@ def bar2D(
                 label=current_label,
                 left=last_column,
             )
-        plt.yticks([elem for elem in range(n_groups)], all_columns[0][1:m])
-        plt.subplots_adjust(
-            left=max(
-                0.3,
-                len(max([str(item) for item in all_columns[0][1:m]], key=len)) / 140.0,
-            )
-        )
-        plt.ylabel(columns[0])
-        plt.xlabel("Density per category")
-        plt.title(
+        ax.set_yticks([elem for elem in range(n_groups)])
+        ax.set_yticklabels(all_columns[0][1:m])
+        ax.set_ylabel(columns[0])
+        ax.set_xlabel("Density per category")
+        ax.set_title(
             "Distribution per category of {} group by {}".format(columns[0], columns[1])
         )
-    plt.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
-    plt.gca().set_axisbelow(True)
-    plt.gca().xaxis.grid()
-    return plt.gcf()
+    ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+    return ax
 
 
 # ---#
 def boxplot(
-    vdf, by: str = "", h: float = 0, max_cardinality: int = 8, cat_priority: list = []
+    vdf,
+    by: str = "",
+    h: float = 0,
+    max_cardinality: int = 8,
+    cat_priority: list = [],
+    ax=None,
 ):
     # SINGLE BOXPLOT
     if by == "":
-        plt.figure(figsize=(12, 8)) if isnotebook() else plt.figure(figsize=(10, 6))
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(6, 4)
+            ax.set_facecolor("#F5F5F5")
+            ax.xaxis.grid()
         if not (vdf.isnum()):
             raise TypeError("The column must be numerical in order to draw a boxplot")
         summarize = (
@@ -325,9 +337,8 @@ def boxplot(
         )
         for i in range(0, 2):
             del summarize[0]
-        plt.rcParams["axes.facecolor"] = "#F5F5F5"
-        plt.xlabel(vdf.alias)
-        box = plt.boxplot(
+        ax.set_xlabel(vdf.alias)
+        box = ax.boxplot(
             summarize,
             notch=False,
             sym="",
@@ -343,10 +354,9 @@ def boxplot(
             )
         for patch in box["boxes"]:
             patch.set_facecolor("#FE5016")
-        plt.gca().xaxis.grid()
-        plt.gca().set_axisbelow(True)
-        plt.title("BoxPlot of {}".format(vdf.alias))
-        return plt.gcf()
+        ax.set_axisbelow(True)
+        ax.set_title("BoxPlot of {}".format(vdf.alias))
+        return ax
     # MULTI BOXPLOT
     else:
         try:
@@ -451,12 +461,14 @@ def boxplot(
                     labels += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
             else:
                 labels = cat_priority
-            plt.figure(figsize=(14, 8)) if isnotebook() else plt.figure(figsize=(10, 6))
-            plt.rcParams["axes.facecolor"] = "#F8F8F8"
-            plt.ylabel(vdf.alias)
-            plt.xlabel(by)
-            plt.xticks(rotation=90)
-            plt.gca().yaxis.grid()
+            if not (ax):
+                fig, ax = plt.subplots()
+                if isnotebook():
+                    fig.set_size_inches(10, 6)
+                ax.set_facecolor("#F5F5F5")
+                ax.yaxis.grid()
+            ax.set_ylabel(vdf.alias)
+            ax.set_xlabel(by)
             other_labels = []
             other_result = []
             all_idx = []
@@ -496,7 +508,7 @@ def boxplot(
                     [item[0] for item in sorted_boxplot],
                     [item[1] for item in sorted_boxplot],
                 )
-            box = plt.boxplot(
+            box = ax.boxplot(
                 result,
                 notch=False,
                 sym="",
@@ -505,12 +517,8 @@ def boxplot(
                 labels=labels,
                 patch_artist=True,
             )
-            plt.title("BoxPlot of {} group by {}".format(vdf.alias, by))
-            plt.subplots_adjust(
-                bottom=max(
-                    0.3, len(max([str(item) for item in labels], key=len)) / 90.0
-                )
-            )
+            ax.set_xticklabels(labels, rotation=90)
+            ax.set_title("BoxPlot of {} group by {}".format(vdf.alias, by))
             colors = gen_colors()
             for median in box["medians"]:
                 median.set(
@@ -518,7 +526,7 @@ def boxplot(
                 )
             for patch, color in zip(box["boxes"], colors):
                 patch.set_facecolor(color)
-            return plt.gcf()
+            return ax
         except Exception as e:
             raise Exception(
                 "{}\nAn error occured during the BoxPlot creation.".format(e)
@@ -526,7 +534,7 @@ def boxplot(
 
 
 # ---#
-def boxplot2D(vdf, columns: list = []):
+def boxplot2D(vdf, columns: list = [], ax=None):
     if not (columns):
         columns = vdf.numcol()
     for column in columns:
@@ -538,8 +546,7 @@ def boxplot2D(vdf, columns: list = []):
             )
             columns.remove(column)
     if not (columns):
-        print("\u26A0 Warning: No numerical columns found to draw the multi boxplot")
-        raise
+        raise MissingColumn("No numerical columns found to draw the multi boxplot")
     # SINGLE BOXPLOT
     if len(columns) == 1:
         vdf[columns[0]].boxplot()
@@ -551,10 +558,12 @@ def boxplot2D(vdf, columns: list = []):
             columns = [column for column in summarize.values]
             del columns[0]
             del result[0]
-            plt.figure(figsize=(14, 8)) if isnotebook() else plt.figure(figsize=(10, 6))
-            plt.rcParams["axes.facecolor"] = "#F8F8F8"
-            plt.xticks(rotation=90)
-            box = plt.boxplot(
+            if not (ax):
+                fig, ax = plt.subplots()
+                if isnotebook():
+                    fig.set_size_inches(10, 6)
+                ax.set_facecolor("#F5F5F5")
+            box = ax.boxplot(
                 result,
                 notch=False,
                 sym="",
@@ -563,12 +572,8 @@ def boxplot2D(vdf, columns: list = []):
                 labels=columns,
                 patch_artist=True,
             )
-            plt.title("Multi BoxPlot of the vDataFrame")
-            plt.subplots_adjust(
-                bottom=max(
-                    0.3, len(max([str(item) for item in columns], key=len)) / 90.0
-                )
-            )
+            ax.set_xticklabels(columns, rotation=90)
+            ax.set_title("Multi BoxPlot of the vDataFrame")
             colors = gen_colors()
             for median in box["medians"]:
                 median.set(
@@ -576,7 +581,7 @@ def boxplot2D(vdf, columns: list = []):
                 )
             for patch, color in zip(box["boxes"], colors):
                 patch.set_facecolor(color)
-            return plt.gcf()
+            return ax
         except Exception as e:
             raise Exception(
                 "{}\nAn error occured during the BoxPlot creation.".format(e)
@@ -591,6 +596,7 @@ def bubble(
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
+    ax=None,
 ):
     colors = gen_colors()
     if not (catcol):
@@ -619,25 +625,27 @@ def bubble(
                 for item in query_result
             ],
         )
-        plt.figure(figsize=(14, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(10, 6)
+            ax.set_facecolor("#F5F5F5")
+            ax.grid()
+            ax.set_axisbelow(True)
         if bbox:
-            plt.xlim(bbox[0], bbox[1])
-            plt.ylim(bbox[2], bbox[3])
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = plt.imread(img)
+            im = ax.imread(img)
             if not (bbox):
                 bbox = (min(column1), max(column1), min(column2), max(column2))
-                plt.xlim(bbox[0], bbox[1])
-                plt.ylim(bbox[2], bbox[3])
-            plt.imshow(im, extent=bbox)
-        plt.gca().grid()
-        plt.gca().set_axisbelow(True)
-        plt.title("Bubble Plot of {} vs {}".format(columns[0], columns[1]))
-        plt.ylabel(columns[1])
-        plt.xlabel(columns[0])
-        scatter = plt.scatter(column1, column2, color=colors[0], s=size, alpha=0.5)
-        plt.gca().grid()
-        plt.gca().set_axisbelow(True)
+                ax.set_xlim(bbox[0], bbox[1])
+                ax.set_ylim(bbox[2], bbox[3])
+            ax.imshow(im, extent=bbox)
+        ax.set_title("Bubble Plot of {} vs {}".format(columns[0], columns[1]))
+        ax.set_ylabel(columns[1])
+        ax.set_xlabel(columns[0])
+        scatter = ax.scatter(column1, column2, color=colors[0], s=size, alpha=0.5)
         kw = dict(
             prop="sizes",
             num=6,
@@ -645,7 +653,7 @@ def bubble(
             alpha=0.6,
             func=lambda s: (s * (max_size - min_size) + min_size) / 1000,
         )
-        plt.legend(
+        ax.legend(
             *scatter.legend_elements(**kw),
             bbox_to_anchor=[1, 0.5],
             loc="center left",
@@ -654,17 +662,18 @@ def bubble(
     else:
         count = vdf.shape()[0]
         all_categories = vdf[catcol].distinct()
-        fig = (
-            plt.figure(figsize=(14, 10))
-            if isnotebook()
-            else plt.figure(figsize=(10, 6))
-        )
-        ax = plt
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(12, 7)
+            ax.set_facecolor("#F5F5F5")
+            ax.grid()
+            ax.set_axisbelow(True)
         if bbox:
-            plt.xlim(bbox[0], bbox[1])
-            plt.ylim(bbox[2], bbox[3])
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = plt.imread(img)
+            im = ax.imread(img)
             if not (bbox):
                 aggr = vdf.agg(columns=[columns[0], columns[1]], func=["min", "max"])
                 bbox = (
@@ -673,9 +682,9 @@ def bubble(
                     aggr.values["min"][1],
                     aggr.values["max"][1],
                 )
-                plt.xlim(bbox[0], bbox[1])
-                plt.ylim(bbox[2], bbox[3])
-            plt.imshow(im, extent=bbox)
+                ax.set_xlim(bbox[0], bbox[1])
+                ax.set_ylim(bbox[2], bbox[3])
+            ax.imshow(im, extent=bbox)
         others = []
         groupby_cardinality = vdf[catcol].nunique(True)
         count = vdf.shape()[0]
@@ -723,8 +732,6 @@ def bubble(
         for idx, item in enumerate(all_categories):
             if len(str(item)) > 20:
                 all_categories[idx] = str(item)[0:20] + "..."
-        plt.gca().grid()
-        plt.gca().set_axisbelow(True)
         kw = dict(
             prop="sizes",
             num=6,
@@ -738,9 +745,9 @@ def bubble(
             loc="center left",
             title=columns[2]
         )
-        plt.title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
-        ax.xlabel(columns[0])
-        ax.ylabel(columns[1])
+        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
+        ax.set_xlabel(columns[0])
+        ax.set_ylabel(columns[1])
         leg2 = ax.legend(
             all_scatter,
             all_categories,
@@ -748,8 +755,8 @@ def bubble(
             loc="center right",
             bbox_to_anchor=[-0.06, 0.5],
         )
-        fig.add_artist(leg1)
-    return plt.gcf()
+        ax.add_artist(leg1)
+    return ax
 
 
 # ---#
@@ -769,6 +776,7 @@ def cmatrix(
     with_numbers: bool = True,
     mround: int = 3,
     is_vector: bool = False,
+    ax=None,
 ):
     matrix_array = [
         [
@@ -792,41 +800,32 @@ def cmatrix(
         m, n = n, m
         x_label, y_label = y_label, x_label
         columns_x, columns_y = columns_y, columns_x
-    plt.figure(
-        figsize=(min(m * 1.4, 500), min(n * 1.4, 500))
-    ) if isnotebook() else plt.figure(
-        figsize=(min(int(m / 1.3) + 2, 500), min(int(n / 1.3) + 1, 500))
-    )
-    plt.title(title)
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(min(m, 500), min(n, 500))
+    else:
+        fig = plt
+    ax.set_title(title)
     if (vmax == 1) and vmin in [0, -1]:
-        plt.imshow(
+        im = ax.imshow(
             matrix_array, cmap=cmap, interpolation="nearest", vmax=vmax, vmin=vmin
         )
     else:
-        plt.imshow(matrix_array, cmap=cmap, interpolation="nearest")
-    plt.colorbar().set_label(colorbar)
-    plt.gca().set_xlabel(x_label)
-    plt.gca().set_ylabel(y_label)
-    plt.gca().set_yticks([i for i in range(0, n)])
-    plt.gca().set_xticks([i for i in range(0, m)])
-    plt.yticks(rotation=0)
-    plt.xticks(rotation=90)
-    try:
-        plt.subplots_adjust(
-            bottom=max(0.2, len(max([str(item) for item in columns_y], key=len)) / 90.0)
-        )
-    except:
-        pass
-    plt.gca().set_xticklabels(columns_y)
-    plt.gca().set_yticklabels(columns_x)
+        im = ax.imshow(matrix_array, cmap=cmap, interpolation="nearest")
+    fig.colorbar(im, ax=ax).set_label(colorbar)
+    ax.set_yticks([i for i in range(0, n)])
+    ax.set_xticks([i for i in range(0, m)])
+    ax.set_xticklabels(columns_y, rotation=90)
+    ax.set_yticklabels(columns_x, rotation=0)
     if with_numbers:
         for y_index in range(n):
             for x_index in range(m):
                 label = matrix_array[y_index][x_index]
-                plt.gca().text(
+                ax.text(
                     x_index, y_index, label, color="black", ha="center", va="center"
                 )
-    return plt.gcf()
+    return ax
 
 
 # ---#
@@ -996,7 +995,12 @@ def compute_plot_variables(
 
 # ---#
 def density(
-    vdf, a=None, kernel: str = "gaussian", smooth: int = 200, color: str = "#FE5016"
+    vdf,
+    a=None,
+    kernel: str = "gaussian",
+    smooth: int = 200,
+    color: str = "#FE5016",
+    ax=None,
 ):
     if kernel == "gaussian":
 
@@ -1055,17 +1059,20 @@ def density(
             ]
         )
         y_smooth += [K]
-    plt.figure(figsize=(12, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
-    plt.rcParams["axes.facecolor"] = "#F5F5F5"
-    plt.plot(x_smooth, y_smooth, color="#222222")
-    plt.xlim(min(x), max(x))
-    plt.ylim(0, max(y_smooth) * 1.1)
-    plt.grid()
-    plt.gca().set_axisbelow(True)
-    plt.fill_between(x_smooth, y_smooth, facecolor=color, alpha=0.7)
-    plt.ylabel("density")
-    plt.title("Distribution of {} ({} kernel)".format(vdf.alias, kernel))
-    return plt.gcf()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(7, 5)
+        ax.set_facecolor("#F5F5F5")
+        ax.grid()
+        ax.set_axisbelow(True)
+    ax.plot(x_smooth, y_smooth, color="#222222")
+    ax.set_xlim(min(x), max(x))
+    ax.set_ylim(0, max(y_smooth) * 1.1)
+    ax.fill_between(x_smooth, y_smooth, facecolor=color, alpha=0.7)
+    ax.set_ylabel("density")
+    ax.set_title("Distribution of {} ({} kernel)".format(vdf.alias, kernel))
+    return ax
 
 
 # ---#
@@ -1111,6 +1118,7 @@ def hexbin(
     color: str = "white",
     bbox: list = [],
     img: str = "",
+    ax=None,
 ):
     if len(columns) != 2:
         raise ParameterError(
@@ -1166,22 +1174,27 @@ def hexbin(
                 column3 += [float(item[2])] * 2
             else:
                 column3 += [float(item[2]) / 2] * 2
-    plt.figure(figsize=(14, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(9, 7)
+        ax.set_facecolor("white")
+    else:
+        fig = plt
     if bbox:
-        plt.xlim(bbox[0], bbox[1])
-        plt.ylim(bbox[2], bbox[3])
+        ax.set_xlim(bbox[0], bbox[1])
+        ax.set_ylim(bbox[2], bbox[3])
     if img:
-        im = plt.imread(img)
+        im = ax.imread(img)
         if not (bbox):
             bbox = (min(column1), max(column1), min(column2), max(column2))
-            plt.xlim(bbox[0], bbox[1])
-            plt.ylim(bbox[2], bbox[3])
-        plt.imshow(im, extent=bbox)
-    plt.rcParams["axes.facecolor"] = "white"
-    plt.title("Hexbin of {} vs {}".format(columns[0], columns[1]))
-    plt.ylabel(columns[1])
-    plt.xlabel(columns[0])
-    plt.hexbin(
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
+        ax.imshow(im, extent=bbox)
+    ax.set_title("Hexbin of {} vs {}".format(columns[0], columns[1]))
+    ax.set_ylabel(columns[1])
+    ax.set_xlabel(columns[0])
+    imh = ax.hexbin(
         column1,
         column2,
         C=column3,
@@ -1192,10 +1205,10 @@ def hexbin(
         mincnt=1,
     )
     if method == "density":
-        plt.colorbar().set_label(method)
+        fig.colorbar(imh).set_label(method)
     else:
-        plt.colorbar().set_label(aggregate)
-    return plt.gcf()
+        fig.colorbar(imh).set_label(aggregate)
+    return ax
 
 
 # ---#
@@ -1207,20 +1220,21 @@ def hist(
     bins: int = 0,
     h: float = 0,
     color: str = "#FE5016",
+    ax=None,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, method, of, max_cardinality, bins, h
     )
     is_numeric = vdf.isnum()
-    rotation = 0 if ((is_numeric) and not (is_categorical)) else 90
-    plt.figure(figsize=(min(len(x), 600), 8)) if isnotebook() else plt.figure(
-        figsize=(10, 6)
-    )
-    plt.rcParams["axes.facecolor"] = "#F5F5F5"
-    plt.bar(x, y, h, color=color, alpha=0.86)
-    plt.xlabel(vdf.alias)
-    plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
+        ax.set_facecolor("#F5F5F5")
+        ax.set_axisbelow(True)
+        ax.yaxis.grid()
+    ax.bar(x, y, h, color=color, alpha=0.86)
+    ax.set_xlabel(vdf.alias)
     if is_categorical:
         if not (is_numeric):
             new_z = []
@@ -1228,25 +1242,24 @@ def hist(
                 new_z += [item[0:47] + "..."] if (len(str(item)) > 50) else [item]
         else:
             new_z = z
-        plt.xticks(x, new_z, rotation=rotation)
-        plt.subplots_adjust(
-            bottom=max(0.3, len(max([str(item) for item in z], key=len)) / 140.0)
-        )
+        ax.set_xticks(x)
+        ax.set_xticklabels(new_z, rotation=90)
     else:
-        plt.xticks([elem - h / 2 / 0.94 for elem in x], rotation=rotation)
+        ax.set_xticks([elem - h / 2 / 0.94 for elem in x])
+        ax.set_xticklabels([elem - h / 2 / 0.94 for elem in x], rotation=90)
     if method == "density":
-        plt.ylabel("Density")
-        plt.title("Distribution of {}".format(vdf.alias))
+        ax.set_ylabel("Density")
+        ax.set_title("Distribution of {}".format(vdf.alias))
     elif (method in ["avg", "min", "max", "sum", "mean"] or ("%" in method)) and (
         of != None
     ):
         aggregate = "{}({})".format(method, of)
-        plt.ylabel(aggregate)
-        plt.title("{} group by {}".format(aggregate, vdf.alias))
+        ax.set_ylabel(aggregate)
+        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
     else:
-        plt.ylabel("Frequency")
-        plt.title("Count by {}".format(vdf.alias))
-    return plt.gcf()
+        ax.set_ylabel("Frequency")
+        ax.set_title("Count by {}".format(vdf.alias))
+    return ax
 
 
 # ---#
@@ -1258,6 +1271,7 @@ def hist2D(
     max_cardinality: tuple = (6, 6),
     h: tuple = (None, None),
     stacked: bool = False,
+    ax=None,
 ):
     colors = gen_colors()
     all_columns = vdf.pivot_table(
@@ -1267,10 +1281,13 @@ def hist2D(
     n, m = len(all_columns), len(all_columns[0])
     n_groups = m - 1
     bar_width = 0.5
-    plt.figure(figsize=(min(600, 3 * m), 11)) if isnotebook() else plt.figure(
-        figsize=(10, 6)
-    )
-    plt.rcParams["axes.facecolor"] = "#F5F5F5"
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(min(600, 3 * m) / 2 + 1, 6)
+        ax.set_facecolor("#F5F5F5")
+        ax.set_axisbelow(True)
+        ax.yaxis.grid()
     for i in range(1, n):
         current_column = all_columns[i][1:m]
         for idx, item in enumerate(current_column):
@@ -1288,7 +1305,7 @@ def hist2D(
                         last_column[idx] += float(item)
                     except:
                         last_column[idx] += 0
-            plt.bar(
+            ax.bar(
                 [elem for elem in range(n_groups)],
                 current_column,
                 bar_width,
@@ -1298,7 +1315,7 @@ def hist2D(
                 bottom=last_column,
             )
         else:
-            plt.bar(
+            ax.bar(
                 [elem + (i - 1) * bar_width / (n - 1) for elem in range(n_groups)],
                 current_column,
                 bar_width / (n - 1),
@@ -1307,42 +1324,37 @@ def hist2D(
                 label=current_label,
             )
     if stacked:
-        plt.xticks([elem for elem in range(n_groups)], all_columns[0][1:m], rotation=90)
+        ax.set_xticks([elem for elem in range(n_groups)])
+        ax.set_xticklabels(all_columns[0][1:m], rotation=90)
     else:
-        plt.xticks(
+        ax.set_xticks(
             [
                 elem + bar_width / 2 - bar_width / 2 / (n - 1)
                 for elem in range(n_groups)
             ],
-            all_columns[0][1:m],
-            rotation=90,
         )
-    plt.subplots_adjust(
-        bottom=max(
-            0.3, len(max([str(item) for item in all_columns[0][1:m]], key=len)) / 140.0
-        )
-    )
-    plt.xlabel(columns[0])
+        ax.set_xticklabels(all_columns[0][1:m], rotation=90)
+    ax.set_xlabel(columns[0])
     if method.lower() == "mean":
         method = "avg"
     if method == "density":
-        plt.ylabel("Density")
-        plt.title("Distribution of {} group by {}".format(columns[0], columns[1]))
+        ax.set_ylabel("Density")
+        ax.set_title("Distribution of {} group by {}".format(columns[0], columns[1]))
     elif (method in ["avg", "min", "max", "sum"]) and (of != None):
-        plt.ylabel("{}({})".format(method, of))
-        plt.title("{}({}) of {} group by {}".format(method, of, columns[0], columns[1]))
+        ax.set_ylabel("{}({})".format(method, of))
+        ax.set_title(
+            "{}({}) of {} group by {}".format(method, of, columns[0], columns[1])
+        )
     else:
-        plt.ylabel("Frequency")
-        plt.title("Count by {} group by {}".format(columns[0], columns[1]))
-    plt.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
-    plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid()
-    return plt.gcf()
+        ax.set_ylabel("Frequency")
+        ax.set_title("Count by {} group by {}".format(columns[0], columns[1]))
+    ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+    return ax
 
 
 # ---#
 def multiple_hist(
-    vdf, columns: list, method: str = "density", of: str = "", h: float = 0
+    vdf, columns: list, method: str = "density", of: str = "", h: float = 0, ax=None
 ):
     colors = gen_colors()
     if len(columns) > 5:
@@ -1350,8 +1362,13 @@ def multiple_hist(
             "The number of column must be <= 5 to use 'multiple_hist' method"
         )
     else:
-        plt.figure(figsize=(12, 7)) if isnotebook() else plt.figure(figsize=(12, 6))
-        plt.rcParams["axes.facecolor"] = "#F5F5F5"
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+            ax.set_facecolor("#F5F5F5")
+            ax.set_axisbelow(True)
+            ax.yaxis.grid()
         alpha, all_columns, all_h = 1, [], []
         if h <= 0:
             for idx, column in enumerate(columns):
@@ -1374,20 +1391,18 @@ def multiple_hist(
                         column
                     )
                 )
-        plt.xlabel(", ".join(all_columns))
-        plt.gca().set_axisbelow(True)
-        plt.gca().yaxis.grid()
+        ax.set_xlabel(", ".join(all_columns))
         if method == "density":
-            plt.ylabel("Density")
+            ax.set_ylabel("Density")
         elif (method in ["avg", "min", "max", "sum", "mean"] or ("%" in method)) and (
             of
         ):
-            plt.ylabel(method + "(" + of + ")")
+            ax.set_ylabel(method + "(" + of + ")")
         else:
-            plt.ylabel("Frequency")
-        plt.title("Multiple Histograms")
-        plt.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-        return plt.gcf()
+            ax.set_ylabel("Frequency")
+        ax.set_title("Multiple Histograms")
+        ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
+        return ax
 
 
 # ---#
@@ -1397,6 +1412,7 @@ def multi_ts_plot(
     columns: list = [],
     order_by_start: str = "",
     order_by_end: str = "",
+    ax=None,
 ):
     if len(columns) == 1:
         return vdf[columns[0]].plot(
@@ -1437,22 +1453,25 @@ def multi_ts_plot(
     except:
         pass
     alpha = 0.3
-    plt.figure(figsize=(14, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
-    plt.gca().grid()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.set_facecolor("#F5F5F5")
+        ax.grid()
     for i in range(0, len(columns)):
-        plt.plot(
+        ax.plot(
             order_by_values,
             [item[i + 1] for item in query_result],
             color=colors[i],
             label=columns[i],
+            linewidth=2,
         )
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    plt.title("Multi Plot of the vDataFrame")
-    plt.xticks(rotation=90)
-    plt.subplots_adjust(bottom=0.24)
-    plt.xlabel(order_by)
-    plt.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
-    return plt.gcf()
+    ax.set_title("Multi Plot of the vDataFrame")
+    ax.set_xticklabels(order_by_values, rotation=90)
+    ax.set_xlabel(order_by)
+    ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
+    return ax
 
 
 # ---#
@@ -1463,6 +1482,7 @@ def pie(
     max_cardinality: int = 6,
     h: float = 0,
     donut: bool = False,
+    ax=None,
 ):
     colors = gen_colors() * 100
     x, y, z, h, is_categorical = compute_plot_variables(
@@ -1501,15 +1521,18 @@ def pie(
         else:
             category = None
         autopct = make_autopct(y, category)
-    plt.figure(figsize=(12, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.set_facecolor("#F5F5F5")
     if donut:
         explode = None
         centre_circle = plt.Circle(
             (0, 0), 0.72, color="#666666", fc="white", linewidth=1.25
         )
-        fig = plt.gcf()
-        fig.gca().add_artist(centre_circle)
-    plt.pie(
+        ax.add_artist(centre_circle)
+    ax.pie(
         y,
         labels=z,
         autopct=autopct,
@@ -1518,15 +1541,14 @@ def pie(
         startangle=290,
         explode=explode,
     )
-    plt.subplots_adjust(bottom=0.2)
     if method == "density":
-        plt.title("Distribution of {}".format(vdf.alias))
+        ax.set_title("Distribution of {}".format(vdf.alias))
     elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
         aggregate = "{}({})".format(method, of)
-        plt.title("{} group by {}".format(aggregate, vdf.alias))
+        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
     else:
-        plt.title("Count by {}".format(vdf.alias))
-    return plt.gcf()
+        ax.set_title("Count by {}".format(vdf.alias))
+    return ax
 
 
 # ---#
@@ -1540,6 +1562,7 @@ def pivot_table(
     show: bool = True,
     cmap: str = "Reds",
     with_numbers: bool = True,
+    ax=None,
 ):
     if method == "median":
         method = "50%"
@@ -1776,6 +1799,7 @@ def pivot_table(
             x_label=columns[1],
             y_label=columns[0],
             with_numbers=with_numbers,
+            ax=ax,
         )
     values = {all_columns[0][0]: all_columns[0][1 : len(all_columns[0])]}
     del all_columns[0]
@@ -1855,6 +1879,7 @@ def scatter2D(
     max_nb_points: int = 100000,
     bbox: list = [],
     img: str = "",
+    ax=None,
 ):
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
@@ -1889,24 +1914,28 @@ def scatter2D(
             [item[0] for item in query_result],
             [item[1] for item in query_result],
         )
-        plt.figure(figsize=(14, 10)) if isnotebook() else plt.figure(figsize=(10, 6))
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+            ax.set_facecolor("#F5F5F5")
         if bbox:
-            plt.xlim(bbox[0], bbox[1])
-            plt.ylim(bbox[2], bbox[3])
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = plt.imread(img)
+            im = ax.imread(img)
             if not (bbox):
                 bbox = (min(column1), max(column1), min(column2), max(column2))
-                plt.xlim(bbox[0], bbox[1])
-                plt.ylim(bbox[2], bbox[3])
-            plt.imshow(im, extent=bbox)
-        plt.gca().grid()
-        plt.gca().set_axisbelow(True)
-        plt.title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
-        plt.ylabel(columns[1])
-        plt.xlabel(columns[0])
-        plt.scatter(column1, column2, color=colors[0], s=14)
-        return plt.gcf()
+                ax.set_xlim(bbox[0], bbox[1])
+                ax.set_ylim(bbox[2], bbox[3])
+            ax.imshow(im, extent=bbox)
+            ax.grid()
+            ax.set_axisbelow(True)
+        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
+        ax.set_ylabel(columns[1])
+        ax.set_xlabel(columns[0])
+        ax.scatter(column1, column2, color=colors[0], s=14)
+        return ax
     else:
         column_groupby = columns[2]
         count = vdf.shape()[0]
@@ -1925,16 +1954,18 @@ def scatter2D(
             ).fetchall()
             query_result = [item for sublist in query_result for item in sublist]
         all_columns, all_scatter, all_categories = [query_result], [], query_result
-        fig = (
-            plt.figure(figsize=(14, 10))
-            if isnotebook()
-            else plt.figure(figsize=(10, 6))
-        )
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+            ax.set_facecolor("#F5F5F5")
+            ax.grid()
+            ax.set_axisbelow(True)
         if bbox:
-            plt.xlim(bbox[0], bbox[1])
-            plt.ylim(bbox[2], bbox[3])
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = plt.imread(img)
+            im = ax.imread(img)
             if not (bbox):
                 aggr = vdf.agg(columns=[columns[0], columns[1]], func=["min", "max"])
                 bbox = (
@@ -1943,10 +1974,9 @@ def scatter2D(
                     aggr.values["min"][1],
                     aggr.values["max"][1],
                 )
-                plt.xlim(bbox[0], bbox[1])
-                plt.ylim(bbox[2], bbox[3])
-            plt.imshow(im, extent=bbox)
-        ax = plt
+                ax.set_xlim(bbox[0], bbox[1])
+                ax.set_ylim(bbox[2], bbox[3])
+            ax.imshow(im, extent=bbox)
         others = []
         groupby_cardinality = vdf[column_groupby].nunique(True)
         count = vdf.shape()[0]
@@ -2027,11 +2057,9 @@ def scatter2D(
         for idx, item in enumerate(all_categories):
             if len(str(item)) > 20:
                 all_categories[idx] = str(item)[0:20] + "..."
-        plt.gca().grid()
-        plt.gca().set_axisbelow(True)
-        plt.title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
-        ax.xlabel(columns[0])
-        ax.ylabel(columns[1])
+        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
+        ax.set_xlabel(columns[0])
+        ax.set_ylabel(columns[1])
         ax.legend(
             all_scatter,
             all_categories,
@@ -2039,7 +2067,7 @@ def scatter2D(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
-        return plt.gcf()
+        return ax
 
 
 # ---#
@@ -2050,6 +2078,7 @@ def scatter3D(
     cat_priority: list = [],
     with_others: bool = True,
     max_nb_points: int = 1000,
+    ax=None,
 ):
     columns = [str_column(column) for column in columns]
     colors = gen_colors()
@@ -2090,13 +2119,11 @@ def scatter3D(
                 [float(item[1]) for item in query_result],
                 [float(item[2]) for item in query_result],
             )
-            fig = (
-                plt.figure(figsize=(14, 12))
-                if isnotebook()
-                else plt.figure(figsize=(10, 6))
-            )
-            ax = fig.add_subplot(111, projection="3d")
-            plt.title(
+            if not (ax):
+                if isnotebook():
+                    plt.figure(figsize=(8, 6))
+                ax = plt.axes(projection="3d")
+            ax.set_title(
                 "Scatter Plot of {} vs {} vs {}".format(
                     columns[0], columns[1], columns[2]
                 )
@@ -2108,7 +2135,7 @@ def scatter3D(
             ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            return plt.gcf()
+            return ax
         else:
             column_groupby = columns[3]
             count = vdf.shape()[0]
@@ -2130,12 +2157,10 @@ def scatter3D(
                 ).fetchall()
                 query_result = [item for sublist in query_result for item in sublist]
             all_columns, all_scatter, all_categories = [query_result], [], query_result
-            fig = (
-                plt.figure(figsize=(14, 12))
-                if isnotebook()
-                else plt.figure(figsize=(10, 6))
-            )
-            ax = fig.add_subplot(111, projection="3d")
+            if not (ax):
+                if isnotebook():
+                    plt.figure(figsize=(8, 6))
+                ax = plt.axes(projection="3d")
             others = []
             groupby_cardinality = vdf[column_groupby].nunique(True)
             tablesample = 10 if (count > 10000) else 90
@@ -2220,7 +2245,7 @@ def scatter3D(
             for idx, item in enumerate(all_categories):
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
-            plt.title(
+            ax.set_title(
                 "Scatter Plot of {} vs {} vs {}".format(
                     columns[0], columns[1], columns[2]
                 )
@@ -2239,7 +2264,7 @@ def scatter3D(
                 loc="center left",
                 bbox_to_anchor=[1, 0.5],
             )
-            return plt.gcf()
+            return ax
 
 
 # ---#
@@ -2251,6 +2276,7 @@ def ts_plot(
     order_by_end: str = "",
     color: str = "#FE5016",
     area: bool = False,
+    ax=None,
 ):
     if not (by):
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
@@ -2277,21 +2303,25 @@ def ts_plot(
         except:
             pass
         column_values = [float(item[1]) for item in query_result]
-        plt.figure(figsize=(12, 9)) if isnotebook() else plt.figure(figsize=(10, 6))
-        plt.rcParams["axes.facecolor"] = "#FCFCFC"
-        plt.plot(order_by_values, column_values, color=color)
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+            ax.set_facecolor("#F5F5F5")
+            ax.grid()
+        ax.plot(
+            order_by_values, column_values, color=color, linewidth=2,
+        )
         if area:
             area_label = "Area "
-            plt.fill_between(order_by_values, column_values, facecolor=color)
+            ax.fill_between(order_by_values, column_values, facecolor=color)
         else:
             area_label = ""
-        plt.title("{}Plot of {} vs {}".format(area_label, vdf.alias, order_by))
-        plt.xticks(rotation=90)
-        plt.subplots_adjust(bottom=0.24)
-        plt.xlabel(order_by)
-        plt.ylabel(vdf.alias)
-        plt.gca().grid()
-        return plt.gcf()
+        ax.set_title("{}Plot of {} vs {}".format(area_label, vdf.alias, order_by))
+        ax.set_xticklabels(order_by_values, rotation=90)
+        ax.set_xlabel(order_by)
+        ax.set_ylabel(vdf.alias)
+        return ax
     else:
         colors = gen_colors()
         by = str_column(by)
@@ -2330,15 +2360,16 @@ def ts_plot(
                     all_data[-1][0] = [parse(elem) for elem in all_data[-1][0]]
             except:
                 pass
-        plt.figure(figsize=(12, 9)) if isnotebook() else plt.figure(figsize=(10, 6))
-        plt.rcParams["axes.facecolor"] = "#FCFCFC"
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+            ax.set_facecolor("#F5F5F5")
+            ax.grid()
         for idx, elem in enumerate(all_data):
-            plt.plot(elem[0], elem[1], color=colors[idx % len(colors)], label=elem[2])
-        plt.title("Plot of {} vs {}".format(vdf.alias, order_by))
-        plt.xticks(rotation=90)
-        plt.subplots_adjust(bottom=0.24)
-        plt.xlabel(order_by)
-        plt.ylabel(vdf.alias)
-        plt.gca().grid()
-        plt.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
-        return plt.gcf()
+            ax.plot(elem[0], elem[1], color=colors[idx % len(colors)], label=elem[2])
+        ax.set_title("Plot of {} vs {}".format(vdf.alias, order_by))
+        ax.set_xlabel(order_by)
+        ax.set_ylabel(vdf.alias)
+        ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+        return ax

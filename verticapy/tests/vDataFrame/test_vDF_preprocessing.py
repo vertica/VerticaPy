@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFPreprocessing():
 
+class TestvDFPreprocessing:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_decode(self):
         pass

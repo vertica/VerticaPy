@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, collections
+import random, os, math, shutil, re, collections, sys
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -183,7 +183,7 @@ def check_types(types_list: list = [], vdf: list = []):
                 if (
                     (list in elem[2])
                     and isinstance(elem[1], collections.Iterable)
-                    and not (isinstance(elem[1], (dict)))
+                    and not (isinstance(elem[1], (dict, str)))
                 ):
                     pass
                 elif len(elem[2]) == 1:
@@ -454,6 +454,49 @@ def indentSQL(query: str):
         del return_l[0]
     query_print += query[i:n]
     return query_print
+
+
+# ---#
+def insert_verticapy_schema(
+    model_name: str,
+    model_type: str,
+    model_save: str,
+    cursor,
+    category: str = "VERTICAPY_MODELS",
+):
+    sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
+    cursor.execute(sql)
+    result = cursor.fetchone()
+    if not (result):
+        print(
+            "\u26A0 Warning: The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and drop_verticapy_schema to drop it if it is corrupted."
+        )
+    else:
+        size = sys.getsizeof(model_save)
+        create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        try:
+            model_name = str_column(model_name)
+            sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                model_name.lower()
+            )
+            cursor.execute(sql)
+            result = cursor.fetchone()
+            if result:
+                raise NameError("The model named {} already exists.".format(model_name))
+            else:
+                sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size, value) VALUES ('{}', '{}', '{}', '{}', {}, '{}');".format(
+                    model_name,
+                    category,
+                    model_type,
+                    create_time,
+                    size,
+                    model_save.replace("'", "''"),
+                )
+                cursor.execute(sql)
+                cursor.execute("COMMIT;")
+        except Exception as e:
+            print("\u26A0 Warning: The VerticaPy model could not be stored.")
+            print(e)
 
 
 # ---#

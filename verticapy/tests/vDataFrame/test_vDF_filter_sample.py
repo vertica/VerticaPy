@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFFilterSample():
 
+class TestvDFFilterSample:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_search(self):
         pass

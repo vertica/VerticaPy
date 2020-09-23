@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFUtilities():
 
+class TestvDFUtilities:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_to_csv(self):
         pass

@@ -14,35 +14,53 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFCombineJoinSort():
 
+class TestvDFCombineJoinSort:
     def test_vDF_append(self, base):
         from verticapy.learn.datasets import load_iris
-        iris = load_iris(cursor = base.cursor)
+
+        iris = load_iris(cursor=base.cursor)
 
         result_vDF = iris.append(iris)
-        assert result_vDF.shape() == (300, 5), "testing vDataFrame.append(vDataFrame) failed"
+        assert result_vDF.shape() == (
+            300,
+            5,
+        ), "testing vDataFrame.append(vDataFrame) failed"
 
         result_vDF = iris.append("public.iris")
         assert result_vDF.shape() == (300, 5), "testing vDataFrame.append(str) failed"
 
-        result_vDF = iris.append(iris,
-                                 expr1 = ["SepalLengthCm AS sl", "PetalLengthCm AS pl"],
-                                 expr2 = ["SepalLengthCm AS sl", "PetalLengthCm AS pl"])
-        assert result_vDF.shape() == (300, 2), "testing vDataFrame.append(vDataFrame, expr1, expr2) failed"
+        result_vDF = iris.append(
+            iris,
+            expr1=["SepalLengthCm AS sl", "PetalLengthCm AS pl"],
+            expr2=["SepalLengthCm AS sl", "PetalLengthCm AS pl"],
+        )
+        assert result_vDF.shape() == (
+            300,
+            2,
+        ), "testing vDataFrame.append(vDataFrame, expr1, expr2) failed"
 
         result_vDF = iris.append(iris, union_all=False)
-        assert result_vDF.shape() == (300, 5), "testing vDataFrame.append(vDataFrame, union_all) failed"
+        assert result_vDF.shape() == (
+            300,
+            5,
+        ), "testing vDataFrame.append(vDataFrame, union_all) failed"
 
         # TODO: add at least one test where the union_all parameter makes a difference
 
     def testvDF_groupby(self, base):
         from verticapy.learn.datasets import load_market
-        market = load_market(cursor = base.cursor)
 
-        result_vDF = market.groupby(columns = ["Form", "Name"], expr = ["AVG(Price) AS avg_price",
-                                                                        "STDDEV(Price) AS std"])
-        assert result_vDF.shape() == (159, 4), "testing vDataFrame.groupby(columns, expr) failed"
+        market = load_market(cursor=base.cursor)
+
+        result_vDF = market.groupby(
+            columns=["Form", "Name"],
+            expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
+        )
+        assert result_vDF.shape() == (
+            159,
+            4,
+        ), "testing vDataFrame.groupby(columns, expr) failed"
 
         # TODO: add tests for other combination of parameters
 

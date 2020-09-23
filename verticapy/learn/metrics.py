@@ -53,7 +53,7 @@ import math, collections
 
 # VerticaPy Modules
 from verticapy import *
-from verticapy.learn.plot import *
+from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect

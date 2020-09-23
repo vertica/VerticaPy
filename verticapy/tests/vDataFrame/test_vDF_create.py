@@ -14,8 +14,8 @@
 import pytest
 from verticapy import vDataFrame
 
-class TestvDFCreate():
 
+class TestvDFCreate:
     @pytest.mark.skip(reason="test not implemented")
     def test_creating_vDF_using_input_relation(self):
         pass

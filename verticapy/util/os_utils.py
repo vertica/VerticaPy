@@ -25,21 +25,23 @@ def ensure_dir_exists(filepath):
     if another process is doing the same.
     """
     directory = os.path.dirname(filepath)
-    if directory != '' and not os.path.exists(directory):
+    if directory != "" and not os.path.exists(directory):
         try:
             os.makedirs(directory)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
 
+
 def check_file_readable(filename):
     """Ensure this is a readable file"""
     if not os.path.exists(filename):
-        raise OSError('{} does not exist'.format(filename))
+        raise OSError("{} does not exist".format(filename))
     elif not os.path.isfile(filename):
-        raise OSError('{} is not a file'.format(filename))
+        raise OSError("{} is not a file".format(filename))
     elif not os.access(filename, os.R_OK):
-        raise OSError('{} is not readable'.format(filename))
+        raise OSError("{} is not readable".format(filename))
+
 
 def check_file_writable(filename):
     """Ensure this is a writable file. If the file doesn't exist,
@@ -47,15 +49,15 @@ def check_file_writable(filename):
     """
     if os.path.exists(filename):
         if not os.path.isfile(filename):
-            raise OSError('{} is not a file'.format(filename))
+            raise OSError("{} is not a file".format(filename))
         if not os.access(filename, os.W_OK):
-            raise OSError('{} is not writable'.format(filename))
+            raise OSError("{} is not writable".format(filename))
     # If target does not exist, check permission on parent dir
     ensure_dir_exists(filename)
     pdir = os.path.dirname(filename)
     if not pdir:
-        pdir = '.'
+        pdir = "."
     if not os.path.isdir(pdir):
-        raise OSError('{} is not a directory'.format(pdir))
+        raise OSError("{} is not a directory".format(pdir))
     if not os.access(pdir, os.W_OK):
-        raise OSError('Directory {} is not writable'.format(pdir))
+        raise OSError("Directory {} is not writable".format(pdir))
