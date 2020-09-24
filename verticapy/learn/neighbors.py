@@ -54,7 +54,8 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.learn.plot import lof_plot
+from verticapy.learn.plot import *
+from verticapy.learn.model_selection import *
 from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
@@ -146,7 +147,7 @@ class NeighborsClassifier(vModel):
             )
 
     # ---#
-    def lift_chart(self, pos_label=None):
+    def lift_chart(self, pos_label=None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -156,6 +157,8 @@ class NeighborsClassifier(vModel):
     pos_label: int/float/str
         To draw a lift chart, one of the response column class has to be the 
         positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
@@ -176,11 +179,11 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return lift_chart(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
         )
 
     # ---#
-    def prc_curve(self, pos_label=None):
+    def prc_curve(self, pos_label=None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -190,6 +193,8 @@ class NeighborsClassifier(vModel):
     pos_label: int/float/str
         To draw the PRC curve, one of the response column class has to be the 
         positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
@@ -210,7 +215,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return prc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
         )
 
     # ---#
@@ -320,7 +325,7 @@ class NeighborsClassifier(vModel):
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
     # ---#
-    def roc_curve(self, pos_label=None):
+    def roc_curve(self, pos_label=None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -330,6 +335,8 @@ class NeighborsClassifier(vModel):
     pos_label: int/float/str
         To draw the ROC curve, one of the response column class has to be the 
         positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
@@ -350,7 +357,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
         )
 
     # ---#
@@ -607,7 +614,6 @@ p: int, optional
             self.y,
         )
         self.centroids_ = to_tablesample(query=query, cursor=self.cursor)
-        self.centroids_.table_info = False
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -619,11 +625,12 @@ p: int, optional
             "centroids": self.centroids_.values,
             "classes": self.classes_,
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="NearestCentroid",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
 
@@ -803,11 +810,12 @@ p: int, optional
             "n_neighbors": self.parameters["n_neighbors"],
             "classes": self.classes_,
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="KNeighborsClassifier",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
 
@@ -956,11 +964,12 @@ p: int, optional
             "p": self.parameters["p"],
             "n_neighbors": self.parameters["n_neighbors"],
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="KNeighborsRegressor",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#
@@ -1207,11 +1216,12 @@ p: int, optional
             "n_neighbors": self.parameters["n_neighbors"],
             "n_errors": self.n_errors_,
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="LocalOutlierFactor",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#

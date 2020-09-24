@@ -85,59 +85,59 @@ preparation and exploration without modifying the data.
 Parameters
 ----------
 input_relation: str
-	Relation (View, Table or Temporary Table) to use to create the object.
-	To get a specific schema relation, your string must include both
-	relation and schema: 'schema.relation' or '"schema"."relation"'.
-	You can also use the 'schema' parameter to be less ambiguous.
-	In this case input_relation must only be the relation name (it must 
-	not include a schema).
+    Relation (View, Table or Temporary Table) to use to create the object.
+    To get a specific schema relation, your string must include both
+    relation and schema: 'schema.relation' or '"schema"."relation"'.
+    You can also use the 'schema' parameter to be less ambiguous.
+    In this case input_relation must only be the relation name (it must 
+    not include a schema).
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-	For a cursor designed by Vertica, search for vertica_python
-	For ODBC, search for pyodbc.
-	For JDBC, search for jaydebeapi.
-	Check out utilities.vHelp function, it may help you.
+    Vertica DB cursor. 
+    For a cursor designed by Vertica, search for vertica_python
+    For ODBC, search for pyodbc.
+    For JDBC, search for jaydebeapi.
+    Check out utilities.vHelp function, it may help you.
 dsn: str, optional
-	Data Base DSN. OS File including the DB credentials.
-	VERTICAPY will try to create a vertica_python cursor first.
-	If it didn't find the library, it will try to create a pyodbc cursor.
-	Check out utilities.vHelp function, it may help you.
+    Data Base DSN. OS File including the DB credentials.
+    VERTICAPY will try to create a vertica_python cursor first.
+    If it didn't find the library, it will try to create a pyodbc cursor.
+    Check out utilities.vHelp function, it may help you.
 usecols: list, optional
-	List of columns to use to create the object. As Vertica is a columnar DB
-	including less columns makes the process faster. Do not hesitate to not include 
-	useless columns.
+    List of columns to use to create the object. As Vertica is a columnar DB
+    including less columns makes the process faster. Do not hesitate to not include 
+    useless columns.
 schema: str, optional
-	Relation schema. It can be to use to be less ambiguous and allow to create schema 
-	and relation name with dots '.' inside.
+    Relation schema. It can be to use to be less ambiguous and allow to create schema 
+    and relation name with dots '.' inside.
 empty: bool, optional
-	If set to True, the created object will be empty. It can be to use to create customized 
-	vDataFrame without going through the initialization check.
+    If set to True, the created object will be empty. It can be to use to create customized 
+    vDataFrame without going through the initialization check.
 
 Attributes
 ----------
 _VERTICAPY_VARIABLES_: dict
-	Dictionary containing all the vDataFrame attributes.
-		allcols_ind, int      : Int to use to optimize the SQL code generation.
-		columns, list         : List of the vcolumns names.
-		count, int            : Number of elements of the vDataFrame (catalog).
-		cursor, DBcursor      : Vertica Database cursor.
+    Dictionary containing all the vDataFrame attributes.
+        allcols_ind, int      : Int to use to optimize the SQL code generation.
+        columns, list         : List of the vcolumns names.
+        count, int            : Number of elements of the vDataFrame (catalog).
+        cursor, DBcursor      : Vertica Database cursor.
         display, dict         : Dictionary to use to format the vDataFrame.
-		dsn, str              : Vertica Database DSN.
-		exclude_columns, list : vcolumns to exclude from the final relation.
-		history, list         : vDataFrame history (user modifications).
-		input_relation, str   : Name of the vDataFrame.
-		main_relation, str    : Relation to use to build the vDataFrame (first floor).
-		order_by, dict        : Dictionary of all the rules to sort the vDataFrame.
-		query_on, bool        : If set to True, all the query will be printed.
-		saving, list          : List to use to reconstruct the vDataFrame.
-		schema, str           : Schema of the input relation.
-		schema_writing, str   : Schema to use to create temporary tables when needed.
-		time_on, bool         : If set to True, all the query elapsed time will be printed.
-		where, list           : List of all the rules to filter the vDataFrame.
+        dsn, str              : Vertica Database DSN.
+        exclude_columns, list : vcolumns to exclude from the final relation.
+        history, list         : vDataFrame history (user modifications).
+        input_relation, str   : Name of the vDataFrame.
+        main_relation, str    : Relation to use to build the vDataFrame (first floor).
+        order_by, dict        : Dictionary of all the rules to sort the vDataFrame.
+        query_on, bool        : If set to True, all the query will be printed.
+        saving, list          : List to use to reconstruct the vDataFrame.
+        schema, str           : Schema of the input relation.
+        schema_writing, str   : Schema to use to create temporary tables when needed.
+        time_on, bool         : If set to True, all the query elapsed time will be printed.
+        where, list           : List of all the rules to filter the vDataFrame.
 vcolumns : vcolumn
-	Each vcolumn of the vDataFrame is accessible by entering its name between brackets
-	For example to access to "myVC", you can write vDataFrame["myVC"].
-	"""
+    Each vcolumn of the vDataFrame is accessible by entering its name between brackets
+    For example to access to "myVC", you can write vDataFrame["myVC"].
+    """
 
     #
     # Special Methods
@@ -217,7 +217,7 @@ vcolumns : vcolumn
             if not (usecols):
                 self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
             if columns != []:
-                self._VERTICAPY_VARIABLES_["columns"] = columns
+                self._VERTICAPY_VARIABLES_["columns"] = [elem for elem in columns]
             else:
                 raise MissingRelation(
                     "No table or views '{}' found.".format(
@@ -259,6 +259,26 @@ vcolumns : vcolumn
             self._VERTICAPY_VARIABLES_["schema_writing"] = ""
 
     # ---#
+    def __abs__(self):
+        return self.abs()
+
+    # ---#
+    def __ceil__(self, n):
+        columns = self.numcol()
+        for elem in columns:
+            if self[elem].category() == "float":
+                self[elem].apply_fun(func="ceil", x=n)
+        return self
+
+    # ---#
+    def __floor__(self, n):
+        columns = self.numcol()
+        for elem in columns:
+            if self[elem].category() == "float":
+                self[elem].apply_fun(func="floor", x=n)
+        return self
+
+    # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
             if index.step not in (1, None):
@@ -288,7 +308,10 @@ vcolumns : vcolumn
             return self._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()
         elif isinstance(index, str):
             new_index = vdf_columns_names([index], self)
-            return getattr(self, new_index[0])
+            try:
+                return getattr(self, new_index[0])
+            except:
+                return getattr(self, index)
         elif isinstance(index, collections.Iterable):
             return self.select(columns=index)
         else:
@@ -304,6 +327,10 @@ vcolumns : vcolumn
         return int(self.shape()[0])
 
     # ---#
+    def __nonzero__(self):
+        return self.shape()[0] > 0 and not (self.empty())
+
+    # ---#
     def __repr__(self):
         return self.head(limit=self._VERTICAPY_VARIABLES_["display"]["rows"]).__repr__()
 
@@ -314,9 +341,20 @@ vcolumns : vcolumn
         )._repr_html_()
 
     # ---#
+    def __round__(self, n):
+        columns = self.numcol()
+        for elem in columns:
+            if self[elem].category() == "float":
+                self[elem].apply_fun(func="round", x=n)
+        return self
+
+    # ---#
     def __setattr__(self, attr, val):
         if isinstance(val, str):
-            self.eval(name=attr, expr=val)
+            if column_check_ambiguous(attr, self.get_columns()):
+                self[attr].apply(func=val)
+            else:
+                self.eval(name=attr, expr=val)
         else:
             self.__dict__[attr] = val
 
@@ -327,11 +365,11 @@ vcolumns : vcolumn
     # ---#
     def __add_to_history__(self, message: str):
         """
-	---------------------------------------------------------------------------
-	VERTICAPY stores the user modification and help the user to look at 
-	what he/she did. This method is to use to add a customized message in the 
-	vDataFrame history attribute.
-		"""
+    ---------------------------------------------------------------------------
+    VERTICAPY stores the user modification and help the user to look at 
+    what he/she did. This method is to use to add a customized message in the 
+    vDataFrame history attribute.
+        """
         check_types([("message", message, [str],)])
         self._VERTICAPY_VARIABLES_["history"] += [
             "{}{}{} {}".format("{", time.strftime("%c"), "}", message)
@@ -346,17 +384,18 @@ vcolumns : vcolumn
         cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Global method to use to compute the Correlation/Cov/Regr Matrix.
+    ---------------------------------------------------------------------------
+    Global method to use to compute the Correlation/Cov/Regr Matrix.
 
-	See Also
-	--------
-	vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-	vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
-	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+    vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
+    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
+        """
         columns = vdf_columns_names(columns, self)
         if method != "cramer":
             for column in columns:
@@ -608,7 +647,9 @@ vcolumns : vcolumn
                             self.__genSQL__(),
                         )
                     )
-                    version(cursor=cursor, condition=[9, 2, 1])
+                    version(
+                        cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 2, 1]
+                    )
                     self.__executeSQL__(
                         query="SELECT CORR_MATRIX({}) OVER () FROM {}".format(
                             ", ".join(columns), table
@@ -810,6 +851,7 @@ vcolumns : vcolumn
                     cmap=cmap,
                     title=title,
                     mround=round_nb,
+                    ax=ax,
                 )
             values = {"index": matrix[0][1 : len(matrix[0])]}
             del matrix[0]
@@ -846,17 +888,18 @@ vcolumns : vcolumn
         cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Global method to use to compute the Correlation/Cov/Beta Vector.
+    ---------------------------------------------------------------------------
+    Global method to use to compute the Correlation/Cov/Beta Vector.
 
-	See Also
-	--------
-	vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-	vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
-	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+    vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
+    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
+        """
         if not (columns):
             if method == "cramer":
                 cols = self.catcol()
@@ -1039,6 +1082,7 @@ vcolumns : vcolumn
                 title=title,
                 mround=round_nb,
                 is_vector=True,
+                ax=ax,
             )
         for idx, column in enumerate(cols):
             self.__update_catalog__(
@@ -1052,26 +1096,26 @@ vcolumns : vcolumn
     # ---#
     def __executeSQL__(self, query: str, title: str = ""):
         """
-	---------------------------------------------------------------------------
-	Executes the input SQL Query.
+    ---------------------------------------------------------------------------
+    Executes the input SQL Query.
 
-	Parameters
- 	----------
- 	query: str
- 		Input query.
- 	title: str, optional
- 		Query title. It is the tip to use to indicate the query meaning when
- 		turning on the SQL using to the 'sql_on_off' method. 
+    Parameters
+    ----------
+    query: str
+        Input query.
+    title: str, optional
+        Query title. It is the tip to use to indicate the query meaning when
+        turning on the SQL using to the 'sql_on_off' method. 
 
- 	Returns
- 	-------
- 	DBcursor
- 		The DB cursor.
+    Returns
+    -------
+    DBcursor
+        The DB cursor.
 
- 	See Also
- 	--------
- 	vDataFrame.sql_on_off : Displays each query generated by the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.sql_on_off : Displays each query generated by the vDataFrame.
+        """
         check_types([("query", query, [str],), ("title", title, [str],)])
         if self._VERTICAPY_VARIABLES_["query_on"]:
             print_query(query, title)
@@ -1087,32 +1131,32 @@ vcolumns : vcolumn
         self, split: bool = False, transformations: dict = {}, force_columns: list = []
     ):
         """
-	---------------------------------------------------------------------------
-	Method to use to generate the SQL final relation. It will look at all the 
-	transformations to build a nested query where each transformation will 
-	be associated to a specific floor.
+    ---------------------------------------------------------------------------
+    Method to use to generate the SQL final relation. It will look at all the 
+    transformations to build a nested query where each transformation will 
+    be associated to a specific floor.
 
-	Parameters
- 	----------
- 	split: bool, optional
- 		Adds a split column __verticapy_split__ in the relation 
- 		which can be to use to downsample the data.
- 	transformations: dict, optional
- 		Dictionary of columns and their respective transformation. It 
- 		will be to use to test if an expression is correct and can be 
- 		added it in the final relation.
- 	force_columns: list, optional
- 		Columns to use to generate the final relation.
+    Parameters
+    ----------
+    split: bool, optional
+        Adds a split column __verticapy_split__ in the relation 
+        which can be to use to downsample the data.
+    transformations: dict, optional
+        Dictionary of columns and their respective transformation. It 
+        will be to use to test if an expression is correct and can be 
+        added it in the final relation.
+    force_columns: list, optional
+        Columns to use to generate the final relation.
 
-	Returns
-	-------
-	str
-		The SQL final relation.
-		"""
+    Returns
+    -------
+    str
+        The SQL final relation.
+        """
         # The First step is to find the Max Floor
         all_imputations_grammar = []
         if not (force_columns):
-            force_columns = self._VERTICAPY_VARIABLES_["columns"]
+            force_columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in force_columns:
             all_imputations_grammar += [
                 [item[0] for item in self[column].transformations]
@@ -1219,11 +1263,11 @@ vcolumns : vcolumn
         self, column: str = "", key: str = "", method: str = "", columns: list = []
     ):
         """
-	---------------------------------------------------------------------------
-	VERTICAPY stores the already computed aggregations to avoid useless 
-	computations. This method returns the stored aggregation if it was already 
-	computed.
-		"""
+    ---------------------------------------------------------------------------
+    VERTICAPY stores the already computed aggregations to avoid useless 
+    computations. This method returns the stored aggregation if it was already 
+    computed.
+        """
         if column == "VERTICAPY_COUNT":
             if self._VERTICAPY_VARIABLES_["count"] < 0:
                 return "VERTICAPY_NOT_PRECOMPUTED"
@@ -1265,10 +1309,10 @@ vcolumns : vcolumn
         column: str = "",
     ):
         """
-	---------------------------------------------------------------------------
-	VERTICAPY stores the already computed aggregations to avoid useless 
-	computations. This method stores the input aggregation in the vcolumn catalog.
-		"""
+    ---------------------------------------------------------------------------
+    VERTICAPY stores the already computed aggregations to avoid useless 
+    computations. This method stores the input aggregation in the vcolumn catalog.
+        """
         columns = vdf_columns_names(columns, self)
         if erase:
             if not (columns):
@@ -1345,9 +1389,9 @@ vcolumns : vcolumn
     # ---#
     def __vdf_from_relation__(self, table: str, func: str, history: str):
         """
-	---------------------------------------------------------------------------
-	This method is to use to build a vDataFrame based on a relation
-		"""
+    ---------------------------------------------------------------------------
+    This method is to use to build a vDataFrame based on a relation
+        """
         check_types(
             [
                 ("table", table, [str],),
@@ -1406,25 +1450,25 @@ vcolumns : vcolumn
     # ---#
     def abs(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Applies the absolute value function to all the input vcolumns. 
+    ---------------------------------------------------------------------------
+    Applies the absolute value function to all the input vcolumns. 
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will 
- 		be used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will 
+        be used.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.apply    : Applies functions to the input vcolumns.
-	vDataFrame.applymap : Applies a function to all the vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.apply    : Applies functions to the input vcolumns.
+    vDataFrame.applymap : Applies a function to all the vcolumns.
+        """
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = self.numcol() if not (columns) else vdf_columns_names(columns, self)
@@ -1437,57 +1481,57 @@ vcolumns : vcolumn
     # ---#
     def aggregate(self, func: list, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using the input functions.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using the input functions.
 
-	Parameters
- 	----------
- 	func: list
- 		List of the different aggregations.
+    Parameters
+    ----------
+    func: list
+        List of the different aggregations.
             aad            : average absolute deviation
- 			approx_unique  : approximative cardinality
- 			count          : number of non-missing elements
-			cvar           : conditional value at risk
-			dtype          : virtual column type
-			iqr            : interquartile range
-			kurtosis       : kurtosis
-			jb             : Jarque Bera index 
-			mad            : median absolute deviation
-			max            : maximum
-			mean           : average
-			median         : median
-			min            : minimum
-			mode           : most occurent element
-			percent        : percent of non-missing elements
-			q%             : q quantile (ex: 50% for the median)
-			prod           : product
-			range          : difference between the max and the min
-			sem            : standard error of the mean
-			skewness       : skewness
-			sum            : sum
-			std            : standard deviation
-			topk           : kth most occurent element (ex: top1 for the mode)
-			topk_percent   : kth most occurent element density
-			unique         : cardinality (count distinct)
-			var            : variance
-				Other aggregations could work if it is part of 
-				the DB version you are using.
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns 
- 		or only numerical vcolumns will be used depending on the
- 		aggregations.
+            approx_unique  : approximative cardinality
+            count          : number of non-missing elements
+            cvar           : conditional value at risk
+            dtype          : virtual column type
+            iqr            : interquartile range
+            kurtosis       : kurtosis
+            jb             : Jarque Bera index 
+            mad            : median absolute deviation
+            max            : maximum
+            mean           : average
+            median         : median
+            min            : minimum
+            mode           : most occurent element
+            percent        : percent of non-missing elements
+            q%             : q quantile (ex: 50% for the median)
+            prod           : product
+            range          : difference between the max and the min
+            sem            : standard error of the mean
+            skewness       : skewness
+            sum            : sum
+            std            : standard deviation
+            topk           : kth most occurent element (ex: top1 for the mode)
+            topk_percent   : kth most occurent element density
+            unique         : cardinality (count distinct)
+            var            : variance
+                Other aggregations could work if it is part of 
+                the DB version you are using.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns 
+        or only numerical vcolumns will be used depending on the
+        aggregations.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
- 	See Also
- 	--------
- 	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
- 		analytical function on a specific vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
+        analytical function on a specific vcolumn.
+        """
         check_types([("func", func, [list],), ("columns", columns, [list],)])
         columns_check(columns, self)
         if not (columns):
@@ -1816,24 +1860,24 @@ vcolumns : vcolumn
     # ---#
     def all(self, columns: list):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'bool_and'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'bool_and'.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["bool_and"], columns=columns)
 
     # ---#
@@ -1850,9 +1894,9 @@ vcolumns : vcolumn
         add_count: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by using an advanced analytical function 
-	on one or two specific vcolumns.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by using an advanced analytical function 
+    on one or two specific vcolumns.
 
     \u26A0 Warning : Some analytical functions can make the vDataFrame structure 
                      heavier. It is recommended to always check the current structure 
@@ -1860,76 +1904,76 @@ vcolumns : vcolumn
                      'to_db' method with the parameters 'inplace = True' and 
                      'relation_type = table'
 
-	Parameters
- 	----------
- 	func: str
- 		Function to apply.
+    Parameters
+    ----------
+    func: str
+        Function to apply.
             aad          : average absolute deviation
- 			beta         : Beta Coefficient between 2 vcolumns
- 			count        : number of non-missing elements
- 			corr         : Pearson correlation between 2 vcolumns
- 			cov          : covariance between 2 vcolumns
-			dense_rank   : dense rank
-			ema          : exponential moving average
-			first_value  : first non null lead
-			iqr          : interquartile range
-			kurtosis     : kurtosis
-			jb           : Jarque Bera index 
-			lead         : next element
-			lag          : previous element
-			last_value   : first non null lag
-			mad          : median absolute deviation
-			max          : maximum
-			mean         : average
-			median       : median
-			min          : minimum
-			mode         : most occurent element
-			q%           : q quantile (ex: 50% for the median)
-			pct_change   : ratio between the current value and the previous one
-			percent_rank : percent rank
-			prod         : product
-			range        : difference between the max and the min
-			rank         : rank
-			row_number   : row number
-			sem          : standard error of the mean
-			skewness     : skewness
-			sum          : sum
-			std          : standard deviation
-			unique       : cardinality (count distinct)
-			var          : variance
-				Other analytical functions could work if it is part of 
-				the DB version you are using.
- 	column: str, optional
- 		Input vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	column2: str, optional
-		Second input vcolumn in case of functions using 2 parameters.
- 	name: str, optional
- 		Name of the new vcolumn. If empty a default name based on the other
- 		parameters will be generated.
- 	offset: int, optional
- 		Lead/Lag offset if parameter 'func' is the function 'lead'/'lag'.
- 	x_smoothing: float, optional
- 		The smoothing parameter of the 'ema' if the function is 'ema'. It must be in [0;1]
- 	add_count: bool, optional
- 		If the function is the 'mode' and this parameter is True then another column will 
- 		be added to the vDataFrame with the mode number of occurences.
+            beta         : Beta Coefficient between 2 vcolumns
+            count        : number of non-missing elements
+            corr         : Pearson correlation between 2 vcolumns
+            cov          : covariance between 2 vcolumns
+            dense_rank   : dense rank
+            ema          : exponential moving average
+            first_value  : first non null lead
+            iqr          : interquartile range
+            kurtosis     : kurtosis
+            jb           : Jarque Bera index 
+            lead         : next element
+            lag          : previous element
+            last_value   : first non null lag
+            mad          : median absolute deviation
+            max          : maximum
+            mean         : average
+            median       : median
+            min          : minimum
+            mode         : most occurent element
+            q%           : q quantile (ex: 50% for the median)
+            pct_change   : ratio between the current value and the previous one
+            percent_rank : percent rank
+            prod         : product
+            range        : difference between the max and the min
+            rank         : rank
+            row_number   : row number
+            sem          : standard error of the mean
+            skewness     : skewness
+            sum          : sum
+            std          : standard deviation
+            unique       : cardinality (count distinct)
+            var          : variance
+                Other analytical functions could work if it is part of 
+                the DB version you are using.
+    column: str, optional
+        Input vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    column2: str, optional
+        Second input vcolumn in case of functions using 2 parameters.
+    name: str, optional
+        Name of the new vcolumn. If empty a default name based on the other
+        parameters will be generated.
+    offset: int, optional
+        Lead/Lag offset if parameter 'func' is the function 'lead'/'lag'.
+    x_smoothing: float, optional
+        The smoothing parameter of the 'ema' if the function is 'ema'. It must be in [0;1]
+    add_count: bool, optional
+        If the function is the 'mode' and this parameter is True then another column will 
+        be added to the vDataFrame with the mode number of occurences.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.eval    : Evaluates a customized expression.
-	vDataFrame.rolling : Computes a customized moving window.
-		"""
+    See Also
+    --------
+    vDataFrame.eval    : Evaluates a customized expression.
+    vDataFrame.rolling : Computes a customized moving window.
+        """
         check_types(
             [
                 ("func", func, [str],),
@@ -2254,24 +2298,24 @@ vcolumns : vcolumn
     # ---#
     def any(self, columns: list):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'bool_or'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'bool_or'.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["bool_or"], columns=columns)
 
     # ---#
@@ -2279,39 +2323,39 @@ vcolumns : vcolumn
         self, input_relation, expr1: list = [], expr2: list = [], union_all: bool = True
     ):
         """
-	---------------------------------------------------------------------------
-	Merges the vDataFrame with another one or an input relation and returns 
-	a new vDataFrame.
+    ---------------------------------------------------------------------------
+    Merges the vDataFrame with another one or an input relation and returns 
+    a new vDataFrame.
 
-	Parameters
- 	----------
- 	input_relation: str / vDataFrame
- 		Relation to use to do the merging.
- 	expr1: list, optional
-		List of expressions from the current vDataFrame to use during the merging.
-		It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-		and 'POWER("column", 2)' will work. If empty all the vDataFrame vcolumns will
-		be used. It is highly recommended to write aliases to avoid auto-naming.
-	expr2: list, optional
-		List of expressions from the input relation to use during the merging.
-		It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-		and 'POWER("column", 2)' will work. If empty all the input relation columns will
-		be used. It is highly recommended to write aliases to avoid auto-naming.
-	union_all: bool, optional
-		If set to True, the vDataFrame will be merged with the input relation using an
-		'UNION ALL' instead of an 'UNION'.
+    Parameters
+    ----------
+    input_relation: str / vDataFrame
+        Relation to use to do the merging.
+    expr1: list, optional
+        List of expressions from the current vDataFrame to use during the merging.
+        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty all the vDataFrame vcolumns will
+        be used. It is highly recommended to write aliases to avoid auto-naming.
+    expr2: list, optional
+        List of expressions from the input relation to use during the merging.
+        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty all the input relation columns will
+        be used. It is highly recommended to write aliases to avoid auto-naming.
+    union_all: bool, optional
+        If set to True, the vDataFrame will be merged with the input relation using an
+        'UNION ALL' instead of an 'UNION'.
 
- 	Returns
- 	-------
- 	vDataFrame
-		vDataFrame of the Union
+    Returns
+    -------
+    vDataFrame
+       vDataFrame of the Union
 
-	See Also
-	--------
-	vDataFrame.groupby : Aggregates the vDataFrame.
-	vDataFrame.join    : Joins the vDataFrame with another relation.
-	vDataFrame.sort    : Sorts the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.groupby : Aggregates the vDataFrame.
+    vDataFrame.join    : Joins the vDataFrame with another relation.
+    vDataFrame.sort    : Sorts the vDataFrame.
+        """
         check_types(
             [
                 ("expr1", expr1, [list],),
@@ -2346,28 +2390,28 @@ vcolumns : vcolumn
     # ---#
     def apply(self, func: dict):
         """
-	---------------------------------------------------------------------------
-	Applies each function of the dictionary to the input vcolumns.
+    ---------------------------------------------------------------------------
+    Applies each function of the dictionary to the input vcolumns.
 
-	Parameters
- 	----------
- 	func: dict
- 		Dictionary of functions.
- 		The dictionary must be like the following: 
-		{column1: func1, ..., columnk: funck}. Each function variable must
-		be composed of two flower brackets {}. For example to apply the 
-		function: x -> x^2 + 2 use "POWER({}, 2) + 2".
+    Parameters
+     ----------
+     func: dict
+        Dictionary of functions.
+        The dictionary must be like the following: 
+        {column1: func1, ..., columnk: funck}. Each function variable must
+        be composed of two flower brackets {}. For example to apply the 
+        function: x -> x^2 + 2 use "POWER({}, 2) + 2".
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+     Returns
+     -------
+     vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.applymap : Applies a function to all the vcolumns.
-	vDataFrame.eval     : Evaluates a customized expression.
-		"""
+    See Also
+    --------
+    vDataFrame.applymap : Applies a function to all the vcolumns.
+    vDataFrame.eval     : Evaluates a customized expression.
+        """
         check_types([("func", func, [dict],)])
         columns_check([elem for elem in func], self)
         for column in func:
@@ -2377,27 +2421,27 @@ vcolumns : vcolumn
     # ---#
     def applymap(self, func: str, numeric_only: bool = True):
         """
-	---------------------------------------------------------------------------
-	Applies a function to all the vcolumns. 
+    ---------------------------------------------------------------------------
+    Applies a function to all the vcolumns. 
 
-	Parameters
- 	----------
- 	func: str
- 		The function.
- 		The function variable must be composed of two flower brackets {}. 
- 		For example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
- 	numeric_only: bool, optional
- 		If set to True, only the numerical columns will be used.
+    Parameters
+    ----------
+    func: str
+        The function.
+        The function variable must be composed of two flower brackets {}. 
+        For example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
+    numeric_only: bool, optional
+        If set to True, only the numerical columns will be used.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.apply : Applies functions to the input vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.apply : Applies functions to the input vcolumns.
+        """
         check_types(
             [("func", func, [str],), ("numeric_only", numeric_only, [bool],),]
         )
@@ -2414,39 +2458,39 @@ vcolumns : vcolumn
     # ---#
     def asfreq(self, ts: str, rule: str, method: dict, by: list = []):
         """
-	---------------------------------------------------------------------------
-	Computes a regular time interval vDataFrame by interpolating the missing 
-	values using different techniques.
+    ---------------------------------------------------------------------------
+    Computes a regular time interval vDataFrame by interpolating the missing 
+    values using different techniques.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...)
- 	rule: str
- 		Interval to use to slice the time. For example, '5 minutes' will create records
- 		separated by '5 minutes' time interval.
- 	method: dict
- 		Dictionary of all the different methods of interpolation. The dict must be 
- 		similar to the following:
- 		{"column1": "interpolation1" ..., "columnk": "interpolationk"}
- 		3 types of interpolations are possible:
- 			bfill  : Constant propagation of the next value (Back Propagation).
- 			ffill  : Constant propagation of the first value (First Propagation).
- 			linear : Linear Interpolation.
- 	by: list, optional
- 		vcolumns used in the partition.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...)
+    rule: str
+        Interval to use to slice the time. For example, '5 minutes' will create records
+        separated by '5 minutes' time interval.
+    method: dict
+        Dictionary of all the different methods of interpolation. The dict must be 
+        similar to the following:
+        {"column1": "interpolation1" ..., "columnk": "interpolationk"}
+        3 types of interpolations are possible:
+            bfill  : Constant propagation of the next value (Back Propagation).
+            ffill  : Constant propagation of the first value (First Propagation).
+            linear : Linear Interpolation.
+    by: list, optional
+        vcolumns used in the partition.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		object result of the interpolation.
+    Returns
+    -------
+    vDataFrame
+        object result of the interpolation.
 
-	See Also
-	--------
-	vDataFrame[].fillna  : Fills the vcolumn missing values.
-	vDataFrame[].slice   : Slices the vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame[].fillna  : Fills the vcolumn missing values.
+    vDataFrame[].slice   : Slices the vcolumn.
+        """
         check_types(
             [
                 ("ts", ts, [str],),
@@ -2497,21 +2541,21 @@ vcolumns : vcolumn
     # ---#
     def astype(self, dtype: dict):
         """
-	---------------------------------------------------------------------------
-	Converts the vcolumns to the input types.
+    ---------------------------------------------------------------------------
+    Converts the vcolumns to the input types.
 
-	Parameters
- 	----------
- 	dtype: dict
- 		Dictionary of the different types. Each key of the dictionary must 
- 		represent a vcolumn. The dictionary must be similar to the 
- 		following: {"column1": "type1", ... "columnk": "typek"}
+    Parameters
+    ----------
+    dtype: dict
+        Dictionary of the different types. Each key of the dictionary must 
+        represent a vcolumn. The dictionary must be similar to the 
+        following: {"column1": "type1", ... "columnk": "typek"}
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+        """
         check_types([("dtype", dtype, [dict],)])
         columns_check([elem for elem in dtype], self)
         for column in dtype:
@@ -2521,30 +2565,30 @@ vcolumns : vcolumn
     # ---#
     def at_time(self, ts: str, time: str):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame by only keeping the records at the input time.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame by only keeping the records at the input time.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...)
- 	time: str
- 		Input Time. For example, time = '12:00' will filter the data when time('ts') 
- 		is equal to 12:00.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
+        date like (date, datetime, timestamp...)
+    time: str
+        Input Time. For example, time = '12:00' will filter the data when time('ts') 
+        is equal to 12:00.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.between_time : Filters the data between two time ranges.
-	vDataFrame.first        : Filters the data by only keeping the first records.
-	vDataFrame.filter       : Filters the data using the input expression.
-	vDataFrame.last         : Filters the data by only keeping the last records.
-		"""
+    See Also
+    --------
+    vDataFrame.between_time : Filters the data between two time ranges.
+    vDataFrame.first        : Filters the data by only keeping the first records.
+    vDataFrame.filter       : Filters the data using the input expression.
+    vDataFrame.last         : Filters the data by only keeping the last records.
+        """
         check_types([("ts", ts, [str],), ("time", time, [str],)])
         columns_check([ts], self)
         self.filter("{}::time = '{}'".format(str_column(ts), time))
@@ -2565,70 +2609,73 @@ vcolumns : vcolumn
         cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Computes the correlations of the input vcolumn and its lags. 
+    ---------------------------------------------------------------------------
+    Computes the correlations of the input vcolumn and its lags. 
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to order the data. It can be of type date
- 		or a numerical vcolumn.
- 	column: str
- 		Input vcolumn to use to compute the Auto Correlation Plot.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	p: int/list, optional
- 		Int equals to the maximum number of lag to consider during the computation
- 		or List of the different lags to include during the computation.
- 		p must be positive or a list of positive integers.
- 	unit: str, optional
- 		Unit to use to compute the lags.
- 			rows: Natural lags
- 			else : Any time unit, for example you can write 'hour' to compute the hours
- 				lags or 'day' to compute the days lags.
- 	method: str, optional
- 		Method to use to compute the correlation.
- 			pearson   : Pearson correlation coefficient (linear).
- 			spearmann : Spearmann correlation coefficient (monotonic - rank based).
- 			kendall   : Kendall correlation coefficient (similar trends).
-                        \u26A0 Warning : This method is computationally expensive. 
-                                         It is using a CROSS JOIN during the computation.
-                                         The complexity is O(n * n), n being the total
-                                         count of the vDataFrame.
- 			cramer    : Cramer's V (correlation between categories).
- 			biserial  : Biserial Point (correlation between binaries and a numericals).
- 	acf_type: str, optional
- 		ACF Type.
- 			bar     : Classical Autocorrelation Plot using bars.
- 			heatmap : Draw the ACF heatmap
- 			line    : Draw the ACF using a Line Plot
- 	confidence: bool, optional
- 		If set to True, the confidence band width is drawn.
- 	alpha: float, optional
- 		Significance Level. Probability to accept H0. Only used to compute the confidence
- 		band width.
- 	cmap: str, optional
- 		Color Map. It is used only if parameter 'acr_type' is set to 'heatmap'.
- 	round_nb: int, optional
- 		Round the coefficient using the input number of digits. It is used only if 
- 		parameter 'acr_type' is set to 'heatmap'.
- 	show: bool, optional
- 		If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. It can be of type date
+        or a numerical vcolumn.
+    column: str
+        Input vcolumn to use to compute the Auto Correlation Plot.
+    by: list, optional
+        vcolumns used in the partition.
+    p: int/list, optional
+        Int equals to the maximum number of lag to consider during the computation
+        or List of the different lags to include during the computation.
+        p must be positive or a list of positive integers.
+    unit: str, optional
+        Unit to use to compute the lags.
+            rows: Natural lags
+            else : Any time unit, for example you can write 'hour' to compute the hours
+                lags or 'day' to compute the days lags.
+    method: str, optional
+        Method to use to compute the correlation.
+            pearson   : Pearson correlation coefficient (linear).
+            spearmann : Spearmann correlation coefficient (monotonic - rank based).
+            kendall   : Kendall correlation coefficient (similar trends).
+                       \u26A0 Warning : This method is computationally expensive. 
+                                        It is using a CROSS JOIN during the computation.
+                                        The complexity is O(n * n), n being the total
+                                        count of the vDataFrame.
+            cramer    : Cramer's V (correlation between categories).
+            biserial  : Biserial Point (correlation between binaries and a numericals).
+    acf_type: str, optional
+        ACF Type.
+            bar     : Classical Autocorrelation Plot using bars.
+            heatmap : Draw the ACF heatmap
+            line    : Draw the ACF using a Line Plot
+    confidence: bool, optional
+        If set to True, the confidence band width is drawn.
+    alpha: float, optional
+        Significance Level. Probability to accept H0. Only used to compute the confidence
+        band width.
+    cmap: str, optional
+        Color Map. It is used only if parameter 'acr_type' is set to 'heatmap'.
+    round_nb: int, optional
+        Round the coefficient using the input number of digits. It is used only if 
+        parameter 'acr_type' is set to 'heatmap'.
+    show: bool, optional
+        If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
-	vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
-	vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
+    vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
+    vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
+        """
         check_types(
             [
                 ("by", by, [list],),
@@ -2717,31 +2764,32 @@ vcolumns : vcolumn
                     title="Autocorrelation",
                     confidence=acf_band,
                     type_bar=True if acf_type == "bar" else False,
+                    ax=ax,
                 )
             return result
 
     # ---#
     def avg(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'avg' (Average).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'avg' (Average).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["avg"], columns=columns)
 
     mean = avg
@@ -2754,50 +2802,53 @@ vcolumns : vcolumn
         max_cardinality: tuple = (6, 6),
         h: tuple = (None, None),
         hist_type: str = "auto",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Bar Chart of the input vcolumns based on an aggregation.
+    ---------------------------------------------------------------------------
+    Draws the Bar Chart of the input vcolumns based on an aggregation.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have one or two elements.
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
- 	h: tuple, optional
- 		Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
- 		vcolumns are numerical. Optimized h will be computed if the parameter 
- 		is empty or invalid.
- 	max_cardinality: tuple, optional
- 		Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
- 		categorical (No h will be picked or computed)
- 	hist_type: str, optional
- 		The Histogram Type.
- 			auto          : Regular Bar Chart based on 1 or 2 vcolumns.
-			stacked       : Stacked Bar Chart based on 2 vcolumns.
-			fully_stacked : Fully Stacked Bar Chart based on 2 vcolumns.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have one or two elements.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+    of: str, optional
+         The vcolumn to use to compute the aggregation.
+    h: tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
+        vcolumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    hist_type: str, optional
+        The Histogram Type.
+            auto          : Regular Bar Chart based on 1 or 2 vcolumns.
+            stacked       : Stacked Bar Chart based on 2 vcolumns.
+            fully_stacked : Fully Stacked Bar Chart based on 2 vcolumns.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
- 	vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
- 	vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
-		"""
+     See Also
+     --------
+     vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
+     vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
+     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -2819,7 +2870,7 @@ vcolumns : vcolumn
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
         if len(columns) == 1:
-            return self[columns[0]].bar(method, of, 6, 0, 0)
+            return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax)
         else:
             stacked, fully_stacked = False, False
             if hist_type.lower() in ("fully", "fully stacked", "fully_stacked"):
@@ -2829,39 +2880,47 @@ vcolumns : vcolumn
             from verticapy.plot import bar2D
 
             return bar2D(
-                self, columns, method, of, max_cardinality, h, stacked, fully_stacked
+                self,
+                columns,
+                method,
+                of,
+                max_cardinality,
+                h,
+                stacked,
+                fully_stacked,
+                ax=ax,
             )
 
     # ---#
     def between_time(self, ts: str, start_time: str, end_time: str):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame by only keeping the records between two input times.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame by only keeping the records between two input times.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...)
- 	start_time: str
- 		Input Start Time. For example, time = '12:00' will filter the data when 
- 		time('ts') is lesser than 12:00.
- 	end_time: str
- 		Input End Time. For example, time = '14:00' will filter the data when 
- 		time('ts') is greater than 14:00.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
+        date like (date, datetime, timestamp...)
+    start_time: str
+        Input Start Time. For example, time = '12:00' will filter the data when 
+        time('ts') is lesser than 12:00.
+    end_time: str
+        Input End Time. For example, time = '14:00' will filter the data when 
+        time('ts') is greater than 14:00.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.at_time : Filters the data at the input time.
-	vDataFrame.first   : Filters the data by only keeping the first records.
-	vDataFrame.filter  : Filters the data using the input expression.
-	vDataFrame.last    : Filters the data by only keeping the last records.
-		"""
+    See Also
+    --------
+    vDataFrame.at_time : Filters the data at the input time.
+    vDataFrame.first   : Filters the data by only keeping the first records.
+    vDataFrame.filter  : Filters the data using the input expression.
+    vDataFrame.last    : Filters the data by only keeping the last records.
+        """
         check_types(
             [
                 ("ts", ts, [str],),
@@ -2880,18 +2939,18 @@ vcolumns : vcolumn
     # ---#
     def bool_to_int(self):
         """
-	---------------------------------------------------------------------------
-	Converts all the booleans vcolumns to integers.
+    ---------------------------------------------------------------------------
+    Converts all the booleans vcolumns to integers.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-	
-	See Also
-	--------
-	vDataFrame.astype : Converts the vcolumns to the input types.
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+    
+    See Also
+    --------
+    vDataFrame.astype : Converts the vcolumns to the input types.
+        """
         columns = self.get_columns()
         for column in columns:
             if self[column].ctype() == "boolean":
@@ -2899,35 +2958,37 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def boxplot(self, columns: list = []):
+    def boxplot(self, columns: list = [], ax=None):
         """
-	---------------------------------------------------------------------------
-	Draws the Box Plot of the input vcolumns. 
+    ---------------------------------------------------------------------------
+    Draws the Box Plot of the input vcolumns. 
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will 
- 		be used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will 
+        be used.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
-	See Also
-	--------
-	vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
-	vDataFrame.boxplot     : Draws the vcolumn Box Plot.
- 	vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
- 	vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
-		"""
+    See Also
+    --------
+    vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
+    vDataFrame.boxplot     : Draws the vcolumn Box Plot.
+    vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
+    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
         from verticapy.plot import boxplot2D
 
-        return boxplot2D(self, columns)
+        return boxplot2D(self, columns, ax=ax)
 
     # ---#
     def bubble(
@@ -2938,36 +2999,39 @@ vcolumns : vcolumn
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Bubble Plot of the input vcolumns.
+    ---------------------------------------------------------------------------
+    Draws the Bubble Plot of the input vcolumns.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have two elements.
- 	size_bubble_col: str
- 		Numerical vcolumn to use to represent the Bubble size.
- 	catcol: str, optional
- 		Categorical column used as color.
- 	max_nb_points: int, optional
- 		Maximum number of points to display.
- 	bbox: list, optional
- 		List of 4 elements to delimit the boundaries of the final Plot. 
- 		It must be similar the following list: [xmin, xmax, ymin, ymax]
- 	img: str, optional
- 		Path to the image to display as background.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have two elements.
+    size_bubble_col: str
+        Numerical vcolumn to use to represent the Bubble size.
+    catcol: str, optional
+        Categorical column used as color.
+    max_nb_points: int, optional
+        Maximum number of points to display.
+    bbox: list, optional
+        List of 4 elements to delimit the boundaries of the final Plot. 
+        It must be similar the following list: [xmin, xmax, ymin, ymax]
+    img: str, optional
+        Path to the image to display as background.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+       Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -2987,30 +3051,30 @@ vcolumns : vcolumn
         from verticapy.plot import bubble
 
         return bubble(
-            self, columns + [size_bubble_col], catcol, max_nb_points, bbox, img
+            self, columns + [size_bubble_col], catcol, max_nb_points, bbox, img, ax=ax
         )
 
     # ---#
     def catcol(self, max_cardinality: int = 12):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame categorical vcolumns.
-	
-	Parameters
-	----------
-	max_cardinality: int, optional
-		Maximum number of unique values to consider integer vcolumns as categorical.
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame categorical vcolumns.
+    
+    Parameters
+    ----------
+    max_cardinality: int, optional
+        Maximum number of unique values to consider integer vcolumns as categorical.
 
- 	Returns
- 	-------
- 	List
- 		List of the categorical vcolumns names.
-	
-	See Also
-	--------
-	vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
-	vDataFrame.numcol      : Returns all the vDataFrame numerical vcolumns.
-		"""
+    Returns
+    -------
+    List
+        List of the categorical vcolumns names.
+    
+    See Also
+    --------
+    vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
+    vDataFrame.numcol      : Returns all the vDataFrame numerical vcolumns.
+        """
         check_types([("max_cardinality", max_cardinality, [int, float],)])
         columns = []
         for column in self.get_columns():
@@ -3034,14 +3098,14 @@ vcolumns : vcolumn
     # ---#
     def copy(self):
         """
-	---------------------------------------------------------------------------
-	Returns a copy of the vDataFrame.
+    ---------------------------------------------------------------------------
+    Returns a copy of the vDataFrame.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		The copy of the vDataFrame.
-		"""
+    Returns
+    -------
+    vDataFrame
+        The copy of the vDataFrame.
+        """
         copy_vDataFrame = vDataFrame("", empty=True)
         copy_vDataFrame._VERTICAPY_VARIABLES_["dsn"] = self._VERTICAPY_VARIABLES_["dsn"]
         copy_vDataFrame._VERTICAPY_VARIABLES_[
@@ -3101,34 +3165,34 @@ vcolumns : vcolumn
         self, name: str, conditions: dict, others=None, auto_quote: bool = True
     ):
         """
-	---------------------------------------------------------------------------
-	Creates a new feature by evaluating some conditions.
-	
-	Parameters
-	----------
-	name: str
-		Name of the new feature.
-	conditions: dict
-		Dictionary of the conditions. The dictionary must be similar to the 
-		following: {"condition1": "value1", ... "conditionk": "valuek"}
-		Each key is a condition and each value is the value returned when
-		the condition is valid.
-	others: str / int / float, optional
-		last condition: The ELSE in the CASE WHEN statement.
-	auto_quote: bool, optional
-		If set to True, all the str values of the dictionary will not be considered
-		as expressions. Otherwise, you'll have to manage by yourself all the quotations.
+    ---------------------------------------------------------------------------
+    Creates a new feature by evaluating some conditions.
+    
+    Parameters
+    ----------
+    name: str
+        Name of the new feature.
+    conditions: dict
+        Dictionary of the conditions. The dictionary must be similar to the 
+        following: {"condition1": "value1", ... "conditionk": "valuek"}
+        Each key is a condition and each value is the value returned when
+        the condition is valid.
+    others: str / int / float, optional
+        last condition: The ELSE in the CASE WHEN statement.
+    auto_quote: bool, optional
+        If set to True, all the str values of the dictionary will not be considered
+        as expressions. Otherwise, you'll have to manage by yourself all the quotations.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		self
-	
-	See Also
-	--------
-	vDataFrame[].decode : Encodes the vcolumn using a User Defined Encoding.
-	vDataFrame.eval : Evaluates a customized expression.
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+    
+    See Also
+    --------
+    vDataFrame[].decode : Encodes the vcolumn using a User Defined Encoding.
+    vDataFrame.eval : Evaluates a customized expression.
+        """
         check_types([("conditions", conditions, [dict],), ("name", name, [str],)])
         for elem in conditions:
             if (isinstance(conditions[elem], str)) and auto_quote:
@@ -3155,49 +3219,52 @@ vcolumns : vcolumn
         round_nb: int = 3,
         focus: str = "",
         show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Computes the Correlation Matrix of the vDataFrame. 
+    ---------------------------------------------------------------------------
+    Computes the Correlation Matrix of the vDataFrame. 
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	method: str, optional
- 		Method to use to compute the correlation.
- 			pearson   : Pearson correlation coefficient (linear).
- 			spearmann : Spearmann correlation coefficient (monotonic - rank based).
- 			kendall   : Kendall correlation coefficient (similar trends).
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    method: str, optional
+        Method to use to compute the correlation.
+            pearson   : Pearson correlation coefficient (linear).
+            spearmann : Spearmann correlation coefficient (monotonic - rank based).
+            kendall   : Kendall correlation coefficient (similar trends).
                         \u26A0 Warning : This method is computationally expensive. 
                                          It is using a CROSS JOIN during the computation.
                                          The complexity is O(n * n), n being the total
                                          count of the vDataFrame.
- 			cramer    : Cramer's V (correlation between categories).
- 			biserial  : Biserial Point (correlation between binaries and a numericals).
- 	cmap: str, optional
- 		Color Map.
- 	round_nb: int, optional
- 		Rounds the coefficient using the input number of digits.
- 	focus: str, optional
- 		Focus the computation on only one vcolumn.
- 	show: bool, optional
- 		If set to True, the Correlation Matrix will be drawn using Matplotlib.
+            cramer    : Cramer's V (correlation between categories).
+            biserial  : Biserial Point (correlation between binaries and a numericals).
+    cmap: str, optional
+        Color Map.
+    round_nb: int, optional
+        Rounds the coefficient using the input number of digits.
+    focus: str, optional
+        Focus the computation on only one vcolumn.
+    show: bool, optional
+        If set to True, the Correlation Matrix will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
-	vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
+    See Also
+    --------
+    vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
+    vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
     vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
-	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame. 
-		"""
+    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame. 
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3217,7 +3284,12 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         if focus == "":
             return self.__aggregate_matrix__(
-                method=method, columns=columns, cmap=cmap, round_nb=round_nb, show=show
+                method=method,
+                columns=columns,
+                cmap=cmap,
+                round_nb=round_nb,
+                show=show,
+                ax=ax,
             )
         else:
             columns_check([focus], self)
@@ -3229,6 +3301,7 @@ vcolumns : vcolumn
                 cmap=cmap,
                 round_nb=round_nb,
                 show=show,
+                ax=ax,
             )
 
     # ---#
@@ -3240,30 +3313,30 @@ vcolumns : vcolumn
         desc: bool = True,
     ):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using a list of 'count' (Number of missing values).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using a list of 'count' (Number of missing values).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns will be used.
- 	percent: bool, optional
- 		If set to True, the percentage of missing value will be also computed.
- 	sort_result: bool, optional
- 		If set to True, the result will be sorted.
- 	desc: bool, optional
- 		If set to True and 'sort_result' is set to True, the result will be sorted desc.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns will be used.
+    percent: bool, optional
+        If set to True, the percentage of missing value will be also computed.
+    sort_result: bool, optional
+        If set to True, the result will be sorted.
+    desc: bool, optional
+        If set to True and 'sort_result' is set to True, the result will be sorted desc.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3300,37 +3373,44 @@ vcolumns : vcolumn
 
     # ---#
     def cov(
-        self, columns: list = [], cmap: str = "", focus: str = "", show: bool = True
+        self,
+        columns: list = [],
+        cmap: str = "",
+        focus: str = "",
+        show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Computes the Covariance Matrix of the vDataFrame. 
+    ---------------------------------------------------------------------------
+    Computes the Covariance Matrix of the vDataFrame. 
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	cmap: str, optional
- 		Color Map.
- 	focus: str, optional
- 		Focus the computation on only one vcolumn.
- 	show: bool, optional
- 		If set to True, the Covariance Matrix will be drawn using Matplotlib.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    cmap: str, optional
+        Color Map.
+    focus: str, optional
+        Focus the computation on only one vcolumn.
+    show: bool, optional
+        If set to True, the Covariance Matrix will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
-	vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+    See Also
+    --------
+    vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
     vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
-	vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
-		"""
+    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3343,44 +3423,44 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         if focus == "":
             return self.__aggregate_matrix__(
-                method="cov", columns=columns, cmap=cmap, show=show
+                method="cov", columns=columns, cmap=cmap, show=show, ax=ax
             )
         else:
             columns_check([focus], self)
             focus = vdf_columns_names([focus], self)[0]
             return self.__aggregate_vector__(
-                focus, method="cov", columns=columns, cmap=cmap, show=show
+                focus, method="cov", columns=columns, cmap=cmap, show=show, ax=ax
             )
 
     # ---#
     def cummax(self, column: str, by: list = [], order_by=[], name: str = ""):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by computing the cumulative maximum of
-	the input vcolumn.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by computing the cumulative maximum of
+    the input vcolumn.
 
-	Parameters
- 	----------
- 	column: str
- 		Input vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	name: str, optional
- 		Name of the new vcolumn. If empty, a default name will be generated.
+    Parameters
+    ----------
+    column: str
+        Input vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    name: str, optional
+        Name of the new vcolumn. If empty, a default name will be generated.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.rolling : Computes a customized moving window.
-		"""
+    See Also
+    --------
+    vDataFrame.rolling : Computes a customized moving window.
+        """
         return self.rolling(
             func="max",
             column=column,
@@ -3394,32 +3474,32 @@ vcolumns : vcolumn
     # ---#
     def cummin(self, column: str, by: list = [], order_by=[], name: str = ""):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by computing the cumulative minimum of
-	the input vcolumn.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by computing the cumulative minimum of
+    the input vcolumn.
 
-	Parameters
- 	----------
- 	column: str
- 		Input vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	name: str, optional
- 		Name of the new vcolumn. If empty, a default name will be generated.
+    Parameters
+    ----------
+    column: str
+        Input vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    name: str, optional
+        Name of the new vcolumn. If empty, a default name will be generated.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.rolling : Computes a customized moving window.
-		"""
+    See Also
+    --------
+    vDataFrame.rolling : Computes a customized moving window.
+        """
         return self.rolling(
             func="min",
             column=column,
@@ -3433,32 +3513,32 @@ vcolumns : vcolumn
     # ---#
     def cumprod(self, column: str, by: list = [], order_by=[], name: str = ""):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
-	the input vcolumn.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
+    the input vcolumn.
 
-	Parameters
- 	----------
- 	column: str
- 		Input vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	name: str, optional
- 		Name of the new vcolumn. If empty, a default name will be generated.
+    Parameters
+    ----------
+    column: str
+        Input vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    name: str, optional
+        Name of the new vcolumn. If empty, a default name will be generated.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.rolling : Computes a customized moving window.
-		"""
+    See Also
+    --------
+    vDataFrame.rolling : Computes a customized moving window.
+        """
         return self.rolling(
             func="prod",
             column=column,
@@ -3472,32 +3552,32 @@ vcolumns : vcolumn
     # ---#
     def cumsum(self, column: str, by: list = [], order_by=[], name: str = ""):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by computing the cumulative sum of the 
-	input vcolumn.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by computing the cumulative sum of the 
+    input vcolumn.
 
-	Parameters
- 	----------
- 	column: str
- 		Input vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	name: str, optional
- 		Name of the new vcolumn. If empty, a default name will be generated.
+    Parameters
+    ----------
+    column: str
+        Input vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    name: str, optional
+        Name of the new vcolumn. If empty, a default name will be generated.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.rolling : Computes a customized moving window.
-		"""
+    See Also
+    --------
+    vDataFrame.rolling : Computes a customized moving window.
+        """
         return self.rolling(
             func="sum",
             column=column,
@@ -3511,19 +3591,19 @@ vcolumns : vcolumn
     # ---#
     def current_relation(self, reindent: bool = True):
         """
-	---------------------------------------------------------------------------
-	Returns the current vDataFrame relation.
+    ---------------------------------------------------------------------------
+    Returns the current vDataFrame relation.
 
-	Parameters
- 	----------
- 	reindent: bool, optional
- 		Reindent the text to be more readable. 
+    Parameters
+    ----------
+    reindent: bool, optional
+        Reindent the text to be more readable. 
 
- 	Returns
- 	-------
- 	str
- 		The formatted current vDataFrame relation.
-		"""
+    Returns
+    -------
+    str
+        The formatted current vDataFrame relation.
+        """
         if reindent:
             return indentSQL(self.__genSQL__())
         else:
@@ -3532,19 +3612,19 @@ vcolumns : vcolumn
     # ---#
     def datecol(self):
         """
-	---------------------------------------------------------------------------
-	Returns all the vDataFrame vcolumns of type date.
+    ---------------------------------------------------------------------------
+    Returns all the vDataFrame vcolumns of type date.
 
- 	Returns
- 	-------
- 	List
- 		List of all the vcolumns of type date.
+    Returns
+    -------
+    List
+        List of all the vcolumns of type date.
 
- 	See Also
- 	--------
- 	vDataFrame.catcol : Returns all the vDataFrame categorical vcolumns.
- 	vDataFrame.numcol : Returns all the vDataFrame numerical vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.catcol : Returns all the vDataFrame categorical vcolumns.
+    vDataFrame.numcol : Returns all the vDataFrame numerical vcolumns.
+        """
         columns = []
         cols = self.get_columns()
         for column in cols:
@@ -3569,44 +3649,44 @@ vcolumns : vcolumn
     # ---#
     def describe(self, method: str = "auto", columns: list = [], unique: bool = True):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using multiple statistical aggregations: 
-	min, max, median, unique... depending on the vcolumns types.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using multiple statistical aggregations: 
+    min, max, median, unique... depending on the vcolumns types.
 
-	Parameters
- 	----------
- 	method: str, optional
- 		The describe method.
+    Parameters
+    ----------
+    method: str, optional
+        The describe method.
             all         : Aggregates all the selected vDataFrame vcolumns different 
                 methods depending on the vcolumn type (numerical dtype: numerical; 
                 timestamp dtype: range; categorical dtype: length)
             auto        : Sets the method to 'numerical' if at least one vcolumn 
                 of the vDataFrame is numerical, 'categorical' otherwise.
-			categorical : Uses only categorical aggregations.
+            categorical : Uses only categorical aggregations.
             length      : Aggregates the vDataFrame using numerical aggregation 
                 on the length of all the selected vcolumns.
- 			numerical   : Uses only numerical descriptive statistics which are 
- 				computed in a faster way than the 'aggregate' method.
+             numerical   : Uses only numerical descriptive statistics which are 
+                 computed in a faster way than the 'aggregate' method.
             range       : Aggregates the vDataFrame using multiple statistical
                 aggregations - min, max, range...
-			statistics  : Aggregates the vDataFrame using multiple statistical 
-				aggregations - kurtosis, skewness, min, max...
- 	columns: list, optional
- 		List of the vcolumns names. If empty, the vcolumns will be selected
- 		depending on the parameter 'method'.
- 	unique: bool, optional
- 		If set to True, the cardinality of each element will be computed.
+            statistics  : Aggregates the vDataFrame using multiple statistical 
+                aggregations - kurtosis, skewness, min, max...
+    columns: list, optional
+        List of the vcolumns names. If empty, the vcolumns will be selected
+        depending on the parameter 'method'.
+    unique: bool, optional
+        If set to True, the cardinality of each element will be computed.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         check_types(
             [
                 (
@@ -3649,7 +3729,9 @@ vcolumns : vcolumn
                     "No Numerical Columns found to run describe using parameter method = 'numerical'."
                 )
             try:
-                version(cursor=cursor, condition=[9, 0, 0])
+                version(
+                    cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 0, 0]
+                )
                 idx = [
                     "index",
                     "count",
@@ -3883,27 +3965,28 @@ vcolumns : vcolumn
                 "The parameter 'method' must be in all|numerical|categorical|statistics|length|range"
             )
         self.__update_catalog__(tablesample(values).transpose().values)
+        values["index"] = [str_column(elem) for elem in values["index"]]
         return tablesample(values)
 
     # ---#
     def drop(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Drops the input vcolumns from the vDataFrame. Dropping vcolumns means 
-	not selecting them in the final SQL code generation.
-	Be Careful when using this method. It can make the vDataFrame structure 
-	heavier if some other vcolumns are computed using the dropped vcolumns.
+    ---------------------------------------------------------------------------
+    Drops the input vcolumns from the vDataFrame. Dropping vcolumns means 
+    not selecting them in the final SQL code generation.
+    Be Careful when using this method. It can make the vDataFrame structure 
+    heavier if some other vcolumns are computed using the dropped vcolumns.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+        """
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
@@ -3914,8 +3997,8 @@ vcolumns : vcolumn
     # ---#
     def drop_duplicates(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Filters the duplicated using a partition by the input vcolumns.
+    ---------------------------------------------------------------------------
+    Filters the duplicated using a partition by the input vcolumns.
 
     \u26A0 Warning : Dropping duplicates will make the vDataFrame structure 
                      heavier. It is recommended to always check the current structure 
@@ -3923,16 +4006,16 @@ vcolumns : vcolumn
                      'to_db' method with the parameters 'inplace = True' and 
                      'relation_type = table'
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns will be selected.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns will be selected.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+        """
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         count = self.duplicated(columns=columns, count=True)
@@ -3960,25 +4043,25 @@ vcolumns : vcolumn
     # ---#
     def dropna(self, columns: list = [], print_info: bool = True):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame where the input vcolumns are missing.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame where the input vcolumns are missing.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns will be selected.
- 	print_info: bool, optional
- 		If set to True, it will display the result.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns will be selected.
+    print_info: bool, optional
+        If set to True, it will display the result.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
- 	See Also
-	--------
-	vDataFrame.filter: Filters the data using the input expression.
-		"""
+    See Also
+    --------
+    vDataFrame.filter: Filters the data using the input expression.
+        """
         check_types(
             [("columns", columns, [list],), ("print_info", print_info, [bool],),]
         )
@@ -4000,15 +4083,15 @@ vcolumns : vcolumn
     # ---#
     def dtypes(self):
         """
-	---------------------------------------------------------------------------
-	Returns the different vcolumns types.
+    ---------------------------------------------------------------------------
+    Returns the different vcolumns types.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
-		"""
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
         values = {"index": [], "dtype": []}
         for column in self.get_columns():
             values["index"] += [column]
@@ -4018,28 +4101,28 @@ vcolumns : vcolumn
     # ---#
     def duplicated(self, columns: list = [], count: bool = False, limit: int = 30):
         """
-	---------------------------------------------------------------------------
-	Returns the duplicated values.
+    ---------------------------------------------------------------------------
+    Returns the duplicated values.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns will be selected.
- 	count: bool, optional
- 		If set to True, the method will also return the count of each duplicates.
- 	limit: int, optional
- 		The limited number of elements to be displayed.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns will be selected.
+    count: bool, optional
+        If set to True, the method will also return the count of each duplicates.
+    limit: int, optional
+        The limited number of elements to be displayed.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
- 	See Also
- 	--------
- 	vDataFrame.drop_duplicates : Filters the duplicated values.
-		"""
+    See Also
+    --------
+    vDataFrame.drop_duplicates : Filters the duplicated values.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -4079,41 +4162,41 @@ vcolumns : vcolumn
     # ---#
     def empty(self):
         """
-	---------------------------------------------------------------------------
-	Returns True if the vDataFrame is empty.
+    ---------------------------------------------------------------------------
+    Returns True if the vDataFrame is empty.
 
- 	Returns
- 	-------
- 	bool
- 		True if the vDataFrame has no vcolumns.
-		"""
+    Returns
+    -------
+    bool
+        True if the vDataFrame has no vcolumns.
+        """
         return not (self.get_columns())
 
     # ---#
     def eval(self, name: str, expr: str):
         """
-	---------------------------------------------------------------------------
-	Evaluates a customized expression.
+    ---------------------------------------------------------------------------
+    Evaluates a customized expression.
 
-	Parameters
- 	----------
- 	name: str
- 		Name of the new vcolumn.
- 	expr: str
- 		Expression to use to compute the new feature. It must be pure SQL. 
- 		For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
- 		'POWER("column", 2)' will work.
+    Parameters
+    ----------
+    name: str
+        Name of the new vcolumn.
+    expr: str
+        Expression to use to compute the new feature. It must be pure SQL. 
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
+        'POWER("column", 2)' will work.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
-		analytical function on a specific vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
+        analytical function on a specific vcolumn.
+        """
         check_types([("name", name, [str],), ("expr", expr, [str],)])
         name = str_column(name.replace('"', "_"))
         if column_check_ambiguous(name, self.get_columns()):
@@ -4172,28 +4255,28 @@ vcolumns : vcolumn
     # ---#
     def expected_store_usage(self, unit: str = "b"):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame expected store usage. 
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame expected store usage. 
 
-	Parameters
-	----------
-	unit: str, optional
-		unit used for the computation
-		b : byte
-		kb: kilo byte
-		gb: giga byte
-		tb: tera byte
+    Parameters
+    ----------
+    unit: str, optional
+        unit used for the computation
+        b : byte
+        kb: kilo byte
+        gb: giga byte
+        tb: tera byte
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.memory_usage : Returns the vDataFrame memory usage.
-		"""
+    See Also
+    --------
+    vDataFrame.memory_usage : Returns the vDataFrame memory usage.
+        """
         check_types([("unit", unit, [str],)])
         if unit.lower() == "kb":
             div_unit = 1024
@@ -4293,20 +4376,20 @@ vcolumns : vcolumn
     # ---#
     def explain(self, digraph: bool = False):
         """
-	---------------------------------------------------------------------------
-	Provides information on how Vertica is computing the current vDataFrame
-	relation.
+    ---------------------------------------------------------------------------
+    Provides information on how Vertica is computing the current vDataFrame
+    relation.
 
-	Parameters
-	----------
-	digraph: bool, optional
-		If set to True, returns only the digraph of the explain plan.
+    Parameters
+    ----------
+    digraph: bool, optional
+        If set to True, returns only the digraph of the explain plan.
 
- 	Returns
- 	-------
- 	str
-		explain plan
-		"""
+    Returns
+    -------
+    str
+        explain plan
+        """
         query = "EXPLAIN SELECT * FROM {}".format(self.__genSQL__())
         self.__executeSQL__(query=query, title="Explaining the Current Relation")
         result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
@@ -4329,42 +4412,42 @@ vcolumns : vcolumn
         print_info: bool = False,
     ):
         """
-	---------------------------------------------------------------------------
-	Fills the vcolumns missing elements using specific rules.
+    ---------------------------------------------------------------------------
+    Fills the vcolumns missing elements using specific rules.
 
-	Parameters
- 	----------
- 	val: dict, optional
- 		Dictionary of values. The dictionary must be similar to the following:
- 		{"column1": val1 ..., "columnk": valk}. Each key of the dictionary must
- 		be a vcolumn. The missing values of the input vcolumns will be replaced
- 		by the input value.
- 	method: dict, optional
- 		Method to use to impute the missing values.
- 			auto    : Mean for the numerical and Mode for the categorical vcolumns.
-			mean    : Average.
-			median  : Median.
-			mode    : Mode (most occurent element).
-			0ifnull : 0 when the vcolumn is null, 1 otherwise.
-				More Methods are available on the vDataFrame[].fillna method.
-	numeric_only: bool, optional
-		If parameters 'val' and 'method' are empty and 'numeric_only' is set
-		to True then all the numerical vcolumns will be imputed by their average.
-		If set to False, all the categorical vcolumns will be also imputed by their
-		mode.
-	print_info: bool, optional
-		If set to True, the information of the imputations will be displayed.
+    Parameters
+    ----------
+    val: dict, optional
+        Dictionary of values. The dictionary must be similar to the following:
+        {"column1": val1 ..., "columnk": valk}. Each key of the dictionary must
+        be a vcolumn. The missing values of the input vcolumns will be replaced
+        by the input value.
+    method: dict, optional
+        Method to use to impute the missing values.
+            auto    : Mean for the numerical and Mode for the categorical vcolumns.
+            mean    : Average.
+            median  : Median.
+            mode    : Mode (most occurent element).
+            0ifnull : 0 when the vcolumn is null, 1 otherwise.
+                More Methods are available on the vDataFrame[].fillna method.
+    numeric_only: bool, optional
+        If parameters 'val' and 'method' are empty and 'numeric_only' is set
+        to True then all the numerical vcolumns will be imputed by their average.
+        If set to False, all the categorical vcolumns will be also imputed by their
+        mode.
+    print_info: bool, optional
+        If set to True, the information of the imputations will be displayed.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame[].fillna : Fills the vcolumn missing values. This method is more 
-		complete than the vDataFrame.fillna method by allowing more parameters.
-		"""
+    See Also
+    --------
+    vDataFrame[].fillna : Fills the vcolumn missing values. This method is more 
+        complete than the vDataFrame.fillna method by allowing more parameters.
+        """
         check_types(
             [
                 ("val", val, [dict],),
@@ -4396,37 +4479,37 @@ vcolumns : vcolumn
     # ---#
     def filter(self, expr: str = "", conditions: list = [], print_info: bool = True):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame using the input expressions.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame using the input expressions.
 
-	Parameters
- 	----------
- 	expr: str, optional
- 		Customized SQL expression to use to filter the data. For example to keep
- 		only the records where the vcolumn 'column' is greater than 5 you can
- 		write 'column > 5' or '"column" > 5'. Try to always keep the double 
- 		quotes if possible, it will make the parsing easier. 
- 	conditions: list, optional
- 		List of expressions. For example to keep only the records where the 
- 		vcolumn 'column' is greater than 5 and lesser than 10 you can write 
- 		['"column" > 5', '"column" < 10'].
- 	print_info: bool, optional
- 		If set to True, the result of the filtering will be displayed.
+    Parameters
+    ----------
+    expr: str, optional
+        Customized SQL expression to use to filter the data. For example to keep
+        only the records where the vcolumn 'column' is greater than 5 you can
+        write 'column > 5' or '"column" > 5'. Try to always keep the double 
+        quotes if possible, it will make the parsing easier. 
+    conditions: list, optional
+        List of expressions. For example to keep only the records where the 
+        vcolumn 'column' is greater than 5 and lesser than 10 you can write 
+        ['"column" > 5', '"column" < 10'].
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.at_time      : Filters the data at the input time.
-	vDataFrame.between_time : Filters the data between two time ranges.
-	vDataFrame.first        : Filters the data by only keeping the first records.
-	vDataFrame.last         : Filters the data by only keeping the last records.
-	vDataFrame.search       : Searches the elements which matches with the input 
-		conditions.
-		"""
+    See Also
+    --------
+    vDataFrame.at_time      : Filters the data at the input time.
+    vDataFrame.between_time : Filters the data between two time ranges.
+    vDataFrame.first        : Filters the data by only keeping the first records.
+    vDataFrame.last         : Filters the data by only keeping the last records.
+    vDataFrame.search       : Searches the elements which matches with the input 
+        conditions.
+        """
         check_types(
             [
                 ("expr", expr, [str],),
@@ -4452,7 +4535,8 @@ vcolumns : vcolumn
                     print("Nothing was filtered.")
         else:
             max_pos = 0
-            for column in self._VERTICAPY_VARIABLES_["columns"]:
+            columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+            for column in columns_tmp:
                 max_pos = max(max_pos, len(self[column].transformations) - 1)
             new_count = self.shape()[0]
             self._VERTICAPY_VARIABLES_["where"] += [(expr, max_pos)]
@@ -4490,30 +4574,30 @@ vcolumns : vcolumn
     # ---#
     def first(self, ts: str, offset: str):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame by only keeping the first records.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame by only keeping the first records.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...)
- 	offset: str
- 		Interval offset. For example, to filter and keep only the first 6 months of
- 		records, offset should be set to '6 months'. 
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
+        date like (date, datetime, timestamp...)
+    offset: str
+        Interval offset. For example, to filter and keep only the first 6 months of
+        records, offset should be set to '6 months'. 
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.at_time      : Filters the data at the input time.
-	vDataFrame.between_time : Filters the data between two time ranges.
-	vDataFrame.filter       : Filters the data using the input expression.
-	vDataFrame.last         : Filters the data by only keeping the last records.
-		"""
+    See Also
+    --------
+    vDataFrame.at_time      : Filters the data at the input time.
+    vDataFrame.between_time : Filters the data between two time ranges.
+    vDataFrame.filter       : Filters the data using the input expression.
+    vDataFrame.last         : Filters the data by only keeping the last records.
+        """
         check_types([("ts", ts, [str],), ("offset", offset, [str],)])
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
@@ -4527,28 +4611,27 @@ vcolumns : vcolumn
     # ---#
     def get_columns(self, exclude_columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame vcolumns.
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame vcolumns.
 
-	Parameters
- 	----------
- 	exclude_columns: list, optional
- 		List of the vcolumns names to exclude from the final list. 
+    Parameters
+    ----------
+    exclude_columns: list, optional
+        List of the vcolumns names to exclude from the final list. 
 
- 	Returns
- 	-------
- 	List
- 		List of all the vDataFrame columns.
+    Returns
+    -------
+    List
+        List of all the vDataFrame columns.
 
-	See Also
-	--------
-	vDataFrame.catcol  : Returns all the categorical vDataFrame vcolumns.
-	vDataFrame.datecol : Returns all the vDataFrame vcolumns of type date.
-	vDataFrame.numcol  : Returns all the numerical vDataFrame vcolumns.
-
-		"""
+    See Also
+    --------
+    vDataFrame.catcol  : Returns all the categorical vDataFrame vcolumns.
+    vDataFrame.datecol : Returns all the vDataFrame vcolumns of type date.
+    vDataFrame.numcol  : Returns all the numerical vDataFrame vcolumns.
+        """
         check_types([("exclude_columns", exclude_columns, [list],)])
-        columns = self._VERTICAPY_VARIABLES_["columns"]
+        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         result = []
         exclude_columns += self._VERTICAPY_VARIABLES_["exclude_columns"]
         exclude_columns = [elem.replace('"', "").lower() for elem in exclude_columns]
@@ -4567,39 +4650,39 @@ vcolumns : vcolumn
         use_numbers_as_suffix: bool = False,
     ):
         """
-	---------------------------------------------------------------------------
-	Encodes the vcolumns using the One Hot Encoding algorithm.
+    ---------------------------------------------------------------------------
+    Encodes the vcolumns using the One Hot Encoding algorithm.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns to use to train the One Hot Encoding model. If empty, 
- 		only the vcolumns having a cardinality lesser than 'max_cardinality' will 
- 		be used.
- 	max_cardinality: int, optional
- 		Cardinality threshold to use to determine if the vcolumn will be taken into
- 		account during the encoding. This parameter is used only if the parameter 
- 		'columns' is empty.
- 	prefix_sep: str, optional
- 		Prefix delimitor of the dummies names.
- 	drop_first: bool, optional
- 		Drops the first dummy to avoid the creation of correlated features.
- 	use_numbers_as_suffix: bool, optional
- 		Uses numbers as suffix instead of the vcolumns categories.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns to use to train the One Hot Encoding model. If empty, 
+        only the vcolumns having a cardinality lesser than 'max_cardinality' will 
+        be used.
+    max_cardinality: int, optional
+        Cardinality threshold to use to determine if the vcolumn will be taken into
+        account during the encoding. This parameter is used only if the parameter 
+        'columns' is empty.
+    prefix_sep: str, optional
+        Prefix delimitor of the dummies names.
+    drop_first: bool, optional
+        Drops the first dummy to avoid the creation of correlated features.
+    use_numbers_as_suffix: bool, optional
+        Uses numbers as suffix instead of the vcolumns categories.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame[].decode       : Encodes the vcolumn using a user defined Encoding.
-	vDataFrame[].discretize   : Discretizes the vcolumn.
-	vDataFrame[].get_dummies  : Computes the vcolumns result of One Hot Encoding.
-	vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
-	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
-		"""
+    See Also
+    --------
+    vDataFrame[].decode       : Encodes the vcolumn using a user defined Encoding.
+    vDataFrame[].discretize   : Discretizes the vcolumn.
+    vDataFrame[].get_dummies  : Computes the vcolumns result of One Hot Encoding.
+    vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
+    vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -4630,37 +4713,37 @@ vcolumns : vcolumn
     # ---#
     def groupby(self, columns: list, expr: list = [], check: bool = True):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame by grouping the elements.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame by grouping the elements.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns used for the grouping.
- 	expr: list, optional
- 		List of the different aggregations. Pure SQL must be written. Aliases can
- 		also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
- 		whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
- 		the different features and not have ambiguous names. The function MODE does
- 		not exist in SQL for example but can be obtained using the 'analytic' method
- 		first and then by grouping the result.
- 	check: bool, optional
- 		Do a columns checking before the computation. Set it to False to do
- 		customized selection.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns used for the grouping.
+    expr: list, optional
+        List of the different aggregations. Pure SQL must be written. Aliases can
+        also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
+        whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
+        the different features and not have ambiguous names. The function MODE does
+        not exist in SQL for example but can be obtained using the 'analytic' method
+        first and then by grouping the result.
+    check: bool, optional
+        Do a columns checking before the computation. Set it to False to do
+        customized selection.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		object result of the grouping.
+    Returns
+    -------
+    vDataFrame
+        object result of the grouping.
 
-	See Also
-	--------
-	vDataFrame.append   : Merges the vDataFrame with another relation.
-	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
- 		analytical function on a specific vcolumn.
-	vDataFrame.join     : Joins the vDataFrame with another relation.
-	vDataFrame.sort     : Sorts the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.append   : Merges the vDataFrame with another relation.
+    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
+        analytical function on a specific vcolumn.
+    vDataFrame.join     : Joins the vDataFrame with another relation.
+    vDataFrame.sort     : Sorts the vDataFrame.
+        """
         check_types([("columns", columns, [list],), ("expr", expr, [list],)])
         if check:
             columns_check(columns, self)
@@ -4694,8 +4777,8 @@ vcolumns : vcolumn
         alpha: float = 0.25,
     ):
         """
-	---------------------------------------------------------------------------
-	[Beta Version]
+    ---------------------------------------------------------------------------
+    [Beta Version]
     Draws responsive charts using the High Chart API: 
     https://api.highcharts.com/highcharts/
 
@@ -4706,117 +4789,117 @@ vcolumns : vcolumn
                      For more information, see python-hicharts repository:
                      https://github.com/kyper-data/python-highcharts
 
-	Parameters
- 	----------
- 	x / y / z / c: str / list
- 		The vcolumns and aggregations used to draw the chart. These will depend 
+    Parameters
+    ----------
+    x / y / z / c: str / list
+        The vcolumns and aggregations used to draw the chart. These will depend 
         on the chart type. You can also specify an expression, but it must be a SQL 
         statement. For example: AVG(column1) + SUM(column2) AS new_name.
 
- 			area / area_ts / line / spline
- 				x: numerical or type date like vcolumn
- 				y: a single expression or list of expressions used to draw the plot
-			    z: [OPTIONAL] vcolumn representing the different categories 
+            area / area_ts / line / spline
+                x: numerical or type date like vcolumn
+                y: a single expression or list of expressions used to draw the plot
+                z: [OPTIONAL] vcolumn representing the different categories 
                     (only if y is a single vcolumn)
- 			area_range
- 				x: numerical or date type vcolumn
- 				y: list of three expressions [expression, lower bound, upper bound]
- 			bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
- 				x: vcolumn used to compute the categories.
- 				y: [OPTIONAL] numerical expression representing the categories values. 
+            area_range
+                x: numerical or date type vcolumn
+                y: list of three expressions [expression, lower bound, upper bound]
+            bar (single) / donut / donut3d / hist (single) / pie / pie_half / pie3d
+                x: vcolumn used to compute the categories.
+                y: [OPTIONAL] numerical expression representing the categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
- 			bar (double / drilldown) / donut (drilldown) / donut3d (drilldown)
- 			hist (double / drilldown) / pie (drilldown) / pie_half (drilldown)
- 			pie3d (drilldown) / stacked_bar / stacked_hist
- 				x: vcolumn used to compute the first category.
-				y: vcolumn used to compute the second category.
-				z: [OPTIONAL] numerical expression representing the different categories values. 
+            bar (double / drilldown) / donut (drilldown) / donut3d (drilldown)
+            hist (double / drilldown) / pie (drilldown) / pie_half (drilldown)
+            pie3d (drilldown) / stacked_bar / stacked_hist
+                x: vcolumn used to compute the first category.
+                y: vcolumn used to compute the second category.
+                z: [OPTIONAL] numerical expression representing the different categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
- 			biserial / boxplot / pearson / kendall / pearson / spearman
- 				x: list of the vcolumns used to draw the Chart.
- 			bubble / scatter
- 				x: numerical vcolumn.
- 				y: numerical vcolumn.
- 				z: numerical vcolumn (bubble size in case of bubble plot, third 
- 					dimension in case of scatter plot)
- 				c: [OPTIONAL] [OPTIONAL] vcolumn used to compute the different categories.
- 			candlestick
- 				x: date type vcolumn.
-				y: Can be a numerical vcolumn or list of 5 expressions 
+            biserial / boxplot / pearson / kendall / pearson / spearman
+                x: list of the vcolumns used to draw the Chart.
+            bubble / scatter
+                x: numerical vcolumn.
+                y: numerical vcolumn.
+                z: numerical vcolumn (bubble size in case of bubble plot, third 
+                     dimension in case of scatter plot)
+                c: [OPTIONAL] [OPTIONAL] vcolumn used to compute the different categories.
+            candlestick
+                x: date type vcolumn.
+                y: Can be a numerical vcolumn or list of 5 expressions 
                     [last quantile, maximum, minimum, first quantile, volume]
- 			negative_bar
- 				x: binary vcolumn used to compute the first category.
- 				y: vcolumn used to compute the second category.
- 				z: [OPTIONAL] numerical expression representing the categories values. 
+            negative_bar
+                x: binary vcolumn used to compute the first category.
+                y: vcolumn used to compute the second category.
+                z: [OPTIONAL] numerical expression representing the categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
- 			spider
- 				x: vcolumn used to compute the different categories.
- 				y: [OPTIONAL] Can be a list of the expressions used to draw the Plot or a single expression. 
+            spider
+                x: vcolumn used to compute the different categories.
+                y: [OPTIONAL] Can be a list of the expressions used to draw the Plot or a single expression. 
                     If empty, COUNT(*) is used as the default aggregation.
- 	aggregate: bool, optional
- 		If set to True, the input vcolumns will be aggregated.
- 	kind: str, optional
- 		Chart Type.
- 			area         : Area Chart
- 			area_range   : Area Range Chart
- 			area_ts      : Area Chart with Time Series Design
- 			bar          : Bar Chart
- 			biserial     : Biserial Point Matrix (Correlation between binary
- 							variables and numerical)
-			boxplot      : Box Plot
-			bubble       : Bubble Plot
-			candlestick  : Candlestick and Volumes (Time Series Special Plot)
-			cramer       : Cramer's V Matrix (Correlation between categories)
-			donut        : Donut Chart
-			donut3d      : 3D Donut Chart
-			heatmap      : Heatmap
-			hist         : Histogram
-			kendall      : Kendall Correlation Matrix
+    aggregate: bool, optional
+        If set to True, the input vcolumns will be aggregated.
+    kind: str, optional
+        Chart Type.
+            area         : Area Chart
+            area_range   : Area Range Chart
+            area_ts      : Area Chart with Time Series Design
+            bar          : Bar Chart
+            biserial     : Biserial Point Matrix (Correlation between binary
+                             variables and numerical)
+            boxplot      : Box Plot
+            bubble       : Bubble Plot
+            candlestick  : Candlestick and Volumes (Time Series Special Plot)
+            cramer       : Cramer's V Matrix (Correlation between categories)
+            donut        : Donut Chart
+            donut3d      : 3D Donut Chart
+            heatmap      : Heatmap
+            hist         : Histogram
+            kendall      : Kendall Correlation Matrix
                            \u26A0 Warning : This method is computationally expensive. 
                                             It is using a CROSS JOIN during the computation.
                                             The complexity is O(n * n), n being the total
                                             count of the vDataFrame.
-			line         : Line Plot
-			negative_bar : Multi Bar Chart for binary classes
-			pearson      : Pearson Correlation Matrix
-			pie          : Pie Chart
-			pie_half     : Half Pie Chart
-			pie3d        : 3D Pie Chart
-			scatter      : Scatter Plot
-			spider       : Spider Chart
-			spline       : Spline Plot
-			stacked_bar  : Stacked Bar Chart
-			stacked_hist : Stacked Histogram
-			spearman     : Spearman Correlation Matrix
- 	width: int, optional
- 		Chart Width.
- 	height: int, optional
- 		Chart Height.
- 	options: dict, optional
- 		High Chart Dictionary to use to customize the Chart. Look at the API 
- 		documentation to know the different options.
- 	h: float, optional
- 		Interval width of the bar. If empty, an optimized value will be used.
- 	max_cardinality: int, optional
-		Maximum number of the vcolumn distinct elements.
- 	limit: int, optional
- 		Maximum number of elements to draw.
- 	drilldown: bool, optional
- 		Drilldown Chart: Only possible for Bars, Histograms, donuts and pies.
- 						 Instead of drawing 2D charts, this option allows you
- 						 to add a drilldown effect to 1D Charts.
- 	stock: bool, optional
- 		Stock Chart: Only possible for Time Series. The design of the Time
- 					 Series is dragable and have multiple options.
- 	alpha: float, optional
- 		Value used to determine the position of the upper and lower quantile 
+            line         : Line Plot
+            negative_bar : Multi Bar Chart for binary classes
+            pearson      : Pearson Correlation Matrix
+            pie          : Pie Chart
+            pie_half     : Half Pie Chart
+            pie3d        : 3D Pie Chart
+            scatter      : Scatter Plot
+            spider       : Spider Chart
+            spline       : Spline Plot
+            stacked_bar  : Stacked Bar Chart
+            stacked_hist : Stacked Histogram
+            spearman     : Spearman Correlation Matrix
+    width: int, optional
+        Chart Width.
+    height: int, optional
+        Chart Height.
+    options: dict, optional
+        High Chart Dictionary to use to customize the Chart. Look at the API 
+        documentation to know the different options.
+    h: float, optional
+        Interval width of the bar. If empty, an optimized value will be used.
+    max_cardinality: int, optional
+        Maximum number of the vcolumn distinct elements.
+    limit: int, optional
+        Maximum number of elements to draw.
+    drilldown: bool, optional
+        Drilldown Chart: Only possible for Bars, Histograms, donuts and pies.
+                          Instead of drawing 2D charts, this option allows you
+                          to add a drilldown effect to 1D Charts.
+    stock: bool, optional
+        Stock Chart: Only possible for Time Series. The design of the Time
+                     Series is dragable and have multiple options.
+    alpha: float, optional
+        Value used to determine the position of the upper and lower quantile 
         (Used when kind is set to 'candlestick')
 
- 	Returns
- 	-------
- 	Highchart
-		Chart Object
-		"""
+    Returns
+    -------
+    Highchart
+        Chart Object
+        """
         check_types([("kind", kind, [str],)])
         kind = kind.lower()
         check_types(
@@ -4909,24 +4992,24 @@ vcolumns : vcolumn
     # ---#
     def head(self, limit: int = 5):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame head.
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame head.
 
-	Parameters
- 	----------
- 	limit: int, optional
- 		Number of elements to display.
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.tail : Returns the vDataFrame tail.
-		"""
+    See Also
+    --------
+    vDataFrame.tail : Returns the vDataFrame tail.
+        """
         return self.iloc(limit=limit, offset=0)
 
     # ---#
@@ -4940,46 +5023,49 @@ vcolumns : vcolumn
         color: str = "white",
         bbox: list = [],
         img: str = "",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Hexbin of the input vcolumns based on an aggregation.
+    ---------------------------------------------------------------------------
+    Draws the Hexbin of the input vcolumns based on an aggregation.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have two elements.
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
- 	cmap: str, optional
- 		Color Map.
- 	gridsize: int, optional
- 		Hexbin grid size.
- 	color: str, optional
- 		Color of the Hexbin borders.
- 	bbox: list, optional
- 		List of 4 elements to delimit the boundaries of the final Plot. 
- 		It must be similar the following list: [xmin, xmax, ymin, ymax]
- 	img: str, optional
- 		Path to the image to display as background.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have two elements.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    cmap: str, optional
+        Color Map.
+    gridsize: int, optional
+        Hexbin grid size.
+    color: str, optional
+        Color of the Hexbin borders.
+    bbox: list, optional
+        List of 4 elements to delimit the boundaries of the final Plot. 
+        It must be similar the following list: [xmin, xmax, ymin, ymax]
+    img: str, optional
+         Path to the image to display as background.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
-		"""
+    See Also
+    --------
+    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5004,7 +5090,9 @@ vcolumns : vcolumn
             cmap = gen_cmap()[0]
         from verticapy.plot import hexbin
 
-        return hexbin(self, columns, method, of, cmap, gridsize, color, bbox, img)
+        return hexbin(
+            self, columns, method, of, cmap, gridsize, color, bbox, img, ax=ax
+        )
 
     # ---#
     def hist(
@@ -5015,50 +5103,53 @@ vcolumns : vcolumn
         max_cardinality: tuple = (6, 6),
         h: tuple = (None, None),
         hist_type: str = "auto",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Histogram of the input vcolumns based on an aggregation.
+    ---------------------------------------------------------------------------
+    Draws the Histogram of the input vcolumns based on an aggregation.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have less than 5 elements.
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
- 	h: tuple, optional
- 		Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
- 		vcolumns are numerical. Optimized h will be computed if the parameter 
- 		is empty or invalid.
- 	max_cardinality: tuple, optional
- 		Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
- 		categorical (No h will be picked or computed)
- 	hist_type: str, optional
- 		The Histogram Type.
- 			auto    : Regular Histogram based on 1 or 2 vcolumns.
- 			multi   : Multiple Regular Histograms based on 1 to 5 vcolumns.
-			stacked : Stacked Histogram based on 2 vcolumns.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have less than 5 elements.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    h: tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
+        vcolumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    hist_type: str, optional
+        The Histogram Type.
+            auto    : Regular Histogram based on 1 or 2 vcolumns.
+            multi   : Multiple Regular Histograms based on 1 to 5 vcolumns.
+            stacked : Stacked Histogram based on 2 vcolumns.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
- 	vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
- 	vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
-		"""
+    See Also
+    --------
+    vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
+    vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
+    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5084,40 +5175,42 @@ vcolumns : vcolumn
                 from verticapy.plot import multiple_hist
 
                 h_0 = h[0] if (h[0]) else 0
-                return multiple_hist(self, columns, method, of, h_0)
+                return multiple_hist(self, columns, method, of, h_0, ax=ax)
             else:
                 from verticapy.plot import hist2D
 
-                return hist2D(self, columns, method, of, max_cardinality, h, stacked)
+                return hist2D(
+                    self, columns, method, of, max_cardinality, h, stacked, ax=ax
+                )
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Returns a part of the vDataFrame (delimited by an offset and a limit).
+    ---------------------------------------------------------------------------
+    Returns a part of the vDataFrame (delimited by an offset and a limit).
 
-	Parameters
- 	----------
- 	limit: int, optional
- 		Number of elements to display.
- 	offset: int, optional
- 		Number of elements to skip.
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
+    offset: int, optional
+        Number of elements to skip.
     columns: list, optional
         A list containing the names of the vcolumns to include in the result. 
         If empty, all the vcolumns will be selected.
 
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.head : Returns the vDataFrame head.
-	vDataFrame.tail : Returns the vDataFrame tail.
-		"""
+    See Also
+    --------
+    vDataFrame.head : Returns the vDataFrame head.
+    vDataFrame.tail : Returns the vDataFrame tail.
+        """
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -5181,14 +5274,14 @@ vcolumns : vcolumn
     # ---#
     def info(self):
         """
-	---------------------------------------------------------------------------
-	Displays information about the different vDataFrame transformations.
+    ---------------------------------------------------------------------------
+    Displays information about the different vDataFrame transformations.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+        """
         if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
             print("The vDataFrame was never modified.")
         elif len(self._VERTICAPY_VARIABLES_["history"]) == 1:
@@ -5203,22 +5296,22 @@ vcolumns : vcolumn
     # ---#
     def isin(self, val: dict):
         """
-	---------------------------------------------------------------------------
-	Looks if some specific records are in the vDataFrame.
+    ---------------------------------------------------------------------------
+    Looks if some specific records are in the vDataFrame.
 
-	Parameters
- 	----------
- 	val: dict
- 		Dictionary of the different records. Each key of the dictionary must 
- 		represent a vcolumn. For example, to check if Badr Ouali and 
- 		Fouad Teban are in the vDataFrame. You can write the following dict:
- 		{"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}
+    Parameters
+    ----------
+    val: dict
+        Dictionary of the different records. Each key of the dictionary must 
+        represent a vcolumn. For example, to check if Badr Ouali and 
+        Fouad Teban are in the vDataFrame. You can write the following dict:
+        {"name": ["Teban", "Ouali"], "surname": ["Fouad", "Badr"]}
 
- 	Returns
- 	-------
- 	list
- 		List containing the bools of the different searches.
-		"""
+    Returns
+    -------
+    list
+        List containing the bools of the different searches.
+        """
         check_types([("val", val, [dict],)])
         columns_check([elem for elem in val], self)
         n = len(val[list(val.keys())[0]])
@@ -5250,8 +5343,8 @@ vcolumns : vcolumn
         expr2: list = ["*"],
     ):
         """
-	---------------------------------------------------------------------------
-	Joins the vDataFrame with another one or an input relation.
+    ---------------------------------------------------------------------------
+    Joins the vDataFrame with another one or an input relation.
 
     \u26A0 Warning : Joins can make the vDataFrame structure heavier. It is 
                      recommended to always check the current structure 
@@ -5259,45 +5352,45 @@ vcolumns : vcolumn
                      'to_db' method with the parameters 'inplace = True' and 
                      'relation_type = table'
 
-	Parameters
- 	----------
- 	input_relation: str/vDataFrame
- 		Relation to use to do the merging.
- 	on: dict, optional
- 		Dictionary of all the different keys. The dict must be similar to the following:
- 		{"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
- 		where relationA is the current vDataFrame and relationB is the input relation
- 		or the input vDataFrame.
- 	how: str, optional
- 		Join Type.
- 			left    : Left Join.
- 			right   : Right Join.
- 			cross   : Cross Join.
- 			full    : Full Outer Join.
- 			natural : Natural Join.
- 			inner   : Inner Join.
- 	expr1: list, optional
- 		List of the different columns to select from the current vDataFrame. 
- 		Pure SQL must be written. Aliases can also be given. 'column' or 
- 		'column AS my_new_alias' are correct. Aliases are recommended to keep 
- 		the track of the different features and not have ambiguous names. 
- 	expr2: list, optional
- 		List of the different columns to select from the input relation. 
- 		Pure SQL must be written. Aliases can also be given. 'column' or 
- 		'column AS my_new_alias' are correct. Aliases are recommended to keep 
- 		the track of the different features and not have ambiguous names. 
+    Parameters
+    ----------
+    input_relation: str/vDataFrame
+        Relation to use to do the merging.
+    on: dict, optional
+        Dictionary of all the different keys. The dict must be similar to the following:
+        {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
+        where relationA is the current vDataFrame and relationB is the input relation
+        or the input vDataFrame.
+    how: str, optional
+        Join Type.
+            left    : Left Join.
+            right   : Right Join.
+            cross   : Cross Join.
+            full    : Full Outer Join.
+            natural : Natural Join.
+            inner   : Inner Join.
+    expr1: list, optional
+        List of the different columns to select from the current vDataFrame. 
+        Pure SQL must be written. Aliases can also be given. 'column' or 
+        'column AS my_new_alias' are correct. Aliases are recommended to keep 
+        the track of the different features and not have ambiguous names. 
+    expr2: list, optional
+        List of the different columns to select from the input relation. 
+        Pure SQL must be written. Aliases can also be given. 'column' or 
+        'column AS my_new_alias' are correct. Aliases are recommended to keep 
+        the track of the different features and not have ambiguous names. 
 
- 	Returns
- 	-------
- 	vDataFrame
- 		object result of the join.
+    Returns
+    -------
+    vDataFrame
+        object result of the join.
 
-	See Also
-	--------
-	vDataFrame.append  : Merges the vDataFrame with another relation.
-	vDataFrame.groupby : Aggregates the vDataFrame.
-	vDataFrame.sort    : Sorts the vDataFrame.
-		"""
+    See Also
+    --------
+    vDataFrame.append  : Merges the vDataFrame with another relation.
+    vDataFrame.groupby : Aggregates the vDataFrame.
+    vDataFrame.sort    : Sorts the vDataFrame.
+        """
         check_types(
             [
                 ("on", on, [dict],),
@@ -5383,55 +5476,55 @@ vcolumns : vcolumn
     # ---#
     def kurtosis(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'kurtosis'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'kurtosis'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["kurtosis"], columns=columns)
 
     kurt = kurtosis
     # ---#
     def last(self, ts: str, offset: str):
         """
-	---------------------------------------------------------------------------
-	Filters the vDataFrame by only keeping the last records.
+    ---------------------------------------------------------------------------
+    Filters the vDataFrame by only keeping the last records.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...)
- 	offset: str
- 		Interval offset. For example, to filter and keep only the last 6 months of
- 		records, offset should be set to '6 months'.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
+        date like (date, datetime, timestamp...)
+    offset: str
+        Interval offset. For example, to filter and keep only the last 6 months of
+        records, offset should be set to '6 months'.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.at_time      : Filters the data at the input time.
-	vDataFrame.between_time : Filters the data between two time ranges.
-	vDataFrame.first        : Filters the data by only keeping the first records.
-	vDataFrame.filter       : Filters the data using the input expression.
-		"""
+    See Also
+    --------
+    vDataFrame.at_time      : Filters the data at the input time.
+    vDataFrame.between_time : Filters the data between two time ranges.
+    vDataFrame.first        : Filters the data by only keeping the first records.
+    vDataFrame.filter       : Filters the data using the input expression.
+        """
         check_types([("ts", ts, [str],), ("offset", offset, [str],)])
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
@@ -5445,23 +5538,23 @@ vcolumns : vcolumn
     # ---#
     def load(self, offset: int = -1):
         """
-	---------------------------------------------------------------------------
-	Loads a previous structure of the vDataFrame. 
+    ---------------------------------------------------------------------------
+    Loads a previous structure of the vDataFrame. 
 
-	Parameters
-	----------
-	offset: int, optional
-		offset of the saving. Example: -1 to load the last saving.
+    Parameters
+    ----------
+    offset: int, optional
+        offset of the saving. Example: -1 to load the last saving.
 
- 	Returns
- 	-------
- 	vDataFrame
-		vDataFrame of the loading.
+    Returns
+    -------
+    vDataFrame
+        vDataFrame of the loading.
 
-	See Also
-	--------
-	vDataFrame.save : Saves the current vDataFrame structure.
-		"""
+    See Also
+    --------
+    vDataFrame.save : Saves the current vDataFrame structure.
+        """
         check_types([("offset", offset, [int, float],)])
         save = self._VERTICAPY_VARIABLES_["saving"][offset]
         vdf = {}
@@ -5473,98 +5566,99 @@ vcolumns : vcolumn
     # ---#
     def mad(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["mad"], columns=columns)
 
     # ---#
     def max(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'max' (Maximum).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'max' (Maximum).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["max"], columns=columns)
 
     # ---#
     def median(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'median'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'median'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["median"], columns=columns)
 
     # ---#
     def memory_usage(self):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame memory usage. 
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame memory usage. 
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.expected_store_usage : Returns the expected store usage.
-		"""
+    See Also
+    --------
+    vDataFrame.expected_store_usage : Returns the expected store usage.
+        """
         import sys
 
         total = sum(
             [sys.getsizeof(elem) for elem in self._VERTICAPY_VARIABLES_]
         ) + sys.getsizeof(self)
         values = {"index": ["object"], "value": [total]}
-        for column in self._VERTICAPY_VARIABLES_["columns"]:
+        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        for column in columns:
             values["index"] += [column]
             values["value"] += [self[column].memory_usage()]
             total += self[column].memory_usage()
@@ -5575,25 +5669,25 @@ vcolumns : vcolumn
     # ---#
     def min(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'min' (Minimum).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'min' (Minimum).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["min"], columns=columns)
 
     # ---#
@@ -5676,34 +5770,34 @@ vcolumns : vcolumn
     # ---#
     def normalize(self, columns: list = [], method: str = "zscore"):
         """
-	---------------------------------------------------------------------------
-	Normalizes the input vcolumns using the input method.
+    ---------------------------------------------------------------------------
+    Normalizes the input vcolumns using the input method.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	method: str, optional
- 		Method to use to normalize.
- 			zscore        : Normalization using the Z-Score (avg and std).
-				(x - avg) / std
- 			robust_zscore : Normalization using the Robust Z-Score (median and mad).
-				(x - median) / (1.4826 * mad)
- 			minmax        : Normalization using the MinMax (min and max).
-				(x - min) / (max - min)
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    method: str, optional
+        Method to use to normalize.
+            zscore        : Normalization using the Z-Score (avg and std).
+                (x - avg) / std
+            robust_zscore : Normalization using the Robust Z-Score (median and mad).
+                (x - median) / (1.4826 * mad)
+            minmax        : Normalization using the MinMax (min and max).
+                (x - min) / (max - min)
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.outliers    : Computes the vDataFrame Global Outliers.
-	vDataFrame[].normalize : Normalizes the vcolumn. This method is more complete 
-		than the vDataFrame.normalize method by allowing more parameters.
-		"""
+    See Also
+    --------
+    vDataFrame.outliers    : Computes the vDataFrame Global Outliers.
+    vDataFrame[].normalize : Normalizes the vcolumn. This method is more complete 
+        than the vDataFrame.normalize method by allowing more parameters.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5730,24 +5824,24 @@ vcolumns : vcolumn
     # ---#
     def numcol(self, exclude_columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame numerical vcolumns.
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame numerical vcolumns.
 
-	Parameters
- 	----------
- 	exclude_columns: list, optional
- 		List of the vcolumns names to exclude from the final list. 
+    Parameters
+    ----------
+    exclude_columns: list, optional
+        List of the vcolumns names to exclude from the final list. 
 
- 	Returns
- 	-------
- 	List
- 		List of the numerical vcolumns names. 
-	
-	See Also
-	--------
-	vDataFrame.catcol      : Returns all the vDataFrame categorical vcolumns.
-	vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
-		"""
+    Returns
+    -------
+    List
+        List of the numerical vcolumns names. 
+    
+    See Also
+    --------
+    vDataFrame.catcol      : Returns all the vDataFrame categorical vcolumns.
+    vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
+        """
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
         for column in cols:
             if self[column].isnum():
@@ -5757,24 +5851,24 @@ vcolumns : vcolumn
     # ---#
     def nunique(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'unique' (cardinality).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'unique' (cardinality).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the vcolumns will be used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the vcolumns will be used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["unique"], columns=columns)
 
     # ---#
@@ -5786,32 +5880,32 @@ vcolumns : vcolumn
         robust: bool = False,
     ):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn labeled with 0 and 1. 1 means that the record is a global 
-	outlier.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn labeled with 0 and 1. 1 means that the record is a global 
+    outlier.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	name: str, optional
- 		Name of the new vcolumn.
- 	threshold: float, optional
- 		Threshold equals to the critical score.
- 	robust: bool
- 		If set to True, the score used will be the Robust Z-Score instead of 
- 		the Z-Score.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    name: str, optional
+        Name of the new vcolumn.
+    threshold: float, optional
+        Threshold equals to the critical score.
+    robust: bool
+        If set to True, the score used will be the Robust Z-Score instead of 
+        the Z-Score.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.normalize : Normalizes the input vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.normalize : Normalizes the input vcolumns.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5855,6 +5949,7 @@ vcolumns : vcolumn
         confidence: bool = True,
         alpha: float = 0.95,
         show: bool = True,
+        ax=None,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5863,7 +5958,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     column: str
-        Input vcolumn to use to compute the Auto Correlation Plot.
+        Input vcolumn to use to compute the Partial Auto Correlation Plot.
     ts: str
         TS (Time Series) vcolumn to use to order the data. It can be of type date
         or a numerical vcolumn.
@@ -5885,12 +5980,13 @@ vcolumns : vcolumn
         band width.
     show: bool, optional
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
+    ax
+        Matplotlib axes object
 
     See Also
     --------
@@ -6038,12 +6134,18 @@ vcolumns : vcolumn
                     title="Partial Autocorrelation",
                     confidence=pacf_band,
                     type_bar=True,
+                    ax=ax,
                 )
             return result
 
     # ---#
     def pivot(
-        self, index: str, columns: str, values: str, aggr: str = "sum", prefix: str = ""
+        self,
+        index: str,
+        columns: str,
+        values: str,
+        aggr: str = "sum",
+        prefix: str = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -6136,51 +6238,54 @@ vcolumns : vcolumn
         show: bool = True,
         cmap: str = "",
         with_numbers: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Pivot Table of one or two columns based on an aggregation.
+    ---------------------------------------------------------------------------
+    Draws the Pivot Table of one or two columns based on an aggregation.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have one or two elements.
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of (ex: 50% to get the median).
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
- 	max_cardinality: tuple, optional
- 		Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
- 		categorical (No h will be picked or computed)
- 	h: tuple, optional
- 		Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
- 		vcolumns are numerical. Optimized h will be computed if the parameter 
- 		is empty or invalid.
- 	show: bool, optional
- 		If set to True, the result will be drawn using Matplotlib.
- 	cmap: str, optional
- 		Color Map.
- 	with_numbers: bool, optional
- 		If set to True, no number will be displayed in the final drawing.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have one or two elements.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of (ex: 50% to get the median).
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    h: tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
+        vcolumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    show: bool, optional
+        If set to True, the result will be drawn using Matplotlib.
+    cmap: str, optional
+        Color Map.
+    with_numbers: bool, optional
+        If set to True, no number will be displayed in the final drawing.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	tablesample
+    Returns
+    -------
+    tablesample
         An object containing the result. For more information, see
         utilities.tablesample.
 
-  	See Also
- 	--------
- 	vDataFrame.hexbin : Draws the Hexbin Plot of 2 vcolumns based on an aggregation.
+    See Also
+    --------
+    vDataFrame.hexbin : Draws the Hexbin Plot of 2 vcolumns based on an aggregation.
     vDataFrame.pivot  : Returns the Pivot of the vDataFrame using the input aggregation.
-		"""
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6206,41 +6311,57 @@ vcolumns : vcolumn
         from verticapy.plot import pivot_table
 
         return pivot_table(
-            self, columns, method, of, h, max_cardinality, show, cmap, with_numbers
+            self,
+            columns,
+            method,
+            of,
+            h,
+            max_cardinality,
+            show,
+            cmap,
+            with_numbers,
+            ax=ax,
         )
 
     # ---#
     def plot(
-        self, ts: str, columns: list = [], start_date: str = "", end_date: str = ""
+        self,
+        ts: str,
+        columns: list = [],
+        start_date: str = "",
+        end_date: str = "",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Time Series.
+    ---------------------------------------------------------------------------
+    Draws the Time Series.
 
-	Parameters
- 	----------
- 	ts: str
- 		TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
- 		date like (date, datetime, timestamp...) or numerical.
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	start_date: str, optional
- 		Input Start Date. For example, time = '03-11-1993' will filter the data when 
- 		'ts' is lesser than November 1993 the 3rd.
- 	end_date: str, optional
- 		Input End Date. For example, time = '03-11-1993' will filter the data when 
- 		'ts' is greater than November 1993 the 3rd.
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    start_date: str, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
-	See Also
-	--------
-	vDataFrame[].plot : Draws the Time Series of one vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame[].plot : Draws the Time Series of one vcolumn.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6254,30 +6375,30 @@ vcolumns : vcolumn
         ts = vdf_columns_names([ts], self)[0]
         from verticapy.plot import multi_ts_plot
 
-        return multi_ts_plot(self, ts, columns, start_date, end_date)
+        return multi_ts_plot(self, ts, columns, start_date, end_date, ax=ax)
 
     # ---#
     def product(self, columns=[]):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'product'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'product'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["prod"], columns=columns)
 
     prod = product
@@ -6285,28 +6406,28 @@ vcolumns : vcolumn
     # ---#
     def quantile(self, q: list, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using a list of 'quantiles'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using a list of 'quantiles'.
 
-	Parameters
- 	----------
- 	q: list
- 		List of the different quantiles. They must be numbers between 0 and 1.
- 		For example [0.25, 0.75] will return Q1 and Q3.
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    q: list
+        List of the different quantiles. They must be numbers between 0 and 1.
+        For example [0.25, 0.75] will return Q1 and Q3.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(
             func=["{}%".format(float(item) * 100) for item in q], columns=columns
         )
@@ -6324,54 +6445,54 @@ vcolumns : vcolumn
         name: str = "",
     ):
         """
-	---------------------------------------------------------------------------
-	Computes a new vcolumn based on regular expressions. 
+    ---------------------------------------------------------------------------
+    Computes a new vcolumn based on regular expressions. 
 
-	Parameters
- 	----------
- 	column: str
- 		Input vcolumn to use to compute the regular expression.
- 	pattern: str
- 		The regular expression.
- 	method: str, optional
- 		Method to use to compute the regular expressions.
- 			count     : Returns the number times a regular expression matches 
- 				each element of the input vcolumn. 
- 			ilike     : Returns True if the vcolumn element contains a match 
- 				for the regular expression.
- 			instr     : Returns the starting or ending position in a vcolumn 
- 				element where a regular expression matches. 
- 			like      : Returns True if the vcolumn element matches the regular 
- 				expression.
- 			not_ilike : Returns True if the vcolumn element does not match the 
- 				case-insensitive regular expression.
- 			not_like  : Returns True if the vcolumn element does not contain a 
- 				match for the regular expression.
- 			replace   : Replaces all occurrences of a substring that match a 
- 				regular expression with another substring.
- 			substr    : Returns the substring that matches a regular expression 
- 				within a vcolumn.
- 	position: int, optional
- 		The number of characters from the start of the string where the function 
- 		should start searching for matches.
- 	occurrence: int, optional
- 		Controls which occurrence of a pattern match in the string to return.
- 	replacement: str, optional
- 		The string to replace matched substrings.
- 	return_position: int, optional
- 		Sets the position within the string to return.
- 	name: str, optional
- 		New feature name. If empty, a name will be generated.
+    Parameters
+    ----------
+    column: str
+        Input vcolumn to use to compute the regular expression.
+    pattern: str
+        The regular expression.
+    method: str, optional
+        Method to use to compute the regular expressions.
+            count     : Returns the number times a regular expression matches 
+                each element of the input vcolumn. 
+            ilike     : Returns True if the vcolumn element contains a match 
+                for the regular expression.
+            instr     : Returns the starting or ending position in a vcolumn 
+                element where a regular expression matches. 
+            like      : Returns True if the vcolumn element matches the regular 
+                expression.
+            not_ilike : Returns True if the vcolumn element does not match the 
+                case-insensitive regular expression.
+            not_like  : Returns True if the vcolumn element does not contain a 
+                match for the regular expression.
+            replace   : Replaces all occurrences of a substring that match a 
+                regular expression with another substring.
+            substr    : Returns the substring that matches a regular expression 
+                within a vcolumn.
+    position: int, optional
+        The number of characters from the start of the string where the function 
+        should start searching for matches.
+    occurrence: int, optional
+        Controls which occurrence of a pattern match in the string to return.
+    replacement: str, optional
+        The string to replace matched substrings.
+    return_position: int, optional
+        Sets the position within the string to return.
+    name: str, optional
+        New feature name. If empty, a name will be generated.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.eval : Evaluates a customized expression.
-	"""
+    See Also
+    --------
+    vDataFrame.eval : Evaluates a customized expression.
+    """
         check_types(
             [
                 ("column", column, [str],),
@@ -6415,52 +6536,59 @@ vcolumns : vcolumn
 
     # ---#
     def regr(
-        self, columns: list = [], method: str = "r2", cmap: str = "", show: bool = True
+        self,
+        columns: list = [],
+        method: str = "r2",
+        cmap: str = "",
+        show: bool = True,
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Computes the Regression Matrix of the vDataFrame.
+    ---------------------------------------------------------------------------
+    Computes the Regression Matrix of the vDataFrame.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
- 	method: str, optional
- 		Method to use to compute the regression matrix.
- 			avgx  : Average of the independent expression in an expression pair.
- 			avgy  : Average of the dependent expression in an expression pair.
- 			count : Count of all rows in an expression pair.
- 			alpha : Intercept of the regression line determined by a set of 
- 				expression pairs.
- 			r2    : Square of the correlation coefficient of a set of expression 
- 				pairs.
- 			beta  : Slope of the regression line, determined by a set of expression 
- 				pairs.
- 			sxx   : Sum of squares of the independent expression in an expression 
- 				pair.
- 			sxy   : Sum of products of the independent expression multiplied by the 
- 				dependent expression in an expression pair.
- 			syy   : Returns the sum of squares of the dependent expression in an 
- 				expression pair.
- 	cmap: str, optional
- 		Color Map.
- 	show: bool, optional
- 		If set to True, the Regression Matrix will be drawn using Matplotlib.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+    method: str, optional
+        Method to use to compute the regression matrix.
+            avgx  : Average of the independent expression in an expression pair.
+            avgy  : Average of the dependent expression in an expression pair.
+            count : Count of all rows in an expression pair.
+            alpha : Intercept of the regression line determined by a set of 
+                expression pairs.
+            r2    : Square of the correlation coefficient of a set of expression 
+                pairs.
+            beta  : Slope of the regression line, determined by a set of expression 
+                pairs.
+            sxx   : Sum of squares of the independent expression in an expression 
+                pair.
+            sxy   : Sum of products of the independent expression multiplied by the 
+                dependent expression in an expression pair.
+            syy   : Returns the sum of squares of the dependent expression in an 
+                expression pair.
+    cmap: str, optional
+        Color Map.
+    show: bool, optional
+        If set to True, the Regression Matrix will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.acf   : Computes the Correlations between a vcolumn and its lags.
-	vDataFrame.cov   : Computes the Covariance Matrix of the vDataFrame.
-	vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
+    See Also
+    --------
+    vDataFrame.acf   : Computes the Correlations between a vcolumn and its lags.
+    vDataFrame.cov   : Computes the Covariance Matrix of the vDataFrame.
+    vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
     vDataFrame.pacf  : Computes the Partial Autocorrelations of the input vcolumn.
-		"""
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6593,6 +6721,7 @@ vcolumns : vcolumn
                 vmin=None,
                 cmap=cmap,
                 title="{} Matrix".format(method_title),
+                ax=ax,
             )
         values = {"index": matrix[0][1 : len(matrix[0])]}
         del matrix[0]
@@ -6621,9 +6750,9 @@ vcolumns : vcolumn
         rule: str = "auto",
     ):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame by using an advanced analytical window 
-	function on one or two specific vcolumns.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame by using an advanced analytical window 
+    function on one or two specific vcolumns.
 
     \u26A0 Warning : Some window functions can make the vDataFrame structure 
                      heavier. It is recommended to always check the current structure 
@@ -6631,72 +6760,72 @@ vcolumns : vcolumn
                      'to_db' method with the parameters 'inplace = True' and 
                      'relation_type = table'
 
-	Parameters
- 	----------
- 	func: str
- 		Function to use.
+    Parameters
+    ----------
+    func: str
+        Function to use.
             aad         : average absolute deviation
- 			beta        : Beta Coefficient between 2 vcolumns
- 			count       : number of non-missing elements
- 			corr        : Pearson correlation between 2 vcolumns
- 			cov         : covariance between 2 vcolumns
-			kurtosis    : kurtosis
-			jb          : Jarque Bera index
-			max         : maximum
-			mean        : average
-			min         : minimum
-			prod        : product
-			range       : difference between the max and the min
-			sem         : standard error of the mean
-			skewness    : skewness
-			sum         : sum
-			std         : standard deviation
-			var         : variance
-				Other window functions could work if it is part of 
-				the DB version you are using.
- 	column: str
- 		Input vcolumn.
- 	preceding: int/str
- 		First part of the moving window. With which lag/lead the window 
- 		should begin. It can be an integer or an interval.
- 	following: int/str
- 		Second part of the moving window. With which lag/lead the window 
- 		should end. It can be an integer or an interval.
- 	column2: str, optional
-		Second input vcolumn in case of functions using 2 parameters.
- 	name: str, optional
- 		Name of the new vcolumn. If empty a default name based on the other
- 		parameters will be generated.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	method: str, optional
- 		Method to use to compute the window.
- 			rows : Uses number of leads/lags instead of time intervals
- 			range: Uses time intervals instead of number of leads/lags
- 	rule: str, optional
- 		Rule to use to compute the window.
- 			auto   : The 'preceding' parameter will correspond to a past event and 
-				the parameter 'following' to a future event.
- 			past   : Both parameters 'preceding' and following will consider
-				past events.
- 			future : Both parameters 'preceding' and following will consider
-				future events.
+            beta        : Beta Coefficient between 2 vcolumns
+            count       : number of non-missing elements
+            corr        : Pearson correlation between 2 vcolumns
+            cov         : covariance between 2 vcolumns
+            kurtosis    : kurtosis
+            jb          : Jarque Bera index
+            max         : maximum
+            mean        : average
+            min         : minimum
+            prod        : product
+            range       : difference between the max and the min
+            sem         : standard error of the mean
+            skewness    : skewness
+            sum         : sum
+            std         : standard deviation
+            var         : variance
+                Other window functions could work if it is part of 
+                the DB version you are using.
+    column: str
+        Input vcolumn.
+    preceding: int/str
+        First part of the moving window. With which lag/lead the window 
+        should begin. It can be an integer or an interval.
+    following: int/str
+        Second part of the moving window. With which lag/lead the window 
+        should end. It can be an integer or an interval.
+    column2: str, optional
+        Second input vcolumn in case of functions using 2 parameters.
+    name: str, optional
+        Name of the new vcolumn. If empty a default name based on the other
+        parameters will be generated.
+    by: list, optional
+        vcolumns used in the partition.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    method: str, optional
+        Method to use to compute the window.
+            rows : Uses number of leads/lags instead of time intervals
+            range: Uses time intervals instead of number of leads/lags
+    rule: str, optional
+        Rule to use to compute the window.
+            auto   : The 'preceding' parameter will correspond to a past event and 
+                the parameter 'following' to a future event.
+            past   : Both parameters 'preceding' and following will consider
+                past events.
+            future : Both parameters 'preceding' and following will consider
+                future events.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.eval     : Evaluates a customized expression.
-	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
-		analytical function on a specific vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame.eval     : Evaluates a customized expression.
+    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
+        analytical function on a specific vcolumn.
+        """
         check_types(
             [
                 ("name", name, [str],),
@@ -6850,24 +6979,24 @@ vcolumns : vcolumn
     # ---#
     def sample(self, x: float):
         """
-	---------------------------------------------------------------------------
-	Downsamples the vDataFrame by filtering using a random vcolumn.
+    ---------------------------------------------------------------------------
+    Downsamples the vDataFrame by filtering using a random vcolumn.
 
     \u26A0 Warning : The result will change for each SQL code generation as the 
                      random numbers are not memorized. You can use this method to 
                      downsample before saving the final relation to the DataBase.
 
-	Parameters
- 	----------
- 	x: float
- 		The sample size. For example it has to be equal to 0.33 to downsample to 
- 		approximatively 33% of the relation.
+    Parameters
+     ----------
+     x: float
+        The sample size. For example it has to be equal to 0.33 to downsample to 
+        approximatively 33% of the relation.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+        """
         check_types([("x", x, [int, float],)])
         if (x <= 0) or (x >= 1):
             raise ParameterError("Parameter 'x' must be between 0 and 1")
@@ -6880,19 +7009,19 @@ vcolumns : vcolumn
     # ---#
     def save(self):
         """
-	---------------------------------------------------------------------------
-	Saves the current structure of the vDataFrame. 
-	This function is useful to load a previous transformation.
+    ---------------------------------------------------------------------------
+    Saves the current structure of the vDataFrame. 
+    This function is useful to load a previous transformation.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.load : Loads a saving.
-		"""
+    See Also
+    --------
+    vDataFrame.load : Loads a saving.
+        """
         save = 'vdf_save = vDataFrame("", empty = True)'
         save += "\nvdf_save._VERTICAPY_VARIABLES_[\"dsn\"] = '{}'".format(
             self._VERTICAPY_VARIABLES_["dsn"].replace("'", "\\'")
@@ -6933,7 +7062,8 @@ vcolumns : vcolumn
         save += "\nvdf_save._VERTICAPY_VARIABLES_[\"schema_writing\"] = '{}'".format(
             self._VERTICAPY_VARIABLES_["schema_writing"].replace("'", "\\'")
         )
-        for column in self._VERTICAPY_VARIABLES_["columns"]:
+        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        for column in columns:
             save += "\nsave_vColumn = vColumn('{}', parent = vdf_save, transformations = {}, catalog = {})".format(
                 column.replace("'", "\\'"),
                 self[column].transformations,
@@ -6959,46 +7089,49 @@ vcolumns : vcolumn
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
+        ax=None,
     ):
         """
-	---------------------------------------------------------------------------
-	Draws the Scatter Plot of the input vcolumns.
+    ---------------------------------------------------------------------------
+    Draws the Scatter Plot of the input vcolumns.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns names. The list must have two or three elements.
- 	catcol: str, optional
- 		Categorical vcolumn to use to label the data.
- 	max_cardinality: int, optional
- 		Maximum number of distinct elements for 'catcol' to be used as 
- 		categorical. The less frequent elements will be gathered together to 
- 		create a new category: 'Others'.
- 	cat_priority: list, optional
- 		List of the different categories to consider when labeling the data using
- 		the vcolumn 'catcol'. The other categories will be filtered.
- 	with_others: bool, optional
- 		If set to false and the cardinality of the vcolumn 'catcol' is too big then 
- 		the less frequent element will not be merged to another category and they 
- 		will not be drawn.
- 	max_nb_points: int, optional
- 		Maximum number of points to display.
- 	bbox: list, optional
- 		List of 4 elements to delimit the boundaries of the final Plot. 
- 		It must be similar the following list: [xmin, xmax, ymin, ymax]
- 	img: str, optional
- 		Path to the image to display as background.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have two or three elements.
+    catcol: str, optional
+        Categorical vcolumn to use to label the data.
+    max_cardinality: int, optional
+        Maximum number of distinct elements for 'catcol' to be used as 
+        categorical. The less frequent elements will be gathered together to 
+        create a new category: 'Others'.
+    cat_priority: list, optional
+        List of the different categories to consider when labeling the data using
+        the vcolumn 'catcol'. The other categories will be filtered.
+    with_others: bool, optional
+        If set to false and the cardinality of the vcolumn 'catcol' is too big then 
+        the less frequent element will not be merged to another category and they 
+        will not be drawn.
+    max_nb_points: int, optional
+        Maximum number of points to display.
+    bbox: list, optional
+        List of 4 elements to delimit the boundaries of the final Plot. 
+        It must be similar the following list: [xmin, xmax, ymin, ymax]
+    img: str, optional
+        Path to the image to display as background.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.bubble      : Draws the Bubble Plot of the input vcolumns.
- 	vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
-		"""
+    See Also
+    --------
+    vDataFrame.bubble      : Draws the Bubble Plot of the input vcolumns.
+    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
         check_types(
             [
                 ("columns", columns, [list],),
@@ -7030,6 +7163,7 @@ vcolumns : vcolumn
                 max_nb_points,
                 bbox,
                 img,
+                ax=ax,
             )
         elif len(columns) == 3:
             from verticapy.plot import scatter3D
@@ -7041,6 +7175,7 @@ vcolumns : vcolumn
                 cat_priority,
                 with_others,
                 max_nb_points,
+                ax=ax,
             )
         else:
             raise ParameterError(
@@ -7052,24 +7187,24 @@ vcolumns : vcolumn
     # ---#
     def scatter_matrix(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Draws the Scatter Matrix of the vDataFrame.
+    ---------------------------------------------------------------------------
+    Draws the Scatter Matrix of the vDataFrame.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	Figure
-		Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
- 	See Also
- 	--------
- 	vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
+        """
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
@@ -7080,34 +7215,34 @@ vcolumns : vcolumn
     # ---#
     def search(self, conditions="", usecols: list = [], expr: list = [], order_by=[]):
         """
-	---------------------------------------------------------------------------
-	Searches the elements which matches with the input conditions.
-	
-	Parameters
-	----------
-	conditions: str / list, optional
- 		Filters of the search. It can be a list of conditions or an expression.
- 	usecols: list, optional
- 		vcolumns to select from the final vDataFrame relation. If empty, all the
- 		vcolumns will be selected.
- 	expr: list, optional
- 		List of customized expressions. It must be pure SQL. For example, it is
- 		possible to write 'column1 * column2 AS my_name'.
-	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    ---------------------------------------------------------------------------
+    Searches the elements which matches with the input conditions.
+    
+    Parameters
+    ----------
+    conditions: str / list, optional
+        Filters of the search. It can be a list of conditions or an expression.
+    usecols: list, optional
+        vcolumns to select from the final vDataFrame relation. If empty, all the
+        vcolumns will be selected.
+    expr: list, optional
+        List of customized expressions. It must be pure SQL. For example, it is
+        possible to write 'column1 * column2 AS my_name'.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
 
- 	Returns
- 	-------
- 	vDataFrame
- 		vDataFrame of the search
+    Returns
+    -------
+    vDataFrame
+        vDataFrame of the search
 
-	See Also
-	--------
-	vDataFrame.filter : Filters the vDataFrame using the input expressions.
-	vDataFrame.select : Returns a copy of the vDataFrame with only the selected vcolumns.
-		"""
+    See Also
+    --------
+    vDataFrame.filter : Filters the vDataFrame using the input expressions.
+    vDataFrame.select : Returns a copy of the vDataFrame with only the selected vcolumns.
+        """
         check_types(
             [
                 ("conditions", conditions, [str, list],),
@@ -7132,25 +7267,25 @@ vcolumns : vcolumn
     # ---#
     def select(self, columns: list, check: bool = True):
         """
-	---------------------------------------------------------------------------
-	Returns a copy of the vDataFrame with only the selected vcolumns.
+    ---------------------------------------------------------------------------
+    Returns a copy of the vDataFrame with only the selected vcolumns.
 
-	Parameters
- 	----------
- 	columns: list
- 		List of the vcolumns to select.
- 	check: bool, optional
- 		Set it to False to do customized expressions selection.
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns to select.
+    check: bool, optional
+        Set it to False to do customized expressions selection.
 
- 	Returns
- 	-------
- 	vDataFrame
- 		object with only the selected columns.
+    Returns
+    -------
+    vDataFrame
+        object with only the selected columns.
 
- 	See Also
-	--------
-	vDataFrame.search : Searches the elements which matches with the input conditions.
-		"""
+    See Also
+    --------
+    vDataFrame.search : Searches the elements which matches with the input conditions.
+        """
         check_types([("columns", columns, [list],)])
         if check:
             columns_check(columns, self)
@@ -7165,25 +7300,25 @@ vcolumns : vcolumn
     # ---#
     def sem(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["sem"], columns=columns)
 
     # ---#
@@ -7195,35 +7330,35 @@ vcolumns : vcolumn
         name: str = "session_id",
     ):
         """
-	---------------------------------------------------------------------------
-	Adds a new vcolumn to the vDataFrame which will correspond to sessions 
-	(user activity during a specific time). A session ends when ts - lag(ts) 
-	is greater than a specific threshold.
+    ---------------------------------------------------------------------------
+    Adds a new vcolumn to the vDataFrame which will correspond to sessions 
+    (user activity during a specific time). A session ends when ts - lag(ts) 
+    is greater than a specific threshold.
 
-	Parameters
- 	----------
- 	ts: str
- 		vcolumn used as timeline. It will be to use to order the data. It can be
- 		a numerical or type date like (date, datetime, timestamp...) vcolumn.
- 	by: list, optional
- 		vcolumns used in the partition.
- 	session_threshold: str, optional
- 		This parameter is the threshold which will determine the end of the 
- 		session. For example, if it is set to '10 minutes' the session ends
- 		after 10 minutes of inactivity.
- 	name: str, optional
- 		The session name.
+    Parameters
+    ----------
+    ts: str
+        vcolumn used as timeline. It will be to use to order the data. It can be
+        a numerical or type date like (date, datetime, timestamp...) vcolumn.
+    by: list, optional
+        vcolumns used in the partition.
+    session_threshold: str, optional
+        This parameter is the threshold which will determine the end of the 
+        session. For example, if it is set to '10 minutes' the session ends
+        after 10 minutes of inactivity.
+    name: str, optional
+        The session name.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
- 	--------
- 	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
-		analytical function on a specific vcolumn.
-		"""
+    See Also
+    --------
+    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
+        analytical function on a specific vcolumn.
+        """
         check_types(
             [
                 ("ts", ts, [str],),
@@ -7244,24 +7379,24 @@ vcolumns : vcolumn
     # ---#
     def set_cursor(self, cursor):
         """
-	---------------------------------------------------------------------------
-	Sets a new DB cursor. It can be very usefull if the connection to the DB is 
-	lost.
+    ---------------------------------------------------------------------------
+    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
+    lost.
 
-	Parameters
-	----------
-	cursor: DBcursor
-		New cursor.
+    Parameters
+    ----------
+    cursor: DBcursor
+        New cursor.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
- 	See Also
- 	--------
- 	vDataFrame.set_dsn: Sets a new DSN.
-		"""
+    See Also
+    --------
+    vDataFrame.set_dsn: Sets a new DSN.
+        """
         check_cursor(cursor)
         cursor.execute("SELECT 1;")
         self._VERTICAPY_VARIABLES_["cursor"] = cursor
@@ -7316,25 +7451,25 @@ vcolumns : vcolumn
     # ---#
     def set_schema_writing(self, schema_writing: str):
         """
-	---------------------------------------------------------------------------
-	Sets a new writing schema, this schema will be to use to create temporary table
-	if it is necessary.
+    ---------------------------------------------------------------------------
+    Sets a new writing schema, this schema will be to use to create temporary table
+    if it is necessary.
 
-	Parameters
-	----------
-	schema_writing: str
-		New schema writing name.
+    Parameters
+    ----------
+    schema_writing: str
+        New schema writing name.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
- 	See Also
- 	--------
- 	vDataFrame.set_cursor : Sets a new DB cursor.
- 	vDataFrame.set_dsn    : Sets a new DB DSN.
-		"""
+    See Also
+    --------
+    vDataFrame.set_cursor : Sets a new DB cursor.
+    vDataFrame.set_dsn    : Sets a new DB DSN.
+        """
         check_types([("schema_writing", schema_writing, [str],)])
         self._VERTICAPY_VARIABLES_["cursor"].execute(
             "SELECT table_schema FROM columns WHERE table_schema = '{}'".format(
@@ -7357,54 +7492,54 @@ vcolumns : vcolumn
     # ---#
     def score(self, y_true: str, y_score: str, method: str):
         """
-	---------------------------------------------------------------------------
-	Computes the score using the input columns and the input method.
+    ---------------------------------------------------------------------------
+    Computes the score using the input columns and the input method.
 
-	Parameters
-	----------
-	y_true: str
-		Response column.
-	y_score: str
-		Prediction.
-	method: str
-		The method to use to compute the score.
-			--- For Classification ---
-			accuracy    : Accuracy
-			auc         : Area Under the Curve (ROC)
-			best_cutoff : Cutoff which optimised the ROC Curve prediction.
-			bm          : Informedness = tpr + tnr - 1
-			csi         : Critical Success Index = tp / (tp + fn + fp)
-			f1          : F1 Score 
-			logloss     : Log Loss
-			mcc         : Matthews Correlation Coefficient 
-			mk          : Markedness = ppv + npv - 1
-			npv         : Negative Predictive Value = tn / (tn + fn)
-			prc_auc     : Area Under the Curve (PRC)
-			precision   : Precision = tp / (tp + fp)
-			recall      : Recall = tp / (tp + fn)
-			specificity : Specificity = tn / (tn + fp)
-			--- For Regression ---
-			max    : Max Error
-			mae    : Mean Absolute Error
-			median : Median Absolute Error
-			mse    : Mean Squared Error
-			msle   : Mean Squared Log Error
-			r2     : R squared coefficient
-			var    : Explained Variance  
-			--- Plots ---
-			roc  : ROC Curve
-			prc  : PRC Curve
-			lift : Lift Chart
+    Parameters
+    ----------
+    y_true: str
+        Response column.
+    y_score: str
+        Prediction.
+    method: str
+        The method to use to compute the score.
+            --- For Classification ---
+            accuracy    : Accuracy
+            auc         : Area Under the Curve (ROC)
+            best_cutoff : Cutoff which optimised the ROC Curve prediction.
+            bm          : Informedness = tpr + tnr - 1
+            csi         : Critical Success Index = tp / (tp + fn + fp)
+            f1          : F1 Score 
+            logloss     : Log Loss
+            mcc         : Matthews Correlation Coefficient 
+            mk          : Markedness = ppv + npv - 1
+            npv         : Negative Predictive Value = tn / (tn + fn)
+            prc_auc     : Area Under the Curve (PRC)
+            precision   : Precision = tp / (tp + fp)
+            recall      : Recall = tp / (tp + fn)
+            specificity : Specificity = tn / (tn + fp)
+            --- For Regression ---
+            max    : Max Error
+            mae    : Mean Absolute Error
+            median : Median Absolute Error
+            mse    : Mean Squared Error
+            msle   : Mean Squared Log Error
+            r2     : R squared coefficient
+            var    : Explained Variance  
+            --- Plots ---
+            roc  : ROC Curve
+            prc  : PRC Curve
+            lift : Lift Chart
 
-	Returns
-	-------
-	float / tablesample
- 		score / tablesample of the curve
+    Returns
+    -------
+    float / tablesample
+        score / tablesample of the curve
 
- 	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         from verticapy.learn.plot import roc_curve, prc_curve, lift_chart
 
         check_types(
@@ -7480,7 +7615,7 @@ vcolumns : vcolumn
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
             )
         elif method in ("best_cutoff", "best_threshold"):
-            from verticapy.learn.metrics import roc_curve
+            from verticapy.learn.model_selection import roc_curve
 
             return roc_curve(
                 y_true,
@@ -7550,19 +7685,19 @@ vcolumns : vcolumn
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
             )
         elif method in ("roc_curve", "roc"):
-            from verticapy.learn.plot import roc_curve
+            from verticapy.learn.model_selection import roc_curve
 
             return roc_curve(
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
             )
         elif method in ("prc_curve", "prc"):
-            from verticapy.learn.plot import prc_curve
+            from verticapy.learn.model_selection import prc_curve
 
             return prc_curve(
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
             )
         elif method in ("lift_chart", "lift"):
-            from verticapy.learn.plot import lift_chart
+            from verticapy.learn.model_selection import lift_chart
 
             return lift_chart(
                 y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
@@ -7575,14 +7710,14 @@ vcolumns : vcolumn
     # ---#
     def shape(self):
         """
-	---------------------------------------------------------------------------
-	Returns the number of rows and columns of the vDataFrame.
+    ---------------------------------------------------------------------------
+    Returns the number of rows and columns of the vDataFrame.
 
- 	Returns
- 	-------
- 	tuple
- 		(number of lines, number of columns)
-		"""
+    Returns
+    -------
+    tuple
+        (number of lines, number of columns)
+        """
         m = len(self.get_columns())
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -7599,56 +7734,57 @@ vcolumns : vcolumn
     # ---#
     def skewness(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'skewness'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'skewness'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["skewness"], columns=columns)
 
     skew = skewness
     # ---#
     def sort(self, columns):
         """
-	---------------------------------------------------------------------------
-	Sorts the vDataFrame using the input vcolumns.
+    ---------------------------------------------------------------------------
+    Sorts the vDataFrame using the input vcolumns.
 
-	Parameters
- 	----------
- 	columns: dict / list
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    Parameters
+    ----------
+    columns: dict / list
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.append  : Merges the vDataFrame with another relation.
-	vDataFrame.groupby : Aggregates the vDataFrame.
-	vDataFrame.join    : Joins the vDataFrame with another relation.
-		"""
+    See Also
+    --------
+    vDataFrame.append  : Merges the vDataFrame with another relation.
+    vDataFrame.groupby : Aggregates the vDataFrame.
+    vDataFrame.join    : Joins the vDataFrame with another relation.
+        """
         check_types([("columns", columns, [dict, list],)])
         columns_check([elem for elem in columns], self)
         max_pos = 0
-        for column in self._VERTICAPY_VARIABLES_["columns"]:
+        columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+        for column in columns_tmp:
             max_pos = max(max_pos, len(self[column].transformations) - 1)
         self._VERTICAPY_VARIABLES_["order_by"][max_pos] = sort_str(columns, self)
         return self
@@ -7656,18 +7792,18 @@ vcolumns : vcolumn
     # ---#
     def sql_on_off(self):
         """
-	---------------------------------------------------------------------------
-	Displays each query generated by the vDataFrame.
+    ---------------------------------------------------------------------------
+    Displays each query generated by the vDataFrame.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-	
-	See Also
-	--------
-	vDataFrame.time_on_off : Displays the time took by each query.
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+    
+    See Also
+    --------
+    vDataFrame.time_on_off : Displays the time took by each query.
+        """
         self._VERTICAPY_VARIABLES_["query_on"] = not (
             self._VERTICAPY_VARIABLES_["query_on"]
         )
@@ -7676,50 +7812,50 @@ vcolumns : vcolumn
     # ---#
     def std(self, columns=[]):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'std' (Standard Deviation).
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'std' (Standard Deviation).
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["stddev"], columns=columns)
 
     stddev = std
     # ---#
-    def sum(self, columns=[]):
+    def sum(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'sum'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'sum'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["sum"], columns=columns)
 
     # ---#
@@ -7775,41 +7911,41 @@ vcolumns : vcolumn
     # ---#
     def tail(self, limit: int = 5):
         """
-	---------------------------------------------------------------------------
-	Returns the vDataFrame tail.
+    ---------------------------------------------------------------------------
+    Returns the vDataFrame tail.
 
-	Parameters
- 	----------
- 	limit: int, optional
- 		Number of elements to display.
+    Parameters
+    ----------
+    limit: int, optional
+        Number of elements to display.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.head : Returns the vDataFrame head.
-		"""
+    See Also
+    --------
+    vDataFrame.head : Returns the vDataFrame head.
+        """
         return self.iloc(limit=limit, offset=-1)
 
     # ---#
     def time_on_off(self):
         """
-	---------------------------------------------------------------------------
-	Displays the time took by each query.
+    ---------------------------------------------------------------------------
+    Displays the time took by each query.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
-	
-	See Also
-	--------
-	vDataFrame.sql_on_off : Displays each query generated by the vDataFrame.
-		"""
+    Returns
+    -------
+    vDataFrame
+        self
+    
+    See Also
+    --------
+    vDataFrame.sql_on_off : Displays each query generated by the vDataFrame.
+        """
         self._VERTICAPY_VARIABLES_["time_on"] = not (
             self._VERTICAPY_VARIABLES_["time_on"]
         )
@@ -7830,48 +7966,48 @@ vcolumns : vcolumn
         limit: int = 0,
     ):
         """
-	---------------------------------------------------------------------------
-	Creates a CSV file of the current vDataFrame relation.
+    ---------------------------------------------------------------------------
+    Creates a CSV file of the current vDataFrame relation.
 
-	Parameters
- 	----------
- 	name: str
- 		Name of the CSV file. Be careful: if a CSV file with the same name exists, 
- 		it will over-write it.
- 	path: str, optional
- 		Absolute path where the CSV file will be created.
- 	sep: str, optional
- 		Column separator.
- 	na_rep: str, optional
- 		Missing values representation.
- 	quotechar: str, optional
- 		Char which will enclose the str values.
- 	usecols: list, optional
- 		vcolumns to select from the final vDataFrame relation. If empty, all the
- 		vcolumns will be selected.
- 	header: bool, optional
- 		If set to False, no header will be written in the CSV file.
- 	new_header: list, optional
- 		List of columns to use to replace vcolumns name in the CSV.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	limit: int, optional
- 		If greater than 0, the maximum number of elements to write at the same time 
- 		in the CSV file. It can be to use to minimize memory impacts. Be sure to keep
- 		the same order to avoid unexpected results.
+    Parameters
+    ----------
+    name: str
+        Name of the CSV file. Be careful: if a CSV file with the same name exists, 
+        it will over-write it.
+    path: str, optional
+        Absolute path where the CSV file will be created.
+    sep: str, optional
+        Column separator.
+    na_rep: str, optional
+        Missing values representation.
+    quotechar: str, optional
+        Char which will enclose the str values.
+    usecols: list, optional
+        vcolumns to select from the final vDataFrame relation. If empty, all the
+        vcolumns will be selected.
+    header: bool, optional
+        If set to False, no header will be written in the CSV file.
+    new_header: list, optional
+        List of columns to use to replace vcolumns name in the CSV.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    limit: int, optional
+        If greater than 0, the maximum number of elements to write at the same time 
+        in the CSV file. It can be to use to minimize memory impacts. Be sure to keep
+        the same order to avoid unexpected results.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.to_db   : Saves the vDataFrame current relation to the Vertica Database.
-	vDataFrame.to_json : Creates a JSON file of the current vDataFrame relation.
-		"""
+    See Also
+    --------
+    vDataFrame.to_db   : Saves the vDataFrame current relation to the Vertica Database.
+    vDataFrame.to_json : Creates a JSON file of the current vDataFrame relation.
+        """
         check_types(
             [
                 ("name", name, [str],),
@@ -7939,44 +8075,44 @@ vcolumns : vcolumn
         nb_split: int = 0,
     ):
         """
-	---------------------------------------------------------------------------
-	Saves the vDataFrame current relation to the Vertica Database.
+    ---------------------------------------------------------------------------
+    Saves the vDataFrame current relation to the Vertica Database.
 
-	Parameters
- 	----------
- 	name: str
- 		Name of the relation. To save the relation in a specific schema you can
- 		write '"my_schema"."my_relation"'. Use double quotes '"' to avoid errors
- 		due to special characters.
- 	usecols: list, optional
- 		vcolumns to select from the final vDataFrame relation. If empty, all the
- 		columns will be selected.
- 	relation_type: str, optional
- 		Type of the relation.
- 			view      : View
- 			table     : Table
- 			temporary : Temporary Table
- 	inplace: bool, optional
- 		If set to True, the vDataFrame will be replaced using the new relation.
- 	db_filter: str / list, optional
- 		Filter used before creating the relation in the DB. It can be a list of
- 		conditions or an expression. This parameter is very useful to create train 
- 		and test sets on TS.
- 	nb_split: int, optional
-		If this parameter is greater than 0, it will add to the final relation a
-		new column '_verticapy_split_' which will contain values in 
-		[0;nb_split - 1] where each category will have represent 1 / nb_split
-		of the entire distribution. 
+    Parameters
+    ----------
+    name: str
+        Name of the relation. To save the relation in a specific schema you can
+        write '"my_schema"."my_relation"'. Use double quotes '"' to avoid errors
+        due to special characters.
+    usecols: list, optional
+        vcolumns to select from the final vDataFrame relation. If empty, all the
+        columns will be selected.
+    relation_type: str, optional
+        Type of the relation.
+            view      : View
+            table     : Table
+            temporary : Temporary Table
+    inplace: bool, optional
+        If set to True, the vDataFrame will be replaced using the new relation.
+    db_filter: str / list, optional
+        Filter used before creating the relation in the DB. It can be a list of
+        conditions or an expression. This parameter is very useful to create train 
+        and test sets on TS.
+    nb_split: int, optional
+        If this parameter is greater than 0, it will add to the final relation a
+        new column '_verticapy_split_' which will contain values in 
+        [0;nb_split - 1] where each category will represent 1 / nb_split
+        of the entire distribution. 
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
-		"""
+    See Also
+    --------
+    vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
+        """
         check_types(
             [
                 ("name", name, [str],),
@@ -8003,7 +8139,9 @@ vcolumns : vcolumn
             if (nb_split > 0)
             else ""
         )
-        if isinstance(db_filter, collections.Iterable):
+        if isinstance(db_filter, collections.Iterable) and not (
+            isinstance(db_filter, str)
+        ):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
         db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
         query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}".format(
@@ -8047,38 +8185,38 @@ vcolumns : vcolumn
         self, name: str, path: str = "", usecols: list = [], order_by=[], limit: int = 0
     ):
         """
-	---------------------------------------------------------------------------
-	Creates a JSON file of the current vDataFrame relation.
+    ---------------------------------------------------------------------------
+    Creates a JSON file of the current vDataFrame relation.
 
-	Parameters
- 	----------
- 	name: str
- 		Name of the JSON file. Be careful: if a JSON file with the same name exists, 
- 		it will over-write it.
- 	path: str, optional
- 		Absolute path where the JSON file will be created.
- 	usecols: list, optional
- 		vcolumns to select from the final vDataFrame relation. If empty, all the
- 		vcolumns will be selected.
- 	order_by: dict / list, optional
- 		List of the vcolumns to use to sort the data using asc order or
- 		dictionary of all the sorting methods. For example, to sort by "column1"
- 		ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
- 	limit: int, optional
- 		If greater than 0, the maximum number of elements to write at the same time 
- 		in the JSON file. It can be to use to minimize memory impacts. Be sure to keep
- 		the same order to avoid unexpected results.
+    Parameters
+    ----------
+    name: str
+        Name of the JSON file. Be careful: if a JSON file with the same name exists, 
+        it will over-write it.
+    path: str, optional
+        Absolute path where the JSON file will be created.
+    usecols: list, optional
+        vcolumns to select from the final vDataFrame relation. If empty, all the
+        vcolumns will be selected.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+    limit: int, optional
+        If greater than 0, the maximum number of elements to write at the same time 
+        in the JSON file. It can be to use to minimize memory impacts. Be sure to keep
+        the same order to avoid unexpected results.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
-	vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica Database.
-		"""
+    See Also
+    --------
+    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
+    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica Database.
+        """
         check_types(
             [
                 ("name", name, [str],),
@@ -8127,16 +8265,16 @@ vcolumns : vcolumn
     # ---#
     def to_list(self):
         """
-	---------------------------------------------------------------------------
-	Converts the vDataFrame to a Python list.
+    ---------------------------------------------------------------------------
+    Converts the vDataFrame to a Python list.
 
     \u26A0 Warning : The data will be loaded in memory.
 
- 	Returns
- 	-------
- 	List
- 		The list of the current vDataFrame relation.
-		"""
+    Returns
+    -------
+    List
+        The list of the current vDataFrame relation.
+        """
         query = "SELECT * FROM {}".format(self.__genSQL__())
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         return self._VERTICAPY_VARIABLES_["cursor"].fetchall()
@@ -8144,16 +8282,16 @@ vcolumns : vcolumn
     # ---#
     def to_pandas(self):
         """
-	---------------------------------------------------------------------------
-	Converts the vDataFrame to a pandas DataFrame.
+    ---------------------------------------------------------------------------
+    Converts the vDataFrame to a pandas DataFrame.
 
     \u26A0 Warning : The data will be loaded in memory.
 
- 	Returns
- 	-------
- 	pandas.DataFrame
- 		The pandas.DataFrame of the current vDataFrame relation.
-		"""
+    Returns
+    -------
+    pandas.DataFrame
+        The pandas.DataFrame of the current vDataFrame relation.
+        """
         try:
             import pandas as pd
         except:
@@ -8173,25 +8311,25 @@ vcolumns : vcolumn
     # ---#
     def to_vdf(self, name: str):
         """
-	---------------------------------------------------------------------------
-	Saves the vDataFrame to a .vdf text file.
-	The saving can be loaded using the 'read_vdf' function.
+    ---------------------------------------------------------------------------
+    Saves the vDataFrame to a .vdf text file.
+    The saving can be loaded using the 'read_vdf' function.
 
-	Parameters
- 	----------
- 	name: str
- 		Name of the file. Be careful: if a VDF file with the same name exists, it 
- 		will over-write it.
+    Parameters
+    ----------
+    name: str
+        Name of the file. Be careful: if a VDF file with the same name exists, it 
+        will over-write it.
 
- 	Returns
- 	-------
- 	vDataFrame
-		self
+    Returns
+    -------
+    vDataFrame
+        self
 
-	See Also
-	--------
-	read_vdf : Loads a .vdf text file and returns a vDataFrame.
-		"""
+    See Also
+    --------
+    read_vdf : Loads a .vdf text file and returns a vDataFrame.
+        """
         check_types([("name", name, [str],)])
         self.save()
         file = open("{}.vdf".format(name), "w+")
@@ -8202,39 +8340,39 @@ vcolumns : vcolumn
     # ---#
     def var(self, columns: list = []):
         """
-	---------------------------------------------------------------------------
-	Aggregates the vDataFrame using 'variance'.
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using 'variance'.
 
-	Parameters
- 	----------
- 	columns: list, optional
- 		List of the vcolumns names. If empty, all the numerical vcolumns will be 
- 		used.
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
 
- 	Returns
- 	-------
- 	tablesample
- 		An object containing the result. For more information, see
- 		utilities.tablesample.
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
-	See Also
-	--------
-	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
-		"""
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         return self.aggregate(func=["variance"], columns=columns)
 
     variance = var
     # ---#
     def version(self):
         """
-	---------------------------------------------------------------------------
-	Returns the Vertica Version.
+    ---------------------------------------------------------------------------
+    Returns the Vertica Version.
 
- 	Returns
- 	-------
- 	str
- 		Vertica Version
-		"""
+    Returns
+    -------
+    str
+        Vertica Version
+        """
         self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT version()")
         version = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         try:

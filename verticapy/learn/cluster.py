@@ -370,11 +370,12 @@ p: int, optional
             "n_cluster": self.n_cluster_,
             "n_noise": self.n_noise_,
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="DBSCAN",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#
@@ -450,10 +451,15 @@ tol: float, optional
         version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
-    def plot_voronoi(self):
+    def plot_voronoi(self, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
@@ -468,6 +474,6 @@ tol: float, optional
             )
             self.cursor.execute(query)
             clusters = self.cursor.fetchall()
-            return voronoi_plot(clusters=clusters, columns=self.X)
+            return voronoi_plot(clusters=clusters, columns=self.X, ax=ax)
         else:
             raise Exception("Voronoi Plots are only available in 2D")

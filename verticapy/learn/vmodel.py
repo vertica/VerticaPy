@@ -54,6 +54,7 @@ import os
 # VerticaPy Modules
 from verticapy import vDataFrame
 from verticapy.learn.plot import *
+from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect
@@ -144,39 +145,18 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica DB.
 		"""
-        if self.type not in (
-            "DBSCAN",
-            "NearestCentroid",
-            "KNeighborsClassifier",
-            "KNeighborsRegressor",
-            "LocalOutlierFactor",
-        ):
-            drop_model(self.name, self.cursor, print_info=False)
-        elif self.type in (
-            "NearestCentroid",
-            "KNeighborsClassifier",
-            "KNeighborsRegressor",
-            "DBSCAN",
-            "LocalOutlierFactor",
-        ):
-            try:
-                path = os.path.dirname(
-                    verticapy.__file__
-                ) + "/learn/models/{}.verticapy".format(self.name)
-                file = open(path, "r")
-                os.remove(path)
-            except:
-                pass
-            if self.type in ("DBSCAN", "LocalOutlierFactor"):
-                drop_table(self.name, self.cursor, print_info=False)
-            elif self.type in ("CountVectorizer"):
-                drop_text_index(self.name, self.cursor, print_info=False)
+        drop_model(self.name, self.cursor, print_info=False)
 
     # ---#
-    def features_importance(self):
+    def features_importance(self, ax=None):
         """
 		---------------------------------------------------------------------------
 		Computes the model features importance.
+
+        Parameters
+        ----------
+        ax: Matplotlib axes object, optional
+            The axes to plot on.
 
 		Returns
 		-------
@@ -230,7 +210,9 @@ Main Class for Vertica Model
             coeff_importances[elem[0]] = elem[1]
             coeff_sign[elem[0]] = elem[2]
         try:
-            plot_importance(coeff_importances, coeff_sign, print_legend=print_legend)
+            plot_importance(
+                coeff_importances, coeff_sign, print_legend=print_legend, ax=ax
+            )
         except:
             pass
         importances = {"index": ["importance", "sign"]}
@@ -349,7 +331,7 @@ Main Class for Vertica Model
         return self.parameters
 
     # ---#
-    def plot(self, max_nb_points: int = 100):
+    def plot(self, max_nb_points: int = 100, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the Model.
@@ -358,11 +340,13 @@ Main Class for Vertica Model
 	----------
 	max_nb_points: int
 		Maximum number of points to display.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
-	Returns
-	-------
-	Figure
-		Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 		"""
         check_types([("max_nb_points", max_nb_points, [int, float],)])
         if self.type in (
@@ -380,6 +364,7 @@ Main Class for Vertica Model
                     coefficients,
                     self.cursor,
                     max_nb_points,
+                    ax=ax,
                 )
             elif self.type == "LinearSVC":
                 return svm_classifier_plot(
@@ -389,6 +374,7 @@ Main Class for Vertica Model
                     coefficients,
                     self.cursor,
                     max_nb_points,
+                    ax=ax,
                 )
             else:
                 return regression_plot(
@@ -398,6 +384,7 @@ Main Class for Vertica Model
                     coefficients,
                     self.cursor,
                     max_nb_points,
+                    ax=ax,
                 )
         elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN"):
             if self.type != "DBSCAN":
@@ -413,6 +400,7 @@ Main Class for Vertica Model
                     catcol=catcol,
                     max_cardinality=100,
                     max_nb_points=max_nb_points,
+                    ax=ax,
                 )
             else:
                 raise Exception("Clustering Plots are only available in 2D or 3D")
@@ -424,7 +412,9 @@ Main Class for Vertica Model
                     "col{}".format(i + 1)
                     for i in range(min(max(self.parameters["n_components"], 2), 3))
                 ]
-                return self.transform().scatter(columns=X, max_nb_points=max_nb_points,)
+                return self.transform().scatter(
+                    columns=X, max_nb_points=max_nb_points, ax=ax
+                )
             else:
                 raise Exception("Decomposition Plots are not available in 1D")
         elif self.type in ("LocalOutlierFactor"):
@@ -432,7 +422,7 @@ Main Class for Vertica Model
             tablesample = 100 * min(
                 float(max_nb_points / self.cursor.execute(query).fetchone()[0]), 1
             )
-            return lof_plot(self.name, self.X, "lof_score", self.cursor, 100)
+            return lof_plot(self.name, self.X, "lof_score", self.cursor, 100, ax=ax)
         else:
             raise FunctionError(
                 "Method 'plot' for '{}' doesn't exist.".format(self.type)
@@ -1323,32 +1313,46 @@ class BinaryClassifier(Classifier):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def lift_chart(self):
+    def lift_chart(self, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
 
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
 	Returns
 	-------
 	tablesample
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return lift_chart(self.y, self.deploySQL(), self.test_relation, self.cursor)
+        return lift_chart(
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+        )
 
     # ---#
-    def prc_curve(self):
+    def prc_curve(self, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
 
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
 	Returns
 	-------
 	tablesample
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
+        return prc_curve(
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+        )
 
     # ---#
     def predict(
@@ -1402,10 +1406,15 @@ class BinaryClassifier(Classifier):
             return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
-    def roc_curve(self):
+    def roc_curve(self, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
 	Returns
 	-------
@@ -1413,7 +1422,9 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor)
+        return roc_curve(
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+        )
 
     # ---#
     def score(self, method: str = "accuracy", cutoff: float = 0.5):
@@ -1659,7 +1670,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
-    def lift_chart(self, pos_label=None):
+    def lift_chart(self, pos_label=None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -1669,6 +1680,8 @@ class MulticlassClassifier(Classifier):
 	pos_label: int/float/str, optional
 		To draw a lift chart, one of the response column class has to be the 
 		positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
 	Returns
 	-------
@@ -1691,10 +1704,11 @@ class MulticlassClassifier(Classifier):
             self.test_relation,
             self.cursor,
             pos_label,
+            ax=ax,
         )
 
     # ---#
-    def prc_curve(self, pos_label=None):
+    def prc_curve(self, pos_label=None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -1704,6 +1718,8 @@ class MulticlassClassifier(Classifier):
 	pos_label: int/float/str, optional
 		To draw the PRC curve, one of the response column class has to be the 
 		positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
 	Returns
 	-------
@@ -1726,6 +1742,7 @@ class MulticlassClassifier(Classifier):
             self.test_relation,
             self.cursor,
             pos_label,
+            ax=ax,
         )
 
     # ---#
@@ -1791,7 +1808,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
-    def roc_curve(self, pos_label=None):
+    def roc_curve(self, pos_label=None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -1801,6 +1818,8 @@ class MulticlassClassifier(Classifier):
 	pos_label: int/float/str, optional
 		To draw the ROC curve, one of the response column class has to be the 
 		positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
 	Returns
 	-------
@@ -1823,6 +1842,7 @@ class MulticlassClassifier(Classifier):
             self.test_relation,
             self.cursor,
             pos_label,
+            ax=ax,
         )
 
     # ---#

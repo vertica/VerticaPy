@@ -127,6 +127,18 @@ Attributes
             self.catalog[elem] = catalog[elem]
 
     # ---#
+    def __abs__(self):
+        return self.abs()
+
+    # ---#
+    def __ceil__(self):
+        return self.apply_fun(func="ceil")
+
+    # ---#
+    def __floor__(self):
+        return self.apply_fun(func="floor")
+
+    # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
             if index.step not in (1, None):
@@ -162,6 +174,10 @@ Attributes
         return int(self.count())
 
     # ---#
+    def __nonzero__(self):
+        return self.count() > 0
+
+    # ---#
     def __repr__(self):
         return self.head(
             limit=self.parent._VERTICAPY_VARIABLES_["display"]["rows"]
@@ -172,6 +188,10 @@ Attributes
         return self.head(
             limit=self.parent._VERTICAPY_VARIABLES_["display"]["rows"]
         )._repr_html_()
+
+    # ---#
+    def __round__(self, n):
+        return self.apply_fun(func="round", x=n)
 
     # ---#
     def __setattr__(self, attr, val):
@@ -606,6 +626,7 @@ Attributes
         bins: int = 0,
         h: float = 0,
         color: str = "#FE5016",
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -633,11 +654,13 @@ Attributes
  		Interval width of the bar. If empty, an optimized h will be computed.
  	color: str, optional
  		Histogram color.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
  	See Also
  	--------
@@ -659,7 +682,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import bar
 
-        return bar(self, method, of, max_cardinality, bins, h, color)
+        return bar(self, method, of, max_cardinality, bins, h, color, ax=ax)
 
     # ---#
     def boxplot(
@@ -668,6 +691,7 @@ Attributes
         h: float = 0,
         max_cardinality: int = 8,
         cat_priority: list = [],
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -687,11 +711,13 @@ Attributes
  	cat_priority: list, optional
  		List of the different categories to consider when drawing the Box Plot.
  		The other categories will be filtered.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
  	See Also
  	--------
@@ -710,7 +736,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import boxplot
 
-        return boxplot(self, by, h, max_cardinality, cat_priority)
+        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax)
 
     # ---#
     def category(self):
@@ -894,6 +920,7 @@ Attributes
         kernel: str = "gaussian",
         smooth: int = 200,
         color: str = "#FE5016",
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -913,11 +940,13 @@ Attributes
  		The number of points used for the smoothing.
  	color: str, optional
  		The Density Plot color.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
 	See Also
 	--------
@@ -934,7 +963,7 @@ Attributes
         kernel = kernel.lower()
         from verticapy.plot import density
 
-        return density(self, a, kernel, smooth, color)
+        return density(self, a, kernel, smooth, color, ax=ax)
 
     # ---#
     def describe(
@@ -1413,6 +1442,7 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         h: float = 0,
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1436,11 +1466,13 @@ Attributes
  		(No h will be picked or computed)
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
  	See Also
  	--------
@@ -1460,7 +1492,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, True)
+        return pie(self, method, of, max_cardinality, h, True, ax=ax)
 
     # ---#
     def drop(self, add_history: bool = True):
@@ -2061,6 +2093,7 @@ Attributes
         bins: int = 0,
         h: float = 0,
         color: str = "#FE5016",
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -2088,11 +2121,13 @@ Attributes
  		Interval width of the bar. If empty, an optimized h will be computed.
  	color: str, optional
  		Histogram color.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
  	See Also
  	--------
@@ -2114,7 +2149,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import hist
 
-        return hist(self, method, of, max_cardinality, bins, h, color)
+        return hist(self, method, of, max_cardinality, bins, h, color, ax=ax)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -3022,6 +3057,7 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         h: float = 0,
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3045,11 +3081,13 @@ Attributes
  		(No h will be picked or computed)
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
  	See Also
  	--------
@@ -3069,7 +3107,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, False)
+        return pie(self, method, of, max_cardinality, h, False, ax=None)
 
     # ---#
     def plot(
@@ -3080,6 +3118,7 @@ Attributes
         end_date: str = "",
         color: str = "#FE5016",
         area: bool = False,
+        ax=None,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3102,11 +3141,13 @@ Attributes
  		Color of the TS.
  	area: bool, optional
  		If set to True, draw an Area Plot.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
- 	Returns
- 	-------
- 	Figure
-        Matplotlib Figure
+    Returns
+    -------
+    ax
+        Matplotlib axes object
 
 	See Also
 	--------
@@ -3128,7 +3169,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import ts_plot
 
-        return ts_plot(self, ts, by, start_date, end_date, color, area)
+        return ts_plot(self, ts, by, start_date, end_date, color, area, ax=ax)
 
     # ---#
     def product(self):
@@ -3617,7 +3658,9 @@ Attributes
 		"""
         check_types([("k", k, [int, float],), ("dropna", dropna, [bool],)])
         try:
-            version(cursor=cursor, condition=[9, 0, 1])
+            version(
+                cursor=self.parent._VERTICAPY_VARIABLES_["cursor"], condition=[9, 0, 1]
+            )
             topk = "" if (k < 1) else "TOPK = {},".format(k)
             query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS {} WITH_TOTALCOUNT = False) OVER () FROM {}".format(
                 self.alias, topk, self.parent.__genSQL__()

@@ -268,11 +268,12 @@ max_text_size: int, optional
             "vocabulary": self.vocabulary_,
             "stop_words": self.stop_words_,
         }
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/learn/models/{}.verticapy".format(self.name)
-        file = open(path, "x")
-        file.write("model_save = " + str(model_save))
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="CountVectorizer",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#

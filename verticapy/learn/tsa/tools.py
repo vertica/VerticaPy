@@ -657,7 +657,7 @@ tablesample
 
 # ---#
 def plot_acf_pacf(
-    vdf, y: str, ts: str, p=15, cursor=None,
+    vdf, y: str, ts: str, by: list = [], p=15, cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -675,6 +675,8 @@ y: str
     Response column.
 ts: str
     vcolumn used to order the data.
+by: list, optional
+    vcolumns used in the partition.
 p: int/list, optional
     Int equals to the maximum number of lag to consider during the computation
     or List of the different lags to include during the computation.
@@ -689,9 +691,16 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("y", y, [str],), ("ts", ts, [str],), ("p", p, [int, float],),]
+        [
+            ("y", y, [str],),
+            ("ts", ts, [str],),
+            ("by", by, [list],),
+            ("p", p, [int, float],),
+        ]
     )
-    y, ts = str_column(y), str_column(ts)
+    columns_check([y, ts] + by, vdf)
+    by = vdf_columns_names(by, vdf)
+    y, ts = vdf_columns_names([y, ts], vdf)
     if not (cursor):
         conn = read_auto_connect()
         cursor = conn.cursor()
@@ -702,8 +711,8 @@ tablesample
         vdf = vdf_from_relation(vdf, "", cursor=cursor)
     else:
         vdf = vdf.copy()
-    acf = vdf.acf(ts=ts, column=y, p=p, show=False)
-    pacf = vdf.pacf(ts=ts, column=y, p=p, show=False)
+    acf = vdf.acf(ts=ts, column=y, by=by, p=p, show=False)
+    pacf = vdf.pacf(ts=ts, column=y, by=by, p=p, show=False)
     if conn:
         conn.close()
     result = tablesample(
@@ -713,7 +722,6 @@ tablesample
             "pacf": pacf.values["value"],
             "confidence": pacf.values["confidence"],
         },
-        table_info=False,
     )
     fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"

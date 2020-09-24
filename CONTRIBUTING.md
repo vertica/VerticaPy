@@ -61,7 +61,7 @@ git checkout -b my-fix-branch
 Install the Python dependencies for development:
 
 ```shell
-pip install -r requirements-dev.txt
+pip3 install -r requirements-dev.txt
 ```
 
 ## Step 4: Get the test suite running (Under development)
@@ -70,11 +70,11 @@ pip install -r requirements-dev.txt
 
 We appreciate any and all [contributions to the test suite](#tests)! These tests use a Python module: [pytest](https://docs.pytest.org/en/latest/). You might want to check out the pytest documentation for more details.
 
-There are two types of tests: unit tests and integration tests. Unit tests do simple unit testing of individual classes and functions, which do not require database connection. Integration tests need to connect to a Vertica database to run stuffs, so you must have access to a Vertica database. We recommend using a non-production database, because some tests may need the superuser permission to manipulate global settings and potentially break that database. Heres one way to go about it:
+You must have access to a Vertica database to run the tests. We recommend using a non-production database, because some tests may need the superuser permission to manipulate global settings and potentially break that database. Heres one way to go about it:
 - Download docker kitematic: https://kitematic.com/
 - Spin up a vertica container (e.g. sumitchawla/vertica)
 
-Spin up your Vertica database for integration tests and then config test settings:
+Spin up your Vertica database for tests and then config test settings:
 * Here are default settings:
   ```sh
   host: 'localhost'
@@ -126,18 +126,18 @@ tox
 # Run tests on specified python versions with `tox -e ENV,ENV`
 tox -e py36,py37
 
-# Run specific tests by filename (e.g.) `test_notice.py`
-tox -- verticapy/tests/unit_tests/test_notice.py
+# Run specific tests by filename (e.g.) `test_vDF_combine_join_sort.py`
+tox -- verticapy/tests/vDataFrame/test_vDF_combine_join_sort.py
 
-# Run all unit tests on the python version 3.6:
-tox -e py36 -- -m unit_tests
+# Run all tests on the python version 3.6:
+tox -e py36 -- -m tests
 
-# Run all integration tests on the python version 3.7 with verbose result outputs:
-tox -e py37 -- -v -m integration_tests
+# Run all tests on the python version 3.7 with verbose result outputs:
+tox -e py37 -- -v -m tests
 
 # Run an individual test on specified python versions.
-# e.g.: Run the test `test_error_message` under `test_notice.py` on the python versions 3.7 and 3.8
-tox -e py37,py38 -- verticapy/tests/unit_tests/test_notice.py::NoticeTestCase::test_error_message
+# e.g.: Run the test `test_vDF_append` under `test_vDF_combine_join_sort.py` on the python versions 3.7 and 3.8
+tox -e py37,py38 -- verticapy/tests/vDataFrame/test_vDF_combine_join_sort.py::TestvDFCombineJoinSort::test_vDF_append
 ```
 
 The arguments after the `--` will be substituted everywhere where you specify `{posargs}` in your test *commands* of

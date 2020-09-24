@@ -59,6 +59,7 @@ from verticapy import vDataFrame
 
 # Other Python Modules
 from dateutil.parser import parse
+import matplotlib.pyplot as plt
 
 # ---#
 class SARIMAX(Regressor):
@@ -699,6 +700,39 @@ papprox_ma: int, optional
                     "[X{}]".format(idx), elem
                 )
         self.transform_relation = relation
+        model_save = {
+            "type": "SARIMAX",
+            "input_relation": self.input_relation,
+            "test_relation": self.test_relation,
+            "transform_relation": self.transform_relation,
+            "deploy_predict": self.deploy_predict_,
+            "X": self.X,
+            "y": self.y,
+            "ts": self.ts,
+            "exogenous": self.exogenous,
+            "coef": self.coef_.values,
+            "p": self.parameters["p"],
+            "d": self.parameters["d"],
+            "q": self.parameters["q"],
+            "P": self.parameters["P"],
+            "D": self.parameters["D"],
+            "Q": self.parameters["Q"],
+            "s": self.parameters["s"],
+            "penalty": self.parameters["penalty"],
+            "tol": self.parameters["tol"],
+            "C": self.parameters["C"],
+            "max_iter": self.parameters["max_iter"],
+            "solver": self.parameters["solver"],
+            "l1_ratio": self.parameters["l1_ratio"],
+            "max_pik": self.parameters["max_pik"],
+            "papprox_ma": self.parameters["papprox_ma"],
+        }
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="SARIMAX",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#
@@ -715,6 +749,7 @@ papprox_ma: int, optional
         nlead: int = 10,
         nlast: int = 0,
         limit: int = 1000,
+        ax=None,
     ):
         """
     ---------------------------------------------------------------------------
@@ -742,11 +777,13 @@ papprox_ma: int, optional
         Number of leads to predict after the last ts date.
     limit: int, optional
         Maximum number of past elements to use.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
-    Figure
-        Matplotlib Figure
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
         """
         check_types(
             [
@@ -852,13 +889,15 @@ papprox_ma: int, optional
                 upper_d += [float(dynamic_forecast[1][i]) + delta_error]
         else:
             lower_d, upper_d, dynamic_forecast = [], [], ([], [])
-        import matplotlib.pyplot as plt
-
         alpha = 0.3
-        plt.figure(figsize=(12, 9)) if isnotebook() else plt.figure(figsize=(10, 6))
-        plt.gca().grid()
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(10, 6)
+            ax.set_facecolor("#F2F2F2")
+            ax.grid()
         if dynamic:
-            plt.fill_between(
+            ax.fill_between(
                 dynamic_forecast[0],
                 1.02
                 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
@@ -868,12 +907,12 @@ papprox_ma: int, optional
                 color="#0073E7",
             )
             if confidence:
-                plt.fill_between(
+                ax.fill_between(
                     dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
                 )
-                plt.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
-                plt.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
-            plt.plot(
+                ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
+                ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
+            ax.plot(
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 color="#FE5016",
@@ -883,26 +922,26 @@ papprox_ma: int, optional
             )
         if one_step:
             if confidence:
-                plt.fill_between(
+                ax.fill_between(
                     one_step_ahead[0][delta_limit:],
                     lower_osa[delta_limit:],
                     upper_osa[delta_limit:],
                     alpha=0.04,
                     color="#555555",
                 )
-                plt.plot(
+                ax.plot(
                     one_step_ahead[0][delta_limit:],
                     lower_osa[delta_limit:],
                     alpha=0.04,
                     color="#000000",
                 )
-                plt.plot(
+                ax.plot(
                     one_step_ahead[0][delta_limit:],
                     upper_osa[delta_limit:],
                     alpha=0.04,
                     color="#000000",
                 )
-            plt.plot(
+            ax.plot(
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 color="#19A26B",
@@ -911,15 +950,14 @@ papprox_ma: int, optional
                 linewidth=2,
             )
         if observed:
-            plt.plot(
+            ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 color="#0073E7",
                 label="Observed",
                 linewidth=2,
             )
-        plt.rcParams["axes.facecolor"] = "#F2F2F2"
-        plt.title(
+        ax.set_title(
             "SARIMAX({},{},{})({},{},{})_{}".format(
                 self.parameters["p"],
                 self.parameters["d"],
@@ -930,15 +968,13 @@ papprox_ma: int, optional
                 self.parameters["s"],
             )
         )
-        plt.xticks(rotation=90)
-        plt.subplots_adjust(bottom=0.24)
-        plt.xlabel(ts)
-        plt.legend(loc="center left", bbox_to_anchor=[1, 0.5])
-        plt.ylim(
+        ax.set_xlabel(ts)
+        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_ylim(
             1.02 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
             1.02 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
         )
-        return plt.gcf()
+        return ax
 
     # ---#
     def predict(
@@ -1267,6 +1303,29 @@ l1_ratio: float, optional
             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
             print_info=False,
         )
+        model_save = {
+            "type": "VAR",
+            "input_relation": self.input_relation,
+            "test_relation": self.test_relation,
+            "transform_relation": self.transform_relation,
+            "deploy_predict": self.deploy_predict_,
+            "X": self.X,
+            "ts": self.ts,
+            "coef": [elem.values for elem in self.coef_],
+            "p": self.parameters["p"],
+            "penalty": self.parameters["penalty"],
+            "tol": self.parameters["tol"],
+            "C": self.parameters["C"],
+            "max_iter": self.parameters["max_iter"],
+            "solver": self.parameters["solver"],
+            "l1_ratio": self.parameters["l1_ratio"],
+        }
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="VAR",
+            model_save=str(model_save),
+            cursor=self.cursor,
+        )
         return self
 
     # ---#
@@ -1305,7 +1364,6 @@ l1_ratio: float, optional
                 result += [result_tmp]
             return result
         except:
-            raise
             return None
 
     # ---#
@@ -1322,6 +1380,7 @@ l1_ratio: float, optional
         nlead: int = 10,
         nlast: int = 0,
         limit: int = 1000,
+        ax=None,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1349,11 +1408,13 @@ l1_ratio: float, optional
         Number of leads to predict after the last ts date.
     limit: int, optional
         Maximum number of past elements to use.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
 
     Returns
     -------
-    Figure
-        Matplotlib Figure
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
         """
         check_types(
             [
@@ -1461,13 +1522,15 @@ l1_ratio: float, optional
                 upper_d += [float(dynamic_forecast[1][i]) + delta_error]
         else:
             lower_d, upper_d, dynamic_forecast = [], [], ([], [])
-        import matplotlib.pyplot as plt
-
         alpha = 0.3
-        plt.figure(figsize=(12, 9)) if isnotebook() else plt.figure(figsize=(10, 6))
-        plt.gca().grid()
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(10, 6)
+            ax.set_facecolor("#F2F2F2")
+            ax.grid()
         if dynamic:
-            plt.fill_between(
+            ax.fill_between(
                 dynamic_forecast[0],
                 1.02
                 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
@@ -1477,12 +1540,12 @@ l1_ratio: float, optional
                 color="#0073E7",
             )
             if confidence:
-                plt.fill_between(
+                ax.fill_between(
                     dynamic_forecast[0], lower_d, upper_d, alpha=0.08, color="#555555"
                 )
-                plt.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
-                plt.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
-            plt.plot(
+                ax.plot(dynamic_forecast[0], lower_d, alpha=0.08, color="#000000")
+                ax.plot(dynamic_forecast[0], upper_d, alpha=0.08, color="#000000")
+            ax.plot(
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 color="#FE5016",
@@ -1492,26 +1555,26 @@ l1_ratio: float, optional
             )
         if one_step:
             if confidence:
-                plt.fill_between(
+                ax.fill_between(
                     one_step_ahead[0][delta_limit:],
                     lower_osa[delta_limit:],
                     upper_osa[delta_limit:],
                     alpha=0.04,
                     color="#555555",
                 )
-                plt.plot(
+                ax.plot(
                     one_step_ahead[0][delta_limit:],
                     lower_osa[delta_limit:],
                     alpha=0.04,
                     color="#000000",
                 )
-                plt.plot(
+                ax.plot(
                     one_step_ahead[0][delta_limit:],
                     upper_osa[delta_limit:],
                     alpha=0.04,
                     color="#000000",
                 )
-            plt.plot(
+            ax.plot(
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 color="#19A26B",
@@ -1520,24 +1583,21 @@ l1_ratio: float, optional
                 linewidth=2,
             )
         if observed:
-            plt.plot(
+            ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 color="#0073E7",
                 label="Observed",
                 linewidth=2,
             )
-        plt.rcParams["axes.facecolor"] = "#F2F2F2"
-        plt.title("VAR({}) [{}]".format(self.parameters["p"], y))
-        plt.xticks(rotation=90)
-        plt.subplots_adjust(bottom=0.24)
-        plt.xlabel(ts)
-        plt.legend(loc="center left", bbox_to_anchor=[1, 0.5])
-        plt.ylim(
+        ax.set_title("VAR({}) [{}]".format(self.parameters["p"], y))
+        ax.set_xlabel(ts)
+        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_ylim(
             1.02 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
             1.02 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
         )
-        return plt.gcf()
+        return ax
 
     # ---#
     def predict(self, vdf, X: list = [], ts: str = "", nlead: int = 0, name: list = []):
