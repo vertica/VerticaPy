@@ -13,17 +13,33 @@
 
 import pytest
 from verticapy import vDataFrame
+from verticapy import drop_table
+from decimal import Decimal 
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
-    from verticapy import drop_table
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     drop_table(name = "public.titanic", cursor = base.cursor)
-    
+
+@pytest.fixture(scope="module")
+def market_vd(base):
+    from verticapy.learn.datasets import load_market
+
+    market = load_market(cursor=base.cursor)
+    yield market
+    drop_table(name = "public.market", cursor = base.cursor)
+
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    yield amazon
+    drop_table(name = "public.amazon", cursor = base.cursor)
 
 
 class TestvDFDescriptiveStat:
@@ -35,13 +51,11 @@ class TestvDFDescriptiveStat:
         assert result.values["aad"][2] == pytest.approx(0.58208012314)
 
         # testing vDataFrame[].aad
-        assert titanic_vd["age"].aad() == pytest.approx(11.254785419447906)
-        assert titanic_vd["fare"].aad() == pytest.approx(30.625865942462237)
-        assert titanic_vd["parch"].aad() == pytest.approx(0.5820801231451393)
+        assert titanic_vd["age"].aad() == result.values["aad"][0]
+        assert titanic_vd["fare"].aad() == result.values["aad"][1]
+        assert titanic_vd["parch"].aad() == result.values["aad"][2]
 
     def test_vDF_agg(self, titanic_vd):
-        from decimal import Decimal
-
         # testing vDataFrame.agg
         result1 = titanic_vd.agg(func = ["unique", "top", "min", "10%", "50%", "90%", "max"],
                                  columns = ["age", "fare", "pclass", "survived"])
@@ -230,29 +244,202 @@ class TestvDFDescriptiveStat:
         assert result3_3.values['"age"'][25] == result3.values['"age"'][25]
         assert result3_3.values['"age"'][26] == result3.values['"age"'][26]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_all(self):
-        pass
+    def test_vDF_all(self, titanic_vd):
+        result = titanic_vd.all(columns = ["survived"])
+        assert result.values["bool_and"][0] == 0.0
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_any(self):
-        pass
+    def test_vDF_any(self, titanic_vd):
+        result = titanic_vd.any(columns = ["survived"])
+        assert result.values["bool_or"][0] == 1.0
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_avg(self):
-        pass
+    def test_vDF_avg(self, titanic_vd):
+        # tests for vDataFrame.avg()
+        result = titanic_vd.avg(columns = ["age", "fare", "parch"])
+        assert result.values["avg"][0] == pytest.approx(30.15245737)
+        assert result.values["avg"][1] == pytest.approx(33.96379367)
+        assert result.values["avg"][2] == pytest.approx(0.378444084)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_count(self):
-        pass
+        # there is an expected exception for categorical columns
+        from vertica_python.errors import QueryError
+        with pytest.raises(QueryError) as exception_info:
+            titanic_vd.avg(columns = ["embarked"])
+        # checking the error message
+        assert exception_info.match("Could not convert \"C\" from column titanic.embarked to a float8")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_describe(self):
-        pass
+        # tests for vDataFrame.mean()
+        result2 = titanic_vd.mean(columns = ["age"])
+        assert result2.values['avg'][0] == result.values["avg"][0]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_distinct(self):
-        pass
+        # tests for vDataFrame[].avg()
+        assert titanic_vd["age"].avg() == result.values["avg"][0]
+
+        # tests for vDataFrame[].mean()
+        assert titanic_vd["age"].mean() == result.values["avg"][0]
+
+    def test_vDF_count(self, titanic_vd):
+        # tests for vDataFrame.count()
+        result = titanic_vd.count(desc = False)
+
+        assert result.values["count"][0] == 118
+        assert result.values["count"][1] == 286
+        assert result.values["count"][2] == 439
+        assert result.values["percent"][0] == pytest.approx(9.562)
+        assert result.values["percent"][1] == pytest.approx(23.177)
+        assert result.values["percent"][2] == pytest.approx(35.575)
+
+        # tests for vDataFrame[].count()
+        assert titanic_vd["age"].count() == 997
+
+        # there is an expected exception for non-existant columns
+        with pytest.raises(AttributeError) as exception_info:
+            titanic_vd["haha"].count()
+        # checking the error message
+        assert exception_info.match("'vDataFrame' object has no attribute 'haha'")
+
+    def test_vDF_describe(self, titanic_vd):
+        # testing vDataFrame.describe()
+        result1 = titanic_vd.describe(method = "all")
+
+        assert result1.values["count"][0] == 1234
+        assert result1.values["unique"][0] == 3
+        assert result1.values["top"][0] == 3
+        assert result1.values["top_percent"][0] == Decimal('53.728') # Why this format?
+        assert result1.values["avg"][0] == pytest.approx(2.284440842)
+        assert result1.values["stddev"][0] == pytest.approx(0.842485636)
+        assert result1.values["min"][0] == 1
+        assert result1.values["25%"][0] == pytest.approx(1.0)
+        assert result1.values["50%"][0] == pytest.approx(3.0)
+        assert result1.values["75%"][0] == pytest.approx(3.0)
+        assert result1.values["max"][0] == pytest.approx(3)
+        assert result1.values["range"][0] == 2
+        assert result1.values["empty"][0] is None
+
+        assert result1.values["count"][5] == 1233
+        assert result1.values["unique"][5] == 277
+        assert result1.values["top"][5] == 8.05
+        assert result1.values["top_percent"][5] == Decimal('4.7') # Why this format?
+        assert result1.values["avg"][5] == pytest.approx(33.9637936)
+        assert result1.values["stddev"][5] == pytest.approx(52.646072)
+        assert result1.values["min"][5] == 0
+        assert result1.values["25%"][5] == pytest.approx(7.8958)
+        assert result1.values["50%"][5] == pytest.approx(14.4542)
+        assert result1.values["75%"][5] == pytest.approx(31.3875)
+        assert result1.values["max"][5] == pytest.approx(512.32920)
+        assert result1.values["range"][5] == Decimal('512.32920') # why this format
+        assert result1.values["empty"][5] is None
+
+        result2 = titanic_vd.describe(method = "categorical")
+
+        assert result2.values["dtype"][7] == 'varchar(36)'
+        assert result2.values["unique"][7] == '887' # Why string?
+        assert result2.values["count"][7] == '1234' # Why string?
+        assert result2.values["top"][7] == 'CA. 2343'
+        assert result2.values["top_percent"][7] == '0.81' # Why this format?
+
+        result3 = titanic_vd.describe(method = "length")
+
+        assert result3.values["dtype"][9] == 'varchar(30)'
+        assert result3.values["percent"][9] == '23.177' # Why string?
+        assert result3.values["count"][9] == '286' # Why string?
+        assert result3.values["unique"][9] == '182' # Why string?
+        assert result3.values["empty"][9] == 0
+        assert result3.values["avg_length"][9] == pytest.approx(3.72027972)
+        assert result3.values["stddev_length"][9] == pytest.approx(2.28313602)
+        assert result3.values["min_length"][9] == 1
+        assert result3.values["25%_length"][9] == 3
+        assert result3.values["50%_length"][9] == 3
+        assert result3.values["75%_length"][9] == 3
+        assert result3.values["max_length"][9] == 15
+
+        result4 = titanic_vd.describe(method = "numerical")
+
+        assert result4.values["count"][1] == 1234
+        assert result4.values["mean"][1] == pytest.approx(0.36466774)
+        assert result4.values["std"][1] == pytest.approx(0.48153201)
+        assert result4.values["min"][1] == 0
+        assert result4.values["25%"][1] == 0
+        assert result4.values["50%"][1] == 0
+        assert result4.values["75%"][1] == 1
+        assert result4.values["max"][1] == 1
+        assert result4.values["unique"][1] == 2.0
+
+        result5 = titanic_vd.describe(method = "range")
+
+        assert result5.values["dtype"][2] == 'numeric(6,3)'
+        assert result5.values["percent"][2] == '80.794' # Why string?
+        assert result5.values["count"][2] == '997' # Why string?
+        assert result5.values["unique"][2] == '96' # Why string?
+        assert result5.values["min"][2] == '0.33' # Why string?
+        assert result5.values["max"][2] == '80' # Why string?
+        assert result5.values["range"][2] == '79.67' # Why string?
+
+        result6 = titanic_vd.describe(method = "statistics")
+
+        assert result6.values["dtype"][3] == 'int'
+        assert result6.values["percent"][3] == '100' # Why string?
+        assert result6.values["count"][3] == '1234' # Why string?
+        assert result6.values["unique"][3] == '7' # Why string?
+        assert result6.values["avg"][3] == '0.504051863857374' # Why string?
+        assert result6.values["stddev"][3] == '1.04111727241629' # Why string?
+        assert result6.values["min"][3] == '0' # Why string?
+        assert result6.values["1%"][3] == pytest.approx(0.0)
+        assert result6.values["10%"][3] == pytest.approx(0.0)
+        assert result6.values["25%"][3] == '0' # Why string?
+        assert result6.values["median"][3] == '0' # Why string?
+        assert result6.values["75%"][3] == '1' # Why string?
+        assert result6.values["90%"][3] == 1.0
+        assert result6.values["99%"][3] == pytest.approx(5.0)
+        assert result6.values["max"][3] == '8' # Why string?
+        assert result6.values["skewness"][3] == pytest.approx(3.7597831)
+        assert result6.values["kurtosis"][3] == pytest.approx(19.21388533)
+
+    def test_vDF_describe_index(self, market_vd):
+        # testing vDataFrame[].describe
+        result1 = market_vd["Form"].describe(method = "categorical", max_cardinality = 3)
+
+        assert result1.values["value"][0] == '"Form"'
+        assert result1.values["value"][1] == 'varchar(32)'
+        assert result1.values["value"][2] == 37.0
+        assert result1.values["value"][3] == 314.0
+        assert result1.values["value"][4] == 90
+        assert result1.values["value"][5] == 90
+        assert result1.values["value"][6] == 57
+        assert result1.values["value"][7] == 47
+
+        result2 = market_vd["Price"].describe(method = "numerical")
+
+        assert result2.values["value"][0] == '"Price"'
+        assert result2.values["value"][1] == 'float'
+        assert result2.values["value"][2] == 308.0
+        assert result2.values["value"][3] == 314
+        assert result2.values["value"][4] == pytest.approx(2.07751098)
+        assert result2.values["value"][5] == pytest.approx(1.51037749)
+        assert result2.values["value"][6] == pytest.approx(0.31663877)
+        assert result2.values["value"][7] == pytest.approx(1.07276187)
+        assert result2.values["value"][8] == pytest.approx(1.56689808)
+        assert result2.values["value"][9] == pytest.approx(2.60376599)
+        assert result2.values["value"][10] == pytest.approx(10.163712)
+
+        result3 = market_vd["Form"].describe(method = "cat_stats", numcol = "Price")
+
+        assert result3.values["count"][3] == 2
+        assert result3.values["percent"][3] == pytest.approx(Decimal('0.63694267515')) # Why this format?
+        assert result3.values["mean"][3] == pytest.approx(4.6364768)
+        assert result3.values["std"][3] == pytest.approx(0.6358942)
+        assert result3.values["min"][3] == pytest.approx(4.1868317)
+        assert result3.values["10%"][3] == pytest.approx(4.2767607)
+        assert result3.values["25%"][3] == pytest.approx(4.4116542)
+        assert result3.values["50%"][3] == pytest.approx(4.6364768)
+        assert result3.values["75%"][3] == pytest.approx(4.8612994)
+        assert result3.values["90%"][3] == pytest.approx(4.9961929)
+        assert result3.values["max"][3] == pytest.approx(5.0861220)
+
+    def test_vDF_distinct(self, amazon_vd):
+        result = amazon_vd["state"].distinct()
+        assert result == ['Acre', 'Alagoas', 'Amapa', 'Amazonas', 'Bahia', 'Ceara', 'Distrito Federal',
+                          'Espirito Santo', 'Goias', 'Maranhao', 'Mato Grosso', 'Minas Gerais',
+                          'Para', 'Paraiba', 'Pernambuco', 'Piau', 'Rio', 'Rondonia', 'Roraima',
+                          'Santa Catarina', 'Sao Paulo', 'Sergipe', 'Tocantins']
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_duplicated(self):
