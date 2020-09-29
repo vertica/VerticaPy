@@ -373,7 +373,7 @@ p: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="DBSCAN",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self

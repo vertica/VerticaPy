@@ -636,7 +636,7 @@ def bubble(
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = ax.imread(img)
+            im = plt.imread(img)
             if not (bbox):
                 bbox = (min(column1), max(column1), min(column2), max(column2))
                 ax.set_xlim(bbox[0], bbox[1])
@@ -673,7 +673,7 @@ def bubble(
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = ax.imread(img)
+            im = plt.imread(img)
             if not (bbox):
                 aggr = vdf.agg(columns=[columns[0], columns[1]], func=["min", "max"])
                 bbox = (
@@ -1185,7 +1185,7 @@ def hexbin(
         ax.set_xlim(bbox[0], bbox[1])
         ax.set_ylim(bbox[2], bbox[3])
     if img:
-        im = ax.imread(img)
+        im = plt.imread(img)
         if not (bbox):
             bbox = (min(column1), max(column1), min(column2), max(column2))
             ax.set_xlim(bbox[0], bbox[1])
@@ -1468,7 +1468,8 @@ def multi_ts_plot(
             linewidth=2,
         )
     ax.set_title("Multi Plot of the vDataFrame")
-    ax.set_xticklabels(order_by_values, rotation=90)
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(90)
     ax.set_xlabel(order_by)
     ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
@@ -1919,11 +1920,12 @@ def scatter2D(
             if isnotebook():
                 fig.set_size_inches(8, 6)
             ax.set_facecolor("#F5F5F5")
+            ax.grid()
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = ax.imread(img)
+            im = plt.imread(img)
             if not (bbox):
                 bbox = (min(column1), max(column1), min(column2), max(column2))
                 ax.set_xlim(bbox[0], bbox[1])
@@ -1965,7 +1967,7 @@ def scatter2D(
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         if img:
-            im = ax.imread(img)
+            im = plt.imread(img)
             if not (bbox):
                 aggr = vdf.agg(columns=[columns[0], columns[1]], func=["min", "max"])
                 bbox = (
@@ -2318,7 +2320,8 @@ def ts_plot(
         else:
             area_label = ""
         ax.set_title("{}Plot of {} vs {}".format(area_label, vdf.alias, order_by))
-        ax.set_xticklabels(order_by_values, rotation=90)
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
         return ax
@@ -2372,4 +2375,6 @@ def ts_plot(
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
         return ax

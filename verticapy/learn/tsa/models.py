@@ -65,6 +65,7 @@ import matplotlib.pyplot as plt
 class SARIMAX(Regressor):
     """
 ---------------------------------------------------------------------------
+[Beta Version]
 Creates an SARIMAX object by using the Vertica Highly Distributed and 
 Scalable Linear Regression on the data.
 
@@ -119,7 +120,7 @@ papprox_ma: int, optional
         self,
         name: str,
         cursor=None,
-        p: int = 1,
+        p: int = 0,
         d: int = 0,
         q: int = 0,
         P: int = 0,
@@ -374,6 +375,7 @@ papprox_ma: int, optional
         self.test_relation = test_relation if (test_relation) else input_relation
         self.y, self.ts, self.deploy_predict_ = str_column(y), str_column(ts), ""
         self.coef_ = tablesample({"predictor": [], "coefficient": []})
+        self.ma_avg_, self.ma_piq_ = None, None
         X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
         self.X, self.exogenous = [], X
         relation = (
@@ -706,6 +708,8 @@ papprox_ma: int, optional
             "test_relation": self.test_relation,
             "transform_relation": self.transform_relation,
             "deploy_predict": self.deploy_predict_,
+            "ma_avg": self.ma_avg_,
+            "ma_piq": self.ma_piq_.values if (self.ma_piq_) else None,
             "X": self.X,
             "y": self.y,
             "ts": self.ts,
@@ -730,7 +734,7 @@ papprox_ma: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="SARIMAX",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -738,7 +742,7 @@ papprox_ma: int, optional
     # ---#
     def plot(
         self,
-        vdf,
+        vdf=None,
         y: str = "",
         ts: str = "",
         X: list = [],
@@ -753,11 +757,11 @@ papprox_ma: int, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Plot of the prediction.
+    Draws the SARIMAX model.
 
     Parameters
     ----------
-    vdf: vDataFrame
+    vdf: vDataFrame, optional
         Object to use to run the prediction.
     y: str, optional
         Response column.
@@ -774,7 +778,11 @@ papprox_ma: int, optional
     confidence: bool, optional
         If set to True, the confidence ranges will be drawn.
     nlead: int, optional
-        Number of leads to predict after the last ts date.
+        Number of predictions computed by the dynamic forecast after
+        the last ts date.
+    nlast: int, optional
+        The dynamic forecast will start nlast values before the last
+        ts date.
     limit: int, optional
         Maximum number of past elements to use.
     ax: Matplotlib axes object, optional
@@ -782,9 +790,11 @@ papprox_ma: int, optional
 
     Returns
     -------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
+    ax
+        Matplotlib axes object
         """
+        if not (vdf):
+            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -974,6 +984,8 @@ papprox_ma: int, optional
             1.02 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
             1.02 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
         )
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
         return ax
 
     # ---#
@@ -1001,7 +1013,7 @@ papprox_ma: int, optional
     X: list, optional
         exogenous vcolumns.
     nlead: int, optional
-        Number of leads to predict after the last ts date.
+        Number of records to predict after the last ts date.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
 
@@ -1117,6 +1129,7 @@ papprox_ma: int, optional
 class VAR(Regressor):
     """
 ---------------------------------------------------------------------------
+[Beta Version]
 Creates an VAR object by using the Vertica Highly Distributed and 
 Scalable Linear Regression on the data.
 
@@ -1214,6 +1227,75 @@ l1_ratio: float, optional
         return sql
 
     # ---#
+    def features_importance(
+        self, X_idx: int = 0, ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Computes the model features importance.
+
+    Parameters
+    ----------
+    X_idx: int/str, optional
+        Index of the main vector vcolumn used to draw the features importance.
+        It can also be the name of a predictor vcolumn.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types([("X_idx", X_idx, [int, float, str],),],)
+        if isinstance(X_idx, str):
+            X_idx = str_column(X_idx).lower()
+            for idx, elem in enumerate(self.X):
+                if str_column(elem).lower() == X_idx:
+                    X_idx = idx
+                    break
+        assert (
+            isinstance(X_idx, (float, int)) and len(self.X) > X_idx >= 0
+        ), ParameterError(
+            "The index of the vcolumn to draw 'X_idx' must be between 0 and {}. It can also be the name of a predictor vcolumn.".format(
+                len(self.X)
+            )
+        )
+        relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts).format(
+            self.test_relation
+        )
+        for idx, elem in enumerate(self.X):
+            relation = relation.replace("[X{}]".format(idx), elem)
+        min_max = (
+            vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            .agg(func=["min", "max"], columns=self.X)
+            .transpose()
+            .values
+        )
+        coefficient = self.coef_[X_idx].values
+        coeff_importances = {}
+        coeff_sign = {}
+        for idx, coef in enumerate(coefficient["predictor"]):
+            if idx > 0:
+                predictor = int(coef.split("_")[0].replace("ar", ""))
+                predictor = str_column(self.X[predictor])
+                minimum, maximum = min_max[predictor]
+                val = coefficient["coefficient"][idx]
+                coeff_importances[coef] = abs(val) * (maximum - minimum)
+                coeff_sign[coef] = 1 if val >= 0 else -1
+        total = sum(coeff_importances[elem] for elem in coeff_importances)
+        for elem in coeff_importances:
+            coeff_importances[elem] = 100 * coeff_importances[elem] / total
+        try:
+            plot_importance(coeff_importances, coeff_sign, print_legend=True, ax=ax)
+        except:
+            pass
+        importances = {"index": ["importance", "sign"]}
+        for elem in coeff_importances:
+            importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
+        return tablesample(values=importances).transpose()
+
+    # ---#
     def fit(self, input_relation: str, X: list, ts: str, test_relation: str = ""):
         """
     ---------------------------------------------------------------------------
@@ -1228,12 +1310,12 @@ l1_ratio: float, optional
     ts: str
         vcolumn used to order the data.
     test_relation: str, optional
-        Relation to use to test the self.
+        Relation to use to test the model.
 
     Returns
     -------
     object
-        model
+        self
         """
         check_types(
             [
@@ -1311,7 +1393,6 @@ l1_ratio: float, optional
             "deploy_predict": self.deploy_predict_,
             "X": self.X,
             "ts": self.ts,
-            "coef": [elem.values for elem in self.coef_],
             "p": self.parameters["p"],
             "penalty": self.parameters["penalty"],
             "tol": self.parameters["tol"],
@@ -1320,10 +1401,12 @@ l1_ratio: float, optional
             "solver": self.parameters["solver"],
             "l1_ratio": self.parameters["l1_ratio"],
         }
+        for idx, elem in enumerate(self.coef_):
+            model_save["coef_{}".format(idx)] = elem.values
         insert_verticapy_schema(
             model_name=self.name,
             model_type="VAR",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -1369,7 +1452,7 @@ l1_ratio: float, optional
     # ---#
     def plot(
         self,
-        vdf,
+        vdf=None,
         X: list = [],
         ts: str = "",
         X_idx: int = 0,
@@ -1384,7 +1467,7 @@ l1_ratio: float, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Plot of the prediction.
+    Draws the VAR model.
 
     Parameters
     ----------
@@ -1395,7 +1478,8 @@ l1_ratio: float, optional
     ts: str, optional
         vcolumn used to order the data.
     X_idx: int, optional
-        Index of the main vector vcolumn to draw.
+        Index of the main vector vcolumn to draw. It can also be the name of a 
+        predictor vcolumn.
     dynamic: bool, optional
         If set to True, the dynamic forecast will be drawn.
     one_step: bool, optional
@@ -1405,7 +1489,11 @@ l1_ratio: float, optional
     confidence: bool, optional
         If set to True, the confidence ranges will be drawn.
     nlead: int, optional
-        Number of leads to predict after the last ts date.
+        Number of predictions computed by the dynamic forecast after
+        the last ts date.
+    nlast: int, optional
+        The dynamic forecast will start nlast values before the last
+        ts date.
     limit: int, optional
         Maximum number of past elements to use.
     ax: Matplotlib axes object, optional
@@ -1413,14 +1501,16 @@ l1_ratio: float, optional
 
     Returns
     -------
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
+    ax 
+        Matplotlib axes object
         """
+        if not (vdf):
+            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
                 ("nlead", nlead, [int, float],),
-                ("X_idx", X_idx, [int, float],),
+                ("X_idx", X_idx, [int, float, str],),
                 ("dynamic", dynamic, [bool],),
                 ("observed", observed, [bool],),
                 ("one_step", one_step, [bool],),
@@ -1433,21 +1523,29 @@ l1_ratio: float, optional
             max(max(limit, self.parameters["p"] + 1 + nlast), 200),
         )
         delta_limit = max(limit - delta_limit - nlast, 0)
+        if not (ts):
+            ts = self.ts
+        if not (X):
+            X = self.X
         assert dynamic or one_step or observed, ParameterError(
             "No option selected.\n You should set either dynamic, one_step or observed to True."
         )
         assert nlead + nlast > 0 or not (dynamic), ParameterError(
             "Dynamic Plots are only possible if either parameter 'nlead' is greater than 0 or parameter 'nlast' is greater than 0, and parameter 'dynamic' is set to True."
         )
-        assert len(self.X) > X_idx >= 0, ParameterError(
-            "The index of the vcolumn to draw 'X_idx' must be between 0 and {}".format(
+        if isinstance(X_idx, str):
+            X_idx = str_column(X_idx).lower()
+            for idx, elem in enumerate(X):
+                if str_column(elem).lower() == X_idx:
+                    X_idx = idx
+                    break
+        assert (
+            isinstance(X_idx, (float, int)) and len(self.X) > X_idx >= 0
+        ), ParameterError(
+            "The index of the vcolumn to draw 'X_idx' must be between 0 and {}. It can also be the name of a predictor vcolumn.".format(
                 len(self.X)
             )
         )
-        if not (ts):
-            ts = self.ts
-        if not (X):
-            X = self.X
         result_all = self.predict(
             vdf=vdf,
             X=X,
@@ -1597,6 +1695,8 @@ l1_ratio: float, optional
             1.02 * float(min(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
             1.02 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
         )
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
         return ax
 
     # ---#
@@ -1614,9 +1714,9 @@ l1_ratio: float, optional
     ts: str, optional
         vcolumn used to order the data.
     nlead: int, optional
-        Number of leads to predict after the last ts date.
+        Number of records to predict after the last ts date.
     name: list, optional
-        Name of the added vcolumns. If empty, names will be generated.
+        Names of the added vcolumns. If empty, names will be generated.
 
     Returns
     -------
