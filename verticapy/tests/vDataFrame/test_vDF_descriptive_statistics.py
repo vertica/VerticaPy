@@ -617,48 +617,118 @@ class TestvDFDescriptiveStat:
         model.predict(titanic_vd, name = "survived_pred")
 
         # Computing AUC
-        #auc = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "auc")
-        #assert auc == pytest.approx(0.697476274)
+        auc = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "auc")
+        assert auc == pytest.approx(0.697476274)
 
         # Computing MSE
-        #mse = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "mse")
-        #assert mse == pytest.approx(0.224993557)
+        mse = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "mse")
+        assert mse == pytest.approx(0.224993557)
+
+        # Drawing ROC Curve
+        roc_res = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "roc")
+        assert roc_res.values["threshold"][3] == 0.003
+        assert roc_res.values["false_positive"][3] == 1.0
+        assert roc_res.values["true_positive"][3] == 1.0
+        assert roc_res.values["threshold"][300] == 0.3
+        assert roc_res.values["false_positive"][300] == pytest.approx(0.9900826446)
+        assert roc_res.values["true_positive"][300] == pytest.approx(0.9974424552)
+        assert roc_res.values["threshold"][900] == 0.9
+        assert roc_res.values["false_positive"][900] == pytest.approx(0.01818181818)
+        assert roc_res.values["true_positive"][900] == pytest.approx(0.06649616368)
+
+        # Drawing PRC Curve
+        prc_res = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "prc")
+        assert prc_res.values["threshold"][3] == 0.002
+        assert prc_res.values["recall"][3] == 1.0
+        assert prc_res.values["precision"][3] == pytest.approx(0.3925702811)
+        assert prc_res.values["threshold"][300] == 0.299
+        assert prc_res.values["recall"][300] == pytest.approx(1.0)
+        assert prc_res.values["precision"][300] == pytest.approx(0.3949494949)
+        assert prc_res.values["threshold"][900] == 0.899
+        assert prc_res.values["recall"][900] == pytest.approx(0.06649616368)
+        assert prc_res.values["precision"][900] == pytest.approx(0.7027027027)
 
         # dropping the created model
         model.drop()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_sem(self):
-        pass
+    def test_vDF_sem(self, titanic_vd):
+        # testing vDataFrame.sem
+        result = titanic_vd.sem(columns = ["age", "fare"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_shape(self):
-        pass
+        assert result.values["sem"][0] == pytest.approx(0.457170684)
+        assert result.values["sem"][1] == pytest.approx(1.499285853)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_skew(self):
-        pass
+        # testing vDataFrame[].sem
+        assert titanic_vd["parch"].sem() == pytest.approx(0.024726611)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_statistics(self):
-        pass
+    def test_vDF_shape(self, market_vd):
+        assert market_vd.shape() == (314, 3)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_std(self):
-        pass
+    def test_vDF_skew(self, titanic_vd):
+        # testing vDataFrame.skew
+        result1 = titanic_vd.skew(columns = ["age", "fare"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_sum(self):
-        pass
+        assert result1.values["skewness"][0] == pytest.approx(0.408876460)
+        assert result1.values["skewness"][1] == pytest.approx(4.300699188)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_topk(self):
-        pass
+        # testing vDataFrame.skewness
+        result2 = titanic_vd.skewness(columns = ["age", "fare"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_value_counts(self):
-        pass
+        assert result2.values["skewness"][0] == result1.values["skewness"][0]
+        assert result2.values["skewness"][1] == result1.values["skewness"][1]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_var(self):
-        pass
+        # testing vDataFrame[].skew
+        assert titanic_vd["parch"].skew() == pytest.approx(3.798019282)
+        # testing vDataFrame[].skewness
+        assert titanic_vd["parch"].skewness() == pytest.approx(3.798019282)
+
+    def test_vDF_std(self, titanic_vd):
+        # testing vDataFrame.std
+        result = titanic_vd.std(columns = ["fare"])
+
+        assert result.values["stddev"][0] == pytest.approx(52.64607298)
+
+        # testing vDataFrame[].std
+        assert titanic_vd["parch"].std() == pytest.approx(0.868604707)
+
+    def test_vDF_sum(self, titanic_vd):
+        # testing vDataFrame.sum
+        result = titanic_vd.sum(columns = ["fare", "parch"])
+
+        assert result.values["sum"][0] == pytest.approx(41877.3576)
+        assert result.values["sum"][1] == pytest.approx(467.0)
+
+        # testing vDataFrame[].sum
+        assert titanic_vd["age"].sum() == pytest.approx(30062.0)
+
+    def test_vDF_topk(self, market_vd):
+        result = market_vd["Name"].topk(k = 3)
+
+        assert result.values["count"][0] == 12
+        assert result.values["percent"][0] == pytest.approx(3.822)
+        assert result.values["count"][1] == 10
+        assert result.values["percent"][1] == pytest.approx(3.185)
+        assert result.values["count"][2] == 8
+        assert result.values["percent"][2] == pytest.approx(2.548)
+
+    def test_vDF_value_counts(self, market_vd):
+        result = market_vd["Name"].value_counts(k = 2)
+
+        assert result.values["value"][0] == '"Name"'
+        assert result.values["value"][1] == "varchar(32)"
+        assert result.values["value"][2] == 73.0
+        assert result.values["value"][3] == 314.0
+        assert result.values["value"][4] == 284
+        assert result.values["value"][5] == 12
+        assert result.values["value"][6] == 10
+        assert result.values["index"][6] == 'Carrots'
+
+    def test_vDF_var(self, titanic_vd):
+        # testing vDataFrame.var
+        result = titanic_vd.var(columns = ["age", "parch"])
+
+        assert result.values["variance"][0] == pytest.approx(208.3780197)
+        assert result.values["variance"][1] == pytest.approx(0.754474138)
+
+        # testing vDataFrame[].var
+        assert titanic_vd["fare"].var() == pytest.approx(2771.6090005)
