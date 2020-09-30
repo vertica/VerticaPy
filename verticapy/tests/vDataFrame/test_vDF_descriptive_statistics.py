@@ -264,7 +264,7 @@ class TestvDFDescriptiveStat:
         with pytest.raises(QueryError) as exception_info:
             titanic_vd.avg(columns = ["embarked"])
         # checking the error message
-        assert exception_info.match("Could not convert \"C\" from column titanic.embarked to a float8")
+        assert exception_info.match("Could not convert")
 
         # tests for vDataFrame.mean()
         result2 = titanic_vd.mean(columns = ["age"])
@@ -441,65 +441,191 @@ class TestvDFDescriptiveStat:
                           'Para', 'Paraiba', 'Pernambuco', 'Piau', 'Rio', 'Rondonia', 'Roraima',
                           'Santa Catarina', 'Sao Paulo', 'Sergipe', 'Tocantins']
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_duplicated(self):
-        pass
+    def test_vDF_duplicated(self, market_vd):
+        result = market_vd.duplicated(columns = ["Form", "Name"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_isin(self):
-        pass
+        assert result.count == 151
+        assert len(result.values) == 3
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_kurt(self):
-        pass
+    def test_vDF_isin(self, market_vd):
+        result = market_vd.groupby(columns = ["Form", "Name"],
+                                expr = ["AVG(Price) AS avg_price",
+                                        "STDDEV(Price) AS std"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_mad(self):
-        pass
+        assert result.shape() == (159, 4)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_max(self):
-        pass
+    def test_vDF_isin(self, amazon_vd):
+        # testing vDataFrame.isin
+        assert amazon_vd.isin({"state": ["Rio", "Acre"], "number": [0, 0]}) == [True, True]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_median(self):
-        pass
+        # testing vDataFrame[].isin
+        assert amazon_vd["state"].isin(val = ["Rio", "Acre", "Paris"]) == [True, True, False]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_min(self):
-        pass
+    def test_vDF_kurt(self, titanic_vd):
+        # testing vDataFrame.kurt
+        result1 = titanic_vd.kurt(columns = ["age", "fare", "parch"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_mode(self):
-        pass
+        assert result1.values['kurtosis'][0] == pytest.approx(0.15689691)
+        assert result1.values['kurtosis'][1] == pytest.approx(26.2543152)
+        assert result1.values['kurtosis'][2] == pytest.approx(22.6438022)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_nlargest(self):
-        pass
+        # testing vDataFrame.kurtosis
+        result2 = titanic_vd.kurtosis(columns = ["age", "fare", "parch"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_nsmallest(self):
-        pass
+        assert result2.values['kurtosis'][0] == result1.values['kurtosis'][0]
+        assert result2.values['kurtosis'][1] == result1.values['kurtosis'][1]
+        assert result2.values['kurtosis'][2] == result1.values['kurtosis'][2]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_nunique(self):
-        pass
+        # testing vDataFrame[].kurt
+        assert titanic_vd['age'].kurt() == result1.values['kurtosis'][0]
+        assert titanic_vd['fare'].kurt() == result1.values['kurtosis'][1]
+        assert titanic_vd['parch'].kurt() == result1.values['kurtosis'][2]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_numh(self):
-        pass
+        # testing vDataFrame[].kurtosis
+        assert titanic_vd['age'].kurtosis() == result1.values['kurtosis'][0]
+        assert titanic_vd['fare'].kurtosis() == result1.values['kurtosis'][1]
+        assert titanic_vd['parch'].kurtosis() == result1.values['kurtosis'][2]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_prod(self):
-        pass
+    def test_vDF_mad(self, titanic_vd):
+        # testing vDataFrame.mad
+        result1 = titanic_vd.mad(columns = ["age", "fare", "parch"])
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_quantile(self):
-        pass
+        assert result1.values["mad"][0] == pytest.approx(8.0)
+        assert result1.values["mad"][1] == pytest.approx(6.9042)
+        assert result1.values["mad"][2] == pytest.approx(0.0)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_score(self):
-        pass
+        # testing vDataFrame[].mad
+        assert titanic_vd["age"].mad() == result1.values["mad"][0]
+        assert titanic_vd["fare"].mad() == result1.values["mad"][1]
+        assert titanic_vd["parch"].mad() == result1.values["mad"][2]
+
+    def test_vDF_max(self, titanic_vd):
+        # testing vDataFrame.max
+        result1 = titanic_vd.max(columns = ["age", "fare", "parch"])
+
+        assert result1.values["max"][0] == pytest.approx(80.0)
+        assert result1.values["max"][1] == pytest.approx(512.3292)
+        assert result1.values["max"][2] == pytest.approx(9.0)
+
+        # testing vDataFrame[].max
+        assert titanic_vd["age"].max() == result1.values["max"][0]
+        assert titanic_vd["fare"].max() == result1.values["max"][1]
+        assert titanic_vd["parch"].max() == result1.values["max"][2]
+
+    def test_vDF_median(self, titanic_vd):
+        # testing vDataFrame.median
+        result = titanic_vd.median(columns = ["age", "fare", "parch"])
+
+        assert result.values["median"][0] == pytest.approx(28.0)
+        assert result.values["median"][1] == pytest.approx(14.4542)
+        assert result.values["median"][2] == pytest.approx(0.0)
+
+        # testing vDataFrame[].median
+        assert titanic_vd["age"].median() == result.values["median"][0]
+        assert titanic_vd["fare"].median() == result.values["median"][1]
+        assert titanic_vd["parch"].median() == result.values["median"][2]
+
+    def test_vDF_min(self, titanic_vd):
+        # testing vDataFrame.min
+        result = titanic_vd.min(columns = ["age", "fare", "parch"])
+
+        assert result.values["min"][0] == pytest.approx(0.33)
+        assert result.values["min"][1] == pytest.approx(0.0)
+        assert result.values["min"][2] == pytest.approx(0.0)
+
+        # testing vDataFrame[].median
+        assert titanic_vd["age"].min() == result.values["min"][0]
+        assert titanic_vd["fare"].min() == result.values["min"][1]
+        assert titanic_vd["parch"].min() == result.values["min"][2]
+
+    def test_vDF_mode(self, market_vd):
+        # testing vDataFrame[].mod
+        assert market_vd["Name"].mode() == 'Pineapple'
+        assert market_vd["Name"].mode(n = 2) == 'Carrots'
+
+    def test_vDF_nlargest(self, market_vd):
+        result = market_vd["Price"].nlargest(n = 2)
+
+        assert result.values["Name"][0] == 'Mangoes'
+        assert result.values["Form"][0] == 'Dried'
+        assert result.values["Price"][0] == pytest.approx(10.1637125)
+        assert result.values["Name"][1] == 'Mangoes'
+        assert result.values["Form"][1] == 'Dried'
+        assert result.values["Price"][1] == pytest.approx(8.50464930)
+
+    def test_vDF_nsmallest(self, market_vd):
+        result = market_vd["Price"].nsmallest(n = 2)
+
+        assert result.values["Name"][0] == 'Watermelon'
+        assert result.values["Form"][0] == 'Fresh'
+        assert result.values["Price"][0] == pytest.approx(0.31663877)
+        assert result.values["Name"][1] == 'Watermelon'
+        assert result.values["Form"][1] == 'Fresh'
+        assert result.values["Price"][1] == pytest.approx(0.33341203)
+
+    def test_vDF_nunique(self, titanic_vd):
+        result = titanic_vd.nunique(columns = ["pclass", "embarked", "survived", "cabin"])
+
+        assert result.values["unique"][0] == 3.0
+        assert result.values["unique"][1] == 3.0
+        assert result.values["unique"][2] == 2.0
+        assert result.values["unique"][3] == 182.0
+
+    def test_vDF_numh(self, market_vd):
+        assert market_vd["Price"].numh(method = "auto") == pytest.approx(0.984707376)
+        assert market_vd["Price"].numh(method = "freedman_diaconis") == pytest.approx(0.450501738)
+        assert market_vd["Price"].numh(method = "sturges") == pytest.approx(0.984707376)
+
+    def test_vDF_prod(self, market_vd):
+        # testing vDataFrame.prod
+        result1 = market_vd.prod(columns = ["Price"])
+
+        assert result1.values["prod"][0] == pytest.approx(1.9205016913e+71)
+
+        # testing vDataFrame.product
+        result2 = market_vd.product(columns = ["Price"])
+
+        assert result2.values["prod"][0] == result1.values["prod"][0]
+
+        # testing vDataFrame[].prod
+        assert market_vd["price"].prod() == result1.values["prod"][0]
+
+        # testing vDataFrame[].product
+        assert market_vd["price"].product() == result1.values["prod"][0]
+
+    def test_vDF_quantile(self, titanic_vd):
+        # testing vDataFrame.quantile
+        result = titanic_vd.quantile(q= [0.22, 0.9], columns = ["age", "fare"])
+
+        assert result.values["22.0%"][0] == pytest.approx(20.0)
+        assert result.values["90.0%"][0] == pytest.approx(50.0)
+        assert result.values["22.0%"][1] == pytest.approx(7.8958)
+        assert result.values["90.0%"][1] == pytest.approx(79.13)
+
+        # testing vDataFrame[].quantile
+        assert titanic_vd["age"].quantile(x = 0.5) == pytest.approx(28.0)
+        assert titanic_vd["fare"].quantile(x = 0.1) == pytest.approx(7.5892)
+
+    def test_vDF_score(self, base, titanic_vd):
+        from verticapy.learn.linear_model import LogisticRegression
+        model = LogisticRegression(name = "public.LR_titanic", cursor=base.cursor,
+                                   tol = 1e-4, C = 1.0, max_iter = 100, 
+                                   solver = 'CGD', l1_ratio = 0.5)
+
+        model.drop() # dropping the model in case of its existance
+        model.fit("public.titanic", ["fare", "age"], "survived")
+        model.predict(titanic_vd, name = "survived_pred")
+
+        # Computing AUC
+        #auc = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "auc")
+        #assert auc == pytest.approx(0.697476274)
+
+        # Computing MSE
+        #mse = titanic_vd.score(y_true  = "survived", y_score = "survived_pred", method  = "mse")
+        #assert mse == pytest.approx(0.224993557)
+
+        # dropping the created model
+        model.drop()
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_sem(self):
