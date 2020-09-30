@@ -1479,6 +1479,181 @@ vcolumns : vcolumn
         return self.apply(func)
 
     # ---#
+    def acf(
+        self,
+        column: str,
+        ts: str,
+        by: list = [],
+        p=12,
+        unit: str = "rows",
+        method: str = "pearson",
+        acf_type: str = "bar",
+        confidence: bool = True,
+        alpha: float = 0.95,
+        cmap: str = "",
+        round_nb: int = 3,
+        show: bool = True,
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Computes the correlations of the input vcolumn and its lags. 
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. It can be of type date
+        or a numerical vcolumn.
+    column: str
+        Input vcolumn to use to compute the Auto Correlation Plot.
+    by: list, optional
+        vcolumns used in the partition.
+    p: int/list, optional
+        Int equals to the maximum number of lag to consider during the computation
+        or List of the different lags to include during the computation.
+        p must be positive or a list of positive integers.
+    unit: str, optional
+        Unit to use to compute the lags.
+            rows: Natural lags
+            else : Any time unit, for example you can write 'hour' to compute the hours
+                lags or 'day' to compute the days lags.
+    method: str, optional
+        Method to use to compute the correlation.
+            pearson   : Pearson correlation coefficient (linear).
+            spearmann : Spearmann correlation coefficient (monotonic - rank based).
+            kendall   : Kendall correlation coefficient (similar trends).
+                       \u26A0 Warning : This method is computationally expensive. 
+                                        It is using a CROSS JOIN during the computation.
+                                        The complexity is O(n * n), n being the total
+                                        count of the vDataFrame.
+            cramer    : Cramer's V (correlation between categories).
+            biserial  : Biserial Point (correlation between binaries and a numericals).
+    acf_type: str, optional
+        ACF Type.
+            bar     : Classical Autocorrelation Plot using bars.
+            heatmap : Draws the ACF heatmap.
+            line    : Draws the ACF using a Line Plot.
+    confidence: bool, optional
+        If set to True, the confidence band width is drawn.
+    alpha: float, optional
+        Significance Level. Probability to accept H0. Only used to compute the confidence
+        band width.
+    cmap: str, optional
+        Color Map. It is used only if parameter 'acr_type' is set to 'heatmap'.
+    round_nb: int, optional
+        Round the coefficient using the input number of digits. It is used only if 
+        acf_type is 'heatmap'.
+    show: bool, optional
+        If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
+    vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
+    vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
+    vDataFrame.pacf   : Computes the Partial Autocorrelations of the input vcolumn.
+        """
+        check_types(
+            [
+                ("by", by, [list],),
+                ("ts", ts, [str],),
+                ("column", column, [str],),
+                ("p", p, [int, float, list],),
+                ("unit", unit, [str],),
+                ("acf_type", acf_type, ["line", "heatmap", "bar"],),
+                (
+                    "method",
+                    method,
+                    ["pearson", "kendall", "spearman", "biserial", "cramer"],
+                ),
+                ("cmap", cmap, [str],),
+                ("round_nb", round_nb, [int, float],),
+                ("confidence", confidence, [bool],),
+                ("alpha", alpha, [int, float],),
+                ("show", show, [bool],),
+            ]
+        )
+        method = method.lower()
+        columns_check([column, ts] + by, self)
+        by = vdf_columns_names(by, self)
+        column = vdf_columns_names([column], self)[0]
+        ts = vdf_columns_names([ts], self)[0]
+        if unit == "rows":
+            table = self.__genSQL__()
+        else:
+            table = self.asfreq(
+                ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
+            ).__genSQL__()
+        if isinstance(p, (int, float)):
+            p = range(1, p + 1)
+        by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
+        columns = [
+            "LAG({}, {}) OVER ({}ORDER BY {}) AS lag_{}_{}".format(
+                column, i, by, ts, i, gen_name([column])
+            )
+            for i in p
+        ]
+        relation = "(SELECT {} FROM {}) acf".format(
+            ", ".join([column] + columns), table
+        )
+        if len(p) == 1:
+            return self.__vdf_from_relation__(relation, "acf", "").corr(
+                [], method=method
+            )
+        elif acf_type == "heatmap":
+            return self.__vdf_from_relation__(relation, "acf", "").corr(
+                [], method=method, cmap=cmap, round_nb=round_nb, focus=column, show=show
+            )
+        else:
+            result = self.__vdf_from_relation__(relation, "acf", "").corr(
+                [], method=method, focus=column, show=False
+            )
+            columns = [elem for elem in result.values["index"]]
+            acf = [elem for elem in result.values[column]]
+            acf_band = []
+            if confidence:
+                from scipy.special import erfinv
+
+                for k in range(1, len(acf) + 1):
+                    acf_band += [
+                        math.sqrt(2)
+                        * erfinv(alpha)
+                        / math.sqrt(self[column].count() - k + 1)
+                        * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
+                    ]
+            if columns[0] == column:
+                columns[0] = 0
+            for i in range(1, len(columns)):
+                columns[i] = int(columns[i].split("_")[1])
+            data = [(columns[i], acf[i]) for i in range(len(columns))]
+            data.sort(key=lambda tup: tup[0])
+            del result.values[column]
+            result.values["index"] = [elem[0] for elem in data]
+            result.values["value"] = [elem[1] for elem in data]
+            if acf_band:
+                result.values["confidence"] = acf_band
+            if show:
+                from verticapy.plot import acf_plot
+
+                acf_plot(
+                    result.values["index"],
+                    result.values["value"],
+                    title="Autocorrelation",
+                    confidence=acf_band,
+                    type_bar=True if acf_type == "bar" else False,
+                    ax=ax,
+                )
+            return result
+
+    # ---#
     def aggregate(self, func: list, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -2211,6 +2386,7 @@ vcolumns : vcolumn
                 "first_value",
                 "last_value",
                 "pct_change",
+                "exponential_moving_average",
             ):
                 raise ParameterError(
                     "The parameter 'column' must be empty when using analytic function '{}'".format(
@@ -2593,180 +2769,6 @@ vcolumns : vcolumn
         columns_check([ts], self)
         self.filter("{}::time = '{}'".format(str_column(ts), time))
         return self
-
-    # ---#
-    def acf(
-        self,
-        column: str,
-        ts: str,
-        by: list = [],
-        p=12,
-        unit: str = "rows",
-        method: str = "pearson",
-        acf_type: str = "bar",
-        confidence: bool = True,
-        alpha: float = 0.95,
-        cmap: str = "",
-        round_nb: int = 3,
-        show: bool = True,
-        ax=None,
-    ):
-        """
-    ---------------------------------------------------------------------------
-    Computes the correlations of the input vcolumn and its lags. 
-
-    Parameters
-    ----------
-    ts: str
-        TS (Time Series) vcolumn to use to order the data. It can be of type date
-        or a numerical vcolumn.
-    column: str
-        Input vcolumn to use to compute the Auto Correlation Plot.
-    by: list, optional
-        vcolumns used in the partition.
-    p: int/list, optional
-        Int equals to the maximum number of lag to consider during the computation
-        or List of the different lags to include during the computation.
-        p must be positive or a list of positive integers.
-    unit: str, optional
-        Unit to use to compute the lags.
-            rows: Natural lags
-            else : Any time unit, for example you can write 'hour' to compute the hours
-                lags or 'day' to compute the days lags.
-    method: str, optional
-        Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
-            spearmann : Spearmann correlation coefficient (monotonic - rank based).
-            kendall   : Kendall correlation coefficient (similar trends).
-                       \u26A0 Warning : This method is computationally expensive. 
-                                        It is using a CROSS JOIN during the computation.
-                                        The complexity is O(n * n), n being the total
-                                        count of the vDataFrame.
-            cramer    : Cramer's V (correlation between categories).
-            biserial  : Biserial Point (correlation between binaries and a numericals).
-    acf_type: str, optional
-        ACF Type.
-            bar     : Classical Autocorrelation Plot using bars.
-            heatmap : Draw the ACF heatmap
-            line    : Draw the ACF using a Line Plot
-    confidence: bool, optional
-        If set to True, the confidence band width is drawn.
-    alpha: float, optional
-        Significance Level. Probability to accept H0. Only used to compute the confidence
-        band width.
-    cmap: str, optional
-        Color Map. It is used only if parameter 'acr_type' is set to 'heatmap'.
-    round_nb: int, optional
-        Round the coefficient using the input number of digits. It is used only if 
-        parameter 'acr_type' is set to 'heatmap'.
-    show: bool, optional
-        If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-
-    Returns
-    -------
-    tablesample
-        An object containing the result. For more information, see
-        utilities.tablesample.
-
-    See Also
-    --------
-    vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
-    vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
-    vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
-        """
-        check_types(
-            [
-                ("by", by, [list],),
-                ("ts", ts, [str],),
-                ("column", column, [str],),
-                ("p", p, [int, float, list],),
-                ("unit", unit, [str],),
-                ("acf_type", acf_type, ["line", "heatmap", "bar"],),
-                (
-                    "method",
-                    method,
-                    ["pearson", "kendall", "spearman", "biserial", "cramer"],
-                ),
-                ("cmap", cmap, [str],),
-                ("round_nb", round_nb, [int, float],),
-                ("confidence", confidence, [bool],),
-                ("alpha", alpha, [int, float],),
-                ("show", show, [bool],),
-            ]
-        )
-        method = method.lower()
-        columns_check([column, ts] + by, self)
-        by = vdf_columns_names(by, self)
-        column = vdf_columns_names([column], self)[0]
-        ts = vdf_columns_names([ts], self)[0]
-        if unit == "rows":
-            table = self.__genSQL__()
-        else:
-            table = self.asfreq(
-                ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
-            ).__genSQL__()
-        if isinstance(p, (int, float)):
-            p = range(1, p + 1)
-        by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
-        columns = [
-            "LAG({}, {}) OVER ({}ORDER BY {}) AS lag_{}_{}".format(
-                column, i, by, ts, i, gen_name([column])
-            )
-            for i in p
-        ]
-        relation = "(SELECT {} FROM {}) acf".format(
-            ", ".join([column] + columns), table
-        )
-        if len(p) == 1:
-            return self.__vdf_from_relation__(relation, "acf", "").corr(
-                [], method=method
-            )
-        elif acf_type == "heatmap":
-            return self.__vdf_from_relation__(relation, "acf", "").corr(
-                [], method=method, cmap=cmap, round_nb=round_nb, focus=column, show=show
-            )
-        else:
-            result = self.__vdf_from_relation__(relation, "acf", "").corr(
-                [], method=method, focus=column, show=False
-            )
-            columns = [elem for elem in result.values["index"]]
-            acf = [elem for elem in result.values[column]]
-            acf_band = []
-            if confidence:
-                from scipy.special import erfinv
-
-                for k in range(1, len(acf) + 1):
-                    acf_band += [
-                        math.sqrt(2)
-                        * erfinv(alpha)
-                        / math.sqrt(self[column].count() - k + 1)
-                        * math.sqrt((1 + 2 * sum([acf[i] ** 2 for i in range(1, k)])))
-                    ]
-            if columns[0] == column:
-                columns[0] = 0
-            for i in range(1, len(columns)):
-                columns[i] = int(columns[i].split("_")[1])
-            data = [(columns[i], acf[i]) for i in range(len(columns))]
-            data.sort(key=lambda tup: tup[0])
-            del result.values[column]
-            result.values["index"] = [elem[0] for elem in data]
-            result.values["value"] = [elem[1] for elem in data]
-            if acf_band:
-                result.values["confidence"] = acf_band
-            if show:
-                from verticapy.plot import acf_plot
-
-                acf_plot(
-                    result.values["index"],
-                    result.values["value"],
-                    title="Autocorrelation",
-                    confidence=acf_band,
-                    type_bar=True if acf_type == "bar" else False,
-                    ax=ax,
-                )
-            return result
 
     # ---#
     def avg(self, columns: list = []):
@@ -5262,7 +5264,7 @@ vcolumns : vcolumn
             or (self._VERTICAPY_VARIABLES_["display"]["percent_bar"] == True)
         ) and (self._VERTICAPY_VARIABLES_["display"]["percent_bar"] != False)
         if all_percent:
-            percent = self.agg(["percent"], columns).transpose().values
+            percent = self.aggregate(["percent"], columns).transpose().values
         for column in result.values:
             result.dtype[column] = self[column].ctype()
             if all_percent:
@@ -5953,7 +5955,7 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Computes the Partial Autocorrelations of the input vcolumn. 
+    Computes the Partial Autocorrelations of the input vcolumn.
 
     Parameters
     ----------
@@ -5979,17 +5981,19 @@ vcolumns : vcolumn
         Significance Level. Probability to accept H0. Only used to compute the confidence
         band width.
     show: bool, optional
-        If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
+        If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
 
     Returns
     -------
-    ax
-        Matplotlib axes object
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
 
     See Also
     --------
+    vDataFrame.acf    : Computes the Correlations between a vcolumn and its lags.
     vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
     vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
     vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
@@ -7255,7 +7259,9 @@ vcolumns : vcolumn
         usecols = (
             self.get_columns() if not (usecols) else vdf_columns_names(usecols, self)
         )
-        if isinstance(conditions, collections.Iterable):
+        if isinstance(conditions, collections.Iterable) and not (
+            isinstance(conditions, str)
+        ):
             conditions = " AND ".join(["({})".format(elem) for elem in conditions])
         conditions = " WHERE {}".format(conditions) if conditions else ""
         all_cols = ", ".join(usecols + expr)
@@ -7540,8 +7546,6 @@ vcolumns : vcolumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        from verticapy.learn.plot import roc_curve, prc_curve, lift_chart
-
         check_types(
             [
                 ("y_true", y_true, [str],),

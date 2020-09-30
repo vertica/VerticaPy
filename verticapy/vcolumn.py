@@ -1748,6 +1748,7 @@ Attributes
         self,
         val=None,
         method: str = "auto",
+        expr: str = "",
         by: list = [],
         order_by: list = [],
         print_info: bool = True,
@@ -1769,6 +1770,8 @@ Attributes
 			median  : Median.
 			mode    : Mode (most occurent element).
 			0ifnull : 0 when the vcolumn is null, 1 otherwise.
+    expr: str, optional
+        SQL expression.
 	by: list, optional
  		vcolumns used in the partition.
  	order_by: list, optional
@@ -1803,6 +1806,7 @@ Attributes
                         "backfill",
                     ],
                 ),
+                ("expr", expr, [str],),
                 ("by", by, [list],),
                 ("order_by", order_by, [list],),
             ]
@@ -1826,6 +1830,8 @@ Attributes
             val = val.replace("'", "''")
         if val != None:
             new_column = "COALESCE({}, '{}')".format("{}", val)
+        elif expr:
+            new_column = "COALESCE({}, {})".format("{}", expr)
         elif method == "0ifnull":
             new_column = "DECODE({}, NULL, 0, 1)"
         elif method in ("mean", "avg", "median"):

@@ -628,7 +628,7 @@ p: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="NearestCentroid",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -813,7 +813,7 @@ p: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="KNeighborsClassifier",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -967,7 +967,7 @@ p: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="KNeighborsRegressor",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -1219,7 +1219,7 @@ p: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="LocalOutlierFactor",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self

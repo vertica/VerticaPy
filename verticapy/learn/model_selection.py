@@ -390,7 +390,7 @@ def elbow(
 ):
     """
 ---------------------------------------------------------------------------
-Draws the Elbow Curve.
+Draws an Elbow Curve.
 
 Parameters
 ----------

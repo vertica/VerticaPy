@@ -56,12 +56,18 @@ from verticapy.toolbox import *
 from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 
+# Other Modules
+try:
+    from IPython.core.display import display
+except:
+    pass
+
 #
 # ---#
 def check_model(name: str, cursor=None):
     """
 ---------------------------------------------------------------------------
-Check if the model already exists.
+Checks if the model already exists.
 
 Parameters
 ----------
@@ -103,7 +109,7 @@ cursor: DBcursor, optional
 def create_verticapy_schema(cursor=None):
     """
 ---------------------------------------------------------------------------
-Create a schema named verticapy which will be used to store VerticaPy 
+Creates a schema named verticapy which will be used to store VerticaPy 
 extended models.
 
 Parameters
@@ -119,7 +125,9 @@ cursor: DBcursor, optional
         check_cursor(cursor)
     sql = "CREATE SCHEMA verticapy;"
     cursor.execute(sql)
-    sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT, value VARCHAR(24000));"
+    sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
+    cursor.execute(sql)
+    sql = "CREATE TABLE verticapy.attr (model_name VARCHAR(128), attr_name VARCHAR(128), value VARCHAR(65000));"
     cursor.execute(sql)
     if conn:
         conn.close()
@@ -129,7 +137,7 @@ cursor: DBcursor, optional
 def drop_verticapy_schema(cursor=None):
     """
 ---------------------------------------------------------------------------
-Drop the VerticaPy schema which is used to store extended models.
+Drops the VerticaPy schema which is used to store extended models.
 
 Parameters
 ----------
@@ -200,10 +208,15 @@ raise_error: bool, optional
         if result:
             model_type = result[0]
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop_table(self.name, self.cursor, print_info=False)
+                drop_table(name, cursor, print_info=False)
             elif model_type in ("CountVectorizer"):
-                drop_text_index(self.name, self.cursor, print_info=False)
+                drop_text_index(name, cursor, print_info=False)
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
+                str_column(name).lower()
+            )
+            cursor.execute(sql)
+            cursor.execute("COMMIT;")
+            sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
             cursor.execute(sql)
@@ -621,18 +634,35 @@ model
             except:
                 try:
                     cursor.execute(
-                        "SELECT value FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                        "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = '{}'".format(
                             str_column(name.lower())
                         )
                     )
-                    result = cursor.fetchone()
+                    result = cursor.fetchall()
+                    model_save = {}
+                    for elem in result:
+                        ldic = {}
+                        try:
+                            exec("result_tmp = {}".format(elem[1]), globals(), ldic)
+                        except:
+                            exec(
+                                "result_tmp = '{}'".format(elem[1].replace("'", "''")),
+                                globals(),
+                                ldic,
+                            )
+                        result_tmp = ldic["result_tmp"]
+                        try:
+                            result_tmp = float(result_tmp)
+                        except:
+                            pass
+                        if result_tmp == None:
+                            result_tmp = "None"
+                        model_save[elem[0]] = result_tmp
                 except:
-                    result = []
-                if not (result):
+                    raise
+                    model_save = {}
+                if not (model_save):
                     raise NameError("The model named {} doesn't exist.".format(name))
-                ldic = {}
-                exec("model_save = {}".format(result[0]), globals(), ldic)
-                model_save = ldic["model_save"]
                 if model_save["type"] == "NearestCentroid":
                     from verticapy.learn.neighbors import NearestCentroid
 
@@ -710,6 +740,11 @@ model
                     )
                     model.transform_relation = model_save["transform_relation"]
                     model.coef_ = tablesample(model_save["coef"])
+                    model.ma_avg_ = model_save["ma_avg"]
+                    if isinstance(model_save["ma_piq"], dict):
+                        model.ma_piq_ = tablesample(model_save["ma_piq"])
+                    else:
+                        model.ma_piq_ = None
                     model.ts = model_save["ts"]
                     model.exogenous = model_save["exogenous"]
                     model.deploy_predict_ = model_save["deploy_predict"]
@@ -728,7 +763,9 @@ model
                         model_save["l1_ratio"],
                     )
                     model.transform_relation = model_save["transform_relation"]
-                    model.coef_ = [tablesample(elem) for elem in model_save["coef"]]
+                    model.coef_ = []
+                    for i in range(len(model_save["X"])):
+                        model.coef_ += [tablesample(model_save["coef_{}".format(i)])]
                     model.ts = model_save["ts"]
                     model.deploy_predict_ = model_save["deploy_predict"]
                     model.X = model_save["X"]
@@ -1194,38 +1231,6 @@ read_json : Ingests a JSON file in the Vertica DB.
     if conn:
         conn.close()
     return dtype
-
-
-# ---#
-def print_html(x):
-    """
----------------------------------------------------------------------------
-Print the HTML representation of the object.
-
-Parameters
-----------
-x: object
-    Object having an HTML representation.
-    """
-    from IPython.core.display import HTML, display
-
-    try:
-        if isinstance(x, (list, tuple)):
-            if isinstance(x, (list)):
-                print("[")
-            else:
-                print("(")
-            for elem in x:
-                display(HTML(elem._repr_html_()))
-                print(",")
-            if isinstance(x, (list)):
-                print("]")
-            else:
-                print(")")
-        else:
-            display(HTML(x._repr_html_()))
-    except:
-        print(x)
 
 
 # ---#
@@ -1704,6 +1709,11 @@ The tablesample attributes are the same than the parameters.
             ]
             data_columns = values0 + values1 + values2
             dtype["..."] = "undefined"
+        percent = self.percent
+        for elem in self.values:
+            if elem not in percent and (elem != "index"):
+                percent = {}
+                break
         formatted_text = print_table(
             data_columns,
             is_finished=(self.count <= len(data_columns[0]) + self.offset),
@@ -1711,7 +1721,7 @@ The tablesample attributes are the same than the parameters.
             repeat_first_column=("index" in self.values),
             return_html=True,
             dtype=dtype,
-            percent=self.percent,
+            percent=percent,
         )
         start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
         formatted_text += '<div style="margin-top:6px; font-size:1.02em">'

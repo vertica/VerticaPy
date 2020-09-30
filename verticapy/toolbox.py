@@ -460,7 +460,7 @@ def indentSQL(query: str):
 def insert_verticapy_schema(
     model_name: str,
     model_type: str,
-    model_save: str,
+    model_save: dict,
     cursor,
     category: str = "VERTICAPY_MODELS",
 ):
@@ -484,16 +484,17 @@ def insert_verticapy_schema(
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
-                sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size, value) VALUES ('{}', '{}', '{}', '{}', {}, '{}');".format(
-                    model_name,
-                    category,
-                    model_type,
-                    create_time,
-                    size,
-                    model_save.replace("'", "''"),
+                sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size) VALUES ('{}', '{}', '{}', '{}', {});".format(
+                    model_name, category, model_type, create_time, size
                 )
                 cursor.execute(sql)
                 cursor.execute("COMMIT;")
+                for elem in model_save:
+                    sql = "INSERT INTO verticapy.attr(model_name, attr_name, value) VALUES ('{}', '{}', '{}');".format(
+                        model_name, elem, str(model_save[elem]).replace("'", "''")
+                    )
+                    cursor.execute(sql)
+                    cursor.execute("COMMIT;")
         except Exception as e:
             print("\u26A0 Warning: The VerticaPy model could not be stored.")
             print(e)

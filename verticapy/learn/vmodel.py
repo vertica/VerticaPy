@@ -85,7 +85,16 @@ Main Class for Vertica Model
 	Returns the model Representation.
 		"""
         try:
-            if self.type not in ("DBSCAN", "NearestCentroid"):
+            rep = ""
+            if self.type not in (
+                "DBSCAN",
+                "NearestCentroid",
+                "VAR",
+                "SARIMAX",
+                "LocalOutlierFactor",
+                "KNeighborsRegressor",
+                "KNeighborsClassifier",
+            ):
                 try:
                     version(cursor=self.cursor, condition=[9, 0, 0])
                     self.cursor.execute(
@@ -99,16 +108,57 @@ Main Class for Vertica Model
                     )
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
-                rep = "<DBSCAN>\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
+                rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
                     self.n_cluster_, self.n_noise_
                 )
-                return rep
+            elif self.type == "LocalOutlierFactor":
+                rep = "=======\ndetails\n=======\nNumber of Errors: {}".format(
+                    self.n_errors_
+                )
             elif self.type == "NearestCentroid":
-                rep = "<NearestCentroid>" + self.centroids_.__repr__()
-                return rep
-            else:
-                raise
+                rep = "=======\ndetails\n=======\n" + self.centroids_.__repr__()
+            elif self.type == "VAR":
+                rep = "=======\ndetails\n======="
+                for idx, elem in enumerate(self.X):
+                    rep += "\n\n # " + str(elem) + "\n\n" + self.coef_[idx].__repr__()
+                rep += "\n\n===============\nAdditional Info\n==============="
+                rep += "\nInput Relation : {}".format(self.input_relation)
+                rep += "\nX : {}".format(", ".join(self.X))
+                rep += "\nts : {}".format(self.ts)
+            elif self.type == "SARIMAX":
+                rep = "=======\ndetails\n======="
+                rep += "\n\n# Coefficients\n\n" + self.coef_.__repr__()
+                if self.ma_piq_:
+                    rep += "\n\n# MA PIQ\n\n" + self.ma_piq_.__repr__()
+                rep += "\n\n===============\nAdditional Info\n==============="
+                rep += "\nInput Relation : {}".format(self.input_relation)
+                rep += "\ny : {}".format(self.y)
+                rep += "\nts : {}".format(self.ts)
+                if self.exogenous:
+                    rep += "\nExogenous Variables : {}".format(
+                        ", ".join(self.exogenous)
+                    )
+                if self.ma_avg_:
+                    rep += "\nMA AVG : {}".format(self.ma_avg_)
+            if self.type in (
+                "DBSCAN",
+                "NearestCentroid",
+                "LocalOutlierFactor",
+                "KNeighborsRegressor",
+                "KNeighborsClassifier",
+            ):
+                rep += "\n\n===============\nAdditional Info\n==============="
+                rep += "\nInput Relation : {}".format(self.input_relation)
+                rep += "\nX : {}".format(", ".join(self.X))
+            if self.type in (
+                "NearestCentroid",
+                "KNeighborsRegressor",
+                "KNeighborsClassifier",
+            ):
+                rep += "\ny : {}".format(self.y)
+            return rep
         except:
+            raise
             return "<{}>".format(self.type)
 
     # ---#
@@ -236,7 +286,7 @@ Main Class for Vertica Model
 	tablesample
 		model attribute
 		"""
-        if self.type not in ("DBSCAN", "LocalOutlierFactor"):
+        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX"):
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
@@ -269,6 +319,28 @@ Main Class for Vertica Model
                 result = tablesample(
                     values={"attr_name": ["n_errors"], "value": [self.n_errors_]},
                 )
+                return result
+            else:
+                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
+        elif self.type in ("SARIMAX"):
+            if attr_name == "coef":
+                return self.coef_
+            elif attr_name == "ma_avg":
+                return self.ma_avg_
+            elif attr_name == "ma_piq":
+                return self.ma_piq_
+            elif not (attr_name):
+                result = tablesample(
+                    values={"attr_name": ["coef", "ma_avg", "ma_piq"]},
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
+        elif self.type in ("VAR"):
+            if attr_name == "coef":
+                return self.coef_
+            elif not (attr_name):
+                result = tablesample(values={"attr_name": ["coef"]},)
                 return result
             else:
                 raise ParameterError("Attribute '' doesn't exist.".format(attr_name))

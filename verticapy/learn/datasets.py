@@ -82,6 +82,8 @@ vDataFrame
 
 See Also
 --------
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_iris         : Ingests the iris dataset in the Vertica DB.
 	(Clustering / Classification).
 load_market       : Ingests the market dataset in the Vertica DB.
@@ -126,6 +128,75 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 
 
 # ---#
+def load_commodities(cursor=None, schema: str = "public", name: str = "commodities"):
+    """
+---------------------------------------------------------------------------
+Ingests the commodities dataset in the Vertica DB (Dataset ideal for TS and
+Regression). If a table with the same name and schema already exists, 
+this function will create a vDataFrame from the input relation.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor. 
+schema: str, optional
+    Schema of the new relation. The default schema is public.
+name: str, optional
+    Name of the new relation.
+
+Returns
+-------
+vDataFrame
+    the amazon vDataFrame.
+
+See Also
+--------
+load_amazon       : Ingests the amazon dataset in the Vertica DB.
+    (Time Series / Regression).
+load_iris         : Ingests the iris dataset in the Vertica DB.
+    (Clustering / Classification).
+load_market       : Ingests the market dataset in the Vertica DB.
+    (Basic Data Exploration).
+load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
+    (Time Series / Regression).
+load_titanic      : Ingests the titanic dataset in the Vertica DB.
+    (Classification).
+load_winequality  : Ingests the winequality dataset in the Vertica DB.
+    (Regression / Classification).
+    """
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
+    if not (cursor):
+        cursor = read_auto_connect().cursor()
+    else:
+        check_cursor(cursor)
+    try:
+        vdf = vDataFrame(name, cursor, schema=schema)
+    except:
+        cursor.execute(
+            'CREATE TABLE {}.{}("date" Date, "Gold" Float, "Oil" Float, "Spread" Float, "Vix" Float, "Dol_Eur" Float, "SP500" Float);'.format(
+                str_column(schema), str_column(name)
+            )
+        )
+        try:
+            path = os.path.dirname(verticapy.__file__) + "/learn/data/commodities.csv"
+            query = 'COPY {}.{}("date", "Gold", "Oil", "Spread", "Vix", "Dol_Eur", "SP500") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
+                str_column(schema), str_column(name), "{}"
+            )
+            if "vertica_python" in str(type(cursor)):
+                with open(path, "r") as fs:
+                    cursor.copy(query.format("STDIN"), fs)
+            else:
+                cursor.execute(query.format("LOCAL '{}'".format(path)))
+            vdf = vDataFrame(name, cursor, schema=schema)
+        except:
+            cursor.execute(
+                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
+            )
+            raise
+    return vdf
+
+
+# ---#
 def load_iris(cursor=None, schema: str = "public", name: str = "iris"):
     """
 ---------------------------------------------------------------------------
@@ -151,6 +222,8 @@ See Also
 --------
 load_amazon       : Ingests the amazon dataset in the Vertica DB.
 	(Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_market       : Ingests the market dataset in the Vertica DB.
 	(Basic Data Exploration).
 load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
@@ -218,6 +291,8 @@ See Also
 --------
 load_amazon       : Ingests the amazon dataset in the Vertica DB.
 	(Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_iris         : Ingests the iris dataset in the Vertica DB.
 	(Clustering / Classification).
 load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
@@ -285,6 +360,8 @@ See Also
 --------
 load_amazon       : Ingests the amazon dataset in the Vertica DB.
 	(Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_iris         : Ingests the iris dataset in the Vertica DB.
 	(Clustering / Classification).
 load_market       : Ingests the market dataset in the Vertica DB.
@@ -352,6 +429,8 @@ See Also
 --------
 load_amazon       : Ingests the amazon dataset in the Vertica DB.
 	(Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_iris         : Ingests the iris dataset in the Vertica DB.
 	(Clustering / Classification).
 load_market       : Ingests the market dataset in the Vertica DB.
@@ -419,6 +498,8 @@ See Also
 --------
 load_amazon       : Ingests the amazon dataset in the Vertica DB.
 	(Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
 load_iris         : Ingests the iris dataset in the Vertica DB.
 	(Clustering / Classification).
 load_market       : Ingests the market dataset in the Vertica DB.

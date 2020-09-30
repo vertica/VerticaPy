@@ -596,9 +596,9 @@ def regression_plot(
         y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
         ax.plot(x_reg, y_reg, alpha=1, color="black")
         ax.scatter(x0, y0, alpha=1, marker="o", color="#FE5016")
-        ax.xlabel(X[0])
-        ax.ylabel(y)
-        ax.title(y + " = f(" + X[0] + ")")
+        ax.set_xlabel(X[0])
+        ax.set_ylabel(y)
+        ax.set_title(y + " = f(" + X[0] + ")")
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
