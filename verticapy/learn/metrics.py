@@ -100,7 +100,7 @@ float
         conn = False
         check_cursor(cursor)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {}".format(
-        y_true, y_score, y_true, input_relation
+        y_score, y_true, y_true, input_relation
     )
     cursor.execute(query)
     result = cursor.fetchone()[0]
