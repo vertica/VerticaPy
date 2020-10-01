@@ -18,6 +18,7 @@ from verticapy.learn.linear_model import LinearRegression
 @pytest.fixture(scope="module")
 def model(base):
     from verticapy.learn.datasets import load_winequality
+    from verticapy import drop_table
 
     winequality = load_winequality(cursor=base.cursor)
 
@@ -26,6 +27,8 @@ def model(base):
     model_class.fit("public.winequality", ["alcohol"], "quality")
     yield model_class
     model_class.drop()
+    drop_table(name = "public.winequality", cursor = base.cursor)
+    
 
 
 class TestLogisticRegression:
