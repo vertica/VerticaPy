@@ -32,6 +32,14 @@ def market_vd(base):
     yield market
     drop_table(name = "public.market", cursor = base.cursor)
 
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    yield amazon
+    drop_table(name = "public.amazon", cursor = base.cursor)
+
 class TestvDFCombineJoinSort:
     @pytest.mark.xfail(reason="UNION_ALL cannot be turned off")
     def test_vDF_append(self, iris_vd):
@@ -95,9 +103,9 @@ class TestvDFCombineJoinSort:
                                    expr2 = ["Name AS Name2"])
         assert left_join.shape() == (5886, 2)
         # SELECT COUNT(*) FROM left_join WHERE Name1 IS NULL;
-        assert left_join["Name1"].count() == 0
+        assert left_join["Name1"].count() == 5886
         # SELECT COUNT(*) FROM left_join WHERE Name2 IS NULL;
-        assert left_join["Name2"].count() == 30
+        assert left_join["Name2"].count() == 5886 - 30
 
         # CREATE TABLE right_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
@@ -107,9 +115,9 @@ class TestvDFCombineJoinSort:
                                     expr2 = ["Name AS Name2"])
         assert right_join.shape() == (5946, 2)
         # SELECT COUNT(*) FROM right_join WHERE Name1 IS NULL;
-        assert right_join["Name1"].count() == 90
+        assert right_join["Name1"].count() == 5946 - 90
         # SELECT COUNT(*) FROM right_join WHERE Name2 IS NULL;
-        assert right_join["Name2"].count() == 0
+        assert right_join["Name2"].count() == 5946
 
         # CREATE TABLE full_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
@@ -119,9 +127,9 @@ class TestvDFCombineJoinSort:
                                    expr2 = ["Name AS Name2"])
         assert full_join.shape() == (5976, 2)
         # SELECT COUNT(*) FROM full_join WHERE Name1 IS NULL;
-        assert full_join["Name1"].count() == 90
+        assert full_join["Name1"].count() == 5976 - 90
         # SELECT COUNT(*) FROM full_join WHERE Name2 IS NULL;
-        assert full_join["Name2"].count() == 30
+        assert full_join["Name2"].count() == 5976 - 30
 
         # CREATE TABLE inner_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
@@ -131,9 +139,9 @@ class TestvDFCombineJoinSort:
                                     expr2 = ["Name AS Name2"])
         assert inner_join.shape() == (5856, 2)
         # SELECT COUNT(*) FROM inner_join WHERE Name1 IS NULL;
-        assert inner_join["Name1"].count() == 0
+        assert inner_join["Name1"].count() == 5856
         # SELECT COUNT(*) FROM inner_join WHERE Name2 IS NULL;
-        assert inner_join["Name2"].count() == 0
+        assert inner_join["Name2"].count() == 5856
 
         # CREATE TABLE natural_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
@@ -143,9 +151,9 @@ class TestvDFCombineJoinSort:
                                       expr2 = ["Name AS Name2"])
         assert natural_join.shape() == (194, 2)
         # SELECT COUNT(*) FROM natural_join WHERE Name1 IS NULL;
-        assert natural_join["Name1"].count() == 0
+        assert natural_join["Name1"].count() == 194
         # SELECT COUNT(*) FROM natural_join WHERE Name2 IS NULL;
-        assert natural_join["Name2"].count() == 0
+        assert natural_join["Name2"].count() == 194
 
         # CREATE TABLE cross_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
@@ -155,18 +163,40 @@ class TestvDFCombineJoinSort:
                                     expr2 = ["Name AS Name2"])
         assert cross_join.shape() == (63616, 2)
         # SELECT COUNT(*) FROM cross_join WHERE Name1 IS NULL;
-        assert cross_join["Name1"].count() == 0
+        assert cross_join["Name1"].count() == 63616
         # SELECT COUNT(*) FROM cross_join WHERE Name2 IS NULL;
-        assert cross_join["Name2"].count() == 0
+        assert cross_join["Name2"].count() == 63616
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_narrow(self, base):
-        pass
+    def test_vDF_narrow(self, amazon_vd):
+        amazon_pivot = amazon_vd.pivot(index = "date",
+                                       columns = "state",
+                                       values = "number",
+                                       aggr = "sum")
+        amazon_narrow = amazon_pivot.narrow("date", col_name = "state", val_name = "number")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_pivot(self, base):
-        pass
+        assert amazon_narrow.shape() == (5497, 3)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_sort(self, base):
-        pass
+    def test_vDF_pivot(self, amazon_vd):
+        amazon_pivot = amazon_vd.pivot(index = "date",
+                                       columns = "state",
+                                       values = "number",
+                                       aggr = "sum",
+                                       prefix = "pv_")
+
+        assert amazon_pivot.shape() == (239, 24)
+        assert amazon_pivot["pv_Acre"].count() == 239
+
+    @pytest.mark.xfail(reason="The results are not correct")
+    def test_vDF_sort(self, iris_vd):
+        result1 = iris_vd.sort(columns = {"PetalLengthCm": "asc"})
+        assert result1["PetalLengthCm"][0] == 1.0
+
+        result2 = iris_vd.sort(columns = ["PetalLengthCm", "PetalLengthCm"])
+        assert result2["PetalLengthCm"][0] == 1.0
+
+        result3 = iris_vd.sort(columns = {"PetalLengthCm": "desc"})
+        assert result3["PetalLengthCm"][0] == 6.9
+
+        result4 = iris_vd.sort(columns = {"PetalLengthCm": "desc", "SepalWidthCm": "asc"})
+        assert result4["PetalLengthCm"][0] == 6.9
+        assert result4["SepalWidthCm"][0] == 2.6
