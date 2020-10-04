@@ -27,7 +27,7 @@ def model(base):
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
-    drop_table(name = "public.titanic", cursor = base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestLogisticRegression:

@@ -241,8 +241,6 @@ def convert_special_type(category: str, convert_date: bool = True, column: str =
         return "TO_HEX({})".format(column)
     elif category == "spatial":
         return "ST_AsText({})".format(column)
-    elif (category == "date") and (convert_date):
-        return "{}::varchar".format(column)
     else:
         return column
 
@@ -409,6 +407,16 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
         return result, categories_alpha, categories_beta
     else:
         return result
+
+
+# ---#
+def get_session(cursor):
+    query = "SELECT CURRENT_SESSION();"
+    cursor.execute(query)
+    result = cursor.fetchone()[0]
+    result = result.split(":")[1]
+    result = int(result, base=16)
+    return result
 
 
 # ---#

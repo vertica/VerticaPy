@@ -414,6 +414,18 @@ papprox_ma: int, optional
                     self.parameters["s"], relation
                 )
 
+        def drop_temp_elem(self, schema):
+            try:
+                drop_view(
+                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self.cursor)
+                    ),
+                    cursor=self.cursor,
+                    print_info=False,
+                )
+            except:
+                pass
+
         # AR(p)
         if self.parameters["p"] > 0 or self.parameters["P"] > 0:
             columns = [
@@ -437,33 +449,29 @@ papprox_ma: int, optional
             relation = "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
                 ", ".join(columns), relation
             )
-            try:
-                drop_view(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                    print_info=False,
-                )
-            except:
-                pass
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_ AS SELECT * FROM {}".format(
+            drop_temp_elem(self, schema)
+            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
                 schema,
+                get_session(self.cursor),
                 relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
-            self.cursor.execute(query)
-            self.X += AR + X
-            model.fit(
-                input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(
-                    schema
-                ),
-                X=self.X,
-                y=self.y,
-            )
-            drop_view(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                print_info=False,
-            )
+            try:
+                self.cursor.execute(query)
+                self.X += AR + X
+                model.fit(
+                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self.cursor)
+                    ),
+                    X=self.X,
+                    y=self.y,
+                )
+            except:
+                drop_temp_elem(self, schema)
+                raise
+            drop_temp_elem(self, schema)
             self.coef_.values["predictor"] = model.coef_.values["predictor"]
             self.coef_.values["coefficient"] = model.coef_.values["coefficient"]
             alphaq = model.coef_.values["coefficient"]
@@ -590,32 +598,28 @@ papprox_ma: int, optional
             )
             for idx, elem in enumerate(X):
                 tmp_relation = tmp_relation.replace("[X{}]".format(idx), elem)
-            try:
-                drop_view(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                    print_info=False,
-                )
-            except:
-                pass
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_ AS SELECT * FROM {}".format(
+            drop_temp_elem(self, schema)
+            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
                 schema,
+                get_session(self.cursor),
                 tmp_relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
-            self.cursor.execute(query)
-            model.fit(
-                input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(
-                    schema
-                ),
-                X=ARq,
-                y=self.y,
-            )
-            drop_view(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                print_info=False,
-            )
+            try:
+                self.cursor.execute(query)
+                model.fit(
+                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self.cursor)
+                    ),
+                    X=ARq,
+                    y=self.y,
+                )
+            except:
+                drop_temp_elem(self, schema)
+                raise
+            drop_temp_elem(self, schema)
             if not (self.coef_.values["predictor"]):
                 self.coef_.values["predictor"] += ["Intercept"]
                 self.coef_.values["coefficient"] += [self.ma_avg_]
@@ -1359,32 +1363,40 @@ l1_ratio: float, optional
         )
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
+
+        def drop_temp_elem(self, schema):
+            try:
+                drop_view(
+                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self.cursor)
+                    ),
+                    cursor=self.cursor,
+                    print_info=False,
+                )
+            except:
+                pass
+
+        drop_temp_elem(self, schema)
         try:
-            drop_view(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                print_info=False,
+            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
+                schema, get_session(self.cursor), relation
             )
+            self.cursor.execute(query)
+            self.coef_ = []
+            for elem in X:
+                model.fit(
+                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self.cursor)
+                    ),
+                    X=AR,
+                    y=elem,
+                )
+                self.coef_ += [model.coef_]
+                model.drop()
         except:
-            pass
-        query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_ AS SELECT * FROM {}".format(
-            schema, relation
-        )
-        self.cursor.execute(query)
-        self.coef_ = []
-        for elem in X:
-            model.fit(
-                input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(
-                    schema
-                ),
-                X=AR,
-                y=elem,
-            )
-            self.coef_ += [model.coef_]
-            model.drop()
-        drop_view(
-            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-            print_info=False,
-        )
+            drop_temp_elem(self, schema)
+            raise
+        drop_temp_elem(self, schema)
         model_save = {
             "type": "VAR",
             "input_relation": self.input_relation,
