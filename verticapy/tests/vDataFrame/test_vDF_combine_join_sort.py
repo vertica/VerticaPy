@@ -88,14 +88,13 @@ class TestvDFCombineJoinSort:
             )
         assert exception_info.match("Syntax error at or near \"For\"")
 
-    @pytest.mark.xfail(reason="Always returns the result of inner join")
     def test_vDF_join(self, market_vd):
-        # CREATE TABLE not_fresh AS SELECT * FROM market WHERE Form != 'Fresh';
-        not_fresh = market_vd.filter(expr = "Form != 'Fresh'")
-        # CREATE TABLE not_dried AS SELECT * FROM market WHERE Form != 'Dried';
-        not_dried = market_vd.filter(expr = "Form != 'Dried'")
+        # CREATE VIEW not_fresh AS SELECT * FROM market WHERE Form != 'Fresh';
+        not_fresh = market_vd.search(expr = "Form != 'Fresh'")
+        # CREATE VIEW not_dried AS SELECT * FROM market WHERE Form != 'Dried';
+        not_dried = market_vd.search(expr = "Form != 'Dried'")
 
-        # CREATE TABLE left_join AS
+        # CREATE VIEW left_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a LEFT JOIN not_dried AS b ON a.Form = b.Form;
         left_join = not_fresh.join(not_dried, how = "left", on = {"Form": "Form"},
@@ -107,7 +106,7 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM left_join WHERE Name2 IS NULL;
         assert left_join["Name2"].count() == 5886 - 30
 
-        # CREATE TABLE right_join AS
+        # CREATE VIEW right_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a RIGHT JOIN not_dried AS b ON a.Form = b.Form;
         right_join = not_fresh.join(not_dried, how = "right", on = {"Form": "Form"},
@@ -119,7 +118,7 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM right_join WHERE Name2 IS NULL;
         assert right_join["Name2"].count() == 5946
 
-        # CREATE TABLE full_join AS
+        # CREATE VIEW full_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a FULL OUTER JOIN not_dried AS b ON a.Form = b.Form;
         full_join = not_fresh.join(not_dried, how = "full", on = {"Form": "Form"},
@@ -131,7 +130,7 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM full_join WHERE Name2 IS NULL;
         assert full_join["Name2"].count() == 5976 - 30
 
-        # CREATE TABLE inner_join AS
+        # CREATE VIEW inner_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a INNER JOIN not_dried AS b ON a.Form = b.Form;
         inner_join = not_fresh.join(not_dried, how = "inner", on = {"Form": "Form"},
@@ -143,7 +142,7 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM inner_join WHERE Name2 IS NULL;
         assert inner_join["Name2"].count() == 5856
 
-        # CREATE TABLE natural_join AS
+        # CREATE VIEW natural_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a NATURAL JOIN not_dried AS b;
         natural_join = not_fresh.join(not_dried, how = "natural",
@@ -155,7 +154,7 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM natural_join WHERE Name2 IS NULL;
         assert natural_join["Name2"].count() == 194
 
-        # CREATE TABLE cross_join AS
+        # CREATE VIEW cross_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a CROSS JOIN not_dried AS b;
         corss_join = not_fresh.join(not_dried, how = "cross",
@@ -166,6 +165,12 @@ class TestvDFCombineJoinSort:
         assert cross_join["Name1"].count() == 63616
         # SELECT COUNT(*) FROM cross_join WHERE Name2 IS NULL;
         assert cross_join["Name2"].count() == 63616
+
+        # join directly with a Vertica table
+        table_join = not_fresh.join("public.not_dried", how = "natural",
+                                    expr1 = ["Name AS Name1"],
+                                    expr2 = ["Name AS Name2"])
+        assert table_join.shape() == (194, 2)
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(index = "date",
