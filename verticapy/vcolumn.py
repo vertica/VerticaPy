@@ -1561,7 +1561,11 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
+        self,
+        threshold: float = 4.0,
+        use_threshold: bool = True,
+        alpha: float = 0.05,
+        print_info: bool = True,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1578,6 +1582,8 @@ Attributes
  	alpha: float, optional
  		Number representing the outliers threshold. Values lesser than 
  		quantile(alpha) or greater than quantile(1-alpha) will be dropped.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
  	Returns
  	-------
@@ -1595,6 +1601,7 @@ Attributes
                 ("alpha", alpha, [int, float],),
                 ("use_threshold", use_threshold, [bool],),
                 ("threshold", threshold, [int, float],),
+                ("print_info", print_info, [bool],),
             ]
         )
         if use_threshold:
@@ -1602,7 +1609,8 @@ Attributes
             self.parent.filter(
                 expr="ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
-                )
+                ),
+                print_info=print_info,
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1611,7 +1619,8 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha)
+                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                print_info=print_info,
             )
         return self.parent
 

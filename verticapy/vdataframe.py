@@ -2761,7 +2761,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: str):
+    def at_time(self, ts: str, time: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -2774,6 +2774,8 @@ vcolumns : vcolumn
     time: str
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2787,9 +2789,17 @@ vcolumns : vcolumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        check_types([("ts", ts, [str],), ("time", time, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("time", time, [str],),
+                ("print_info", print_info, [bool]),
+            ]
+        )
         columns_check([ts], self)
-        self.filter("{}::time = '{}'".format(str_column(ts), time))
+        self.filter(
+            "{}::time = '{}'".format(str_column(ts), time), print_info=print_info
+        )
         return self
 
     # ---#
@@ -2916,7 +2926,9 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def between_time(self, ts: str, start_time: str, end_time: str):
+    def between_time(
+        self, ts: str, start_time: str, end_time: str, print_info: bool = True
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records between two input times.
@@ -2932,6 +2944,8 @@ vcolumns : vcolumn
     end_time: str
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2950,13 +2964,15 @@ vcolumns : vcolumn
                 ("ts", ts, [str],),
                 ("start_time", start_time, [str],),
                 ("end_time", end_time, [str],),
+                ("print_info", print_info, [bool],),
             ]
         )
         columns_check([ts], self)
         self.filter(
             "{}::time BETWEEN '{}' AND '{}'".format(
                 str_column(ts), start_time, end_time
-            )
+            ),
+            print_info=print_info,
         )
         return self
 
@@ -4024,7 +4040,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def drop_duplicates(self, columns: list = []):
+    def drop_duplicates(self, columns: list = [], print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the duplicated using a partition by the input vcolumns.
@@ -4039,13 +4055,17 @@ vcolumns : vcolumn
     ----------
     columns: list, optional
         List of the vcolumns names. If empty, all the vcolumns will be selected.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
     vDataFrame
         self
         """
-        check_types([("columns", columns, [list],)])
+        check_types(
+            [("columns", columns, [list],), ("print_info", print_info, [bool],)]
+        )
         columns_check(columns, self)
         count = self.duplicated(columns=columns, count=True)
         if count:
@@ -4063,9 +4083,9 @@ vcolumns : vcolumn
                 name=name,
                 expr="ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)),
             )
-            self.filter(expr='"{}" = 1'.format(name))
+            self.filter(expr='"{}" = 1'.format(name), print_info=print_info)
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
-        else:
+        elif print_info:
             print("\u26A0 Warning : No duplicates detected")
         return self
 
@@ -4601,7 +4621,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def first(self, ts: str, offset: str):
+    def first(self, ts: str, offset: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the first records.
@@ -4613,7 +4633,9 @@ vcolumns : vcolumn
         date like (date, datetime, timestamp...)
     offset: str
         Interval offset. For example, to filter and keep only the first 6 months of
-        records, offset should be set to '6 months'. 
+        records, offset should be set to '6 months'.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -4627,14 +4649,20 @@ vcolumns : vcolumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        check_types([("ts", ts, [str],), ("offset", offset, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("offset", offset, [str],),
+                ("print_info", print_info, [bool],),
+            ]
+        )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         first_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} <= '{}'".format(ts, first_date))
+        self.filter("{} <= '{}'".format(ts, first_date), print_info=print_info)
         return self
 
     # ---#
@@ -5530,7 +5558,7 @@ vcolumns : vcolumn
 
     kurt = kurtosis
     # ---#
-    def last(self, ts: str, offset: str):
+    def last(self, ts: str, offset: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the last records.
@@ -5543,6 +5571,8 @@ vcolumns : vcolumn
     offset: str
         Interval offset. For example, to filter and keep only the last 6 months of
         records, offset should be set to '6 months'.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -5556,14 +5586,20 @@ vcolumns : vcolumn
     vDataFrame.first        : Filters the data by only keeping the first records.
     vDataFrame.filter       : Filters the data using the input expression.
         """
-        check_types([("ts", ts, [str],), ("offset", offset, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("offset", offset, [str],),
+                ("print_info", print_info, [bool],),
+            ]
+        )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         last_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} >= '{}'".format(ts, last_date))
+        self.filter("{} >= '{}'".format(ts, last_date), print_info=print_info)
         return self
 
     # ---#
@@ -6774,6 +6810,11 @@ vcolumns : vcolumn
         del matrix[0]
         for column in matrix:
             values[column[0]] = column[1 : len(column)]
+        for elem in values:
+            if elem != "index":
+                for idx in range(len(values[elem])):
+                    if isinstance(values[elem][idx], decimal.Decimal):
+                        values[elem][idx] = float(values[elem][idx])
         for column1 in values:
             if column1 != "index":
                 val = {}
@@ -7298,20 +7339,20 @@ vcolumns : vcolumn
                 ("order_by", order_by, [dict, list],),
             ]
         )
-        columns_check(usecols, self)
-        usecols = (
-            self.get_columns() if not (usecols) else vdf_columns_names(usecols, self)
-        )
         if isinstance(conditions, collections.Iterable) and not (
             isinstance(conditions, str)
         ):
             conditions = " AND ".join(["({})".format(elem) for elem in conditions])
         conditions = " WHERE {}".format(conditions) if conditions else ""
-        all_cols = ", ".join(usecols + expr)
+        all_cols = ", ".join(["*"] + expr)
         table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
             all_cols, self.__genSQL__(), conditions
         )
-        return self.__vdf_from_relation__(table, "search", "").sort(order_by)
+        return (
+            self.__vdf_from_relation__(table, "search", "")
+            .sort(order_by)
+            .select(usecols)
+        )
 
     # ---#
     def select(self, columns: list, check: bool = True):
