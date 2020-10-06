@@ -146,23 +146,31 @@ Attributes
                     "vColumn doesn't allow slicing having steps different than 1."
                 )
             else:
-                if isinstance(index.stop, int):
-                    if index.stop < 0:
-                        index.stop += self.shape()[0]
-                    limit = index.stop - index.start
+                index_stop = index.stop
+                index_start = index.start
+                if not (isinstance(index_start, int)):
+                    index_start = 0
+                if index_start < 0:
+                    index_start += self.parent.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.parent.shape()[0]
+                    limit = index_stop - index_start
                     if limit <= 0:
                         limit = 0
                     limit = " LIMIT {}".format(limit)
                 else:
                     limit = ""
                 query = "(SELECT {} FROM {} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias, self.parent.__genSQL__(), index.start, limit
+                    self.alias, self.parent.__genSQL__(), index_start, limit
                 )
                 return vdf_from_relation(
                     query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
                 )
         elif isinstance(index, int):
             cast = "::float" if self.category() == "float" else ""
+            if index < 0:
+                index += self.parent.shape()[0]
             query = "SELECT {}{} FROM {} OFFSET {} LIMIT 1".format(
                 self.alias, cast, self.parent.__genSQL__(), index
             )
@@ -837,6 +845,7 @@ Attributes
 		"""
         return self.transformations[-1][1].lower()
 
+    dtype = ctype
     # ---#
     def date_part(self, field: str):
         """
@@ -1647,21 +1656,6 @@ Attributes
         check_types([("print_info", print_info, [bool],)])
         self.parent.filter("{} IS NOT NULL".format(self.alias), print_info=print_info)
         return self.parent
-
-    # ---#
-    def dtype(self):
-        """
-	---------------------------------------------------------------------------
-	Displays and Returns the vcolumn Data type. 
-
- 	Returns
- 	-------
- 	str
- 		vcolumn data type.
-		"""
-        print("col".ljust(6) + self.ctype().rjust(12))
-        print("dtype: object")
-        return self.ctype()
 
     # ---#
     def fill_outliers(

@@ -15,6 +15,15 @@ import pytest
 from verticapy import vDataFrame
 
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.learn.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    drop_table(name="public.titanic", cursor=base.cursor)
+
+
 class TestvDFPlot:
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_bar(self):
@@ -45,8 +54,57 @@ class TestvDFPlot:
         pass
 
     @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_hist(self):
-        pass
+    def test_vDF_hist(self, titanic_vd):
+        # testing vDataFrame[].hist
+        result = titanic_vd["age"].hist()
+        assert result.get_default_bbox_extra_artists()[0].get_height() == pytest.approx(
+            0.050243111831442464
+        )
+        assert result.get_default_bbox_extra_artists()[1].get_height() == pytest.approx(
+            0.029983792544570502
+        )
+        assert result.get_default_bbox_extra_artists()[2].get_height() == pytest.approx(
+            0.13452188006482982
+        )
+        assert result.get_default_bbox_extra_artists()[3].get_height() == pytest.approx(
+            0.1952998379254457
+        )
+        assert result.get_default_bbox_extra_artists()[4].get_height() == pytest.approx(
+            0.17017828200972449
+        )
+        assert result.get_default_bbox_extra_artists()[5].get_height() == pytest.approx(
+            0.08184764991896272
+        )
+        assert result.get_default_bbox_extra_artists()[6].get_height() == pytest.approx(
+            0.06888168557536467
+        )
+        assert result.get_default_bbox_extra_artists()[7].get_height() == pytest.approx(
+            0.03727714748784441
+        )
+        assert result.get_default_bbox_extra_artists()[8].get_height() == pytest.approx(
+            0.031604538087520256
+        )
+        assert result.get_default_bbox_extra_artists()[9].get_height() == pytest.approx(
+            0.005672609400324149
+        )
+        assert result.get_default_bbox_extra_artists()[
+            10
+        ].get_height() == pytest.approx(0.0016207455429497568)
+        assert result.get_default_bbox_extra_artists()[
+            11
+        ].get_height() == pytest.approx(0.0008103727714748784)
+        assert result.get_xticks()[0] == pytest.approx(0.0)
+        assert result.get_xticks()[1] == pytest.approx(7.24272727)
+        assert result.get_xticks()[2] == pytest.approx(7.24272727 * 2)
+        assert result.get_xticks()[3] == pytest.approx(7.24272727 * 3)
+        assert result.get_xticks()[4] == pytest.approx(7.24272727 * 4)
+        assert result.get_xticks()[5] == pytest.approx(7.24272727 * 5)
+        assert result.get_xticks()[6] == pytest.approx(7.24272727 * 6)
+        assert result.get_xticks()[7] == pytest.approx(7.24272727 * 7)
+        assert result.get_xticks()[8] == pytest.approx(7.24272727 * 8)
+        assert result.get_xticks()[9] == pytest.approx(7.24272727 * 9)
+        assert result.get_xticks()[10] == pytest.approx(7.24272727 * 10)
+        assert result.get_xticks()[11] == pytest.approx(7.24272727 * 11)
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_pie(self):

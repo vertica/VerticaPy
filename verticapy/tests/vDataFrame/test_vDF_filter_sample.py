@@ -13,6 +13,7 @@
 
 import pytest
 from verticapy import vDataFrame
+from verticapy import drop_table
 
 
 @pytest.fixture(scope="module")
@@ -21,7 +22,7 @@ def smart_meters_vd(base):
 
     smart_meters = load_smart_meters(cursor=base.cursor)
     yield smart_meters
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.smart_meters", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -42,13 +43,13 @@ class TestvDFFilterSample:
             expr=["sibsp + parch + 1 AS family_size"],
             order_by={"age": "desc", "family_size": "asc"},
         )
-        assert result.shape() == (456, 5)
-        assert result["age"][0] == 70.0
-        assert result["age"][1] == 70.0
-        assert result["family_size"][0] == 1
-        assert result["family_size"][1] == 3
-        assert result["pclass"][0] == 2
-        assert result["pclass"][1] == 1
+        assert result1.shape() == (456, 5)
+        assert result1["age"][0] == 70.0
+        assert result1["age"][1] == 70.0
+        assert result1["family_size"][0] == 1
+        assert result1["family_size"][1] == 3
+        assert result1["pclass"][0] == 2
+        assert result1["pclass"][1] == 1
 
         # testing with multiple conditions
         result2 = titanic_vd.search(
@@ -110,8 +111,10 @@ class TestvDFFilterSample:
 
     def test_vDF_drop_outliers(self, titanic_vd):
         # testing with threshold
-        result = titanic_vd.copy()["age"].drop_outliers(threshold=3.0, print_info=False)
-        assert result.shape() == (994, 14)
+        result1 = titanic_vd.copy()["age"].drop_outliers(
+            threshold=3.0, print_info=False
+        )
+        assert result1.shape() == (994, 14)
 
         # testing without threshold
         result2 = titanic_vd.copy()["age"].drop_outliers(

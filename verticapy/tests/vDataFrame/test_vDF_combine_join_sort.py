@@ -198,6 +198,25 @@ class TestvDFCombineJoinSort:
         # SELECT COUNT(*) FROM cross_join WHERE Name2 IS NULL;
         assert cross_join["Name2"].count() == 63616
 
+        # join directly with a Vertica table
+        not_dried._VERTICAPY_VARIABLES_["cursor"].execute(
+            "CREATE LOCAL TEMPORARY TABLE not_dried ON COMMIT PRESERVE ROWS AS SELECT * FROM {}".format(
+                not_dried.__genSQL__()
+            )
+        )
+        table_join = not_fresh.join(
+            "v_temp_schema.not_dried",
+            how="natural",
+            expr1=["Name AS Name1"],
+            expr2=["Name AS Name2"],
+        )
+        assert table_join.shape() == (194, 2)
+        drop_table(
+            "v_temp_schema.not_dried",
+            not_dried._VERTICAPY_VARIABLES_["cursor"],
+            print_info=False,
+        )
+
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
             index="date", columns="state", values="number", aggr="sum"
