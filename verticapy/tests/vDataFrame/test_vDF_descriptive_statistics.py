@@ -523,9 +523,7 @@ class TestvDFDescriptiveStat:
         result3 = market_vd["Form"].describe(method="cat_stats", numcol="Price")
 
         assert result3["count"][3] == 2
-        assert result3["percent"][3] == pytest.approx(
-            Decimal("0.63694267515")
-        )  # Why this format?
+        assert result3["percent"][3] == pytest.approx(0.63694267515)
         assert result3["mean"][3] == pytest.approx(4.6364768)
         assert result3["std"][3] == pytest.approx(0.6358942)
         assert result3["min"][3] == pytest.approx(4.1868317)

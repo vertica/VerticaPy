@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, time
+import os, math, shutil, re, time, decimal
 
 # VerticaPy Modules
 from verticapy.toolbox import *
@@ -2009,6 +2009,11 @@ def to_tablesample(
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
+    for elem in values:
+        if elem != "index":
+            for idx in range(len(values[elem])):
+                if isinstance(values[elem][idx], decimal.Decimal):
+                    values[elem][idx] = float(values[elem][idx])
     if conn:
         conn.close()
     return tablesample(values=values, dtype=dtype)

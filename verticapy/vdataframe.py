@@ -286,17 +286,23 @@ vcolumns : vcolumn
                     "vDataFrame doesn't allow slicing having steps different than 1."
                 )
             else:
-                if isinstance(index.stop, int):
-                    if index.stop < 0:
-                        index.stop += self.shape()[0]
-                    limit = index.stop - index.start
+                index_stop = index.stop
+                index_start = index.start
+                if not (isinstance(index_start, int)):
+                    index_start = 0
+                if index_start < 0:
+                    index_start += self.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.shape()[0]
+                    limit = index_stop - index_start
                     if limit <= 0:
                         limit = 0
                     limit = " LIMIT {}".format(limit)
                 else:
                     limit = ""
                 query = "(SELECT * FROM {} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.__genSQL__(), index.start, limit
+                    self.__genSQL__(), index_start, limit
                 )
                 return vdf_from_relation(
                     query, cursor=self._VERTICAPY_VARIABLES_["cursor"]
@@ -306,6 +312,8 @@ vcolumns : vcolumn
             for idx, elem in enumerate(columns):
                 if self[elem].category() == "float":
                     columns[idx] = "{}::float".format(elem)
+            if index < 0:
+                index += self.shape()[0]
             query = "SELECT {} FROM {} OFFSET {} LIMIT 1".format(
                 ", ".join(columns), self.__genSQL__(), index
             )
@@ -3684,7 +3692,7 @@ vcolumns : vcolumn
     vDataFrame
         self
         """
-        titanic.__update_catalog__(erase=True)
+        self.__update_catalog__(erase=True)
         return self
 
     # ---#
@@ -5338,19 +5346,19 @@ vcolumns : vcolumn
 
     Returns
     -------
-    vDataFrame
-        self
+    str
+        information on the vDataFrame modifications
         """
         if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
-            print("The vDataFrame was never modified.")
+            result = "The vDataFrame was never modified."
         elif len(self._VERTICAPY_VARIABLES_["history"]) == 1:
-            print("The vDataFrame was modified with only one action: ")
-            print(" * " + self._VERTICAPY_VARIABLES_["history"][0])
+            result = "The vDataFrame was modified with only one action: "
+            result += "\n * " + self._VERTICAPY_VARIABLES_["history"][0]
         else:
-            print("The vDataFrame was modified many times: ")
+            result = "The vDataFrame was modified many times: "
             for modif in self._VERTICAPY_VARIABLES_["history"]:
-                print(" * " + modif)
-        return self
+                result += "\n * " + modif
+        return result
 
     # ---#
     def isin(self, val: dict):
@@ -7348,11 +7356,10 @@ vcolumns : vcolumn
         table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
             all_cols, self.__genSQL__(), conditions
         )
-        return (
-            self.__vdf_from_relation__(table, "search", "")
-            .sort(order_by)
-            .select(usecols)
-        )
+        result = self.__vdf_from_relation__(table, "search", "").sort(order_by)
+        if usecols:
+            result = result.select(usecols)
+        return result
 
     # ---#
     def select(self, columns: list, check: bool = True):
@@ -8365,7 +8372,16 @@ vcolumns : vcolumn
         """
         query = "SELECT * FROM {}".format(self.__genSQL__())
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
-        return self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        final_result = []
+        for elem in result:
+            final_result += [
+                [
+                    float(item) if isinstance(item, decimal.Decimal) else item
+                    for item in elem
+                ]
+            ]
+        return final_result
 
     # ---#
     def to_pandas(self):
@@ -8458,12 +8474,10 @@ vcolumns : vcolumn
 
     Returns
     -------
-    str
-        Vertica Version
+    list
+        List containing the version information.
+        [MAJOR, MINOR, PATCH, POST]
         """
-        self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT version()")
-        version = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        try:
-            return version.split("Vertica Analytic Database v")[1]
-        except:
-            return version
+        from verticapy.utilities import version as vertica_version
+
+        return vertica_version(cursor=self._VERTICAPY_VARIABLES_["cursor"])
