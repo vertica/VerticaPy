@@ -27,8 +27,7 @@ def model(base):
     model_class.fit("public.winequality", ["alcohol"], "quality")
     yield model_class
     model_class.drop()
-    drop_table(name = "public.winequality", cursor = base.cursor)
-    
+    drop_table(name="public.winequality", cursor=base.cursor)
 
 
 class TestLogisticRegression:

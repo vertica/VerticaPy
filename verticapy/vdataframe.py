@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, collections
+import random, time, shutil, re, collections, decimal
 
 # VerticaPy Modules
 from verticapy.vcolumn import vColumn
@@ -302,8 +302,12 @@ vcolumns : vcolumn
                     query, cursor=self._VERTICAPY_VARIABLES_["cursor"]
                 )
         elif isinstance(index, int):
-            query = "SELECT * FROM {} OFFSET {} LIMIT 1".format(
-                self.__genSQL__(), index
+            columns = self.get_columns()
+            for idx, elem in enumerate(columns):
+                if self[elem].category() == "float":
+                    columns[idx] = "{}::float".format(elem)
+            query = "SELECT {} FROM {} OFFSET {} LIMIT 1".format(
+                ", ".join(columns), self.__genSQL__(), index
             )
             return self._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()
         elif isinstance(index, str):
@@ -616,6 +620,8 @@ vcolumns : vcolumn
             self.__update_catalog__(
                 values={columns[0]: result}, matrix=method, column=columns[1]
             )
+            if isinstance(result, decimal.Decimal):
+                result = float(result)
             return result
         elif len(columns) > 2:
             try:
@@ -863,6 +869,11 @@ vcolumns : vcolumn
                     for idx, column2 in enumerate(values["index"]):
                         val[column2] = values[column1][idx]
                     self.__update_catalog__(values=val, matrix=method, column=column1)
+            for elem in values:
+                if elem != "index":
+                    for idx in range(len(values[elem])):
+                        if isinstance(values[elem][idx], decimal.Decimal):
+                            values[elem][idx] = float(values[elem][idx])
             return tablesample(values=values)
         else:
             if method == "cramer":
@@ -926,7 +937,7 @@ vcolumns : vcolumn
                             column, method_name, method_type
                         )
                     )
-        if method in ("spearman", "pearson", "kendall") and (len(cols) >= 1):
+        if method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
                 fail = 0
                 cast_i = "::int" if (self[focus].ctype() == "boolean") else ""
@@ -1036,9 +1047,9 @@ vcolumns : vcolumn
                 vector = [elem for elem in result]
             except:
                 fail = 1
-        if not (method in ("spearman", "pearson", "kendall") and (len(cols) >= 1)) or (
-            fail
-        ):
+        if not (
+            method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1)
+        ) or (fail):
             vector = []
             for column in cols:
                 if column.replace('"', "").lower() == focus.replace('"', "").lower():
@@ -1091,6 +1102,9 @@ vcolumns : vcolumn
             self.__update_catalog__(
                 values={column: vector[idx]}, matrix=method, column=focus
             )
+        for idx in range(len(vector)):
+            if isinstance(vector[idx], decimal.Decimal):
+                vector[idx] = float(vector[idx])
         return tablesample(values={"index": cols, focus: vector})
 
     # ---#
@@ -1733,11 +1747,14 @@ vcolumns : vcolumn
                 pre_comp = self.__get_catalog_value__(column, fun)
                 if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                     nb_precomputed += 1
-                    expr = (
-                        "'{}'".format(str(pre_comp).replace("'", "''"))
-                        if (pre_comp != None)
-                        else "NULL"
-                    )
+                    if pre_comp == None or pre_comp != pre_comp:
+                        expr = "NULL"
+                    elif isinstance(pre_comp, str):
+                        expr = "'{}'".format(pre_comp.replace("'", "''"))
+                    elif isinstance(pre_comp, (int, float)):
+                        expr = pre_comp
+                    else:
+                        expr = "'{}'".format(str(pre_comp).replace("'", "''"))
                 elif ("_percent" in fun.lower()) and (fun.lower()[0:3] == "top"):
                     n = fun.lower().replace("top", "").replace("_percent", "")
                     if n == "":
@@ -2028,6 +2045,10 @@ vcolumns : vcolumn
                             else:
                                 result = pre_comp
                             values[columns[i]] += [result]
+        for elem in values:
+            for idx in range(len(values[elem])):
+                if isinstance(values[elem][idx], decimal.Decimal):
+                    values[elem][idx] = float(values[elem][idx])
         self.__update_catalog__(values)
         return tablesample(values=values).transpose()
 
@@ -2552,8 +2573,9 @@ vcolumns : vcolumn
             )
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
-        table = "(SELECT {} FROM {}) UNION ALL (SELECT {} FROM {})".format(
-            columns, first_relation, columns2, second_relation
+        union = "UNION" if not (union_all) else "UNION ALL"
+        table = "(SELECT {} FROM {}) {} (SELECT {} FROM {})".format(
+            columns, first_relation, union, columns2, second_relation
         )
         query = "SELECT * FROM ({}) append_table".format(table)
         self.__executeSQL__(query=query, title="Merges the two relations.")
@@ -2739,7 +2761,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: str):
+    def at_time(self, ts: str, time: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -2752,6 +2774,8 @@ vcolumns : vcolumn
     time: str
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2765,9 +2789,17 @@ vcolumns : vcolumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        check_types([("ts", ts, [str],), ("time", time, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("time", time, [str],),
+                ("print_info", print_info, [bool]),
+            ]
+        )
         columns_check([ts], self)
-        self.filter("{}::time = '{}'".format(str_column(ts), time))
+        self.filter(
+            "{}::time = '{}'".format(str_column(ts), time), print_info=print_info
+        )
         return self
 
     # ---#
@@ -2894,7 +2926,9 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def between_time(self, ts: str, start_time: str, end_time: str):
+    def between_time(
+        self, ts: str, start_time: str, end_time: str, print_info: bool = True
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records between two input times.
@@ -2910,6 +2944,8 @@ vcolumns : vcolumn
     end_time: str
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2928,13 +2964,15 @@ vcolumns : vcolumn
                 ("ts", ts, [str],),
                 ("start_time", start_time, [str],),
                 ("end_time", end_time, [str],),
+                ("print_info", print_info, [bool],),
             ]
         )
         columns_check([ts], self)
         self.filter(
             "{}::time BETWEEN '{}' AND '{}'".format(
                 str_column(ts), start_time, end_time
-            )
+            ),
+            print_info=print_info,
         )
         return self
 
@@ -3316,14 +3354,15 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Aggregates the vDataFrame using a list of 'count' (Number of missing values).
+    Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
+    values).
 
     Parameters
     ----------
     columns: list, optional
         List of the vcolumns names. If empty, all the vcolumns will be used.
     percent: bool, optional
-        If set to True, the percentage of missing value will be also computed.
+        If set to True, the percentage of non-Missing value will be also computed.
     sort_result: bool, optional
         If set to True, the result will be sorted.
     desc: bool, optional
@@ -3968,6 +4007,10 @@ vcolumns : vcolumn
             )
         self.__update_catalog__(tablesample(values).transpose().values)
         values["index"] = [str_column(elem) for elem in values["index"]]
+        for elem in values:
+            for i in range(len(values[elem])):
+                if isinstance(values[elem][i], decimal.Decimal):
+                    values[elem][i] = float(values[elem][i])
         return tablesample(values)
 
     # ---#
@@ -3997,7 +4040,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def drop_duplicates(self, columns: list = []):
+    def drop_duplicates(self, columns: list = [], print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the duplicated using a partition by the input vcolumns.
@@ -4012,13 +4055,17 @@ vcolumns : vcolumn
     ----------
     columns: list, optional
         List of the vcolumns names. If empty, all the vcolumns will be selected.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
     vDataFrame
         self
         """
-        check_types([("columns", columns, [list],)])
+        check_types(
+            [("columns", columns, [list],), ("print_info", print_info, [bool],)]
+        )
         columns_check(columns, self)
         count = self.duplicated(columns=columns, count=True)
         if count:
@@ -4036,9 +4083,9 @@ vcolumns : vcolumn
                 name=name,
                 expr="ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)),
             )
-            self.filter(expr='"{}" = 1'.format(name))
+            self.filter(expr='"{}" = 1'.format(name), print_info=print_info)
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
-        else:
+        elif print_info:
             print("\u26A0 Warning : No duplicates detected")
         return self
 
@@ -4574,7 +4621,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def first(self, ts: str, offset: str):
+    def first(self, ts: str, offset: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the first records.
@@ -4586,7 +4633,9 @@ vcolumns : vcolumn
         date like (date, datetime, timestamp...)
     offset: str
         Interval offset. For example, to filter and keep only the first 6 months of
-        records, offset should be set to '6 months'. 
+        records, offset should be set to '6 months'.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -4600,14 +4649,20 @@ vcolumns : vcolumn
     vDataFrame.filter       : Filters the data using the input expression.
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
-        check_types([("ts", ts, [str],), ("offset", offset, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("offset", offset, [str],),
+                ("print_info", print_info, [bool],),
+            ]
+        )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         first_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} <= '{}'".format(ts, first_date))
+        self.filter("{} <= '{}'".format(ts, first_date), print_info=print_info)
         return self
 
     # ---#
@@ -4751,7 +4806,9 @@ vcolumns : vcolumn
             columns_check(columns, self)
             columns = vdf_columns_names(columns, self)
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(columns + expr), self.__genSQL__(), ", ".join(columns)
+            ", ".join(columns + expr),
+            self.__genSQL__(),
+            ", ".join([str(i + 1) for i in range(len(columns))]),
         )
         return self.__vdf_from_relation__(
             relation,
@@ -5501,7 +5558,7 @@ vcolumns : vcolumn
 
     kurt = kurtosis
     # ---#
-    def last(self, ts: str, offset: str):
+    def last(self, ts: str, offset: str, print_info: bool = True):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the last records.
@@ -5514,6 +5571,8 @@ vcolumns : vcolumn
     offset: str
         Interval offset. For example, to filter and keep only the last 6 months of
         records, offset should be set to '6 months'.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -5527,14 +5586,20 @@ vcolumns : vcolumn
     vDataFrame.first        : Filters the data by only keeping the first records.
     vDataFrame.filter       : Filters the data using the input expression.
         """
-        check_types([("ts", ts, [str],), ("offset", offset, [str],)])
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("offset", offset, [str],),
+                ("print_info", print_info, [bool],),
+            ]
+        )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         last_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} >= '{}'".format(ts, last_date))
+        self.filter("{} >= '{}'".format(ts, last_date), print_info=print_info)
         return self
 
     # ---#
@@ -6039,76 +6104,90 @@ vcolumns : vcolumn
             schema = self._VERTICAPY_VARIABLES_["schema_writing"]
             if not (schema):
                 schema = "public"
+
+            def drop_temp_elem(self, schema):
+                try:
+                    drop_model(
+                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                        ),
+                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        print_info=False,
+                    )
+                    drop_model(
+                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
+                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                        ),
+                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        print_info=False,
+                    )
+                    drop_view(
+                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                        ),
+                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        print_info=False,
+                    )
+                except:
+                    pass
+
             try:
-                drop_model(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_".format(schema),
-                    print_info=False,
+                drop_temp_elem(self, schema)
+                query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
+                    schema, get_session(self._VERTICAPY_VARIABLES_["cursor"]), relation
                 )
-                drop_model(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_".format(schema),
-                    print_info=False,
+                self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+                vdf = vDataFrame(
+                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                    ),
+                    self._VERTICAPY_VARIABLES_["cursor"],
                 )
-                drop_view(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                    print_info=False,
+
+                from verticapy.learn.linear_model import LinearRegression
+
+                model = LinearRegression(
+                    name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+                        schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                    ),
+                    cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                    solver="Newton",
                 )
+                model.fit(
+                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                    ),
+                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
+                    y=column,
+                )
+                model.predict(vdf, name="prediction_0")
+                model = LinearRegression(
+                    name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
+                        schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                    ),
+                    cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                    solver="Newton",
+                )
+                model.fit(
+                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                        schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                    ),
+                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
+                    y="lag_{}_{}".format(p, gen_name([column])),
+                )
+                model.predict(vdf, name="prediction_p")
+                vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
+                vdf.eval(
+                    expr="{} - prediction_p".format(
+                        "lag_{}_{}".format(p, gen_name([column]))
+                    ),
+                    name="eps_p",
+                )
+                result = vdf.corr(["eps_0", "eps_p"])
+                drop_temp_elem(self, schema)
             except:
-                pass
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_ AS SELECT * FROM {}".format(
-                schema, relation
-            )
-            self._VERTICAPY_VARIABLES_["cursor"].execute(query)
-            vdf = vDataFrame(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                self._VERTICAPY_VARIABLES_["cursor"],
-            )
-
-            from verticapy.learn.linear_model import LinearRegression
-
-            model = LinearRegression(
-                name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_".format(schema),
-                solver="Newton",
-            )
-            model.fit(
-                input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(
-                    schema
-                ),
-                X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
-                y=column,
-            )
-            model.predict(vdf, name="prediction_0")
-            model = LinearRegression(
-                name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_".format(schema),
-                solver="Newton",
-            )
-            model.fit(
-                input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(
-                    schema
-                ),
-                X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
-                y="lag_{}_{}".format(p, gen_name([column])),
-            )
-            model.predict(vdf, name="prediction_p")
-            vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
-            vdf.eval(
-                expr="{} - prediction_p".format(
-                    "lag_{}_{}".format(p, gen_name([column]))
-                ),
-                name="eps_p",
-            )
-            result = vdf.corr(["eps_0", "eps_p"])
-            drop_model(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_".format(schema),
-                print_info=False,
-            )
-            drop_model(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_".format(schema),
-                print_info=False,
-            )
-            drop_view(
-                "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_".format(schema),
-                print_info=False,
-            )
+                drop_temp_elem(self, schema)
+                raise
             return result
         else:
             if isinstance(p, (float, int)):
@@ -6731,6 +6810,11 @@ vcolumns : vcolumn
         del matrix[0]
         for column in matrix:
             values[column[0]] = column[1 : len(column)]
+        for elem in values:
+            if elem != "index":
+                for idx in range(len(values[elem])):
+                    if isinstance(values[elem][idx], decimal.Decimal):
+                        values[elem][idx] = float(values[elem][idx])
         for column1 in values:
             if column1 != "index":
                 val = {}
@@ -7255,20 +7339,20 @@ vcolumns : vcolumn
                 ("order_by", order_by, [dict, list],),
             ]
         )
-        columns_check(usecols, self)
-        usecols = (
-            self.get_columns() if not (usecols) else vdf_columns_names(usecols, self)
-        )
         if isinstance(conditions, collections.Iterable) and not (
             isinstance(conditions, str)
         ):
             conditions = " AND ".join(["({})".format(elem) for elem in conditions])
         conditions = " WHERE {}".format(conditions) if conditions else ""
-        all_cols = ", ".join(usecols + expr)
+        all_cols = ", ".join(["*"] + expr)
         table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
             all_cols, self.__genSQL__(), conditions
         )
-        return self.__vdf_from_relation__(table, "search", "").sort(order_by)
+        return (
+            self.__vdf_from_relation__(table, "search", "")
+            .sort(order_by)
+            .select(usecols)
+        )
 
     # ---#
     def select(self, columns: list, check: bool = True):

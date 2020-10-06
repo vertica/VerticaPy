@@ -41,7 +41,6 @@ def amazon_vd(base):
     drop_table(name = "public.amazon", cursor = base.cursor)
 
 class TestvDFCombineJoinSort:
-    @pytest.mark.xfail(reason="UNION_ALL cannot be turned off")
     def test_vDF_append(self, iris_vd):
         assert iris_vd.shape() == (150, 5)
 
@@ -60,7 +59,7 @@ class TestvDFCombineJoinSort:
 
         # the duplicate rows 
         result_vDF = iris_vd.append(iris_vd, union_all=False)
-        assert result_vDF.shape() == (150, 5), "testing vDataFrame.append(vDataFrame, union_all) failed"
+        assert result_vDF.shape() == (147, 5), "testing vDataFrame.append(vDataFrame, union_all) failed"
 
     def testvDF_groupby(self, market_vd):
         result1 = market_vd.groupby(
@@ -88,11 +87,15 @@ class TestvDFCombineJoinSort:
             )
         assert exception_info.match("Syntax error at or near \"For\"")
 
+    @pytest.mark.xfail(reason="Syntax error in the SQL made by the search function")
     def test_vDF_join(self, market_vd):
         # CREATE VIEW not_fresh AS SELECT * FROM market WHERE Form != 'Fresh';
-        not_fresh = market_vd.search(expr = "Form != 'Fresh'")
+        not_fresh = market_vd.search(["Form != 'Fresh'"])
+        # the error:
+        # Error Code: 4856, SQL: 'CREATE LOCAL TEMPORARY TABLE VERTICAPY_search_TEST ON COMMIT PRESERVE ROWS AS SELECT * FROM (SELECT  FROM (SELECT "Name", "Form", "Price" FROM (SELECT * FROM "public"."market" WHERE (Form != \'Fresh\')) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE LIMIT 10;'
+
         # CREATE VIEW not_dried AS SELECT * FROM market WHERE Form != 'Dried';
-        not_dried = market_vd.search(expr = "Form != 'Dried'")
+        not_dried = market_vd.search(conditions = ["Form != 'Dried'"])
 
         # CREATE VIEW left_join AS
         #        SELECT a.Name as Name1, b.Name as Name2

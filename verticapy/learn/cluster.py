@@ -252,113 +252,121 @@ p: int, optional
         schema, relation = schema_relation(input_relation)
         relation_alpha = "".join(ch for ch in relation if ch.isalnum())
         cursor = self.cursor
-        if not (index):
-            index = "id"
-            main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
+
+        def drop_temp_elem(cursor, relation_alpha):
             try:
                 cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table)
+                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
+                        relation_alpha
+                    )
                 )
-            except:
-                pass
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
-                main_table,
-                ", ".join(X + key_columns),
-                input_relation,
-                " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
-            )
-            cursor.execute(sql)
-        else:
-            cursor.execute(
-                "SELECT {} FROM {} LIMIT 10".format(
-                    ", ".join(X + key_columns + [index]), input_relation
-                )
-            )
-            main_table = input_relation
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
-            for i in range(len(X))
-        ]
-        distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
-            index, index, distance, main_table, main_table
-        )
-        sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
-            self.parameters["eps"], sql
-        )
-        sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
-            sql, self.parameters["min_samples"], self.parameters["eps"]
-        )
-        cursor.execute(sql)
-        graph = cursor.fetchall()
-        main_nodes = list(
-            dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
-        )
-        clusters = {}
-        for elem in main_nodes:
-            clusters[elem] = None
-        i = 0
-        while graph:
-            node = graph[0][0]
-            node_neighbor = graph[0][1]
-            if (clusters[node] == None) and (clusters[node_neighbor] == None):
-                clusters[node] = i
-                clusters[node_neighbor] = i
-                i = i + 1
-            else:
-                if clusters[node] != None and clusters[node_neighbor] == None:
-                    clusters[node_neighbor] = clusters[node]
-                elif clusters[node_neighbor] != None and clusters[node] == None:
-                    clusters[node] = clusters[node_neighbor]
-            del graph[0]
-        try:
-            f = open("VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "w")
-            for elem in clusters:
-                f.write("{}, {}\n".format(elem, clusters[elem]))
-            f.close()
-            try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS"
                 )
             except:
                 pass
-            cursor.execute(
-                "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
-            )
-            if "vertica_python" in str(type(cursor)):
-                with open("./VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "r") as fs:
-                    cursor.copy(
-                        "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';",
-                        fs,
-                    )
+
+        try:
+            if not (index):
+                index = "id"
+                main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
+                drop_temp_elem(cursor, relation_alpha)
+                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
+                    main_table,
+                    ", ".join(X + key_columns),
+                    input_relation,
+                    " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+                )
+                cursor.execute(sql)
             else:
                 cursor.execute(
-                    "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICAPY_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';"
+                    "SELECT {} FROM {} LIMIT 10".format(
+                        ", ".join(X + key_columns + [index]), input_relation
+                    )
                 )
+                main_table = input_relation
+            sql = [
+                "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
+                for i in range(len(X))
+            ]
+            distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
+            sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
+                index, index, distance, main_table, main_table
+            )
+            sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
+                self.parameters["eps"], sql
+            )
+            sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
+                sql, self.parameters["min_samples"], self.parameters["eps"]
+            )
+            cursor.execute(sql)
+            graph = cursor.fetchall()
+            main_nodes = list(
+                dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
+            )
+            clusters = {}
+            for elem in main_nodes:
+                clusters[elem] = None
+            i = 0
+            while graph:
+                node = graph[0][0]
+                node_neighbor = graph[0][1]
+                if (clusters[node] == None) and (clusters[node_neighbor] == None):
+                    clusters[node] = i
+                    clusters[node_neighbor] = i
+                    i = i + 1
+                else:
+                    if clusters[node] != None and clusters[node_neighbor] == None:
+                        clusters[node_neighbor] = clusters[node]
+                    elif clusters[node_neighbor] != None and clusters[node] == None:
+                        clusters[node] = clusters[node_neighbor]
+                del graph[0]
             try:
-                cursor.execute("COMMIT")
+                f = open("VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "w")
+                for elem in clusters:
+                    f.write("{}, {}\n".format(elem, clusters[elem]))
+                f.close()
+                try:
+                    cursor.execute(
+                        "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS"
+                    )
+                except:
+                    pass
+                cursor.execute(
+                    "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
+                )
+                if "vertica_python" in str(type(cursor)):
+                    with open("./VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "r") as fs:
+                        cursor.copy(
+                            "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';",
+                            fs,
+                        )
+                else:
+                    cursor.execute(
+                        "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICAPY_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';"
+                    )
+                try:
+                    cursor.execute("COMMIT")
+                except:
+                    pass
+                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
             except:
-                pass
-            os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                raise
+            self.n_cluster_ = i
+            cursor.execute(
+                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
+                    self.name, ", ".join(self.X + self.key_columns), main_table, index
+                )
+            )
+            cursor.execute(
+                "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
+            )
+            self.n_noise_ = cursor.fetchone()[0]
         except:
-            os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+            drop_temp_elem(cursor, relation_alpha)
             raise
-        self.n_cluster_ = i
-        cursor.execute(
-            "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
-                self.name, ", ".join(self.X + self.key_columns), main_table, index
-            )
-        )
-        cursor.execute(
-            "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
-        )
-        self.n_noise_ = cursor.fetchone()[0]
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                relation_alpha
-            )
-        )
-        cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS")
+        drop_temp_elem(cursor, relation_alpha)
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
