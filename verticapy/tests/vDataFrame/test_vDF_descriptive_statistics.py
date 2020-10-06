@@ -22,7 +22,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +31,7 @@ def market_vd(base):
 
     market = load_market(cursor=base.cursor)
     yield market
-    drop_table(name="public.market", cursor=base.cursor)
+    drop_table(name="public.market", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +40,7 @@ def amazon_vd(base):
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
 
 
 class TestvDFDescriptiveStat:
@@ -536,30 +536,35 @@ class TestvDFDescriptiveStat:
 
     def test_vDF_distinct(self, amazon_vd):
         result = amazon_vd["state"].distinct()
+        result.sort()
         assert result == [
-            "Acre",
-            "Alagoas",
-            "Amapa",
-            "Amazonas",
-            "Bahia",
-            "Ceara",
-            "Distrito Federal",
-            "Espirito Santo",
-            "Goias",
-            "Maranhao",
-            "Mato Grosso",
-            "Minas Gerais",
-            "Para",
-            "Paraiba",
-            "Pernambuco",
-            "Piau",
-            "Rio",
-            "Rondonia",
-            "Roraima",
-            "Santa Catarina",
-            "Sao Paulo",
-            "Sergipe",
-            "Tocantins",
+            "ACRE",
+            "ALAGOAS",
+            "AMAPÁ",
+            "AMAZONAS",
+            "BAHIA",
+            "CEARÁ",
+            "DISTRITO FEDERAL",
+            "ESPÍRITO SANTO",
+            "GOIÁS",
+            "MARANHÃO",
+            "MATO GROSSO",
+            "MATO GROSSO DO SUL",
+            "MINAS GERAIS",
+            "PARANÁ",
+            "PARAÍBA",
+            "PARÁ",
+            "PERNAMBUCO",
+            "PIAUÍ",
+            "RIO DE JANEIRO",
+            "RIO GRANDE DO NORTE",
+            "RIO GRANDE DO SUL",
+            "RONDÔNIA",
+            "RORAIMA",
+            "SANTA CATARINA",
+            "SERGIPE",
+            "SÃO PAULO",
+            "TOCANTINS",
         ]
 
     def test_vDF_duplicated(self, market_vd):
@@ -568,23 +573,14 @@ class TestvDFDescriptiveStat:
         assert result.count == 151
         assert len(result.values) == 3
 
-    def test_vDF_isin(self, market_vd):
-        result = market_vd.groupby(
-            columns=["Form", "Name"],
-            expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
-        )
-
-        assert result.shape() == (159, 4)
-
     def test_vDF_isin(self, amazon_vd):
         # testing vDataFrame.isin
-        assert amazon_vd.isin({"state": ["Rio", "Acre"], "number": [0, 0]}) == [
-            True,
-            True,
-        ]
+        assert amazon_vd.isin(
+            {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
+        ) == [True, True,]
 
         # testing vDataFrame[].isin
-        assert amazon_vd["state"].isin(val=["Rio", "Acre", "Paris"]) == [
+        assert amazon_vd["state"].isin(val=["SERGIPE", "TOCANTINS", "PARIS"]) == [
             True,
             True,
             False,
