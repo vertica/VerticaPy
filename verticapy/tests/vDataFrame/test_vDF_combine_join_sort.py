@@ -233,7 +233,6 @@ class TestvDFCombineJoinSort:
         assert amazon_pivot.shape() == (239, 24)
         assert amazon_pivot["pv_Acre"].count() == 239
 
-    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_sort(self, iris_vd):
         result1 = iris_vd.sort(columns={"PetalLengthCm": "asc"})
         assert result1["PetalLengthCm"][0] == 1.0
