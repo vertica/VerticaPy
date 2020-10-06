@@ -1098,115 +1098,129 @@ p: int, optional
         p = self.parameters["p"]
         relation_alpha = "".join(ch for ch in input_relation if ch.isalnum())
         schema, relation = schema_relation(input_relation)
-        if not (index):
-            index = "id"
-            relation_alpha = "".join(ch for ch in relation if ch.isalnum())
-            main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
-            schema = "v_temp_schema"
-            try:
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table)
+
+        def drop_temp_elem(cursor, relation_alpha):
+            cursor.execute(
+                "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
+                    relation_alpha
                 )
-            except:
-                pass
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
-                main_table,
-                ", ".join(X + key_columns),
-                input_relation,
-                " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
             )
-            cursor.execute(sql)
-        else:
-            main_table = input_relation
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], p) for i in range(len(X))
-        ]
-        distance = "POWER({}, 1 / {})".format(" + ".join(sql), p)
-        sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {}.{} AS x CROSS JOIN {}.{} AS y".format(
-            index,
-            index,
-            distance,
-            index,
-            distance,
-            schema,
-            main_table,
-            schema,
-            main_table,
-        )
-        sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
-            sql, n_neighbors + 1
-        )
-        try:
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
                     relation_alpha
                 )
             )
-        except:
-            pass
-        sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
-            relation_alpha, sql
-        )
-        cursor.execute(sql)
-        kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
-            relation_alpha, n_neighbors + 1
-        )
-        lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICAPY_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
-            n_neighbors, relation_alpha, kdistance
-        )
-        try:
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
                     relation_alpha
                 )
             )
-        except:
-            pass
-        sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
-            relation_alpha, lrd
-        )
-        cursor.execute(sql)
-        sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
-            n_neighbors, relation_alpha, relation_alpha, relation_alpha
-        )
-        try:
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
                     relation_alpha
                 )
             )
+
+        drop_temp_elem(cursor, relation_alpha)
+        try:
+            if not (index):
+                index = "id"
+                relation_alpha = "".join(ch for ch in relation if ch.isalnum())
+                main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
+                schema = "v_temp_schema"
+                try:
+                    cursor.execute(
+                        "DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table)
+                    )
+                except:
+                    pass
+                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
+                    main_table,
+                    ", ".join(X + key_columns),
+                    input_relation,
+                    " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+                )
+                cursor.execute(sql)
+            else:
+                main_table = input_relation
+            sql = [
+                "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], p)
+                for i in range(len(X))
+            ]
+            distance = "POWER({}, 1 / {})".format(" + ".join(sql), p)
+            sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance, ROW_NUMBER() OVER(PARTITION BY x.{} ORDER BY {}) AS knn FROM {}.{} AS x CROSS JOIN {}.{} AS y".format(
+                index,
+                index,
+                distance,
+                index,
+                distance,
+                schema,
+                main_table,
+                schema,
+                main_table,
+            )
+            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
+                sql, n_neighbors + 1
+            )
+            try:
+                cursor.execute(
+                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
+                        relation_alpha
+                    )
+                )
+            except:
+                pass
+            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
+                relation_alpha, sql
+            )
+            cursor.execute(sql)
+            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
+                relation_alpha, n_neighbors + 1
+            )
+            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICAPY_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
+                n_neighbors, relation_alpha, kdistance
+            )
+            try:
+                cursor.execute(
+                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
+                        relation_alpha
+                    )
+                )
+            except:
+                pass
+            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
+                relation_alpha, lrd
+            )
+            cursor.execute(sql)
+            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
+                n_neighbors, relation_alpha, relation_alpha, relation_alpha
+            )
+            try:
+                cursor.execute(
+                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
+                        relation_alpha
+                    )
+                )
+            except:
+                pass
+            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
+                relation_alpha, sql
+            )
+            cursor.execute(sql)
+            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
+                ", ".join(X + self.key_columns), main_table, relation_alpha, index
+            )
+            cursor.execute("CREATE TABLE {} AS {}".format(self.name, sql))
+            cursor.execute(
+                "SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(
+                    schema, relation_alpha
+                )
+            )
+            self.n_errors_ = cursor.fetchone()[0]
         except:
-            pass
-        sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
-            relation_alpha, sql
-        )
-        cursor.execute(sql)
-        sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
-            ", ".join(X + self.key_columns), main_table, relation_alpha, index
-        )
-        cursor.execute("CREATE TABLE {} AS {}".format(self.name, sql))
-        cursor.execute(
-            "SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(
-                schema, relation_alpha
-            )
-        )
-        self.n_errors_ = cursor.fetchone()[0]
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                relation_alpha
-            )
-        )
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
-                relation_alpha
-            )
-        )
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(relation_alpha)
-        )
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(relation_alpha)
-        )
+            drop_temp_elem(cursor, relation_alpha)
+            raise
+        drop_temp_elem(cursor, relation_alpha)
         model_save = {
             "type": "LocalOutlierFactor",
             "input_relation": self.input_relation,

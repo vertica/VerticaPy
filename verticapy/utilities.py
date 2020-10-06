@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, time
+import os, math, shutil, re, time, decimal
 
 # VerticaPy Modules
 from verticapy.toolbox import *
@@ -501,7 +501,9 @@ list of tuples
     else:
         conn = False
         check_cursor(cursor)
-    if "vertica_python" in str(type(cursor)):
+    import vertica_python
+
+    if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
         try:
             if column_name:
                 cursor.execute(expr)
@@ -530,7 +532,7 @@ list of tuples
                 return ctype
         except:
             pass
-    tmp_name = "_VERTICAPY_TEMPORARY_TABLE_{}".format(random.randint(0, 10000000))
+    tmp_name = "_VERTICAPY_TEMPORARY_TABLE_{}".format(get_session(cursor))
     schema = "v_temp_schema" if not (schema_writing) else schema_writing
     try:
         cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, tmp_name))
@@ -1124,7 +1126,7 @@ read_json : Ingests a JSON file in the Vertica DB.
     else:
         conn = False
         check_cursor(cursor)
-    flex_name = "VERTICAPY_{}_FLEX".format(random.randint(0, 10000000))
+    flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
@@ -1204,7 +1206,7 @@ read_json : Ingests a JSON file in the Vertica DB.
     else:
         conn = False
         check_cursor(cursor)
-    flex_name = "VERTICAPY_{}_FLEX".format(random.randint(0, 10000000))
+    flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
@@ -1494,7 +1496,7 @@ read_csv : Ingests a CSV file in the Vertica DB.
     else:
         input_relation, flex_name = (
             '"{}"."{}"'.format(schema, table_name),
-            "VERTICAPY_" + str(random.randint(0, 10000000)) + "_FLEX",
+            "VERTICAPY_" + str(get_session(cursor)) + "_FLEX",
         )
         cursor.execute(
             "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -1689,6 +1691,15 @@ The tablesample attributes are the same than the parameters.
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
+
+    # ---#
+    def __getitem__(self, key):
+        all_cols = [elem for elem in self.values]
+        for elem in all_cols:
+            if str_column(str(elem).lower()) == str_column(str(key).lower()):
+                key = elem
+                break
+        return self.values[key]
 
     # ---#
     def _repr_html_(self):
@@ -1998,6 +2009,11 @@ def to_tablesample(
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
+    for elem in values:
+        if elem != "index":
+            for idx in range(len(values[elem])):
+                if isinstance(values[elem][idx], decimal.Decimal):
+                    values[elem][idx] = float(values[elem][idx])
     if conn:
         conn.close()
     return tablesample(values=values, dtype=dtype)

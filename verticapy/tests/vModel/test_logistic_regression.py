@@ -18,6 +18,7 @@ from verticapy.learn.linear_model import LogisticRegression
 @pytest.fixture(scope="module")
 def model(base):
     from verticapy.learn.datasets import load_titanic
+    from verticapy import drop_table
 
     titanic = load_titanic(cursor=base.cursor)
 
@@ -26,6 +27,7 @@ def model(base):
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
+    drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestLogisticRegression:

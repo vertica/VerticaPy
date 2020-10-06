@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math, re
+import math, re, decimal
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -146,26 +146,37 @@ Attributes
                     "vColumn doesn't allow slicing having steps different than 1."
                 )
             else:
-                if isinstance(index.stop, int):
-                    if index.stop < 0:
-                        index.stop += self.shape()[0]
-                    limit = index.stop - index.start
+                index_stop = index.stop
+                index_start = index.start
+                if not (isinstance(index_start, int)):
+                    index_start = 0
+                if index_start < 0:
+                    index_start += self.parent.shape()[0]
+                if isinstance(index_stop, int):
+                    if index_stop < 0:
+                        index_stop += self.parent.shape()[0]
+                    limit = index_stop - index_start
                     if limit <= 0:
                         limit = 0
                     limit = " LIMIT {}".format(limit)
                 else:
                     limit = ""
                 query = "(SELECT {} FROM {} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias, self.parent.__genSQL__(), index.start, limit
+                    self.alias, self.parent.__genSQL__(), index_start, limit
                 )
                 return vdf_from_relation(
                     query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
                 )
         elif isinstance(index, int):
-            query = "SELECT {} FROM {} OFFSET {} LIMIT 1".format(
-                self.alias, self.parent.__genSQL__(), index
+            cast = "::float" if self.category() == "float" else ""
+            if index < 0:
+                index += self.parent.shape()[0]
+            query = "SELECT {}{} FROM {} OFFSET {} LIMIT 1".format(
+                self.alias, cast, self.parent.__genSQL__(), index
             )
-            return self.parent._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()
+            return (
+                self.parent._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+            )
         else:
             return getattr(self, index)
 
@@ -808,12 +819,12 @@ Attributes
     def count(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'count' (Number of Missing elements).
+	Aggregates the vcolumn using 'count' (Number of non-Missing elements).
 
  	Returns
  	-------
  	int
- 		number of missing elements.
+ 		number of non-Missing elements.
 
 	See Also
 	--------
@@ -834,6 +845,7 @@ Attributes
 		"""
         return self.transformations[-1][1].lower()
 
+    dtype = ctype
     # ---#
     def date_part(self, field: str):
         """
@@ -1080,13 +1092,13 @@ Attributes
                     numcol, self.alias
                 ),
             )
-            return to_tablesample(
+            values = to_tablesample(
                 query,
                 self.parent._VERTICAPY_VARIABLES_["cursor"],
                 query_on=query_on,
                 time_on=time_on,
                 title=title,
-            )
+            ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
             or not (is_numeric)
@@ -1129,12 +1141,19 @@ Attributes
                 "75%",
                 "max",
             ]
-        values = {
-            "index": ["name", "dtype"] + index,
-            "value": [self.alias, self.ctype()] + result,
-        }
-        if ((is_date) and not (method == "categorical")) or (method == "is_numeric"):
-            self.parent.__update_catalog__({"index": index, self.alias: result})
+        if method != "cat_stats":
+            values = {
+                "index": ["name", "dtype"] + index,
+                "value": [self.alias, self.ctype()] + result,
+            }
+            if ((is_date) and not (method == "categorical")) or (
+                method == "is_numeric"
+            ):
+                self.parent.__update_catalog__({"index": index, self.alias: result})
+        for elem in values:
+            for i in range(len(values[elem])):
+                if isinstance(values[elem][i], decimal.Decimal):
+                    values[elem][i] = float(values[elem][i])
         return tablesample(values)
 
     # ---#
@@ -1215,28 +1234,39 @@ Attributes
             schema = self.parent._VERTICAPY_VARIABLES_["schema_writing"]
             if not (schema):
                 schema = "public"
-            rand_int = random.randint(0, 10000000)
             temp_information = (
-                "{}.VERTICAPY_TEMP_VIEW_{}".format(schema, rand_int),
-                "{}.VERTICAPY_TEMP_MODEL_{}".format(schema, rand_int),
+                "{}.VERTICAPY_TEMP_VIEW_{}".format(
+                    schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
+                ),
+                "{}.VERTICAPY_TEMP_MODEL_{}".format(
+                    schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
+                ),
             )
-            if bins < 2:
-                raise ParameterError(
-                    "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'"
-                )
+            assert bins >= 2, ParameterError(
+                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'"
+            )
+            assert response, ParameterError(
+                "Parameter 'response' can not be empty in case of discretization using the method 'smart'"
+            )
             columns_check([response], self.parent)
             response = vdf_columns_names([response], self.parent)[0]
-            try:
-                self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
-                    "DROP VIEW IF EXISTS {}".format(temp_information[0])
-                )
-            except:
+
+            def drop_temp_elem(self, temp_information):
                 try:
-                    self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
-                        "DROP MODEL IF EXISTS {}".format(temp_information[1])
+                    drop_model(
+                        temp_information[0],
+                        cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                        print_info=False,
+                    )
+                    drop_view(
+                        temp_information[1],
+                        cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                        print_info=False,
                     )
                 except:
                     pass
+
+            drop_temp_elem(self, temp_information)
             self.parent.to_db(temp_information[0])
             from verticapy.learn.ensemble import RandomForestClassifier
 
@@ -1248,28 +1278,27 @@ Attributes
                 nbins=100,
                 min_samples_leaf=min_bin_size,
             )
-            model.fit(temp_information[0], [self.alias], response)
-            query = [
-                "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
-                    temp_information[1], i
+            try:
+                model.fit(temp_information[0], [self.alias], response)
+                query = [
+                    "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
+                        temp_information[1], i
+                    )
+                    for i in range(20)
+                ]
+                query = "SELECT split_value FROM (SELECT split_value, COUNT(*) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
+                    " UNION ALL ".join(query), bins - 1
                 )
-                for i in range(20)
-            ]
-            query = "SELECT split_value FROM (SELECT split_value, COUNT(*) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
-                " UNION ALL ".join(query), bins - 1
-            )
-            self.parent.__executeSQL__(
-                query=query,
-                title="Computes the optimized histogram bins using Random Forest.",
-            )
-            result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            result = [elem[0] for elem in result]
-            self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
-                "DROP VIEW IF EXISTS {}".format(temp_information[0])
-            )
-            self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
-                "DROP MODEL IF EXISTS {}".format(temp_information[1])
-            )
+                self.parent.__executeSQL__(
+                    query=query,
+                    title="Computes the optimized histogram bins using Random Forest.",
+                )
+                result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                result = [elem[0] for elem in result]
+            except:
+                drop_temp_elem(self, temp_information)
+                raise
+            drop_temp_elem(self, temp_information)
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             if k < 2:
@@ -1541,7 +1570,11 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
+        self,
+        threshold: float = 4.0,
+        use_threshold: bool = True,
+        alpha: float = 0.05,
+        print_info: bool = True,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1558,6 +1591,8 @@ Attributes
  	alpha: float, optional
  		Number representing the outliers threshold. Values lesser than 
  		quantile(alpha) or greater than quantile(1-alpha) will be dropped.
+    print_info: bool, optional
+        If set to True, the result of the filtering will be displayed.
 
  	Returns
  	-------
@@ -1575,6 +1610,7 @@ Attributes
                 ("alpha", alpha, [int, float],),
                 ("use_threshold", use_threshold, [bool],),
                 ("threshold", threshold, [int, float],),
+                ("print_info", print_info, [bool],),
             ]
         )
         if use_threshold:
@@ -1582,7 +1618,8 @@ Attributes
             self.parent.filter(
                 expr="ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
-                )
+                ),
+                print_info=print_info,
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1591,7 +1628,8 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha)
+                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                print_info=print_info,
             )
         return self.parent
 
@@ -1618,21 +1656,6 @@ Attributes
         check_types([("print_info", print_info, [bool],)])
         self.parent.filter("{} IS NOT NULL".format(self.alias), print_info=print_info)
         return self.parent
-
-    # ---#
-    def dtype(self):
-        """
-	---------------------------------------------------------------------------
-	Displays and Returns the vcolumn Data type. 
-
- 	Returns
- 	-------
- 	str
- 		vcolumn data type.
-		"""
-        print("col".ljust(6) + self.ctype().rjust(12))
-        print("dtype: object")
-        return self.ctype()
 
     # ---#
     def fill_outliers(
