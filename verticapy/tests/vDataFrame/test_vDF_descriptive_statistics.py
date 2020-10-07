@@ -398,7 +398,7 @@ class TestvDFDescriptiveStat:
 
     def test_vDF_describe(self, titanic_vd):
         # testing vDataFrame.describe()
-        result1 = titanic_vd.describe(method="all").transpose()
+        result1 = titanic_vd.describe(method="all")
 
         assert result1["count"][0] == 1234
         assert result1["unique"][0] == 3
