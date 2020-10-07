@@ -189,7 +189,7 @@ class TestvDFCombineJoinSort:
         # CREATE TABLE cross_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a CROSS JOIN not_dried AS b;
-        corss_join = not_fresh.join(
+        cross_join = not_fresh.join(
             not_dried, how="cross", expr1=["Name AS Name1"], expr2=["Name AS Name2"]
         )
         assert cross_join.shape() == (63616, 2)
