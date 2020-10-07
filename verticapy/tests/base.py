@@ -91,7 +91,6 @@ class VerticaPyTestBase(unittest.TestCase):
                 test_config["log_dir"],
                 "py{0}{1}".format(sys.version_info.major, sys.version_info.minor),
             )
-
         return test_config
 
     @classmethod

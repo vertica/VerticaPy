@@ -130,10 +130,10 @@ tox -e py36,py37
 tox -- verticapy/tests/vDataFrame/test_vDF_combine_join_sort.py
 
 # Run all tests on the python version 3.6:
-tox -e py36 -- -m tests
+tox -e py36 -- verticapy/tests
 
 # Run all tests on the python version 3.7 with verbose result outputs:
-tox -e py37 -- -v -m tests
+tox -e py37 -v -- verticapy/tests
 
 # Run an individual test on specified python versions.
 # e.g.: Run the test `test_vDF_append` under `test_vDF_combine_join_sort.py` on the python versions 3.7 and 3.8

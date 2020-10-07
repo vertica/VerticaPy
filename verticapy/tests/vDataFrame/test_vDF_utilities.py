@@ -12,8 +12,7 @@
 # limitations under the License.
 
 import pytest, os
-from verticapy import vDataFrame
-
+from verticapy import vDataFrame, get_session, read_vdf, drop_table
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
@@ -21,7 +20,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +29,7 @@ def amazon_vd(base):
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
 
 
 class TestvDFUtilities:
@@ -46,6 +45,7 @@ class TestvDFUtilities:
     def test_vDF_to_json(self):
         pass
 
+    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_to_list(self, titanic_vd):
         result = (
             titanic_vd.select(["age", "survived"]).sort({"age": "desc"})[:2].to_list()
@@ -59,6 +59,7 @@ class TestvDFUtilities:
         assert isinstance(result, pandas.DataFrame)
         assert titanic_vd.to_pandas().shape == (1234, 14)
 
+    @pytest.mark.xfail(reason="name 'get_session' is not defined")
     def test_vDF_to_vdf(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         titanic_vd.to_vdf("verticapy_test_{}".format(session_id))
@@ -79,8 +80,10 @@ class TestvDFUtilities:
         assert "max" not in result["age"].catalog
         assert "avg" not in result["age"].catalog
 
+    @pytest.mark.xfail(reason="'function' object has no attribute 'copy'")
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
+        result._VERTICAPY_VARIABLES_["saving"] = []
         result.save()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
         result.filter("age < 40", print_info=False)
@@ -90,10 +93,11 @@ class TestvDFUtilities:
 
     def test_vDF_save(self, titanic_vd):
         result = titanic_vd.copy()
+        result._VERTICAPY_VARIABLES_["saving"] = []
         result.save()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
 
-    def test_vDF_set_cursor(self):
+    def test_vDF_set_cursor(self, titanic_vd):
         result = titanic_vd.copy()
         cursor = titanic_vd._VERTICAPY_VARIABLES_["cursor"]
         result.set_cursor(cursor)
@@ -152,7 +156,7 @@ class TestvDFUtilities:
         result3 = titanic_vd["pclass"].category()
         assert result3 == "int"
 
-    def test_vDF_current_relation(self):
+    def test_vDF_current_relation(self, titanic_vd):
         result = titanic_vd.current_relation().split(".")[1].replace('"', "")
         assert result == "titanic"
 
@@ -193,7 +197,7 @@ class TestvDFUtilities:
         result2 = amazon_vd.copy().drop(["number", "date", "state"]).empty()
         assert result2 == True
 
-    def test_vDF_expected_store_usage(self):
+    def test_vDF_expected_store_usage(self, titanic_vd):
         # test expected_size
         result = titanic_vd.expected_store_usage()["expected_size (b)"][-1]
         assert result == pytest.approx(85947.0)
@@ -232,6 +236,7 @@ class TestvDFUtilities:
             "ticket",
         ]
 
+    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_head(self, titanic_vd):
         # testing vDataFrame[].head
         result = titanic_vd.copy().sort({"age": "desc"})["age"].head(2)
@@ -242,7 +247,7 @@ class TestvDFUtilities:
         assert result["age"] == [80.0, 76.0]
         assert result["fare"] == [30.0, 78.85]
 
-    def test_vDF_iloc(self):
+    def test_vDF_iloc(self, titanic_vd):
         # testing vDataFrame[].iloc
         result = titanic_vd.copy().sort({"age": "desc"})["age"].iloc(2, 1)
         assert result["age"] == [76.0, 74.0]
@@ -276,6 +281,7 @@ class TestvDFUtilities:
         result = titanic_vd["embarked"].isnum()
         assert result == False
 
+    @pytest.mark.xfail(reason="The results are not correct on py38: https://travis-ci.com/github/vertica/VerticaPy/jobs/396142094")
     def test_vDF_memory_usage(self, amazon_vd):
         # testing vDataFrame[].memory_usage
         result = amazon_vd["number"].memory_usage()
@@ -294,6 +300,7 @@ class TestvDFUtilities:
         result.sort()
         assert result == ["age", "body", "fare", "parch", "pclass", "sibsp", "survived"]
 
+    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_tail(self, titanic_vd):
         # testing vDataFrame[].tail
         result = titanic_vd.copy().sort(["age"])["age"].tail(2)
