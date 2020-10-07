@@ -104,20 +104,23 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
         cursor.execute(
-            'CREATE TABLE {}.{}("number" Integer, "date" Date, "state" Varchar(32));'.format(
+            'CREATE TABLE {}.{}("date" Date, "state" Varchar(32), "number" Integer);'.format(
                 str_column(schema), str_column(name)
             )
         )
         try:
             path = os.path.dirname(verticapy.__file__) + "/learn/data/amazon.csv"
-            query = "COPY {}.{}(\"number\", \"date\", \"state\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
+            query = "COPY {}.{}(\"date\", \"state\", \"number\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -182,11 +185,14 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
             query = 'COPY {}.{}("date", "Gold", "Oil", "Spread", "Vix", "Dol_Eur", "SP500") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -251,11 +257,14 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
             query = 'COPY {}.{}("Id" FILLER Integer, "SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -320,11 +329,14 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
             query = "COPY {}.{}(\"Form\", \"Name\", \"Price\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -389,11 +401,14 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
             query = "COPY {}.{}(\"time\", \"val\", \"id\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -458,11 +473,14 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
             query = 'COPY {}.{}("pclass", "survived", "name", "sex", "age", "sibsp", "parch", "ticket", "fare", "cabin", "embarked", "boat", "body", "home.dest") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(
@@ -527,11 +545,14 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
             query = 'COPY {}.{}("fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "free_sulfur_dioxide", "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol", "quality", "good", "color") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
                 str_column(schema), str_column(name), "{}"
             )
-            if "vertica_python" in str(type(cursor)):
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(

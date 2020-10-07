@@ -21,7 +21,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
 
 
 class TestvDFPlot:

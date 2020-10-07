@@ -31,7 +31,7 @@ def market_vd(base):
 
     market = load_market(cursor=base.cursor)
     yield market
-    drop_table(name="public.market", cursor=base.cursor)
+    drop_table(name="public.market", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +40,7 @@ def amazon_vd(base):
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
 
 
 class TestvDFCombineJoinSort:
@@ -199,11 +199,7 @@ class TestvDFCombineJoinSort:
         assert cross_join["Name2"].count() == 63616
 
         # join directly with a Vertica table
-        not_dried._VERTICAPY_VARIABLES_["cursor"].execute(
-            "CREATE LOCAL TEMPORARY TABLE not_dried ON COMMIT PRESERVE ROWS AS SELECT * FROM {}".format(
-                not_dried.__genSQL__()
-            )
-        )
+        not_dried.to_db("not_dried", relation_type="local")
         table_join = not_fresh.join(
             "v_temp_schema.not_dried",
             how="natural",
@@ -223,17 +219,16 @@ class TestvDFCombineJoinSort:
         )
         amazon_narrow = amazon_pivot.narrow("date", col_name="state", val_name="number")
 
-        assert amazon_narrow.shape() == (5497, 3)
+        assert amazon_narrow.shape() == (6453, 3)
 
     def test_vDF_pivot(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
             index="date", columns="state", values="number", aggr="sum", prefix="pv_"
         )
 
-        assert amazon_pivot.shape() == (239, 24)
+        assert amazon_pivot.shape() == (239, 28)
         assert amazon_pivot["pv_Acre"].count() == 239
 
-    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_sort(self, iris_vd):
         result1 = iris_vd.sort(columns={"PetalLengthCm": "asc"})
         assert result1["PetalLengthCm"][0] == 1.0

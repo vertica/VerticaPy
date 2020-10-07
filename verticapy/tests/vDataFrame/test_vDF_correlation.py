@@ -22,7 +22,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +31,7 @@ def amazon_vd(base):
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
 
 
 class TestvDFCorrelation:
@@ -49,9 +49,11 @@ class TestvDFCorrelation:
         )
 
         assert result1["value"][0] == pytest.approx(1)
-        assert result1["confidence"][0] == pytest.approx(0.0243968418)
-        assert result1.values["value"][10] == pytest.approx(0.48, abs=1e-2)
-        assert result1.values["confidence"][10] == pytest.approx(0.068, abs=1e-2)
+        assert result1["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
+        assert result1.values["value"][10] == pytest.approx(0.494663471420921, 1e-2)
+        assert result1.values["confidence"][10] == pytest.approx(
+            0.06977116419369607, 1e-2
+        )
 
         # pearson method
         result2 = amazon_vd.acf(
@@ -64,10 +66,10 @@ class TestvDFCorrelation:
             show=False,
         )
 
-        assert result2["value"][0] == pytest.approx(1.0)
-        assert result2["confidence"][0] == pytest.approx(0.0243968418)
-        assert result2["value"][4] == pytest.approx(0.372, 1e-2)
-        assert result2["confidence"][4] == pytest.approx(0.040264769501212744, 1e-2)
+        assert result2["value"][0] == pytest.approx(1)
+        assert result2["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
+        assert result2["value"][4] == pytest.approx(0.367, 1e-2)
+        assert result2["confidence"][4] == pytest.approx(0.04080280865931269, 1e-2)
 
         # Autocorrelation Heatmap for each 'month' lag
         result3 = amazon_vd.acf(
@@ -83,9 +85,9 @@ class TestvDFCorrelation:
         )
 
         assert result3["index"][1].replace('"', "") == "lag_12_number"
-        assert result3["number"][1] == pytest.approx(0.701, 1e-2)
+        assert result3["number"][1] == pytest.approx(0.778, 1e-2)
         assert result3["index"][5].replace('"', "") == "lag_10_number"
-        assert result3["number"][5] == pytest.approx(0.308, 1e-2)
+        assert result3["number"][5] == pytest.approx(0.334, 1e-2)
 
         # Autocorrelation Line for each 'month' lag
         result4 = amazon_vd.acf(
@@ -99,10 +101,10 @@ class TestvDFCorrelation:
             show=False,
         )
 
-        assert result4["value"][1] == pytest.approx(0.669, 1e-2)
-        assert result4["confidence"][1] == pytest.approx(0.03435634321363168, 1e-2)
-        assert result4["value"][6] == pytest.approx(-0.097, 1e-2)
-        assert result4["confidence"][6] == pytest.approx(0.04901689655068288, 1e-2)
+        assert result4["value"][1] == pytest.approx(0.752, 1e-2)
+        assert result4["confidence"][1] == pytest.approx(0.03627598368700659, 1e-2)
+        assert result4["value"][6] == pytest.approx(-0.06, 1e-2)
+        assert result4["confidence"][6] == pytest.approx(0.05273251493184901, 1e-2)
 
     def test_vDF_corr(self, titanic_vd):
         #
@@ -131,23 +133,32 @@ class TestvDFCorrelation:
         # SPEARMAN
         #
         # testing vDataFrame.corr (method = 'spearman')
-        result2 = titanic_vd.corr(
+        titanic_vd_gb = titanic_vd.groupby(
+            ["age"], ["AVG(survived) AS survived", "AVG(fare) AS fare"]
+        )
+        titanic_vd_gb = titanic_vd_gb.groupby(
+            ["fare"], ["AVG(age) AS age", "AVG(survived) AS survived"]
+        )
+        titanic_vd_gb = titanic_vd_gb.groupby(
+            ["survived"], ["AVG(age) AS age", "AVG(fare) AS fare"]
+        )
+        result2 = titanic_vd_gb.corr(
             columns=["survived", "age", "fare"], show=False, method="spearman"
         )
         assert result2["survived"][0] == 1.0
-        assert result2["survived"][1] == pytest.approx(-0.0909763969172584, abs = 1e-2)
-        assert result2["survived"][2] == pytest.approx(0.322409613111481, abs = 1e-2)
-        assert result2["age"][0] == pytest.approx(-0.0909763969172584, abs = 1e-2)
+        assert result2["survived"][1] == pytest.approx(-0.221388367729831, 1e-2)
+        assert result2["survived"][2] == pytest.approx(0.425515947467167, 1e-2)
+        assert result2["age"][0] == pytest.approx(-0.221388367729831, 1e-2)
         assert result2["age"][1] == 1.0
-        assert result2["age"][2] == pytest.approx(0.005, abs = 1e-2)
-        assert result2["fare"][0] == pytest.approx(0.322409613111481, abs = 1e-2)
-        assert result2["fare"][1] == pytest.approx(0.005, abs = 1e-2)
+        assert result2["age"][2] == pytest.approx(0.287617260787992, 1e-2)
+        assert result2["fare"][0] == pytest.approx(0.425515947467167, 1e-2)
+        assert result2["fare"][1] == pytest.approx(0.287617260787992, 1e-2)
         assert result2["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'spearman') with focus
-        result2_f = titanic_vd.corr(focus="survived", show=False, method="spearman",)
-        assert result2_f["survived"][1] == pytest.approx(-0.336, 1e-2)
-        assert result2_f["survived"][2] == pytest.approx(0.322, 1e-2)
+        result2_f = titanic_vd_gb.corr(focus="survived", show=False, method="spearman",)
+        assert result2_f["survived"][1] == pytest.approx(0.425515947467167, 1e-2)
+        assert result2_f["survived"][2] == pytest.approx(-0.221388367729831, 1e-2)
 
         #
         # KENDALL
@@ -241,11 +252,11 @@ class TestvDFCorrelation:
             column="number", ts="date", by=["state"], p=5, show=False
         )
         assert result["value"][0] == 1.0
-        assert result["value"][1] == pytest.approx(0.514716791247187, 1e-2)
-        assert result["value"][2] == pytest.approx(0.133201986167273, 1e-2)
-        assert result["value"][3] == pytest.approx(-0.0293272001119337, 1e-2)
-        assert result["value"][4] == pytest.approx(-0.0468372999807555, 1e-2)
-        assert result["value"][5] == pytest.approx(-0.053730457039713, 1e-2)
+        assert result["value"][1] == pytest.approx(0.672667529541858, 1e-2)
+        assert result["value"][2] == pytest.approx(-0.188727403801382, 1e-2)
+        assert result["value"][3] == pytest.approx(0.022206688265849, 1e-2)
+        assert result["value"][4] == pytest.approx(-0.0819798501305434, 1e-2)
+        assert result["value"][5] == pytest.approx(-0.00663606854011195, 1e-2)
 
     def test_vDF_regr(self, titanic_vd):
         # testing vDataFrame.regr (method = 'alpha')

@@ -4001,14 +4001,14 @@ vcolumns : vcolumn
                     "empty",
                 ]:
                     values[elem] += tmp[elem]
+            dtype, percent = {}, {}
             if isnotebook():
-                dtype, percent = {}, {}
                 for i in range(len(values["index"])):
                     dtype[values["index"][i]] = values["dtype"][i]
                     percent[values["index"][i]] = values["percent"][i]
                 del values["dtype"]
                 del values["percent"]
-                return tablesample(values, percent=percent, dtype=dtype).transpose()
+            return tablesample(values, percent=percent, dtype=dtype).transpose()
         else:
             raise ParameterError(
                 "The parameter 'method' must be in all|numerical|categorical|statistics|length|range"
@@ -8187,6 +8187,7 @@ vcolumns : vcolumn
             view      : View
             table     : Table
             temporary : Temporary Table
+            local     : Local Temporary Table
     inplace: bool, optional
         If set to True, the vDataFrame will be replaced using the new relation.
     db_filter: str / list, optional
@@ -8221,9 +8222,15 @@ vcolumns : vcolumn
         relation_type = relation_type.lower()
         columns_check(usecols, self)
         usecols = vdf_columns_names(usecols, self)
-        commit = " ON COMMIT PRESERVE ROWS" if (relation_type == "temporary") else ""
+        commit = (
+            " ON COMMIT PRESERVE ROWS"
+            if (relation_type in ("local", "temporary"))
+            else ""
+        )
         if relation_type == "temporary":
             relation_type += " table"
+        elif relation_type == "local":
+            relation_type += " temporary table"
         usecols = (
             "*"
             if not (usecols)

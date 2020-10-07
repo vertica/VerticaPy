@@ -12,9 +12,7 @@
 # limitations under the License.
 
 import pytest, os
-from verticapy import vDataFrame
-from verticapy import drop_table
-
+from verticapy import vDataFrame, get_session, read_vdf, drop_table
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
@@ -22,7 +20,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
 
 
 @pytest.fixture(scope="module")
@@ -31,7 +29,7 @@ def amazon_vd(base):
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
 
 
 class TestvDFUtilities:
@@ -85,6 +83,7 @@ class TestvDFUtilities:
     @pytest.mark.xfail(reason="'function' object has no attribute 'copy'")
     def test_vDF_load(self, titanic_vd):
         result = titanic_vd.copy()
+        result._VERTICAPY_VARIABLES_["saving"] = []
         result.save()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
         result.filter("age < 40", print_info=False)
@@ -94,11 +93,11 @@ class TestvDFUtilities:
 
     def test_vDF_save(self, titanic_vd):
         result = titanic_vd.copy()
+        result._VERTICAPY_VARIABLES_["saving"] = []
         result.save()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
 
-    @pytest.mark.xfail(reason="'function' object has no attribute 'copy'")
-    def test_vDF_set_cursor(self):
+    def test_vDF_set_cursor(self, titanic_vd):
         result = titanic_vd.copy()
         cursor = titanic_vd._VERTICAPY_VARIABLES_["cursor"]
         result.set_cursor(cursor)
@@ -157,8 +156,7 @@ class TestvDFUtilities:
         result3 = titanic_vd["pclass"].category()
         assert result3 == "int"
 
-    @pytest.mark.xfail(reason="'function' object has no attribute 'current_relation'")
-    def test_vDF_current_relation(self):
+    def test_vDF_current_relation(self, titanic_vd):
         result = titanic_vd.current_relation().split(".")[1].replace('"', "")
         assert result == "titanic"
 
@@ -199,8 +197,7 @@ class TestvDFUtilities:
         result2 = amazon_vd.copy().drop(["number", "date", "state"]).empty()
         assert result2 == True
 
-    @pytest.mark.xfail(reason="'function' object has no attribute 'expected_store_usage'")
-    def test_vDF_expected_store_usage(self):
+    def test_vDF_expected_store_usage(self, titanic_vd):
         # test expected_size
         result = titanic_vd.expected_store_usage()["expected_size (b)"][-1]
         assert result == pytest.approx(85947.0)
@@ -250,8 +247,7 @@ class TestvDFUtilities:
         assert result["age"] == [80.0, 76.0]
         assert result["fare"] == [30.0, 78.85]
 
-    @pytest.mark.xfail(reason="'function' object has no attribute 'copy'")
-    def test_vDF_iloc(self):
+    def test_vDF_iloc(self, titanic_vd):
         # testing vDataFrame[].iloc
         result = titanic_vd.copy().sort({"age": "desc"})["age"].iloc(2, 1)
         assert result["age"] == [76.0, 74.0]
