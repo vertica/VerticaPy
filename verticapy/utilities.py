@@ -2040,7 +2040,7 @@ vDataFrame
             ("saving", saving, [list],),
             ("query_on", query_on, [bool],),
             ("time_on", time_on, [bool],),
-            ("display", display, [dict],),
+            ("display_params", display_params, [dict],),
         ]
     )
     name = gen_name([name])
