@@ -421,7 +421,6 @@ papprox_ma: int, optional
                         schema, get_session(self.cursor)
                     ),
                     cursor=self.cursor,
-                    print_info=False,
                 )
             except:
                 pass
@@ -842,9 +841,10 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
+        result.set_display_parameters(print_info=False)
         result = (
             result.select([ts, y, "_verticapy_prediction_"])
-            .dropna(print_info=False)
+            .dropna()
             .sort([ts])
             .tail(limit)
             .values
@@ -1371,7 +1371,6 @@ l1_ratio: float, optional
                         schema, get_session(self.cursor)
                     ),
                     cursor=self.cursor,
-                    print_info=False,
                 )
             except:
                 pass
@@ -1569,9 +1568,10 @@ l1_ratio: float, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
+        result_all.set_display_parameters(print_info=False)
         result = (
             result_all.select([ts, y, prediction])
-            .dropna(print_info=False)
+            .dropna()
             .sort([ts])
             .tail(limit)
             .values
@@ -1592,13 +1592,8 @@ l1_ratio: float, optional
             ],
         )
         if dynamic:
-            result = (
-                result_all.select([ts] + X)
-                .dropna(print_info=False)
-                .sort([ts])
-                .tail(limit)
-                .values
-            )
+            result_all.set_display_parameters(print_info=False)
+            result = result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
