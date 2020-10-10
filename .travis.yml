@@ -23,4 +23,5 @@ before_install:
 install:
   - pip install tox
 script:
-  - echo "RUN TEST SUITE"
+  - export VP_TEST_USER=dbadmin
+  - tox
