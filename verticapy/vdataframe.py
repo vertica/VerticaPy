@@ -48,7 +48,8 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, collections, decimal
+import random, time, shutil, re, decimal
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy.vcolumn import vColumn
@@ -325,7 +326,7 @@ vcolumns : vcolumn
                 return getattr(self, new_index[0])
             except:
                 return getattr(self, index)
-        elif isinstance(index, collections.Iterable):
+        elif isinstance(index, Iterable):
             return self.select(columns=index)
         else:
             return getattr(self, index)
@@ -6075,7 +6076,7 @@ vcolumns : vcolumn
                 ("show", show, [bool],),
             ]
         )
-        if isinstance(p, collections.Iterable) and (len(p) == 1):
+        if isinstance(p, Iterable) and (len(p) == 1):
             p = p[0]
             if p == 0:
                 return 1.0
@@ -7339,7 +7340,7 @@ vcolumns : vcolumn
                 ("order_by", order_by, [dict, list],),
             ]
         )
-        if isinstance(conditions, collections.Iterable) and not (
+        if isinstance(conditions, Iterable) and not (
             isinstance(conditions, str)
         ):
             conditions = " AND ".join(["({})".format(elem) for elem in conditions])
@@ -8238,7 +8239,7 @@ vcolumns : vcolumn
             if (nb_split > 0)
             else ""
         )
-        if isinstance(db_filter, collections.Iterable) and not (
+        if isinstance(db_filter, Iterable) and not (
             isinstance(db_filter, str)
         ):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
