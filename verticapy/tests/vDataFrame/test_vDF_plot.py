@@ -13,6 +13,7 @@
 
 import pytest, datetime
 from verticapy import vDataFrame, drop_table
+import matplotlib.pyplot as plt
 
 
 @pytest.fixture(scope="module")
@@ -36,6 +37,17 @@ def amazon_vd(base):
     yield amazon
     drop_table(
         name="public.amazon", cursor=base.cursor,
+    )
+
+@pytest.fixture(scope="module")
+def iris_vd(base):
+    from verticapy.learn.datasets import load_iris
+
+    iris = load_iris(cursor=base.cursor)
+    iris.set_display_parameters(print_info=False)
+    yield iris
+    drop_table(
+        name="public.iris", cursor=base.cursor,
     )
 
 
@@ -87,6 +99,7 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
             0.6121794871794872
         )
+        plt.close()
 
     def test_vDF_boxplot(self, titanic_vd):
         # testing vDataFrame[].boxplot
@@ -106,14 +119,26 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[6].get_data()[1][
             1
         ] == pytest.approx(512.3292)
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_bubble(self):
-        pass
+    def test_vDF_bubble(self, iris_vd):
+        # testing vDataFrame.bubble
+        result = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm")
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
+        # testing vDataFrame.scatter using parameter catcol
+        result2 = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", catcol="Species")
+        result2 = result2.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result2.get_offsets().data]) in [1.9, 5.1, 6.9]
+        assert max([elem[1] for elem in result2.get_offsets().data]) in [5.8, 7.0, 7.9]
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_density(self):
-        pass
+    def test_vDF_density(self, iris_vd):
+        for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
+            result = iris_vd["PetalLengthCm"].density(kernel=kernel)
+            assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
+        plt.close()
 
     def test_vDF_donut(self, titanic_vd):
         result = titanic_vd["sex"].donut(method="sum", of="survived")
@@ -121,14 +146,18 @@ class TestvDFPlot:
         assert int(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(302)
+        plt.close()
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_hchart(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_hexbin(self):
-        pass
+    def test_vDF_hexbin(self, titanic_vd):
+        result = titanic_vd.hexbin(columns = ["age", "fare"], method="avg", of="survived")
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(78.0082500756865, 1e-2)
+        assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(512.3292, 1e-2)
+        plt.close()
 
     def test_vDF_hist(self, titanic_vd):
         # testing vDataFrame[].hist
@@ -175,6 +204,7 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[
             1
         ].get_height() == pytest.approx(0.4327390599675851)
+        plt.close()
 
     def test_vDF_pie(self, titanic_vd):
         result = titanic_vd["pclass"].pie(method="avg", of="survived")
@@ -182,6 +212,7 @@ class TestvDFPlot:
         assert float(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(0.227753)
+        plt.close()
 
     def test_vDF_pivot_table(self, titanic_vd):
         result = titanic_vd.pivot_table(
@@ -194,6 +225,7 @@ class TestvDFPlot:
         assert result[2][1] == pytest.approx(0.875)
         assert result[2][2] == pytest.approx(0.375)
         assert len(result[1]) == 12
+        plt.close()
 
     def test_vDF_plot(self, amazon_vd):
         # testing vDataFrame[].plot
@@ -209,11 +241,31 @@ class TestvDFPlot:
         assert result[0][-1] == datetime.date(2017, 11, 1)
         assert result[1][0] == pytest.approx(0.0)
         assert result[1][-1] == pytest.approx(651.2962963)
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_scatter(self):
-        pass
+    def test_vDF_scatter(self, iris_vd):
+        # testing vDataFrame.scatter
+        result = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"])
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
+        result2 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"])
+        result2 = result2.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result2.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_scatter_matrix(self):
-        pass
+        # testing vDataFrame.scatter using parameter catcol
+        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"], catcol="Species")
+        result3 = result3.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result3.get_offsets().data]) in [1.9, 5.1, 6.9]
+        assert max([elem[1] for elem in result3.get_offsets().data]) in [5.8, 7.0, 7.9]
+        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species")
+        result3 = result3.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result3.get_offsets().data]) in [1.9, 5.1, 6.9]
+        assert max([elem[1] for elem in result3.get_offsets().data]) in [5.8, 7.0, 7.9]
+        plt.close()
+
+    def test_vDF_scatter_matrix(self, iris_vd):
+        result = iris_vd.scatter_matrix()
+        assert len(result) == 4
+        plt.close()
