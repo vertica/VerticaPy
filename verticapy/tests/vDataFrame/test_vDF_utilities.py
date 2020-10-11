@@ -293,9 +293,9 @@ class TestvDFUtilities:
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
         assert result2["value"][0] == pytest.approx(1031, 1e-2)
-        assert result2["value"][1] == pytest.approx(1714, 1e-2)
-        assert result2["value"][2] == pytest.approx(1712, 1e-2)
-        assert result2["value"][3] == pytest.approx(1713, 1e-2)
+        assert result2["value"][1] == pytest.approx(1712, 1e-2)
+        assert result2["value"][2] == pytest.approx(1713, 1e-2)
+        assert result2["value"][3] == pytest.approx(1714, 1e-2)
         assert result2["value"][4] == pytest.approx(6170, 1e-2)
 
     def test_vDF_numcol(self, titanic_vd):

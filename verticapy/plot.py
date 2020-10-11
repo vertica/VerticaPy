@@ -1825,7 +1825,7 @@ def scatter_matrix(vdf, columns: list = []):
         plt.subplots(nrows=n, ncols=n, figsize=(min(1.5 * n, 500), min(1.5 * n, 500)))
         if isnotebook()
         else plt.subplots(
-            nrows=n, ncols=n, figsize=(min(int(n / 1.1, 500)), min(int(n / 1.1, 500)))
+            nrows=n, ncols=n, figsize=(min(int(n / 1.1), 500), min(int(n / 1.1), 500))
         )
     )
     query = "SELECT {}, RANDOM() AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
@@ -1867,7 +1867,7 @@ def scatter_matrix(vdf, columns: list = []):
     fig.suptitle(
         "Scatter Plot Matrix of {}".format(vdf._VERTICAPY_VARIABLES_["input_relation"])
     )
-    return plt.gcf()
+    return axes
 
 
 # ---#

@@ -2194,19 +2194,41 @@ Attributes
             self.parent._VERTICAPY_VARIABLES_["time_on"],
             "Reads {}.".format(self.alias),
         )
-        tail = to_tablesample(
-            "SELECT {} AS {} FROM {} LIMIT {} OFFSET {}".format(
-                convert_special_type(self.category(), False, self.alias),
-                self.alias,
-                self.parent.__genSQL__(),
-                limit,
-                offset,
-            ),
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
-            title=title,
-        )
+        max_pos = 0
+        columns_tmp = [elem for elem in self.parent.get_columns()]
+        for column in columns_tmp:
+            max_pos = max(max_pos, len(self.parent[column].transformations) - 1)
+        if max_pos in self.parent._VERTICAPY_VARIABLES_["order_by"]:
+            order_by = self.parent._VERTICAPY_VARIABLES_["order_by"][max_pos]
+        try:
+            tail = to_tablesample(
+                "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
+                    convert_special_type(self.category(), False, self.alias),
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    order_by,
+                    limit,
+                    offset,
+                ),
+                self.parent._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
+        except:
+            tail = to_tablesample(
+                "SELECT {} AS {} FROM {} LIMIT {} OFFSET {}".format(
+                    convert_special_type(self.category(), False, self.alias),
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    limit,
+                    offset,
+                ),
+                self.parent._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
         tail.dtype[self.alias] = self.ctype()
