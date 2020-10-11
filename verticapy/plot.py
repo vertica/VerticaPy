@@ -2134,9 +2134,9 @@ def scatter3D(
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
-            ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             return ax
         else:
             column_groupby = columns[3]
@@ -2255,9 +2255,9 @@ def scatter3D(
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
-            ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-            ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+            ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
             ax.legend(
                 all_scatter,
                 all_categories,
