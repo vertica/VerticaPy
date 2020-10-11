@@ -130,8 +130,8 @@ class TestvDFPlot:
         # testing vDataFrame.scatter using parameter catcol
         result2 = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", catcol="Species")
         result2 = result2.get_default_bbox_extra_artists()[0]
-        assert max([elem[0] for elem in result2.get_offsets().data]) in [1.9, 5.1, 6.9]
-        assert max([elem[1] for elem in result2.get_offsets().data]) in [5.8, 7.0, 7.9]
+        assert max([elem[0] for elem in result2.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close()
 
     def test_vDF_density(self, iris_vd):
