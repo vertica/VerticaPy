@@ -19,8 +19,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
+    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.titanic", cursor=base.cursor,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -28,8 +31,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
 
 
 class TestvDFUtilities:
@@ -86,7 +92,7 @@ class TestvDFUtilities:
         result._VERTICAPY_VARIABLES_["saving"] = []
         result.save()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 1
-        result.filter("age < 40", print_info=False)
+        result.filter("age < 40")
         result = result.load()
         assert len(result._VERTICAPY_VARIABLES_["saving"]) == 0
         assert result.shape() == (1234, 14)
@@ -129,7 +135,8 @@ class TestvDFUtilities:
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
-            elem.replace('"', "") for elem in titanic_vd.catcol(max_cardinality=3)
+            elem.replace('"', "").lower()
+            for elem in titanic_vd.catcol(max_cardinality=3)
         ]
         result.sort()
         assert result == [
@@ -258,8 +265,8 @@ class TestvDFUtilities:
         assert result["fare"] == [78.85, 7.775]
 
     def test_vDF_info(self, titanic_vd):
-        result = titanic_vd.copy().filter("age > 0", print_info=False)
-        result["fare"].drop_outliers(print_info=False)
+        result = titanic_vd.copy().filter("age > 0")
+        result["fare"].drop_outliers()
         result = len(result.info().split("\n")) - 1
         assert result == 2
 

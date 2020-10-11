@@ -21,8 +21,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
 
 
 class TestvDFStatsTools:

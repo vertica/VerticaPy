@@ -21,8 +21,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
+    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.titanic", cursor=base.cursor,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -30,8 +33,11 @@ def market_vd(base):
     from verticapy.learn.datasets import load_market
 
     market = load_market(cursor=base.cursor)
+    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(name="public.market", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.market", cursor=base.cursor,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -39,8 +45,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
 
 
 class TestvDFDescriptiveStat:

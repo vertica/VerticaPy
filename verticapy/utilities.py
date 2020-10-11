@@ -157,9 +157,7 @@ cursor: DBcursor, optional
 
 
 # ---#
-def drop_model(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_model(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input model.
@@ -170,18 +168,12 @@ name: str
 	Model name.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-print_info: bool, optional
-	If set to True, displays the result of the query.
 raise_error: bool, optional
 	If the model couldn't be dropped, raises the entire error instead of
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -194,8 +186,7 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The model {} was successfully dropped.".format(name))
+        return "The model {} was successfully dropped.".format(name)
     except:
         try:
             sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
@@ -208,9 +199,9 @@ raise_error: bool, optional
         if result:
             model_type = result[0]
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop_table(name, cursor, print_info=False)
+                drop_table(name, cursor)
             elif model_type in ("CountVectorizer"):
-                drop_text_index(name, cursor, print_info=False)
+                drop_text_index(name, cursor)
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
@@ -221,27 +212,21 @@ raise_error: bool, optional
             )
             cursor.execute(sql)
             cursor.execute("COMMIT;")
-            if print_info:
-                print("The model {} was successfully dropped.".format(name))
             if conn:
                 conn.close()
+            return "The model {} was successfully dropped.".format(name)
         else:
             if conn:
                 conn.close()
             if raise_error:
                 raise
-            elif print_info:
-                print(
-                    "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                        name
-                    )
-                )
+            return "\u26A0 Warning: The model {} doesn't exist or can not be dropped ! Use parameter: raise_error = True to get more information.".format(
+                name
+            )
 
 
 # ---#
-def drop_table(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_table(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input table.
@@ -251,19 +236,13 @@ Parameters
 name: str
 	Table name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to True, displays the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the table couldn't be dropped, raises the entire error instead of
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -276,25 +255,19 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The table {} was successfully dropped.".format(name))
+        return "The table {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
-def drop_text_index(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_text_index(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input text index.
@@ -304,19 +277,13 @@ Parameters
 name: str
 	Text index name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to true, displays the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the text index couldn't be dropped, raises the entire error instead 
 	of displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -329,25 +296,19 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The text index {} was successfully dropped.".format(name))
+        return "The text index {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
-def drop_view(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_view(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input view.
@@ -357,19 +318,13 @@ Parameters
 name: str
 	View name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to true, display the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the view couldn't be dropped, raises the entire error instead of 
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -382,19 +337,15 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The view {} was successfully dropped.".format(name))
+        return "The view {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
@@ -2031,6 +1982,7 @@ def vdf_from_relation(
     saving: list = [],
     query_on: bool = False,
     time_on: bool = False,
+    display_params: dict = {},
 ):
     """
 ---------------------------------------------------------------------------
@@ -2070,6 +2022,8 @@ query_on: bool, optional
 	If set to True, all the query will be printed.
 time_on: bool, optional
 	If set to True, all the query elapsed time will be printed.
+display_params: dict, optional
+    Parameters used to display the output vDataFrame.
 
 Returns
 -------
@@ -2086,6 +2040,7 @@ vDataFrame
             ("saving", saving, [list],),
             ("query_on", query_on, [bool],),
             ("time_on", time_on, [bool],),
+            ("display_params", display_params, [dict],),
         ]
     )
     name = gen_name([name])
@@ -2113,6 +2068,8 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
+    for elem in display_params:
+        vdf._VERTICAPY_VARIABLES_["display"][elem] = display_params[elem]
     try:
         cursor.execute(
             "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_{}_TEST;".format(name)
