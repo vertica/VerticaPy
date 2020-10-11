@@ -2254,7 +2254,7 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 5:
         message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
     elif response == 6:
-        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n\%\%sql\nSELECT * FROM public.titanic\n```"
+        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n%%sql\nSELECT * FROM public.titanic\n```"
     elif response == -1:
         message = "Thank you for using the VERTICAPY help."
     elif response == 666:
