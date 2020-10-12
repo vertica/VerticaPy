@@ -19,7 +19,6 @@ from setuptools import setup, find_packages
 ReqOpts = collections.namedtuple('ReqOpts', ['skip_requirements_regex', 'default_vcs'])
 
 opts = ReqOpts(None, 'git')
-
 setup(
     name='VerticaPy',
     version='0.2.1',
