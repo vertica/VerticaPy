@@ -49,7 +49,8 @@
 # Modules
 #
 # Standard Python Modules
-import math, collections
+import math
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy import *
@@ -708,7 +709,7 @@ tablesample
                 current_cutoff = estimator.score(
                     method="best_cutoff", pos_label=pos_label
                 )
-            elif isinstance(cutoff, collections.Iterable):
+            elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
                 else:
@@ -778,7 +779,7 @@ tablesample
                 current_cutoff = roc_curve(
                     y_t, y_p, input_relation, cursor, best_threshold=True
                 )
-            elif isinstance(cutoff, collections.Iterable):
+            elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
                 else:

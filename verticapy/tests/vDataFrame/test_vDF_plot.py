@@ -257,8 +257,8 @@ class TestvDFPlot:
         # testing vDataFrame.scatter using parameter catcol
         result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"], catcol="Species")
         result3 = result3.get_default_bbox_extra_artists()[0]
-        assert max([elem[0] for elem in result3.get_offsets().data]) in [1.9, 5.1, 6.9]
-        assert max([elem[1] for elem in result3.get_offsets().data]) in [5.8, 7.0, 7.9]
+        assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species")
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
