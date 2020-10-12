@@ -610,7 +610,7 @@ tablesample
         STDS = float(STDS)
     except:
         STDS = None
-    if STDS == None or S == None:
+    if STDS in (None, 0) or S == None:
         return None
     if S > 0:
         ZMK = (S - 1) / STDS
