@@ -195,7 +195,9 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica DB.
 		"""
-        drop_model(self.name, self.cursor, print_info=False)
+        drop_model(
+            self.name, self.cursor,
+        )
 
     # ---#
     def features_importance(self, ax=None):

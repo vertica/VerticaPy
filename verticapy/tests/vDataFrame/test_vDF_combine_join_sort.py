@@ -21,6 +21,7 @@ def iris_vd(base):
     from verticapy.learn.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
+    iris.set_display_parameters(print_info=False)
     yield iris
     drop_table(name="public.iris", cursor=base.cursor)
 
@@ -30,8 +31,11 @@ def market_vd(base):
     from verticapy.learn.datasets import load_market
 
     market = load_market(cursor=base.cursor)
+    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(name="public.market", cursor=base.cursor)
+    drop_table(
+        name="public.market", cursor=base.cursor,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -39,8 +43,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor)
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
 
 
 class TestvDFCombineJoinSort:
@@ -189,7 +196,7 @@ class TestvDFCombineJoinSort:
         # CREATE TABLE cross_join AS
         #        SELECT a.Name as Name1, b.Name as Name2
         #        FROM not_fresh AS a CROSS JOIN not_dried AS b;
-        corss_join = not_fresh.join(
+        cross_join = not_fresh.join(
             not_dried, how="cross", expr1=["Name AS Name1"], expr2=["Name AS Name2"]
         )
         assert cross_join.shape() == (63616, 2)
@@ -199,11 +206,7 @@ class TestvDFCombineJoinSort:
         assert cross_join["Name2"].count() == 63616
 
         # join directly with a Vertica table
-        not_dried._VERTICAPY_VARIABLES_["cursor"].execute(
-            "CREATE LOCAL TEMPORARY TABLE not_dried ON COMMIT PRESERVE ROWS AS SELECT * FROM {}".format(
-                not_dried.__genSQL__()
-            )
-        )
+        not_dried.to_db("not_dried", relation_type="local")
         table_join = not_fresh.join(
             "v_temp_schema.not_dried",
             how="natural",
@@ -212,9 +215,7 @@ class TestvDFCombineJoinSort:
         )
         assert table_join.shape() == (194, 2)
         drop_table(
-            "v_temp_schema.not_dried",
-            not_dried._VERTICAPY_VARIABLES_["cursor"],
-            print_info=False,
+            "v_temp_schema.not_dried", not_dried._VERTICAPY_VARIABLES_["cursor"],
         )
 
     def test_vDF_narrow(self, amazon_vd):
@@ -223,27 +224,29 @@ class TestvDFCombineJoinSort:
         )
         amazon_narrow = amazon_pivot.narrow("date", col_name="state", val_name="number")
 
-        assert amazon_narrow.shape() == (5497, 3)
+        assert amazon_narrow.shape() == (6453, 3)
 
     def test_vDF_pivot(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
             index="date", columns="state", values="number", aggr="sum", prefix="pv_"
         )
 
-        assert amazon_pivot.shape() == (239, 24)
+        assert amazon_pivot.shape() == (239, 28)
         assert amazon_pivot["pv_Acre"].count() == 239
 
-    @pytest.mark.xfail(reason="The results are not correct")
+    @pytest.mark.xfail(reason = "Wrong result")
     def test_vDF_sort(self, iris_vd):
-        result1 = iris_vd.sort(columns={"PetalLengthCm": "asc"})
+        result1 = iris_vd.copy().sort(columns={"PetalLengthCm": "asc"})
         assert result1["PetalLengthCm"][0] == 1.0
 
-        result2 = iris_vd.sort(columns=["PetalLengthCm", "PetalLengthCm"])
+        result2 = iris_vd.copy().sort(columns=["PetalLengthCm", "SepalWidthCm"])
         assert result2["PetalLengthCm"][0] == 1.0
 
-        result3 = iris_vd.sort(columns={"PetalLengthCm": "desc"})
+        result3 = iris_vd.copy().sort(columns={"PetalLengthCm": "desc"})
         assert result3["PetalLengthCm"][0] == 6.9
 
-        result4 = iris_vd.sort(columns={"PetalLengthCm": "desc", "SepalWidthCm": "asc"})
+        result4 = iris_vd.copy().sort(
+            columns={"PetalLengthCm": "desc", "SepalWidthCm": "asc"}
+        )
         assert result4["PetalLengthCm"][0] == 6.9
         assert result4["SepalWidthCm"][0] == 2.6

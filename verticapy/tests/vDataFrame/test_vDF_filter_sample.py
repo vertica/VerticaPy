@@ -21,8 +21,11 @@ def smart_meters_vd(base):
     from verticapy.learn.datasets import load_smart_meters
 
     smart_meters = load_smart_meters(cursor=base.cursor)
+    smart_meters.set_display_parameters(print_info=False)
     yield smart_meters
-    drop_table(name="public.smart_meters", cursor=base.cursor)
+    drop_table(
+        name="public.smart_meters", cursor=base.cursor,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -30,14 +33,18 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
+    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    drop_table(
+        name="public.titanic", cursor=base.cursor,
+    )
 
 
 class TestvDFFilterSample:
+    @pytest.mark.xfail(reason="The results are not correct")
     def test_vDF_search(self, titanic_vd):
         # testing with one condition
-        result = titanic_vd.search(
+        result1 = titanic_vd.search(
             conditions="age BETWEEN 30 AND 70",
             usecols=["pclass", "boat", "embarked", "age", "family_size"],
             expr=["sibsp + parch + 1 AS family_size"],
@@ -69,12 +76,12 @@ class TestvDFFilterSample:
         assert result2["pclass"][1] == 1
 
     def test_vDF_at_time(self, smart_meters_vd):
-        result = smart_meters_vd.at_time(ts="time", time="12:00", print_info=False)
+        result = smart_meters_vd.copy().at_time(ts="time", time="12:00",)
         assert result.shape() == (140, 3)
 
     def test_vDF_between_time(self, smart_meters_vd):
-        result = smart_meters_vd.between_time(
-            ts="time", start_time="12:00", end_time="14:00", print_info=False
+        result = smart_meters_vd.copy().between_time(
+            ts="time", start_time="12:00", end_time="14:00",
         )
         assert result.shape() == (1151, 3)
 
@@ -82,16 +89,15 @@ class TestvDFFilterSample:
         result = titanic_vd.copy().filter(
             expr="pclass = 1 OR age > 50",
             conditions=["embarked = 'S'", "boat IS NOT NULL"],
-            print_info=False,
         )
         assert result.shape() == (343, 14)
 
     def test_vDF_first(self, smart_meters_vd):
-        result = smart_meters_vd.first(ts="time", offset="6 months", print_info=False)
+        result = smart_meters_vd.copy().first(ts="time", offset="6 months",)
         assert result.shape() == (3427, 3)
 
     def test_vDF_last(self, smart_meters_vd):
-        result = smart_meters_vd.last(ts="time", offset="1 year", print_info=False)
+        result = smart_meters_vd.copy().last(ts="time", offset="1 year",)
         assert result.shape() == (7018, 3)
 
     def test_vDF_drop(self, titanic_vd):
@@ -104,21 +110,17 @@ class TestvDFFilterSample:
         assert result.shape() == (1234, 13)
 
     def test_vDF_drop_duplicates(self, titanic_vd):
-        result = titanic_vd.copy().drop_duplicates(
-            columns=["age", "fare", "pclass"], print_info=False
-        )
+        result = titanic_vd.copy().drop_duplicates(columns=["age", "fare", "pclass"],)
         assert result.shape() == (942, 14)
 
     def test_vDF_drop_outliers(self, titanic_vd):
         # testing with threshold
-        result1 = titanic_vd.copy()["age"].drop_outliers(
-            threshold=3.0, print_info=False
-        )
+        result1 = titanic_vd.copy()["age"].drop_outliers(threshold=3.0,)
         assert result1.shape() == (994, 14)
 
         # testing without threshold
         result2 = titanic_vd.copy()["age"].drop_outliers(
-            use_threshold=False, alpha=0.05, print_info=False
+            use_threshold=False, alpha=0.05,
         )
         assert result2.shape() == (900, 14)
 

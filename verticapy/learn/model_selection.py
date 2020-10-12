@@ -49,7 +49,8 @@
 # Modules
 #
 # Standard Python Modules
-import statistics, collections
+import statistics
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -126,7 +127,7 @@ int
     else:
         conn = False
         check_cursor(cursor)
-    if not (isinstance(n_cluster, collections.Iterable)):
+    if not (isinstance(n_cluster, Iterable)):
         L = range(n_cluster[0], n_cluster[1])
     else:
         L = n_cluster
