@@ -8405,7 +8405,7 @@ vcolumns : vcolumn
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
+                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
             )
         query = "SELECT * FROM {}".format(self.__genSQL__())
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)

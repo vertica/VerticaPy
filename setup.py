@@ -19,11 +19,9 @@ from setuptools import setup, find_packages
 ReqOpts = collections.namedtuple('ReqOpts', ['skip_requirements_regex', 'default_vcs'])
 
 opts = ReqOpts(None, 'git')
-
-# version should use the format 'x.x.x' (instead of 'vx.x.x')
 setup(
     name='VerticaPy',
-    version='0.2.0',
+    version='0.2.1',
     description='A Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica.',
     author='Badr Ouali',
     author_email='badr.ouali@vertica.com',
