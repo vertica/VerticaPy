@@ -21,7 +21,7 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
+    drop_table(name="public.titanic", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -39,7 +39,7 @@ def market_vd(base):
 
     market = load_market(cursor=base.cursor)
     yield market
-    drop_table(name="public.market", cursor=base.cursor, print_info=False)
+    drop_table(name="public.market", cursor=base.cursor)
 
 
 class TestvDFPreprocessing:
@@ -155,7 +155,7 @@ class TestvDFPreprocessing:
     def test_vDF_dropna(self, titanic_vd):
         # Testing vDataFrame.dropna
         titanic_copy = titanic_vd.copy()
-        titanic_copy.dropna(columns = ["fare", "embarked", "age"], print_info = False)
+        titanic_copy.dropna(columns = ["fare", "embarked", "age"])
         result = titanic_copy.count(columns = ["fare", "embarked", "age"])
         
         assert result["count"][0] == 994
@@ -164,7 +164,7 @@ class TestvDFPreprocessing:
 
         # Testing vDataFrame[].dropna
         titanic_copy = titanic_vd.copy()
-        titanic_copy["age"].dropna(print_info = False)
+        titanic_copy["age"].dropna()
         assert titanic_copy.count(["age"])["count"][0] == 997
 
     def test_vDF_fillna(self, titanic_vd):
@@ -172,7 +172,7 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
         titanic_copy.fillna(val = {"boat": "No boat"}, method = {"age": "mean", "embarked": "mode",
                                                                  "fare": "median", "body" : "0ifnull",
-                                                                 "cabin" : "auto"}, print_info = False)
+                                                                 "cabin" : "auto"})
 
         result = titanic_copy.count(["age", "fare", "embarked", "boat", "cabin", "body"])
 
@@ -187,34 +187,34 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
 
         assert titanic_copy["age"].count() == 997
-        titanic_copy["age"].fillna(method = "mean", by = ["pclass", "sex"], print_info = False)
+        titanic_copy["age"].fillna(method = "mean", by = ["pclass", "sex"])
         assert titanic_copy["age"].count() == 1234
 
         assert titanic_copy["embarked"].count() == 1232
-        titanic_copy["embarked"].fillna(method = "mode", print_info = False)
+        titanic_copy["embarked"].fillna(method = "mode")
         assert titanic_copy["embarked"].count() == 1234
 
         assert titanic_copy["fare"].count() == 1233
-        titanic_copy["fare"].fillna(method = "median", by = ["pclass", "sex"], print_info = False)
+        titanic_copy["fare"].fillna(method = "median", by = ["pclass", "sex"])
         assert titanic_copy["fare"].count() == 1234
 
         assert titanic_copy["cabin"].count() == 286
-        titanic_copy["cabin"].fillna(method = "bfill", order_by = ["pclass", "cabin"], print_info = False)
+        titanic_copy["cabin"].fillna(method = "bfill", order_by = ["pclass", "cabin"])
         assert titanic_copy["cabin"].count() == 1234
 
         assert titanic_copy["home.dest"].count() == 706
-        titanic_copy["home.dest"].fillna(method = "ffill", order_by = ["ticket"], print_info = False)
+        titanic_copy["home.dest"].fillna(method = "ffill", order_by = ["ticket"])
         assert titanic_copy["home.dest"].count() == 1234
 
         assert titanic_copy["body"].count() == 118
         assert titanic_copy["body"].mean() == pytest.approx(164.1440677)
-        titanic_copy["body"].fillna(method = "auto", print_info = False)
+        titanic_copy["body"].fillna(method = "auto")
         assert titanic_copy["body"].count() == 1234
         assert titanic_copy["body"].mean() == pytest.approx(164.1440677)
 
         assert titanic_copy["boat"].count() == 439
         assert titanic_copy["boat"].mode(dropna = True) == '13'
-        titanic_copy["boat"].fillna(print_info = False)
+        titanic_copy["boat"].fillna()
         assert titanic_copy["boat"].count() == 1234
         assert titanic_copy["boat"].mode() == '13'
 
@@ -248,22 +248,88 @@ class TestvDFPreprocessing:
         market_copy["Price"].fill_outliers(method = "mean", threshold = 1.5)
         assert market_copy["Price"].mean() == pytest.approx(0)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_normalize(self):
-        pass
+    def test_vDF_normalize(self, titanic_vd):
+        ### Testing vDataFrame.normalize
+        # MINMAX
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.normalize(method = "minmax")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_outliers(self):
-        pass
+        assert titanic_copy["fare"].mean() == pytest.approx(0.06629291024)
+        assert titanic_copy["age"].mean() == pytest.approx(0.3743248069)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_astype(self):
-        pass
+        # ZSCORE
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.normalize(columns = ["fare", "age"], method = "zscore")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_bool_to_int(self):
-        pass
+        assert titanic_copy["fare"].std() == 1
+        assert titanic_copy["age"].std() == 1
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_rename(self):
-        pass
+        # ROBUST_ZSCORE
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.normalize(["fare", "age"], method = "robust_zscore")
+
+        assert titanic_copy["fare"].std() == pytest.approx(5.143143267)
+        assert titanic_copy["age"].std() == pytest.approx(1.21705994)
+
+        ### Testing vDataFrame.normalize
+        titanic_copy = titanic_vd.copy()
+
+        # MINMAX
+        titanic_copy["fare"].normalize(method = "minmax")
+        assert titanic_copy["fare"].mean() == pytest.approx(0.06629291024)
+
+        # ZSCORE 
+        titanic_copy["age"].normalize(method = "zscore")
+        assert titanic_copy["age"].std() == 1
+
+        # ROBUST_ZSCORE
+        titanic_copy["body"].normalize(method = "robust_zscore")
+        assert titanic_copy["body"].std() == pytest.approx(0.727817135)
+
+        # using by parameter
+        titanic_copy["sibsp"].normalize(method = "minmax", by = ["sex"])
+        assert titanic_copy["sibsp"].mean() == pytest.approx(0.06300648298)
+
+    def test_vDF_outliers(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.outliers(columns = ["age", "fare"], name = "outliers",threshold = 2.5)
+        assert  titanic_copy["outliers"].sum() == 45
+
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.outliers(columns = ["age", "fare"], name = "outliers", robust = True)
+        assert  titanic_copy["outliers"].sum() == 260
+
+    def test_vDF_astype(self, titanic_vd):
+        ### Testing vDataFrame.astype
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.astype({"fare": "int", "cabin": "varchar(1)"})
+
+        assert titanic_copy["fare"].dtype() == 'int'
+        assert titanic_copy["cabin"].dtype() == 'varchar(1)'
+
+        ### Testing vDataFrame[].astype
+        # expected exception
+        with pytest.raises(errors.ConversionError) as exception_info:
+            titanic_copy["sex"].astype("int")
+        # checking the error message
+        assert exception_info.match("The vcolumn \"sex\" can not be converted to int")
+
+        titanic_copy["sex"].astype("varchar(10)")
+        assert titanic_copy["sex"].dtype() == 'varchar(10)'
+
+        titanic_copy["age"].astype("float")
+        assert titanic_copy["age"].dtype() == 'float'
+
+    @pytest.mark.xfail(reason = "doesn't convert bool to int")
+    def test_vDF_bool_to_int(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["survived"].astype("bool")
+        assert titanic_copy["survived"].dtype() == 'bool'
+
+        titanic_copy.bool_to_int()
+        assert titanic_copy["survived"].dtype() == 'int'
+
+    def test_vDF_rename(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["sex"].rename("gender")
+        assert '"gender"' in titanic_copy.get_columns()
