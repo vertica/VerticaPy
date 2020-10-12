@@ -157,9 +157,7 @@ cursor: DBcursor, optional
 
 
 # ---#
-def drop_model(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_model(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input model.
@@ -170,18 +168,12 @@ name: str
 	Model name.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-print_info: bool, optional
-	If set to True, displays the result of the query.
 raise_error: bool, optional
 	If the model couldn't be dropped, raises the entire error instead of
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -194,8 +186,7 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The model {} was successfully dropped.".format(name))
+        return "The model {} was successfully dropped.".format(name)
     except:
         try:
             sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
@@ -208,9 +199,9 @@ raise_error: bool, optional
         if result:
             model_type = result[0]
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop_table(name, cursor, print_info=False)
+                drop_table(name, cursor)
             elif model_type in ("CountVectorizer"):
-                drop_text_index(name, cursor, print_info=False)
+                drop_text_index(name, cursor)
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
@@ -221,27 +212,21 @@ raise_error: bool, optional
             )
             cursor.execute(sql)
             cursor.execute("COMMIT;")
-            if print_info:
-                print("The model {} was successfully dropped.".format(name))
             if conn:
                 conn.close()
+            return "The model {} was successfully dropped.".format(name)
         else:
             if conn:
                 conn.close()
             if raise_error:
                 raise
-            elif print_info:
-                print(
-                    "\u26A0 Warning: The model {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                        name
-                    )
-                )
+            return "\u26A0 Warning: The model {} doesn't exist or can not be dropped ! Use parameter: raise_error = True to get more information.".format(
+                name
+            )
 
 
 # ---#
-def drop_table(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_table(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input table.
@@ -251,19 +236,13 @@ Parameters
 name: str
 	Table name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to True, displays the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the table couldn't be dropped, raises the entire error instead of
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -276,25 +255,19 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The table {} was successfully dropped.".format(name))
+        return "The table {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
-def drop_text_index(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_text_index(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input text index.
@@ -304,19 +277,13 @@ Parameters
 name: str
 	Text index name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to true, displays the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the text index couldn't be dropped, raises the entire error instead 
 	of displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -329,25 +296,19 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The text index {} was successfully dropped.".format(name))
+        return "The text index {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
-def drop_view(
-    name: str, cursor=None, print_info: bool = True, raise_error: bool = False
-):
+def drop_view(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input view.
@@ -357,19 +318,13 @@ Parameters
 name: str
 	View name.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
-print_info: bool, optional
-	If set to true, display the result of the query.
+	Vertica DB cursor.
 raise_error: bool, optional
 	If the view couldn't be dropped, raises the entire error instead of 
 	displaying a warning.
 	"""
     check_types(
-        [
-            ("name", name, [str],),
-            ("print_info", print_info, [bool],),
-            ("raise_error", raise_error, [bool],),
-        ]
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
     if not (cursor):
         conn = read_auto_connect()
@@ -382,19 +337,15 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        if print_info:
-            print("The view {} was successfully dropped.".format(name))
+        return "The view {} was successfully dropped.".format(name)
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        elif print_info:
-            print(
-                "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                    name
-                )
-            )
+        return "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+            name
+        )
 
 
 # ---#
@@ -2031,6 +1982,7 @@ def vdf_from_relation(
     saving: list = [],
     query_on: bool = False,
     time_on: bool = False,
+    display_params: dict = {},
 ):
     """
 ---------------------------------------------------------------------------
@@ -2070,6 +2022,8 @@ query_on: bool, optional
 	If set to True, all the query will be printed.
 time_on: bool, optional
 	If set to True, all the query elapsed time will be printed.
+display_params: dict, optional
+    Parameters used to display the output vDataFrame.
 
 Returns
 -------
@@ -2086,6 +2040,7 @@ vDataFrame
             ("saving", saving, [list],),
             ("query_on", query_on, [bool],),
             ("time_on", time_on, [bool],),
+            ("display_params", display_params, [dict],),
         ]
     )
     name = gen_name([name])
@@ -2113,6 +2068,8 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
+    for elem in display_params:
+        vdf._VERTICAPY_VARIABLES_["display"][elem] = display_params[elem]
     try:
         cursor.execute(
             "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_{}_TEST;".format(name)
@@ -2286,7 +2243,7 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 1:
         message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic(db_cursor)\n```"
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>sql_on_off</b> method:\n```python\nvdf.sql_on_off()\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>sql_on_off</b> method:\n```python\nvdf.sql_on_off()\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
@@ -2297,7 +2254,7 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 5:
         message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
     elif response == 6:
-        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n\%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n\%\%sql\nSELECT * FROM public.titanic\n```"
+        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n%%sql\nSELECT * FROM public.titanic\n```"
     elif response == -1:
         message = "Thank you for using the VERTICAPY help."
     elif response == 666:

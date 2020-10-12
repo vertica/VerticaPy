@@ -11,8 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
+import pytest, datetime
+from verticapy import vDataFrame, drop_table
+import matplotlib.pyplot as plt
 
 
 @pytest.fixture(scope="module")
@@ -20,42 +21,147 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
+    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.titanic", cursor=base.cursor,
+    )
+
+
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
+    yield amazon
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
+
+@pytest.fixture(scope="module")
+def iris_vd(base):
+    from verticapy.learn.datasets import load_iris
+
+    iris = load_iris(cursor=base.cursor)
+    iris.set_display_parameters(print_info=False)
+    yield iris
+    drop_table(
+        name="public.iris", cursor=base.cursor,
+    )
 
 
 class TestvDFPlot:
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_bar(self):
-        pass
+    def test_vDF_bar(self, titanic_vd):
+        # testing vDataFrame[].bar
+        # auto
+        result = titanic_vd["fare"].bar()
+        assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
+            0.7965964343598055
+        )
+        assert result.get_default_bbox_extra_artists()[1].get_width() == pytest.approx(
+            0.12236628849270664
+        )
+        assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_boxplot(self):
-        pass
+        # method=sum of=survived and bins=5
+        result2 = titanic_vd["fare"].bar(method="sum", of="survived", bins=5)
+        assert result2.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
+            391
+        )
+        assert result2.get_default_bbox_extra_artists()[1].get_width() == pytest.approx(
+            34
+        )
+        assert result2.get_yticks()[1] == pytest.approx(102.46583999999999)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_bubble(self):
-        pass
+        # testing vDataFrame.bar
+        # auto & stacked
+        for hist_type in ["auto", "stacked"]:
+            result3 = titanic_vd.bar(
+                columns=["pclass", "survived"],
+                method="50%",
+                of="fare",
+                hist_type=hist_type,
+            )
+            assert result3.get_default_bbox_extra_artists()[
+                0
+            ].get_width() == pytest.approx(50.0)
+            assert result3.get_default_bbox_extra_artists()[
+                3
+            ].get_width() == pytest.approx(77.9583)
+        # fully_stacked
+        result4 = titanic_vd.bar(
+            columns=["pclass", "survived"], hist_type="fully_stacked"
+        )
+        assert result4.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
+            0.38782051282051283
+        )
+        assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
+            0.6121794871794872
+        )
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_density(self):
-        pass
+    def test_vDF_boxplot(self, titanic_vd):
+        # testing vDataFrame[].boxplot
+        result = titanic_vd["age"].boxplot()
+        assert result.get_default_bbox_extra_artists()[0].get_data()[0][
+            0
+        ] == pytest.approx(16.07647847)
+        assert result.get_default_bbox_extra_artists()[1].get_data()[0][
+            0
+        ] == pytest.approx(36.25)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_donut(self):
-        pass
+        # testing vDataFrame.boxplot
+        result = titanic_vd.boxplot(columns=["age", "fare"])
+        assert result.get_default_bbox_extra_artists()[6].get_data()[1][
+            0
+        ] == pytest.approx(31.3875)
+        assert result.get_default_bbox_extra_artists()[6].get_data()[1][
+            1
+        ] == pytest.approx(512.3292)
+        plt.close()
+
+    def test_vDF_bubble(self, iris_vd):
+        # testing vDataFrame.bubble
+        result = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm")
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
+        # testing vDataFrame.scatter using parameter catcol
+        result2 = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", catcol="Species")
+        result2 = result2.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result2.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
+        plt.close()
+
+    def test_vDF_density(self, iris_vd):
+        for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
+            result = iris_vd["PetalLengthCm"].density(kernel=kernel)
+            assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
+        plt.close()
+
+    def test_vDF_donut(self, titanic_vd):
+        result = titanic_vd["sex"].donut(method="sum", of="survived")
+        assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
+        assert int(
+            result.get_default_bbox_extra_artists()[7].get_text()
+        ) == pytest.approx(302)
+        plt.close()
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_hchart(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_hexbin(self):
-        pass
+    def test_vDF_hexbin(self, titanic_vd):
+        result = titanic_vd.hexbin(columns = ["age", "fare"], method="avg", of="survived")
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(78.0082500756865, 1e-2)
+        assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(512.3292, 1e-2)
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_vDF_hist(self, titanic_vd):
         # testing vDataFrame[].hist
+        # auto
         result = titanic_vd["age"].hist()
         assert result.get_default_bbox_extra_artists()[0].get_height() == pytest.approx(
             0.050243111831442464
@@ -63,69 +169,103 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[1].get_height() == pytest.approx(
             0.029983792544570502
         )
-        assert result.get_default_bbox_extra_artists()[2].get_height() == pytest.approx(
-            0.13452188006482982
-        )
-        assert result.get_default_bbox_extra_artists()[3].get_height() == pytest.approx(
-            0.1952998379254457
-        )
-        assert result.get_default_bbox_extra_artists()[4].get_height() == pytest.approx(
-            0.17017828200972449
-        )
-        assert result.get_default_bbox_extra_artists()[5].get_height() == pytest.approx(
-            0.08184764991896272
-        )
-        assert result.get_default_bbox_extra_artists()[6].get_height() == pytest.approx(
-            0.06888168557536467
-        )
-        assert result.get_default_bbox_extra_artists()[7].get_height() == pytest.approx(
-            0.03727714748784441
-        )
-        assert result.get_default_bbox_extra_artists()[8].get_height() == pytest.approx(
-            0.031604538087520256
-        )
-        assert result.get_default_bbox_extra_artists()[9].get_height() == pytest.approx(
-            0.005672609400324149
-        )
-        assert result.get_default_bbox_extra_artists()[
-            10
-        ].get_height() == pytest.approx(0.0016207455429497568)
-        assert result.get_default_bbox_extra_artists()[
-            11
-        ].get_height() == pytest.approx(0.0008103727714748784)
-        assert result.get_xticks()[0] == pytest.approx(0.0)
         assert result.get_xticks()[1] == pytest.approx(7.24272727)
-        assert result.get_xticks()[2] == pytest.approx(7.24272727 * 2)
-        assert result.get_xticks()[3] == pytest.approx(7.24272727 * 3)
-        assert result.get_xticks()[4] == pytest.approx(7.24272727 * 4)
-        assert result.get_xticks()[5] == pytest.approx(7.24272727 * 5)
-        assert result.get_xticks()[6] == pytest.approx(7.24272727 * 6)
-        assert result.get_xticks()[7] == pytest.approx(7.24272727 * 7)
-        assert result.get_xticks()[8] == pytest.approx(7.24272727 * 8)
-        assert result.get_xticks()[9] == pytest.approx(7.24272727 * 9)
-        assert result.get_xticks()[10] == pytest.approx(7.24272727 * 10)
-        assert result.get_xticks()[11] == pytest.approx(7.24272727 * 11)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_pie(self):
-        pass
+        # method=avg of=survived and h=15
+        result2 = titanic_vd["age"].hist(method="avg", of="survived", h=15)
+        assert result2.get_default_bbox_extra_artists()[
+            0
+        ].get_height() == pytest.approx(0.534653465346535)
+        assert result2.get_default_bbox_extra_artists()[
+            1
+        ].get_height() == pytest.approx(0.354838709677419)
+        assert result2.get_xticks()[1] == pytest.approx(15)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_(self):
-        pass
+        # testing vDataFrame.hist
+        # auto & stacked
+        for hist_type in ["auto", "stacked"]:
+            result3 = titanic_vd.hist(
+                columns=["pclass", "sex"],
+                method="avg",
+                of="survived",
+                hist_type=hist_type,
+            )
+            assert result3.get_default_bbox_extra_artists()[
+                0
+            ].get_height() == pytest.approx(0.964285714285714)
+            assert result3.get_default_bbox_extra_artists()[
+                3
+            ].get_height() == pytest.approx(0.325581395348837)
+        # multi
+        result4 = titanic_vd.hist(columns=["fare", "age"], hist_type="multi")
+        assert result4.get_default_bbox_extra_artists()[
+            0
+        ].get_height() == pytest.approx(0.07374392220421394)
+        assert result4.get_default_bbox_extra_artists()[
+            1
+        ].get_height() == pytest.approx(0.4327390599675851)
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_pivot_table(self):
-        pass
+    def test_vDF_pie(self, titanic_vd):
+        result = titanic_vd["pclass"].pie(method="avg", of="survived")
+        assert int(result.get_default_bbox_extra_artists()[6].get_text()) == 3
+        assert float(
+            result.get_default_bbox_extra_artists()[7].get_text()
+        ) == pytest.approx(0.227753)
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_plot(self):
-        pass
+    def test_vDF_pivot_table(self, titanic_vd):
+        result = titanic_vd.pivot_table(
+            columns=["age", "pclass"], method="avg", of="survived"
+        )
+        assert result[1][0] == pytest.approx(0.75)
+        assert result[1][1] == pytest.approx(1.0)
+        assert result[1][2] == pytest.approx(0.782608695652174)
+        assert result[2][0] == pytest.approx(1.0)
+        assert result[2][1] == pytest.approx(0.875)
+        assert result[2][2] == pytest.approx(0.375)
+        assert len(result[1]) == 12
+        plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_scatter(self):
-        pass
+    def test_vDF_plot(self, amazon_vd):
+        # testing vDataFrame[].plot
+        result = amazon_vd["number"].plot(ts="date", by="state")
+        result = result.get_default_bbox_extra_artists()[0].get_data()
+        assert len(result[0]) == len(result[1]) == pytest.approx(239, 1e-2)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_scatter_matrix(self):
-        pass
+        # testing vDataFrame.plot
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result = result.plot(ts="date", columns=["number"])
+        result = result.get_default_bbox_extra_artists()[0].get_data()
+        assert result[0][0] == datetime.date(1998, 1, 1)
+        assert result[0][-1] == datetime.date(2017, 11, 1)
+        assert result[1][0] == pytest.approx(0.0)
+        assert result[1][-1] == pytest.approx(651.2962963)
+        plt.close()
+
+    def test_vDF_scatter(self, iris_vd):
+        # testing vDataFrame.scatter
+        result = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"])
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
+        result2 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"])
+        result2 = result2.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result2.get_offsets().data]) == 6.9
+        assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
+
+        # testing vDataFrame.scatter using parameter catcol
+        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"], catcol="Species")
+        result3 = result3.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
+        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species")
+        result3 = result3.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
+        plt.close()
+
+    def test_vDF_scatter_matrix(self, iris_vd):
+        result = iris_vd.scatter_matrix()
+        assert len(result) == 4
+        plt.close()

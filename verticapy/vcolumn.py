@@ -1256,12 +1256,10 @@ Attributes
                     drop_model(
                         temp_information[0],
                         cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                        print_info=False,
                     )
                     drop_view(
                         temp_information[1],
                         cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                        print_info=False,
                     )
                 except:
                     pass
@@ -1570,11 +1568,7 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self,
-        threshold: float = 4.0,
-        use_threshold: bool = True,
-        alpha: float = 0.05,
-        print_info: bool = True,
+        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1591,8 +1585,6 @@ Attributes
  	alpha: float, optional
  		Number representing the outliers threshold. Values lesser than 
  		quantile(alpha) or greater than quantile(1-alpha) will be dropped.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
  	Returns
  	-------
@@ -1610,7 +1602,6 @@ Attributes
                 ("alpha", alpha, [int, float],),
                 ("use_threshold", use_threshold, [bool],),
                 ("threshold", threshold, [int, float],),
-                ("print_info", print_info, [bool],),
             ]
         )
         if use_threshold:
@@ -1619,7 +1610,6 @@ Attributes
                 expr="ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
                 ),
-                print_info=print_info,
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1629,20 +1619,14 @@ Attributes
             )
             self.parent.filter(
                 expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
-                print_info=print_info,
             )
         return self.parent
 
     # ---#
-    def dropna(self, print_info: bool = True):
+    def dropna(self):
         """
 	---------------------------------------------------------------------------
 	Filters the vDataFrame where the vcolumn is missing.
-
-	Parameters
- 	----------
- 	print_info: bool, optional
- 		If set to True, it will display the result.
 
  	Returns
  	-------
@@ -1653,8 +1637,7 @@ Attributes
 	--------
 	vDataFrame.filter: Filters the data using the input expression.
 		"""
-        check_types([("print_info", print_info, [bool],)])
-        self.parent.filter("{} IS NOT NULL".format(self.alias), print_info=print_info)
+        self.parent.filter("{} IS NOT NULL".format(self.alias))
         return self.parent
 
     # ---#
@@ -1774,7 +1757,6 @@ Attributes
         expr: str = "",
         by: list = [],
         order_by: list = [],
-        print_info: bool = True,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1799,8 +1781,6 @@ Attributes
  		vcolumns used in the partition.
  	order_by: list, optional
  		List of the vcolumns to use to sort the data when using TS methods.
- 	print_info: bool, optional
- 		If set to True, displays all the filling information.
 
  	Returns
  	-------
@@ -1964,7 +1944,7 @@ Attributes
                     )
             except:
                 pass
-            if print_info:
+            if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
                 print("{} element(s) was/were filled".format(int(total)))
             self.parent.__add_to_history__(
                 "[Fillna]: {} missing value(s) of the vcolumn {} was/were filled.".format(
@@ -1972,7 +1952,7 @@ Attributes
                 )
             )
         else:
-            if print_info:
+            if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
                 print("Nothing was filled")
             self.transformations = [elem for elem in copy_trans]
             for elem in sauv:
@@ -2214,19 +2194,41 @@ Attributes
             self.parent._VERTICAPY_VARIABLES_["time_on"],
             "Reads {}.".format(self.alias),
         )
-        tail = to_tablesample(
-            "SELECT {} AS {} FROM {} LIMIT {} OFFSET {}".format(
-                convert_special_type(self.category(), False, self.alias),
-                self.alias,
-                self.parent.__genSQL__(),
-                limit,
-                offset,
-            ),
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
-            title=title,
-        )
+        max_pos = 0
+        columns_tmp = [elem for elem in self.parent.get_columns()]
+        for column in columns_tmp:
+            max_pos = max(max_pos, len(self.parent[column].transformations) - 1)
+        if max_pos in self.parent._VERTICAPY_VARIABLES_["order_by"]:
+            order_by = self.parent._VERTICAPY_VARIABLES_["order_by"][max_pos]
+        try:
+            tail = to_tablesample(
+                "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
+                    convert_special_type(self.category(), False, self.alias),
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    order_by,
+                    limit,
+                    offset,
+                ),
+                self.parent._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
+        except:
+            tail = to_tablesample(
+                "SELECT {} AS {} FROM {} LIMIT {} OFFSET {}".format(
+                    convert_special_type(self.category(), False, self.alias),
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    limit,
+                    offset,
+                ),
+                self.parent._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
         tail.dtype[self.alias] = self.ctype()

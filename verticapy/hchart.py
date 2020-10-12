@@ -49,10 +49,13 @@
 # Modules
 #
 # Standard Python Modules
-import collections
+from collections.abc import Iterable
 
 # High Chart
-from highcharts import Highchart, Highstock
+try:
+    from highcharts import Highchart, Highstock
+except:
+    raise ImportError("The highcharts module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module.")
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -106,7 +109,7 @@ def hchart_from_vdf(
         if kind == "hist":
             kind = "column"
         check_types([("y", y, [str, list],)])
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         if isinstance(y, str):
@@ -128,7 +131,7 @@ def hchart_from_vdf(
     ):
         if not (y):
             y = "COUNT(*)"
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         unique = vdf[x].nunique()
@@ -179,7 +182,7 @@ def hchart_from_vdf(
             if not (z):
                 z = "COUNT(*)"
             check_types([("y", y, [str, list],)])
-            if isinstance(x, collections.Iterable):
+            if isinstance(x, Iterable) and not (isinstance(x, str)):
                 x = x[0]
             columns_check([x], vdf)
             if isinstance(y, str):
@@ -224,7 +227,7 @@ def hchart_from_vdf(
         )
     elif kind in ("area", "area_ts", "line", "spline"):
         check_types([("y", y, [str, list],)])
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
@@ -297,7 +300,7 @@ def hchart_from_vdf(
         else:
             columns_check(y, vdf)
             y = vdf_columns_names(y, vdf)[0]
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z) and not (c) and (kind == "scatter"):
@@ -366,7 +369,7 @@ def hchart_from_vdf(
             )
     elif kind == "area_range":
         check_types([("y", y, [str, list],)])
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
@@ -386,7 +389,7 @@ def hchart_from_vdf(
         check_types([("y", y, [str, list],)])
         if isinstance(y, str):
             y = [y]
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         # x
@@ -424,7 +427,7 @@ def hchart_from_vdf(
             limit,
         )
     elif kind == "candlestick":
-        if isinstance(x, collections.Iterable):
+        if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
         if aggregate:

@@ -21,12 +21,14 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(name="public.amazon", cursor=base.cursor, print_info=False)
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
 
 
 class TestvDFStatsTools:
-    @pytest.mark.xfail(reason="The results are not correct")
     def test_adfuller(self, amazon_vd):
         # testing without trend
         result = adfuller(
@@ -79,7 +81,7 @@ class TestvDFStatsTools:
             40053.87251600001, 1e-2
         )
 
-    @pytest.mark.xfail(reason="It fails")
+    @pytest.mark.xfail(reason = "ZeroDivisionError: float division by zero")
     def test_mkt(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result = mkt(result, column="number", ts="date")

@@ -49,7 +49,8 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, collections, sys
+import random, os, math, shutil, re, sys
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -182,7 +183,7 @@ def check_types(types_list: list = [], vdf: list = []):
             if not (isinstance(elem[1], tuple(elem[2]))):
                 if (
                     (list in elem[2])
-                    and isinstance(elem[1], collections.Iterable)
+                    and isinstance(elem[1], Iterable)
                     and not (isinstance(elem[1], (dict, str)))
                 ):
                     pass
