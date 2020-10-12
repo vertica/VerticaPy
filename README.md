@@ -38,9 +38,13 @@ Main Advantages:
 ## Installation
 To install <b>VerticaPy</b> with pip:
 ```shell
+# Latest release version
 root@ubuntu:~$ pip3 install verticapy
+
+# Latest commit on master branch
+root@ubuntu:~$ pip3 install git+https://github.com/vertica/verticapy.git@master
 ```
-You can also clone the VerticaPy repository and then run the installation script:
+To install <b>VerticaPy</b> from source, run the following command from the root directory:
 ```shell
 root@ubuntu:~$ python3 setup.py install
 ```

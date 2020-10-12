@@ -41,7 +41,6 @@ def amazon_vd(base):
 
 
 class TestvDFCorrelation:
-    @pytest.mark.xfail(reason="The results are not stable")
     def test_vDF_acf(self, amazon_vd):
         # spearmann method
         result1 = amazon_vd.acf(
@@ -251,7 +250,6 @@ class TestvDFCorrelation:
         assert result_f["survived"][1] == pytest.approx(-0.297583583247234, 1e-2)
         assert result_f["survived"][2] == pytest.approx(0.231685181342251, 1e-2)
 
-    @pytest.mark.xfail(reason="The results are not stable")
     def test_vDF_pacf(self, amazon_vd):
         # testing vDataFrame.pacf
         result = amazon_vd.pacf(
