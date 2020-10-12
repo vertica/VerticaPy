@@ -166,6 +166,7 @@ vcolumns : vcolumn
             "rows": 100,
             "columns": 50,
             "percent_bar": "auto",
+            "print_info": True,
         }
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
@@ -1429,6 +1430,9 @@ vcolumns : vcolumn
         saving = self._VERTICAPY_VARIABLES_["saving"]
         query_on = self._VERTICAPY_VARIABLES_["query_on"]
         time_on = self._VERTICAPY_VARIABLES_["time_on"]
+        display_params = {}
+        for elem in self._VERTICAPY_VARIABLES_["display"]:
+            display_params[elem] = self._VERTICAPY_VARIABLES_["display"][elem]
         return vdf_from_relation(
             table,
             func,
@@ -1440,6 +1444,7 @@ vcolumns : vcolumn
             saving,
             query_on,
             time_on,
+            display_params,
         )
 
     #
@@ -2769,7 +2774,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: str, print_info: bool = True):
+    def at_time(self, ts: str, time: str):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -2782,8 +2787,6 @@ vcolumns : vcolumn
     time: str
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2798,16 +2801,10 @@ vcolumns : vcolumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         check_types(
-            [
-                ("ts", ts, [str],),
-                ("time", time, [str],),
-                ("print_info", print_info, [bool]),
-            ]
+            [("ts", ts, [str],), ("time", time, [str],),]
         )
         columns_check([ts], self)
-        self.filter(
-            "{}::time = '{}'".format(str_column(ts), time), print_info=print_info
-        )
+        self.filter("{}::time = '{}'".format(str_column(ts), time),)
         return self
 
     # ---#
@@ -2935,7 +2932,7 @@ vcolumns : vcolumn
 
     # ---#
     def between_time(
-        self, ts: str, start_time: str, end_time: str, print_info: bool = True
+        self, ts: str, start_time: str, end_time: str,
     ):
         """
     ---------------------------------------------------------------------------
@@ -2952,8 +2949,6 @@ vcolumns : vcolumn
     end_time: str
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -2972,7 +2967,6 @@ vcolumns : vcolumn
                 ("ts", ts, [str],),
                 ("start_time", start_time, [str],),
                 ("end_time", end_time, [str],),
-                ("print_info", print_info, [bool],),
             ]
         )
         columns_check([ts], self)
@@ -2980,7 +2974,6 @@ vcolumns : vcolumn
             "{}::time BETWEEN '{}' AND '{}'".format(
                 str_column(ts), start_time, end_time
             ),
-            print_info=print_info,
         )
         return self
 
@@ -3155,6 +3148,10 @@ vcolumns : vcolumn
         The copy of the vDataFrame.
         """
         copy_vDataFrame = vDataFrame("", empty=True)
+        for elem in copy_vDataFrame._VERTICAPY_VARIABLES_["display"]:
+            copy_vDataFrame._VERTICAPY_VARIABLES_["display"][
+                elem
+            ] = self._VERTICAPY_VARIABLES_["display"][elem]
         copy_vDataFrame._VERTICAPY_VARIABLES_["dsn"] = self._VERTICAPY_VARIABLES_["dsn"]
         copy_vDataFrame._VERTICAPY_VARIABLES_[
             "input_relation"
@@ -4048,7 +4045,9 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def drop_duplicates(self, columns: list = [], print_info: bool = True):
+    def drop_duplicates(
+        self, columns: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the duplicated using a partition by the input vcolumns.
@@ -4063,8 +4062,6 @@ vcolumns : vcolumn
     ----------
     columns: list, optional
         List of the vcolumns names. If empty, all the vcolumns will be selected.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -4072,7 +4069,7 @@ vcolumns : vcolumn
         self
         """
         check_types(
-            [("columns", columns, [list],), ("print_info", print_info, [bool],)]
+            [("columns", columns, [list],),]
         )
         columns_check(columns, self)
         count = self.duplicated(columns=columns, count=True)
@@ -4091,14 +4088,16 @@ vcolumns : vcolumn
                 name=name,
                 expr="ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)),
             )
-            self.filter(expr='"{}" = 1'.format(name), print_info=print_info)
+            self.filter(expr='"{}" = 1'.format(name),)
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
-        elif print_info:
+        elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
             print("\u26A0 Warning : No duplicates detected")
         return self
 
     # ---#
-    def dropna(self, columns: list = [], print_info: bool = True):
+    def dropna(
+        self, columns: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame where the input vcolumns are missing.
@@ -4107,8 +4106,6 @@ vcolumns : vcolumn
     ----------
     columns: list, optional
         List of the vcolumns names. If empty, all the vcolumns will be selected.
-    print_info: bool, optional
-        If set to True, it will display the result.
 
     Returns
     -------
@@ -4120,7 +4117,7 @@ vcolumns : vcolumn
     vDataFrame.filter: Filters the data using the input expression.
         """
         check_types(
-            [("columns", columns, [list],), ("print_info", print_info, [bool],),]
+            [("columns", columns, [list],),]
         )
         columns_check(columns, self)
         columns = (
@@ -4128,8 +4125,8 @@ vcolumns : vcolumn
         )
         total = self.shape()[0]
         for column in columns:
-            self[column].dropna(print_info=False)
-        if print_info:
+            self[column].dropna()
+        if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
             total -= self.shape()[0]
             if total == 0:
                 print("\u26A0 Warning : Nothing was dropped")
@@ -4462,11 +4459,7 @@ vcolumns : vcolumn
 
     # ---#
     def fillna(
-        self,
-        val: dict = {},
-        method: dict = {},
-        numeric_only: bool = False,
-        print_info: bool = False,
+        self, val: dict = {}, method: dict = {}, numeric_only: bool = False,
     ):
         """
     ---------------------------------------------------------------------------
@@ -4492,8 +4485,6 @@ vcolumns : vcolumn
         to True then all the numerical vcolumns will be imputed by their average.
         If set to False, all the categorical vcolumns will be also imputed by their
         mode.
-    print_info: bool, optional
-        If set to True, the information of the imputations will be displayed.
 
     Returns
     -------
@@ -4510,7 +4501,6 @@ vcolumns : vcolumn
                 ("val", val, [dict],),
                 ("method", method, [dict],),
                 ("numeric_only", numeric_only, [bool],),
-                ("print_info", print_info, [bool],),
             ]
         )
         columns_check([elem for elem in val] + [elem for elem in method], self)
@@ -4519,22 +4509,22 @@ vcolumns : vcolumn
             for column in cols:
                 if numeric_only:
                     if self[column].isnum():
-                        self[column].fillna(method="auto", print_info=print_info)
+                        self[column].fillna(method="auto",)
                 else:
-                    self[column].fillna(method="auto", print_info=print_info)
+                    self[column].fillna(method="auto",)
         else:
             for column in val:
-                self[vdf_columns_names([column], self)[0]].fillna(
-                    val=val[column], print_info=print_info
-                )
+                self[vdf_columns_names([column], self)[0]].fillna(val=val[column],)
             for column in method:
                 self[vdf_columns_names([column], self)[0]].fillna(
-                    method=method[column], print_info=print_info
+                    method=method[column],
                 )
         return self
 
     # ---#
-    def filter(self, expr: str = "", conditions: list = [], print_info: bool = True):
+    def filter(
+        self, expr: str = "", conditions: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame using the input expressions.
@@ -4550,8 +4540,6 @@ vcolumns : vcolumn
         List of expressions. For example to keep only the records where the 
         vcolumn 'column' is greater than 5 and lesser than 10 you can write 
         ['"column" > 5', '"column" < 10'].
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -4568,28 +4556,23 @@ vcolumns : vcolumn
         conditions.
         """
         check_types(
-            [
-                ("expr", expr, [str],),
-                ("conditions", conditions, [list],),
-                ("print_info", print_info, [bool],),
-            ]
+            [("expr", expr, [str],), ("conditions", conditions, [list],),]
         )
         count = self.shape()[0]
         if not (expr):
             for condition in conditions:
-                self.filter(expr=condition, print_info=False)
+                self.filter(expr=condition,)
             count -= self.shape()[0]
             if count > 0:
-                if print_info:
+                if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
                     print("{} element(s) was/were filtered".format(count))
                 self.__add_to_history__(
                     "[Filter]: {} element(s) was/were filtered using the filter '{}'".format(
                         count, conditions
                     )
                 )
-            else:
-                if print_info:
-                    print("Nothing was filtered.")
+            elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                print("Nothing was filtered.")
         else:
             max_pos = 0
             columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
@@ -4605,7 +4588,7 @@ vcolumns : vcolumn
                 count -= new_count
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
-                if print_info:
+                if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
                     print(
                         "\u26A0 Warning : The expression '{}' is incorrect.\nNothing was filtered.".format(
                             expr
@@ -4615,7 +4598,7 @@ vcolumns : vcolumn
             if count > 0:
                 self.__update_catalog__(erase=True)
                 self._VERTICAPY_VARIABLES_["count"] = new_count
-                if print_info:
+                if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
                     print("{} element(s) was/were filtered".format(count))
                 self.__add_to_history__(
                     "[Filter]: {} element(s) was/were filtered using the filter '{}'".format(
@@ -4624,12 +4607,14 @@ vcolumns : vcolumn
                 )
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
-                if print_info:
+                if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
                     print("\u26A0 Warning : Nothing was filtered.")
         return self
 
     # ---#
-    def first(self, ts: str, offset: str, print_info: bool = True):
+    def first(
+        self, ts: str, offset: str,
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the first records.
@@ -4642,8 +4627,6 @@ vcolumns : vcolumn
     offset: str
         Interval offset. For example, to filter and keep only the first 6 months of
         records, offset should be set to '6 months'.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -4658,11 +4641,7 @@ vcolumns : vcolumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         check_types(
-            [
-                ("ts", ts, [str],),
-                ("offset", offset, [str],),
-                ("print_info", print_info, [bool],),
-            ]
+            [("ts", ts, [str],), ("offset", offset, [str],),]
         )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
@@ -4670,7 +4649,7 @@ vcolumns : vcolumn
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         first_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} <= '{}'".format(ts, first_date), print_info=print_info)
+        self.filter("{} <= '{}'".format(ts, first_date),)
         return self
 
     # ---#
@@ -5304,15 +5283,32 @@ vcolumns : vcolumn
                 limit, offset
             ),
         )
-        result = to_tablesample(
-            "SELECT {} FROM {} LIMIT {} OFFSET {}".format(
-                ", ".join(all_columns), self.__genSQL__(), limit, offset
-            ),
-            self._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
-            title=title,
-        )
+        max_pos = 0
+        columns_tmp = [elem for elem in self.get_columns()]
+        for column in columns_tmp:
+            max_pos = max(max_pos, len(self[column].transformations) - 1)
+        if max_pos in self._VERTICAPY_VARIABLES_["order_by"]:
+            order_by = self._VERTICAPY_VARIABLES_["order_by"][max_pos]
+        try:
+            result = to_tablesample(
+                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
+                    ", ".join(all_columns), self.__genSQL__(), order_by, limit, offset
+                ),
+                self._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
+        except:
+            result = to_tablesample(
+                "SELECT {} FROM {} LIMIT {} OFFSET {}".format(
+                    ", ".join(all_columns), self.__genSQL__(), limit, offset
+                ),
+                self._VERTICAPY_VARIABLES_["cursor"],
+                query_on=query_on,
+                time_on=time_on,
+                title=title,
+            )
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
@@ -5566,7 +5562,9 @@ vcolumns : vcolumn
 
     kurt = kurtosis
     # ---#
-    def last(self, ts: str, offset: str, print_info: bool = True):
+    def last(
+        self, ts: str, offset: str,
+    ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the last records.
@@ -5579,8 +5577,6 @@ vcolumns : vcolumn
     offset: str
         Interval offset. For example, to filter and keep only the last 6 months of
         records, offset should be set to '6 months'.
-    print_info: bool, optional
-        If set to True, the result of the filtering will be displayed.
 
     Returns
     -------
@@ -5595,11 +5591,7 @@ vcolumns : vcolumn
     vDataFrame.filter       : Filters the data using the input expression.
         """
         check_types(
-            [
-                ("ts", ts, [str],),
-                ("offset", offset, [str],),
-                ("print_info", print_info, [bool],),
-            ]
+            [("ts", ts, [str],), ("offset", offset, [str],),]
         )
         ts = vdf_columns_names([ts], self)[0]
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
@@ -5607,7 +5599,7 @@ vcolumns : vcolumn
         )
         self._VERTICAPY_VARIABLES_["cursor"].execute(query)
         last_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        self.filter("{} >= '{}'".format(ts, last_date), print_info=print_info)
+        self.filter("{} >= '{}'".format(ts, last_date),)
         return self
 
     # ---#
@@ -6120,21 +6112,18 @@ vcolumns : vcolumn
                             schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
                         ),
                         cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                        print_info=False,
                     )
                     drop_model(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
                             schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
                         ),
                         cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                        print_info=False,
                     )
                     drop_view(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
                             schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
                         ),
                         cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                        print_info=False,
                     )
                 except:
                     pass
@@ -7098,7 +7087,7 @@ vcolumns : vcolumn
             raise ParameterError("Parameter 'x' must be between 0 and 1")
         name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
         self.eval(name, "RANDOM()")
-        self.filter("{} < {}".format(name, x), print_info=False)
+        self.filter("{} < {}".format(name, x),)
         self[name].drop()
         return self
 
@@ -7157,6 +7146,9 @@ vcolumns : vcolumn
         )
         save += "\nvdf_save._VERTICAPY_VARIABLES_[\"schema_writing\"] = '{}'".format(
             self._VERTICAPY_VARIABLES_["schema_writing"].replace("'", "\\'")
+        )
+        save += '\nvdf_save._VERTICAPY_VARIABLES_["display"] = {}'.format(
+            self._VERTICAPY_VARIABLES_["display"]
         )
         columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in columns:
@@ -7501,7 +7493,7 @@ vcolumns : vcolumn
 
     # ---#
     def set_display_parameters(
-        self, rows: int = -1, columns: int = -1, percent_bar="auto"
+        self, rows: int = -1, columns: int = -1, percent_bar="auto", print_info=None
     ):
         """
     ---------------------------------------------------------------------------
@@ -7518,6 +7510,9 @@ vcolumns : vcolumn
     percent_bar: bool/"auto"
         If set to True or 'auto' (and the percent of missing values are already 
         computed), displays the percent of non-missing values.
+    print_info: bool
+        If set to True, information will be printed each time the vDataFrame is 
+        modified.
 
     Returns
     -------
@@ -7535,6 +7530,8 @@ vcolumns : vcolumn
             self._VERTICAPY_VARIABLES_["display"]["rows"] = int(rows)
         if columns > 0:
             self._VERTICAPY_VARIABLES_["display"]["columns"] = int(columns)
+        if isinstance(print_info, bool):
+            self._VERTICAPY_VARIABLES_["display"]["print_info"] = print_info
         if percent_bar in (True, False, "auto"):
             self._VERTICAPY_VARIABLES_["display"]["percent_bar"] = percent_bar
         else:
