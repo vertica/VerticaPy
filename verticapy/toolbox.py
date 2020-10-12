@@ -522,6 +522,15 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
+# ---#
+def last_order_by(vdf):
+    max_pos, order_by = 0, ""
+    columns_tmp = [elem for elem in vdf.get_columns()]
+    for column in columns_tmp:
+        max_pos = max(max_pos, len(vdf[column].transformations) - 1)
+    if max_pos in vdf._VERTICAPY_VARIABLES_["order_by"]:
+        order_by = vdf._VERTICAPY_VARIABLES_["order_by"][max_pos]
+    return order_by
 
 # ---#
 def levenshtein(s: str, t: str):
