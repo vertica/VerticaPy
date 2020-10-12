@@ -26,7 +26,7 @@ setup(
     version='0.2.0',
     description='A Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica.',
     author='Badr Ouali',
-    author_email='badr.ouali@microfocus.com',
+    author_email='badr.ouali@vertica.com',
     url='https://github.com/vertica/VerticaPy',
     keywords="machine-learning database vertica",
     packages=find_packages(),
