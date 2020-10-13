@@ -303,8 +303,8 @@ vcolumns : vcolumn
                     limit = " LIMIT {}".format(limit)
                 else:
                     limit = ""
-                query = "(SELECT * FROM {} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.__genSQL__(), index_start, limit
+                query = "(SELECT * FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
+                    self.__genSQL__(), last_order_by(self), index_start, limit
                 )
                 return vdf_from_relation(
                     query, cursor=self._VERTICAPY_VARIABLES_["cursor"]
@@ -316,10 +316,11 @@ vcolumns : vcolumn
                     columns[idx] = "{}::float".format(elem)
             if index < 0:
                 index += self.shape()[0]
-            query = "SELECT {} FROM {} OFFSET {} LIMIT 1".format(
-                ", ".join(columns), self.__genSQL__(), index
+            query = "SELECT {} FROM {}{} OFFSET {} LIMIT 1".format(
+                ", ".join(columns), self.__genSQL__(), last_order_by(self), index
             )
-            return self._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()
+            self.__executeSQL__(query=query, title="Gets the vDataFrame element.")
+            return self._VERTICAPY_VARIABLES_["cursor"].fetchone()
         elif isinstance(index, str):
             new_index = vdf_columns_names([index], self)
             try:
@@ -433,8 +434,8 @@ vcolumns : vcolumn
             pre_comp_val = self.__get_catalog_value__(method=method, columns=columns)
             if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp_val
-            cast_0 = "::int" if (self[columns[0]].ctype() == "boolean") else ""
-            cast_1 = "::int" if (self[columns[1]].ctype() == "boolean") else ""
+            cast_0 = "::int" if (self[columns[0]].isbool()) else ""
+            cast_1 = "::int" if (self[columns[1]].isbool()) else ""
             if method in ("pearson", "spearman"):
                 if columns[1] == columns[0]:
                     return 1
@@ -463,7 +464,7 @@ vcolumns : vcolumn
                 ):
                     return float("nan")
                 elif self[columns[1]].category() == "int":
-                    if self[columns[1]].ctype() != "boolean":
+                    if not(self[columns[1]].isbool()):
                         agg = (
                             self[columns[1]]
                             .aggregate(["approx_unique", "min", "max"])
@@ -474,7 +475,7 @@ vcolumns : vcolumn
                     column_b, column_n = columns[1], columns[0]
                     cast_b, cast_n = cast_1, cast_0
                 elif self[columns[0]].category() == "int":
-                    if self[columns[0]].ctype() != "boolean":
+                    if not(self[columns[0]].isbool()):
                         agg = (
                             self[columns[0]]
                             .aggregate(["approx_unique", "min", "max"])
@@ -520,10 +521,10 @@ vcolumns : vcolumn
                 table_1 = "SELECT {}, COUNT(*) AS nj FROM {} WHERE {} IS NOT NULL GROUP BY 1".format(
                     columns[1], self.__genSQL__(), columns[1]
                 )
-                self._VERTICAPY_VARIABLES_["cursor"].execute(
+                self.__executeSQL__(
                     "SELECT COUNT(*) AS n FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
                         self.__genSQL__(), columns[0], columns[1]
-                    )
+                    ), title="Computes the {} correlation between {} and {}.".format(method, columns[0], columns[1])
                 )
                 n = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
                 phi = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / (ni * nj)) AS phi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}".format(
@@ -710,12 +711,12 @@ vcolumns : vcolumn
                             nb_loop += 1
                             cast_i = (
                                 "::int"
-                                if (self[columns[i]].ctype() == "boolean")
+                                if (self[columns[i]].isbool())
                                 else ""
                             )
                             cast_j = (
                                 "::int"
-                                if (self[columns[j]].ctype() == "boolean")
+                                if (self[columns[j]].isbool())
                                 else ""
                             )
                             pre_comp_val = self.__get_catalog_value__(
@@ -950,7 +951,7 @@ vcolumns : vcolumn
         if method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
                 fail = 0
-                cast_i = "::int" if (self[focus].ctype() == "boolean") else ""
+                cast_i = "::int" if (self[focus].isbool()) else ""
                 all_list, all_cols = [], [focus]
                 nb_precomputed = 0
                 for column in cols:
@@ -959,7 +960,7 @@ vcolumns : vcolumn
                         != focus.replace('"', "").lower()
                     ):
                         all_cols += [column]
-                    cast_j = "::int" if (self[column].ctype() == "boolean") else ""
+                    cast_j = "::int" if (self[column].isbool()) else ""
                     pre_comp_val = self.__get_catalog_value__(
                         method=method, columns=[focus, column]
                     )
@@ -1502,7 +1503,7 @@ vcolumns : vcolumn
         columns = self.numcol() if not (columns) else vdf_columns_names(columns, self)
         func = {}
         for column in columns:
-            if self[column].ctype() != "boolean":
+            if not(self[column].isbool()):
                 func[column] = "ABS({})"
         return self.apply(func)
 
@@ -1756,7 +1757,7 @@ vcolumns : vcolumn
         agg = [[] for i in range(len(columns))]
         nb_precomputed = 0
         for idx, column in enumerate(columns):
-            cast = "::int" if (self[column].ctype() == "boolean") else ""
+            cast = "::int" if (self[column].isbool()) else ""
             for fun in func:
                 pre_comp = self.__get_catalog_value__(column, fun)
                 if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -2662,7 +2663,7 @@ vcolumns : vcolumn
         for column in columns:
             function[column] = (
                 func
-                if (self[column].ctype() != "boolean")
+                if not(self[column].isbool())
                 else func.replace("{}", "{}::int")
             )
         return self.apply(function)
@@ -2995,7 +2996,7 @@ vcolumns : vcolumn
         """
         columns = self.get_columns()
         for column in columns:
-            if self[column].ctype() == "boolean":
+            if self[column].isbool():
                 self[column].astype("int")
         return self
 
@@ -3120,8 +3121,8 @@ vcolumns : vcolumn
         check_types([("max_cardinality", max_cardinality, [int, float],)])
         columns = []
         for column in self.get_columns():
-            if (self[column].category() == "int") and (
-                self[column].ctype() != "boolean"
+            if (self[column].category() == "int") and not(
+                self[column].isbool()
             ):
                 self._VERTICAPY_VARIABLES_["cursor"].execute(
                     "SELECT (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(
@@ -3817,7 +3818,7 @@ vcolumns : vcolumn
                         ", ".join(
                             [
                                 elem
-                                if self[elem].ctype() != "boolean"
+                                if not(self[elem].isbool())
                                 else "{}::int".format(elem)
                                 for elem in col_to_compute
                             ]
@@ -4648,7 +4649,7 @@ vcolumns : vcolumn
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
-        self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+        self.__executeSQL__(query, title="Gets the vDataFrame first values.")
         first_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         self.filter("{} <= '{}'".format(ts, first_date),)
         return self
@@ -5284,26 +5285,9 @@ vcolumns : vcolumn
                 limit, offset
             ),
         )
-        max_pos = 0
-        columns_tmp = [elem for elem in self.get_columns()]
-        for column in columns_tmp:
-            max_pos = max(max_pos, len(self[column].transformations) - 1)
-        if max_pos in self._VERTICAPY_VARIABLES_["order_by"]:
-            order_by = self._VERTICAPY_VARIABLES_["order_by"][max_pos]
-        try:
-            result = to_tablesample(
+        result = to_tablesample(
                 "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(all_columns), self.__genSQL__(), order_by, limit, offset
-                ),
-                self._VERTICAPY_VARIABLES_["cursor"],
-                query_on=query_on,
-                time_on=time_on,
-                title=title,
-            )
-        except:
-            result = to_tablesample(
-                "SELECT {} FROM {} LIMIT {} OFFSET {}".format(
-                    ", ".join(all_columns), self.__genSQL__(), limit, offset
+                    ", ".join(all_columns), self.__genSQL__(), last_order_by(self), limit, offset
                 ),
                 self._VERTICAPY_VARIABLES_["cursor"],
                 query_on=query_on,
@@ -5393,7 +5377,7 @@ vcolumns : vcolumn
             query = "SELECT * FROM {} WHERE {} LIMIT 1".format(
                 self.__genSQL__(), " AND ".join(tmp_query)
             )
-            self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+            self.__executeSQL__(query, title="Checks if the input value is in the vDataFrame.")
             isin += [self._VERTICAPY_VARIABLES_["cursor"].fetchone() != None]
         return isin
 
@@ -5598,7 +5582,7 @@ vcolumns : vcolumn
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
-        self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+        self.__executeSQL__(query, title="Gets the vDataFrame last values.")
         last_date = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         self.filter("{} >= '{}'".format(ts, last_date),)
         return self
@@ -5877,9 +5861,9 @@ vcolumns : vcolumn
         no_cols = True if not (columns) else False
         columns = self.numcol() if not (columns) else vdf_columns_names(columns, self)
         for column in columns:
-            if self[column].isnum() and (self[column].ctype() != "boolean"):
+            if self[column].isnum() and not(self[column].isbool()):
                 self[column].normalize(method=method)
-            elif (no_cols) and (self[column].ctype() == "boolean"):
+            elif (no_cols) and (self[column].isbool()):
                 pass
             else:
                 print(
@@ -6717,8 +6701,8 @@ vcolumns : vcolumn
         all_list, nb_precomputed = [], 0
         for i in range(0, n):
             for j in range(0, n):
-                cast_i = "::int" if (self[columns[i]].ctype() == "boolean") else ""
-                cast_j = "::int" if (self[columns[j]].ctype() == "boolean") else ""
+                cast_i = "::int" if (self[columns[i]].isbool()) else ""
+                cast_j = "::int" if (self[columns[j]].isbool()) else ""
                 pre_comp_val = self.__get_catalog_value__(
                     method=method, columns=[columns[i], columns[j]]
                 )
@@ -7349,10 +7333,10 @@ vcolumns : vcolumn
         table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
             all_cols, self.__genSQL__(), conditions
         )
-        result = self.__vdf_from_relation__(table, "search", "").sort(order_by)
+        result = self.__vdf_from_relation__(table, "search", "")
         if usecols:
             result = result.select(usecols)
-        return result
+        return result.sort(order_by)
 
     # ---#
     def select(self, columns: list, check: bool = True):
@@ -8132,6 +8116,8 @@ vcolumns : vcolumn
         if limit <= 0:
             limit = total
         order_by = sort_str(order_by, self)
+        if not(order_by):
+            order_by = last_order_by(self)
         while current_nb_rows_written < total:
             self._VERTICAPY_VARIABLES_["cursor"].execute(
                 "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
@@ -8244,7 +8230,7 @@ vcolumns : vcolumn
         ):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
         db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
-        query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}".format(
+        query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}{}".format(
             relation_type.upper(),
             name,
             commit,
@@ -8252,6 +8238,7 @@ vcolumns : vcolumn
             nb_split,
             self.__genSQL__(),
             db_filter,
+            last_order_by(self),
         )
         self.__executeSQL__(
             query=query,
@@ -8338,6 +8325,8 @@ vcolumns : vcolumn
             limit = total
         file.write("[\n")
         order_by = sort_str(order_by, self)
+        if not(order_by):
+            order_by = last_order_by(self)
         while current_nb_rows_written < total:
             self._VERTICAPY_VARIABLES_["cursor"].execute(
                 "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
@@ -8375,8 +8364,8 @@ vcolumns : vcolumn
     List
         The list of the current vDataFrame relation.
         """
-        query = "SELECT * FROM {}".format(self.__genSQL__())
-        self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+        query = "SELECT * FROM {}{}".format(self.__genSQL__(), last_order_by(self))
+        self.__executeSQL__(query, title="Gets the vDataFrame values.")
         result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
         final_result = []
         for elem in result:
@@ -8407,8 +8396,8 @@ vcolumns : vcolumn
             raise ImportError(
                 "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
             )
-        query = "SELECT * FROM {}".format(self.__genSQL__())
-        self._VERTICAPY_VARIABLES_["cursor"].execute(query)
+        query = "SELECT * FROM {}{}".format(self.__genSQL__(), last_order_by(self))
+        self.__executeSQL__(query, title="Gets the vDataFrame values.")
         column_names = [
             column[0] for column in self._VERTICAPY_VARIABLES_["cursor"].description
         ]

@@ -49,8 +49,6 @@ class TestvDFPreprocessing:
 
         assert titanic_copy["sex"].distinct() == [0, 1]
 
-    @pytest.mark.xfail(reason = "The temp view created in the smart method is not properly cleaned up"
-                       " in case of failuer")
     def test_vDF_discretize(self, titanic_vd):
         ### method = "same_width"
         titanic_copy = titanic_vd.copy()
@@ -224,7 +222,6 @@ class TestvDFPreprocessing:
 
         assert market_copy["Price"].mean() == pytest.approx(1.95852599)
 
-    @pytest.mark.xfail(reason = "method mean fails")
     def test_vDF_fill_outliers(self, market_vd):
         # method = "null"
         market_copy = market_vd.copy()
@@ -234,7 +231,7 @@ class TestvDFPreprocessing:
 
         # method = "winsorize", use_threshold = True
         market_copy = market_vd.copy()
-        assert market_copy["Price"].mean == pytest.approx(2.077510986)
+        assert market_copy["Price"].mean() == pytest.approx(2.077510986)
         market_copy["Price"].fill_outliers(method = "winsorize", threshold = 1.5, use_threshold = True)
         assert market_copy["Price"].mean() == pytest.approx(1.942654626)
 
@@ -246,7 +243,7 @@ class TestvDFPreprocessing:
         # method = "mean"
         market_copy = market_vd.copy()
         market_copy["Price"].fill_outliers(method = "mean", threshold = 1.5)
-        assert market_copy["Price"].mean() == pytest.approx(0)
+        assert market_copy["Price"].mean() == pytest.approx(2.07751098603612)
 
     def test_vDF_normalize(self, titanic_vd):
         ### Testing vDataFrame.normalize
@@ -320,7 +317,6 @@ class TestvDFPreprocessing:
         titanic_copy["age"].astype("float")
         assert titanic_copy["age"].dtype() == 'float'
 
-    @pytest.mark.xfail(reason = "doesn't convert bool to int")
     def test_vDF_bool_to_int(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["survived"].astype("bool")

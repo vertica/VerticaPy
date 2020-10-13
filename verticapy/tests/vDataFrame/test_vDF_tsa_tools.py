@@ -81,7 +81,6 @@ class TestvDFStatsTools:
             40053.87251600001, 1e-2
         )
 
-    @pytest.mark.xfail(reason = "ZeroDivisionError: float division by zero")
     def test_mkt(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result = mkt(result, column="number", ts="date")
