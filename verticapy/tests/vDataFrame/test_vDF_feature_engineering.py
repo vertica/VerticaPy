@@ -12,25 +12,74 @@
 # limitations under the License.
 
 import pytest
-from verticapy import vDataFrame
+import datetime
+from verticapy import vDataFrame, drop_table, errors
+
+
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    amazon.set_display_parameters(print_info=False)
+    yield amazon
+    drop_table(
+        name="public.amazon", cursor=base.cursor,
+    )
+
+
+@pytest.fixture(scope="module")
+def iris_vd(base):
+    from verticapy.learn.datasets import load_iris
+
+    iris = load_iris(cursor=base.cursor)
+    yield iris
+    drop_table(name="public.iris", cursor=base.cursor)
+
+
+@pytest.fixture(scope="module")
+def smart_meters_vd(base):
+    from verticapy.learn.datasets import load_smart_meters
+
+    smart_meters = load_smart_meters(cursor=base.cursor)
+    yield smart_meters
+    drop_table(name="public.smart_meters", cursor=base.cursor)
+
+
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.learn.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFFeatureEngineering:
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_cummax(self):
-        pass
+    def test_vDF_cummax(self, amazon_vd):
+        amazon_copy = amazon_vd.copy()
+        amazon_copy.cummax(column = "number", by = ["state"], order_by = ["date"], name = "cummax_number")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_cummin(self):
-        pass
+        assert amazon_copy["cummax_number"].max() == 25963.0
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_cumprod(self):
-        pass
+    def test_vDF_cummin(self, amazon_vd):
+        amazon_copy = amazon_vd.copy()
+        amazon_copy.cummin(column = "number", by = ["state"], order_by = ["date"], name = "cummin_number")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_cumsum(self):
-        pass
+        assert amazon_copy["cummin_number"].min() == 0.0
+
+    def test_vDF_cumprod(self, iris_vd):
+        iris_copy = iris_vd.copy()
+        iris_copy.cumprod(column = "PetalWidthCm", by = ["Species"],
+                          order_by = ["PetalLengthCm"], name = "cumprod_number")
+
+        assert iris_copy["cumprod_number"].max() == 1347985569095150.0
+
+    def test_vDF_cumsum(self, amazon_vd):
+        amazon_copy = amazon_vd.copy()
+        amazon_copy.cumsum(column = "number", by = ["state"], order_by = ["date"], name = "cumsum_number")
+
+        assert amazon_copy["cumsum_number"].max() == pytest.approx(723629.0)
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_rolling(self):
@@ -40,29 +89,127 @@ class TestvDFFeatureEngineering:
     def test_vDF_analytic(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_asfreq(self):
-        pass
+    @pytest.mark.xfail(reason = "the answers change time-to-time")
+    def test_vDF_asfreq(self, smart_meters_vd):
+        # bfill method
+        result1 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
+                                         method = {"val": "bfill"}, by = ["id"])
+        result1.sort({"time" : "asc"})
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_sessionize(self):
-        pass
+        assert result1.shape() == (148189, 3)
+        assert result1["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
+        assert result1["id"][2] == 2
+        assert result1["val"][2] == pytest.approx(0.037)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_case_when(self):
-        pass
+        # ffill
+        result2 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
+                                         method = {"val": "ffill"}, by = ["id"])
+        result2.sort({"time" : "asc"})
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_eval(self):
-        pass
+        assert result2.shape() == (148189, 3)
+        assert result2["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
+        assert result2["id"][2] == 2
+        assert result2["val"][2] == pytest.approx(0.037)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_abs(self):
-        pass
+        # linear method
+        result3 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
+                                         method = {"val": "linear"}, by = ["id"])
+        result3.sort({"time" : "asc"})
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_apply(self):
-        pass
+        assert result3.shape() == (148189, 3)
+        assert result3["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
+        assert result3["id"][2] == 2
+        assert result3["val"][2] == pytest.approx(0.06116129032)
+
+    @pytest.mark.xfail(reason = "the answers change time-to-time")
+    def test_vDF_sessionize(self, smart_meters_vd):
+        smart_meters_copy = smart_meters_vd.copy()
+
+        # expected exception
+        with pytest.raises(errors.QueryError) as exception_info:
+            smart_meters_copy.sessionize(ts = "time", by = ["id"], session_threshold = "1 time", name = "slot")
+        # checking the error message
+        assert exception_info.match("seems to be incorrect")
+
+        smart_meters_copy.sessionize(ts = "time", by = ["id"], session_threshold = "1 hour", name = "slot")
+        smart_meters_copy.sort({"time" : "asc"})
+
+        assert smart_meters_copy.shape() == (11844, 4)
+        assert smart_meters_copy["time"][2] == datetime.datetime(2014, 1, 1, 15, 30)
+        assert smart_meters_copy["val"][2] == 0.235
+        assert smart_meters_copy["id"][2] == 9
+        assert smart_meters_copy["slot"][2] == 1
+
+    def test_vDF_case_when(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.case_when(name = "age_category",
+                               conditions = {"age < 12": "children",
+                                             "age < 18": "teenagers",
+                                             "age > 60": "seniors",
+                                             "age < 25": "young adults"},
+                               others = "adults")
+
+        assert titanic_copy["age_category"].distinct() == \
+            ['adults', 'children', 'seniors', 'teenagers', 'young adults']
+
+    def test_vDF_eval(self, titanic_vd):
+        # new feature creation
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.eval(name = "family_size", expr = "parch + sibsp + 1")
+
+        assert titanic_copy["family_size"].max() == 11
+
+        # Customized SQL code evaluation
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.eval(name = "has_life_boat", expr = "CASE WHEN boat IS NULL THEN 0 ELSE 1 END")
+
+        assert titanic_copy["boat"].count() == titanic_copy["has_life_boat"].sum()
+
+    def test_vDF_abs(self, titanic_vd):
+        # Testing vDataFrame.abs
+        titanic_copy = titanic_vd.copy()
+
+        titanic_copy.normalize(["fare", "age"])
+        assert titanic_copy["fare"].min() == pytest.approx(-0.64513441)
+        assert titanic_copy["age"].min() == pytest.approx(-2.0659389)
+
+        titanic_copy.abs(["fare", "age"])
+        assert titanic_copy["fare"].min() == pytest.approx(0.001082821)
+        assert titanic_copy["age"].min() == pytest.approx(0.010561423)
+
+        # Testing vDataFrame[].abs
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["fare"].normalize()
+        titanic_copy["fare"].abs()
+
+        assert titanic_copy["fare"].min() == pytest.approx(0.001082821)
+
+    def test_vDF_apply(self, titanic_vd):
+        ### Testing vDataFrame.apply
+        titanic_copy = titanic_vd.copy()
+
+        titanic_copy.apply(func = {"boat": "DECODE({}, NULL, 0, 1)",
+                                   "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
+                                   "name": "REGEXP_SUBSTR({}, ' ([A-Za-z])+\.')"})
+
+        assert titanic_copy["boat"].sum() == titanic_vd["boat"].count()
+        assert titanic_copy["age"].std() == pytest.approx(13.234162542)
+        assert len(titanic_copy["name"].distinct()) == 16
+
+        ### Testing vDataFrame[].apply
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].apply(func = "POWER({}, 2)")
+        assert titanic_copy["age"].min() == pytest.approx(0.1089)
+
+        # expected exception
+        with pytest.raises(errors.QueryError) as exception_info:
+            titanic_copy["age"].apply(func = "POWER({}, 2)", copy = True)
+        # checking the error message
+        assert exception_info.match("The parameter 'name' must not be empty")
+
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].apply(func = "POWER({}, 2)", copy = True, copy_name = "age_pow_2")
+        assert titanic_copy["age_pow_2"].min() == pytest.approx(0.1089)
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_apply_fun(self):
