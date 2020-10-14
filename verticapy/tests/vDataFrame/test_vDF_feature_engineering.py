@@ -215,66 +215,103 @@ class TestvDFFeatureEngineering:
     def test_vDF_apply_fun(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_applymap(self):
-        pass
+    def test_vDF_applymap(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.applymap(func = "COALESCE({}, 0)", numeric_only = True)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_data_part(self):
-        pass
+        assert titanic_copy["age"].count() == 1234
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_round(self):
-        pass
+    def test_vDF_data_part(self, smart_meters_vd):
+        smart_meters_copy = smart_meters_vd.copy()
+        smart_meters_copy["time"].date_part("hour")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_slice(self):
-        pass
+        assert len(smart_meters_copy["time"].distinct()) == 24
+
+    def test_vDF_round(self, smart_meters_vd):
+        smart_meters_copy = smart_meters_vd.copy()
+        smart_meters_copy["val"].round(n = 1)
+
+        assert smart_meters_copy["val"].mode() == '0.1000000'
+
+    def test_vDF_slice(self, smart_meters_vd):
+        # start = True
+        smart_meters_copy = smart_meters_vd.copy()
+        smart_meters_copy["time"].slice(length = 1, unit = "hour")
+
+        assert smart_meters_copy["time"].min() == datetime.datetime(2014, 1, 1, 1, 0)
+
+        # start = False
+        smart_meters_copy = smart_meters_vd.copy()
+        smart_meters_copy["time"].slice(length = 1, unit = "hour", start = False)
+
+        assert smart_meters_copy["time"].min() == datetime.datetime(2014, 1, 1, 2, 0)
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_regexp(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_str_contains(self):
-        pass
+    def test_vDF_str_contains(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["name"].str_contains(pat = " ([A-Za-z])+\.")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_count(self):
-        pass
+        assert titanic_copy["name"].dtype() == 'boolean'
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_str_extract(self):
-        pass
+    def test_vDF_count(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["name"].str_count(pat = " ([A-Za-z])+\.")
+        
+        assert titanic_copy["name"].distinct() == [1, 2]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_str_replace(self):
-        pass
+    def test_vDF_str_extract(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["name"].str_extract(pat = " ([A-Za-z])+\.")
+        
+        assert len(titanic_copy["name"].distinct()) == 16
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_str_slice(self):
-        pass
+    def test_vDF_str_replace(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["name"].str_replace(to_replace = " ([A-Za-z])+\.", value = "VERTICAPY")
+        
+        assert 'VERTICAPY' in titanic_copy["name"][0]
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_add(self):
-        pass
+    def test_vDF_str_slice(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["name"].str_slice(start = 0, step = 3)
+        
+        assert len(titanic_copy["name"].distinct()) == 165
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_div(self):
-        pass
+    def test_vDF_add(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].add(2)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_mul(self):
-        pass
+        assert titanic_copy["age"].mean() == pytest.approx(titanic_vd["age"].mean() + 2)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_sub(self):
-        pass
+    def test_vDF_div(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].div(2)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_add_copy(self):
-        pass
+        assert titanic_copy["age"].mean() == pytest.approx(titanic_vd["age"].mean() / 2)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_copy(self):
-        pass
+    def test_vDF_mul(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].mul(2)
+
+        assert titanic_copy["age"].mean() == pytest.approx(titanic_vd["age"].mean() * 2)
+
+    def test_vDF_sub(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].sub(2)
+
+        assert titanic_copy["age"].mean() == pytest.approx(titanic_vd["age"].mean() - 2)
+
+    def test_vDF_add_copy(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].add_copy(name = "copy_age")
+
+        assert titanic_copy["copy_age"].mean() == titanic_copy["age"].mean()
+
+    def test_vDF_copy(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+
+        assert titanic_copy.get_columns() == titanic_vd.get_columns()
+
