@@ -329,3 +329,4 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
         titanic_copy["sex"].rename("gender")
         assert '"gender"' in titanic_copy.get_columns()
+        assert '"sex"' not in titanic_copy.get_columns()
