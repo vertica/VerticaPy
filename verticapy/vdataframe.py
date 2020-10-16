@@ -2214,16 +2214,16 @@ vcolumns : vcolumn
         by = ", ".join(by)
         by = "PARTITION BY {}".format(by) if (by) else ""
         order_by = sort_str(order_by, self)
-        func = str_function(func.lower())
+        func = str_function(func.lower(), method="vertica")
         if func in (
             "max",
             "min",
             "avg",
             "sum",
             "count",
-            "std",
+            "stddev",
             "median",
-            "var",
+            "variance",
             "unique",
             "top",
             "kurtosis",
@@ -2233,6 +2233,8 @@ vcolumns : vcolumn
             "range",
             "prod",
             "jb",
+            "iqr",
+            "sem",
         ) or ("%" in func):
             if order_by:
                 print(
@@ -2268,7 +2270,7 @@ vcolumns : vcolumn
                     self.eval(count_name, "COUNT({}) OVER ({})".format(column, by))
                 if func == "kurtosis":
                     self.eval(
-                        "{}_kurtosis".format(name),
+                        name,
                         "AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
                             column,
                             mean_name,
@@ -2286,7 +2288,7 @@ vcolumns : vcolumn
                     )
                 elif func == "skewness":
                     self.eval(
-                        "{}_skewness".format(name),
+                        name,
                         "AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
                             column,
                             mean_name,
@@ -2299,7 +2301,7 @@ vcolumns : vcolumn
                     )
                 elif func == "jb":
                     self.eval(
-                        "{}_jb".format(name),
+                        name,
                         "{} / 6 * (POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2)), 2) + POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3)), 2) / 4)".format(
                             count_name,
                             column,
@@ -2325,12 +2327,12 @@ vcolumns : vcolumn
                     )
                 elif func == "aad":
                     self.eval(
-                        "{}_aad".format(name),
+                        name,
                         "AVG(ABS({} - {})) OVER ({})".format(column, mean_name, by),
                     )
                 elif func == "mad":
                     self.eval(
-                        "{}_mad".format(name),
+                        name,
                         "AVG(ABS({} - {})) OVER ({})".format(column, median_name, by),
                     )
             elif func == "top":
@@ -2383,6 +2385,21 @@ vcolumns : vcolumn
                         column, by, column, by
                     ),
                 )
+            elif func == "iqr":
+                self.eval(
+                    name,
+                    "PERCENTILE_CONT(0.75) WITHIN GROUP(ORDER BY {}) OVER ({}) - PERCENTILE_CONT(0.25) WITHIN GROUP(ORDER BY {}) OVER ({})".format(
+                        column, by, column, by
+                    ),
+                )
+            elif func == "sem":
+                self.eval(
+                    name,
+                    "STDDEV({}) OVER ({}) / SQRT(COUNT({}) OVER ({}))".format(
+                        column, by, column, by
+                    ),
+                )
+                expr = "STDDEV({})# / SQRT(COUNT({})#)".format(column, column)
             elif func == "prod":
                 self.eval(
                     name,
@@ -6932,7 +6949,7 @@ vcolumns : vcolumn
             if not (order_by)
             else sort_str(order_by, self)
         )
-        func = str_function(func.lower())
+        func = str_function(func.lower(), method="vertica")
         if method == "rows":
             preceding = (
                 "{}".format(preceding)
