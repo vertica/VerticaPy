@@ -56,7 +56,7 @@ from verticapy.learn.linear_model import LinearRegression
 # Other modules
 import math
 import matplotlib.pyplot as plt
-from scipy.stats import chi2
+from scipy.stats import chi2, norm
 
 # ---#
 def adfuller(
@@ -601,8 +601,9 @@ tablesample
         S = float(S)
     except:
         S = None
-    query = "SELECT SQRT((SUM(row) * (SUM(row) - 1) * (2 * SUM(row) + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row".format(
-        column, vdf.__genSQL__()
+    n = vdf[column].count()
+    query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
+        n, n, n, column, vdf.__genSQL__()
     )
     vdf.__executeSQL__(query, title="Computes the Mann Kendall S standard deviation.")
     STDS = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
@@ -610,20 +611,25 @@ tablesample
         STDS = float(STDS)
     except:
         STDS = None
-    if STDS == None or S == None:
+    if STDS in (None, 0) or S == None:
         return None
     if S > 0:
         ZMK = (S - 1) / STDS
+        trend = 'increasing'
     elif S < 0:
         ZMK = (S + 1) / STDS
+        trend = 'decreasing'
     else:
         ZMK = 0
-    pvalue = (1.0 - math.erf(abs(ZMK) / math.sqrt(2.0))) / 2.0
+        trend = 'no trend'
+    pvalue = norm.pdf(ZMK)
     result = (
         True
         if (ZMK <= 0 and pvalue < alpha) or (ZMK >= 0 and pvalue < alpha)
         else False
     )
+    if not(result):
+        trend = 'no trend'
     result = tablesample(
         {
             "index": [
@@ -632,8 +638,9 @@ tablesample
                 "STDS",
                 "p_value",
                 "Monotonic Trend",
+                "Trend"
             ],
-            "value": [ZMK, S, STDS, pvalue, result],
+            "value": [ZMK, S, STDS, pvalue, result, trend],
         }
     )
     return result

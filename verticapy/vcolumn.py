@@ -161,8 +161,8 @@ Attributes
                     limit = " LIMIT {}".format(limit)
                 else:
                     limit = ""
-                query = "(SELECT {} FROM {} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias, self.parent.__genSQL__(), index_start, limit
+                query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
+                    self.alias, self.parent.__genSQL__(), last_order_by(self.parent), index_start, limit
                 )
                 return vdf_from_relation(
                     query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
@@ -171,11 +171,12 @@ Attributes
             cast = "::float" if self.category() == "float" else ""
             if index < 0:
                 index += self.parent.shape()[0]
-            query = "SELECT {}{} FROM {} OFFSET {} LIMIT 1".format(
-                self.alias, cast, self.parent.__genSQL__(), index
+            query = "SELECT {}{} FROM {}{} OFFSET {} LIMIT 1".format(
+                self.alias, cast, self.parent.__genSQL__(), last_order_by(self.parent), index
             )
+            self.parent.__executeSQL__(query=query, title="Gets the vcolumn element.")
             return (
-                self.parent._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+                self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
             )
         else:
             return getattr(self, index)
@@ -1041,7 +1042,7 @@ Attributes
             numcol = vdf_columns_names([numcol], self.parent)[0]
             if self.parent[numcol].category() not in ("float", "int"):
                 raise TypeError("The column 'numcol' must be numerical")
-            cast = "::int" if (self.parent[numcol].ctype() == "boolean") else ""
+            cast = "::int" if (self.parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
                 lp, rp = "(", ")"
@@ -1254,11 +1255,14 @@ Attributes
             def drop_temp_elem(self, temp_information):
                 try:
                     drop_model(
-                        temp_information[0],
+                        temp_information[1],
                         cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
                     )
+                except:
+                    pass
+                try:
                     drop_view(
-                        temp_information[1],
+                        temp_information[0],
                         cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
                     )
                 except:
@@ -1742,6 +1746,10 @@ Attributes
                     item[0]
                     for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
                 ]
+                if mean_alpha == None:
+                    mean_alpha = "NULL"
+                if mean_1_alpha == None:
+                    mean_alpha = "NULL"
                 self.apply(
                     func="(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format(
                         "{}", p_alpha, mean_alpha, "{}", p_1_alpha, mean_1_alpha, "{}"
@@ -2003,7 +2011,7 @@ Attributes
             ]
         )
         distinct_elements = self.distinct()
-        if distinct_elements not in ([0, 1], [1, 0]) or self.ctype() == "boolean":
+        if distinct_elements not in ([0, 1], [1, 0]) or self.isbool():
             all_new_features = []
             prefix = (
                 self.alias.replace('"', "") + prefix_sep.replace('"', "_")
@@ -2194,46 +2202,43 @@ Attributes
             self.parent._VERTICAPY_VARIABLES_["time_on"],
             "Reads {}.".format(self.alias),
         )
-        max_pos = 0
-        columns_tmp = [elem for elem in self.parent.get_columns()]
-        for column in columns_tmp:
-            max_pos = max(max_pos, len(self.parent[column].transformations) - 1)
-        if max_pos in self.parent._VERTICAPY_VARIABLES_["order_by"]:
-            order_by = self.parent._VERTICAPY_VARIABLES_["order_by"][max_pos]
-        try:
-            tail = to_tablesample(
-                "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    convert_special_type(self.category(), False, self.alias),
-                    self.alias,
-                    self.parent.__genSQL__(),
-                    order_by,
-                    limit,
-                    offset,
-                ),
-                self.parent._VERTICAPY_VARIABLES_["cursor"],
-                query_on=query_on,
-                time_on=time_on,
-                title=title,
-            )
-        except:
-            tail = to_tablesample(
-                "SELECT {} AS {} FROM {} LIMIT {} OFFSET {}".format(
-                    convert_special_type(self.category(), False, self.alias),
-                    self.alias,
-                    self.parent.__genSQL__(),
-                    limit,
-                    offset,
-                ),
-                self.parent._VERTICAPY_VARIABLES_["cursor"],
-                query_on=query_on,
-                time_on=time_on,
-                title=title,
-            )
+        tail = to_tablesample(
+            "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
+                convert_special_type(self.category(), False, self.alias),
+                self.alias,
+                self.parent.__genSQL__(),
+                last_order_by(self.parent),
+                limit,
+                offset,
+            ),
+            self.parent._VERTICAPY_VARIABLES_["cursor"],
+            query_on=query_on,
+            time_on=time_on,
+            title=title,
+        )
         tail.count = self.parent.shape()[0]
         tail.offset = offset
         tail.dtype[self.alias] = self.ctype()
         tail.name = self.alias
         return tail
+
+    # ---#
+    def isbool(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns True if the vcolumn is boolean, False otherwise.
+
+    Returns
+    -------
+    bool
+        True if the vcolumn is boolean.
+
+    See Also
+    --------
+    vDataFrame[].isdate : Returns True if the vcolumn category is date.
+    vDataFrame[].isnum  : Returns True if the vcolumn is numerical.
+        """
+        return self.ctype().lower() in ("bool", "boolean")
 
     # ---#
     def isdate(self):
@@ -2248,7 +2253,8 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].isnum : Returns True if the vcolumn is numerical.
+    vDataFrame[].isbool : Returns True if the vcolumn is boolean.
+	vDataFrame[].isnum  : Returns True if the vcolumn is numerical.
 		"""
         return self.category() == "date"
 
@@ -2290,6 +2296,7 @@ Attributes
 
 	See Also
 	--------
+    vDataFrame[].isbool : Returns True if the vcolumn is boolean.
 	vDataFrame[].isdate : Returns True if the vcolumn category is date.
 		"""
         return self.category() in ("float", "int")
@@ -2658,7 +2665,7 @@ Attributes
         columns_check(by, self.parent)
         by = vdf_columns_names(by, self.parent)
         nullifzero, n = 1, len(by)
-        if self.ctype() == "boolean":
+        if self.isbool():
             print(
                 "\u26A0 Warning : Normalize doesn't work on booleans".format(self.alias)
             )

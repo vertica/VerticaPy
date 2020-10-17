@@ -81,12 +81,13 @@ class TestvDFStatsTools:
             40053.87251600001, 1e-2
         )
 
-    @pytest.mark.xfail(reason = "ZeroDivisionError: float division by zero")
+    @pytest.mark.xfail(reason = "result is None on my machine")
     def test_mkt(self, amazon_vd):
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
         result = mkt(result, column="number", ts="date")
-        assert result["value"][0] == pytest.approx(2.6625750399515633, 1e-2)
+        assert result["value"][0] == pytest.approx(2.579654773618437, 1e-2)
         assert result["value"][1] == pytest.approx(3188.0, 1e-2)
-        assert result["value"][2] == pytest.approx(1196.96156997625, 1e-2)
-        assert result["value"][3] == pytest.approx(0.003877263864806191, 1e-2)
+        assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
+        assert result["value"][3] == pytest.approx(0.014317855149496753, 1e-2)
         assert result["value"][4] == True
+        assert result["value"][5] == 'increasing'
