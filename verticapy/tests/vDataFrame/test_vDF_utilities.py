@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, os
-from verticapy import vDataFrame, get_session, read_vdf, drop_table
+from verticapy import vDataFrame, get_session, read_vdf, drop_table, drop_view
 
 
 @pytest.fixture(scope="module")
@@ -54,9 +54,69 @@ class TestvDFUtilities:
         os.remove("verticapy_test_{}.csv".format(session_id))
         file.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_to_db(self):
-        pass
+    def test_vDF_to_db(self, titanic_vd):
+        try:
+            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        except:
+            pass
+        # testing relation_type = view
+        try:
+            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "view", db_filter = "age > 40", nb_split = 3)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            assert titanic_tmp.shape() == (220, 4)
+            assert titanic_tmp["_verticapy_split_"].min() == 0
+            assert titanic_tmp["_verticapy_split_"].max() == 2
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM view_columns WHERE table_name = 'verticapy_titanic_tmp'")
+            result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
+            assert result[0] == "verticapy_titanic_tmp"
+        except:
+            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            raise
+        drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        # testing relation_type = table
+        try:
+            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "table", db_filter = "age > 40", nb_split = 3)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            assert titanic_tmp.shape() == (220, 4)
+            assert titanic_tmp["_verticapy_split_"].min() == 0
+            assert titanic_tmp["_verticapy_split_"].max() == 2
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
+            assert result[0] == "verticapy_titanic_tmp"
+        except:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            raise
+        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        # testing relation_type = temporary table
+        try:
+            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "temporary", db_filter = "age > 40", nb_split = 3)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            assert titanic_tmp.shape() == (220, 4)
+            assert titanic_tmp["_verticapy_split_"].min() == 0
+            assert titanic_tmp["_verticapy_split_"].max() == 2
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
+            assert result[0] == "verticapy_titanic_tmp"
+        except:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            raise
+        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        # testing relation_type = temporary local table
+        try:
+            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "local", db_filter = "age > 40", nb_split = 3)
+            titanic_tmp = vDataFrame("v_temp_schema.verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            assert titanic_tmp.shape() == (220, 4)
+            assert titanic_tmp["_verticapy_split_"].min() == 0
+            assert titanic_tmp["_verticapy_split_"].max() == 2
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
+            assert result[0] == "verticapy_titanic_tmp"
+        except:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            raise
+        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])

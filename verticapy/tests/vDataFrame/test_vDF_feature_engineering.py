@@ -90,9 +90,9 @@ class TestvDFFeatureEngineering:
 
         # func = "beta"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.rolling(func = "beta", column = "age", column2 = "fare", preceding = 10,
-                             following = 1, by = ["pclass"], order_by = {"name" : "asc", "ticket": "desc"}, name = "beta")
-        assert titanic_copy["beta"].max() == pytest.approx(82.6985471904259)
+        titanic_copy.rolling(func = "beta", column = "age", column2 = "fare", preceding = 100,
+                             following = 100, by = ["pclass"], order_by = {"name" : "asc", "ticket": "desc"}, name = "beta")
+        titanic_copy["beta"].max() == pytest.approx(0.181693993120358)
 
         # func = "count"
         titanic_copy = titanic_vd.copy()
@@ -104,13 +104,13 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "corr", column = "age", column2 = "fare", preceding = 10,
                              following = 1, name = "corr", order_by = {"name": "asc", "ticket": "desc"})
-        assert titanic_copy["corr"].median() == pytest.approx(0.176804605801569)
+        assert titanic_copy["corr"].median() == pytest.approx(0.317169567973457)
 
         # func = "cov"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "cov", column = "age", column2 = "fare", preceding = 10,
                              following = 1, name = "cov", order_by = {"name": "asc", "ticket": "desc"})
-        assert titanic_copy["cov"].median() == pytest.approx(54.8434520814294)
+        assert titanic_copy["cov"].median() == pytest.approx(101.433815700758)
 
         # func = "kurtosis"
         titanic_copy = titanic_vd.copy()
@@ -194,7 +194,7 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "beta", column = "age", column2 = "fare",
                               by = ["pclass"], name = "beta")
-        assert titanic_copy["beta"].min() == pytest.approx(-0.198944792925276)
+        assert titanic_copy["beta"].min() == pytest.approx(-0.293055805788566)
 
         # func = "count"
         titanic_copy = titanic_vd.copy()
@@ -205,13 +205,13 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "corr", column = "age", column2 = "fare",
                               name = "corr")
-        assert titanic_copy["corr"].median() == pytest.approx(0.1905927909)
+        assert titanic_copy["corr"].median() == pytest.approx(0.316603147524037)
 
         # func = "cov"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "cov", column = "age", column2 = "fare",
                               name = "cov")
-        assert titanic_copy["cov"].median() == pytest.approx(144.8432978)
+        assert titanic_copy["cov"].median() == pytest.approx(240.60639320099)
 
         # func = "ema"
         titanic_copy = titanic_vd.copy()
@@ -481,7 +481,7 @@ class TestvDFFeatureEngineering:
 
         titanic_copy.apply(func = {"boat": "DECODE({}, NULL, 0, 1)",
                                    "age" : "COALESCE(age, AVG({}) OVER (PARTITION BY pclass, sex))",
-                                   "name": "REGEXP_SUBSTR({}, ' ([A-Za-z])+\.')"})
+                                   "name": "REGEXP_SUBSTR({}, ' ([A-Za-z])+\\.')"})
 
         assert titanic_copy["boat"].sum() == titanic_vd["boat"].count()
         assert titanic_copy["age"].std() == pytest.approx(13.234162542)
@@ -726,25 +726,25 @@ class TestvDFFeatureEngineering:
 
     def test_vDF_str_contains(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["name"].str_contains(pat = " ([A-Za-z])+\.")
+        titanic_copy["name"].str_contains(pat = " ([A-Za-z])+\\.")
 
         assert titanic_copy["name"].dtype() == 'boolean'
 
     def test_vDF_count(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["name"].str_count(pat = " ([A-Za-z])+\.")
+        titanic_copy["name"].str_count(pat = " ([A-Za-z])+\\.")
         
         assert titanic_copy["name"].distinct() == [1, 2]
 
     def test_vDF_str_extract(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["name"].str_extract(pat = " ([A-Za-z])+\.")
+        titanic_copy["name"].str_extract(pat = " ([A-Za-z])+\\.")
         
         assert len(titanic_copy["name"].distinct()) == 16
 
     def test_vDF_str_replace(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["name"].str_replace(to_replace = " ([A-Za-z])+\.", value = "VERTICAPY")
+        titanic_copy["name"].str_replace(to_replace = " ([A-Za-z])+\\.", value = "VERTICAPY")
         
         assert 'VERTICAPY' in titanic_copy["name"][0]
 
