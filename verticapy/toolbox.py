@@ -882,7 +882,8 @@ def str_column(column: str):
 
 
 # ---#
-def str_function(key: str):
+def str_function(key: str, method: str = ""):
+    key = key.lower()
     if key in ("median", "med", "approximate_median"):
         key = "50%"
     elif key == "100%":
@@ -924,6 +925,11 @@ def str_function(key: str):
         key = "lead"
     elif key in ("prev", "previous"):
         key = "lag"
+    if method == "vertica":
+        if key == "var":
+            key = "variance"
+        elif key == "std":
+            key = "stddev"
     return key
 
 

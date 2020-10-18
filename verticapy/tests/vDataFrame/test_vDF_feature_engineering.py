@@ -81,426 +81,338 @@ class TestvDFFeatureEngineering:
 
         assert amazon_copy["cumsum_number"].max() == pytest.approx(723629.0)
 
-
-    @pytest.mark.xfail(reason = "big variance in the results of func = aad")
     def test_vDF_rolling(self, titanic_vd):
         # func = "aad"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "aad", column = "age", preceding = 10, following = 1, by = ["pclass"],
-                             order_by = {"home.dest" : "asc"}, method = "rows", rule = "past")
-        # There is a big variance of results in different runs
-        assert titanic_copy["age_mean_moving_aad_age__10_1_past"].max() == pytest.approx(50, abs = 5)
-        assert titanic_copy["moving_aad_age__10_1_past"].max() == pytest.approx(29, abs = 3)
+                             order_by = {"name": "asc", "ticket": "desc"}, method = "rows", rule = "past", name = "aad")
+        assert titanic_copy["aad"].max() == pytest.approx(38.0)
 
         # func = "beta"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "beta", column = "age", column2 = "fare", preceding = 10,
-                             following = 1, by = ["pclass"], order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_moving_beta_age_fare_10_1_auto"].min() == pytest.approx(9.416666666)
-        assert titanic_copy["fare_mean_moving_beta_age_fare_10_1_auto"].min() == pytest.approx(7.1, abs = 0.1)
-        #assert titanic_copy["moving_beta_age_fare_10_1_auto"].min() == pytest.approx(-1182.151267)
+                             following = 1, by = ["pclass"], order_by = {"name" : "asc", "ticket": "desc"}, name = "beta")
+        assert titanic_copy["beta"].max() == pytest.approx(82.6985471904259)
 
         # func = "count"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "count", column = "age", preceding = 10, following = 1, by = ["pclass"],
-                             order_by = {"home.dest" : "asc"}, name = "age_count")
-
-        assert titanic_copy["age_count"].max() == 12
+                             order_by = {"name": "asc", "ticket": "desc"}, name = "count")
+        assert titanic_copy["count"].max() == 12
 
         # func = "corr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "corr", column = "age", column2 = "fare", preceding = 10,
-                             following = 1, name = "corr", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_corr"].min() == pytest.approx(9.416666666)
-        assert titanic_copy["fare_mean_corr"].min() == pytest.approx(7.085408333)
-        assert titanic_copy["corr"].median() == pytest.approx(0.0562292376)
+                             following = 1, name = "corr", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["corr"].median() == pytest.approx(0.176804605801569)
 
         # func = "cov"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "cov", column = "age", column2 = "fare", preceding = 10,
-                             following = 1, name = "cov", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_cov"].min() == pytest.approx(9.416666666)
-        assert titanic_copy["fare_mean_cov"].min() == pytest.approx(7.085408333)
-        assert titanic_copy["cov"].median() == pytest.approx(5.42332668)
+                             following = 1, name = "cov", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["cov"].median() == pytest.approx(54.8434520814294)
 
         # func = "kurtosis"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "kurtosis", column = "age", preceding = 10, following = 1,
-                             name = "kurtosis", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_kurtosis"].min() == pytest.approx(9.416666666)
-        assert titanic_copy["age_std_kurtosis"].median() == pytest.approx(12.7053530)
-        assert titanic_copy["age_count_kurtosis"].max() == pytest.approx(12)
-        assert titanic_copy["kurtosis"].min() == pytest.approx(-13.35110758)
+                             name = "kurtosis", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["kurtosis"].min() == pytest.approx(-9.98263002423947)
 
         # func = "jb"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "jb", column = "age", preceding = 10, following = 1,
-                             name = "jb", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_jb"].min() == pytest.approx(9.416666666)
-        assert titanic_copy["age_std_jb"].median() == pytest.approx(12.705353)
-        assert titanic_copy["age_count_jb"].max() == pytest.approx(12)
-        assert titanic_copy["jb"].min() == pytest.approx(0.00186842957)
+                             name = "jb", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["jb"].min() == pytest.approx(0.000815735789122907)
 
         # func = "max"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "max", column = "age", preceding = 10, following = 1,
-                             name = "max", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["max"].min() == pytest.approx(10)
+                             name = "max", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["max"].min() == pytest.approx(24)
 
         # func = "mean"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "mean", column = "age", preceding = 10, following = 1,
-                             name = "mean", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["mean"].min() == pytest.approx(9.416666666)
+                             name = "mean", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["mean"].min() == pytest.approx(11.4545454545455)
 
         # func = "min"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "min", column = "age", preceding = 10, following = 1,
-                             name = "min", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["min"].max() == pytest.approx(38.5)
+                             name = "min", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["min"].max() == pytest.approx(34.5)
 
         # func = "prod"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "prod", column = "age", preceding = 10, following = 1,
-                             name = "prod", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["prod"].min() == pytest.approx(10)
+                             name = "prod", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["prod"].min() == pytest.approx(409.92)
 
         # func = "range"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "range", column = "age", preceding = 10, following = 1,
-                             name = "range", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["range"].max() == pytest.approx(70.08)
+                             name = "range", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["range"].max() == pytest.approx(72)
 
         # func = "sem"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "sem", column = "age", preceding = 10, following = 1,
-                             name = "sem", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["sem"].median() == pytest.approx(4.026658577)
+                             name = "sem", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["sem"].median() == pytest.approx(4.28774427352888)
 
         # func = "skewness"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "skewness", column = "age", preceding = 10, following = 1,
-                             name = "skewness", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_mean_skewness"].min() == pytest.approx(9.41666666)
-        assert titanic_copy["age_std_skewness"].median() == pytest.approx(12.705353)
-        assert titanic_copy["age_count_skewness"].max() == pytest.approx(12)
-        assert titanic_copy["skewness"].max() == pytest.approx(7.23371596)
+                             name = "skewness", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["skewness"].max() == pytest.approx(21.6801549178229)
 
         # func = "sum"
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(func = "sum", column = "age", preceding = 10, following = 1,
-                             name = "sum", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["sum"].max() == pytest.approx(524)
+                             name = "sum", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["sum"].max() == pytest.approx(545)
 
         # func = "std"
         titanic_copy = titanic_vd.copy()
-        #titanic_copy.rolling(func = "std", column = "pclass", preceding = 10, following = 1,
-        #                     name = "std", order_by = {"home.dest" : "asc"})
-
-        #assert titanic_copy["std"].median() == pytest.approx()
+        titanic_copy.rolling(func = "std", column = "pclass", preceding = 10, following = 1,
+                             name = "std", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["std"].median() == pytest.approx(0.792961461098759)
 
         # func = "var"
         titanic_copy = titanic_vd.copy()
-        #titanic_copy.rolling(func = "std", column = "pclass", preceding = 10, following = 1,
-        #                     name = "std", order_by = {"home.dest" : "asc"})
+        titanic_copy.rolling(func = "var", column = "pclass", preceding = 10, following = 1,
+                             name = "var", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["var"].median() == pytest.approx(0.628787878787879)
 
-        #assert titanic_copy["std"].median() == pytest.approx()
-
-    @pytest.mark.xfail(reason = "big variance in the result of func = ema")
     def test_vDF_analytic(self, titanic_vd):
         # func = "aad"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func = "aad", column = "age", by = ["pclass"], order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanby_pclass_order_by_homedest"].max() == pytest.approx(39.23145985)
-        assert titanic_copy["aad_age__by_pclass_order_by_homedest_aad"].max() == pytest.approx(12.16526772)
+        titanic_copy.analytic(func = "aad", column = "age", by = ["pclass"], name = "aad")
+        assert titanic_copy["aad"].max() == pytest.approx(12.1652677287016)
 
         # func = "beta"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "beta", column = "age", column2 = "fare",
-                              by = ["pclass"], order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanby_pclass_order_by_homedest"].min() == pytest.approx(25.16945492)
-        assert titanic_copy["fare_meanby_pclass_order_by_homedest"].min() == pytest.approx(25.16945492)
+                              by = ["pclass"], name = "beta")
+        assert titanic_copy["beta"].min() == pytest.approx(-0.198944792925276)
 
         # func = "count"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func = "count", column = "age", by = ["pclass"],
-                              order_by = {"home.dest" : "asc"}, name = "age_count")
-
+        titanic_copy.analytic(func = "count", column = "age", by = ["pclass"], name = "age_count")
         assert titanic_copy["age_count"].max() == 477
 
         # func = "corr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "corr", column = "age", column2 = "fare",
-                              name = "corr", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
-        assert titanic_copy["fare_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
+                              name = "corr")
         assert titanic_copy["corr"].median() == pytest.approx(0.1905927909)
 
         # func = "cov"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "cov", column = "age", column2 = "fare",
-                              name = "cov", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
-        assert titanic_copy["fare_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
+                              name = "cov")
         assert titanic_copy["cov"].median() == pytest.approx(144.8432978)
 
         # func = "ema"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "ema", column = "age", by = ["survived"],
-                              name = "ema", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["ema"].min() == pytest.approx(12)
+                              name = "ema", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["ema"].min() == pytest.approx(5.98894892036915)
 
         # func = "first_value"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "first_value", column = "age",
-                              name = "first_value", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["first_value"].min() == pytest.approx(28.5)
+                              name = "first_value", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["first_value"].min() == pytest.approx(42)
 
         # func = "iqr"
-        #titanic_copy = titanic_vd.copy()
-        #titanic_copy.analytic(func = "iqr", column = "age",
-        #                      name = "iqr", order_by = {"home.dest" : "asc"})
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.analytic(func = "iqr", column = "age",
+                              name = "iqr")
+        assert titanic_copy["iqr"].min() == pytest.approx(18)
 
-        #assert titanic_copy[""].min() == pytest.approx()
-
-        # func = "kurtosis"
+        # func = "dense_rank"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "dense_rank",
-                              name = "dense_rank", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["dense_rank"].max() == pytest.approx(360)
+                              name = "dense_rank", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["dense_rank"].max() == pytest.approx(1234)
 
         # func = "kurtosis"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "kurtosis", column = "age",
-                              name = "kurtosis", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
-        assert titanic_copy["age_stdorder_by_homedest"].median() == pytest.approx(14.43530462)
-        assert titanic_copy["age_countorder_by_homedest"].max() == pytest.approx(997)
-        assert titanic_copy["kurtosis_kurtosis"].min() == pytest.approx(0.1568969133)
+                              name = "kurtosis")
+        assert titanic_copy["kurtosis"].min() == pytest.approx(0.1568969133)
 
         # func = "jb"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "jb", column = "age",
-                              name = "jb", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
-        assert titanic_copy["age_stdorder_by_homedest"].median() == pytest.approx(14.43530462)
-        assert titanic_copy["age_countorder_by_homedest"].max() == pytest.approx(997)
-        assert titanic_copy["jb_jb"].min() == pytest.approx(28.802353)
+                              name = "jb")
+        assert titanic_copy["jb"].min() == pytest.approx(28.802353)
 
         # func = "lead"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "lead", column = "age",
-                              name = "lead", order_by = {"home.dest" : "asc"})
-
+                              name = "lead", order_by = {"name": "asc", "ticket": "desc"})
         assert titanic_copy["lead"].min() == pytest.approx(0.33)
 
         # func = "lag"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "lag", column = "age",
-                              name = "lag", order_by = {"home.dest" : "asc"})
-
+                              name = "lag", order_by = {"name": "asc", "ticket": "desc"})
         assert titanic_copy["lag"].min() == pytest.approx(0.33)
 
-        # func = "last_value"
+        # func = "last_value" -
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "last_value", column = "age",
-                              name = "last_value", order_by = {"home.dest" : "asc"})
-
+                              name = "last_value", order_by = {"name": "asc", "ticket": "desc"})
         assert titanic_copy["last_value"].min() == pytest.approx(0.33)
 
         # func = "mad"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "mad", column = "age",
-                              name = "mad", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_medianorder_by_homedest"].min() == pytest.approx(28)
-        assert titanic_copy["mad_mad"].min() == pytest.approx(11.14643931)
+                              name = "mad")
+        assert titanic_copy["mad"].min() == pytest.approx(11.14643931)
 
         # func = "max"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "max", column = "age",
-                              name = "max", order_by = {"home.dest" : "asc"})
-
+                              name = "max")
         assert titanic_copy["max"].min() == pytest.approx(80)
 
         # func = "mean"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "mean", column = "age",
-                              name = "mean", order_by = {"home.dest" : "asc"})
-
+                              name = "mean")
         assert titanic_copy["mean"].min() == pytest.approx(30.15245737)
 
         # func = "median"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "median", column = "age",
-                              name = "median", order_by = {"home.dest" : "asc"})
-
+                              name = "median")
         assert titanic_copy["median"].min() == pytest.approx(28)
 
         # func = "min"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "min", column = "age",
-                              name = "min", order_by = {"home.dest" : "asc"})
-
+                              name = "min")
         assert titanic_copy["min"].max() == pytest.approx(0.33)
 
         # func = "mode"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "mode", column = "embarked",
-                              name = "mode", order_by = {"home.dest" : "asc"})
-
+                              name = "mode")
         assert titanic_copy["mode"].distinct() == ['S']
         assert titanic_copy["mode_count"].distinct() == [873]
 
         # func = "q%"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "20%", column = "age",
-                              name = "q20%", order_by = {"home.dest" : "asc"})
-
+                              name = "q20%")
         assert titanic_copy["q20%"].max() == pytest.approx(19)
 
         # func = "pct_change"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "pct_change", column = "age",
-                              name = "pct_change", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["pct_change"].max() == pytest.approx(166.666666666)
+                              name = "pct_change", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["pct_change"].max() == pytest.approx(103.03030303030303)
 
         # func = "percent_rank"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "percent_rank",
-                              name = "percent_rank", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["percent_rank"].max() == pytest.approx(0.5725871857)
+                              name = "percent_rank", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["percent_rank"].max() == pytest.approx(1)
 
         # func = "prod"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "prod", column = "fare", by = ["pclass"],
-                              name = "prod", order_by = {"home.dest" : "asc"})
-
+                              name = "prod")
         assert titanic_copy["prod"].min() == 0
 
         # func = "range"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "range", column = "age",
-                              name = "range", order_by = {"home.dest" : "asc"})
-
+                              name = "range")
         assert titanic_copy["range"].max() == pytest.approx(79.67)
 
         # func = "rank"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "rank",
-                              name = "rank", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["rank"].max() == pytest.approx(707)
+                              name = "rank", order_by = {"name": "asc", "ticket": "desc"})
+        assert titanic_copy["rank"].max() == pytest.approx(1234)
 
         # func = "row_number"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "row_number",
-                              name = "row_number", order_by = {"home.dest" : "asc"})
-
+                              name = "row_number", order_by = {"name": "asc", "ticket": "desc"})
         assert titanic_copy["row_number"].max() == pytest.approx(1234)
 
         # func = "sem"
         titanic_copy = titanic_vd.copy()
-        #titanic_copy.analytic(func = "sem", column = "age",
-        #                      name = "sem", order_by = {"home.dest" : "asc"})
-
-        #assert titanic_copy["sem"].median() == pytest.approx(4.026658577)
+        titanic_copy.analytic(func = "sem", column = "age",
+                              name = "sem")
+        assert titanic_copy["sem"].median() == pytest.approx(0.457170684605937)
 
         # func = "skewness"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "skewness", column = "age",
-                              name = "skewness", order_by = {"home.dest" : "asc"})
-
-        assert titanic_copy["age_meanorder_by_homedest"].min() == pytest.approx(30.15245737)
-        assert titanic_copy["age_stdorder_by_homedest"].median() == pytest.approx(14.43530462)
-        assert titanic_copy["age_countorder_by_homedest"].max() == pytest.approx(997)
-        assert titanic_copy["skewness_skewness"].max() == pytest.approx(0.4088764607)
+                              name = "skewness")
+        assert titanic_copy["skewness"].max() == pytest.approx(0.4088764607)
 
         # func = "sum"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "sum", column = "age",
-                              name = "sum", order_by = {"home.dest" : "asc"})
-
+                              name = "sum")
         assert titanic_copy["sum"].max() == pytest.approx(30062)
 
         # func = "std"
-        #titanic_copy = titanic_vd.copy()
-        #titanic_copy.analytic(func = "std", column = "age",
-        #                      name = "std", order_by = {"home.dest" : "asc"})
-
-        #assert titanic_copy["std"].median() == pytest.approx()
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.analytic(func = "std", column = "age",
+                              name = "std")
+        assert titanic_copy["std"].median() == pytest.approx(14.4353046299159)
 
         # func = "unique"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(func = "unique", column = "pclass",
-                              name = "unique", order_by = {"home.dest" : "asc"})
-
+                              name = "unique")
         assert titanic_copy["unique"].max() == pytest.approx(3)
 
         # func = "var"
-        #titanic_copy = titanic_vd.copy()
-        #titanic_copy.analytic(func = "var", column = "age",
-        #                      name = "var", order_by = {"home.dest" : "asc"})
+        titanic_copy = titanic_vd.copy()
+        titanic_copy.analytic(func = "var", column = "age",
+                              name = "var")
+        assert titanic_copy["var"].median() == pytest.approx(208.378019758472)
 
-        #assert titanic_copy["var"].median() == pytest.approx()
-
-    @pytest.mark.xfail(reason = "the answers change time-to-time")
     def test_vDF_asfreq(self, smart_meters_vd):
         # bfill method
         result1 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
                                          method = {"val": "bfill"}, by = ["id"])
-        result1.sort({"time" : "asc"})
+        result1.sort({"id": "asc", "time" : "asc"})
 
         assert result1.shape() == (148189, 3)
-        assert result1["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
-        assert result1["id"][2] == 2
-        assert result1["val"][2] == pytest.approx(0.037)
+        assert result1["time"][2] == datetime.datetime(2014, 1, 1, 13, 0)
+        assert result1["id"][2] == 0
+        assert result1["val"][2] == pytest.approx(0.029)
 
         # ffill
         result2 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
                                          method = {"val": "ffill"}, by = ["id"])
-        result2.sort({"time" : "asc"})
+        result2.sort({"id": "asc", "time" : "asc"})
 
         assert result2.shape() == (148189, 3)
-        assert result2["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
-        assert result2["id"][2] == 2
-        assert result2["val"][2] == pytest.approx(0.037)
+        assert result2["time"][2] == datetime.datetime(2014, 1, 1, 13, 0)
+        assert result2["id"][2] == 0
+        assert result2["val"][2] == pytest.approx(0.277)
 
         # linear method
         result3 = smart_meters_vd.asfreq(ts = "time", rule = "1 hour",
                                          method = {"val": "linear"}, by = ["id"])
-        result3.sort({"time" : "asc"})
+        result3.sort({"id": "asc", "time" : "asc"})
 
         assert result3.shape() == (148189, 3)
-        assert result3["time"][2] == datetime.datetime(2014, 1, 1, 3, 0)
-        assert result3["id"][2] == 2
-        assert result3["val"][2] == pytest.approx(0.06116129032)
+        assert result3["time"][2] == datetime.datetime(2014, 1, 1, 13, 0)
+        assert result3["id"][2] == 0
+        assert result3["val"][2] == pytest.approx(0.209363636363636)
 
-    @pytest.mark.xfail(reason = "the answers change time-to-time")
     def test_vDF_sessionize(self, smart_meters_vd):
         smart_meters_copy = smart_meters_vd.copy()
 
@@ -511,13 +423,13 @@ class TestvDFFeatureEngineering:
         assert exception_info.match("seems to be incorrect")
 
         smart_meters_copy.sessionize(ts = "time", by = ["id"], session_threshold = "1 hour", name = "slot")
-        smart_meters_copy.sort({"time" : "asc"})
+        smart_meters_copy.sort({"id" : "asc", "time" : "asc"})
 
         assert smart_meters_copy.shape() == (11844, 4)
-        assert smart_meters_copy["time"][2] == datetime.datetime(2014, 1, 1, 15, 30)
-        assert smart_meters_copy["val"][2] == 0.235
-        assert smart_meters_copy["id"][2] == 9
-        assert smart_meters_copy["slot"][2] == 1
+        assert smart_meters_copy["time"][2] == datetime.datetime(2014, 1, 2, 10, 45)
+        assert smart_meters_copy["val"][2] == 0.321
+        assert smart_meters_copy["id"][2] == 0
+        assert smart_meters_copy["slot"][2] == 2
 
     def test_vDF_case_when(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
@@ -876,4 +788,3 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
 
         assert titanic_copy.get_columns() == titanic_vd.get_columns()
-
