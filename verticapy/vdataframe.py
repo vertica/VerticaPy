@@ -2208,7 +2208,6 @@ vcolumns : vcolumn
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
         if not (name):
             name = gen_name([func, column, column2] + by_name + by_order)
-        by_order_name = gen_name(by_name + by_order)
         by = vdf_columns_names(by, self)
         func = func.lower()
         by = ", ".join(by)
@@ -2238,35 +2237,29 @@ vcolumns : vcolumn
         ) or ("%" in func):
             if order_by:
                 print(
-                    "\u26A0 '{}' analytic function doesn't need an order by clause, it was ignored".format(
+                    "\u26A0 '{}' analytic method doesn't need an order by clause, it was ignored".format(
                         func
                     )
                 )
             elif not (column):
                 raise MissingColumn(
-                    "The parameter 'column' must be a vDataFrame Column when using analytic function '{}'".format(
+                    "The parameter 'column' must be a vDataFrame Column when using analytic method '{}'".format(
                         func
                     )
                 )
             if func in ("skewness", "kurtosis", "aad", "mad", "jb"):
-                mean_name = "{}_mean{}".format(column.replace('"', ""), by_order_name)
-                median_name = "{}_median{}".format(
-                    column.replace('"', ""), by_order_name
-                )
-                std_name = "{}_std{}".format(column.replace('"', ""), by_order_name)
-                count_name = "{}_count{}".format(column.replace('"', ""), by_order_name)
-                all_cols = self.get_columns()
-                if (str_column(median_name) not in all_cols) and (func == "mad"):
+                mean_name = "{}_mean_{}".format(column.replace('"', ""), random.randint(0, 10000000))
+                median_name = "{}_median_{}".format(
+                    column.replace('"', ""), random.randint(0, 10000000))
+                std_name = "{}_std_{}".format(column.replace('"', ""), random.randint(0, 10000000))
+                count_name = "{}_count_{}".format(column.replace('"', ""), random.randint(0, 10000000))
+                all_cols = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
+                if (func == "mad"):
                     self.eval(median_name, "MEDIAN({}) OVER ({})".format(column, by))
-                if (str_column(mean_name) not in all_cols) and (func != "mad"):
+                else:
                     self.eval(mean_name, "AVG({}) OVER ({})".format(column, by))
-                if (str_column(std_name) not in all_cols) and (
-                    func not in ("aad", "mad")
-                ):
+                if (func not in ("aad", "mad")):
                     self.eval(std_name, "STDDEV({}) OVER ({})".format(column, by))
-                if (str_column(count_name) not in all_cols) and (
-                    func not in ("aad", "mad")
-                ):
                     self.eval(count_name, "COUNT({}) OVER ({})".format(column, by))
                 if func == "kurtosis":
                     self.eval(
@@ -2399,7 +2392,6 @@ vcolumns : vcolumn
                         column, by, column, by
                     ),
                 )
-                expr = "STDDEV({})# / SQRT(COUNT({})#)".format(column, column)
             elif func == "prod":
                 self.eval(
                     name,
@@ -2429,7 +2421,7 @@ vcolumns : vcolumn
                 "pct_change",
             ):
                 raise ParameterError(
-                    "The parameter 'column' must be a vDataFrame Column when using analytic function '{}'".format(
+                    "The parameter 'column' must be a vDataFrame Column when using analytic method '{}'".format(
                         func
                     )
                 )
@@ -2442,7 +2434,7 @@ vcolumns : vcolumn
                 "exponential_moving_average",
             ):
                 raise ParameterError(
-                    "The parameter 'column' must be empty when using analytic function '{}'".format(
+                    "The parameter 'column' must be empty when using analytic method '{}'".format(
                         func
                     )
                 )
@@ -2471,42 +2463,42 @@ vcolumns : vcolumn
         elif func in ("corr", "cov", "beta"):
             if order_by:
                 print(
-                    "\u26A0 '{}' analytic function doesn't need an order by clause, it was ignored".format(
+                    "\u26A0 '{}' analytic method doesn't need an order by clause, it was ignored".format(
                         func
                     )
                 )
             if not (column):
                 raise MissingColumn(
-                    "The parameter 'column' must be a vcolumn when using analytic function '{}'".format(
+                    "The parameter 'column' must be a vcolumn when using analytic method '{}'".format(
                         func
                     )
                 )
             elif not (column2):
                 raise MissingColumn(
-                    "The parameter 'column2' must be a vcolumn when using analytic function '{}'".format(
+                    "The parameter 'column2' must be a vcolumn when using analytic method '{}'".format(
                         func
                     )
                 )
-            all_cols = self.get_columns()
-            mean_name = "{}_mean{}".format(column.replace('"', ""), by_order_name)
-            if str_column(mean_name) not in all_cols:
-                self.eval(mean_name, "AVG({}) OVER ({})".format(column, by))
-            mean_name2 = "{}_mean{}".format(column2.replace('"', ""), by_order_name)
-            if str_column(mean_name2) not in all_cols:
-                self.eval(mean_name2, "AVG({}) OVER ({})".format(column, by))
-            if func == "corr":
-                den = " / (STDDEV({}) OVER ({}) * STDDEV({}) OVER ({}))".format(
-                    column, by, column2, by
-                )
-            elif func == "beta":
-                den = " / (VARIANCE({}) OVER ({}))".format(column2, by)
+            if column == column2:
+                if func == "cov":
+                    expr = "VARIANCE({}) OVER ({})".format(column, by)
+                else:
+                    expr = 1
             else:
-                den = ""
+                if func == "corr":
+                    den = " / (STDDEV({}) OVER ({}) * STDDEV({}) OVER ({}))".format(
+                        column, by, column2, by
+                    )
+                elif func == "beta":
+                    den = " / (VARIANCE({}) OVER ({}))".format(column2, by)
+                else:
+                    den = ""
+                expr = "(AVG({} * {}) OVER ({}) - AVG({}) OVER ({}) * AVG({}) OVER ({})){}".format(
+                    column, column2, by, column, by, column2, by, den
+                )
             self.eval(
                 name,
-                "AVG(({} - {}) * ({} - {})) OVER ({}){}".format(
-                    column, mean_name, column2, mean_name2, by, den
-                ),
+                expr,
             )
         else:
             try:
@@ -2518,10 +2510,16 @@ vcolumns : vcolumn
                 )
             except:
                 raise FunctionError(
-                    "The aggregate function '{}' doesn't exist or is not managed by the analytic function. If you want more flexibility use the 'eval' function".format(
+                    "The aggregate function '{}' doesn't exist or is not managed by the 'analytic' method. If you want more flexibility use the 'eval' method".format(
                         func
                     )
                 )
+        if func in ("kurtosis", "skewness", "jb"):
+            self._VERTICAPY_VARIABLES_["exclude_columns"] += [str_column(mean_name), str_column(std_name), str_column(count_name)]
+        elif func in ("aad"):
+            self._VERTICAPY_VARIABLES_["exclude_columns"] += [str_column(mean_name)]
+        elif func in ("mad"):
+            self._VERTICAPY_VARIABLES_["exclude_columns"] += [str_column(median_name)]
         return self
 
     # ---#
@@ -6979,17 +6977,15 @@ vcolumns : vcolumn
         windows_frame = " OVER ({}{} {} BETWEEN {} AND {})".format(
             by, order_by, method.upper(), preceding, following
         )
-        all_cols = [elem.replace('"', "").lower() for elem in self.get_columns()]
+        all_cols = [elem.replace('"', "").lower() for elem in self._VERTICAPY_VARIABLES_["columns"]]
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
-                mean_name = "{}_mean_{}".format(column.replace('"', ""), name).lower()
-                std_name = "{}_std_{}".format(column.replace('"', ""), name).lower()
-                count_name = "{}_count_{}".format(column.replace('"', ""), name).lower()
-                if mean_name not in all_cols:
-                    self.eval(mean_name, "AVG({}){}".format(column, windows_frame))
-                if (std_name not in all_cols) and (func != "aad"):
+                mean_name = "{}_mean_{}".format(column.replace('"', ""), random.randint(0, 10000000)).lower()
+                std_name = "{}_std_{}".format(column.replace('"', ""), random.randint(0, 10000000)).lower()
+                count_name = "{}_count_{}".format(column.replace('"', ""), random.randint(0, 10000000)).lower()
+                self.eval(mean_name, "AVG({}){}".format(column, windows_frame))
+                if (func != "aad"):
                     self.eval(std_name, "STDDEV({}){}".format(column, windows_frame))
-                if (count_name not in all_cols) and (func != "aad"):
                     self.eval(count_name, "COUNT({}){}".format(column, windows_frame))
                 if func == "kurtosis":
                     expr = "AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
@@ -7039,21 +7035,21 @@ vcolumns : vcolumn
         elif func in ("corr", "cov", "beta"):
             columns_check([column2], self)
             column2 = vdf_columns_names([column2], self)[0]
-            mean_name = "{}_mean_{}".format(column.replace('"', ""), name).lower()
-            mean_name2 = "{}_mean_{}".format(column2.replace('"', ""), name).lower()
-            if mean_name not in all_cols:
-                self.eval(mean_name, "AVG({}){}".format(column, windows_frame))
-            if mean_name2 not in all_cols:
-                self.eval(mean_name2, "AVG({}){}".format(column2, windows_frame))
-            if func == "corr":
-                den = " / (STDDEV({})# * STDDEV({})#)".format(column, column2)
-            elif func == "beta":
-                den = " / (VARIANCE({})#)".format(column2)
+            if column2 == column:
+                if func == "cov":
+                    expr = "VARIANCE({})#".format(column)
+                else:
+                    expr = "1"
             else:
-                den = ""
-            expr = "AVG(({} - {}) * ({} - {}))#{}".format(
-                column, mean_name, column2, mean_name2, den
-            )
+                if func == "corr":
+                    den = " / (STDDEV({})# * STDDEV({})#)".format(column, column2)
+                elif func == "beta":
+                    den = " / (VARIANCE({})#)".format(column2)
+                else:
+                    den = ""
+                expr = "(AVG({} * {})# - AVG({})# * AVG({})#) {}".format(
+                    column, column2, column, column2, den
+                )
         elif func == "range":
             expr = "MAX({})# - MIN({})#".format(column, column)
         elif func == "sem":
@@ -7061,7 +7057,12 @@ vcolumns : vcolumn
         else:
             expr = "{}({})#".format(func.upper(), column)
         expr = expr.replace("#", windows_frame)
-        return self.eval(name=name, expr=expr)
+        self.eval(name=name, expr=expr)
+        if func in ("kurtosis", "skewness", "jb"):
+            self._VERTICAPY_VARIABLES_["exclude_columns"] += [str_column(mean_name), str_column(std_name), str_column(count_name)]
+        elif func in ("aad"):
+            self._VERTICAPY_VARIABLES_["exclude_columns"] += [str_column(mean_name)]
+        return self
 
     # ---#
     def sample(self, x: float):
@@ -8214,7 +8215,7 @@ vcolumns : vcolumn
             [
                 ("name", name, [str],),
                 ("usecols", usecols, [list],),
-                ("relation_type", relation_type, ["view", "temporary", "table"],),
+                ("relation_type", relation_type, ["view", "temporary", "table", "local"],),
                 ("inplace", inplace, [bool],),
                 ("db_filter", db_filter, [str, list],),
                 ("nb_split", nb_split, [int, float],),
