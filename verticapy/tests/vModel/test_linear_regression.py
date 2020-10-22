@@ -159,7 +159,7 @@ class TestLogisticRegression:
         assert model.get_params()['max_iter'] == 1000
 
     @pytest.mark.skip(reason="feautre not implemented")
-    def test_model_from_vDF(self, winequality_vd):
+    def test_model_from_vDF(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS linreg_from_vDF")
         model_test = LinearRegression("linreg_from_vDF", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
