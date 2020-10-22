@@ -64,6 +64,7 @@ class TestLogisticRegression:
 
         assert fim["index"] == ['alcohol', 'residual_sugar', 'citric_acid']
         assert fim["importance"] == [52.25, 32.58, 15.17]
+        # TODO: it is nicer not to have Decimal for sign
         assert fim["sign"] == [Decimal('1'), Decimal('1'), Decimal('1')]
 
     def test_get_model_attribute(self, model):
