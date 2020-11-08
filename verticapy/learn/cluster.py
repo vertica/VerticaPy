@@ -145,6 +145,14 @@ tol: float, optional
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 3, 1])
 
+     # ---#
+    def get_tree(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns a table with all the BK tree information.
+        """
+        return self.cluster_centers_
+
     # ---#
     def plot_tree(self, pic_path: str = ""):
         """
@@ -159,7 +167,7 @@ tol: float, optional
         check_types(
             [("pic_path", pic_path, [str],),]
         )
-        plot_BKtree(self.centers_.values, pic_path=pic_path)
+        plot_BKtree(self.cluster_centers_.values, pic_path=pic_path)
 
 
 # ---#

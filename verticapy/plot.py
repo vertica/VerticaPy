@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 from random import shuffle
-import math, statistics
+import math, statistics, warnings
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -539,11 +539,11 @@ def boxplot2D(vdf, columns: list = [], ax=None):
         columns = vdf.numcol()
     for column in columns:
         if column not in vdf.numcol():
-            print(
-                "\u26A0 Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(
+            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
                     column
                 )
-            )
+                warnings.warn(warning_message, Warning)
             columns.remove(column)
     if not (columns):
         raise MissingColumn("No numerical columns found to draw the multi boxplot")
@@ -776,17 +776,11 @@ def cmatrix(
     with_numbers: bool = True,
     mround: int = 3,
     is_vector: bool = False,
+    interpolation: str = "nearest",
+    inverse: bool = False,
+    extent: list = [],
     ax=None,
 ):
-    matrix_array = [
-        [
-            round(float(matrix[i][j]), mround)
-            if (matrix[i][j] != None and matrix[i][j] != "")
-            else float("nan")
-            for i in range(1, m + 1)
-        ]
-        for j in range(1, n + 1)
-    ]
     if is_vector:
         is_vector = True
         vector = []
@@ -800,24 +794,40 @@ def cmatrix(
         m, n = n, m
         x_label, y_label = y_label, x_label
         columns_x, columns_y = columns_y, columns_x
+    else:
+        matrix_array = [
+            [
+                round(float(matrix[i][j]), mround)
+                if (matrix[i][j] != None and matrix[i][j] != "")
+                else float("nan")
+                for i in range(1, m + 1)
+            ]
+            for j in range(1, n + 1)
+        ]
+        if inverse:
+            matrix_array.reverse()
+            columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook():
+        if isnotebook() and not(inverse):
             fig.set_size_inches(min(m, 500), min(n, 500))
+        else:
+            fig.set_size_inches(8, 6)
     else:
         fig = plt
     ax.set_title(title)
     if (vmax == 1) and vmin in [0, -1]:
         im = ax.imshow(
-            matrix_array, cmap=cmap, interpolation="nearest", vmax=vmax, vmin=vmin
+            matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
         )
     else:
-        im = ax.imshow(matrix_array, cmap=cmap, interpolation="nearest")
+        im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation, extent=extent)
     fig.colorbar(im, ax=ax).set_label(colorbar)
-    ax.set_yticks([i for i in range(0, n)])
-    ax.set_xticks([i for i in range(0, m)])
-    ax.set_xticklabels(columns_y, rotation=90)
-    ax.set_yticklabels(columns_x, rotation=0)
+    if not(extent):
+        ax.set_yticks([i for i in range(0, n)])
+        ax.set_xticks([i for i in range(0, m)])
+        ax.set_xticklabels(columns_y, rotation=90)
+        ax.set_yticklabels(columns_x, rotation=0)
     if with_numbers:
         for y_index in range(n):
             for x_index in range(m):
@@ -994,88 +1004,6 @@ def compute_plot_variables(
 
 
 # ---#
-def density(
-    vdf,
-    a=None,
-    kernel: str = "gaussian",
-    smooth: int = 200,
-    color: str = "#FE5016",
-    ax=None,
-):
-    if kernel == "gaussian":
-
-        def fkernel(x):
-            try:
-                return math.exp(-1 / 2 * ((x) ** 2)) / (math.sqrt(2 * math.pi))
-            except:
-                return 0
-
-    elif kernel == "logistic":
-
-        def fkernel(x):
-            try:
-                return 1 / (2 + math.exp(x) + math.exp(-x))
-            except:
-                return 0
-
-    elif kernel == "sigmoid":
-
-        def fkernel(x):
-            try:
-                return 2 / (math.pi * (math.exp(x) + math.exp(-x)))
-            except:
-                return 0
-
-    elif kernel == "silverman":
-
-        def fkernel(x):
-            return (
-                math.exp(-1 / math.sqrt(2) * abs(x))
-                / (2)
-                * math.sin(abs(x) / math.sqrt(2) + math.pi / 4)
-            )
-
-    else:
-        raise ParameterError(
-            "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]"
-        )
-    if a == None:
-        a = max(1.06 * vdf.std() / vdf.count() ** (1.0 / 5.0), 1e-5)
-    if not (vdf.isnum()):
-        raise TypeError("Cannot draw a density plot for non-numerical columns")
-    x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method="count", max_cardinality=1
-    )
-    x = [item - h / 2 / 0.94 for item in x]
-    N = sum(y)
-    y_smooth = []
-    x_smooth = [(max(x) - min(x)) * i / smooth + min(x) for i in range(0, smooth + 1)]
-    n = len(y)
-    for x0_smooth in x_smooth:
-        K = sum(
-            [
-                y[i] * fkernel(((x0_smooth - x[i]) / a) ** 2) / (a * N)
-                for i in range(0, len(x))
-            ]
-        )
-        y_smooth += [K]
-    if not (ax):
-        fig, ax = plt.subplots()
-        if isnotebook():
-            fig.set_size_inches(7, 5)
-        ax.set_facecolor("#F5F5F5")
-        ax.grid()
-        ax.set_axisbelow(True)
-    ax.plot(x_smooth, y_smooth, color="#222222")
-    ax.set_xlim(min(x), max(x))
-    ax.set_ylim(0, max(y_smooth) * 1.1)
-    ax.fill_between(x_smooth, y_smooth, facecolor=color, alpha=0.7)
-    ax.set_ylabel("density")
-    ax.set_title("Distribution of {} ({} kernel)".format(vdf.alias, kernel))
-    return ax
-
-
-# ---#
 def gen_cmap():
     cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#FE5016"], N=1000)
     cm2 = LinearSegmentedColormap.from_list(
@@ -1203,6 +1131,7 @@ def hexbin(
         color=color,
         cmap=cmap,
         mincnt=1,
+        edgecolors=None,
     )
     if method == "density":
         fig.colorbar(imh).set_label(method)
@@ -1386,11 +1315,11 @@ def multiple_hist(
                 alpha -= 0.2
                 all_columns += [columns[idx]]
             else:
-                print(
-                    "\u26A0 Warning: {} is not numerical. Its histogram will not be draw.".format(
+                if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                    warning_message = "The Virtual Column {} is not numerical. Its histogram will not be draw.".format(
                         column
                     )
-                )
+                    warnings.warn(warning_message, Warning)
         ax.set_xlabel(", ".join(all_columns))
         if method == "density":
             ax.set_ylabel("Density")
@@ -1422,11 +1351,11 @@ def multi_ts_plot(
         columns = vdf.numcol()
     for column in columns:
         if not (vdf[column].isnum()):
-            print(
-                "\u26A0 Warning: The Virtual Column {} is not numerical.\nIt will be ignored.".format(
+            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
                     column
                 )
-            )
+                warnings.warn(warning_message, Warning)
             columns.remove(column)
     if not (columns):
         raise EmptyParameter("No numerical columns found to draw the multi TS plot")
@@ -1564,6 +1493,9 @@ def pivot_table(
     cmap: str = "Reds",
     with_numbers: bool = True,
     ax=None,
+    interpolation: str = "nearest",
+    return_ax: bool = False,
+    extent: list = [],
 ):
     if method == "median":
         method = "50%"
@@ -1786,7 +1718,7 @@ def pivot_table(
     ] + all_columns
     if show:
         all_count = [item[2] for item in query_result]
-        cmatrix(
+        ax = cmatrix(
             all_columns,
             all_column0_categories,
             all_column1_categories,
@@ -1800,8 +1732,13 @@ def pivot_table(
             x_label=columns[1],
             y_label=columns[0],
             with_numbers=with_numbers,
+            interpolation=interpolation,
+            inverse=True,
+            extent=extent,
             ax=ax,
         )
+        if return_ax:
+            return ax
     values = {all_columns[0][0]: all_columns[0][1 : len(all_columns[0])]}
     del all_columns[0]
     for column in all_columns:
@@ -1886,9 +1823,8 @@ def scatter2D(
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
     columns = [str_column(column) for column in columns]
     if (bbox) and len(bbox) != 4:
-        print(
-            "\u26A0 Warning: Parameter 'bbox' must be a list of 4 numerics containing the 'xlim' and 'ylim'.\nIt was ignored."
-        )
+        warning_message = "Parameter 'bbox' must be a list of 4 numerics containing the 'xlim' and 'ylim'.\nIt was ignored."
+        warnings.warn(warning_message, Warning)
         bbox = []
     for column in columns:
         if column not in vdf.get_columns():

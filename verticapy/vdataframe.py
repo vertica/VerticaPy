@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal
+import random, time, shutil, re, decimal, warnings
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -229,11 +229,10 @@ vcolumns : vcolumn
             for col_dtype in columns_dtype:
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
-                    print(
-                        "\u26A0 Warning : A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
-                            column, column.replace('"', "_")
-                        )
+                    warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}.".format(
+                        column, column.replace('"', "_")
                     )
+                    warnings.warn(warning_message, Warning)
                 new_vColumn = vColumn(
                     '"{}"'.format(column.replace('"', "_")),
                     parent=self,
@@ -1341,31 +1340,23 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         if erase:
             if not (columns):
-                columns = self._VERTICAPY_VARIABLES_["columns"]
-            all_cols = self.get_columns()
+                columns = self.get_columns()
             for column in columns:
-                self[column].catalog = {}
-                for method in [
-                    "cov",
-                    "pearson",
-                    "spearman",
-                    "kendall",
-                    "cramer",
-                    "biserial",
-                    "regr_avgx",
-                    "regr_avgy",
-                    "regr_count",
-                    "regr_intercept",
-                    "regr_r2",
-                    "regr_slope",
-                    "regr_sxx",
-                    "regr_sxy",
-                    "regr_syy",
-                ]:
-                    self[column].catalog[method] = {}
-                    for col in all_cols:
-                        if column in self[col].catalog[method]:
-                            del self[col].catalog[method][column]
+                self[column].catalog = {"cov": {}, 
+                                        "pearson": {}, 
+                                        "spearman": {}, 
+                                        "kendall": {},
+                                        "cramer": {},
+                                        "biserial": {},
+                                        "regr_avgx": {},
+                                        "regr_avgy": {},
+                                        "regr_count": {},
+                                        "regr_intercept": {},
+                                        "regr_r2": {},
+                                        "regr_slope": {},
+                                        "regr_sxx": {},
+                                        "regr_sxy": {},
+                                        "regr_syy": {}}
             self._VERTICAPY_VARIABLES_["count"] = -1
         elif matrix:
             matrix = str_function(matrix.lower())
@@ -3710,6 +3701,102 @@ vcolumns : vcolumn
         return self
 
     # ---#
+    def density(
+        self,
+        columns: list = [],
+        bandwidth: float = 1.0,
+        kernel: str = "gaussian",
+        nbins: int = 200,
+        xlim = None,
+        color: str = "#FE5016",
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the vcolumns Density Plot.
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will 
+        be selected.
+    bandwidth: float, optional
+        The bandwidth of the kernel.
+    kernel: str, optional
+        The method used for the plot.
+            gaussian  : Gaussian Kernel.
+            logistic  : Logistic Kernel.
+            sigmoid   : Sigmoid Kernel.
+            silverman : Silverman Kernel.
+    nbins: int, optional
+        Maximum number of points to use to evaluate the approximate density function.
+        Increasing this parameter will increase the precision but will also increase 
+        the time of the learning and the scoring phases.
+    xlim: tuple, optional
+        Set the x limits of the current axes.
+    color: str, optional
+        The Density Plot color.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].hist : Draws the Histogram of the vcolumn based on an aggregation.
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
+                ("bandwidth", bandwidth, [int, float],),
+                ("color", color, [str],),
+                ("nbins", nbins, [float, int],),
+            ]
+        )
+        columns_check(columns, self)
+        columns = vdf_columns_names(columns, self)
+        if not (columns):
+            columns = self.numcol()
+        else:
+            for column in columns:
+                if not (self[column].isnum()):
+                    raise TypeError(
+                        "vcolumn {} is not numerical to draw KDE".format(
+                            column
+                        )
+                    )
+        if not (columns):
+            raise EmptyParameter(
+                "No Numerical Columns found to draw KDE."
+            )
+        from verticapy.plot import gen_colors
+        from matplotlib.lines import Line2D
+        colors = gen_colors()
+        min_max = self.agg(func=["min", "max"], columns=columns)
+        if not xlim:
+            xmin = min(min_max["min"])
+            xmax = max(min_max["max"])
+        else:
+            xmin, xmax = xlim
+        custom_lines = []
+        for idx, column in enumerate(columns):
+            ax = self[column].density(bandwidth=bandwidth,
+                                      kernel=kernel,
+                                      nbins=nbins,
+                                      xlim=(xmin, xmax),
+                                      color=colors[idx%len(colors)],
+                                      ax=ax,)
+            custom_lines += [Line2D([0], [0], color=colors[idx%len(colors)], lw=4),]
+        ax.set_title("KernelDensity")
+        ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.set_ylim(bottom=0)
+        return ax
+
+    # ---#
     def describe(self, method: str = "auto", columns: list = [], unique: bool = True):
         """
     ---------------------------------------------------------------------------
@@ -3783,7 +3870,7 @@ vcolumns : vcolumn
                 for column in columns:
                     if not (self[column].isnum()):
                         raise TypeError(
-                            "vcolumn {} is not numerical to run describe using parameter method = 'numerical'".format(
+                            "vcolumn {} must be numerical to run describe using parameter method = 'numerical'".format(
                                 column
                             )
                         )
@@ -3817,12 +3904,11 @@ vcolumns : vcolumn
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 col_to_compute += [column]
                                 break
-                    else:
-                        print(
-                            "\u26A0 Warning : The vcolumn {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(
-                                column
-                            )
+                    elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                        warning_message = "The vcolumn {} is not numerical, it was ignored.\nTo get statistical information about all the different variables, please use the parameter method = 'categorical'.".format(
+                            column
                         )
+                        warnings.warn(warning_message, Warning)
                 for column in columns:
                     if column not in col_to_compute:
                         values["index"] += [column.replace('"', "")]
@@ -4108,7 +4194,7 @@ vcolumns : vcolumn
             self.filter(expr='"{}" = 1'.format(name),)
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
         elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
-            print("\u26A0 Warning : No duplicates detected")
+            print("No duplicates detected.")
         return self
 
     # ---#
@@ -4146,9 +4232,10 @@ vcolumns : vcolumn
         if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
             total -= self.shape()[0]
             if total == 0:
-                print("\u26A0 Warning : Nothing was dropped")
+                print("Nothing was dropped.")
             else:
-                print("{} element(s) was/were dropped".format(total))
+                conj = "s were " if total > 1 else " was "
+                print("{} element{}dropped.".format(total, conj))
         return self
 
     # ---#
@@ -4521,22 +4608,29 @@ vcolumns : vcolumn
             ]
         )
         columns_check([elem for elem in val] + [elem for elem in method], self)
-        if not (val) and not (method):
-            cols = self.get_columns()
-            for column in cols:
-                if numeric_only:
-                    if self[column].isnum():
+        print_info = self._VERTICAPY_VARIABLES_["display"]["print_info"]
+        self._VERTICAPY_VARIABLES_["display"]["print_info"] = False
+        try:
+            if not (val) and not (method):
+                cols = self.get_columns()
+                for column in cols:
+                    if numeric_only:
+                        if self[column].isnum():
+                            self[column].fillna(method="auto",)
+                    else:
                         self[column].fillna(method="auto",)
-                else:
-                    self[column].fillna(method="auto",)
-        else:
-            for column in val:
-                self[vdf_columns_names([column], self)[0]].fillna(val=val[column],)
-            for column in method:
-                self[vdf_columns_names([column], self)[0]].fillna(
-                    method=method[column],
-                )
-        return self
+            else:
+                for column in val:
+                    self[vdf_columns_names([column], self)[0]].fillna(val=val[column],)
+                for column in method:
+                    self[vdf_columns_names([column], self)[0]].fillna(
+                        method=method[column],
+                    )
+            self._VERTICAPY_VARIABLES_["display"]["print_info"] = print_info
+            return self
+        except:
+            self._VERTICAPY_VARIABLES_["display"]["print_info"] = print_info
+            raise
 
     # ---#
     def filter(
@@ -4582,10 +4676,11 @@ vcolumns : vcolumn
             count -= self.shape()[0]
             if count > 0:
                 if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                    print("{} element(s) was/were filtered".format(count))
+                    conj = "s were " if count > 1 else " was "
+                    print("{} element{}filtered".format(count, conj))
                 self.__add_to_history__(
-                    "[Filter]: {} element(s) was/were filtered using the filter '{}'".format(
-                        count, conditions
+                    "[Filter]: {} element{}filtered using the filter '{}'".format(
+                        count, conj, conditions
                     )
                 )
             elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
@@ -4606,26 +4701,26 @@ vcolumns : vcolumn
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                    print(
-                        "\u26A0 Warning : The expression '{}' is incorrect.\nNothing was filtered.".format(
-                            expr
-                        )
+                    warning_message = "The expression '{}' is incorrect.\nNothing was filtered.".format(
+                        expr
                     )
+                    warnings.warn(warning_message, Warning)
                 return self
             if count > 0:
                 self.__update_catalog__(erase=True)
                 self._VERTICAPY_VARIABLES_["count"] = new_count
+                conj = "s were " if count > 1 else " was "
                 if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                    print("{} element(s) was/were filtered".format(count))
+                    print("{} element{}filtered.".format(count, conj))
                 self.__add_to_history__(
-                    "[Filter]: {} element(s) was/were filtered using the filter '{}'".format(
-                        count, expr
+                    "[Filter]: {} element{}filtered using the filter '{}'".format(
+                        count, conj, expr
                     )
                 )
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if self._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                    print("\u26A0 Warning : Nothing was filtered.")
+                    print("Nothing was filtered.")
         return self
 
     # ---#
@@ -4694,7 +4789,8 @@ vcolumns : vcolumn
         check_types([("exclude_columns", exclude_columns, [list],)])
         columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         result = []
-        exclude_columns += self._VERTICAPY_VARIABLES_["exclude_columns"]
+        exclude_columns = [elem for elem in exclude_columns]
+        exclude_columns += [elem for elem in self._VERTICAPY_VARIABLES_["exclude_columns"]]
         exclude_columns = [elem.replace('"', "").lower() for elem in exclude_columns]
         for column in columns:
             if column.replace('"', "").lower() not in exclude_columns:
@@ -4763,12 +4859,11 @@ vcolumns : vcolumn
                 self[column].get_dummies(
                     "", prefix_sep, drop_first, use_numbers_as_suffix
                 )
-            elif cols_hand:
-                print(
-                    "\u26A0 Warning : The vcolumn {} was ignored because of its high cardinality\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vcolumn get_dummies method".format(
-                        column
-                    )
+            elif cols_hand and self._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                warning_message = "The vcolumn {} was ignored because of its high cardinality.\nIncrease the parameter 'max_cardinality' to solve this issue or use directly the vcolumn get_dummies method.".format(
+                    column
                 )
+                warnings.warn(warning_message, Warning)
         return self
 
     # ---#
@@ -5074,6 +5169,101 @@ vcolumns : vcolumn
     vDataFrame.tail : Returns the vDataFrame tail.
         """
         return self.iloc(limit=limit, offset=0)
+
+    # ---#
+    def heatmap(
+        self,
+        columns: list,
+        method: str = "count",
+        of: str = "",
+        h: tuple = (None, None),
+        cmap: str = "",
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Heatmap of the two input vcolumns.
+
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have two elements.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of (ex: 50% to get the median).
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    h: tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. Optimized h will be computed 
+        if the parameter is empty or invalid.
+    cmap: str, optional
+        Color Map.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.pivot_table  : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("method", method, [str],),
+                ("of", of, [str],),
+                ("h", h, [list],),
+                ("cmap", cmap, [str],),
+            ]
+        )
+        method = method.lower()
+        columns_check(columns, self, [2])
+        columns = vdf_columns_names(columns, self)
+        if of:
+            columns_check([of], self)
+            of = vdf_columns_names([of], self)[0]
+        if not (cmap):
+            from verticapy.plot import gen_cmap
+
+            cmap = gen_cmap()[0]
+
+        for column in columns:
+            if not (self[column].isnum()):
+                raise TypeError(
+                    "vcolumn {} must be numerical to draw the Heatmap.".format(
+                        column
+                    )
+                )
+        from verticapy.plot import pivot_table
+
+        min_max = self.agg(func=["min", "max"], columns=columns).transpose()
+
+        ax = pivot_table(
+            self,
+            columns,
+            method,
+            of,
+            h,
+            (0, 0),
+            True,
+            cmap,
+            False,
+            ax,
+            "bilinear",
+            True,
+            min_max[columns[0]] + min_max[columns[1]],
+        )
+        ax.set_title("Heatmap of " + columns[0] + " vs " + columns[1])
+        return ax
 
     # ---#
     def hexbin(
@@ -5880,12 +6070,11 @@ vcolumns : vcolumn
                 self[column].normalize(method=method)
             elif (no_cols) and (self[column].isbool()):
                 pass
-            else:
-                print(
-                    "\u26A0 Warning : The vcolumn {} was skipped\nNormalize only accept numerical data types".format(
-                        column
-                    )
+            elif self._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                warning_message = "The vcolumn {} was skipped.\nNormalize only accept numerical data types.".format(
+                    column
                 )
+                warnings.warn(warning_message, Warning)
         return self
 
     # ---#
@@ -6107,24 +6296,25 @@ vcolumns : vcolumn
 
             def drop_temp_elem(self, schema):
                 try:
-                    drop_model(
-                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
-                        ),
-                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                    )
-                    drop_model(
-                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
-                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
-                        ),
-                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                    )
-                    drop_view(
-                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                            schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
-                        ),
-                        cursor=self._VERTICAPY_VARIABLES_["cursor"],
-                    )
+                    with warnings.catch_warnings(record=True) as w:
+                        drop_model(
+                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+                                schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                            ),
+                            cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        )
+                        drop_model(
+                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
+                                schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                            ),
+                            cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        )
+                        drop_view(
+                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                                schema, get_session(self._VERTICAPY_VARIABLES_["cursor"])
+                            ),
+                            cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                        )
                 except:
                     pass
 
@@ -7496,7 +7686,7 @@ vcolumns : vcolumn
 
     # ---#
     def set_display_parameters(
-        self, rows: int = -1, columns: int = -1, percent_bar="auto", print_info=None
+        self, rows: int = -1, columns: int = -1, percent_bar=None, print_info=None
     ):
         """
     ---------------------------------------------------------------------------
@@ -7526,7 +7716,7 @@ vcolumns : vcolumn
             [
                 ("rows", rows, [int, float],),
                 ("columns", columns, [int, float],),
-                ("percent_bar", percent_bar, [bool, str],),
+                ("percent_bar", percent_bar, [bool, str, type(None)],),
             ]
         )
         if rows >= 0:
@@ -7537,12 +7727,6 @@ vcolumns : vcolumn
             self._VERTICAPY_VARIABLES_["display"]["print_info"] = print_info
         if percent_bar in (True, False, "auto"):
             self._VERTICAPY_VARIABLES_["display"]["percent_bar"] = percent_bar
-        else:
-            raise ParameterError(
-                "Parameter 'percent_bar' must be a boolean or equal to 'auto', found {}.".format(
-                    percent_bar
-                )
-            )
         return self
 
     # ---#
