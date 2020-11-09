@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, time, decimal
+import os, math, shutil, re, time, decimal, warnings
 
 # VerticaPy Modules
 from verticapy.toolbox import *
@@ -171,6 +171,11 @@ cursor: DBcursor, optional
 raise_error: bool, optional
 	If the model couldn't be dropped, raises the entire error instead of
 	displaying a warning.
+
+Returns
+-------
+bool
+    True if the model was dropped, False otherwise.
 	"""
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
@@ -186,7 +191,7 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        return "The model {} was successfully dropped.".format(name)
+        return True
     except:
         try:
             sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
@@ -202,6 +207,9 @@ raise_error: bool, optional
                 drop_table(name, cursor)
             elif model_type in ("CountVectorizer"):
                 drop_text_index(name, cursor)
+            elif model_type in ("KernelDensity"):
+                drop_table(name.replace('"', '') + "_KernelDensity_Map", cursor)
+                drop_model("{}_KernelDensity_Tree".format(name.replace('"', '')), cursor)
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
@@ -214,15 +222,17 @@ raise_error: bool, optional
             cursor.execute("COMMIT;")
             if conn:
                 conn.close()
-            return "The model {} was successfully dropped.".format(name)
+            return True
         else:
             if conn:
                 conn.close()
             if raise_error:
                 raise
-            return "\u26A0 Warning: The model {} doesn't exist or can not be dropped ! Use parameter: raise_error = True to get more information.".format(
+            warning_message = "The model '{}' doesn't exist or can not be dropped ! Use parameter: raise_error = True to get more information.".format(
                 name
             )
+            warnings.warn(warning_message, Warning)
+            return False
 
 
 # ---#
@@ -240,6 +250,11 @@ cursor: DBcursor, optional
 raise_error: bool, optional
 	If the table couldn't be dropped, raises the entire error instead of
 	displaying a warning.
+
+Returns
+-------
+bool
+    True if the table was dropped, False otherwise.
 	"""
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
@@ -255,15 +270,17 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        return "The table {} was successfully dropped.".format(name)
+        return True
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        return "\u26A0 Warning: The table {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
+        warning_message = "The table '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+                name
         )
+        warnings.warn(warning_message, Warning)
+        return False
 
 
 # ---#
@@ -281,6 +298,11 @@ cursor: DBcursor, optional
 raise_error: bool, optional
 	If the text index couldn't be dropped, raises the entire error instead 
 	of displaying a warning.
+
+Returns
+-------
+bool
+    True if the text index was dropped, False otherwise.
 	"""
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
@@ -296,15 +318,17 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        return "The text index {} was successfully dropped.".format(name)
+        return True
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        return "\u26A0 Warning: The text index {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
+        warning_message = "The text index '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+                name
         )
+        warnings.warn(warning_message, Warning)
+        return False
 
 
 # ---#
@@ -322,6 +346,11 @@ cursor: DBcursor, optional
 raise_error: bool, optional
 	If the view couldn't be dropped, raises the entire error instead of 
 	displaying a warning.
+
+Returns
+-------
+bool
+    True if the view was dropped, False otherwise.
 	"""
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
@@ -337,15 +366,17 @@ raise_error: bool, optional
         cursor.execute(query)
         if conn:
             conn.close()
-        return "The view {} was successfully dropped.".format(name)
+        return True
     except:
         if conn:
             conn.close()
         if raise_error:
             raise
-        return "\u26A0 Warning: The view {} doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
+        warning_message = "The view '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
+                name
         )
+        warnings.warn(warning_message, Warning)
+        return False
 
 
 # ---#
@@ -635,6 +666,13 @@ model
                     model = KNeighborsRegressor(
                         name, cursor, model_save["n_neighbors"], model_save["p"]
                     )
+                elif model_save["type"] == "KernelDensity":
+                    from verticapy.learn.neighbors import KernelDensity
+
+                    model = KernelDensity(
+                        name, cursor, model_save["bandwidth"], model_save["kernel"], model_save["leaf_size"]
+                    )
+                    model.map_ = tablesample({"x": model_save["map"][0], "y": model_save["map"][1]})
                 elif model_save["type"] == "LocalOutlierFactor":
                     from verticapy.learn.neighbors import LocalOutlierFactor
 
@@ -2091,11 +2129,10 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in result]
     for column, ctype in result:
         if '"' in column:
-            print(
-                "\u26A0 Warning: A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
-                    column, column.replace('"', "_")
-                )
+            warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
+                column, column.replace('"', "_")
             )
+            warnings.warn(warning_message, Warning)
         from verticapy.vcolumn import vColumn
 
         new_vColumn = vColumn(

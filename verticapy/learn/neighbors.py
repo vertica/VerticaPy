@@ -60,6 +60,9 @@ from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
+# Standard Python Modules
+import warnings
+
 # ---#
 class NeighborsClassifier(vModel):
 
@@ -818,6 +821,288 @@ p: int, optional
         )
         return self
 
+# ---#
+class KernelDensity(Regressor, Tree):
+    """
+---------------------------------------------------------------------------
+[Beta Version]
+Creates a KernelDensity object. 
+This object is using pure SQL to compute the final score.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor. 
+bandwidth: float, optional
+    The bandwidth of the kernel.
+kernel: str, optional
+    The kernel used during the learning phase.
+        gaussian  : Gaussian Kernel.
+        logistic  : Logistic Kernel.
+        sigmoid   : Sigmoid Kernel.
+        silverman : Silverman Kernel.
+p: int, optional
+    The p corresponding to the one of the p-distance (distance metric used during 
+    the model computation).
+max_leaf_nodes: int, optional
+    The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
+max_depth: int, optional
+    The maximum tree depth, an integer between 1 and 100, inclusive.
+min_samples_leaf: int, optional
+    The minimum number of samples each branch must have after splitting a node, an 
+    integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+    is discarded.
+nbins: int, optional 
+    The number of bins to use to discretize the input features.
+xlim: list, optional
+    List of tuples use to compute the kernel window.
+    """
+
+    def __init__(self, 
+                 name: str, 
+                 cursor=None,
+                 bandwidth: float = 1,
+                 kernel: str = "gaussian",
+                 p: int = 2,
+                 max_leaf_nodes: int = 1e9,
+                 max_depth: int = 5,
+                 min_samples_leaf: int = 1,
+                 nbins: int = 5,
+                 xlim: list = []):
+        check_types([("name", name, [str], False), ("bandwidth", bandwidth, [int, float], False), ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]), 
+                     ("max_leaf_nodes", max_leaf_nodes, [int, float], False), ("max_depth", max_depth, [int, float], False), ("min_samples_leaf", min_samples_leaf, [int, float], False),
+                     ("nbins", nbins, [int, float], False), ("xlim", xlim, [list], False),])
+        self.type, self.name = "KernelDensity", name
+        self.set_params({"nbins": nbins, "p": p, "bandwidth": bandwidth, "kernel": kernel, "max_leaf_nodes": int(max_leaf_nodes), "max_depth": int(max_depth), "min_samples_leaf": int(min_samples_leaf), "xlim": xlim})
+        if not (cursor):
+            cursor = read_auto_connect().cursor()
+        else:
+            check_cursor(cursor)
+        self.cursor = cursor
+
+    # ---#
+    def fit(self, input_relation: str, X: list,):
+        """
+    ---------------------------------------------------------------------------
+    Trains the model.
+
+    Parameters
+    ----------
+    input_relation: str
+        Train relation.
+    X: list
+        List of the predictors. Only 1D KDE is currently supported.
+
+    Returns
+    -------
+    object
+        self
+        """
+        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
+        check_model(name=self.name, cursor=self.cursor)
+        try:
+            vdf = vDataFrame(input_relation, cursor=self.cursor)
+        except:
+            vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+        columns_check(X, vdf)
+        X = vdf_columns_names(X, vdf)
+
+        # ---#
+        def density_compute(
+            vdf,
+            columns: list,
+            h=None,
+            kernel: str = "gaussian",
+            nbins: int = 5,
+            p: int = 2,
+        ):
+            # ---#
+            def density_kde(
+                vdf,
+                columns: list,
+                kernel: str,
+                x,
+                p: int,
+                h=None,):
+                for elem in columns:
+                    if not (vdf[elem].isnum()):
+                        raise TypeError("Cannot compute KDE for non-numerical columns. {} is not numerical.".format(elem))
+                if kernel == "gaussian":
+                    fkernel = "EXP(-1 / 2 * POWER({}, 2)) / SQRT(2 * PI())"
+
+                elif kernel == "logistic":
+                    fkernel = "1 / (2 + EXP({}) + EXP(-{}))"
+
+                elif kernel == "sigmoid":
+                    fkernel = "2 / (PI() * (EXP({}) + EXP(-{})))"
+
+                elif kernel == "silverman":
+                    fkernel = "EXP(-1 / SQRT(2) * ABS({})) / 2 * SIN(ABS({}) / SQRT(2) + PI() / 4)"
+
+                else:
+                    raise ParameterError(
+                        "The parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman]."
+                    )
+                if isinstance(x, (tuple)):
+                    return density_kde(vdf, columns, kernel, [x], p, h)[0]
+                elif isinstance(x, (list)):
+                    N = vdf.shape()[0]
+                    L = []
+                    for elem in x:
+                        distance = []
+                        for i in range(len(columns)):
+                            distance += ["POWER({} - {}, {})".format(columns[i], elem[i], p)]
+                        distance = " + ".join(distance)
+                        distance = "POWER({}, {})".format(distance, 1.0 / p)
+                        fkernel_tmp = fkernel.replace("{}", "{} / {}".format(distance, h))
+                        L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
+                    query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
+                    vdf.__executeSQL__(query, "Computing the KDE")
+                    result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()
+                    return [elem for elem in result]
+                else:
+                    return 0
+
+            columns_check(columns, vdf)
+            columns = vdf_columns_names(columns, vdf)
+            x_vars = []
+            y = []
+            for idx, column in enumerate(columns):
+                if self.parameters["xlim"]:
+                    try:
+                        x_min, x_max = self.parameters["xlim"][idx]
+                        N = vdf[column].count()
+                    except:
+                        warning_message = "Wrong xlim for the vcolumn {}.\nThe max and the min will be used instead.".format(
+                            column, 
+                        )
+                        warnings.warn(warning_message, Warning)
+                        x_min, x_max, N = vdf[column].min(), vdf[column].max(), vdf[column].count()
+                else:
+                    x_min, x_max, N = vdf[column].min(), vdf[column].max(), vdf[column].count()
+                x_vars += [[(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]]
+            import itertools
+            x = list(itertools.product(*x_vars))
+            try:
+                y = density_kde(vdf, columns, kernel, x, p, h)
+            except:
+                for xi in x:
+                    K = density_kde(vdf, columns, kernel, xi, p, h)
+                    y += [K]
+            return [x, y]
+
+        x, y = density_compute(vdf, X, self.parameters["bandwidth"], self.parameters["kernel"], self.parameters["nbins"], self.parameters["p"])
+        query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(self.name.replace('"', ''), ", ".join(X), vdf.__genSQL__())
+        self.cursor.execute(query)
+        r = 0
+        while (r < len(y)):
+            values = []
+            m = min(r + 100, len(y))
+            for i in range(r, m):
+                values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
+            query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(self.name.replace('"', ''), ", ".join(X), " UNION ".join(values))
+            self.cursor.execute(query)
+            self.cursor.execute("COMMIT;")
+            r += 100
+        self.X, self.input_relation = X, input_relation
+        self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ''))
+        self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ''))
+        self.y = "KDE"
+
+        from verticapy.learn.tree import DecisionTreeRegressor
+
+        model = DecisionTreeRegressor(name=self.tree_name,
+                                      cursor=self.cursor,
+                                      max_leaf_nodes=self.parameters["max_leaf_nodes"],
+                                      max_depth=self.parameters["max_depth"],
+                                      min_samples_leaf=self.parameters["min_samples_leaf"],
+                                      nbins = 1000)
+        model.fit(self.map, self.X, "KDE")
+        model_save = {
+            "type": "KernelDensity",
+            "input_relation": self.input_relation,
+            "X": self.X,
+            "map": self.map,
+            "tree_name": self.tree_name,
+            "bandwidth": self.parameters["bandwidth"],
+            "kernel": self.parameters["kernel"],
+            "p": self.parameters["p"],
+            "max_leaf_nodes": self.parameters["max_leaf_nodes"],
+            "max_depth": self.parameters["max_depth"],
+            "min_samples_leaf": self.parameters["min_samples_leaf"],
+            "nbins": self.parameters["nbins"],
+            "xlim": self.parameters["xlim"],
+        }
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="KernelDensity",
+            model_save=model_save,
+            cursor=self.cursor,
+        )
+        return self
+
+    # ---#
+    def plot(self, color: str = "#FE5016", ax=None,):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Model.
+
+    Parameters
+    ----------
+    color: str
+        The Density Plot color.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        if (len(self.X) == 1):
+            query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+            if not (ax):
+                fig, ax = plt.subplots()
+                if isnotebook():
+                    fig.set_size_inches(7, 5)
+                ax.set_facecolor("#F5F5F5")
+                ax.grid()
+                ax.set_axisbelow(True)
+            ax.plot(x, y, color="#222222")
+            ax.set_xlim(min(x), max(x))
+            ax.set_ylim(bottom=0,)
+            ax.fill_between(x, y, facecolor=color, alpha=0.7)
+            ax.set_ylabel("density")
+            ax.set_title("Distribution of {} ({} kernel)".format(self.X[0], self.parameters["kernel"]))
+            return ax
+        elif (len(self.X) == 2):
+            query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(self.X[0], self.X[1], self.map,)
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            n = self.parameters["nbins"]
+            x, y, z = [elem[0] for elem in result], [elem[1] for elem in result], [elem[2] for elem in result]
+            result, idx = [], 0
+            while idx < (n + 1) * (n + 1):
+                result += [[z[idx + i] for i in range(n + 1)]]
+                idx += n + 1
+            if not (ax):
+                fig, ax = plt.subplots()
+                if isnotebook():
+                    fig.set_size_inches(8, 6)
+            else:
+                fig = plt
+            im = ax.imshow(result, interpolation='bilinear', cmap="Reds",
+                           origin='lower', extent=[min(x), max(x), min(y), max(y)],)
+            fig.colorbar(im, ax=ax)
+            ax.set_title("Kernel Density Estimation")
+            ax.set_ylabel(self.X[1])
+            ax.set_xlabel(self.X[0])
+            return ax
+        else:
+            raise Exception("KDE Plots are only available in 1D or 2D.")
 
 # ---#
 class KNeighborsRegressor(Regressor):

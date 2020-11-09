@@ -134,11 +134,14 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close()
 
+    @pytest.mark.skip(reason="new version of density")
     def test_vDF_density(self, iris_vd):
+        # testing vDataFrame[].density
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(kernel=kernel)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
         plt.close()
+        # testing vDataFrame.density
 
     def test_vDF_donut(self, titanic_vd):
         result = titanic_vd["sex"].donut(method="sum", of="survived")
@@ -150,6 +153,10 @@ class TestvDFPlot:
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_hchart(self):
+        pass
+
+    @pytest.mark.skip(reason="test not implemented")
+    def test_vDF_heatmap(self, iris_vd):
         pass
 
     def test_vDF_hexbin(self, titanic_vd):

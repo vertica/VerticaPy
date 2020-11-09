@@ -312,8 +312,6 @@ dict
             conn_info[elem.lower()] = dsn[elem]
     if "port" not in [elem.lower() for elem in dsn]:
         conn_info["password"] = 5433
-    if "connection_timeout" not in [elem.lower() for elem in dsn]:
-        conn_info["connection_timeout"] = 9999
     return conn_info
 
 

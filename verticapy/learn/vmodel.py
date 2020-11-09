@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os
+import os, warnings
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -95,16 +95,17 @@ Main Class for Vertica Model
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
             ):
+                name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
                     version(cursor=self.cursor, condition=[9, 0, 0])
                     self.cursor.execute(
                         "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                            self.name
+                            name
                         )
                     )
                 except:
                     self.cursor.execute(
-                        "SELECT SUMMARIZE_MODEL('{}')".format(self.name)
+                        "SELECT SUMMARIZE_MODEL('{}')".format(name)
                     )
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
@@ -158,7 +159,6 @@ Main Class for Vertica Model
                 rep += "\ny : {}".format(self.y)
             return rep
         except:
-            raise
             return "<{}>".format(self.type)
 
     # ---#
@@ -170,7 +170,7 @@ Main Class for Vertica Model
 	Parameters
 	----------
 	X: list, optional
-		List of the columns used to deploy the self. If empty, the model
+		List of the columns used to deploy the model. If empty, the model
 		predictors will be used.
 
 	Returns
@@ -179,11 +179,12 @@ Main Class for Vertica Model
 		the SQL code needed to deploy the model.
 		"""
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
+            name = self.tree_name if self.type in ("KernelDensity") else self.name
             check_types([("X", X, [list],)])
             X = [str_column(elem) for elem in X]
             fun = self.get_model_fun()[1]
             sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
-            return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+            return sql.format(fun, ", ".join(self.X if not (X) else X), name)
         else:
             raise FunctionError(
                 "Method 'deploySQL' for '{}' doesn't exist.".format(self.type)
@@ -195,9 +196,10 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica DB.
 		"""
-        drop_model(
-            self.name, self.cursor,
-        )
+        with warnings.catch_warnings(record=True) as w:
+            drop_model(
+                self.name, self.cursor,
+            )
 
     # ---#
     def features_importance(self, ax=None):
@@ -216,10 +218,11 @@ Main Class for Vertica Model
 			An object containing the result. For more information, see
 			utilities.tablesample.
 		"""
-        if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+        if self.type in ("RandomForestClassifier", "RandomForestRegressor", "KernelDensity"):
+            name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[9, 1, 1])
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
-                self.name
+                name
             )
             print_legend = False
         elif self.type in (
@@ -289,10 +292,11 @@ Main Class for Vertica Model
 		model attribute
 		"""
         if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX"):
+            name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
-                    self.name,
+                    name,
                     ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 cursor=self.cursor,
@@ -346,6 +350,14 @@ Main Class for Vertica Model
                 return result
             else:
                 raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
+        elif self.type in ("KernelDensity"):
+            if attr_name == "map":
+                return self.map_
+            elif not (attr_name):
+                result = tablesample(values={"attr_name": ["map"]},)
+                return result
+            else:
+                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
         else:
             raise FunctionError(
                 "Method 'get_model_attribute' for '{}' doesn't exist.".format(self.type)
@@ -370,7 +382,7 @@ Main Class for Vertica Model
             return ("SVM_CLASSIFIER", "PREDICT_SVM_CLASSIFIER", "")
         elif self.type == "LinearSVR":
             return ("SVM_REGRESSOR", "PREDICT_SVM_REGRESSOR", "")
-        elif self.type == "RandomForestRegressor":
+        elif self.type in ("RandomForestRegressor", "KernelDensity"):
             return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
         elif self.type == "RandomForestClassifier":
             return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
@@ -477,7 +489,7 @@ Main Class for Vertica Model
                     ax=ax,
                 )
             else:
-                raise Exception("Clustering Plots are only available in 2D or 3D")
+                raise Exception("Clustering Plots are only available in 2D or 3D.")
         elif self.type in ("PCA", "SVD"):
             if 2 <= self.parameters["n_components"] or (
                 self.parameters["n_components"] <= 0 and len(self.X) > 1
@@ -671,6 +683,90 @@ Main Class for Vertica Model
                 model_parameters["papprox_ma"] = parameters["papprox_ma"]
             elif self.type == "SARIMAX":
                 model_parameters["papprox_ma"] = default_parameters["papprox_ma"]
+        elif self.type in ("KernelDensity"):
+            if "bandwidth" in parameters:
+                check_types([("bandwidth", parameters["bandwidth"], [int, float],)])
+                assert 0 <= parameters["bandwidth"], ParameterError(
+                    "Incorrect parameter 'bandwidth'.\nThe bandwidth must be positive."
+                )
+                model_parameters["bandwidth"] = parameters["bandwidth"]
+            else:
+                model_parameters["bandwidth"] = default_parameters["bandwidth"]
+            if "kernel" in parameters:
+                check_types([("kernel", parameters["kernel"], ["gaussian", "logistic", "sigmoid", "silverman"],)])
+                assert parameters["kernel"] in ["gaussian", "logistic", "sigmoid", "silverman"], ParameterError(
+                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(kernel)
+                )
+                model_parameters["kernel"] = parameters["kernel"]
+            else:
+                model_parameters["kernel"] = default_parameters["kernel"]
+            if "max_leaf_nodes" in parameters:
+                check_types(
+                    [
+                        (
+                            "max_leaf_nodes",
+                            parameters["max_leaf_nodes"],
+                            [int, float],
+                            False,
+                        )
+                    ]
+                )
+                assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
+                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of leaf nodes must be between 1 and 1e9, inclusive."
+                )
+                model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
+            else:
+                model_parameters["max_leaf_nodes"] = default_parameters[
+                    "max_leaf_nodes"
+                ]
+            if "max_depth" in parameters:
+                check_types([("max_depth", parameters["max_depth"], [int],)])
+                assert 1 <= parameters["max_depth"] <= 100, ParameterError(
+                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 100, inclusive."
+                )
+                model_parameters["max_depth"] = parameters["max_depth"]
+            else:
+                model_parameters["max_depth"] = default_parameters["max_depth"]
+            if "min_samples_leaf" in parameters:
+                check_types(
+                    [
+                        (
+                            "min_samples_leaf",
+                            parameters["min_samples_leaf"],
+                            [int, float],
+                            False,
+                        )
+                    ]
+                )
+                assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
+                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number of samples each branch must have after splitting a node must be between 1 and 1e6, inclusive."
+                )
+                model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
+            else:
+                model_parameters["min_samples_leaf"] = default_parameters[
+                    "min_samples_leaf"
+                ]
+            if "nbins" in parameters:
+                check_types([("nbins", parameters["nbins"], [int, float],)])
+                assert 2 <= parameters["nbins"], ParameterError(
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be greater than 2."
+                )
+                model_parameters["nbins"] = parameters["nbins"]
+            else:
+                model_parameters["nbins"] = default_parameters["nbins"]
+            if "p" in parameters:
+                check_types([("p", parameters["p"], [int, float],)])
+                assert 0 < parameters["p"], ParameterError(
+                    "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
+                )
+                model_parameters["p"] = parameters["p"]
+            else:
+                model_parameters["p"] = default_parameters["p"]
+            if "xlim" in parameters:
+                check_types([("xlim", parameters["xlim"], [list],)])
+                model_parameters["xlim"] = parameters["xlim"]
+            else:
+                model_parameters["xlim"] = default_parameters["xlim"]
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
             if "n_estimators" in parameters:
                 check_types([("n_estimators", parameters["n_estimators"], [int],)])
@@ -777,7 +873,7 @@ Main Class for Vertica Model
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float],)])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
-                    "Incorrect parameter 'min_info_gain'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
             else:
@@ -1246,8 +1342,9 @@ class Tree:
 		"""
         check_types([("tree_id", tree_id, [int, float],)])
         version(cursor=self.cursor, condition=[9, 1, 1])
+        name = self.tree_name if self.type in ("KernelDensity") else self.name
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(
-            self.name, tree_id
+            name, tree_id
         )
         self.cursor.execute(query)
         return self.cursor.fetchone()[1]
@@ -1271,8 +1368,9 @@ class Tree:
 		"""
         check_types([("tree_id", tree_id, [int, float],)])
         version(cursor=self.cursor, condition=[9, 1, 1])
+        name = self.tree_name if self.type in ("KernelDensity") else self.name
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular');".format(
-            self.name, tree_id
+            name, tree_id
         )
         result = to_tablesample(query=query, cursor=self.cursor)
         return result
@@ -2170,6 +2268,8 @@ class Regressor(Supervised):
                     y, self.deploySQL()[idx], relation, self.cursor
                 ).values["value"]
             return result
+        elif self.type == "KernelDensity":
+            test_relation = self.map
         else:
             test_relation = self.test_relation
         return regression_report(self.y, prediction, test_relation, self.cursor)
@@ -2225,6 +2325,9 @@ class Regressor(Supervised):
         elif self.type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
             prediction = "predict_neighbors"
+        elif self.type == "KernelDensity":
+            test_relation = self.map
+            prediction = self.deploySQL()
         else:
             test_relation = self.test_relation
             prediction = self.deploySQL()

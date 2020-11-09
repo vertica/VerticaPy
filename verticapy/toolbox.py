@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, sys
+import random, os, math, shutil, re, sys, warnings
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -168,17 +168,15 @@ def check_types(types_list: list = [], vdf: list = []):
                 list_check = True
         if list_check:
             if not (isinstance(elem[1], str)):
-                print(
-                    "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
-                        elem[0], str, type(elem[1])
-                    )
+                warning_message = "Parameter '{}' must be of type {}, found type {}".format(
+                    elem[0], str, type(elem[1])
                 )
+                warnings.warn(warning_message, Warning)
             if elem[1].lower() not in elem[2] and elem[1] not in elem[2]:
-                print(
-                    "\u26A0 Warning: Parameter '{}' must be in [{}], found '{}'".format(
-                        elem[0], "|".join(elem[2]), elem[1]
-                    )
+                warning_message = "Parameter '{}' must be in [{}], found '{}'".format(
+                    elem[0], "|".join(elem[2]), elem[1]
                 )
+                warnings.warn(warning_message, Warning)
         else:
             if not (isinstance(elem[1], tuple(elem[2]))):
                 if (
@@ -188,17 +186,15 @@ def check_types(types_list: list = [], vdf: list = []):
                 ):
                     pass
                 elif len(elem[2]) == 1:
-                    print(
-                        "\u26A0 Warning: Parameter '{}' must be of type {}, found type {}".format(
-                            elem[0], elem[2][0], type(elem[1])
-                        )
+                    warning_message = "Parameter '{}' must be of type {}, found type {}".format(
+                        elem[0], elem[2][0], type(elem[1])
                     )
+                    warnings.warn(warning_message, Warning)
                 else:
-                    print(
-                        "\u26A0 Warning: Parameter '{}' type must be one of the following {}, found type {}".format(
-                            elem[0], elem[2], type(elem[1])
-                        )
+                    warning_message = "Parameter '{}' type must be one of the following {}, found type {}".format(
+                        elem[0], elem[2], type(elem[1])
                     )
+                    warnings.warn(warning_message, Warning)
 
 
 # ---#
@@ -268,6 +264,17 @@ def default_model_parameters(model_type: str):
             "max_iter": 100,
             "solver": "CGD",
             "l1_ratio": 0.5,
+        }
+    elif model_type in ("KernelDensity"):
+        return {
+            "bandwidth": 1,
+            "kernel": "gaussian",
+            "p": 2,
+            "max_leaf_nodes": 1e9,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "nbins": 5,
+            "xlim": [],
         }
     elif model_type in ("LinearRegression"):
         return {
@@ -359,6 +366,15 @@ def default_model_parameters(model_type: str):
             "init": "kmeanspp",
             "max_iter": 300,
             "tol": 1e-4,
+        }
+    elif model_type in ("KNeighborsClassifier", "KNeighborsRegressor"):
+        return {
+            "n_neighbors": 5,
+            "p": 2,
+        }
+    elif model_type in ("NearestCentroid"):
+        return {
+            "p": 2,
         }
     elif model_type in ("DBSCAN"):
         return {"eps": 0.5, "min_samples": 5, "p": 2}
@@ -477,9 +493,8 @@ def insert_verticapy_schema(
     cursor.execute(sql)
     result = cursor.fetchone()
     if not (result):
-        print(
-            "\u26A0 Warning: The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and drop_verticapy_schema to drop it if it is corrupted."
-        )
+        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and drop_verticapy_schema to drop it if it is corrupted."
+        warnings.warn(warning_message, Warning)
     else:
         size = sys.getsizeof(model_save)
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
@@ -505,8 +520,8 @@ def insert_verticapy_schema(
                     cursor.execute(sql)
                     cursor.execute("COMMIT;")
         except Exception as e:
-            print("\u26A0 Warning: The VerticaPy model could not be stored.")
-            print(e)
+            warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
+            warnings.warn(warning_message, Warning)
 
 
 # ---#
@@ -864,11 +879,10 @@ def sort_str(columns, vdf):
         for elem in columns:
             column_name = vdf_columns_names([elem], vdf)[0]
             if columns[elem].lower() not in ("asc", "desc"):
-                print(
-                    "\u26A0 Warning: Method of {} must be in (asc, desc), found '{}'\nThis column was ignored.".format(
-                        column_name, columns[elem].lower()
-                    )
+                warning_message = "Method of {} must be in (asc, desc), found '{}'\nThis column was ignored.".format(
+                    column_name, columns[elem].lower()
                 )
+                warnings.warn(warning_message, Warning)
             else:
                 order_by += ["{} {}".format(column_name, columns[elem].upper())]
     else:
@@ -1010,7 +1024,7 @@ def vertica_param_name(param: str):
     elif param.lower() == "max_leaf_nodes":
         return "max_breadth"
     elif param.lower() == "min_samples_leaf":
-        return "min_samples_leaf"
+        return "min_leaf_size"
     elif param.lower() == "n_components":
         return "num_components"
     elif param.lower() == "init":
