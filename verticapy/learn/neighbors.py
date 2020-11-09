@@ -845,10 +845,9 @@ p: int, optional
     The p corresponding to the one of the p-distance (distance metric used during 
     the model computation).
 max_leaf_nodes: int, optional
-    The maximum number of leaf nodes a tree in the forest can have, an integer 
-    between 1 and 1e9, inclusive.
+    The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
 max_depth: int, optional
-    The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+    The maximum tree depth, an integer between 1 and 100, inclusive.
 min_samples_leaf: int, optional
     The minimum number of samples each branch must have after splitting a node, an 
     integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
@@ -905,6 +904,8 @@ xlim: list, optional
             vdf = vDataFrame(input_relation, cursor=self.cursor)
         except:
             vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+        columns_check(X, vdf)
+        X = vdf_columns_names(X, vdf)
 
         # ---#
         def density_compute(

@@ -956,7 +956,7 @@ Attributes
  	nbins: int, optional
         Maximum number of points to use to evaluate the approximate density function.
         Increasing this parameter will increase the precision but will also increase 
-        the time of the learning and the scoring phases.
+        the time of the learning and scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
  	color: str, optional

@@ -779,6 +779,7 @@ def cmatrix(
     interpolation: str = "nearest",
     inverse: bool = False,
     extent: list = [],
+    is_pivot: bool = False,
     ax=None,
 ):
     if is_vector:
@@ -809,19 +810,22 @@ def cmatrix(
             columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if isnotebook() and not(inverse):
+        if (isnotebook() and not(inverse)) or is_pivot:
             fig.set_size_inches(min(m, 500), min(n, 500))
         else:
             fig.set_size_inches(8, 6)
     else:
         fig = plt
     ax.set_title(title)
-    if (vmax == 1) and vmin in [0, -1]:
+    if ((vmax == 1) and vmin in [0, -1]) and not(extent):
         im = ax.imshow(
             matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
         )
     else:
-        im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation, extent=extent)
+        try:
+            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation, extent=extent)
+        except:
+            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation,)
     fig.colorbar(im, ax=ax).set_label(colorbar)
     if not(extent):
         ax.set_yticks([i for i in range(0, n)])
@@ -1736,6 +1740,7 @@ def pivot_table(
             inverse=True,
             extent=extent,
             ax=ax,
+            is_pivot=True,
         )
         if return_ax:
             return ax

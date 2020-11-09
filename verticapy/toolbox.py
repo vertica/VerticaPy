@@ -1024,7 +1024,7 @@ def vertica_param_name(param: str):
     elif param.lower() == "max_leaf_nodes":
         return "max_breadth"
     elif param.lower() == "min_samples_leaf":
-        return "min_samples_leaf"
+        return "min_leaf_size"
     elif param.lower() == "n_components":
         return "num_components"
     elif param.lower() == "init":
