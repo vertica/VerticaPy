@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math
+import math, warnings
 
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
@@ -416,12 +416,13 @@ papprox_ma: int, optional
 
         def drop_temp_elem(self, schema):
             try:
-                drop_view(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session(self.cursor)
-                    ),
-                    cursor=self.cursor,
-                )
+                with warnings.catch_warnings(record=True) as w:
+                    drop_view(
+                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                            schema, get_session(self.cursor)
+                        ),
+                        cursor=self.cursor,
+                    )
             except:
                 pass
 
@@ -1366,12 +1367,13 @@ l1_ratio: float, optional
 
         def drop_temp_elem(self, schema):
             try:
-                drop_view(
-                    "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session(self.cursor)
-                    ),
-                    cursor=self.cursor,
-                )
+                with warnings.catch_warnings(record=True) as w:
+                    drop_view(
+                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
+                            schema, get_session(self.cursor)
+                        ),
+                        cursor=self.cursor,
+                    )
             except:
                 pass
 

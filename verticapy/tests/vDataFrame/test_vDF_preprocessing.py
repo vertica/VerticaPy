@@ -74,18 +74,12 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
 
         # expected exception
-        with pytest.raises(AssertionError) as exception_info:
-            titanic_copy["age"].discretize(method = "smart", response = "survived", bins = 6, min_bin_size = 0)
-        # checking the error message
-        assert exception_info.match("Incorrect parameter 'min_samples_leaf'")
-
-        titanic_copy["age"].discretize(method = "smart", response = "survived", bins = 6, min_bin_size = 25)
-        # because randomness in the method the distinct values may not stay the same
+        titanic_copy["age"].discretize(method = "smart", response = "survived", bins = 6, RFmodel_params = {"n_estimators": 100, "nbins": 100})
         assert len(titanic_copy["age"].distinct()) == 6
 
         ### method = "topk"
         titanic_copy = titanic_vd.copy()
-        titanic_copy["name"].str_extract(' ([A-Za-z])+\.')
+        titanic_copy["name"].str_extract(' ([A-Za-z])+\\.')
 
         # expected exception
         with pytest.raises(errors.ParameterError) as exception_info:

@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math, re, decimal
+import math, re, decimal, warnings
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -108,21 +108,21 @@ Attributes
             alias,
             [elem for elem in transformations],
         )
-        self.catalog = {}
-        for method in ["cov", "pearson", "spearman", "kendall", "cramer", "biserial"]:
-            self.catalog[method] = {}
-        for method in [
-            "regr_avgx",
-            "regr_avgy",
-            "regr_count",
-            "regr_intercept",
-            "regr_r2",
-            "regr_slope",
-            "regr_sxx",
-            "regr_sxy",
-            "regr_syy",
-        ]:
-            self.catalog[method] = {}
+        self.catalog = {"cov": {}, 
+                        "pearson": {}, 
+                        "spearman": {}, 
+                        "kendall": {},
+                        "cramer": {},
+                        "biserial": {},
+                        "regr_avgx": {},
+                        "regr_avgy": {},
+                        "regr_count": {},
+                        "regr_intercept": {},
+                        "regr_r2": {},
+                        "regr_slope": {},
+                        "regr_sxx": {},
+                        "regr_sxy": {},
+                        "regr_syy": {}}
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
 
@@ -929,9 +929,11 @@ Attributes
     # ---#
     def density(
         self,
-        a=None,
+        by: str = "",
+        bandwidth: float = 1.0,
         kernel: str = "gaussian",
-        smooth: int = 200,
+        nbins: int = 200,
+        xlim = None,
         color: str = "#FE5016",
         ax=None,
     ):
@@ -941,16 +943,22 @@ Attributes
 
 	Parameters
  	----------
- 	a: float, optional
- 		The kernel window. If empty, an optimal one is computed.
+    by: str, optional
+        vcolumn to use to partition the data.
+ 	bandwidth: float, optional
+ 		The bandwidth of the kernel.
  	kernel: str, optional
  		The method used for the plot.
  			gaussian  : Gaussian Kernel.
  			logistic  : Logistic Kernel.
  			sigmoid   : Sigmoid Kernel.
  			silverman : Silverman Kernel.
- 	smooth: int, optional
- 		The number of points used for the smoothing.
+ 	nbins: int, optional
+        Maximum number of points to use to evaluate the approximate density function.
+        Increasing this parameter will increase the precision but will also increase 
+        the time of the learning and scoring phases.
+    xlim: tuple, optional
+        Set the x limits of the current axes.
  	color: str, optional
  		The Density Plot color.
     ax: Matplotlib axes object, optional
@@ -967,16 +975,55 @@ Attributes
 		"""
         check_types(
             [
+                ("by", by, [str],),
                 ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
-                ("smooth", smooth, [int, float],),
+                ("bandwidth", bandwidth, [int, float],),
                 ("color", color, [str],),
-                ("a", a, [type(None), float, int],),
+                ("nbins", nbins, [float, int],),
             ]
         )
+        if by:
+            columns_check([by], self.parent)
+            by = vdf_columns_names([by], self.parent)[0]
+            from verticapy.plot import gen_colors
+            from matplotlib.lines import Line2D
+            colors = gen_colors()
+            if not xlim:
+                xmin = self.min()
+                xmax = self.max()
+            else:
+                xmin, xmax = xlim
+            custom_lines = []
+            columns = self.parent[by].distinct()
+            for idx, column in enumerate(columns):
+                ax = self.parent.search("{} = '{}'".format(self.parent[by].alias, column))[self.alias].density(bandwidth=bandwidth,
+                                                                                                               kernel=kernel,
+                                                                                                               nbins=nbins,
+                                                                                                               xlim=(xmin, xmax),
+                                                                                                               color=colors[idx%len(colors)],
+                                                                                                               ax=ax,)
+                custom_lines += [Line2D([0], [0], color=colors[idx%len(colors)], lw=4),]
+            ax.set_title("KernelDensity")
+            ax.legend(custom_lines, columns, title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+            ax.set_xlabel(self.alias)
+            return ax
         kernel = kernel.lower()
-        from verticapy.plot import density
-
-        return density(self, a, kernel, smooth, color, ax=ax)
+        from verticapy.learn.neighbors import KernelDensity
+        name = "VERTICAPY_TEMP_MODEL_KDE_{}".format(
+            get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
+        )
+        if isinstance(xlim, (tuple, list)):
+            xlim_tmp = [xlim]
+        else:
+            xlim_tmp = []
+        model = KernelDensity(name, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"], bandwidth = bandwidth, kernel = kernel, nbins = nbins, xlim = xlim_tmp)
+        try:
+            result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(color=color, ax=ax)
+            model.drop()
+            return result
+        except:
+            model.drop()
+            raise
 
     # ---#
     def describe(
@@ -1165,8 +1212,8 @@ Attributes
         bins: int = -1,
         k: int = 6,
         new_category: str = "Others",
+        RFmodel_params: dict = {},
         response: str = "",
-        min_bin_size: int = 20,
         return_enum_trans: bool = False,
     ):
         """
@@ -1194,10 +1241,14 @@ Attributes
  		The integer k of the 'topk' method.
  	new_category: str, optional
  		The name of the merging category when using the 'topk' method.
- 	response: str, optional
- 		Response vcolumn when using the 'smart' method.
- 	min_bin_size: int, optional
- 		Minimum Number of elements in the bin when using the 'smart' method.
+ 	RFmodel_params: dict, optional
+ 		Dictionary of the Random Forest model parameters used to compute the best splits 
+        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
+        is numerical (except ints and bools), a RF Classifier otherwise.
+        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+        20 trees and a maximum depth of 10.
+    response: str, optional
+        Response vcolumn when method is set to 'smart'.
  	return_enum_trans: bool, optional
  		Returns the transformation instead of the vDataFrame parent and do not apply
  		it. This parameter is very useful for testing to be able to look at the final 
@@ -1217,7 +1268,7 @@ Attributes
 		"""
         check_types(
             [
-                ("min_bin_size", min_bin_size, [int, float],),
+                ("RFmodel_params", RFmodel_params, [dict],),
                 ("return_enum_trans", return_enum_trans, [bool],),
                 ("h", h, [int, float],),
                 ("response", response, [str],),
@@ -1244,51 +1295,57 @@ Attributes
                 ),
             )
             assert bins >= 2, ParameterError(
-                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'"
+                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
             )
             assert response, ParameterError(
-                "Parameter 'response' can not be empty in case of discretization using the method 'smart'"
+                "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
             )
             columns_check([response], self.parent)
             response = vdf_columns_names([response], self.parent)[0]
 
             def drop_temp_elem(self, temp_information):
-                try:
-                    drop_model(
-                        temp_information[1],
-                        cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                    )
-                except:
-                    pass
-                try:
-                    drop_view(
-                        temp_information[0],
-                        cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                    )
-                except:
-                    pass
+                with warnings.catch_warnings(record=True) as w:
+                    try:
+                        drop_model(
+                            temp_information[1],
+                            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                        )
+                    except:
+                        pass
+                    try:
+                        drop_view(
+                            temp_information[0],
+                            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                        )
+                    except:
+                        pass
 
             drop_temp_elem(self, temp_information)
             self.parent.to_db(temp_information[0])
-            from verticapy.learn.ensemble import RandomForestClassifier
+            from verticapy.learn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-            model = RandomForestClassifier(
-                temp_information[1],
-                self.parent._VERTICAPY_VARIABLES_["cursor"],
-                n_estimators=20,
-                max_depth=3,
-                nbins=100,
-                min_samples_leaf=min_bin_size,
-            )
+            if self.parent[response].category() == "float":
+                model = RandomForestRegressor(
+                    temp_information[1],
+                    self.parent._VERTICAPY_VARIABLES_["cursor"],
+                )
+            else:
+                model = RandomForestClassifier(
+                    temp_information[1],
+                    self.parent._VERTICAPY_VARIABLES_["cursor"],
+                )
+            model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
+            model.set_params(RFmodel_params)
+            parameters = model.get_params()
             try:
                 model.fit(temp_information[0], [self.alias], response)
                 query = [
                     "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
                         temp_information[1], i
                     )
-                    for i in range(20)
+                    for i in range(parameters["n_estimators"])
                 ]
-                query = "SELECT split_value FROM (SELECT split_value, COUNT(*) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
+                query = "SELECT split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
                     " UNION ALL ".join(query), bins - 1
                 )
                 self.parent.__executeSQL__(
@@ -1831,11 +1888,10 @@ Attributes
         if (method == "mode") and (val == None):
             val = self.mode(dropna=True)
             if val == None:
-                print(
-                    "\u26A0 Warning : The vcolumn {} has no mode (only missing values)\nNothing was filled.".format(
-                        self.alias
-                    )
+                warning_message = "The vcolumn {} has no mode (only missing values).\nNothing was filled.".format(
+                    self.alias
                 )
+                warnings.warn(warning_message, Warning)
                 return self.parent
         if isinstance(val, str):
             val = val.replace("'", "''")
@@ -1952,16 +2008,18 @@ Attributes
                     )
             except:
                 pass
+            total = int(total)
+            conj = "s were " if total > 1 else " was "
             if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                print("{} element(s) was/were filled".format(int(total)))
+                print("{} element{}filled.".format(total, conj))
             self.parent.__add_to_history__(
-                "[Fillna]: {} missing value(s) of the vcolumn {} was/were filled.".format(
-                    total, self.alias
+                "[Fillna]: {} {} missing value{} filled.".format(
+                    total, self.alias, conj,
                 )
             )
         else:
             if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
-                print("Nothing was filled")
+                print("Nothing was filled.")
             self.transformations = [elem for elem in copy_trans]
             for elem in sauv:
                 self.catalog[elem] = sauv[elem]
@@ -2070,9 +2128,10 @@ Attributes
                 setattr(self.parent, name.replace('"', ""), new_vColumn)
                 self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
                 all_new_features += [name]
+            conj = "s were " if len(all_new_features) > 1 else " was "
             self.parent.__add_to_history__(
-                "[Get Dummies]: One hot encoder was applied to the vcolumn {}\n{} feature(s) was/were created: {}".format(
-                    self.alias, len(all_new_features), ", ".join(all_new_features)
+                "[Get Dummies]: One hot encoder was applied to the vcolumn {}\n{} feature{}created: {}".format(
+                    self.alias, len(all_new_features), conj, ", ".join(all_new_features)
                 )
                 + "."
             )
@@ -2339,9 +2398,8 @@ Attributes
 	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
 		"""
         if self.category() in ["date", "float"]:
-            print(
-                "\u26A0 Warning : label_encode is only available for categorical variables."
-            )
+            warning_message = "label_encode is only available for categorical variables."
+            warnings.warn(warning_message, Warning)
         else:
             distinct_elements = self.distinct()
             expr = ["DECODE({}"]
@@ -2666,20 +2724,18 @@ Attributes
         by = vdf_columns_names(by, self.parent)
         nullifzero, n = 1, len(by)
         if self.isbool():
-            print(
-                "\u26A0 Warning : Normalize doesn't work on booleans".format(self.alias)
-            )
+            warning_message = "Normalize doesn't work on booleans".format(self.alias)
+            warnings.warn(warning_message, Warning)
         elif self.isnum():
             if method == "zscore":
                 if n == 0:
                     nullifzero = 0
                     avg, stddev = self.aggregate(["avg", "std"]).values[self.alias]
                     if stddev == 0:
-                        print(
-                            "\u26A0 Warning : Can not normalize {} using a Z-Score - The Standard Deviation is null !".format(
-                                self.alias
-                            )
+                        warning_message = "Can not normalize {} using a Z-Score - The Standard Deviation is null !".format(
+                            self.alias
                         )
+                        warnings.warn(warning_message, Warning)
                         return self
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
@@ -2768,9 +2824,8 @@ Attributes
                     ]
             elif method == "robust_zscore":
                 if n > 0:
-                    print(
-                        "\u26A0 Warning : the method 'robust_zscore' is available only if the parameter 'by' is empty\nIf you want to normalize by grouping by elements, please use a method in zscore|minmax"
-                    )
+                    warning_message = "The method 'robust_zscore' is available only if the parameter 'by' is empty\nIf you want to normalize by grouping by elements, please use a method in zscore|minmax"
+                    warnings.warn(warning_message, Warning)
                     return self
                 mad, med = self.aggregate(["mad", "median"]).values[self.alias]
                 mad *= 1.4826
@@ -2786,22 +2841,20 @@ Attributes
                             )
                         ]
                 else:
-                    print(
-                        "\u26A0 Warning : Can not normalize {} using a Robust Z-Score - The MAD is null !".format(
-                            self.alias
-                        )
+                    warning_message = "Can not normalize {} using a Robust Z-Score - The MAD is null !".format(
+                        self.alias
                     )
+                    warnings.warn(warning_message, Warning)
                     return self
             elif method == "minmax":
                 if n == 0:
                     nullifzero = 0
                     cmin, cmax = self.aggregate(["min", "max"]).values[self.alias]
                     if cmax - cmin == 0:
-                        print(
-                            "\u26A0 Warning : Can not normalize {} using the MIN and the MAX. MAX = MIN !".format(
-                                self.alias
-                            )
+                        warning_message = "Can not normalize {} using the MIN and the MAX. MAX = MIN !".format(
+                            self.alias
                         )
+                        warnings.warn(warning_message, Warning)
                         return self
                 elif n == 1:
                     try:

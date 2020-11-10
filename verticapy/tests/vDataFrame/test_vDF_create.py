@@ -13,25 +13,35 @@
 
 import pytest
 from verticapy import vDataFrame
+from verticapy import drop_table
+
+
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.learn.datasets import load_titanic
+
+    titanic = load_titanic(cursor = base.cursor)
+    titanic.set_display_parameters(print_info=False)
+    yield titanic
+    drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFCreate:
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation(self):
-        pass
+    def test_creating_vDF_using_input_relation(self, base, titanic_vd):
+        tvdf = vDataFrame(input_relation = 'public.titanic', cursor = base.cursor)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_schema(self):
-        pass
+        assert tvdf["pclass"].count() == 1234
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_vcolumns(self):
-        pass
+    def test_creating_vDF_using_input_relation_schema(self, base, titanic_vd):
+        tvdf = vDataFrame(input_relation = 'titanic', schema = 'public', cursor = base.cursor)
+
+        assert tvdf["pclass"].count() == 1234
+
+    def test_creating_vDF_using_input_relation_vcolumns(self, base, titanic_vd):
+        tvdf = vDataFrame(input_relation = 'public.titanic', usecols = ["age", "survived"], cursor = base.cursor)
+
+        assert tvdf["survived"].count() == 1234
 
     @pytest.mark.skip(reason="test not implemented")
     def test_creating_vDF_using_input_relation_dsn(self):
-        pass
-
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_cursor(self):
         pass
