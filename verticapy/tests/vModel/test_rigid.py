@@ -118,7 +118,7 @@ class TestRidge:
                                     'mean_absolute_error', 'mean_squared_error', 'r2']
         assert reg_rep["value"][0] == pytest.approx(0.172149, abs = 1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.231887, abs = 1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.570369, abs = 1e-6)
+        assert reg_rep["value"][2] == pytest.approx(0.570369, abs = 1e-3)
         assert reg_rep["value"][3] == pytest.approx(0.625551, abs = 1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.631200, abs = 1e-6)
         assert reg_rep["value"][5] == pytest.approx(0.172149, abs = 1e-6)
@@ -129,7 +129,7 @@ class TestRidge:
         # method = "mae"
         assert model.score(method = "mae") == pytest.approx(0.625551, abs = 1e-6)
         # method = "median"
-        assert model.score(method = "median") == pytest.approx(0.570369, abs = 1e-6)
+        assert model.score(method = "median") == pytest.approx(0.570369, abs = 1e-3)
         # method = "mse"
         assert model.score(method = "mse") == pytest.approx(0.625551, abs = 1e-6)
         # method = "msl"
