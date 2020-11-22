@@ -140,7 +140,7 @@ class TestvDFPlot:
         try:
             create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
         except:
-            pass
+            raise
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
