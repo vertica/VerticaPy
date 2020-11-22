@@ -52,6 +52,7 @@
 import math, re, decimal, warnings
 
 # VerticaPy Modules
+import verticapy
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -192,13 +193,13 @@ Attributes
     # ---#
     def __repr__(self):
         return self.head(
-            limit=self.parent._VERTICAPY_VARIABLES_["display"]["rows"]
+            limit=verticapy.options["max_rows"]
         ).__repr__()
 
     # ---#
     def _repr_html_(self):
         return self.head(
-            limit=self.parent._VERTICAPY_VARIABLES_["display"]["rows"]
+            limit=verticapy.options["max_rows"]
         )._repr_html_()
 
     # ---#
@@ -794,8 +795,8 @@ Attributes
 		"""
         check_types(
             [
-                ("lower", lower, [float, int, type(None)],),
-                ("upper", upper, [float, int, type(None)],),
+                ("lower", lower, [float, int,],),
+                ("upper", upper, [float, int,],),
             ]
         )
         if (lower == None) and (upper == None):
@@ -1133,18 +1134,12 @@ Attributes
             query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
                 self.parent.__genSQL__(), " UNION ALL ".join(query)
             )
-            query_on, time_on, title = (
-                self.parent._VERTICAPY_VARIABLES_["query_on"],
-                self.parent._VERTICAPY_VARIABLES_["time_on"],
-                "Describes the statics of {} partitioned by {}.".format(
-                    numcol, self.alias
-                ),
+            title = "Describes the statics of {} partitioned by {}.".format(
+                numcol, self.alias
             )
             values = to_tablesample(
                 query,
                 self.parent._VERTICAPY_VARIABLES_["cursor"],
-                query_on=query_on,
-                time_on=time_on,
                 title=title,
             ).values
         elif (
@@ -1413,7 +1408,10 @@ Attributes
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
             if h <= 0:
-                h = self.numh()
+                if (bins <= 0):
+                    h = self.numh()
+                else:
+                    h = (self.max() - self.min()) * 1.01 / bins 
                 if h > 0.01:
                     h = round(h, 2)
                 elif h > 0.0001:
@@ -2010,7 +2008,7 @@ Attributes
                 pass
             total = int(total)
             conj = "s were " if total > 1 else " was "
-            if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if verticapy.options["print_info"]:
                 print("{} element{}filled.".format(total, conj))
             self.parent.__add_to_history__(
                 "[Fillna]: {} {} missing value{} filled.".format(
@@ -2018,7 +2016,7 @@ Attributes
                 )
             )
         else:
-            if self.parent._VERTICAPY_VARIABLES_["display"]["print_info"]:
+            if verticapy.options["print_info"]:
                 print("Nothing was filled.")
             self.transformations = [elem for elem in copy_trans]
             for elem in sauv:
@@ -2256,11 +2254,7 @@ Attributes
         )
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
-        query_on, time_on, title = (
-            self.parent._VERTICAPY_VARIABLES_["query_on"],
-            self.parent._VERTICAPY_VARIABLES_["time_on"],
-            "Reads {}.".format(self.alias),
-        )
+        title = "Reads {}.".format(self.alias)
         tail = to_tablesample(
             "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
                 convert_special_type(self.category(), False, self.alias),
@@ -2271,8 +2265,6 @@ Attributes
                 offset,
             ),
             self.parent._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
             title=title,
         )
         tail.count = self.parent.shape()[0]
@@ -2359,6 +2351,59 @@ Attributes
 	vDataFrame[].isdate : Returns True if the vcolumn category is date.
 		"""
         return self.category() in ("float", "int")
+
+    # ---#
+    def iv_woe(self, y: str, bins: int = 10,):
+        """
+    ---------------------------------------------------------------------------
+    Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
+    the predictive power of an independent variable in relation to the dependent 
+    variable.
+
+    Parameters
+    ----------
+    y: str
+        Response vcolumn.
+    bins: int, optional
+        Maximum number of bins used for the discretization (must be > 1)
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        check_types([("y", y, [str],), ("bins", bins, [int],)])
+        columns_check([y], self.parent)
+        y = vdf_columns_names([y], self.parent)[0]
+        assert self.parent[y].nunique() == 2, TypeError("vcolumn {} must be binary to use iv_woe.".format(y))
+        response_cat = self.parent[y].distinct()
+        response_cat.sort()
+        assert response_cat == [0, 1], TypeError("vcolumn {} must be binary to use iv_woe.".format(y))
+        self.parent[y].distinct()
+        trans = self.discretize(method = "same_width" if self.isnum() else 'topk',
+                                bins = bins,
+                                k = bins,
+                                new_category = "Others",
+                                return_enum_trans = True,)[0].replace("{}", self.alias)
+        query = "SELECT {} AS {}, {} AS ord, {}::int AS {} FROM {}".format(trans, self.alias, self.alias, y, y, self.parent.__genSQL__(),)
+        query = "SELECT {}, MIN(ord) AS ord, SUM(1 - {}) AS non_events, SUM({}) AS events FROM ({}) x GROUP BY 1".format(self.alias, y, y, query,)
+        query = "SELECT {}, ord, non_events, events, non_events / NULLIFZERO(SUM(non_events) OVER ()) AS pt_non_events, events / NULLIFZERO(SUM(events) OVER ()) AS pt_events FROM ({}) x".format(self.alias, query,)
+        query = "SELECT {} AS index, non_events, events, pt_non_events, pt_events, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS woe, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE (pt_non_events - pt_events) * ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS iv FROM ({}) x ORDER BY ord".format(self.alias, query,)
+        title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)
+        result = to_tablesample(
+            query,
+            self.parent._VERTICAPY_VARIABLES_["cursor"],
+            title=title,
+        )
+        result.values["index"] += ["total"]
+        result.values["non_events"] += [sum(result["non_events"])]
+        result.values["events"] += [sum(result["events"])]
+        result.values["pt_non_events"] += [""]
+        result.values["pt_events"] += [""]
+        result.values["woe"] += [""]
+        result.values["iv"] += [sum(result["iv"])]
+        return result
 
     # ---#
     def kurtosis(self):
@@ -2666,16 +2711,10 @@ Attributes
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(
             self.parent.__genSQL__(), self.alias, self.alias, n
         )
-        query_on, time_on, title = (
-            self.parent._VERTICAPY_VARIABLES_["query_on"],
-            self.parent._VERTICAPY_VARIABLES_["time_on"],
-            "Reads {} {} largest elements.".format(self.alias, n),
-        )
+        title = "Reads {} {} largest elements.".format(self.alias, n)
         return to_tablesample(
             query,
             self.parent._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
             title=title,
         )
 
@@ -3028,16 +3067,10 @@ Attributes
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(
             self.parent.__genSQL__(), self.alias, self.alias, n
         )
-        query_on, time_on, title = (
-            self.parent._VERTICAPY_VARIABLES_["query_on"],
-            self.parent._VERTICAPY_VARIABLES_["time_on"],
-            "Reads {} {} smallest elements.".format(n, self.alias),
-        )
+        title = "Reads {} {} smallest elements.".format(n, self.alias)
         return to_tablesample(
             query,
             self.parent._VERTICAPY_VARIABLES_["cursor"],
-            query_on=query_on,
-            time_on=time_on,
             title=title,
         )
 

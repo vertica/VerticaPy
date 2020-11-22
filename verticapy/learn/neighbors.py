@@ -616,7 +616,7 @@ p: int, optional
             self.y,
             self.y,
         )
-        self.centroids_ = to_tablesample(query=query, cursor=self.cursor)
+        self.centroids_ = to_tablesample(query=query, cursor=self.cursor, title="Getting Model Centroids.",)
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -994,16 +994,17 @@ xlim: list, optional
         x, y = density_compute(vdf, X, self.parameters["bandwidth"], self.parameters["kernel"], self.parameters["nbins"], self.parameters["p"])
         query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(self.name.replace('"', ''), ", ".join(X), vdf.__genSQL__())
         self.cursor.execute(query)
-        r = 0
+        r, idx = 0, 0
         while (r < len(y)):
             values = []
             m = min(r + 100, len(y))
             for i in range(r, m):
                 values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
             query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(self.name.replace('"', ''), ", ".join(X), " UNION ".join(values))
-            self.cursor.execute(query)
+            executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
             self.cursor.execute("COMMIT;")
             r += 100
+            idx += 1
         self.X, self.input_relation = X, input_relation
         self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ''))
         self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ''))
@@ -1458,7 +1459,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
                 relation_alpha, sql
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 0.")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
                 relation_alpha, n_neighbors + 1
             )
@@ -1476,7 +1477,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
                 relation_alpha, lrd
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 1.")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
                 n_neighbors, relation_alpha, relation_alpha, relation_alpha
             )
@@ -1491,11 +1492,11 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
                 relation_alpha, sql
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 2.")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
                 ", ".join(X + self.key_columns), main_table, relation_alpha, index
             )
-            cursor.execute("CREATE TABLE {} AS {}".format(self.name, sql))
+            executeSQL(self.cursor, "CREATE TABLE {} AS {}".format(self.name, sql), "Computing the LOF - STEP 3.")
             cursor.execute(
                 "SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(
                     schema, relation_alpha

@@ -46,7 +46,7 @@
 # of moving data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
@@ -65,3 +65,11 @@ from verticapy.connections.connect import *
 # Learn
 import verticapy.learn
 import verticapy.learn.tsa
+
+verticapy.options = {"max_rows": 100,
+		        	 "max_columns": 50,
+		        	 "percent_bar": None,
+		        	 "print_info": True,
+		        	 "query_on": False,
+		        	 "time_on": False,
+		        	 "mode": None,}

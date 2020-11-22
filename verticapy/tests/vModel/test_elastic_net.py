@@ -14,7 +14,10 @@
 import pytest
 from verticapy.learn.linear_model import ElasticNet
 from verticapy import drop_table
-from decimal import Decimal
+import matplotlib.pyplot as plt
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -22,7 +25,6 @@ def winequality_vd(base):
     from verticapy.learn.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
-    winequality.set_display_parameters(print_info=False)
     yield winequality
     drop_table(name="public.winequality", cursor=base.cursor)
 
@@ -64,8 +66,8 @@ class TestElasticNet:
 
         assert fim["index"] == ['total_sulfur_dioxide', 'residual_sugar', 'alcohol']
         assert fim["importance"] == [100, 0, 0]
-        # TODO: it is nicer not to have Decimal for sign
-        assert fim["sign"] == [Decimal('-1'), Decimal('0'), Decimal('0')]
+        assert fim["sign"] == [-1, 0, 0]
+        plt.close()
 
     def test_get_model_attribute(self, model):
         m_att = model.get_model_attribute()
@@ -94,11 +96,11 @@ class TestElasticNet:
         assert model.get_model_attribute("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_model_attribute("accepted_row_count")["accepted_row_count"][0] == 6497
         assert model.get_model_attribute("call_string")["call_string"][0] == \
-            'linear_reg(\'public.elasticnet_model_test\', \'public.winequality\', \'"quality"\', \'"total_sulfur_dioxide", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'cgd\', epsilon=0.0001, max_iterations=100, regularization=\'enet\', lambda=1, alpha=0.5)'
+            'linear_reg(\'public.elasticnet_model_test\', \'public.winequality\', \'"quality"\', \'"total_sulfur_dioxide", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'cgd\', epsilon=1e-06, max_iterations=100, regularization=\'enet\', lambda=1, alpha=0.5)'
 
     def test_get_params(self, model):
         assert model.get_params() == {'solver': 'cgd', 'penalty': 'enet', 'max_iter': 100,
-                                      'l1_ratio': 0.5, 'C': 1, 'tol': 0.0001}
+                                      'l1_ratio': 0.5, 'C': 1, 'tol': 1e-6}
 
     @pytest.mark.skip(reason="test not implemented")
     def test_get_plot(self):

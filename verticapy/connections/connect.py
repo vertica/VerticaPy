@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import os
+from configparser import ConfigParser
 
 # VerticaPy Modules
 from verticapy.utilities import check_types
@@ -75,39 +76,26 @@ See Also
 --------
 new_auto_connection : Saves a connection to automatically create DB cursors.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections/all/"
-    all_connections = [
-        f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))
-    ]
-    all_connections = [
-        elem.replace(".verticapy", "")
-        for elem in all_connections
-        if ".verticapy" in elem
-    ]
-    if len(all_connections) == 1:
-        print("The only available connection is {}".format(all_connections[0]))
-    elif all_connections:
-        print(
-            "The available connections are the following: {}".format(
-                ", ".join(all_connections)
-            )
-        )
-    else:
-        print(
-            "No connections yet available. Use the new_auto_connection function to create your first one."
-        )
+    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    try:
+        confparser.read(path)
+    except:
+        pass
+    all_connections = confparser.sections()
     return all_connections
 
 
 # ---#
-def change_auto_connection(name: str = "DSN"):
+def change_auto_connection(name: str):
     """
 ---------------------------------------------------------------------------
 Changes the current auto connection.
 
 Parameters
 ----------
-name: str, optional
+name: str
 	Name of the new auto connection.
 
 See Also
@@ -116,24 +104,23 @@ new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    try:
-        path = os.path.dirname(
-            verticapy.__file__
-        ) + "/connections/all/{}.verticapy".format(name)
-        file = open(path, "r")
-        file.close()
-    except:
-        available_auto_connection()
+    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    confparser.read(path)
+    if confparser.has_section(name):
+        confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
+        confparser.add_section("VERTICAPY_AUTO_CONNECTION")
+        confparser.set("VERTICAPY_AUTO_CONNECTION", "name", name)
+        f = open(path, "w+")
+        confparser.write(f)
+        f.close()
+    else:
         raise NameError(
             "The input name is incorrect. The connection '{}' has never been created.\nUse the new_auto_connection function to create a new connection.".format(
                 name
             )
         )
-    path = os.path.dirname(verticapy.__file__) + "/connections/auto_connection"
-    file = open(path, "w+")
-    file.write(name)
-    file.close()
-
 
 # ---#
 def new_auto_connection(dsn: dict, name: str = "DSN"):
@@ -162,36 +149,21 @@ read_auto_connect      : Automatically creates a connection.
 vertica_conn           : Creates a Vertica Database connection.
 	"""
     check_types([("dsn", dsn, [dict],)])
-    if "port" not in dsn:
-        print(
-            "\u26A0 Warning: No port found in the 'dsn' dictionary. The default port is 5433."
-        )
-        dsn["port"] = 5433
-    if "user" not in dsn:
-        print(
-            "\u26A0 Warning: No user found in the 'dsn' dictionary. The default user is 'dbadmin'."
-        )
-        dsn["user"] = "dbadmin"
-    if ("password" not in dsn) or ("database" not in dsn) or ("host" not in dsn):
-        raise ParameterError(
-            'The dictionary \'dsn\' is incomplete. It must include all the needed credentitals to set up the connection.\nExample: dsn = { "host": "10.211.55.14", "port": "5433", "database": "testdb", "password": "XxX", "user": "dbadmin"}"'
-        )
-    path = os.path.dirname(verticapy.__file__) + "/connections/all/{}.verticapy".format(
-        name
-    )
-    file = open(path, "w+")
-    file.write(
-        "Connection - {}\nhost: {}\nport: {}\ndatabase: {}\nuser: {}\npassword: {}".format(
-            name,
-            dsn["host"],
-            dsn["port"],
-            dsn["database"],
-            dsn["user"],
-            dsn["password"],
-        )
-    )
-    file.close()
-
+    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    try:
+        confparser.read(path)
+    except:
+        pass
+    if confparser.has_section(name):
+        confparser.remove_section(name)
+    confparser.add_section(name)
+    for elem in dsn:
+        confparser.set(name, elem, dsn[elem])
+    f = open(path, "w+")
+    confparser.write(f)
+    f.close()
 
 # ---#
 def read_auto_connect():
@@ -210,122 +182,74 @@ See Also
 new_auto_connection : Saves a connection to automatically create DB cursors.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections"
-    try:
-        file = open(path + "/auto_connection", "r")
-        name = file.read()
-        path += "/all/{}.verticapy".format(name)
-        file = open(path, "r")
-    except:
-        raise NameError(
-            "No auto connection is available. To create an auto connection, use the new_auto_connection function of the verticapy.connections.connect module."
-        )
-    try:
-        dsn = file.read()
-        dsn = dsn.split("\n")
-        dsn[1] = dsn[1][6:]
-        dsn[2] = dsn[2][6:]
-        dsn[3] = dsn[3][10:]
-        dsn[4] = dsn[4][6:]
-        dsn[5] = dsn[5][10:]
-    except:
-        raise ParsingError(
-            "The auto connection format seems to be incorrect. To create a new auto connection, use the new_auto_connection function of the verticapy.connections.connect module."
-        )
-    conn = vertica_python.connect(
-        **{
-            "host": dsn[1],
-            "port": dsn[2],
-            "database": dsn[3],
-            "user": dsn[4],
-            "password": dsn[5],
-        }
-    )
-    return conn
+    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    confparser.read(path)
+    section = confparser.get("VERTICAPY_AUTO_CONNECTION", "name")
+    return vertica_conn(section, path)
 
 
 # ---#
-def read_dsn(dsn: str):
+def read_dsn(section: str, dsn: str = "",):
     """
 ---------------------------------------------------------------------------
-Reads the DSN information from the ODBCINI environment variable.
+Reads the DSN information from the ODBCINI environment variable or the input
+file.
 
 Parameters
 ----------
-dsn: str
-	DSN name
+section: str
+    Name of the section in the configuration file.
+dsn: str, optional
+	Path to the file containing the credentials. If empty, the ODBCINI 
+    environment variable will be used.
 
 Returns
 -------
 dict
 	dictionary with all the credentials
 	"""
-    check_types([("dsn", dsn, [str],)])
-    f = open(os.environ["ODBCINI"], "r")
-    odbc = f.read()
-    f.close()
-    if "[{}]".format(dsn) not in odbc:
-        raise NameError("The DSN '{}' doesn't exist.".format(dsn))
-    odbc = odbc.split("[{}]\n".format(dsn))[1].split("\n\n")[0].split("\n")
-    dsn = {}
-    for elem in odbc:
-        try:
-            info = elem.replace(" ", "").split("=")
-            dsn[info[0].lower()] = info[1]
-        except:
-            pass
-    return dsn
+    check_types([("dsn", dsn, [str],), ("section", section, [str],)])
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    if not dsn:
+        dsn = os.environ["ODBCINI"]
+    confparser.read(dsn)
+    if confparser.has_section(section):
+        options = confparser.items(section)
+        conn_info = {"port": 5433, "user": "dbadmin"}
+        for elem in options:
+            if elem[0].lower() == "servername":
+                conn_info["host"] = elem[1]
+            elif elem[0].lower() == "uid":
+                conn_info["user"] = elem[1]
+            elif elem[0].lower() == "pwd":
+                conn_info["password"] = elem[1]
+            elif elem[0].lower() == "kerberosservicename":
+                conn_info["kerberos_service_name"] = elem[1]
+            elif elem[0].lower() == "kerberoshostname":
+                conn_info["kerberos_host_name"] = elem[1]
+            else:
+                conn_info[elem[0].lower()] = elem[1]
+        return conn_info
+    else:
+        raise NameError("The DSN Section '{}' doesn't exist.".format(section))
 
 
 # ---#
-def to_vertica_python_format(dsn: str):
+def vertica_conn(section: str, dsn: str = "",):
     """
 ---------------------------------------------------------------------------
-Converts the ODBC dictionary obtained with the read_dsn method to the 
-vertica_python format.
+Reads the input DSN and creates a Vertica Database connection.
 
 Parameters
 ----------
-dsn: str
-	DSN name
-
-Returns
--------
-dict
-	dictionary with all the credentials
-	"""
-    check_types([("dsn", dsn, [str],)])
-    dsn = read_dsn(dsn)
-    conn_info = {}
-    for elem in dsn:
-        if elem.lower() == "servername":
-            conn_info["host"] = dsn[elem]
-        elif elem.lower() == "uid":
-            conn_info["user"] = dsn[elem]
-        elif elem.lower() == "pwd":
-            conn_info["password"] = dsn[elem]
-        elif elem.lower() == "kerberosservicename":
-            conn_info["kerberos_service_name"] = dsn[elem]
-        elif elem.lower() == "kerberoshostname":
-            conn_info["kerberos_host_name"] = dsn[elem]
-        else:
-            conn_info[elem.lower()] = dsn[elem]
-    if "port" not in [elem.lower() for elem in dsn]:
-        conn_info["password"] = 5433
-    return conn_info
-
-
-# ---#
-def vertica_conn(dsn: str):
-    """
----------------------------------------------------------------------------
-Reads the input DSN from the ODBCINI environment and creates a Vertica 
-Database connection.
-
-Parameters
-----------
-dsn: str
-	DSN name
+section: str
+    Name of the section in the configuration file.
+dsn: str, optional
+    Path to the file containing the credentials. If empty, the ODBCINI 
+    environment variable will be used.
 
 Returns
 -------
@@ -338,12 +262,5 @@ new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 	"""
     check_types([("dsn", dsn, [str],)])
-    conn = vertica_python.connect(**to_vertica_python_format(dsn))
+    conn = vertica_python.connect(**read_dsn(section, dsn))
     return conn
-
-
-def vertica_cursor(dsn: str):
-    print(
-        "\u26A0 Warning: This function has been deprecated, please use vertica_conn to create a DB connection."
-    )
-    return vertica_conn(dsn).cursor()

@@ -16,13 +16,14 @@ from verticapy.learn.linear_model import Ridge
 from verticapy import drop_table
 from decimal import Decimal
 
+from verticapy import set_option
+set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
     from verticapy.learn.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
-    winequality.set_display_parameters(print_info=False)
     yield winequality
     drop_table(name="public.winequality", cursor=base.cursor)
 
@@ -63,9 +64,9 @@ class TestRidge:
         fim = model.features_importance()
 
         assert fim["index"] == ['alcohol', 'residual_sugar', 'citric_acid']
-        assert fim["importance"] == [65.86, 33.35, 0.79]
+        assert fim["importance"] == [52.3, 32.63, 15.07]
         # TODO: it is nicer not to have Decimal for sign
-        assert fim["sign"] == [Decimal('1'), Decimal('1'), Decimal('1')]
+        assert fim["sign"] == [1, 1, 1]
 
     def test_get_model_attribute(self, model):
         m_att = model.get_model_attribute()
@@ -77,13 +78,13 @@ class TestRidge:
         m_att_details = model.get_model_attribute(attr_name = "details")
 
         assert m_att_details["predictor"] == ['Intercept', 'citric_acid', 'residual_sugar', 'alcohol']
-        assert m_att_details["coefficient"][0] == pytest.approx(3.658003, abs = 1e-6)
-        assert m_att_details["coefficient"][1] == pytest.approx(0.009950, abs = 1e-6)
-        assert m_att_details["coefficient"][2] == pytest.approx(0.010719, abs = 1e-6)
-        assert m_att_details["coefficient"][3] == pytest.approx(0.200047, abs = 1e-6)
-        assert m_att_details["std_err"][3] == pytest.approx(0.008867, abs = 1e-6)
-        assert m_att_details["t_value"][3] == pytest.approx(22.558792, abs = 1e-6)
-        assert m_att_details["p_value"][1] == pytest.approx(0.884702)
+        assert m_att_details["coefficient"][0] == pytest.approx(1.77574980319025, abs = 1e-6)
+        assert m_att_details["coefficient"][1] == pytest.approx(0.431005879933288, abs = 1e-6)
+        assert m_att_details["coefficient"][2] == pytest.approx(0.0237636413018576, abs = 1e-6)
+        assert m_att_details["coefficient"][3] == pytest.approx(0.359894749137091, abs = 1e-6)
+        assert m_att_details["std_err"][3] == pytest.approx(0.00860813464286587, abs = 1e-6)
+        assert m_att_details["t_value"][3] == pytest.approx(41.8086802853809, abs = 1e-6)
+        assert m_att_details["p_value"][1] == pytest.approx(8.96677134128099e-11)
 
         m_att_regularization = model.get_model_attribute("regularization")
 
@@ -94,11 +95,11 @@ class TestRidge:
         assert model.get_model_attribute("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_model_attribute("accepted_row_count")["accepted_row_count"][0] == 6497
         assert model.get_model_attribute("call_string")["call_string"][0] == \
-            'linear_reg(\'public.ridge_model_test\', \'public.winequality\', \'"quality"\', \'"citric_acid", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'cgd\', epsilon=0.0001, max_iterations=100, regularization=\'l2\', lambda=1, alpha=0)'
+            'linear_reg(\'public.ridge_model_test\', \'public.winequality\', \'"quality"\', \'"citric_acid", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'newton\', epsilon=1e-06, max_iterations=100, regularization=\'l2\', lambda=1, alpha=0.5)'
 
     def test_get_params(self, model):
-        assert model.get_params() == {'solver': 'cgd', 'penalty': 'L2', 'max_iter': 100,
-                                      'l1_ratio': 0.5, 'C': 1, 'tol': 0.0001}
+        assert model.get_params() == {'solver': 'newton', 'penalty': 'l2', 'max_iter': 100,
+                                      'C': 1.0, 'tol': 1e-06}
 
     @pytest.mark.skip(reason="test not implemented")
     def test_get_plot(self):
@@ -116,28 +117,28 @@ class TestRidge:
 
         assert reg_rep["index"] == ['explained_variance', 'max_error', 'median_absolute_error',
                                     'mean_absolute_error', 'mean_squared_error', 'r2']
-        assert reg_rep["value"][0] == pytest.approx(0.172149, abs = 1e-6)
-        assert reg_rep["value"][1] == pytest.approx(3.231887, abs = 1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.570369, abs = 1e-3)
-        assert reg_rep["value"][3] == pytest.approx(0.625551, abs = 1e-6)
-        assert reg_rep["value"][4] == pytest.approx(0.631200, abs = 1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.172149, abs = 1e-6)
+        assert reg_rep["value"][0] == pytest.approx(0.219816244842147, abs = 1e-6)
+        assert reg_rep["value"][1] == pytest.approx(3.59213874427945, abs = 1e-6)
+        assert reg_rep["value"][2] == pytest.approx(0.495516023908698, abs = 1e-3)
+        assert reg_rep["value"][3] == pytest.approx(0.60908330928705, abs = 1e-6)
+        assert reg_rep["value"][4] == pytest.approx(0.594856874272792, abs = 1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.219816244842152, abs = 1e-6)
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method = "max") == pytest.approx(3.231887, abs = 1e-6)
+        assert model.score(method = "max") == pytest.approx(3.59213874427945, abs = 1e-6)
         # method = "mae"
-        assert model.score(method = "mae") == pytest.approx(0.625551, abs = 1e-6)
+        assert model.score(method = "mae") == pytest.approx(0.60908330928705, abs = 1e-6)
         # method = "median"
-        assert model.score(method = "median") == pytest.approx(0.570369, abs = 1e-3)
+        assert model.score(method = "median") == pytest.approx(0.495516023908698, abs = 1e-3)
         # method = "mse"
-        assert model.score(method = "mse") == pytest.approx(0.625551, abs = 1e-6)
+        assert model.score(method = "mse") == pytest.approx(0.60908330928705, abs = 1e-6)
         # method = "msl"
-        assert model.score(method = "msle") == pytest.approx(0.002657, abs = 1e-6)
+        assert model.score(method = "msle") == pytest.approx(0.00250970549028931, abs = 1e-6)
         # method = "r2"
-        assert model.score(method = "r2") == pytest.approx(0.172149, abs = 1e-6)
+        assert model.score(method = "r2") == pytest.approx(0.219816244842152, abs = 1e-6)
         # method = "var"
-        assert model.score(method = "var") == pytest.approx(0.172149, abs = 1e-6)
+        assert model.score(method = "var") == pytest.approx(0.219816244842147, abs = 1e-6)
 
     def test_set_cursor(self, base):
         model_test = Ridge("ridge_cursor_test", cursor = base.cursor)

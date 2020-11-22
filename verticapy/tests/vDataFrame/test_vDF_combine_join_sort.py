@@ -11,19 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop_table
 
+from verticapy import set_option
+set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
     from verticapy.learn.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
-    iris.set_display_parameters(print_info=False)
     yield iris
-    drop_table(name="public.iris", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -31,11 +32,11 @@ def market_vd(base):
     from verticapy.learn.datasets import load_market
 
     market = load_market(cursor=base.cursor)
-    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(
-        name="public.market", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.market", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -43,11 +44,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFCombineJoinSort:

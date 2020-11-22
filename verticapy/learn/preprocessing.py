@@ -114,7 +114,7 @@ vDataFrame
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
     )
-    cursor.execute(sql)
+    executeSQL(cursor, sql, "Computing the Balanced Relation.")
     return vDataFrame(name, cursor)
 
 
@@ -228,9 +228,7 @@ max_text_size: int, optional
         except:
             pass
         sql = "CREATE TABLE {}.VERTICAPY_COUNT_VECTORIZER_{}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
-        self.cursor.execute(
-            sql.format(schema, relation_alpha, self.parameters["max_text_size"])
-        )
+        executeSQL(self.cursor, sql.format(schema, relation_alpha, self.parameters["max_text_size"]), "Computing the CountVectorizer - STEP 0.")
         text = (
             " || ".join(self.X)
             if not (self.parameters["lowercase"])
@@ -241,11 +239,11 @@ max_text_size: int, optional
         sql = "INSERT INTO {}.VERTICAPY_COUNT_VECTORIZER_{}(text) SELECT {} FROM {}".format(
             schema, relation_alpha, text, input_relation
         )
-        self.cursor.execute(sql)
+        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 1.")
         sql = "CREATE TEXT INDEX {} ON {}.VERTICAPY_COUNT_VECTORIZER_{}(id, text) stemmer NONE;".format(
             self.name, schema, relation_alpha
         )
-        self.cursor.execute(sql)
+        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 2.")
         stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )

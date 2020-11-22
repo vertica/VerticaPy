@@ -54,7 +54,7 @@ import math, warnings
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
 from verticapy.connections.connect import read_auto_connect
-from verticapy.learn.linear_model import ElasticNet
+from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
 # Other Python Modules
@@ -89,16 +89,8 @@ Q: int, optional
     Order of the seasonal MA (Moving-Average) part.
 s: int, optional
     Span of the seasonality.
-penalty: str, optional
-    Determines the method of regularization.
-        None : No Regularization
-        L1   : L1 Regularization
-        L2   : L2 Regularization
-        ENet : Combination between L1 and L2
 tol: float, optional
     Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
     Determines the maximum number of iterations the algorithm performs before 
     achieving the specified accuracy result.
@@ -106,10 +98,6 @@ solver: str, optional
     The optimizer method to use to train the model. 
         Newton : Newton Method
         BFGS   : Broyden Fletcher Goldfarb Shanno
-        CGD    : Coordinate Gradient Descent
-l1_ratio: float, optional
-    ENet mixture parameter that defines how much L1 versus L2 regularization 
-    to provide.
 max_pik: int, optional
     Number of inverse MA coefficient used to approximate the MA.
 papprox_ma: int, optional
@@ -127,9 +115,7 @@ papprox_ma: int, optional
         D: int = 0,
         Q: int = 0,
         s: int = 0,
-        penalty: str = "None",
         tol: float = 1e-4,
-        C: float = 1.0,
         max_iter: int = 1000,
         solver: str = "Newton",
         l1_ratio: float = 0.5,
@@ -147,12 +133,9 @@ papprox_ma: int, optional
                 "D": D,
                 "Q": Q,
                 "s": s,
-                "penalty": penalty,
                 "tol": tol,
-                "C": C,
                 "max_iter": max_iter,
                 "solver": solver,
-                "l1_ratio": l1_ratio,
                 "max_pik": max_pik,
                 "papprox_ma": papprox_ma,
             }
@@ -381,14 +364,11 @@ papprox_ma: int, optional
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "
         )
-        model = ElasticNet(
+        model = LinearRegression(
             name=self.name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
-            penalty=self.parameters["penalty"],
-            l1_ratio=self.parameters["l1_ratio"],
-            C=self.parameters["C"],
         )
 
         if (
@@ -726,12 +706,9 @@ papprox_ma: int, optional
             "D": self.parameters["D"],
             "Q": self.parameters["Q"],
             "s": self.parameters["s"],
-            "penalty": self.parameters["penalty"],
             "tol": self.parameters["tol"],
-            "C": self.parameters["C"],
             "max_iter": self.parameters["max_iter"],
             "solver": self.parameters["solver"],
-            "l1_ratio": self.parameters["l1_ratio"],
             "max_pik": self.parameters["max_pik"],
             "papprox_ma": self.parameters["papprox_ma"],
         }
@@ -1146,16 +1123,8 @@ cursor: DBcursor, optional
     Vertica DB cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
-penalty: str, optional
-    Determines the method of regularization.
-        None : No Regularization
-        L1   : L1 Regularization
-        L2   : L2 Regularization
-        ENet : Combination between L1 and L2
 tol: float, optional
     Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
     Determines the maximum number of iterations the algorithm performs before 
     achieving the specified accuracy result.
@@ -1163,10 +1132,6 @@ solver: str, optional
     The optimizer method to use to train the model. 
         Newton : Newton Method
         BFGS   : Broyden Fletcher Goldfarb Shanno
-        CGD    : Coordinate Gradient Descent
-l1_ratio: float, optional
-    ENet mixture parameter that defines how much L1 versus L2 regularization 
-    to provide.
     """
 
     def __init__(
@@ -1174,12 +1139,9 @@ l1_ratio: float, optional
         name: str,
         cursor=None,
         p: int = 1,
-        penalty: str = "None",
         tol: float = 1e-4,
-        C: float = 1.0,
         max_iter: int = 1000,
         solver: str = "Newton",
-        l1_ratio: float = 0.5,
     ):
         check_types([("name", name, [str],)])
         self.type, self.name = "VAR", name
@@ -1189,12 +1151,9 @@ l1_ratio: float, optional
         self.set_params(
             {
                 "p": p,
-                "penalty": penalty,
                 "tol": tol,
-                "C": C,
                 "max_iter": max_iter,
                 "solver": solver,
-                "l1_ratio": l1_ratio,
             }
         )
         if not (cursor):
@@ -1336,14 +1295,11 @@ l1_ratio: float, optional
         self.test_relation = test_relation if (test_relation) else input_relation
         self.ts, self.deploy_predict_ = str_column(ts), []
         self.X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
-        model = ElasticNet(
+        model = LinearRegression(
             name=self.name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
-            penalty=self.parameters["penalty"],
-            l1_ratio=self.parameters["l1_ratio"],
-            C=self.parameters["C"],
         )
 
         # AR(p)
@@ -1407,12 +1363,9 @@ l1_ratio: float, optional
             "X": self.X,
             "ts": self.ts,
             "p": self.parameters["p"],
-            "penalty": self.parameters["penalty"],
             "tol": self.parameters["tol"],
-            "C": self.parameters["C"],
             "max_iter": self.parameters["max_iter"],
             "solver": self.parameters["solver"],
-            "l1_ratio": self.parameters["l1_ratio"],
         }
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values

@@ -11,8 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, os
+import pytest, os, warnings
 from verticapy import vDataFrame, get_session, read_vdf, drop_table, drop_view
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -20,11 +23,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -32,11 +35,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFUtilities:
@@ -56,8 +59,9 @@ class TestvDFUtilities:
 
     def test_vDF_to_db(self, titanic_vd):
         try:
-            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+                drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         except:
             pass
         # testing relation_type = view
@@ -71,9 +75,11 @@ class TestvDFUtilities:
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
             raise
-        drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "table", db_filter = "age > 40", nb_split = 3)
@@ -85,9 +91,11 @@ class TestvDFUtilities:
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "temporary", db_filter = "age > 40", nb_split = 3)
@@ -99,9 +107,11 @@ class TestvDFUtilities:
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "local", db_filter = "age > 40", nb_split = 3)
@@ -113,9 +123,11 @@ class TestvDFUtilities:
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
 
 
     def test_vDF_to_json(self, titanic_vd):
@@ -194,30 +206,10 @@ class TestvDFUtilities:
         result.set_cursor(cursor)
         assert isinstance(result._VERTICAPY_VARIABLES_["cursor"], type(cursor))
 
-    def test_vDF_set_display_parameters(self, titanic_vd):
-        result = titanic_vd.copy()
-        result.set_display_parameters(rows=50, columns=5, percent_bar=True, print_info=False)
-        assert result._VERTICAPY_VARIABLES_["display"]["rows"] == 50
-        assert result._VERTICAPY_VARIABLES_["display"]["columns"] == 5
-        assert result._VERTICAPY_VARIABLES_["display"]["percent_bar"] == True
-        assert result._VERTICAPY_VARIABLES_["display"]["print_info"] == False
-
     def test_vDF_set_schema_writing(self, titanic_vd):
         result = titanic_vd.copy()
         result.set_schema_writing("test")
         assert result._VERTICAPY_VARIABLES_["schema_writing"] == "test"
-
-    def test_vDF_sql_on_off(self, titanic_vd):
-        result = titanic_vd.copy()
-        query_on = result._VERTICAPY_VARIABLES_["query_on"]
-        result.sql_on_off()
-        assert result._VERTICAPY_VARIABLES_["query_on"] != query_on
-
-    def test_vDF_time_on_off(self, titanic_vd):
-        result = titanic_vd.copy()
-        time_on = result._VERTICAPY_VARIABLES_["time_on"]
-        result.time_on_off()
-        assert result._VERTICAPY_VARIABLES_["time_on"] != time_on
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -387,11 +379,11 @@ class TestvDFUtilities:
 
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
-        assert result2["value"][0] == pytest.approx(1031, 5e-2)
+        assert result2["value"][0] == pytest.approx(862, 5e-2)
         assert result2["value"][1] == pytest.approx(1712, 5e-2)
         assert result2["value"][2] == pytest.approx(1713, 5e-2)
         assert result2["value"][3] == pytest.approx(1714, 5e-2)
-        assert result2["value"][4] == pytest.approx(6170, 5e-2)
+        assert result2["value"][4] == pytest.approx(6001, 5e-2)
 
     def test_vDF_numcol(self, titanic_vd):
         result = [elem.replace('"', "") for elem in titanic_vd.numcol()]

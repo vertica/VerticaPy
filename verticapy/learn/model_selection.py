@@ -543,7 +543,7 @@ tablesample
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the Lift Table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()
@@ -639,7 +639,7 @@ tablesample
     version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the PRC table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()
@@ -748,7 +748,7 @@ tablesample
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the ROC Table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()

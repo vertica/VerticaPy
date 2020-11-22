@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-import datetime
+import pytest, datetime, warnings
 from verticapy import vDataFrame, drop_table, errors
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +23,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -34,7 +36,8 @@ def iris_vd(base):
 
     iris = load_iris(cursor=base.cursor)
     yield iris
-    drop_table(name="public.iris", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +46,8 @@ def smart_meters_vd(base):
 
     smart_meters = load_smart_meters(cursor=base.cursor)
     yield smart_meters
-    drop_table(name="public.smart_meters", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.smart_meters", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +56,8 @@ def titanic_vd(base):
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFFeatureEngineering:

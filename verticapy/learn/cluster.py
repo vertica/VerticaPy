@@ -52,6 +52,7 @@
 import os
 
 # VerticaPy Modules
+import vertica_python
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
@@ -285,7 +286,7 @@ p: int, optional
                     input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                cursor.execute(sql)
+                executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 0.")
             else:
                 cursor.execute(
                     "SELECT {} FROM {} LIMIT 10".format(
@@ -307,7 +308,7 @@ p: int, optional
             sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
                 sql, self.parameters["min_samples"], self.parameters["eps"]
             )
-            cursor.execute(sql)
+            executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 1.")
             graph = cursor.fetchall()
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
@@ -343,7 +344,7 @@ p: int, optional
                 cursor.execute(
                     "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
                 )
-                if "vertica_python" in str(type(cursor)):
+                if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                     with open("./VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "r") as fs:
                         cursor.copy(
                             "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';",
@@ -362,11 +363,7 @@ p: int, optional
                 os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
                 raise
             self.n_cluster_ = i
-            cursor.execute(
-                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
-                    self.name, ", ".join(self.X + self.key_columns), main_table, index
-                )
-            )
+            executeSQL(cursor, "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(self.name, ", ".join(self.X + self.key_columns), main_table, index), "Computing the DBSCAN Table - STEP 2.")
             cursor.execute(
                 "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
             )
