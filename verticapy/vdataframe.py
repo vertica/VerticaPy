@@ -7135,10 +7135,10 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def sample(self, x: float, method: str = "random", by: list = [],):
+    def sample(self, n = None, x = None, method: str = "random", by: list = [],):
         """
     ---------------------------------------------------------------------------
-    Downsamples the vDataFrame.
+    Downsamples the input vDataFrame.
 
     \u26A0 Warning : The result might change for each SQL code generation as the 
                      random numbers are not memorized. You can use this method to 
@@ -7146,7 +7146,9 @@ vcolumns : vcolumn
 
     Parameters
      ----------
-     x: float
+     n: int, optional
+        Approximate number of element to consider in the sample.
+     x: float, optional
         The sample size. For example it has to be equal to 0.33 to downsample to 
         approximatively 33% of the relation.
     method: str, optional
@@ -7161,8 +7163,17 @@ vcolumns : vcolumn
     vDataFrame
         sample vDataFrame
         """
+        assert n != None or x != None, ParameterError("One of the parameter 'n' or 'x' must not be empty.")
+        assert n == None or x == None, ParameterError("One of the parameter 'n' or 'x' must be empty.")
+        if n != None:
+            check_types([("n", n, [int, float,],),])
+            x = float(n / self.shape()[0])
         if isinstance(method, str):
             method = method.lower()
+        if method in ("systematic", "random"):
+            order_by = ""
+            if (by):
+                raise ParameterError("Parameter 'by' must be empty when using '{}' sampling.".format(method))
         check_types([("method", method, ["random", "systematic", "stratified",],), ("x", x, [int, float],)])
         columns_check(by, self)
         by = vdf_columns_names(by, self)
@@ -7176,22 +7187,18 @@ vcolumns : vcolumn
             verticapy.options["print_info"] = False
             vdf.filter("{} < {}".format(name, x),)
             verticapy.options["print_info"] = print_info_init
-            vdf[name].drop()
+            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
-            if method == "systematic":
-                order_by = ""
-                if (by):
-                    raise ParameterError("Parameter 'by' must be empty when using 'systematic' sampling.")
-            else:
-                if not(by):
-                    raise ParameterError("Parameter 'by' must include at least one column when using 'stratified' sampling.")
+            if method == "stratified" and not(by):
+                raise ParameterError("Parameter 'by' must include at least one column when using 'stratified' sampling.")
+            elif (method == "stratified"):
                 order_by = "ORDER BY " + ", ".join(by)
             vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
             vdf.filter("MOD({}, {}) = 0".format(name, int(1 / x)))
             verticapy.options["print_info"] = print_info_init
-            vdf[name].drop()
+            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         else:
             raise ParameterError("Sampling method '{}' doesn't exist.".format(method))
         return vdf
@@ -8519,6 +8526,11 @@ vcolumns : vcolumn
     tablesample
         An object containing the result. For more information, see
         utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame[].iv_woe : Computes the Information Value (IV) / 
+        Weight Of Evidence (WOE) Table.
         """
         check_types([("y", y, [str],), ("columns", columns, [list],), ("bins", bins, [int],), ("show", show, [bool],), ])
         columns_check(columns + [y], self)

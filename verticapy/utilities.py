@@ -1612,7 +1612,7 @@ vdf_from_relation : Creates a vDataFrame based on a customized relation.
 def set_option(option: str, value=None):
     """
     ---------------------------------------------------------------------------
-    Sets new VerticaPy option.
+    Sets new VerticaPy options.
 
     Parameters
     ----------

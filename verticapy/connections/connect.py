@@ -81,6 +81,7 @@ new_auto_connection : Saves a connection to automatically create DB cursors.
     confparser.optionxform = str
     try:
         confparser.read(path)
+        confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
     except:
         pass
     all_connections = confparser.sections()
@@ -224,6 +225,11 @@ dict
                 conn_info["host"] = elem[1]
             elif elem[0].lower() == "uid":
                 conn_info["user"] = elem[1]
+            elif elem[0].lower() == "port":
+                try:
+                    conn_info["port"] = int(elem[1])
+                except:
+                    conn_info["port"] = elem[1]
             elif elem[0].lower() == "pwd":
                 conn_info["password"] = elem[1]
             elif elem[0].lower() == "kerberosservicename":

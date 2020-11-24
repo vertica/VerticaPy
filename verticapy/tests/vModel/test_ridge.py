@@ -65,7 +65,6 @@ class TestRidge:
 
         assert fim["index"] == ['alcohol', 'residual_sugar', 'citric_acid']
         assert fim["importance"] == [52.3, 32.63, 15.07]
-        # TODO: it is nicer not to have Decimal for sign
         assert fim["sign"] == [1, 1, 1]
 
     def test_get_model_attribute(self, model):

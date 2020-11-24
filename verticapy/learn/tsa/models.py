@@ -118,7 +118,6 @@ papprox_ma: int, optional
         tol: float = 1e-4,
         max_iter: int = 1000,
         solver: str = "Newton",
-        l1_ratio: float = 0.5,
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):

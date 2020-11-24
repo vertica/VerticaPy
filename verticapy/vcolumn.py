@@ -2372,6 +2372,10 @@ Attributes
     tablesample
         An object containing the result. For more information, see
         utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
         check_types([("y", y, [str],), ("bins", bins, [int],)])
         columns_check([y], self.parent)

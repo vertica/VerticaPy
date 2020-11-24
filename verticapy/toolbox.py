@@ -738,10 +738,8 @@ def print_table(
             for j in range(m):
                 val = data_columns[j][i]
                 if isinstance(val, str):
-                    val = val.replace('"', "&quot;")
                     val = val.replace('<', "&lt;")
                     val = val.replace('>', "&gt;")
-                    val = val.replace('&', "&amp;")
                     val = val.replace("'", "&apos;")
                     val = val.replace(' ', "&nbsp;")
                 if val == None:

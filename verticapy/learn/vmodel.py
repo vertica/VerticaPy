@@ -545,21 +545,21 @@ Main Class for Vertica Model
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
-            if "solver" in parameters:
+            if "solver" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("solver", parameters["solver"], [str],)])
                 assert str(parameters["solver"]).lower() in [
                     "newton",
                     "bfgs",
                     "cgd",
                 ], ParameterError(
-                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGC | CGD), found '{}'.".format(
+                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGS | CGD), found '{}'.".format(
                         parameters["solver"]
                     )
                 )
                 model_parameters["solver"] = parameters["solver"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["solver"] = default_parameters["solver"]
-            if "penalty" in parameters:
+            if "penalty" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("penalty", parameters["penalty"], [str],)])
                 assert str(parameters["penalty"]).lower() in [
                     "none",
@@ -572,7 +572,7 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["penalty"] = parameters["penalty"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["penalty"] = default_parameters["penalty"]
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
@@ -582,21 +582,21 @@ Main Class for Vertica Model
                 model_parameters["max_iter"] = parameters["max_iter"]
             else:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
-            if "l1_ratio" in parameters:
+            if "l1_ratio" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("l1_ratio", parameters["l1_ratio"], [int, float],)])
                 assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
-            if "C" in parameters:
+            if "C" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("C", parameters["C"], [int, float],)])
                 assert 0 <= parameters["C"], ParameterError(
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["C"] = default_parameters["C"]
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
