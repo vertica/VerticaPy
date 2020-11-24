@@ -21,7 +21,7 @@ ReqOpts = collections.namedtuple('ReqOpts', ['skip_requirements_regex', 'default
 opts = ReqOpts(None, 'git')
 setup(
     name='VerticaPy',
-    version='0.3.0',
+    version='0.3.1',
     description='A Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica.',
     author='Badr Ouali',
     author_email='badr.ouali@vertica.com',

@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop_table
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +23,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -33,11 +35,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFCorrelation:
@@ -173,19 +175,19 @@ class TestvDFCorrelation:
             columns=["survived", "age", "fare"], show=False, method="kendall"
         )
         assert result3["survived"][0] == 1.0
-        assert result3["survived"][1] == pytest.approx(-0.033166080419339265, 1e-2)
-        assert result3["survived"][2] == pytest.approx(0.3894712709557243, 1e-2)
-        assert result3["age"][0] == pytest.approx(-0.033166080419339265, 1e-2)
+        assert result3["survived"][1] == pytest.approx(-0.0149530691050183, 1e-2)
+        assert result3["survived"][2] == pytest.approx(0.264138930414481, 1e-2)
+        assert result3["age"][0] == pytest.approx(-0.0149530691050183, 1e-2)
         assert result3["age"][1] == 1.0
-        assert result3["age"][2] == pytest.approx(0.1324522539797924, 1e-2)
-        assert result3["fare"][0] == pytest.approx(0.3894712709557243, 1e-2)
-        assert result3["fare"][1] == pytest.approx(0.1324522539797924, 1e-2)
+        assert result3["age"][2] == pytest.approx(0.0844989716189637, 1e-2)
+        assert result3["fare"][0] == pytest.approx(0.264138930414481, 1e-2)
+        assert result3["fare"][1] == pytest.approx(0.0844989716189637, 1e-2)
         assert result3["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'kendall') with focus
         result3_f = titanic_vd.corr(focus="survived", show=False, method="kendall",)
-        assert result3_f["survived"][1] == pytest.approx(-0.5413205461115183, 1e-2)
-        assert result3_f["survived"][2] == pytest.approx(0.3894712709557243, 1e-2)
+        assert result3_f["survived"][1] == pytest.approx(-0.317426126117454, 1e-2)
+        assert result3_f["survived"][2] == pytest.approx(0.264138930414481, 1e-2)
 
         #
         # BISERIAL POINT

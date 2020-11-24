@@ -98,15 +98,9 @@ Main Class for Vertica Model
                 name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
                     version(cursor=self.cursor, condition=[9, 0, 0])
-                    self.cursor.execute(
-                        "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
-                            name
-                        )
-                    )
+                    executeSQL(self.cursor, "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(name), "Summarizing the model.")
                 except:
-                    self.cursor.execute(
-                        "SELECT SUMMARIZE_MODEL('{}')".format(name)
-                    )
+                    executeSQL(self.cursor, "SELECT SUMMARIZE_MODEL('{}')".format(name), "Summarizing the model.")
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
                 rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
@@ -221,7 +215,7 @@ Main Class for Vertica Model
         if self.type in ("RandomForestClassifier", "RandomForestRegressor", "KernelDensity"):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[9, 1, 1])
-            query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
+            query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
                 name
             )
             print_legend = False
@@ -245,7 +239,7 @@ Main Class for Vertica Model
                 relation = self.input_relation
             version(cursor=self.cursor, condition=[8, 1, 1])
             query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
-            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min)) AS importance, SIGN(coefficient) AS sign FROM "
+            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
             query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
                 ", ".join(self.X)
             )
@@ -258,7 +252,7 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
             )
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Computing Features Importance.")
         result = self.cursor.fetchall()
         coeff_importances, coeff_sign = {}, {}
         for elem in result:
@@ -300,6 +294,7 @@ Main Class for Vertica Model
                     ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 cursor=self.cursor,
+                title="Getting Model Attributes.",
             )
             return result
         elif self.type in ("DBSCAN"):
@@ -550,21 +545,21 @@ Main Class for Vertica Model
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
-            if "solver" in parameters:
+            if "solver" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("solver", parameters["solver"], [str],)])
                 assert str(parameters["solver"]).lower() in [
                     "newton",
                     "bfgs",
                     "cgd",
                 ], ParameterError(
-                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGC | CGD), found '{}'.".format(
+                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGS | CGD), found '{}'.".format(
                         parameters["solver"]
                     )
                 )
                 model_parameters["solver"] = parameters["solver"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["solver"] = default_parameters["solver"]
-            if "penalty" in parameters:
+            if "penalty" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("penalty", parameters["penalty"], [str],)])
                 assert str(parameters["penalty"]).lower() in [
                     "none",
@@ -577,7 +572,7 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["penalty"] = parameters["penalty"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["penalty"] = default_parameters["penalty"]
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
@@ -587,21 +582,21 @@ Main Class for Vertica Model
                 model_parameters["max_iter"] = parameters["max_iter"]
             else:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
-            if "l1_ratio" in parameters:
+            if "l1_ratio" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("l1_ratio", parameters["l1_ratio"], [int, float],)])
                 assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
-            if "C" in parameters:
+            if "C" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
                 check_types([("C", parameters["C"], [int, float],)])
                 assert 0 <= parameters["C"], ParameterError(
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["C"] = default_parameters["C"]
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
@@ -1301,7 +1296,7 @@ class Supervised(vModel):
         if alpha != None:
             query += ", alpha = {}".format(alpha)
         query += ")"
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Fitting the model.")
         if self.type in (
             "LinearSVC",
             "LinearSVR",
@@ -1346,7 +1341,7 @@ class Tree:
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(
             name, tree_id
         )
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Exporting to graphviz.")
         return self.cursor.fetchone()[1]
 
     # ---#
@@ -1372,7 +1367,7 @@ class Tree:
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular');".format(
             name, tree_id
         )
-        result = to_tablesample(query=query, cursor=self.cursor)
+        result = to_tablesample(query=query, cursor=self.cursor, title="Reading Tree.",)
         return result
 
     # ---#
@@ -1432,6 +1427,7 @@ class BinaryClassifier(Classifier):
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
             self.cursor,
+            cutoff=cutoff
         )
 
     # ---#
@@ -2497,7 +2493,7 @@ class Unsupervised(vModel):
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         query += ")"
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Fitting the model.")
         if self.type == "KMeans":
             try:
                 self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
@@ -2550,6 +2546,7 @@ class Unsupervised(vModel):
                         self.name, self.name
                     ),
                     cursor=self.cursor,
+                    title="Getting Model Attributes.",
                 )
             except:
                 try:
@@ -2558,6 +2555,7 @@ class Unsupervised(vModel):
                             self.name
                         ),
                         cursor=self.cursor,
+                        title="Getting Model Attributes.",
                     )
                 except:
                     self.param_ = self.get_model_attribute("varchar_categories")
@@ -2774,7 +2772,7 @@ class Decomposition(Unsupervised):
             ),
             query,
         )
-        result = to_tablesample(query, cursor=self.cursor).transpose()
+        result = to_tablesample(query, cursor=self.cursor, title="Getting Model Score.",).transpose()
         return result
 
     # ---#

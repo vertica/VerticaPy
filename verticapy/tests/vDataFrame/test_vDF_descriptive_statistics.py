@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop_table
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +23,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -33,11 +35,11 @@ def market_vd(base):
     from verticapy.learn.datasets import load_market
 
     market = load_market(cursor=base.cursor)
-    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(
-        name="public.market", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.market", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -45,11 +47,11 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFDescriptiveStat:
@@ -752,6 +754,7 @@ class TestvDFDescriptiveStat:
             C=1.0,
             max_iter=100,
             solver="CGD",
+            penalty='ENet',
             l1_ratio=0.5,
         )
 
@@ -761,11 +764,11 @@ class TestvDFDescriptiveStat:
 
         # Computing AUC
         auc = titanic_vd.score(y_true="survived", y_score="survived_pred", method="auc")
-        assert auc == pytest.approx(0.697476274)
+        assert auc == pytest.approx(0.7051784997146537)
 
         # Computing MSE
         mse = titanic_vd.score(y_true="survived", y_score="survived_pred", method="mse")
-        assert mse == pytest.approx(0.224993557)
+        assert mse == pytest.approx(0.228082579110535)
 
         # Drawing ROC Curve
         roc_res = titanic_vd.score(
@@ -775,11 +778,11 @@ class TestvDFDescriptiveStat:
         assert roc_res["false_positive"][3] == 1.0
         assert roc_res["true_positive"][3] == 1.0
         assert roc_res["threshold"][300] == 0.3
-        assert roc_res["false_positive"][300] == pytest.approx(0.9900826446)
-        assert roc_res["true_positive"][300] == pytest.approx(0.9974424552)
+        assert roc_res["false_positive"][300] == pytest.approx(1.0)
+        assert roc_res["true_positive"][300] == pytest.approx(1.0)
         assert roc_res["threshold"][900] == 0.9
-        assert roc_res["false_positive"][900] == pytest.approx(0.01818181818)
-        assert roc_res["true_positive"][900] == pytest.approx(0.06649616368)
+        assert roc_res["false_positive"][900] == pytest.approx(0.0148760330578512)
+        assert roc_res["true_positive"][900] == pytest.approx(0.061381074168798)
 
         # Drawing PRC Curve
         prc_res = titanic_vd.score(
@@ -790,10 +793,10 @@ class TestvDFDescriptiveStat:
         assert prc_res["precision"][3] == pytest.approx(0.3925702811)
         assert prc_res["threshold"][300] == 0.299
         assert prc_res["recall"][300] == pytest.approx(1.0)
-        assert prc_res["precision"][300] == pytest.approx(0.3949494949)
+        assert prc_res["precision"][300] == pytest.approx(0.392570281124498)
         assert prc_res["threshold"][900] == 0.899
-        assert prc_res["recall"][900] == pytest.approx(0.06649616368)
-        assert prc_res["precision"][900] == pytest.approx(0.7027027027)
+        assert prc_res["recall"][900] == pytest.approx(0.061381074168798)
+        assert prc_res["precision"][900] == pytest.approx(0.727272727272727)
 
         # dropping the created model
         model.drop()

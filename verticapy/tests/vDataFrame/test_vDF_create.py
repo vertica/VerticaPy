@@ -11,9 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop_table
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,9 +23,9 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor = base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(name="public.titanic", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFCreate:

@@ -11,10 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import pytest, warnings
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import drop_table
-from decimal import Decimal
+import matplotlib.pyplot as plt
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -22,9 +25,9 @@ def winequality_vd(base):
     from verticapy.learn.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
-    winequality.set_display_parameters(print_info=False)
     yield winequality
-    drop_table(name="public.winequality", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -64,8 +67,8 @@ class TestLogisticRegression:
 
         assert fim["index"] == ['alcohol', 'residual_sugar', 'citric_acid']
         assert fim["importance"] == [52.25, 32.58, 15.17]
-        # TODO: it is nicer not to have Decimal for sign
-        assert fim["sign"] == [Decimal('1'), Decimal('1'), Decimal('1')]
+        assert fim["sign"] == [1, 1, 1]
+        plt.close()
 
     def test_get_model_attribute(self, model):
         m_att = model.get_model_attribute()
@@ -82,7 +85,7 @@ class TestLogisticRegression:
         assert m_att_details["coefficient"][2] == pytest.approx(0.023752, abs = 1e-6)
         assert m_att_details["coefficient"][3] == pytest.approx(0.359921, abs = 1e-6)
         assert m_att_details["std_err"][3] == pytest.approx(0.008608, abs = 1e-6)
-        assert m_att_details["t_value"][3] == pytest.approx(41.808913, abs = 1e-6)
+        assert m_att_details["t_value"][3] == pytest.approx(41.8089205202906, abs = 1e-6)
         assert m_att_details["p_value"][3] == pytest.approx(0)
 
         m_att_regularization = model.get_model_attribute("regularization")
@@ -94,11 +97,10 @@ class TestLogisticRegression:
         assert model.get_model_attribute("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_model_attribute("accepted_row_count")["accepted_row_count"][0] == 6497
         assert model.get_model_attribute("call_string")["call_string"][0] == \
-            'linear_reg(\'public.linreg_model_test\', \'public.winequality\', \'"quality"\', \'"citric_acid", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'cgd\', epsilon=0.0001, max_iterations=100, regularization=\'none\', lambda=1, alpha=0.5)'
+            'linear_reg(\'public.linreg_model_test\', \'public.winequality\', \'"quality"\', \'"citric_acid", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'newton\', epsilon=1e-06, max_iterations=100, regularization=\'none\', lambda=1, alpha=0.5)'
 
     def test_get_params(self, model):
-        assert model.get_params() == {'solver': 'cgd', 'penalty': 'None', 'max_iter': 100,
-                                      'l1_ratio': 0.5, 'C': 1, 'tol': 0.0001}
+        assert model.get_params() == {'solver': 'newton', 'penalty': 'none', 'max_iter': 100, 'tol': 1e-06}
 
     @pytest.mark.skip(reason="test not implemented")
     def test_get_plot(self):

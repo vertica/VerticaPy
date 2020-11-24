@@ -11,9 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import pytest, warnings
 from verticapy import vDataFrame
 from verticapy import drop_table
+
+from verticapy import set_option
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +24,11 @@ def smart_meters_vd(base):
     from verticapy.learn.datasets import load_smart_meters
 
     smart_meters = load_smart_meters(cursor=base.cursor)
-    smart_meters.set_display_parameters(print_info=False)
     yield smart_meters
-    drop_table(
-        name="public.smart_meters", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.smart_meters", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -33,11 +36,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 class TestvDFFilterSample:
@@ -136,5 +139,18 @@ class TestvDFFilterSample:
         assert result.shape() == (1234, 4)
 
     def test_vDF_sample(self, titanic_vd):
-        result = titanic_vd.copy().sample(0.33)
+        # testing with x
+        result = titanic_vd.copy().sample(x=0.33, method="random")
         assert result.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+        result2 = titanic_vd.copy().sample(x=0.33, method="stratified", by=["age", "pclass",])
+        assert result2.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+        result3 = titanic_vd.copy().sample(x=0.33, method="systematic")
+        assert result3.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+
+        # testing with n
+        result = titanic_vd.copy().sample(n=200, method="random")
+        assert result.shape()[0] == pytest.approx(200, 0.12)
+        result2 = titanic_vd.copy().sample(n=200, method="stratified", by=["age", "pclass",])
+        assert result2.shape()[0] == pytest.approx(200, 0.12)
+        result3 = titanic_vd.copy().sample(n=200, method="systematic")
+        assert result3.shape()[0] == pytest.approx(200, 0.12)

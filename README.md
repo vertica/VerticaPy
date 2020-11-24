@@ -162,9 +162,9 @@ pclass             3.0         3
 sibsp              8.0         7  
 survived           1.0         2 
 ```
-Print the SQL query with the <b>sql_on_off</b> method:
+Print the SQL query with the <b>set_option</b> function:
 ```python
-vdf.sql_on_off()
+set_option("sql_on", True)
 vdf.describe()
 
 # Output

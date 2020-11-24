@@ -784,14 +784,11 @@ def cmatrix(
 ):
     if is_vector:
         is_vector = True
-        vector = []
-        for elem in matrix_array:
-            if len(elem) == 1:
-                vector += elem
-            else:
-                raise
-        vector = [vector]
-        matrix_array = vector
+        vector = [elem for elem in matrix[1]]
+        matrix_array = vector[1:]
+        for i in range(len(matrix_array)):
+            matrix_array[i] = round(float(matrix_array[i]), mround)
+        matrix_array = [matrix_array]
         m, n = n, m
         x_label, y_label = y_label, x_label
         columns_x, columns_y = columns_y, columns_x
