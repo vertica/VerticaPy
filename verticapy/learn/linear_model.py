@@ -166,7 +166,7 @@ solver: str, optional
                 "solver": str(solver).lower(),
             }
         )
-        for elem in ['l1_ratio']:
+        for elem in ["l1_ratio"]:
             del self.parameters[elem]
         if not (cursor):
             cursor = read_auto_connect().cursor()
@@ -208,7 +208,9 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "Newton",
     ):
-        check_types([("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),])
+        check_types(
+            [("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -218,7 +220,7 @@ solver: str, optional
                 "solver": str(solver).lower(),
             }
         )
-        for elem in ['l1_ratio', 'C']:
+        for elem in ["l1_ratio", "C"]:
             del self.parameters[elem]
         if not (cursor):
             cursor = read_auto_connect().cursor()
@@ -287,12 +289,12 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if penalty.lower() == 'none':
-            for elem in ['l1_ratio', 'C']:
+        if penalty.lower() == "none":
+            for elem in ["l1_ratio", "C"]:
                 del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
-        elif penalty.lower() == 'l2':
-            for elem in ['l1_ratio']:
+        elif penalty.lower() == "l2":
+            for elem in ["l1_ratio"]:
                 del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
         if not (cursor):
@@ -339,7 +341,9 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "Newton",
     ):
-        check_types([("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)])
+        check_types(
+            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -350,7 +354,7 @@ solver: str, optional
                 "solver": str(solver).lower(),
             }
         )
-        for elem in ['l1_ratio']:
+        for elem in ["l1_ratio"]:
             del self.parameters[elem]
         if not (cursor):
             cursor = read_auto_connect().cursor()

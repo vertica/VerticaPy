@@ -159,6 +159,45 @@ cursor: DBcursor, optional
 
 
 # ---#
+def drop_verticapy_temp(cursor=None):
+    """
+---------------------------------------------------------------------------
+Drops VerticaPy temporary elements.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        check_cursor(cursor)
+    sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+    cursor.execute(sql)
+    all_tables = cursor.fetchall()
+    for elem in all_tables:
+        table = '"{}"."{}"'.format(
+            elem[0].replace('"', '""'), elem[1].replace('"', '""')
+        )
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(table, cursor)
+    sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+    cursor.execute(sql)
+    all_views = cursor.fetchall()
+    for elem in all_views:
+        view = '"{}"."{}"'.format(
+            elem[0].replace('"', '""'), elem[1].replace('"', '""')
+        )
+        with warnings.catch_warnings(record=True) as w:
+            drop_view(view, cursor)
+    if conn:
+        conn.close()
+
+
+# ---#
 def drop_model(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
@@ -209,9 +248,16 @@ bool
                 drop_table(name, cursor)
             elif model_type in ("CountVectorizer"):
                 drop_text_index(name, cursor)
+                sql = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(
+                    str_column(name).lower()
+                )
+                cursor.execute(sql)
+                drop_table(cursor.fetchone()[0], cursor)
             elif model_type in ("KernelDensity"):
-                drop_table(name.replace('"', '') + "_KernelDensity_Map", cursor)
-                drop_model("{}_KernelDensity_Tree".format(name.replace('"', '')), cursor)
+                drop_table(name.replace('"', "") + "_KernelDensity_Map", cursor)
+                drop_model(
+                    "{}_KernelDensity_Tree".format(name.replace('"', "")), cursor
+                )
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
@@ -279,7 +325,7 @@ bool
         if raise_error:
             raise
         warning_message = "The table '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -327,7 +373,7 @@ bool
         if raise_error:
             raise
         warning_message = "The text index '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -375,7 +421,7 @@ bool
         if raise_error:
             raise
         warning_message = "The view '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -383,11 +429,7 @@ bool
 
 # ---#
 def readSQL(
-    query: str,
-    cursor=None,
-    dsn: str = "",
-    time_on: bool = False,
-    limit: int = 100,
+    query: str, cursor=None, dsn: str = "", time_on: bool = False, limit: int = 100,
 ):
     """
 	---------------------------------------------------------------------------
@@ -670,9 +712,15 @@ model
                     from verticapy.learn.neighbors import KernelDensity
 
                     model = KernelDensity(
-                        name, cursor, model_save["bandwidth"], model_save["kernel"], model_save["leaf_size"]
+                        name,
+                        cursor,
+                        model_save["bandwidth"],
+                        model_save["kernel"],
+                        model_save["leaf_size"],
                     )
-                    model.map_ = tablesample({"x": model_save["map"][0], "y": model_save["map"][1]})
+                    model.map_ = tablesample(
+                        {"x": model_save["map"][0], "y": model_save["map"][1]}
+                    )
                 elif model_save["type"] == "LocalOutlierFactor":
                     from verticapy.learn.neighbors import LocalOutlierFactor
 
@@ -1609,7 +1657,8 @@ vdf_from_relation : Creates a vDataFrame based on a customized relation.
     vdf._VERTICAPY_VARIABLES_["cursor"] = cursor
     return vdf
 
-def set_option(option: str, value=None):
+
+def set_option(option: str, value: (bool, int, str) = None):
     """
     ---------------------------------------------------------------------------
     Sets new VerticaPy options.
@@ -1618,12 +1667,19 @@ def set_option(option: str, value=None):
     ----------
     option: str
         Option to use.
+        cache       : bool
+            If set to True, the vDataFrame will save in memory the computed
+            aggregations.
         max_rows    : int
             Maximum number of rows to display. If the parameter is incorrect, 
             nothing will be changed.
         max_columns : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing will be changed.
+        mode        : str
+            How to display VerticaPy outputs.
+                full  : VerticaPy regular display mode.
+                light : Minimalist display mode.
         percent_bar : bool
             If set to True, it displays the percent of non-missing values.
         print_info  : bool
@@ -1633,10 +1689,6 @@ def set_option(option: str, value=None):
             If set to True, displays all the SQL queries.
         time_on     : bool
             If set to True, displays all the SQL queries elapsed time.
-        mode        : str
-            How to display VerticaPy outputs.
-                full  : VerticaPy regular display mode.
-                light : Minimalist display mode.
     value: object, optional
         New value of option.
     """
@@ -1646,10 +1698,27 @@ def set_option(option: str, value=None):
         pass
     check_types(
         [
-            ("option", option, ["max_rows", "max_columns", "percent_bar", "print_info", "sql_on", "time_on", "mode",],),
+            (
+                "option",
+                option,
+                [
+                    "cache",
+                    "max_rows",
+                    "max_columns",
+                    "percent_bar",
+                    "print_info",
+                    "sql_on",
+                    "time_on",
+                    "mode",
+                ],
+            ),
         ]
     )
-    if option == "max_rows":
+    if option == "cache":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["cache"] = value
+    elif option == "max_rows":
         check_types([("value", value, [int, float])])
         if value >= 0:
             verticapy.options["max_rows"] = int(value)
@@ -1675,7 +1744,7 @@ def set_option(option: str, value=None):
             verticapy.options["time_on"] = value
     elif option == "mode":
         check_types([("value", value, ["light", "full"])])
-        if (value.lower() in ["light", "full", None]):
+        if value.lower() in ["light", "full", None]:
             verticapy.options["mode"] = value.lower()
     else:
         raise ParameterError("")
@@ -1999,9 +2068,7 @@ The tablesample attributes are the same than the parameters.
 
 # ---#
 def to_tablesample(
-    query: str,
-    cursor=None,
-    title: str = "",
+    query: str, cursor=None, title: str = "",
 ):
     """
 	---------------------------------------------------------------------------
@@ -2320,14 +2387,14 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 1:
         message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic(db_cursor)\n```"
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nvdf.set_display_parameters(sql_on=True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
         else:
             message = "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>https://github.com/vertica/VerticaPy/</a>"
     elif response == 4:
-        message = "You can Display the SQL Code generation & elapsed time of the Virtual DataFrame using the <b>set_display_parameters</b> method.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
+        message = "You can Display the SQL Code generation & elapsed time of the Virtual DataFrame using the <b>set_option</b> function.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
     elif response == 5:
         message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
     elif response == 6:

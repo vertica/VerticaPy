@@ -17,6 +17,7 @@ from verticapy import drop_table
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
+
 set_option("print_info", False)
 
 
@@ -33,14 +34,18 @@ def winequality_vd(base):
 def model(base, winequality_vd):
     base.cursor.execute("DROP MODEL IF EXISTS lasso_model_test")
     model_class = Lasso("lasso_model_test", cursor=base.cursor)
-    model_class.fit("public.winequality", ["total_sulfur_dioxide", "residual_sugar", "alcohol"], "quality")
+    model_class.fit(
+        "public.winequality",
+        ["total_sulfur_dioxide", "residual_sugar", "alcohol"],
+        "quality",
+    )
     yield model_class
     model_class.drop()
 
 
 class TestLasso:
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_LINEAR_REG(\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'lasso_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_LINEAR_REG("total_sulfur_dioxide", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'lasso_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -64,7 +69,7 @@ class TestLasso:
     def test_features_importance(self, model):
         fim = model.features_importance()
 
-        assert fim["index"] == ['total_sulfur_dioxide', 'residual_sugar', 'alcohol']
+        assert fim["index"] == ["total_sulfur_dioxide", "residual_sugar", "alcohol"]
         assert fim["importance"] == [100, 0, 0]
         assert fim["sign"] == [-1, 0, 0]
         plt.close()
@@ -72,35 +77,67 @@ class TestLasso:
     def test_get_model_attribute(self, model):
         m_att = model.get_model_attribute()
 
-        assert m_att["attr_name"] == ['details', 'regularization', 'iteration_count', 'rejected_row_count', 'accepted_row_count', 'call_string']
-        assert m_att["attr_fields"] == ['predictor, coefficient, std_err, t_value, p_value', 'type, lambda', 'iteration_count', 'rejected_row_count', 'accepted_row_count', 'call_string']
+        assert m_att["attr_name"] == [
+            "details",
+            "regularization",
+            "iteration_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+        ]
+        assert m_att["attr_fields"] == [
+            "predictor, coefficient, std_err, t_value, p_value",
+            "type, lambda",
+            "iteration_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+        ]
         assert m_att["#_of_rows"] == [4, 1, 1, 1, 1, 1]
 
-        m_att_details = model.get_model_attribute(attr_name = "details")
+        m_att_details = model.get_model_attribute(attr_name="details")
 
-        assert m_att_details["predictor"] == ['Intercept', 'total_sulfur_dioxide', 'residual_sugar', 'alcohol']
-        assert m_att_details["coefficient"][0] == pytest.approx(5.856149, abs = 1e-6)
-        assert m_att_details["coefficient"][1] == pytest.approx(-0.000326, abs = 1e-6)
-        assert m_att_details["coefficient"][2] == pytest.approx(0, abs = 1e-6)
-        assert m_att_details["coefficient"][3] == pytest.approx(0, abs = 1e-6)
-        assert m_att_details["std_err"][1] == pytest.approx(0.000221, abs = 1e-6)
-        assert m_att_details["t_value"][1] == pytest.approx(-1.470683, abs = 1e-6)
-        assert m_att_details["p_value"][1] == pytest.approx(0.141425, abs = 1e-6)
+        assert m_att_details["predictor"] == [
+            "Intercept",
+            "total_sulfur_dioxide",
+            "residual_sugar",
+            "alcohol",
+        ]
+        assert m_att_details["coefficient"][0] == pytest.approx(5.856149, abs=1e-6)
+        assert m_att_details["coefficient"][1] == pytest.approx(-0.000326, abs=1e-6)
+        assert m_att_details["coefficient"][2] == pytest.approx(0, abs=1e-6)
+        assert m_att_details["coefficient"][3] == pytest.approx(0, abs=1e-6)
+        assert m_att_details["std_err"][1] == pytest.approx(0.000221, abs=1e-6)
+        assert m_att_details["t_value"][1] == pytest.approx(-1.470683, abs=1e-6)
+        assert m_att_details["p_value"][1] == pytest.approx(0.141425, abs=1e-6)
 
         m_att_regularization = model.get_model_attribute("regularization")
 
-        assert m_att_regularization["type"][0] == 'l1'
+        assert m_att_regularization["type"][0] == "l1"
         assert m_att_regularization["lambda"][0] == 1
 
         assert model.get_model_attribute("iteration_count")["iteration_count"][0] == 1
-        assert model.get_model_attribute("rejected_row_count")["rejected_row_count"][0] == 0
-        assert model.get_model_attribute("accepted_row_count")["accepted_row_count"][0] == 6497
-        assert model.get_model_attribute("call_string")["call_string"][0] == \
-            'linear_reg(\'public.lasso_model_test\', \'public.winequality\', \'"quality"\', \'"total_sulfur_dioxide", "residual_sugar", "alcohol"\'\nUSING PARAMETERS optimizer=\'cgd\', epsilon=1e-06, max_iterations=100, regularization=\'l1\', lambda=1, alpha=1)'
+        assert (
+            model.get_model_attribute("rejected_row_count")["rejected_row_count"][0]
+            == 0
+        )
+        assert (
+            model.get_model_attribute("accepted_row_count")["accepted_row_count"][0]
+            == 6497
+        )
+        assert (
+            model.get_model_attribute("call_string")["call_string"][0]
+            == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1)"
+        )
 
     def test_get_params(self, model):
-        assert model.get_params() == {'solver': 'cgd', 'penalty': 'l1', 'max_iter': 100,
-                                      'C': 1.0, 'tol': 1e-06}
+        assert model.get_params() == {
+            "solver": "cgd",
+            "penalty": "l1",
+            "max_iter": 100,
+            "C": 1.0,
+            "tol": 1e-06,
+        }
 
     @pytest.mark.skip(reason="test not implemented")
     def test_get_plot(self):
@@ -108,41 +145,52 @@ class TestLasso:
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
-        model.predict(winequality_copy, X = ["total_sulfur_dioxide", "residual_sugar", "alcohol"],
-                      name = "predicted_quality")
+        model.predict(
+            winequality_copy,
+            X=["total_sulfur_dioxide", "residual_sugar", "alcohol"],
+            name="predicted_quality",
+        )
 
-        assert winequality_copy["predicted_quality"].mean() == pytest.approx(5.818377, abs = 1e-6)
+        assert winequality_copy["predicted_quality"].mean() == pytest.approx(
+            5.818377, abs=1e-6
+        )
 
     def test_regression_report(self, model):
         reg_rep = model.regression_report()
 
-        assert reg_rep["index"] == ['explained_variance', 'max_error', 'median_absolute_error',
-                                    'mean_absolute_error', 'mean_squared_error', 'r2']
-        assert reg_rep["value"][0] == pytest.approx(0.001302, abs = 1e-6)
-        assert reg_rep["value"][1] == pytest.approx(3.189211, abs = 1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.798061, abs = 1e-6)
-        assert reg_rep["value"][3] == pytest.approx(0.684704, abs = 1e-6)
-        assert reg_rep["value"][4] == pytest.approx(0.761464, abs = 1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.001302, abs = 1e-6)
+        assert reg_rep["index"] == [
+            "explained_variance",
+            "max_error",
+            "median_absolute_error",
+            "mean_absolute_error",
+            "mean_squared_error",
+            "r2",
+        ]
+        assert reg_rep["value"][0] == pytest.approx(0.001302, abs=1e-6)
+        assert reg_rep["value"][1] == pytest.approx(3.189211, abs=1e-6)
+        assert reg_rep["value"][2] == pytest.approx(0.798061, abs=1e-6)
+        assert reg_rep["value"][3] == pytest.approx(0.684704, abs=1e-6)
+        assert reg_rep["value"][4] == pytest.approx(0.761464, abs=1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.001302, abs=1e-6)
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method = "max") == pytest.approx(3.189211, abs = 1e-6)
+        assert model.score(method="max") == pytest.approx(3.189211, abs=1e-6)
         # method = "mae"
-        assert model.score(method = "mae") == pytest.approx(0.684704, abs = 1e-6)
+        assert model.score(method="mae") == pytest.approx(0.684704, abs=1e-6)
         # method = "median"
-        assert model.score(method = "median") == pytest.approx(0.798061, abs = 1e-6)
+        assert model.score(method="median") == pytest.approx(0.798061, abs=1e-6)
         # method = "mse"
-        assert model.score(method = "mse") == pytest.approx(0.684704, abs = 1e-6)
+        assert model.score(method="mse") == pytest.approx(0.684704, abs=1e-6)
         # method = "msl"
-        assert model.score(method = "msle") == pytest.approx(0.003172, abs = 1e-6)
+        assert model.score(method="msle") == pytest.approx(0.003172, abs=1e-6)
         # method = "r2"
-        assert model.score(method = "r2") == pytest.approx(0.001302, abs = 1e-6)
+        assert model.score(method="r2") == pytest.approx(0.001302, abs=1e-6)
         # method = "var"
-        assert model.score(method = "var") == pytest.approx(0.001302, abs = 1e-6)
+        assert model.score(method="var") == pytest.approx(0.001302, abs=1e-6)
 
     def test_set_cursor(self, base):
-        model_test = Lasso("lasso_cursor_test", cursor = base.cursor)
+        model_test = Lasso("lasso_cursor_test", cursor=base.cursor)
         # TODO: creat a new cursor
         model_test.set_cursor(base.cursor)
         model_test.drop()
@@ -158,7 +206,7 @@ class TestLasso:
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
 
-        assert model.get_params()['max_iter'] == 1000
+        assert model.get_params()["max_iter"] == 1000
 
     @pytest.mark.skip(reason="feautre not implemented")
     def test_model_from_vDF(self, base, winequality_vd):

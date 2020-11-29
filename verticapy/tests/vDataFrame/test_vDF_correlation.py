@@ -15,6 +15,7 @@ import pytest, warnings
 from verticapy import vDataFrame, drop_table
 
 from verticapy import set_option
+
 set_option("print_info", False)
 
 
@@ -218,18 +219,48 @@ class TestvDFCorrelation:
         )
         assert result5["survived"][0] == 1.0
         assert result5["survived"][1] == pytest.approx(0.235827362803827, 1e-2)
-        assert result5["survived"][2] == pytest.approx(0.128304316649469, 1e-2)
+        assert result5["survived"][2] == pytest.approx(0.13157894029602724, 1e-2)
         assert result5["pclass"][0] == pytest.approx(0.235827362803827, 1e-2)
         assert result5["pclass"][1] == 1.0
-        assert result5["pclass"][2] == pytest.approx(0.2214160584227, 1e-2)
-        assert result5["embarked"][0] == pytest.approx(0.128304316649469, 1e-2)
-        assert result5["embarked"][1] == pytest.approx(0.2214160584227, 1e-2)
+        assert result5["pclass"][2] == pytest.approx(0.2241532135502508, 1e-2)
+        assert result5["embarked"][0] == pytest.approx(0.13157894029602724, 1e-2)
+        assert result5["embarked"][1] == pytest.approx(0.2241532135502508, 1e-2)
         assert result5["embarked"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'cramer') with focus
         result5_f = titanic_vd.corr(focus="survived", show=False, method="cramer",)
-        assert result5_f["survived"][1] == pytest.approx(0.487748850668771, 1e-2)
-        assert result5_f["survived"][2] == pytest.approx(0.444220830019381, 1e-2)
+        assert result5_f["survived"][1] == pytest.approx(0.5175379908150811, 1e-2)
+        assert result5_f["survived"][2] == pytest.approx(0.4742909457022474, 1e-2)
+
+    def test_vDF_corr_pvalue(self, titanic_vd):
+        assert titanic_vd.corr_pvalue("age", "fare", "pearson") == (
+            pytest.approx(0.178575164117468, 1e-2),
+            pytest.approx(1.3923308548466764e-08, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "spearman") == (
+            pytest.approx(0.0045193585753828, 1e-2),
+            pytest.approx(0.8899833744540833, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "kendallA") == (
+            pytest.approx(0.12796714496175657, 1e-2),
+            pytest.approx(1.4735187810450437e-09, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "kendallB") == (
+            pytest.approx(0.0844989716189637, 1e-2),
+            pytest.approx(1.1056646764730614e-09, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "kendallC") == (
+            pytest.approx(0.12919864967860847, 1e-2),
+            pytest.approx(1.1056646764730614e-09, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("survived", "fare", "biserial") == (
+            pytest.approx(0.264043222121672, 1e-2),
+            pytest.approx(4.097598100216442e-21, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("survived", "pclass", "cramer") == (
+            pytest.approx(0.23749320521366055, 1e-2),
+            pytest.approx(5.922792773022642e-31, 1e-2),
+        )
 
     def test_vDF_cov(self, titanic_vd):
         # testing vDataFrame.cov
