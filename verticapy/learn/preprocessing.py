@@ -196,39 +196,50 @@ max_text_size: int, optional
         return sql.format(", ".join(self.X), self.name)
 
     # ---#
-    def fit(self, input_relation: str, X: list):
+    def fit(self, input_relation: (str, vDataFrame), X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
-		List of the predictors.
+		List of the predictors. If empty, all the columns will be used.
 
 	Returns
 	-------
 	object
  		self
 		"""
-        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
-        self.input_relation = input_relation
+        check_types(
+            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+        )
+        if isinstance(input_relation, vDataFrame):
+            if not (X):
+                X = input_relation.get_columns()
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).get_columns()
+            self.input_relation = input_relation
         self.X = [str_column(elem) for elem in X]
-        schema, relation = schema_relation(input_relation)
+        schema, relation = schema_relation(self.name)
         schema = str_column(schema)
-        relation_alpha = "".join(ch for ch in relation if ch.isalnum())
+        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}".format(
+            schema, get_session(self.cursor)
+        )
         try:
-            self.cursor.execute(
-                "DROP TABLE IF EXISTS {}.VERTICAPY_COUNT_VECTORIZER_{} CASCADE".format(
-                    schema, relation_alpha
-                )
-            )
+            self.drop()
         except:
             pass
-        sql = "CREATE TABLE {}.VERTICAPY_COUNT_VECTORIZER_{}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
-        executeSQL(self.cursor, sql.format(schema, relation_alpha, self.parameters["max_text_size"]), "Computing the CountVectorizer - STEP 0.")
+        sql = "CREATE TABLE {}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
+        executeSQL(
+            self.cursor,
+            sql.format(tmp_name, self.parameters["max_text_size"]),
+            "Computing the CountVectorizer - STEP 0.",
+        )
         text = (
             " || ".join(self.X)
             if not (self.parameters["lowercase"])
@@ -236,12 +247,12 @@ max_text_size: int, optional
         )
         if self.parameters["ignore_special"]:
             text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
-        sql = "INSERT INTO {}.VERTICAPY_COUNT_VECTORIZER_{}(text) SELECT {} FROM {}".format(
-            schema, relation_alpha, text, input_relation
+        sql = "INSERT INTO {}(text) SELECT {} FROM {}".format(
+            tmp_name, text, self.input_relation
         )
         executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 1.")
-        sql = "CREATE TEXT INDEX {} ON {}.VERTICAPY_COUNT_VECTORIZER_{}(id, text) stemmer NONE;".format(
-            self.name, schema, relation_alpha
+        sql = "CREATE TEXT INDEX {} ON {}(id, text) stemmer NONE;".format(
+            self.name, tmp_name
         )
         executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 2.")
         stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
@@ -253,10 +264,12 @@ max_text_size: int, optional
         self.stop_words_ = [item[0] for item in self.cursor.fetchall()]
         self.cursor.execute(self.deploySQL())
         self.vocabulary_ = [item[0] for item in self.cursor.fetchall()]
+        self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
             "input_relation": self.input_relation,
             "X": self.X,
+            "countvectorizer_table": tmp_name,
             "lowercase": self.parameters["lowercase"],
             "max_df": self.parameters["max_df"],
             "min_df": self.parameters["min_df"],
@@ -269,7 +282,7 @@ max_text_size: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="CountVectorizer",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -347,15 +360,19 @@ method: str, optional
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def inverse_transform_preprocessing(self, vdf=None, X: list = []):
+    def inverse_transform_preprocessing(
+        self, vdf: (str, vDataFrame) = None, X: list = []
+    ):
         """
     ---------------------------------------------------------------------------
     Creates a vDataFrame of the model.
 
     Parameters
     ----------
-    vdf: vDataFrame, optional
-        input vDataFrame.
+    vdf: str/vDataFrame, optional
+        input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -366,7 +383,9 @@ method: str, optional
         """
         check_types([("X", X, [list],)])
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],)])
+            check_types([("vdf", vdf, [str, vDataFrame],)])
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:

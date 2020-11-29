@@ -66,7 +66,7 @@ name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-max_features: str, optional
+max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -93,7 +93,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
@@ -135,7 +135,7 @@ name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-max_features: str, optional
+max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -162,7 +162,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,

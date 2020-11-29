@@ -15,6 +15,7 @@ import pytest, warnings
 from verticapy import vDataFrame, drop_table
 
 from verticapy import set_option
+
 set_option("print_info", False)
 
 
@@ -22,7 +23,7 @@ set_option("print_info", False)
 def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
-    titanic = load_titanic(cursor = base.cursor)
+    titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
         drop_table(name="public.titanic", cursor=base.cursor)
@@ -30,17 +31,21 @@ def titanic_vd(base):
 
 class TestvDFCreate:
     def test_creating_vDF_using_input_relation(self, base, titanic_vd):
-        tvdf = vDataFrame(input_relation = 'public.titanic', cursor = base.cursor)
+        tvdf = vDataFrame(input_relation="public.titanic", cursor=base.cursor)
 
         assert tvdf["pclass"].count() == 1234
 
     def test_creating_vDF_using_input_relation_schema(self, base, titanic_vd):
-        tvdf = vDataFrame(input_relation = 'titanic', schema = 'public', cursor = base.cursor)
+        tvdf = vDataFrame(input_relation="titanic", schema="public", cursor=base.cursor)
 
         assert tvdf["pclass"].count() == 1234
 
     def test_creating_vDF_using_input_relation_vcolumns(self, base, titanic_vd):
-        tvdf = vDataFrame(input_relation = 'public.titanic', usecols = ["age", "survived"], cursor = base.cursor)
+        tvdf = vDataFrame(
+            input_relation="public.titanic",
+            usecols=["age", "survived"],
+            cursor=base.cursor,
+        )
 
         assert tvdf["survived"].count() == 1234
 

@@ -75,7 +75,7 @@ cursor: DBcursor, optional
 	Vertica DB cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
-max_features: str, optional
+max_features: int/str, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -106,7 +106,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -153,7 +153,7 @@ cursor: DBcursor, optional
 	Vertica DB cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
-max_features: str, optional
+max_features: int/str, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -184,7 +184,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,

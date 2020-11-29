@@ -55,7 +55,9 @@ from collections.abc import Iterable
 try:
     from highcharts import Highchart, Highstock
 except:
-    raise ImportError("The highcharts module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module.")
+    raise ImportError(
+        "The highcharts module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module."
+    )
 
 # VerticaPy Modules
 from verticapy.utilities import *

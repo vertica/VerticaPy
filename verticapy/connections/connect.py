@@ -123,6 +123,7 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
             )
         )
 
+
 # ---#
 def new_auto_connection(dsn: dict, name: str = "DSN"):
     """
@@ -166,6 +167,7 @@ vertica_conn           : Creates a Vertica Database connection.
     confparser.write(f)
     f.close()
 
+
 # ---#
 def read_auto_connect():
     """
@@ -192,7 +194,9 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
 
 
 # ---#
-def read_dsn(section: str, dsn: str = "",):
+def read_dsn(
+    section: str, dsn: str = "",
+):
     """
 ---------------------------------------------------------------------------
 Reads the DSN information from the ODBCINI environment variable or the input
@@ -244,7 +248,9 @@ dict
 
 
 # ---#
-def vertica_conn(section: str, dsn: str = "",):
+def vertica_conn(
+    section: str, dsn: str = "",
+):
     """
 ---------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.

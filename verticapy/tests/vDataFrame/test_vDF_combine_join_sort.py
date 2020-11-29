@@ -15,7 +15,9 @@ import pytest, warnings
 from verticapy import vDataFrame, drop_table
 
 from verticapy import set_option
+
 set_option("print_info", False)
+
 
 @pytest.fixture(scope="module")
 def iris_vd(base):

@@ -161,7 +161,7 @@ def check_cursor(cursor):
 
 
 # ---#
-def check_types(types_list: list = [], vdf: list = []):
+def check_types(types_list: list = [],):
     for elem in types_list:
         list_check = False
         for sub_elem in elem[2]:
@@ -380,6 +380,7 @@ def default_model_parameters(model_type: str):
     elif model_type in ("DBSCAN"):
         return {"eps": 0.5, "min_samples": 5, "p": 2}
 
+
 # ---#
 def executeSQL(cursor, query: str, title: str = ""):
     check_types([("query", query, [str],), ("title", title, [str],)])
@@ -391,6 +392,7 @@ def executeSQL(cursor, query: str, title: str = ""):
     if verticapy.options["time_on"]:
         print_time(elapsed_time)
     return cursor
+
 
 # ---#
 def gen_name(L: list):
@@ -439,12 +441,16 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 
 
 # ---#
-def get_session(cursor):
+def get_session(cursor, add_username: bool = True):
     query = "SELECT CURRENT_SESSION();"
     cursor.execute(query)
     result = cursor.fetchone()[0]
     result = result.split(":")[1]
     result = int(result, base=16)
+    if add_username:
+        query = "SELECT USERNAME();"
+        cursor.execute(query)
+        result = "{}_{}".format(cursor.fetchone()[0], result)
     return result
 
 
@@ -534,6 +540,7 @@ def insert_verticapy_schema(
         except Exception as e:
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
+            raise
 
 
 # ---#
@@ -549,6 +556,7 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
+
 # ---#
 def last_order_by(vdf):
     max_pos, order_by = 0, ""
@@ -558,6 +566,7 @@ def last_order_by(vdf):
     if max_pos in vdf._VERTICAPY_VARIABLES_["order_by"]:
         order_by = vdf._VERTICAPY_VARIABLES_["order_by"][max_pos]
     return order_by
+
 
 # ---#
 def levenshtein(s: str, t: str):
@@ -738,15 +747,17 @@ def print_table(
             for j in range(m):
                 val = data_columns[j][i]
                 if isinstance(val, str):
-                    val = val.replace('<', "&lt;")
-                    val = val.replace('>', "&gt;")
+                    val = val.replace("<", "&lt;")
+                    val = val.replace(">", "&gt;")
                     val = val.replace("'", "&apos;")
-                    val = val.replace(' ', "&nbsp;")
+                    val = val.replace(" ", "&nbsp;")
                 if val == None:
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if isinstance(val, bool) and (verticapy.options["mode"] in ("full", None)):
+                    if isinstance(val, bool) and (
+                        verticapy.options["mode"] in ("full", None)
+                    ):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -754,14 +765,18 @@ def print_table(
                         )
                     color = "black"
                 html_table += '<td style="background-color: '
-                if (j == 0) or (i == 0) or (verticapy.options["mode"] not in ("full", None)):
+                if (
+                    (j == 0)
+                    or (i == 0)
+                    or (verticapy.options["mode"] not in ("full", None))
+                ):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
                     html_table += " #EEEEEE; "
                 else:
                     html_table += " #FAFAFA; "
                 html_table += "color: {}; white-space:nowrap; ".format(color)
-                if (verticapy.options["mode"] in ("full", None)):
+                if verticapy.options["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -786,7 +801,9 @@ def print_table(
                 if (j == 0) or (i == 0):
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
-                        if data_columns[j][0] in dtype and (verticapy.options["mode"] in ("full", None)):
+                        if data_columns[j][0] in dtype and (
+                            verticapy.options["mode"] in ("full", None)
+                        ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
                                 category = category_from_type(type_val)
@@ -848,7 +865,7 @@ def print_table(
                     )
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if (verticapy.options["mode"] not in ("full", None)):
+                    if verticapy.options["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += '><input style="background-color: {}; border: none; text-align: center; width: {}px;" type="text" value="{}" readonly></td>'.format(
                         background, cell_width[j] - 10, val
@@ -865,27 +882,35 @@ def print_table(
 
 
 # ---#
-def schema_relation(relation: str):
-    quote_nb = relation.count('"')
-    if quote_nb not in (0, 2, 4):
-        raise ParsingError("The format of the input relation is incorrect.")
-    if quote_nb == 4:
-        schema_input_relation = relation.split('"')[1], relation.split('"')[3]
-    elif quote_nb == 4:
-        schema_input_relation = (
-            relation.split('"')[1],
-            relation.split('"')[2][1:]
-            if (relation.split('"')[0] == "")
-            else relation.split('"')[0][0:-1],
-            relation.split('"')[1],
-        )
+def schema_relation(relation):
+    from verticapy import vDataFrame
+
+    if isinstance(relation, vDataFrame):
+        schema = relation._VERTICAPY_VARIABLES_["schema_writing"]
+        relation = ""
+        if not (schema):
+            schema = "public"
     else:
-        schema_input_relation = relation.split(".")
-    if len(schema_input_relation) == 1:
-        schema, relation = "public", relation
-    else:
-        schema, relation = schema_input_relation[0], schema_input_relation[1]
-    return (schema, relation)
+        quote_nb = relation.count('"')
+        if quote_nb not in (0, 2, 4):
+            raise ParsingError("The format of the input relation is incorrect.")
+        if quote_nb == 4:
+            schema_input_relation = relation.split('"')[1], relation.split('"')[3]
+        elif quote_nb == 4:
+            schema_input_relation = (
+                relation.split('"')[1],
+                relation.split('"')[2][1:]
+                if (relation.split('"')[0] == "")
+                else relation.split('"')[0][0:-1],
+                relation.split('"')[1],
+            )
+        else:
+            schema_input_relation = relation.split(".")
+        if len(schema_input_relation) == 1:
+            schema, relation = "public", relation
+        else:
+            schema, relation = schema_input_relation[0], schema_input_relation[1]
+    return (str_column(schema), str_column(relation))
 
 
 # ---#
@@ -1057,7 +1082,9 @@ def vertica_param_dict(model):
     for param in model.parameters:
         if model.type in ("LinearSVC", "LinearSVR") and param == "C":
             parameters[param] = model.parameters[param]
-        elif model.type in ("LinearRegression", "LogisticRegression") and param in ("C"):
+        elif model.type in ("LinearRegression", "LogisticRegression") and param in (
+            "C"
+        ):
             parameters["lambda"] = model.parameters[param]
         elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
             if param == "init":
