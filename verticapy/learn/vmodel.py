@@ -57,7 +57,6 @@ from verticapy.learn.plot import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.metrics import *
 
@@ -1337,6 +1336,11 @@ class Supervised(vModel):
                 str_column(schema), get_session(self.cursor)
             )
             self.cursor.execute(
+                "DROP VIEW IF EXISTS {}".format(
+                    relation
+                )
+            )
+            self.cursor.execute(
                 "CREATE VIEW {} AS SELECT * FROM {}".format(
                     relation, input_relation.__genSQL__()
                 )
@@ -2553,6 +2557,11 @@ class Unsupervised(vModel):
             schema, relation = schema_relation(self.name)
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
                 str_column(schema), get_session(self.cursor)
+            )
+            self.cursor.execute(
+                "DROP VIEW IF EXISTS {}".format(
+                    relation
+                )
             )
             self.cursor.execute(
                 "CREATE VIEW {} AS SELECT * FROM {}".format(

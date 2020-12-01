@@ -56,7 +56,6 @@ from collections.abc import Iterable
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 
 # Other Python Modules
@@ -123,18 +122,7 @@ int
 
     from verticapy.learn.cluster import KMeans
 
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor, input_relation)[0:2]
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -446,18 +434,7 @@ tablesample
             ("tol", tol, [int, float],),
         ]
     )
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor, input_relation)[0:2]
     version(cursor=cursor, condition=[8, 0, 0])
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
@@ -555,20 +532,7 @@ tablesample
             ("nbins", nbins, [int, float],),
         ]
     )
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    if isinstance(input_relation, vDataFrame):
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
@@ -659,20 +623,7 @@ tablesample
             ("auc_prc", auc_prc, [bool],),
         ]
     )
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    if isinstance(input_relation, vDataFrame):
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
@@ -776,20 +727,7 @@ tablesample
             ("best_threshold", best_threshold, [bool],),
         ]
     )
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    if isinstance(input_relation, vDataFrame):
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
@@ -887,18 +825,7 @@ tuple
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        try:
-            cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-            cursor.execute("SELECT 1;")
-        except:
-            cursor = None
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor = check_cursor(cursor, input_relation)[0]
     schema, relation = schema_relation(input_relation)
     if isinstance(input_relation, vDataFrame):
         input_relation = input_relation.__genSQL__()

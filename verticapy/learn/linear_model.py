@@ -52,7 +52,6 @@
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -110,10 +109,7 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -168,10 +164,7 @@ solver: str, optional
         )
         for elem in ["l1_ratio"]:
             del self.parameters[elem]
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -222,10 +215,7 @@ solver: str, optional
         )
         for elem in ["l1_ratio", "C"]:
             del self.parameters[elem]
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -297,10 +287,7 @@ l1_ratio: float, optional
             for elem in ["l1_ratio"]:
                 del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -356,9 +343,6 @@ solver: str, optional
         )
         for elem in ["l1_ratio"]:
             del self.parameters[elem]
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])

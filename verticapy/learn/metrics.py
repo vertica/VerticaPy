@@ -58,7 +58,6 @@ from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 
 #
 # Regression
@@ -97,20 +96,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {}".format(
         y_score, y_true, y_true, input_relation
     )
@@ -155,20 +141,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT MAX(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Max Error.")
     result = cursor.fetchone()[0]
@@ -215,20 +188,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Mean Absolute Error.")
     result = cursor.fetchone()[0]
@@ -271,20 +231,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT MSE({}, {}) OVER () FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the MSE.")
     result = cursor.fetchone()[0]
@@ -327,20 +274,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -385,20 +319,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -446,20 +367,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {}".format(
         y_true, y_score, q, input_relation
     )
@@ -502,20 +410,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT RSQUARED({}, {}) OVER() FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -561,20 +456,7 @@ tablesample
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(
         y_true, y_score, y_true, y_true, y_score
     )
@@ -644,20 +526,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if pos_label != None:
         matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
         non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
@@ -724,14 +593,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return roc_curve(
         y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_roc=True
     )
@@ -790,24 +652,12 @@ tablesample
             ("cutoff", cutoff, [int, float, list],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes > 2) else [estimator.classes_[1]]
     else:
-        if not (cursor):
-            conn = read_auto_connect()
-            cursor = conn.cursor()
-        else:
-            conn = False
-            check_cursor(cursor)
+        cursor, conn = check_cursor(cursor)[0:2]
         labels = [1] if not (labels) else labels
         num_classes = len(labels) + 1
     values = {
@@ -975,20 +825,7 @@ tablesample
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
         y_true
@@ -1056,20 +893,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1125,20 +949,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1200,20 +1011,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1270,20 +1068,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {};"
     query = query.format(y_true, pos_label, y_score, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Log Loss.")
@@ -1334,20 +1119,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1405,20 +1177,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1479,20 +1238,7 @@ tablesample
             ("labels", labels, [list],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {}) OVER() FROM (SELECT DECODE({}".format(
@@ -1560,20 +1306,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1629,14 +1362,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return prc_curve(
         y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_prc=True
     )
@@ -1683,20 +1409,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1752,20 +1465,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1821,20 +1521,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        if not (cursor):
-            try:
-                cursor = input_relation._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = input_relation.__genSQL__()
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()

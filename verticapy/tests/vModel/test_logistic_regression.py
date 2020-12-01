@@ -301,10 +301,9 @@ class TestLogisticRegression:
 
         assert model.get_params()["max_iter"] == 1000
 
-    @pytest.mark.skip(reason="feature not implemented")
     def test_model_from_vDF(self, base, titanic_vd):
         base.cursor.execute("DROP MODEL IF EXISTS logreg_from_vDF")
-        model_test = LinearRegression("logreg_from_vDF", cursor=base.cursor)
+        model_test = LogisticRegression("logreg_from_vDF", cursor=base.cursor)
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
         base.cursor.execute(

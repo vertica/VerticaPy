@@ -54,7 +54,6 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -128,10 +127,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -206,9 +202,6 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])

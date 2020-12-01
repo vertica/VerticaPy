@@ -55,7 +55,7 @@ import os, math, shutil, re, time, decimal, warnings
 import verticapy
 import vertica_python
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
+from verticapy.connections.connect import read_auto_connect, vertica_conn
 from verticapy.errors import *
 
 # Other Modules
@@ -79,12 +79,7 @@ cursor: DBcursor, optional
     Vertica DB cursor.
     """
     check_types([("name", name, [str],)])
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     cursor.execute("SELECT * FROM MODELS WHERE model_name='{}'".format(name))
     result = cursor.fetchone()
     if result:
@@ -119,12 +114,7 @@ Parameters
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     sql = "CREATE SCHEMA verticapy;"
     cursor.execute(sql)
     sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
@@ -146,12 +136,7 @@ Parameters
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     sql = "DROP SCHEMA verticapy CASCADE;"
     cursor.execute(sql)
     if conn:
@@ -169,12 +154,7 @@ Parameters
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
     cursor.execute(sql)
     all_tables = cursor.fetchall()
@@ -221,12 +201,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP MODEL {};".format(name)
         cursor.execute(query)
@@ -307,12 +282,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP TABLE {};".format(name)
         cursor.execute(query)
@@ -355,12 +325,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP TEXT INDEX {};".format(name)
         cursor.execute(query)
@@ -403,12 +368,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP VIEW {};".format(name)
         cursor.execute(query)
@@ -466,7 +426,7 @@ def readSQL(
         conn = read_auto_connect()
         cursor = conn.cursor()
     elif not (cursor):
-        cursor = vertica_cursor(dsn)
+        cursor = vertica_conn(dsn).cursor()
     cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
     query_on_init = verticapy.options["query_on"]
@@ -520,12 +480,7 @@ Returns
 list of tuples
 	The list of the different columns and their respective type.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
 
     if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
         try:
@@ -616,10 +571,7 @@ model
 	The model.
 	"""
     check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         check_model(name=name, cursor=cursor)
         raise NameError("The model '{}' doesn't exist.".format(name))
@@ -1086,12 +1038,7 @@ read_json : Ingests a JSON file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     path = "verticapy_{}.csv".format(gen_name([name]))
     try:
         df.to_csv(path, index=False)
@@ -1151,12 +1098,7 @@ See Also
 read_csv  : Ingests a CSV file in the Vertica DB.
 read_json : Ingests a JSON file in the Vertica DB.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -1231,12 +1173,7 @@ See Also
 read_csv  : Ingests a CSV file in the Vertica DB.
 read_json : Ingests a JSON file in the Vertica DB.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -1348,10 +1285,7 @@ read_json : Ingests a JSON file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
         sep.replace("'", "''"),
@@ -1501,10 +1435,7 @@ read_csv : Ingests a CSV file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     file = path.split("/")[-1]
     file_extension = file[-4 : len(file)]
     if file_extension != "json":
@@ -1641,10 +1572,7 @@ vDataFrame.to_vdf : Saves the vDataFrame to a .vdf text file.
 vdf_from_relation : Creates a vDataFrame based on a customized relation.
 	"""
     check_types([("path", path, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     file = open(path, "r")
     save = (
         "from verticapy import vDataFrame\nfrom verticapy.vcolumn import vColumn\n"
@@ -2057,9 +1985,7 @@ The tablesample attributes are the same than the parameters.
         if not (cursor) and not (dsn):
             cursor = read_auto_connect().cursor()
         elif not (cursor):
-            from verticapy import vertica_cursor
-
-            cursor = vertica_cursor(dsn)
+            cursor = vertica_conn(dsn).cursor()
         else:
             check_cursor(cursor)
         relation = "({}) sql_relation".format(self.to_sql())
@@ -2093,12 +2019,7 @@ def to_tablesample(
 	tablesample : Object in memory created for rendering purposes.
 	"""
     check_types([("query", query, [str],)])
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -2200,9 +2121,7 @@ vDataFrame
     if not (cursor) and not (dsn):
         cursor = read_auto_connect().cursor()
     elif not (cursor):
-        from verticapy import vertica_cursor
-
-        cursor = vertica_cursor(dsn)
+        cursor = vertica_conn(dsn).cursor()
     else:
         check_cursor(cursor)
     vdf._VERTICAPY_VARIABLES_["input_relation"] = name
@@ -2281,12 +2200,7 @@ list
     check_types(
         [("condition", condition, [list],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     version = (

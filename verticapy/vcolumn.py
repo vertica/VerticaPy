@@ -67,7 +67,7 @@ from verticapy.errors import *
 #
 #
 # ---#
-class vColumn:
+class vColumn(str_sql):
     """
 ---------------------------------------------------------------------------
 Python object which will store all the user transformations. The vDataFrame
@@ -128,60 +128,6 @@ Attributes
         }
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
-
-    # ---#
-    def __abs__(self):
-        return self.abs()
-
-    # ---#
-    def __add__(self, x):
-        if self.category() in ("int", "float") and isinstance(x, (float, int)):
-            return "{} + {}".format(self.alias, x)
-        elif self.category() in ("text",) and isinstance(x, str):
-            return "{} || '{}'".format(self.alias, x)
-        elif self.category() in ("date",) and isinstance(x, (float, int)):
-            return "TIMESTAMPADD(SECOND, {}, {})".format(self.alias, x)
-        elif self.category() in ("date",) and isinstance(x, str):
-            return "{} + '{}'::interval".format(self.alias, x)
-        else:
-            raise
-
-    # ---#
-    def __mul__(self, x):
-        if self.category() in ("int", "float") and isinstance(x, (float, int)):
-            return "{} * {}".format(self.alias, x)
-        elif self.category() in ("text",) and isinstance(x, int) and x > 0:
-            return "||".join(["{}" for elem in range(x)]).replace("{}", self.alias)
-        else:
-            raise
-
-    # ---#
-    def __sub__(self, x):
-        if self.category() in ("int", "float") and isinstance(x, (float, int)):
-            return "{} - {}".format(self.alias, x)
-        elif self.category() in ("date",) and isinstance(x, (float, int)):
-            return "TIMESTAMPADD(SECOND, {}, -{})".format(self.alias, x)
-        elif self.category() in ("date",) and isinstance(x, str):
-            return "{} - '{}'::interval".format(self.alias, x)
-        else:
-            raise
-
-    # ---#
-    def __truediv__(self, x):
-        if self.category() in ("int", "float") and isinstance(x, (float, int)):
-            return "{} / {}".format(self.alias, x)
-        elif self.category() in ("date",) and isinstance(x, str):
-            return "{} / '{}'::interval".format(self.alias, x)
-        else:
-            raise
-
-    # ---#
-    def __ceil__(self):
-        return self.apply_fun(func="ceil")
-
-    # ---#
-    def __floor__(self):
-        return self.apply_fun(func="floor")
 
     # ---#
     def __getitem__(self, index):
@@ -247,10 +193,6 @@ Attributes
     # ---#
     def _repr_html_(self):
         return self.head(limit=verticapy.options["max_rows"])._repr_html_()
-
-    # ---#
-    def __round__(self, n):
-        return self.apply_fun(func="round", x=n)
 
     # ---#
     def __setattr__(self, attr, val):
@@ -702,6 +644,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -735,7 +678,6 @@ Attributes
                 ("color", color, [str],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -1610,6 +1552,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -1637,7 +1580,6 @@ Attributes
                 ("h", h, [int, float],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -2249,6 +2191,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -2282,7 +2225,6 @@ Attributes
                 ("color", color, [str],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -3279,6 +3221,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -3306,7 +3249,6 @@ Attributes
                 ("h", h, [int, float],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]

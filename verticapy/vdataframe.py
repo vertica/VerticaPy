@@ -251,23 +251,25 @@ vcolumns : vcolumn
 
     # ---#
     def __abs__(self):
-        return self.abs()
+        return self.copy().abs()
 
     # ---#
     def __ceil__(self, n):
-        columns = self.numcol()
+        vdf = self.copy()
+        columns = vdf.numcol()
         for elem in columns:
-            if self[elem].category() == "float":
-                self[elem].apply_fun(func="ceil", x=n)
-        return self
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="ceil", x=n)
+        return vdf
 
     # ---#
     def __floor__(self, n):
-        columns = self.numcol()
+        vdf = self.copy()
+        columns = vdf.numcol()
         for elem in columns:
-            if self[elem].category() == "float":
-                self[elem].apply_fun(func="floor", x=n)
-        return self
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="floor", x=n)
+        return vdf
 
     # ---#
     def __getitem__(self, index):
@@ -310,14 +312,26 @@ vcolumns : vcolumn
             )
             self.__executeSQL__(query=query, title="Gets the vDataFrame element.")
             return self._VERTICAPY_VARIABLES_["cursor"].fetchone()
-        elif isinstance(index, str):
+        elif isinstance(index, (str, str_sql)):
+            is_sql = False
+            if isinstance(index, vColumn):
+                index = index.alias
+            elif isinstance(index, str_sql):
+                index = str(index)
+                is_sql = True
             new_index = vdf_columns_names([index], self)
             try:
                 return getattr(self, new_index[0])
             except:
-                return getattr(self, index)
+                if is_sql:
+                    return self.search(conditions=index)
+                else:
+                    return getattr(self, index)
         elif isinstance(index, Iterable):
-            return self.select(columns=index)
+            try:
+                return self.select(columns=[str(elem) for elem in index])
+            except:
+                return self.search(conditions=[str(elem) for elem in index])
         else:
             return getattr(self, index)
 
@@ -344,15 +358,17 @@ vcolumns : vcolumn
 
     # ---#
     def __round__(self, n):
-        columns = self.numcol()
+        vdf = self.copy()
+        columns = vdf.numcol()
         for elem in columns:
-            if self[elem].category() == "float":
-                self[elem].apply_fun(func="round", x=n)
-        return self
+            if vdf[elem].category() == "float":
+                vdf[elem].apply_fun(func="round", x=n)
+        return vdf
 
     # ---#
     def __setattr__(self, attr, val):
-        if isinstance(val, str):
+        if isinstance(val, (str, str_sql)) and not isinstance(val, vColumn):
+            val = str(val)
             if column_check_ambiguous(attr, self.get_columns()):
                 self[attr].apply(func=val)
             else:
@@ -1115,7 +1131,7 @@ vcolumns : vcolumn
         Input query.
     title: str, optional
         Query title. It is the tip to use to indicate the query meaning when
-        turning on the SQL using to the 'set_display_parameters' method. 
+        turning on the SQL using the 'set_option' function. 
 
     Returns
     -------
@@ -1126,7 +1142,7 @@ vcolumns : vcolumn
 
     # ---#
     def __genSQL__(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = []
+        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -2840,6 +2856,7 @@ vcolumns : vcolumn
             max     : Maximum of the vcolumn 'of'.
             sum     : Sum of the vcolumn 'of'.
             q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
          The vcolumn to use to compute the aggregation.
     h: tuple, optional
@@ -4524,7 +4541,7 @@ vcolumns : vcolumn
                 )
             except:
                 raise QueryError(
-                    "The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'set_display_parameters' method, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(
+                    "The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(
                         expr
                     )
                 )
@@ -5343,6 +5360,7 @@ vcolumns : vcolumn
             max     : Maximum of the vcolumn 'of'.
             sum     : Sum of the vcolumn 'of'.
             q%      : q Quantile of the vcolumn 'of (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vcolumn to use to compute the aggregation.
     h: tuple, optional
@@ -5371,7 +5389,6 @@ vcolumns : vcolumn
                 ("cmap", cmap, [str],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self, [2])
         columns = vdf_columns_names(columns, self)
         if of:
@@ -5519,6 +5536,7 @@ vcolumns : vcolumn
             max     : Maximum of the vcolumn 'of'.
             sum     : Sum of the vcolumn 'of'.
             q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vcolumn to use to compute the aggregation.
     h: tuple, optional
@@ -5557,7 +5575,6 @@ vcolumns : vcolumn
                 ("hist_type", hist_type, ["auto", "multi", "stacked"],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self, [1, 2, 3, 4, 5])
         columns = vdf_columns_names(columns, self)
         if of:
@@ -6672,6 +6689,7 @@ vcolumns : vcolumn
             max     : Maximum of the vcolumn 'of'.
             sum     : Sum of the vcolumn 'of'.
             q%      : q Quantile of the vcolumn 'of (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vcolumn to use to compute the aggregation.
     max_cardinality: tuple, optional
@@ -6713,7 +6731,6 @@ vcolumns : vcolumn
                 ("with_numbers", with_numbers, [bool],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self, [1, 2])
         columns = vdf_columns_names(columns, self)
         if of:

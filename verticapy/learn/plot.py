@@ -60,7 +60,6 @@ import numpy
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 
 # ---#
@@ -82,12 +81,7 @@ def logit_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
 
     def logit(x):
         return 1 / (1 + math.exp(-x))
@@ -265,12 +259,7 @@ def lof_plot(
             ("tablesample", tablesample, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     tablesample = (
         "TABLESAMPLE({})".format(tablesample)
         if (tablesample > 0 and tablesample < 100)
@@ -568,12 +557,7 @@ def regression_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if len(X) == 1:
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
@@ -663,12 +647,7 @@ def svm_classifier_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if len(X) == 1:
         query = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)

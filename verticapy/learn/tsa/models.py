@@ -53,7 +53,6 @@ import math, warnings
 
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
@@ -155,10 +154,7 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -1165,10 +1161,7 @@ solver: str, optional
         self.set_params(
             {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 

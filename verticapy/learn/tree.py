@@ -50,7 +50,6 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.connections.connect import read_auto_connect
 
 
 # ---#
@@ -114,10 +113,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -183,10 +179,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])
 
@@ -221,10 +214,7 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -259,9 +249,6 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])

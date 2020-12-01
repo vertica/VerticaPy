@@ -209,7 +209,6 @@ class TestElasticNet:
 
         assert model.get_params()["max_iter"] == 1000
 
-    @pytest.mark.skip(reason="feautre not implemented")
     def test_model_from_vDF(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS enet_from_vDF")
         model_test = ElasticNet("enet_from_vDF", cursor=base.cursor)

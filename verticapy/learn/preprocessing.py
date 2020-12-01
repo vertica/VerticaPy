@@ -52,7 +52,6 @@
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.vmodel import *
 
 # ---#
@@ -105,10 +104,7 @@ vDataFrame
             ("ratio", ratio, [float],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     version(cursor=cursor, condition=[8, 1, 1])
     method = method.lower()
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
@@ -171,10 +167,7 @@ max_text_size: int, optional
                 "max_text_size": max_text_size,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
@@ -329,10 +322,7 @@ method: str, optional
         check_types([("name", name, [str],)])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 0])
 
@@ -432,9 +422,6 @@ X: list
         check_types([("name", name, [str],)])
         self.type, self.name = "OneHotEncoder", name
         self.set_params({"extra_levels": extra_levels})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 0])
