@@ -148,20 +148,40 @@ def category_from_type(ctype: str = ""):
 
 
 # ---#
-def check_cursor(cursor):
-    if "cursor" not in (str(type(cursor))).lower():
-        try:
-            cursor.execute("SELECT 1;")
-        except:
-            raise TypeError(
-                "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
-                    type(cursor)
+def check_cursor(cursor, vdf = ""):
+
+    from verticapy import vDataFrame
+    from verticapy.connections.connect import read_auto_connect
+
+    if isinstance(vdf, vDataFrame):
+        if not (cursor):
+            try:
+                cursor = vdf._VERTICAPY_VARIABLES_["cursor"]
+                cursor.execute("SELECT 1;")
+            except:
+                cursor = None
+        input_relation = vdf.__genSQL__()
+    else:
+        input_relation = vdf
+    if not (cursor):
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+    else:
+        conn = False
+        if "cursor" not in (str(type(cursor))).lower():
+            try:
+                cursor.execute("SELECT 1;")
+            except:
+                raise TypeError(
+                    "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
+                        type(cursor)
+                    )
                 )
-            )
+    return (cursor, conn, input_relation)
 
 
 # ---#
-def check_types(types_list: list = [], vdf: list = []):
+def check_types(types_list: list = [],):
     for elem in types_list:
         list_check = False
         for sub_elem in elem[2]:
@@ -380,6 +400,7 @@ def default_model_parameters(model_type: str):
     elif model_type in ("DBSCAN"):
         return {"eps": 0.5, "min_samples": 5, "p": 2}
 
+
 # ---#
 def executeSQL(cursor, query: str, title: str = ""):
     check_types([("query", query, [str],), ("title", title, [str],)])
@@ -391,6 +412,19 @@ def executeSQL(cursor, query: str, title: str = ""):
     if verticapy.options["time_on"]:
         print_time(elapsed_time)
     return cursor
+
+# ---#
+def format_magic(x):
+
+    from verticapy.vcolumn import vColumn
+
+    if isinstance(x, vColumn):
+        val = x.alias
+    elif isinstance(x, (int, float, str_sql)):
+        val = x
+    else:
+        val = "'{}'".format(x)
+    return val
 
 # ---#
 def gen_name(L: list):
@@ -439,12 +473,16 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 
 
 # ---#
-def get_session(cursor):
+def get_session(cursor, add_username: bool = True):
     query = "SELECT CURRENT_SESSION();"
     cursor.execute(query)
     result = cursor.fetchone()[0]
     result = result.split(":")[1]
     result = int(result, base=16)
+    if add_username:
+        query = "SELECT USERNAME();"
+        cursor.execute(query)
+        result = "{}_{}".format(cursor.fetchone()[0], result)
     return result
 
 
@@ -534,6 +572,7 @@ def insert_verticapy_schema(
         except Exception as e:
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
+            raise
 
 
 # ---#
@@ -549,6 +588,7 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
+
 # ---#
 def last_order_by(vdf):
     max_pos, order_by = 0, ""
@@ -558,6 +598,7 @@ def last_order_by(vdf):
     if max_pos in vdf._VERTICAPY_VARIABLES_["order_by"]:
         order_by = vdf._VERTICAPY_VARIABLES_["order_by"][max_pos]
     return order_by
+
 
 # ---#
 def levenshtein(s: str, t: str):
@@ -738,15 +779,17 @@ def print_table(
             for j in range(m):
                 val = data_columns[j][i]
                 if isinstance(val, str):
-                    val = val.replace('<', "&lt;")
-                    val = val.replace('>', "&gt;")
+                    val = val.replace("<", "&lt;")
+                    val = val.replace(">", "&gt;")
                     val = val.replace("'", "&apos;")
-                    val = val.replace(' ', "&nbsp;")
+                    val = val.replace(" ", "&nbsp;")
                 if val == None:
                     val = "[null]"
                     color = "#999999"
                 else:
-                    if isinstance(val, bool) and (verticapy.options["mode"] in ("full", None)):
+                    if isinstance(val, bool) and (
+                        verticapy.options["mode"] in ("full", None)
+                    ):
                         val = (
                             "<center>&#9989;</center>"
                             if (val)
@@ -754,14 +797,18 @@ def print_table(
                         )
                     color = "black"
                 html_table += '<td style="background-color: '
-                if (j == 0) or (i == 0) or (verticapy.options["mode"] not in ("full", None)):
+                if (
+                    (j == 0)
+                    or (i == 0)
+                    or (verticapy.options["mode"] not in ("full", None))
+                ):
                     html_table += " #FFFFFF; "
                 elif val == "[null]":
                     html_table += " #EEEEEE; "
                 else:
                     html_table += " #FAFAFA; "
                 html_table += "color: {}; white-space:nowrap; ".format(color)
-                if (verticapy.options["mode"] in ("full", None)):
+                if verticapy.options["mode"] in ("full", None):
                     if (j == 0) or (i == 0):
                         html_table += "border: 1px solid #AAAAAA; "
                     else:
@@ -786,7 +833,9 @@ def print_table(
                 if (j == 0) or (i == 0):
                     if j != 0:
                         type_val, category, missing_values = "", "", ""
-                        if data_columns[j][0] in dtype and (verticapy.options["mode"] in ("full", None)):
+                        if data_columns[j][0] in dtype and (
+                            verticapy.options["mode"] in ("full", None)
+                        ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
                                 category = category_from_type(type_val)
@@ -848,7 +897,7 @@ def print_table(
                     )
                 elif cell_width[j] > 240:
                     background = "#EEEEEE" if val == "[null]" else "#FAFAFA"
-                    if (verticapy.options["mode"] not in ("full", None)):
+                    if verticapy.options["mode"] not in ("full", None):
                         background = "#FFFFFF"
                     html_table += '><input style="background-color: {}; border: none; text-align: center; width: {}px;" type="text" value="{}" readonly></td>'.format(
                         background, cell_width[j] - 10, val
@@ -865,27 +914,35 @@ def print_table(
 
 
 # ---#
-def schema_relation(relation: str):
-    quote_nb = relation.count('"')
-    if quote_nb not in (0, 2, 4):
-        raise ParsingError("The format of the input relation is incorrect.")
-    if quote_nb == 4:
-        schema_input_relation = relation.split('"')[1], relation.split('"')[3]
-    elif quote_nb == 4:
-        schema_input_relation = (
-            relation.split('"')[1],
-            relation.split('"')[2][1:]
-            if (relation.split('"')[0] == "")
-            else relation.split('"')[0][0:-1],
-            relation.split('"')[1],
-        )
+def schema_relation(relation):
+    from verticapy import vDataFrame
+
+    if isinstance(relation, vDataFrame):
+        schema = relation._VERTICAPY_VARIABLES_["schema_writing"]
+        relation = ""
+        if not (schema):
+            schema = "public"
     else:
-        schema_input_relation = relation.split(".")
-    if len(schema_input_relation) == 1:
-        schema, relation = "public", relation
-    else:
-        schema, relation = schema_input_relation[0], schema_input_relation[1]
-    return (schema, relation)
+        quote_nb = relation.count('"')
+        if quote_nb not in (0, 2, 4):
+            raise ParsingError("The format of the input relation is incorrect.")
+        if quote_nb == 4:
+            schema_input_relation = relation.split('"')[1], relation.split('"')[3]
+        elif quote_nb == 4:
+            schema_input_relation = (
+                relation.split('"')[1],
+                relation.split('"')[2][1:]
+                if (relation.split('"')[0] == "")
+                else relation.split('"')[0][0:-1],
+                relation.split('"')[1],
+            )
+        else:
+            schema_input_relation = relation.split(".")
+        if len(schema_input_relation) == 1:
+            schema, relation = "public", relation
+        else:
+            schema, relation = schema_input_relation[0], schema_input_relation[1]
+    return (str_column(schema), str_column(relation))
 
 
 # ---#
@@ -1057,7 +1114,9 @@ def vertica_param_dict(model):
     for param in model.parameters:
         if model.type in ("LinearSVC", "LinearSVR") and param == "C":
             parameters[param] = model.parameters[param]
-        elif model.type in ("LinearRegression", "LogisticRegression") and param in ("C"):
+        elif model.type in ("LinearRegression", "LogisticRegression") and param in (
+            "C"
+        ):
             parameters["lambda"] = model.parameters[param]
         elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
             if param == "init":
@@ -1081,3 +1140,165 @@ def vertica_param_dict(model):
         else:
             parameters[vertica_param_name(param)] = model.parameters[param]
     return parameters
+
+
+# ---#
+class str_sql:
+    # ---#
+    def __init__(self, alias, category="text"):
+        self.alias = alias
+        self.category_ = category
+
+    def __repr__(self):
+        return self.alias
+
+    def __str__(self):
+        return self.alias
+
+    # ---#
+    def __abs__(self):
+        return str_sql("ABS({})".format(self.alias), self.category())
+
+    # ---#
+    def __add__(self, x):
+        val = format_magic(x)
+        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
+        return str_sql("{} {} {}".format(self.alias, op, val), self.category())
+
+    # ---#
+    def __radd__(self, x):
+        val = format_magic(x)
+        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
+        return str_sql("{} {} {}".format(val, op, self.alias), self.category())
+
+    # ---#
+    def __and__(self, x):
+        val = format_magic(x)
+        return str_sql("{} AND {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __rand__(self, x):
+        val = format_magic(x)
+        return str_sql("{} AND {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __eq__(self, x):
+        val = format_magic(x)
+        return str_sql("{} = {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __ge__(self, x):
+        val = format_magic(x)
+        return str_sql("{} >= {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __gt__(self, x):
+        val = format_magic(x)
+        return str_sql("{} > {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __le__(self, x):
+        val = format_magic(x)
+        return str_sql("{} <= {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __lt__(self, x):
+        val = format_magic(x)
+        return str_sql("{} < {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __mul__(self, x):
+        if self.category() in ("text",) and isinstance(x, (int)):
+            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+        val = format_magic(x)
+        return str_sql("{} * {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __rmul__(self, x):
+        if self.category() in ("text",) and isinstance(x, (int)):
+            return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
+        val = format_magic(x)
+        return str_sql("{} * {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __or__(self, x):
+        val = format_magic(x)
+        return str_sql("{} OR {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __ror__(self, x):
+        val = format_magic(x)
+        return str_sql("{} OR {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __pos__(self):
+        return str_sql("+{}".format(self.alias), self.category())
+
+    # ---#
+    def __neg__(self):
+        return str_sql("-{}".format(self.alias), self.category())
+
+    # ---#
+    def __pow__(self, x):
+        val = format_magic(x)
+        return str_sql("POWER({}, {})".format(self.alias, val), self.category())
+
+    # ---#
+    def __rpow__(self, x):
+        val = format_magic(x)
+        return str_sql("POWER({}, {})".format(val, self.alias), self.category())
+
+    # ---#
+    def __mod__(self, x):
+        val = format_magic(x)
+        return str_sql("MOD({}, {})".format(self.alias, val), self.category())
+
+    # ---#
+    def __rmod__(self, x):
+        val = format_magic(x)
+        return str_sql("MOD({}, {})".format(val, self.alias), self.category())
+
+    # ---#
+    def __sub__(self, x):
+        val = format_magic(x)
+        return str_sql("{} - {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __rsub__(self, x):
+        val = format_magic(x)
+        return str_sql("{} - {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __truediv__(self, x):
+        val = format_magic(x)
+        return str_sql("{} / {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __rtruediv__(self, x):
+        val = format_magic(x)
+        return str_sql("{} / {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __floordiv__(self, x):
+        val = format_magic(x)
+        return str_sql("{} // {}".format(self.alias, val), self.category())
+
+    # ---#
+    def __rfloordiv__(self, x):
+        val = format_magic(x)
+        return str_sql("{} // {}".format(val, self.alias), self.category())
+
+    # ---#
+    def __ceil__(self):
+        return str_sql("CEIL({})".format(self.alias), self.category())
+
+    # ---#
+    def __floor__(self):
+        return str_sql("FLOOR({})".format(self.alias), self.category())
+
+    # ---#
+    def __round__(self, x):
+        return str_sql("ROUND({}, {})".format(self.alias, x), self.category())
+
+    def category(self):
+        return self.category_

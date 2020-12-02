@@ -54,7 +54,6 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -84,9 +83,6 @@ alpha: float, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "MultinomialNB", name
         self.set_params({"alpha": alpha})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])

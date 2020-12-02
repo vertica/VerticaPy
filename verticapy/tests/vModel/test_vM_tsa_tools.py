@@ -16,7 +16,9 @@ from verticapy import vDataFrame
 from verticapy.learn.tsa.tools import *
 
 from verticapy import set_option
+
 set_option("print_info", False)
+
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
@@ -91,4 +93,4 @@ class TestvDFStatsTools:
         assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
         assert result["value"][3] == pytest.approx(0.014317855149496753, 1e-2)
         assert result["value"][4] == True
-        assert result["value"][5] == 'increasing'
+        assert result["value"][5] == "increasing"

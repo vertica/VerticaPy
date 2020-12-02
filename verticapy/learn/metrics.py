@@ -54,16 +54,18 @@ from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy import *
+from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 
 #
 # Regression
 #
 # ---#
-def explained_variance(y_true: str, y_score: str, input_relation: str, cursor=None):
+def explained_variance(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Explained Variance.
@@ -74,7 +76,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -91,15 +93,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {}".format(
         y_score, y_true, y_true, input_relation
     )
@@ -111,7 +108,9 @@ float
 
 
 # ---#
-def max_error(y_true: str, y_score: str, input_relation: str, cursor=None):
+def max_error(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Max Error.
@@ -122,7 +121,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -139,25 +138,26 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT MAX(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Max Error.")
     result = cursor.fetchone()[0]
     if conn:
         conn.close()
+    try:
+        result = float(result)
+    except:
+        pass
     return result
 
 
 # ---#
-def mean_absolute_error(y_true: str, y_score: str, input_relation: str, cursor=None):
+def mean_absolute_error(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Absolute Error.
@@ -168,7 +168,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -185,15 +185,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Mean Absolute Error.")
     result = cursor.fetchone()[0]
@@ -203,7 +198,9 @@ float
 
 
 # ---#
-def mean_squared_error(y_true: str, y_score: str, input_relation: str, cursor=None):
+def mean_squared_error(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Squared Error.
@@ -214,7 +211,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -231,15 +228,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT MSE({}, {}) OVER () FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the MSE.")
     result = cursor.fetchone()[0]
@@ -249,7 +241,9 @@ float
 
 
 # ---#
-def mean_squared_log_error(y_true: str, y_score: str, input_relation: str, cursor=None):
+def mean_squared_log_error(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
@@ -260,7 +254,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -277,15 +271,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -297,7 +286,9 @@ float
 
 
 # ---#
-def median_absolute_error(y_true: str, y_score: str, input_relation: str, cursor=None):
+def median_absolute_error(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes the Median Absolute Error.
@@ -308,7 +299,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -325,15 +316,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -346,7 +332,7 @@ float
 
 # ---#
 def quantile_error(
-    q: float, y_true: str, y_score: str, input_relation: str, cursor=None
+    q: float, y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -360,7 +346,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction.
-input_relation: str
+input_relation: str/vDataFrame
     Relation to use to do the scoring. The relation can be a view or a table
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -378,15 +364,10 @@ float
             ("q", q, [int, float],),
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {}".format(
         y_true, y_score, q, input_relation
     )
@@ -398,7 +379,7 @@ float
 
 
 # ---#
-def r2_score(y_true: str, y_score: str, input_relation: str, cursor=None):
+def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None):
     """
 ---------------------------------------------------------------------------
 Computes the R2 Score.
@@ -409,7 +390,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -426,15 +407,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT RSQUARED({}, {}) OVER() FROM {}".format(
         y_true, y_score, input_relation
     )
@@ -446,7 +422,9 @@ float
 
 
 # ---#
-def regression_report(y_true: str, y_score: str, input_relation: str, cursor=None):
+def regression_report(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+):
     """
 ---------------------------------------------------------------------------
 Computes a regression report using multiple metrics (r2, mse, max error...). 
@@ -457,7 +435,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -475,15 +453,10 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(
         y_true, y_score, y_true, y_true, y_score
     )
@@ -514,7 +487,11 @@ tablesample
 #
 # ---#
 def accuracy_score(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -526,7 +503,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -546,15 +523,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if pos_label != None:
         matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
         non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
@@ -581,7 +553,13 @@ float
 
 
 # ---#
-def auc(y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1):
+def auc(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
+):
     """
 ---------------------------------------------------------------------------
 Computes the ROC AUC (Area Under Curve).
@@ -592,7 +570,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -612,9 +590,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return roc_curve(
         y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_roc=True
     )
@@ -624,10 +603,10 @@ float
 def classification_report(
     y_true: str = "",
     y_score: list = [],
-    input_relation: str = "",
+    input_relation: (str, vDataFrame) = "",
     cursor=None,
     labels: list = [],
-    cutoff=[],
+    cutoff: (float, list) = [],
     estimator=None,
 ):
     """
@@ -642,7 +621,7 @@ y_true: str, optional
 	Response column.
 y_score: list, optional
 	List containing the probability and the prediction.
-input_relation: str, optional
+input_relation: str/vDataFrame, optional
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -651,7 +630,7 @@ cursor: DBcursor, optional
 	Vertica DB cursor.
 labels: list, optional
 	List of the response column categories to use.
-cutoff: float / list, optional
+cutoff: float/list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
 	In case of multiclass classification, the list will represent the 
 	the classes threshold. If it is empty, the best cutoff will be used.
@@ -668,21 +647,17 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [list],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("labels", labels, [list],),
             ("cutoff", cutoff, [int, float, list],),
         ]
     )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes > 2) else [estimator.classes_[1]]
     else:
-        if not (cursor):
-            conn = read_auto_connect()
-            cursor = conn.cursor()
-        else:
-            conn = False
-            check_cursor(cursor)
+        cursor, conn = check_cursor(cursor)[0:2]
         labels = [1] if not (labels) else labels
         num_classes = len(labels) + 1
     values = {
@@ -809,7 +784,11 @@ tablesample
 
 # ---#
 def confusion_matrix(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -821,7 +800,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -843,15 +822,10 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
         y_true
@@ -880,7 +854,11 @@ tablesample
 
 # ---#
 def critical_success_index(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -892,7 +870,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -912,15 +890,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -936,7 +909,13 @@ float
 
 
 # ---#
-def f1_score(y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1):
+def f1_score(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
+):
     """
 ---------------------------------------------------------------------------
 Computes the F1 Score.
@@ -947,7 +926,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -967,15 +946,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -998,7 +972,11 @@ float
 
 # ---#
 def informedness(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1010,7 +988,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1030,15 +1008,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1055,7 +1028,13 @@ float
 
 
 # ---#
-def log_loss(y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1):
+def log_loss(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
+):
     """
 ---------------------------------------------------------------------------
 Computes the Log Loss.
@@ -1066,7 +1045,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1086,15 +1065,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {};"
     query = query.format(y_true, pos_label, y_score, y_score, input_relation)
     executeSQL(cursor, query, "Computing the Log Loss.")
@@ -1106,7 +1080,11 @@ float
 
 # ---#
 def markedness(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1118,7 +1096,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1138,15 +1116,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1164,7 +1137,11 @@ float
 
 # ---#
 def matthews_corrcoef(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1176,7 +1153,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1197,15 +1174,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1226,7 +1198,11 @@ float
 
 # ---#
 def multilabel_confusion_matrix(
-    y_true: str, y_score: str, input_relation: str, labels: list, cursor=None
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    labels: list,
+    cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1238,7 +1214,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1258,16 +1234,11 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("labels", labels, [list],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {}) OVER() FROM (SELECT DECODE({}".format(
@@ -1296,7 +1267,11 @@ tablesample
 
 # ---#
 def negative_predictive_score(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1308,7 +1283,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1328,15 +1303,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1352,7 +1322,13 @@ float
 
 
 # ---#
-def prc_auc(y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1):
+def prc_auc(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
+):
     """
 ---------------------------------------------------------------------------
 Computes the PRC AUC (Area Under Curve).
@@ -1363,7 +1339,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1383,9 +1359,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return prc_curve(
         y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_prc=True
     )
@@ -1393,7 +1370,11 @@ float
 
 # ---#
 def precision_score(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1405,7 +1386,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1425,15 +1406,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1450,7 +1426,11 @@ float
 
 # ---#
 def recall_score(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1462,7 +1442,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1482,15 +1462,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()
@@ -1507,7 +1482,11 @@ float
 
 # ---#
 def specificity_score(
-    y_true: str, y_score: str, input_relation: str, cursor=None, pos_label=1
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    pos_label: (int, float, str) = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1519,7 +1498,7 @@ y_true: str
 	Response column.
 y_score: str
 	Prediction.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -1539,15 +1518,10 @@ float
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
     if conn:
         conn.close()

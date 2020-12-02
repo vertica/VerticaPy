@@ -15,6 +15,7 @@ import pytest, warnings
 from verticapy import vDataFrame, drop_table
 
 from verticapy import set_option
+
 set_option("print_info", False)
 
 
@@ -754,7 +755,7 @@ class TestvDFDescriptiveStat:
             C=1.0,
             max_iter=100,
             solver="CGD",
-            penalty='ENet',
+            penalty="ENet",
             l1_ratio=0.5,
         )
 

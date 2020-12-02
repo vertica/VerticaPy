@@ -57,7 +57,6 @@ from verticapy.learn.plot import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.metrics import *
 
@@ -94,13 +93,24 @@ Main Class for Vertica Model
                 "LocalOutlierFactor",
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
+                "CountVectorizer",
             ):
                 name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
                     version(cursor=self.cursor, condition=[9, 0, 0])
-                    executeSQL(self.cursor, "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(name), "Summarizing the model.")
+                    executeSQL(
+                        self.cursor,
+                        "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
+                            name
+                        ),
+                        "Summarizing the model.",
+                    )
                 except:
-                    executeSQL(self.cursor, "SELECT SUMMARIZE_MODEL('{}')".format(name), "Summarizing the model.")
+                    executeSQL(
+                        self.cursor,
+                        "SELECT SUMMARIZE_MODEL('{}')".format(name),
+                        "Summarizing the model.",
+                    )
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
                 rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
@@ -135,6 +145,22 @@ Main Class for Vertica Model
                     )
                 if self.ma_avg_:
                     rep += "\nMA AVG : {}".format(self.ma_avg_)
+            elif self.type == "CountVectorizer":
+                rep = "=======\ndetails\n======="
+                if self.vocabulary_:
+                    voc = [str(elem) for elem in self.vocabulary_]
+                    if len(voc) > 100:
+                        voc = voc[0:100] + [
+                            "... ({} more)".format(len(self.vocabulary_) - 100)
+                        ]
+                    rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
+                if self.stop_words_:
+                    rep += "\n\n# Stop Words\n\n" + ", ".join(
+                        [str(elem) for elem in self.stop_words_]
+                    )
+                rep += "\n\n===============\nAdditional Info\n==============="
+                rep += "\nInput Relation : {}".format(self.input_relation)
+                rep += "\nX : {}".format(", ".join(self.X))
             if self.type in (
                 "DBSCAN",
                 "NearestCentroid",
@@ -153,6 +179,7 @@ Main Class for Vertica Model
                 rep += "\ny : {}".format(self.y)
             return rep
         except:
+            raise
             return "<{}>".format(self.type)
 
     # ---#
@@ -212,7 +239,11 @@ Main Class for Vertica Model
 			An object containing the result. For more information, see
 			utilities.tablesample.
 		"""
-        if self.type in ("RandomForestClassifier", "RandomForestRegressor", "KernelDensity"):
+        if self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "KernelDensity",
+        ):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[9, 1, 1])
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
@@ -290,8 +321,7 @@ Main Class for Vertica Model
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
-                    name,
-                    ", attr_name = '{}'".format(attr_name) if attr_name else "",
+                    name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 cursor=self.cursor,
                 title="Getting Model Attributes.",
@@ -545,7 +575,7 @@ Main Class for Vertica Model
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
-            if "solver" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
+            if "solver" in parameters:
                 check_types([("solver", parameters["solver"], [str],)])
                 assert str(parameters["solver"]).lower() in [
                     "newton",
@@ -557,9 +587,12 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["solver"] = parameters["solver"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
+            else:
                 model_parameters["solver"] = default_parameters["solver"]
-            if "penalty" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
+            if "penalty" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("penalty", parameters["penalty"], [str],)])
                 assert str(parameters["penalty"]).lower() in [
                     "none",
@@ -582,7 +615,10 @@ Main Class for Vertica Model
                 model_parameters["max_iter"] = parameters["max_iter"]
             else:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
-            if "l1_ratio" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
+            if "l1_ratio" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("l1_ratio", parameters["l1_ratio"], [int, float],)])
                 assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
@@ -590,7 +626,10 @@ Main Class for Vertica Model
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
             elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
-            if "C" in parameters and self.type in ("LinearRegression", "LogisticRegression"):
+            if "C" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("C", parameters["C"], [int, float],)])
                 assert 0 <= parameters["C"], ParameterError(
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
@@ -688,9 +727,24 @@ Main Class for Vertica Model
             else:
                 model_parameters["bandwidth"] = default_parameters["bandwidth"]
             if "kernel" in parameters:
-                check_types([("kernel", parameters["kernel"], ["gaussian", "logistic", "sigmoid", "silverman"],)])
-                assert parameters["kernel"] in ["gaussian", "logistic", "sigmoid", "silverman"], ParameterError(
-                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(kernel)
+                check_types(
+                    [
+                        (
+                            "kernel",
+                            parameters["kernel"],
+                            ["gaussian", "logistic", "sigmoid", "silverman"],
+                        )
+                    ]
+                )
+                assert parameters["kernel"] in [
+                    "gaussian",
+                    "logistic",
+                    "sigmoid",
+                    "silverman",
+                ], ParameterError(
+                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(
+                        kernel
+                    )
                 )
                 model_parameters["kernel"] = parameters["kernel"]
             else:
@@ -1239,20 +1293,26 @@ Main Class for Vertica Model
 class Supervised(vModel):
 
     # ---#
-    def fit(self, input_relation: str, X: list, y: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (str, vDataFrame),
+        X: list,
+        y: str,
+        test_relation: (str, vDataFrame) = "",
+    ):
         """
 	---------------------------------------------------------------------------
 	Trains the self.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str, optional
+	test_relation: str/vDataFrame, optional
 		Relation to use to test the self.
 
 	Returns
@@ -1262,15 +1322,38 @@ class Supervised(vModel):
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("y", y, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+            schema, relation = schema_relation(self.name)
+            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
+                str_column(schema), get_session(self.cursor)
+            )
+            self.cursor.execute(
+                "DROP VIEW IF EXISTS {}".format(
+                    relation
+                )
+            )
+            self.cursor.execute(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                )
+            )
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
         parameters = vertica_param_dict(self)
@@ -1289,14 +1372,21 @@ class Supervised(vModel):
                 parameters["mtry"] = len(self.X)
         fun = self.get_model_fun()[0]
         query = "SELECT {}('{}', '{}', '{}', '{}' USING PARAMETERS "
-        query = query.format(fun, self.name, input_relation, self.y, ", ".join(self.X))
+        query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         if alpha != None:
             query += ", alpha = {}".format(alpha)
         query += ")"
-        executeSQL(self.cursor, query, "Fitting the model.")
+        try:
+            executeSQL(self.cursor, query, "Fitting the model.")
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+        except:
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+            raise
         if self.type in (
             "LinearSVC",
             "LinearSVR",
@@ -1427,7 +1517,7 @@ class BinaryClassifier(Classifier):
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
             self.cursor,
-            cutoff=cutoff
+            cutoff=cutoff,
         )
 
     # ---#
@@ -1525,7 +1615,7 @@ class BinaryClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: (str, vDataFrame),
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -1537,8 +1627,10 @@ class BinaryClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -1559,9 +1651,11 @@ class BinaryClassifier(Classifier):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -1692,7 +1786,7 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
-    def classification_report(self, cutoff=[], labels: list = []):
+    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -1723,7 +1817,7 @@ class MulticlassClassifier(Classifier):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def confusion_matrix(self, pos_label=None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
         """
 	---------------------------------------------------------------------------
 	Computes the model confusion matrix.
@@ -1764,7 +1858,11 @@ class MulticlassClassifier(Classifier):
 
     # ---#
     def deploySQL(
-        self, pos_label=None, cutoff: float = -1, allSQL: bool = False, X: list = []
+        self,
+        pos_label: (int, float, str) = None,
+        cutoff: float = -1,
+        allSQL: bool = False,
+        X: list = [],
     ):
         """
 	---------------------------------------------------------------------------
@@ -1838,7 +1936,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
-    def lift_chart(self, pos_label=None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -1876,7 +1974,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def prc_curve(self, pos_label=None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -1916,7 +2014,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: (str, vDataFrame),
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -1929,8 +2027,10 @@ class MulticlassClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -1955,9 +2055,11 @@ class MulticlassClassifier(Classifier):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -1976,7 +2078,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
-    def roc_curve(self, pos_label=None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2014,7 +2116,12 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def score(self, method: str = "accuracy", pos_label=None, cutoff: float = -1):
+    def score(
+        self,
+        method: str = "accuracy",
+        pos_label: (int, float, str) = None,
+        cutoff: float = -1,
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes the model score.
@@ -2172,15 +2279,19 @@ class MulticlassClassifier(Classifier):
 class Regressor(Supervised):
 
     # ---#
-    def predict(self, vdf, X: list = [], name: str = "", inplace: bool = True):
+    def predict(
+        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+    ):
         """
 	---------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -2195,8 +2306,14 @@ class Regressor(Supervised):
 		the input object.
 		"""
         check_types(
-            [("name", name, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame],),],
+            [
+                ("name", name, [str],),
+                ("X", X, [list],),
+                ("vdf", vdf, [str, vDataFrame],),
+            ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -2414,33 +2531,57 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def fit(self, input_relation: str, X: list):
+    def fit(self, input_relation: (str, vDataFrame), X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the self.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
-	X: list
-		List of the predictors.
+	X: list, optional
+		List of the predictors. If empty, all the numerical columns will be used.
 
 	Returns
 	-------
 	object
 		model
 		"""
-        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
+        check_types(
+            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+        )
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+            schema, relation = schema_relation(self.name)
+            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
+                str_column(schema), get_session(self.cursor)
+            )
+            self.cursor.execute(
+                "DROP VIEW IF EXISTS {}".format(
+                    relation
+                )
+            )
+            self.cursor.execute(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                )
+            )
+            if not (X):
+                X = input_relation.numcol()
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).numcol()
         self.X = [str_column(column) for column in X]
         parameters = vertica_param_dict(self)
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self.get_model_fun()[0]
         query = "SELECT {}('{}', '{}', '{}'".format(
-            fun, self.name, input_relation, ", ".join(self.X)
+            fun, self.name, relation, ", ".join(self.X)
         )
         if self.type in ("BisectingKMeans", "KMeans"):
             query += ", {}".format(parameters["n_cluster"])
@@ -2493,7 +2634,14 @@ class Unsupervised(vModel):
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         query += ")"
-        executeSQL(self.cursor, query, "Fitting the model.")
+        try:
+            executeSQL(self.cursor, query, "Fitting the model.")
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+        except:
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+            raise
         if self.type == "KMeans":
             try:
                 self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
@@ -2651,15 +2799,19 @@ class Decomposition(Unsupervised):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def inverse_transform(self, vdf=None, X: list = [], key_columns: list = []):
+    def inverse_transform(
+        self, vdf: (str, vDataFrame) = None, X: list = [], key_columns: list = []
+    ):
         """
 	---------------------------------------------------------------------------
 	Applies the Inverse Model on a vDataFrame.
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		input vDataFrame.
+	vdf: str/vDataFrame, optional
+		input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 	key_columns: list, optional
@@ -2672,7 +2824,9 @@ class Decomposition(Unsupervised):
 		"""
         check_types([("key_columns", key_columns, [list],), ("X", X, [list],)])
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],),],)
+            check_types([("vdf", vdf, [str, vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2772,13 +2926,15 @@ class Decomposition(Unsupervised):
             ),
             query,
         )
-        result = to_tablesample(query, cursor=self.cursor, title="Getting Model Score.",).transpose()
+        result = to_tablesample(
+            query, cursor=self.cursor, title="Getting Model Score.",
+        ).transpose()
         return result
 
     # ---#
     def transform(
         self,
-        vdf=None,
+        vdf: (str, vDataFrame) = None,
         X: list = [],
         n_components: int = 0,
         cutoff: float = 1,
@@ -2790,8 +2946,10 @@ class Decomposition(Unsupervised):
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		Input vDataFrame.
+	vdf: str/vDataFrame, optional
+		Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 	n_components: int, optional
@@ -2817,7 +2975,9 @@ class Decomposition(Unsupervised):
             ]
         )
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],),],)
+            check_types([("vdf", vdf, [str, vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2834,15 +2994,17 @@ class Decomposition(Unsupervised):
 class Preprocessing(Unsupervised):
 
     # ---#
-    def transform(self, vdf=None, X: list = []):
+    def transform(self, vdf: (str, vDataFrame) = None, X: list = []):
         """
 	---------------------------------------------------------------------------
 	Applies the model on a vDataFrame.
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		Input vDataFrame.
+	vdf: str/vDataFrame, optional
+		Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 
@@ -2854,6 +3016,8 @@ class Preprocessing(Unsupervised):
         check_types([("X", X, [list],)])
         if vdf:
             check_types([("vdf", vdf, [vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2872,15 +3036,19 @@ class Preprocessing(Unsupervised):
 class Clustering(Unsupervised):
 
     # ---#
-    def predict(self, vdf, X: list = [], name: str = "", inplace: bool = True):
+    def predict(
+        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+    ):
         """
 	---------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -2895,8 +3063,14 @@ class Clustering(Unsupervised):
 		the input object.
 		"""
         check_types(
-            [("name", name, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame],),],
+            [
+                ("name", name, [str],),
+                ("X", X, [list],),
+                ("vdf", vdf, [str, vDataFrame],),
+            ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())

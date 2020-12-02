@@ -54,7 +54,6 @@ from verticapy.learn.plot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -75,7 +74,7 @@ cursor: DBcursor, optional
 	Vertica DB cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
-max_features: str, optional
+max_features: int/str, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -106,7 +105,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -128,10 +127,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -153,7 +149,7 @@ cursor: DBcursor, optional
 	Vertica DB cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
-max_features: str, optional
+max_features: int/str, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -184,7 +180,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features="auto",
+        max_features: (int, str) = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -206,9 +202,6 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])

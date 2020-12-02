@@ -53,7 +53,6 @@ import math, warnings
 
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
@@ -155,10 +154,7 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -315,11 +311,11 @@ papprox_ma: int, optional
     # ---#
     def fit(
         self,
-        input_relation: str,
+        input_relation: (vDataFrame, str),
         y: str,
         ts: str,
         X: list = [],
-        test_relation: str = "",
+        test_relation: (vDataFrame, str) = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -327,7 +323,7 @@ papprox_ma: int, optional
 
     Parameters
     ----------
-    input_relation: str
+    input_relation: str/vDataFrame
         Train relation.
     y: str
         Response column.
@@ -335,8 +331,8 @@ papprox_ma: int, optional
         vcolumn used to order the data.
     X: list, optional
         exogenous columns used to fit the model.
-    test_relation: str, optional
-        Relation to use to test the self.
+    test_relation: str/vDataFrame, optional
+        Relation to use to test the model.
 
     Returns
     -------
@@ -345,16 +341,25 @@ papprox_ma: int, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("y", y, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
                 ("ts", ts, [str],),
             ]
         )
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        self.input_relation = (
+            input_relation
+            if isinstance(input_relation, str)
+            else input_relation.__genSQL__()
+        )
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.y, self.ts, self.deploy_predict_ = str_column(y), str_column(ts), ""
         self.coef_ = tablesample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
@@ -553,7 +558,7 @@ papprox_ma: int, optional
                     "[X{}]".format(idx), elem
                 )
             query = "SELECT COUNT(*), AVG({}) FROM {}".format(
-                self.y, transform_relation.format(input_relation)
+                self.y, transform_relation.format(self.input_relation)
             )
             result = self.cursor.execute(query).fetchone()
             self.ma_avg_ = result[1]
@@ -722,7 +727,7 @@ papprox_ma: int, optional
     # ---#
     def plot(
         self,
-        vdf=None,
+        vdf: vDataFrame = None,
         y: str = "",
         ts: str = "",
         X: list = [],
@@ -774,7 +779,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -818,14 +823,20 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        result.set_display_parameters(print_info=False)
-        result = (
-            result.select([ts, y, "_verticapy_prediction_"])
-            .dropna()
-            .sort([ts])
-            .tail(limit)
-            .values
-        )
+        print_info = verticapy.options["print_info"]
+        verticapy.options["print_info"] = False
+        try:
+            result = (
+                result.select([ts, y, "_verticapy_prediction_"])
+                .dropna()
+                .sort([ts])
+                .tail(limit)
+                .values
+            )
+        except:
+            verticapy.options["print_info"] = print_info
+            raise
+        verticapy.options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -972,7 +983,7 @@ papprox_ma: int, optional
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: vDataFrame,
         y: str = "",
         ts: str = "",
         X: list = [],
@@ -1148,17 +1159,9 @@ solver: str, optional
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
         self.set_params(
-            {
-                "p": p,
-                "tol": tol,
-                "max_iter": max_iter,
-                "solver": solver,
-            }
+            {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -1230,7 +1233,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
             .values
@@ -1259,20 +1262,26 @@ solver: str, optional
         return tablesample(values=importances).transpose()
 
     # ---#
-    def fit(self, input_relation: str, X: list, ts: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (vDataFrame, str),
+        X: list,
+        ts: str,
+        test_relation: (vDataFrame, str) = "",
+    ):
         """
     ---------------------------------------------------------------------------
     Trains the model.
 
     Parameters
     ----------
-    input_relation: str
+    input_relation: str/vDataFrame
         Train relation.
     X: list
         List of the response columns.
     ts: str
         vcolumn used to order the data.
-    test_relation: str, optional
+    test_relation: str/vDataFrame, optional
         Relation to use to test the model.
 
     Returns
@@ -1282,16 +1291,25 @@ solver: str, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("ts", ts, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        self.input_relation = (
+            input_relation
+            if isinstance(input_relation, str)
+            else input_relation.__genSQL__()
+        )
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.ts, self.deploy_predict_ = str_column(ts), []
         self.X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
         model = LinearRegression(
@@ -1315,7 +1333,7 @@ solver: str, optional
             ", ".join(columns), "{}"
         )
         relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts).format(
-            input_relation
+            self.input_relation
         )
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
@@ -1417,7 +1435,7 @@ solver: str, optional
     # ---#
     def plot(
         self,
-        vdf=None,
+        vdf: vDataFrame = None,
         X: list = [],
         ts: str = "",
         X_idx: int = 0,
@@ -1470,7 +1488,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -1522,14 +1540,20 @@ solver: str, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        result_all.set_display_parameters(print_info=False)
-        result = (
-            result_all.select([ts, y, prediction])
-            .dropna()
-            .sort([ts])
-            .tail(limit)
-            .values
-        )
+        print_info = verticapy.options["print_info"]
+        verticapy.options["print_info"] = False
+        try:
+            result = (
+                result_all.select([ts, y, prediction])
+                .dropna()
+                .sort([ts])
+                .tail(limit)
+                .values
+            )
+        except:
+            verticapy.options["print_info"] = print_info
+            raise
+        verticapy.options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1546,8 +1570,16 @@ solver: str, optional
             ],
         )
         if dynamic:
-            result_all.set_display_parameters(print_info=False)
-            result = result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
+            print_info = verticapy.options["print_info"]
+            verticapy.options["print_info"] = False
+            try:
+                result = (
+                    result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
+                )
+            except:
+                verticapy.options["print_info"] = print_info
+                raise
+            verticapy.options["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1661,7 +1693,14 @@ solver: str, optional
         return ax
 
     # ---#
-    def predict(self, vdf, X: list = [], ts: str = "", nlead: int = 0, name: list = []):
+    def predict(
+        self,
+        vdf: vDataFrame,
+        X: list = [],
+        ts: str = "",
+        nlead: int = 0,
+        name: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1690,8 +1729,8 @@ solver: str, optional
                 ("ts", ts, [str],),
                 ("nlead", nlead, [int, float],),
                 ("X", X, [list],),
+                ("vdf", vdf, [vDataFrame],),
             ],
-            ("vdf", vdf, [vDataFrame],),
         )
         if not (ts):
             ts = self.ts

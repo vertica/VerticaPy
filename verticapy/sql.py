@@ -71,7 +71,7 @@ def sql(line, cell=""):
     conn = read_auto_connect()
     cursor = conn.cursor()
     queries = line if (not (cell) and (line)) else cell
-    options = {"limit": 100, "columns": 100, "percent_bar": False, "vdf": False}
+    options = {"limit": 100, "vdf": False}
     queries = queries.replace("\t", " ")
     queries = queries.replace("\n", " ")
     queries = re.sub(" +", " ", queries)
@@ -89,10 +89,6 @@ def sql(line, cell=""):
         for option in all_options_dict:
             if option.lower() == "-limit":
                 options["limit"] = int(all_options_dict[option])
-            elif option.lower() == "-ncols":
-                options["columns"] = int(all_options_dict[option])
-            elif option.lower() == "-percent":
-                options["percent_bar"] = bool(all_options_dict[option])
             elif option.lower() == "-vdf":
                 options["vdf"] = bool(all_options_dict[option])
             else:
@@ -176,20 +172,14 @@ def sql(line, cell=""):
             try:
                 if options["vdf"]:
                     result = vdf_from_relation("({}) x".format(query), cursor=cursor)
-                    result.set_display_parameters(
-                        rows=options["limit"],
-                        columns=options["columns"],
-                        percent_bar=options["percent_bar"],
-                    )
                 else:
                     result = readSQL(
                         query,
                         cursor=cursor,
                         limit=options["limit"],
-                        display_ncols=options["columns"],
-                        percent_bar=options["percent_bar"],
                     )
             except:
+                raise
                 try:
                     cursor.execute(query)
                     final_result = cursor.fetchone()

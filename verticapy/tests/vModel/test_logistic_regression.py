@@ -1,4 +1,3 @@
-
 # (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,7 +17,9 @@ from verticapy import drop_table
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
+
 set_option("print_info", False)
+
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
@@ -56,7 +57,7 @@ class TestLogisticRegression:
         assert cls_rep1["csi"][0] == pytest.approx(0.19718309859154928)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
 
-        cls_rep2 = model.classification_report(cutoff = 0.2).transpose()
+        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
 
         assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
 
@@ -68,7 +69,7 @@ class TestLogisticRegression:
         assert conf_mat1[1][0] == 47
         assert conf_mat1[1][1] == 98
 
-        conf_mat2 = model.confusion_matrix(cutoff = 0.2)
+        conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
         assert conf_mat2[0][0] == 182
         assert conf_mat2[0][1] == 59
@@ -100,7 +101,7 @@ class TestLogisticRegression:
     def test_features_importance(self, model):
         f_imp = model.features_importance()
 
-        assert f_imp["index"] == ['fare', 'age']
+        assert f_imp["index"] == ["fare", "age"]
         assert f_imp["importance"] == [85.51, 14.49]
         assert f_imp["sign"] == [1, -1]
         plt.close()
@@ -109,7 +110,9 @@ class TestLogisticRegression:
         lift_ch = model.lift_chart()
 
         assert lift_ch["decision_boundary"][10] == pytest.approx(0.01)
-        assert lift_ch["positive_prediction_ratio"][10] == pytest.approx(0.010230179028133)
+        assert lift_ch["positive_prediction_ratio"][10] == pytest.approx(
+            0.010230179028133
+        )
         assert lift_ch["lift"][10] == pytest.approx(2.54731457800512)
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
@@ -122,14 +125,26 @@ class TestLogisticRegression:
 
     def test_get_model_attribute(self, model):
         attr = model.get_model_attribute()
-        assert attr["attr_name"] == ['details', 'regularization', 'iteration_count', 'rejected_row_count',
-                                     'accepted_row_count', 'call_string']
-        assert attr["attr_fields"] == ['predictor, coefficient, std_err, z_value, p_value', 'type, lambda',
-                                       'iteration_count', 'rejected_row_count', 'accepted_row_count', 'call_string']
+        assert attr["attr_name"] == [
+            "details",
+            "regularization",
+            "iteration_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+        ]
+        assert attr["attr_fields"] == [
+            "predictor, coefficient, std_err, z_value, p_value",
+            "type, lambda",
+            "iteration_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+        ]
         assert attr["#_of_rows"] == [3, 1, 1, 1, 1, 1]
 
-        details = model.get_model_attribute('details')
-        assert details["predictor"] == ['Intercept', 'age', 'fare']
+        details = model.get_model_attribute("details")
+        assert details["predictor"] == ["Intercept", "age", "fare"]
         assert details["coefficient"][0] == pytest.approx(-0.477190254617772)
         assert details["coefficient"][1] == pytest.approx(-0.0152670631243078)
         assert details["coefficient"][2] == pytest.approx(0.0140086238717347)
@@ -143,19 +158,33 @@ class TestLogisticRegression:
         assert details["p_value"][1] == pytest.approx(0.00174410802172094)
         assert details["p_value"][2] == pytest.approx(2.99885239324552e-13)
 
-        reg = model.get_model_attribute('regularization')
-        assert reg["type"][0] == 'none'
+        reg = model.get_model_attribute("regularization")
+        assert reg["type"][0] == "none"
         assert reg["lambda"][0] == 1.0
 
-        assert model.get_model_attribute('iteration_count')["iteration_count"][0] == 4
-        assert model.get_model_attribute('rejected_row_count')["rejected_row_count"][0] == 238
-        assert model.get_model_attribute('accepted_row_count')["accepted_row_count"][0] == 996
-        assert model.get_model_attribute('call_string')["call_string"][0] == 'logistic_reg(\'public.logreg_model_test\', \'public.titanic\', \'"survived"\', \'"age", "fare"\'\nUSING PARAMETERS optimizer=\'newton\', epsilon=1e-06, max_iterations=100, regularization=\'none\', lambda=1, alpha=0.5)'
+        assert model.get_model_attribute("iteration_count")["iteration_count"][0] == 4
+        assert (
+            model.get_model_attribute("rejected_row_count")["rejected_row_count"][0]
+            == 238
+        )
+        assert (
+            model.get_model_attribute("accepted_row_count")["accepted_row_count"][0]
+            == 996
+        )
+        assert (
+            model.get_model_attribute("call_string")["call_string"][0]
+            == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
+        )
 
     def test_get_params(self, model):
         params = model.get_params()
 
-        assert params == {'solver': 'newton', 'penalty': 'none', 'max_iter': 100, 'tol': 1e-06}
+        assert params == {
+            "solver": "newton",
+            "penalty": "none",
+            "max_iter": 100,
+            "tol": 1e-06,
+        }
 
     def test_prc_curve(self, model):
         prc = model.prc_curve()
@@ -171,13 +200,15 @@ class TestLogisticRegression:
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
 
-        model.predict(titanic_copy, name = "pred_probability")
-        assert titanic_copy["pred_probability"].min() == pytest.approx(0.182718648793846)
+        model.predict(titanic_copy, name="pred_probability")
+        assert titanic_copy["pred_probability"].min() == pytest.approx(
+            0.182718648793846
+        )
 
-        model.predict(titanic_copy, name = "pred_class1", cutoff = 0.7)
+        model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
         assert titanic_copy["pred_class1"].sum() == 56.0
 
-        model.predict(titanic_copy, name = "pred_class2", cutoff = 0.3)
+        model.predict(titanic_copy, name="pred_class2", cutoff=0.3)
         assert titanic_copy["pred_class2"].sum() == 828.0
 
     def test_roc_curve(self, model):
@@ -192,32 +223,74 @@ class TestLogisticRegression:
         plt.close()
 
     def test_score(self, model):
-        assert model.score(cutoff = 0.7, method = "accuracy") == pytest.approx(0.653160453808752)
-        assert model.score(cutoff = 0.3, method = "accuracy") == pytest.approx(0.5429497568881686)
-        assert model.score(cutoff = 0.7, method = "auc") == pytest.approx(0.6941239880788826)
-        assert model.score(cutoff = 0.3, method = "auc") == pytest.approx(0.6941239880788826)
-        assert model.score(cutoff = 0.7, method = "best_cutoff") == pytest.approx(0.36)
-        assert model.score(cutoff = 0.3, method = "best_cutoff") == pytest.approx(0.36)
-        assert model.score(cutoff = 0.7, method = "bm") == pytest.approx(0.06498299319727896)
-        assert model.score(cutoff = 0.3, method = "bm") == pytest.approx(0.19256802721088428)
-        assert model.score(cutoff = 0.7, method = "csi") == pytest.approx(0.0835117773019272)
-        assert model.score(cutoff = 0.3, method = "csi") == pytest.approx(0.38762214983713356)
-        assert model.score(cutoff = 0.7, method = "f1") == pytest.approx(0.1541501976284585)
-        assert model.score(cutoff = 0.3, method = "f1") == pytest.approx(0.5586854460093896)
-        assert model.score(cutoff = 0.7, method = "logloss") == pytest.approx(0.271495668573431)
-        assert model.score(cutoff = 0.3, method = "logloss") == pytest.approx(0.271495668573431)
-        assert model.score(cutoff = 0.7, method = "mcc") == pytest.approx(0.15027866941483783)
-        assert model.score(cutoff = 0.3, method = "mcc") == pytest.approx(0.19727419700681625)
-        assert model.score(cutoff = 0.7, method = "mk") == pytest.approx(0.34753213679359685)
-        assert model.score(cutoff = 0.3, method = "mk") == pytest.approx(0.202095380880988)
-        assert model.score(cutoff = 0.7, method = "npv") == pytest.approx(0.6964285714285714)
-        assert model.score(cutoff = 0.3, method = "npv") == pytest.approx(0.4311594202898551)
-        assert model.score(cutoff = 0.7, method = "prc_auc") == pytest.approx(0.5979751713359676)
-        assert model.score(cutoff = 0.3, method = "prc_auc") == pytest.approx(0.5979751713359676)
-        assert model.score(cutoff = 0.7, method = "precision") == pytest.approx(0.6964285714285714)
-        assert model.score(cutoff = 0.3, method = "precision") == pytest.approx(0.4311594202898551)
-        assert model.score(cutoff = 0.7, method = "specificity") == pytest.approx(0.9783163265306123)
-        assert model.score(cutoff = 0.3, method = "specificity") == pytest.approx(0.399234693877551)
+        assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
+            0.653160453808752
+        )
+        assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
+            0.5429497568881686
+        )
+        assert model.score(cutoff=0.7, method="auc") == pytest.approx(
+            0.6941239880788826
+        )
+        assert model.score(cutoff=0.3, method="auc") == pytest.approx(
+            0.6941239880788826
+        )
+        assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.36)
+        assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.36)
+        assert model.score(cutoff=0.7, method="bm") == pytest.approx(
+            0.06498299319727896
+        )
+        assert model.score(cutoff=0.3, method="bm") == pytest.approx(
+            0.19256802721088428
+        )
+        assert model.score(cutoff=0.7, method="csi") == pytest.approx(
+            0.0835117773019272
+        )
+        assert model.score(cutoff=0.3, method="csi") == pytest.approx(
+            0.38762214983713356
+        )
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.1541501976284585)
+        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5586854460093896)
+        assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
+            0.271495668573431
+        )
+        assert model.score(cutoff=0.3, method="logloss") == pytest.approx(
+            0.271495668573431
+        )
+        assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
+            0.15027866941483783
+        )
+        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
+            0.19727419700681625
+        )
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
+            0.34753213679359685
+        )
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.202095380880988)
+        assert model.score(cutoff=0.7, method="npv") == pytest.approx(
+            0.6964285714285714
+        )
+        assert model.score(cutoff=0.3, method="npv") == pytest.approx(
+            0.4311594202898551
+        )
+        assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
+            0.5979751713359676
+        )
+        assert model.score(cutoff=0.3, method="prc_auc") == pytest.approx(
+            0.5979751713359676
+        )
+        assert model.score(cutoff=0.7, method="precision") == pytest.approx(
+            0.6964285714285714
+        )
+        assert model.score(cutoff=0.3, method="precision") == pytest.approx(
+            0.4311594202898551
+        )
+        assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
+            0.9783163265306123
+        )
+        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
+            0.399234693877551
+        )
 
     @pytest.mark.skip(reason="test not implemented")
     def test_set_cursor(self):
@@ -226,12 +299,11 @@ class TestLogisticRegression:
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
 
-        assert model.get_params()['max_iter'] == 1000
+        assert model.get_params()["max_iter"] == 1000
 
-    @pytest.mark.skip(reason="feature not implemented")
     def test_model_from_vDF(self, base, titanic_vd):
         base.cursor.execute("DROP MODEL IF EXISTS logreg_from_vDF")
-        model_test = LinearRegression("logreg_from_vDF", cursor=base.cursor)
+        model_test = LogisticRegression("logreg_from_vDF", cursor=base.cursor)
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
         base.cursor.execute(

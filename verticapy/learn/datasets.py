@@ -56,7 +56,6 @@ import verticapy
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 
 # ---#
 def load_amazon(cursor=None, schema: str = "public", name: str = "amazon"):
@@ -96,10 +95,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -168,10 +164,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
     (Regression / Classification).
     """
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -240,10 +233,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -312,10 +302,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -384,10 +371,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -456,10 +440,7 @@ load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
@@ -528,10 +509,7 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 	(Classification).
 	"""
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:

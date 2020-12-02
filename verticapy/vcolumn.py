@@ -67,7 +67,7 @@ from verticapy.errors import *
 #
 #
 # ---#
-class vColumn:
+class vColumn(str_sql):
     """
 ---------------------------------------------------------------------------
 Python object which will store all the user transformations. The vDataFrame
@@ -109,35 +109,25 @@ Attributes
             alias,
             [elem for elem in transformations],
         )
-        self.catalog = {"cov": {}, 
-                        "pearson": {}, 
-                        "spearman": {}, 
-                        "kendall": {},
-                        "cramer": {},
-                        "biserial": {},
-                        "regr_avgx": {},
-                        "regr_avgy": {},
-                        "regr_count": {},
-                        "regr_intercept": {},
-                        "regr_r2": {},
-                        "regr_slope": {},
-                        "regr_sxx": {},
-                        "regr_sxy": {},
-                        "regr_syy": {}}
+        self.catalog = {
+            "cov": {},
+            "pearson": {},
+            "spearman": {},
+            "kendall": {},
+            "cramer": {},
+            "biserial": {},
+            "regr_avgx": {},
+            "regr_avgy": {},
+            "regr_count": {},
+            "regr_intercept": {},
+            "regr_r2": {},
+            "regr_slope": {},
+            "regr_sxx": {},
+            "regr_sxy": {},
+            "regr_syy": {},
+        }
         for elem in catalog:
             self.catalog[elem] = catalog[elem]
-
-    # ---#
-    def __abs__(self):
-        return self.abs()
-
-    # ---#
-    def __ceil__(self):
-        return self.apply_fun(func="ceil")
-
-    # ---#
-    def __floor__(self):
-        return self.apply_fun(func="floor")
 
     # ---#
     def __getitem__(self, index):
@@ -163,7 +153,11 @@ Attributes
                 else:
                     limit = ""
                 query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias, self.parent.__genSQL__(), last_order_by(self.parent), index_start, limit
+                    self.alias,
+                    self.parent.__genSQL__(),
+                    last_order_by(self.parent),
+                    index_start,
+                    limit,
                 )
                 return vdf_from_relation(
                     query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
@@ -173,12 +167,14 @@ Attributes
             if index < 0:
                 index += self.parent.shape()[0]
             query = "SELECT {}{} FROM {}{} OFFSET {} LIMIT 1".format(
-                self.alias, cast, self.parent.__genSQL__(), last_order_by(self.parent), index
+                self.alias,
+                cast,
+                self.parent.__genSQL__(),
+                last_order_by(self.parent),
+                index,
             )
             self.parent.__executeSQL__(query=query, title="Gets the vcolumn element.")
-            return (
-                self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-            )
+            return self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         else:
             return getattr(self, index)
 
@@ -192,19 +188,11 @@ Attributes
 
     # ---#
     def __repr__(self):
-        return self.head(
-            limit=verticapy.options["max_rows"]
-        ).__repr__()
+        return self.head(limit=verticapy.options["max_rows"]).__repr__()
 
     # ---#
     def _repr_html_(self):
-        return self.head(
-            limit=verticapy.options["max_rows"]
-        )._repr_html_()
-
-    # ---#
-    def __round__(self, n):
-        return self.apply_fun(func="round", x=n)
+        return self.head(limit=verticapy.options["max_rows"])._repr_html_()
 
     # ---#
     def __setattr__(self, attr, val):
@@ -656,6 +644,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -689,7 +678,6 @@ Attributes
                 ("color", color, [str],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -794,10 +782,7 @@ Attributes
  	vDataFrame[].fill_outliers : Fills the vcolumn outliers using the input method.
 		"""
         check_types(
-            [
-                ("lower", lower, [float, int,],),
-                ("upper", upper, [float, int,],),
-            ]
+            [("lower", lower, [float, int,],), ("upper", upper, [float, int,],),]
         )
         if (lower == None) and (upper == None):
             raise ParameterError(
@@ -934,7 +919,7 @@ Attributes
         bandwidth: float = 1.0,
         kernel: str = "gaussian",
         nbins: int = 200,
-        xlim = None,
+        xlim: tuple = None,
         color: str = "#FE5016",
         ax=None,
     ):
@@ -988,6 +973,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
             from verticapy.plot import gen_colors
             from matplotlib.lines import Line2D
+
             colors = gen_colors()
             if not xlim:
                 xmin = self.min()
@@ -997,19 +983,32 @@ Attributes
             custom_lines = []
             columns = self.parent[by].distinct()
             for idx, column in enumerate(columns):
-                ax = self.parent.search("{} = '{}'".format(self.parent[by].alias, column))[self.alias].density(bandwidth=bandwidth,
-                                                                                                               kernel=kernel,
-                                                                                                               nbins=nbins,
-                                                                                                               xlim=(xmin, xmax),
-                                                                                                               color=colors[idx%len(colors)],
-                                                                                                               ax=ax,)
-                custom_lines += [Line2D([0], [0], color=colors[idx%len(colors)], lw=4),]
+                ax = self.parent.search(
+                    "{} = '{}'".format(self.parent[by].alias, column)
+                )[self.alias].density(
+                    bandwidth=bandwidth,
+                    kernel=kernel,
+                    nbins=nbins,
+                    xlim=(xmin, xmax),
+                    color=colors[idx % len(colors)],
+                    ax=ax,
+                )
+                custom_lines += [
+                    Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
+                ]
             ax.set_title("KernelDensity")
-            ax.legend(custom_lines, columns, title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+            ax.legend(
+                custom_lines,
+                columns,
+                title=by,
+                loc="center left",
+                bbox_to_anchor=[1, 0.5],
+            )
             ax.set_xlabel(self.alias)
             return ax
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
+
         name = "VERTICAPY_TEMP_MODEL_KDE_{}".format(
             get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
         )
@@ -1017,9 +1016,18 @@ Attributes
             xlim_tmp = [xlim]
         else:
             xlim_tmp = []
-        model = KernelDensity(name, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"], bandwidth = bandwidth, kernel = kernel, nbins = nbins, xlim = xlim_tmp)
+        model = KernelDensity(
+            name,
+            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+            bandwidth=bandwidth,
+            kernel=kernel,
+            nbins=nbins,
+            xlim=xlim_tmp,
+        )
         try:
-            result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(color=color, ax=ax)
+            result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
+                color=color, ax=ax
+            )
             model.drop()
             return result
         except:
@@ -1138,9 +1146,7 @@ Attributes
                 numcol, self.alias
             )
             values = to_tablesample(
-                query,
-                self.parent._VERTICAPY_VARIABLES_["cursor"],
-                title=title,
+                query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
             ).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
@@ -1317,17 +1323,18 @@ Attributes
 
             drop_temp_elem(self, temp_information)
             self.parent.to_db(temp_information[0])
-            from verticapy.learn.ensemble import RandomForestClassifier, RandomForestRegressor
+            from verticapy.learn.ensemble import (
+                RandomForestClassifier,
+                RandomForestRegressor,
+            )
 
             if self.parent[response].category() == "float":
                 model = RandomForestRegressor(
-                    temp_information[1],
-                    self.parent._VERTICAPY_VARIABLES_["cursor"],
+                    temp_information[1], self.parent._VERTICAPY_VARIABLES_["cursor"],
                 )
             else:
                 model = RandomForestClassifier(
-                    temp_information[1],
-                    self.parent._VERTICAPY_VARIABLES_["cursor"],
+                    temp_information[1], self.parent._VERTICAPY_VARIABLES_["cursor"],
                 )
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
@@ -1408,10 +1415,10 @@ Attributes
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
             if h <= 0:
-                if (bins <= 0):
+                if bins <= 0:
                     h = self.numh()
                 else:
-                    h = (self.max() - self.min()) * 1.01 / bins 
+                    h = (self.max() - self.min()) * 1.01 / bins
                 if h > 0.01:
                     h = round(h, 2)
                 elif h > 0.0001:
@@ -1545,6 +1552,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -1572,7 +1580,6 @@ Attributes
                 ("h", h, [int, float],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -2184,6 +2191,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -2217,7 +2225,6 @@ Attributes
                 ("color", color, [str],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -2353,7 +2360,9 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
-    def iv_woe(self, y: str, bins: int = 10,):
+    def iv_woe(
+        self, y: str, bins: int = 10,
+    ):
         """
     ---------------------------------------------------------------------------
     Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
@@ -2380,25 +2389,37 @@ Attributes
         check_types([("y", y, [str],), ("bins", bins, [int],)])
         columns_check([y], self.parent)
         y = vdf_columns_names([y], self.parent)[0]
-        assert self.parent[y].nunique() == 2, TypeError("vcolumn {} must be binary to use iv_woe.".format(y))
+        assert self.parent[y].nunique() == 2, TypeError(
+            "vcolumn {} must be binary to use iv_woe.".format(y)
+        )
         response_cat = self.parent[y].distinct()
         response_cat.sort()
-        assert response_cat == [0, 1], TypeError("vcolumn {} must be binary to use iv_woe.".format(y))
+        assert response_cat == [0, 1], TypeError(
+            "vcolumn {} must be binary to use iv_woe.".format(y)
+        )
         self.parent[y].distinct()
-        trans = self.discretize(method = "same_width" if self.isnum() else 'topk',
-                                bins = bins,
-                                k = bins,
-                                new_category = "Others",
-                                return_enum_trans = True,)[0].replace("{}", self.alias)
-        query = "SELECT {} AS {}, {} AS ord, {}::int AS {} FROM {}".format(trans, self.alias, self.alias, y, y, self.parent.__genSQL__(),)
-        query = "SELECT {}, MIN(ord) AS ord, SUM(1 - {}) AS non_events, SUM({}) AS events FROM ({}) x GROUP BY 1".format(self.alias, y, y, query,)
-        query = "SELECT {}, ord, non_events, events, non_events / NULLIFZERO(SUM(non_events) OVER ()) AS pt_non_events, events / NULLIFZERO(SUM(events) OVER ()) AS pt_events FROM ({}) x".format(self.alias, query,)
-        query = "SELECT {} AS index, non_events, events, pt_non_events, pt_events, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS woe, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE (pt_non_events - pt_events) * ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS iv FROM ({}) x ORDER BY ord".format(self.alias, query,)
+        trans = self.discretize(
+            method="same_width" if self.isnum() else "topk",
+            bins=bins,
+            k=bins,
+            new_category="Others",
+            return_enum_trans=True,
+        )[0].replace("{}", self.alias)
+        query = "SELECT {} AS {}, {} AS ord, {}::int AS {} FROM {}".format(
+            trans, self.alias, self.alias, y, y, self.parent.__genSQL__(),
+        )
+        query = "SELECT {}, MIN(ord) AS ord, SUM(1 - {}) AS non_events, SUM({}) AS events FROM ({}) x GROUP BY 1".format(
+            self.alias, y, y, query,
+        )
+        query = "SELECT {}, ord, non_events, events, non_events / NULLIFZERO(SUM(non_events) OVER ()) AS pt_non_events, events / NULLIFZERO(SUM(events) OVER ()) AS pt_events FROM ({}) x".format(
+            self.alias, query,
+        )
+        query = "SELECT {} AS index, non_events, events, pt_non_events, pt_events, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS woe, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE (pt_non_events - pt_events) * ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS iv FROM ({}) x ORDER BY ord".format(
+            self.alias, query,
+        )
         title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)
         result = to_tablesample(
-            query,
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
-            title=title,
+            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
         )
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]
@@ -2447,7 +2468,9 @@ Attributes
 	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
 		"""
         if self.category() in ["date", "float"]:
-            warning_message = "label_encode is only available for categorical variables."
+            warning_message = (
+                "label_encode is only available for categorical variables."
+            )
             warnings.warn(warning_message, Warning)
         else:
             distinct_elements = self.distinct()
@@ -2717,9 +2740,7 @@ Attributes
         )
         title = "Reads {} {} largest elements.".format(self.alias, n)
         return to_tablesample(
-            query,
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
-            title=title,
+            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
         )
 
     # ---#
@@ -3073,9 +3094,7 @@ Attributes
         )
         title = "Reads {} {} smallest elements.".format(n, self.alias)
         return to_tablesample(
-            query,
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
-            title=title,
+            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
         )
 
     # ---#
@@ -3202,6 +3221,7 @@ Attributes
  			max     : Maximum of the vcolumn 'of'.
  			sum     : Sum of the vcolumn 'of'.
  			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
  		The vcolumn to use to compute the aggregation.
 	max_cardinality: int, optional
@@ -3229,7 +3249,6 @@ Attributes
                 ("h", h, [int, float],),
             ]
         )
-        method = method.lower()
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]

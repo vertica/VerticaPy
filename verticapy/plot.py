@@ -151,16 +151,15 @@ def bar(
         ax.set_yticklabels(new_z, rotation=0)
     else:
         ax.set_yticks([elem - h / 2 / 0.94 for elem in x])
-    if method == "density":
+    if method.lower() == "density":
         ax.set_xlabel("Density")
-        ax.set_title("Distribution of {}".format(vdf.alias))
-    elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
+    elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (of != None):
         aggregate = "{}({})".format(method.upper(), of)
         ax.set_xlabel(aggregate)
-        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
-    else:
+    elif (method.lower() == "count"):
         ax.set_xlabel("Frequency")
-        ax.set_title("Count by {}".format(vdf.alias))
+    else:
+        ax.set_xlabel(method)
     return ax
 
 
@@ -240,21 +239,18 @@ def bar2D(
             )
             ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
-        if method == "mean":
+        if method.lower() == "mean":
             method = "avg"
-        if method == "density":
+        if method.lower() == "mean":
+            method = "avg"
+        if method.lower() == "density":
             ax.set_xlabel("Density")
-            ax.set_title(
-                "Distribution of {} group by {}".format(columns[0], columns[1])
-            )
-        elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
+        elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
             ax.set_xlabel("{}({})".format(method, of))
-            ax.set_title(
-                "{}({}) of {} group by {}".format(method, of, columns[0], columns[1])
-            )
-        else:
+        elif (method.lower() == "count"):
             ax.set_xlabel("Frequency")
-            ax.set_title("Count by {} group by {}".format(columns[0], columns[1]))
+        else:
+            ax.set_xlabel(method)
     else:
         total = [0 for item in range(1, m)]
         for i in range(1, n):
@@ -303,10 +299,6 @@ def bar2D(
         ax.set_yticks([elem for elem in range(n_groups)])
         ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
-        ax.set_xlabel("Density per category")
-        ax.set_title(
-            "Distribution per category of {} group by {}".format(columns[0], columns[1])
-        )
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
 
@@ -355,7 +347,6 @@ def boxplot(
         for patch in box["boxes"]:
             patch.set_facecolor("#FE5016")
         ax.set_axisbelow(True)
-        ax.set_title("BoxPlot of {}".format(vdf.alias))
         return ax
     # MULTI BOXPLOT
     else:
@@ -518,7 +509,6 @@ def boxplot(
                 patch_artist=True,
             )
             ax.set_xticklabels(labels, rotation=90)
-            ax.set_title("BoxPlot of {} group by {}".format(vdf.alias, by))
             colors = gen_colors()
             for median in box["medians"]:
                 median.set(
@@ -573,7 +563,6 @@ def boxplot2D(vdf, columns: list = [], ax=None):
                 patch_artist=True,
             )
             ax.set_xticklabels(columns, rotation=90)
-            ax.set_title("Multi BoxPlot of the vDataFrame")
             colors = gen_colors()
             for median in box["medians"]:
                 median.set(
@@ -642,7 +631,6 @@ def bubble(
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(im, extent=bbox)
-        ax.set_title("Bubble Plot of {} vs {}".format(columns[0], columns[1]))
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
         scatter = ax.scatter(column1, column2, color=colors[0], s=size, alpha=0.5)
@@ -745,7 +733,6 @@ def bubble(
             loc="center left",
             title=columns[2]
         )
-        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
         leg2 = ax.legend(
@@ -807,24 +794,26 @@ def cmatrix(
             columns_x.reverse()
     if not (ax):
         fig, ax = plt.subplots()
-        if (isnotebook() and not(inverse)) or is_pivot:
+        if (isnotebook() and not (inverse)) or is_pivot:
             fig.set_size_inches(min(m, 500), min(n, 500))
         else:
             fig.set_size_inches(8, 6)
     else:
         fig = plt
     ax.set_title(title)
-    if ((vmax == 1) and vmin in [0, -1]) and not(extent):
+    if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
             matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
         )
     else:
         try:
-            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation, extent=extent)
+            im = ax.imshow(
+                matrix_array, cmap=cmap, interpolation=interpolation, extent=extent
+            )
         except:
             im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation,)
     fig.colorbar(im, ax=ax).set_label(colorbar)
-    if not(extent):
+    if not (extent):
         ax.set_yticks([i for i in range(0, n)])
         ax.set_xticks([i for i in range(0, m)])
         ax.set_xticklabels(columns_y, rotation=90)
@@ -849,29 +838,32 @@ def compute_plot_variables(
     h: float = 0,
     pie: bool = False,
 ):
-    if method == "median":
+    other_columns = ""
+    if method.lower() == "median":
         method = "50%"
-    elif method == "mean":
+    elif method.lower() == "mean":
         method = "avg"
+    if (method.lower() not in ["avg", "min", "max", "sum", "density", "count"] and "%" != method[-1]) and of:
+        raise ParameterError("Parameter 'of' must be empty when using customized aggregations.")
     if (
-        (method in ["avg", "min", "max", "sum"]) or (method and method[-1] == "%")
+        (method.lower() in ["avg", "min", "max", "sum"]) or (method.lower() and method[-1] == "%")
     ) and (of):
-        if method in ["avg", "min", "max", "sum"]:
+        if method.lower() in ["avg", "min", "max", "sum"]:
             aggregate = "{}({})".format(method.upper(), str_column(of))
-            others_aggregate = method
         elif method and method[-1] == "%":
             aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
                 str_column(of), float(method[0:-1]) / 100
             )
-            others_aggregate = method
         else:
-            raise MissingColumn("The column '" + of + "' doesn't exist")
-    elif method in ["density", "count"]:
+            raise ParameterError("The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(method))
+    elif method.lower() in ["density", "count"]:
         aggregate = "count(*)"
-        others_aggregate = "sum"
+    elif isinstance(method, str):
+        aggregate = method
+        other_columns = ", " + ", ".join(vdf.parent.get_columns(exclude_columns = [vdf.alias]))
     else:
         raise ParameterError(
-            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
+            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(method)
         )
     # depending on the cardinality, the type, the vColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
@@ -908,7 +900,7 @@ def compute_plot_variables(
                 )
                 if of:
                     enum_trans += " , " + of
-                table = "(SELECT {} FROM {}) enum_table".format(enum_trans, table)
+                table = "(SELECT {} FROM {}) enum_table".format(enum_trans + other_columns, table)
             query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
                 convert_special_type(vdf.category(), True, vdf.alias),
                 vdf.alias,
@@ -919,12 +911,14 @@ def compute_plot_variables(
             )
             if cardinality > max_cardinality:
                 query += (
-                    " UNION (SELECT 'Others', {}(count) FROM (SELECT {} AS count FROM {} "
-                    + "GROUP BY {} ORDER BY {} DESC OFFSET {}) y LIMIT 1) ORDER BY 2 DESC"
+                    " UNION (SELECT 'Others', {} FROM {} WHERE {} NOT IN " +
+                    "(SELECT {} FROM {} GROUP BY {} ORDER BY {} DESC LIMIT {}))"
                 )
                 query = query.format(
-                    others_aggregate,
                     aggregate,
+                    table,
+                    vdf.alias,
+                    vdf.alias,
                     table,
                     vdf.alias,
                     aggregate,
@@ -937,7 +931,7 @@ def compute_plot_variables(
         z = [item[0] for item in query_result]
         y = (
             [item[1] / float(count) if item[1] != None else 0 for item in query_result]
-            if (method == "density")
+            if (method.lower() == "density")
             else [item[1] if item[1] != None else 0 for item in query_result]
         )
         x = [0.4 * i + 0.2 for i in range(0, len(y))]
@@ -964,7 +958,7 @@ def compute_plot_variables(
         x = [float(item[0]) for item in query_result]
         y = (
             [item[1] / float(count) for item in query_result]
-            if (method == "density")
+            if (method.lower() == "density")
             else [item[1] for item in query_result]
         )
         query = ""
@@ -995,7 +989,7 @@ def compute_plot_variables(
         query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
         y = (
             [item[1] / float(count) for item in query_result]
-            if (method == "density")
+            if (method.lower() == "density")
             else [item[1] for item in query_result]
         )
         x = [float(item[0]) + h / 2 for item in query_result]
@@ -1053,32 +1047,32 @@ def hexbin(
         raise ParameterError(
             "The parameter 'columns' must be exactly of size 2 to draw the hexbin"
         )
-    if method == "mean":
+    if method.lower() == "mean":
         method = "avg"
     if (
-        (method in ["avg", "min", "max", "sum"])
+        (method.lower() in ["avg", "min", "max", "sum"])
         and (of)
         and ((of in vdf.get_columns()) or (str_column(of) in vdf.get_columns()))
     ):
         aggregate = "{}({})".format(method, of)
         others_aggregate = method
-        if method == "avg":
+        if method.lower() == "avg":
             reduce_C_function = statistics.mean
-        elif method == "min":
+        elif method.lower() == "min":
             reduce_C_function = min
-        elif method == "max":
+        elif method.lower() == "max":
             reduce_C_function = max
-        elif method == "sum":
+        elif method.lower() == "sum":
             reduce_C_function = sum
-    elif method in ("count", "density"):
+    elif method.lower() in ("count", "density"):
         aggregate = "count(*)"
         reduce_C_function = sum
     else:
         raise ParameterError(
-            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%]"
+            "The parameter 'method' must be in [avg|mean|min|max|sum|median]"
         )
     count = vdf.shape()[0]
-    if method == "density":
+    if method.lower() == "density":
         over = "/" + str(float(count))
     else:
         over = ""
@@ -1120,7 +1114,6 @@ def hexbin(
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         ax.imshow(im, extent=bbox)
-    ax.set_title("Hexbin of {} vs {}".format(columns[0], columns[1]))
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
     imh = ax.hexbin(
@@ -1134,7 +1127,7 @@ def hexbin(
         mincnt=1,
         edgecolors=None,
     )
-    if method == "density":
+    if method.lower() == "density":
         fig.colorbar(imh).set_label(method)
     else:
         fig.colorbar(imh).set_label(aggregate)
@@ -1177,18 +1170,17 @@ def hist(
     else:
         ax.set_xticks([elem - h / 2 / 0.94 for elem in x])
         ax.set_xticklabels([elem - h / 2 / 0.94 for elem in x], rotation=90)
-    if method == "density":
+    if method.lower() == "density":
         ax.set_ylabel("Density")
-        ax.set_title("Distribution of {}".format(vdf.alias))
-    elif (method in ["avg", "min", "max", "sum", "mean"] or ("%" in method)) and (
+    elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
         of != None
     ):
         aggregate = "{}({})".format(method, of)
-        ax.set_ylabel(aggregate)
-        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
-    else:
+        ax.set_ylabel(method)
+    elif (method.lower() == "count"):
         ax.set_ylabel("Frequency")
-        ax.set_title("Count by {}".format(vdf.alias))
+    else:
+        ax.set_ylabel(method)
     return ax
 
 
@@ -1267,17 +1259,14 @@ def hist2D(
     ax.set_xlabel(columns[0])
     if method.lower() == "mean":
         method = "avg"
-    if method == "density":
+    if method.lower() == "density":
         ax.set_ylabel("Density")
-        ax.set_title("Distribution of {} group by {}".format(columns[0], columns[1]))
-    elif (method in ["avg", "min", "max", "sum"]) and (of != None):
+    elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
         ax.set_ylabel("{}({})".format(method, of))
-        ax.set_title(
-            "{}({}) of {} group by {}".format(method, of, columns[0], columns[1])
-        )
-    else:
+    elif (method.lower() == "count"):
         ax.set_ylabel("Frequency")
-        ax.set_title("Count by {} group by {}".format(columns[0], columns[1]))
+    else:
+        ax.set_ylabel(method)
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
 
@@ -1322,15 +1311,16 @@ def multiple_hist(
                     )
                     warnings.warn(warning_message, Warning)
         ax.set_xlabel(", ".join(all_columns))
-        if method == "density":
+        if method.lower() == "density":
             ax.set_ylabel("Density")
-        elif (method in ["avg", "min", "max", "sum", "mean"] or ("%" in method)) and (
+        elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
             of
         ):
             ax.set_ylabel(method + "(" + of + ")")
-        else:
+        elif (method.lower() == "count"):
             ax.set_ylabel("Frequency")
-        ax.set_title("Multiple Histograms")
+        else:
+            ax.set_ylabel(method)
         ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
         return ax
 
@@ -1397,7 +1387,6 @@ def multi_ts_plot(
             label=columns[i],
             linewidth=2,
         )
-    ax.set_title("Multi Plot of the vDataFrame")
     for tick in ax.get_xticklabels():
         tick.set_rotation(90)
     ax.set_xlabel(order_by)
@@ -1429,7 +1418,7 @@ def pie(
         if (item < 0.05) or ((item > 1) and (float(item) / float(total_count) < 0.05)):
             current_explode = min(0.9, current_explode * 1.4)
             explode[idx] = current_explode
-    if method == "density":
+    if method.lower() == "density":
         autopct = "%1.1f%%"
     else:
 
@@ -1445,8 +1434,8 @@ def pie(
 
             return my_autopct
 
-        if (method in ["sum", "count"]) or (
-            (method in ["min", "max"]) and (vdf.parent[of].category == "int")
+        if (method.lower() in ["sum", "count"]) or (
+            (method.lower() in ["min", "max"]) and (vdf.parent[of].category == "int")
         ):
             category = "int"
         else:
@@ -1472,20 +1461,23 @@ def pie(
         startangle=290,
         explode=explode,
     )
-    if method == "density":
-        ax.set_title("Distribution of {}".format(vdf.alias))
-    elif (method in ["avg", "min", "max", "sum"] or "%" in method) and (of != None):
-        aggregate = "{}({})".format(method, of)
-        ax.set_title("{} group by {}".format(aggregate, vdf.alias))
+    if method.lower() == "density":
+        ax.set_title("Density")
+    elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
+        of
+    ):
+        ax.set_title(method + "(" + of + ")")
+    elif (method.lower() == "count"):
+        ax.set_title("Frequency")
     else:
-        ax.set_title("Count by {}".format(vdf.alias))
+        ax.set_title(method)
     return ax
 
 
 # ---#
 def pivot_table(
     vdf,
-    columns,
+    columns: list,
     method: str = "count",
     of: str = "",
     h: tuple = (None, None),
@@ -1498,20 +1490,25 @@ def pivot_table(
     return_ax: bool = False,
     extent: list = [],
 ):
-    if method == "median":
+    other_columns = ""
+    if method.lower() == "median":
         method = "50%"
-    elif method == "mean":
+    elif method.lower() == "mean":
         method = "avg"
+    if (method.lower() not in ["avg", "min", "max", "sum", "density", "count"] and "%" != method[-1]) and of:
+        raise ParameterError("Parameter 'of' must be empty when using customized aggregations.")
     if (method.lower() in ["avg", "min", "max", "sum"]) and (of):
         aggregate = "{}({})".format(method.upper(), str_column(of))
-        others_aggregate = method
-    elif method and method[-1] == "%":
+    elif method.lower() and method[-1] == "%":
         aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
             str_column(of), float(method[0:-1]) / 100
         )
     elif method.lower() in ["density", "count"]:
         aggregate = "COUNT(*)"
-        others_aggregate = "sum"
+    elif isinstance(method, str):
+        aggregate = method
+        other_columns = vdf.get_columns(exclude_columns = columns)
+        other_columns = ", " + ", ".join(other_columns)
     else:
         raise ParameterError(
             "The parameter 'method' must be in [count|density|avg|mean|min|max|sum|q%]"
@@ -1620,34 +1617,36 @@ def pivot_table(
         return to_tablesample(query, vdf._VERTICAPY_VARIABLES_["cursor"])
     alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
     aggr = ", " + of if (of) else ""
-    subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table".format(
+    subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table".format(
         all_columns[0],
         columns[0],
         all_columns[1],
         columns[1],
         alias,
+        other_columns,
         vdf.__genSQL__(),
         where,
     )
     if is_column_date[0] and not (is_column_date[1]):
-        subtable = "(SELECT {} AS {}, {}{} FROM {}{}) pivot_table_date".format(
-            timestampadd[0], columns[0], columns[1], aggr, subtable, where
+        subtable = "(SELECT {} AS {}, {}{}{} FROM {}{}) pivot_table_date".format(
+            timestampadd[0], columns[0], columns[1], aggr, other_columns, subtable, where
         )
     elif is_column_date[1] and not (is_column_date[0]):
-        subtable = "(SELECT {}, {} AS {}{} FROM {}{}) pivot_table_date".format(
-            columns[0], timestampadd[1], columns[1], aggr, subtable, where
+        subtable = "(SELECT {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
+            columns[0], timestampadd[1], columns[1], aggr, other_columns, subtable, where
         )
     elif is_column_date[1] and is_column_date[0]:
-        subtable = "(SELECT {} AS {}, {} AS {}{} FROM {}{}) pivot_table_date".format(
+        subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
             timestampadd[0],
             columns[0],
             timestampadd[1],
             columns[1],
             aggr,
+            other_columns,
             subtable,
             where,
         )
-    over = "/" + str(vdf.shape()[0]) if (method == "density") else ""
+    over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
     cast = []
     for column in columns:
         cast += [convert_special_type(vdf[column].category(), True, column)]
@@ -1728,7 +1727,7 @@ def pivot_table(
             vmax=max(all_count),
             vmin=min(all_count),
             cmap=cmap,
-            title="Pivot Table of " + columns[0] + " vs " + columns[1],
+            title="",
             colorbar=aggregate,
             x_label=columns[1],
             y_label=columns[0],
@@ -1871,7 +1870,6 @@ def scatter2D(
             ax.imshow(im, extent=bbox)
             ax.grid()
             ax.set_axisbelow(True)
-        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
         ax.scatter(column1, column2, color=colors[0], s=14)
@@ -1997,7 +1995,6 @@ def scatter2D(
         for idx, item in enumerate(all_categories):
             if len(str(item)) > 20:
                 all_categories[idx] = str(item)[0:20] + "..."
-        ax.set_title("Scatter Plot of {} vs {}".format(columns[0], columns[1]))
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
         ax.legend(
@@ -2063,11 +2060,6 @@ def scatter3D(
                 if isnotebook():
                     plt.figure(figsize=(8, 6))
                 ax = plt.axes(projection="3d")
-            ax.set_title(
-                "Scatter Plot of {} vs {} vs {}".format(
-                    columns[0], columns[1], columns[2]
-                )
-            )
             ax.scatter(column1, column2, column3, color=colors[0])
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
@@ -2185,11 +2177,6 @@ def scatter3D(
             for idx, item in enumerate(all_categories):
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
-            ax.set_title(
-                "Scatter Plot of {} vs {} vs {}".format(
-                    columns[0], columns[1], columns[2]
-                )
-            )
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
@@ -2257,7 +2244,6 @@ def ts_plot(
             ax.fill_between(order_by_values, column_values, facecolor=color)
         else:
             area_label = ""
-        ax.set_title("{}Plot of {} vs {}".format(area_label, vdf.alias, order_by))
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         ax.set_xlabel(order_by)
@@ -2309,7 +2295,6 @@ def ts_plot(
             ax.grid()
         for idx, elem in enumerate(all_data):
             ax.plot(elem[0], elem[1], color=colors[idx % len(colors)], label=elem[2])
-        ax.set_title("Plot of {} vs {}".format(vdf.alias, order_by))
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])

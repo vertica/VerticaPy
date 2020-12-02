@@ -51,7 +51,6 @@
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.vmodel import *
 
 # ---#
@@ -93,10 +92,7 @@ method: str, optional
         self.set_params(
             {"n_components": n_components, "scale": scale, "method": method.lower()}
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 1, 0])
 
@@ -130,9 +126,6 @@ method: str, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name
         self.set_params({"n_components": n_components, "method": method.lower()})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 1, 0])

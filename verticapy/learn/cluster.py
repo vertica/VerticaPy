@@ -56,7 +56,6 @@ import vertica_python
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -139,14 +138,11 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 3, 1])
 
-     # ---#
+    # ---#
     def get_tree(self):
         """
     ---------------------------------------------------------------------------
@@ -213,15 +209,16 @@ p: int, optional
         check_types([("name", name, [str],)])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
     def fit(
-        self, input_relation: str, X: list, key_columns: list = [], index: str = ""
+        self,
+        input_relation: (str, vDataFrame),
+        X: list = [],
+        key_columns: list = [],
+        index: str = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -229,10 +226,10 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
-	X: list
-		List of the predictors.
+	X: list, optional
+		List of the predictors. If empty, all the numerical vcolumns will be used.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
@@ -247,26 +244,32 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("key_columns", key_columns, [list],),
                 ("index", index, [str],),
             ]
         )
         check_model(name=self.name, cursor=self.cursor)
+        if isinstance(input_relation, vDataFrame):
+            if not (X):
+                X = input_relation.numcol()
+            input_relation = input_relation.__genSQL__()
+        else:
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).numcol()
         X = [str_column(column) for column in X]
         self.X = X
         self.key_columns = [str_column(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
-        relation_alpha = "".join(ch for ch in relation if ch.isalnum())
         cursor = self.cursor
 
-        def drop_temp_elem(cursor, relation_alpha):
+        def drop_temp_elem(cursor):
             try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                        relation_alpha
+                        get_session(cursor)
                     )
                 )
                 cursor.execute(
@@ -278,22 +281,22 @@ p: int, optional
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
-                drop_temp_elem(cursor, relation_alpha)
+                main_table = "VERTICAPY_MAIN_{}".format(get_session(self.cursor))
+                drop_temp_elem(cursor)
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
-                    input_relation,
+                    self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
                 executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 0.")
             else:
                 cursor.execute(
                     "SELECT {} FROM {} LIMIT 10".format(
-                        ", ".join(X + key_columns + [index]), input_relation
+                        ", ".join(X + key_columns + [index]), self.input_relation
                     )
                 )
-                main_table = input_relation
+                main_table = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
                 for i in range(len(X))
@@ -363,15 +366,21 @@ p: int, optional
                 os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
                 raise
             self.n_cluster_ = i
-            executeSQL(cursor, "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(self.name, ", ".join(self.X + self.key_columns), main_table, index), "Computing the DBSCAN Table - STEP 2.")
+            executeSQL(
+                cursor,
+                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
+                    self.name, ", ".join(self.X + self.key_columns), main_table, index
+                ),
+                "Computing the DBSCAN Table - STEP 2.",
+            )
             cursor.execute(
                 "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
             )
             self.n_noise_ = cursor.fetchone()[0]
         except:
-            drop_temp_elem(cursor, relation_alpha)
+            drop_temp_elem(cursor)
             raise
-        drop_temp_elem(cursor, relation_alpha)
+        drop_temp_elem(cursor)
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
@@ -456,10 +465,7 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 

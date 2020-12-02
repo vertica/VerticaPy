@@ -16,6 +16,7 @@ from verticapy import vDataFrame
 from verticapy import drop_table
 
 from verticapy import set_option
+
 set_option("print_info", False)
 
 
@@ -142,7 +143,9 @@ class TestvDFFilterSample:
         # testing with x
         result = titanic_vd.copy().sample(x=0.33, method="random")
         assert result.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
-        result2 = titanic_vd.copy().sample(x=0.33, method="stratified", by=["age", "pclass",])
+        result2 = titanic_vd.copy().sample(
+            x=0.33, method="stratified", by=["age", "pclass",]
+        )
         assert result2.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
         result3 = titanic_vd.copy().sample(x=0.33, method="systematic")
         assert result3.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
@@ -150,7 +153,9 @@ class TestvDFFilterSample:
         # testing with n
         result = titanic_vd.copy().sample(n=200, method="random")
         assert result.shape()[0] == pytest.approx(200, 0.12)
-        result2 = titanic_vd.copy().sample(n=200, method="stratified", by=["age", "pclass",])
+        result2 = titanic_vd.copy().sample(
+            n=200, method="stratified", by=["age", "pclass",]
+        )
         assert result2.shape()[0] == pytest.approx(200, 0.12)
         result3 = titanic_vd.copy().sample(n=200, method="systematic")
         assert result3.shape()[0] == pytest.approx(200, 0.12)
