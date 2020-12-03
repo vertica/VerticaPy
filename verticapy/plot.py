@@ -153,10 +153,12 @@ def bar(
         ax.set_yticks([elem - h / 2 / 0.94 for elem in x])
     if method.lower() == "density":
         ax.set_xlabel("Density")
-    elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (of != None):
+    elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (
+        of != None
+    ):
         aggregate = "{}({})".format(method.upper(), of)
         ax.set_xlabel(aggregate)
-    elif (method.lower() == "count"):
+    elif method.lower() == "count":
         ax.set_xlabel("Frequency")
     else:
         ax.set_xlabel(method)
@@ -247,7 +249,7 @@ def bar2D(
             ax.set_xlabel("Density")
         elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
             ax.set_xlabel("{}({})".format(method, of))
-        elif (method.lower() == "count"):
+        elif method.lower() == "count":
             ax.set_xlabel("Frequency")
         else:
             ax.set_xlabel(method)
@@ -843,10 +845,16 @@ def compute_plot_variables(
         method = "50%"
     elif method.lower() == "mean":
         method = "avg"
-    if (method.lower() not in ["avg", "min", "max", "sum", "density", "count"] and "%" != method[-1]) and of:
-        raise ParameterError("Parameter 'of' must be empty when using customized aggregations.")
     if (
-        (method.lower() in ["avg", "min", "max", "sum"]) or (method.lower() and method[-1] == "%")
+        method.lower() not in ["avg", "min", "max", "sum", "density", "count"]
+        and "%" != method[-1]
+    ) and of:
+        raise ParameterError(
+            "Parameter 'of' must be empty when using customized aggregations."
+        )
+    if (
+        (method.lower() in ["avg", "min", "max", "sum"])
+        or (method.lower() and method[-1] == "%")
     ) and (of):
         if method.lower() in ["avg", "min", "max", "sum"]:
             aggregate = "{}({})".format(method.upper(), str_column(of))
@@ -855,15 +863,23 @@ def compute_plot_variables(
                 str_column(of), float(method[0:-1]) / 100
             )
         else:
-            raise ParameterError("The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(method))
+            raise ParameterError(
+                "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(
+                    method
+                )
+            )
     elif method.lower() in ["density", "count"]:
         aggregate = "count(*)"
     elif isinstance(method, str):
         aggregate = method
-        other_columns = ", " + ", ".join(vdf.parent.get_columns(exclude_columns = [vdf.alias]))
+        other_columns = ", " + ", ".join(
+            vdf.parent.get_columns(exclude_columns=[vdf.alias])
+        )
     else:
         raise ParameterError(
-            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(method)
+            "The parameter 'method' must be in [avg|mean|min|max|sum|median|q%] or a customized aggregation. Found {}.".format(
+                method
+            )
         )
     # depending on the cardinality, the type, the vColumn can be treated as categorical or not
     cardinality, count, is_numeric, is_date, is_categorical = (
@@ -900,7 +916,9 @@ def compute_plot_variables(
                 )
                 if of:
                     enum_trans += " , " + of
-                table = "(SELECT {} FROM {}) enum_table".format(enum_trans + other_columns, table)
+                table = "(SELECT {} FROM {}) enum_table".format(
+                    enum_trans + other_columns, table
+                )
             query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
                 convert_special_type(vdf.category(), True, vdf.alias),
                 vdf.alias,
@@ -911,8 +929,8 @@ def compute_plot_variables(
             )
             if cardinality > max_cardinality:
                 query += (
-                    " UNION (SELECT 'Others', {} FROM {} WHERE {} NOT IN " +
-                    "(SELECT {} FROM {} GROUP BY {} ORDER BY {} DESC LIMIT {}))"
+                    " UNION (SELECT 'Others', {} FROM {} WHERE {} NOT IN "
+                    + "(SELECT {} FROM {} GROUP BY {} ORDER BY {} DESC LIMIT {}))"
                 )
                 query = query.format(
                     aggregate,
@@ -1172,12 +1190,12 @@ def hist(
         ax.set_xticklabels([elem - h / 2 / 0.94 for elem in x], rotation=90)
     if method.lower() == "density":
         ax.set_ylabel("Density")
-    elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
-        of != None
-    ):
+    elif (
+        method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])
+    ) and (of != None):
         aggregate = "{}({})".format(method, of)
         ax.set_ylabel(method)
-    elif (method.lower() == "count"):
+    elif method.lower() == "count":
         ax.set_ylabel("Frequency")
     else:
         ax.set_ylabel(method)
@@ -1263,7 +1281,7 @@ def hist2D(
         ax.set_ylabel("Density")
     elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
         ax.set_ylabel("{}({})".format(method, of))
-    elif (method.lower() == "count"):
+    elif method.lower() == "count":
         ax.set_ylabel("Frequency")
     else:
         ax.set_ylabel(method)
@@ -1313,11 +1331,12 @@ def multiple_hist(
         ax.set_xlabel(", ".join(all_columns))
         if method.lower() == "density":
             ax.set_ylabel("Density")
-        elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
-            of
-        ):
+        elif (
+            method.lower() in ["avg", "min", "max", "sum", "mean"]
+            or ("%" == method[-1])
+        ) and (of):
             ax.set_ylabel(method + "(" + of + ")")
-        elif (method.lower() == "count"):
+        elif method.lower() == "count":
             ax.set_ylabel("Frequency")
         else:
             ax.set_ylabel(method)
@@ -1463,11 +1482,11 @@ def pie(
     )
     if method.lower() == "density":
         ax.set_title("Density")
-    elif (method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])) and (
-        of
-    ):
+    elif (
+        method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])
+    ) and (of):
         ax.set_title(method + "(" + of + ")")
-    elif (method.lower() == "count"):
+    elif method.lower() == "count":
         ax.set_title("Frequency")
     else:
         ax.set_title(method)
@@ -1495,8 +1514,13 @@ def pivot_table(
         method = "50%"
     elif method.lower() == "mean":
         method = "avg"
-    if (method.lower() not in ["avg", "min", "max", "sum", "density", "count"] and "%" != method[-1]) and of:
-        raise ParameterError("Parameter 'of' must be empty when using customized aggregations.")
+    if (
+        method.lower() not in ["avg", "min", "max", "sum", "density", "count"]
+        and "%" != method[-1]
+    ) and of:
+        raise ParameterError(
+            "Parameter 'of' must be empty when using customized aggregations."
+        )
     if (method.lower() in ["avg", "min", "max", "sum"]) and (of):
         aggregate = "{}({})".format(method.upper(), str_column(of))
     elif method.lower() and method[-1] == "%":
@@ -1507,7 +1531,7 @@ def pivot_table(
         aggregate = "COUNT(*)"
     elif isinstance(method, str):
         aggregate = method
-        other_columns = vdf.get_columns(exclude_columns = columns)
+        other_columns = vdf.get_columns(exclude_columns=columns)
         other_columns = ", " + ", ".join(other_columns)
     else:
         raise ParameterError(
@@ -1629,11 +1653,23 @@ def pivot_table(
     )
     if is_column_date[0] and not (is_column_date[1]):
         subtable = "(SELECT {} AS {}, {}{}{} FROM {}{}) pivot_table_date".format(
-            timestampadd[0], columns[0], columns[1], aggr, other_columns, subtable, where
+            timestampadd[0],
+            columns[0],
+            columns[1],
+            aggr,
+            other_columns,
+            subtable,
+            where,
         )
     elif is_column_date[1] and not (is_column_date[0]):
         subtable = "(SELECT {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
-            columns[0], timestampadd[1], columns[1], aggr, other_columns, subtable, where
+            columns[0],
+            timestampadd[1],
+            columns[1],
+            aggr,
+            other_columns,
+            subtable,
+            where,
         )
     elif is_column_date[1] and is_column_date[0]:
         subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table_date".format(
@@ -1766,8 +1802,9 @@ def scatter_matrix(vdf, columns: list = []):
             nrows=n, ncols=n, figsize=(min(int(n / 1.1), 500), min(int(n / 1.1), 500))
         )
     )
-    query = "SELECT {}, RANDOM() AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
-        ", ".join(columns), vdf.__genSQL__(True)
+    random_func = random_function()
+    query = "SELECT {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
+        ", ".join(columns), random_func, vdf.__genSQL__(True)
     )
     all_scatter_points = vdf.__executeSQL__(
         query=query, title="Select random points to draw the scatter plot"

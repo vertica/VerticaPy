@@ -273,8 +273,9 @@ tablesample
         )
     except:
         pass
-    query = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(
-        get_session(cursor), cv, input_relation
+    random_func = random_function(cv)
+    query = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, {} AS test FROM {}".format(
+        get_session(cursor), random_func, input_relation
     )
     estimator.cursor.execute(query)
     for i in range(cv):
@@ -786,81 +787,4 @@ tablesample
             "false_positive": false_positive,
             "true_positive": true_positive,
         },
-    )
-
-
-# ---#
-def train_test_split(
-    input_relation: (str, vDataFrame),
-    cursor=None,
-    test_size: float = 0.33,
-    schema_writing: str = "",
-):
-    """
----------------------------------------------------------------------------
-Creates a temporary table and 2 views which can be to use to evaluate a model. 
-The table will include all the main relation information with a test column 
-(boolean) which represents if the data belong to the test or train set.
-
-Parameters
-----------
-input_relation: str/vDataFrame
-	Input Relation.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-test_size: float, optional
-	Proportion of the test set comparint to the training set.
-schema_writing: str, optional
-	Schema to use to write the main relation.
-
-Returns
--------
-tuple
- 	(train vDataFrame, test vDataFrame)
-	"""
-    check_types(
-        [
-            ("test_size", test_size, [float],),
-            ("schema_writing", schema_writing, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-        ]
-    )
-    cursor = check_cursor(cursor, input_relation)[0]
-    schema, relation = schema_relation(input_relation)
-    if isinstance(input_relation, vDataFrame):
-        input_relation = input_relation.__genSQL__()
-    schema = str_column(schema) if not (schema_writing) else schema_writing
-    test_name, train_name = (
-        "{}_{}".format(get_session(cursor), int(test_size * 100)),
-        "{}_{}".format(get_session(cursor), int(100 - test_size * 100)),
-    )
-    try:
-        cursor.execute(
-            "DROP TABLE IF EXISTS {}.VERTICAPY_SPLIT_{}".format(
-                schema, get_session(cursor)
-            )
-        )
-    except:
-        pass
-    cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_SPLIT_{}_TEST".format(schema, test_name)
-    )
-    cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_SPLIT_{}_TRAIN".format(schema, train_name)
-    )
-    query = "CREATE TEMPORARY TABLE {}.VERTICAPY_SPLIT_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(
-        schema, get_session(cursor), test_size, input_relation
-    )
-    cursor.execute(query)
-    query = "CREATE VIEW {}.VERTICAPY_SPLIT_{}_TEST AS SELECT * FROM {} WHERE test".format(
-        schema, test_name, "{}.VERTICAPY_SPLIT_{}".format(schema, get_session(cursor))
-    )
-    cursor.execute(query)
-    query = "CREATE VIEW {}.VERTICAPY_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE NOT(test)".format(
-        schema, train_name, "{}.VERTICAPY_SPLIT_{}".format(schema, get_session(cursor))
-    )
-    cursor.execute(query)
-    return (
-        vDataFrame("{}.VERTICAPY_SPLIT_{}_TRAIN".format(schema, train_name), cursor),
-        vDataFrame("{}.VERTICAPY_SPLIT_{}_TEST".format(schema, test_name), cursor),
     )

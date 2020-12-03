@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, sys, warnings
+import os, math, shutil, re, sys, warnings
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -148,13 +148,13 @@ def category_from_type(ctype: str = ""):
 
 
 # ---#
-def check_cursor(cursor, vdf = ""):
+def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
     from verticapy.connections.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
-        if not (cursor):
+        if not (cursor) or vdf_cursor:
             try:
                 cursor = vdf._VERTICAPY_VARIABLES_["cursor"]
                 cursor.execute("SELECT 1;")
@@ -413,6 +413,7 @@ def executeSQL(cursor, query: str, title: str = ""):
         print_time(elapsed_time)
     return cursor
 
+
 # ---#
 def format_magic(x):
 
@@ -425,6 +426,7 @@ def format_magic(x):
     else:
         val = "'{}'".format(x)
     return val
+
 
 # ---#
 def gen_name(L: list):
@@ -914,6 +916,22 @@ def print_table(
 
 
 # ---#
+def random_function(rand_int=None):
+    random_state = verticapy.options["random_state"]
+    if isinstance(rand_int, int):
+        if isinstance(random_state, int):
+            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
+        else:
+            random_func = "RANDOMINT({})".format(rand_int)
+    else:
+        if isinstance(random_state, int):
+            random_func = "SEEDED_RANDOM({})".format(random_state)
+        else:
+            random_func = "RANDOM()"
+    return random_func
+
+
+# ---#
 def schema_relation(relation):
     from verticapy import vDataFrame
 
@@ -1162,13 +1180,21 @@ class str_sql:
     # ---#
     def __add__(self, x):
         val = format_magic(x)
-        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
+        op = (
+            "||"
+            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            else "+"
+        )
         return str_sql("{} {} {}".format(self.alias, op, val), self.category())
 
     # ---#
     def __radd__(self, x):
         val = format_magic(x)
-        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
+        op = (
+            "||"
+            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            else "+"
+        )
         return str_sql("{} {} {}".format(val, op, self.alias), self.category())
 
     # ---#
@@ -1295,6 +1321,14 @@ class str_sql:
     # ---#
     def __floor__(self):
         return str_sql("FLOOR({})".format(self.alias), self.category())
+
+    # ---#
+    def __trunc__(self):
+        return str_sql("TRUNC({})".format(self.alias), self.category())
+
+    # ---#
+    def __invert__(self):
+        return str_sql("-({}) - 1".format(self.alias), self.category())
 
     # ---#
     def __round__(self, x):

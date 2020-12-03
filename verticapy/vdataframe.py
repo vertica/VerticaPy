@@ -1251,7 +1251,8 @@ vcolumns : vcolumn
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        split = ", RANDOM() AS __verticapy_split__" if (split) else ""
+        random_func = random_function()
+        split = ", {} AS __verticapy_split__".format(random_func) if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
                 table = "SELECT *{} FROM ({}) VERTICAPY_SUBTABLE".format(split, table)
@@ -3641,7 +3642,7 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def cummax(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cummax(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative maximum of
@@ -3680,7 +3681,7 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cummin(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cummin(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative minimum of
@@ -3719,7 +3720,7 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cumprod(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cumprod(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
@@ -7437,9 +7438,8 @@ vcolumns : vcolumn
     ---------------------------------------------------------------------------
     Downsamples the input vDataFrame.
 
-    \u26A0 Warning : The result might change for each SQL code generation as the 
-                     random numbers are not memorized. You can use this method to 
-                     downsample before saving the final relation to the DataBase.
+    \u26A0 Warning : The result might change for each SQL code generation if the
+                     data are not ordered.
 
     Parameters
      ----------
@@ -7455,6 +7455,7 @@ vcolumns : vcolumn
             stratified : stratified sampling.
     by: list, optional
         vcolumns used in the partition.
+
     Returns
     -------
     vDataFrame
@@ -7494,7 +7495,14 @@ vcolumns : vcolumn
         if (x <= 0) or (x >= 1):
             raise ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
-            vdf.eval(name, "RANDOM()")
+            random_state = verticapy.options["random_state"]
+            random_seed = (
+                random_state
+                if isinstance(random_state, int)
+                else random.randint(-10e6, 10e6)
+            )
+            random_func = "SEEDED_RANDOM({})".format(random_seed)
+            vdf.eval(name, random_func)
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
             vdf.filter("{} < {}".format(name, x),)
@@ -8569,10 +8577,9 @@ vcolumns : vcolumn
             if not (usecols)
             else ", ".join([str_column(column) for column in usecols])
         )
+        random_func = random_function(nb_split)
         nb_split = (
-            ", RANDOMINT({}) AS _verticapy_split_".format(nb_split)
-            if (nb_split > 0)
-            else ""
+            ", {} AS _verticapy_split_".format(random_func) if (nb_split > 0) else ""
         )
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
@@ -8782,6 +8789,67 @@ vcolumns : vcolumn
         file.write(self._VERTICAPY_VARIABLES_["saving"][-1])
         file.close()
         return self
+
+    # ---#
+    def train_test_split(
+        self,
+        test_size: float = 0.33,
+        order_by: (list, dict) = {},
+        random_state: int = None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Creates 2 vDataFrame (train/test) which can be to use to evaluate a model.
+    The intersection between the train and the test is empty only if a unique
+    order is specified.
+
+    Parameters
+    ----------
+    test_size: float, optional
+        Proportion of the test set comparint to the training set.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+        Without this parameter, the seeded random number used to split the data
+        into train and test can not garanty that no collision occurs. Use this
+        parameter to avoid collisions.
+    random_state: int, optional
+        Integer used to seed the randomness.
+
+    Returns
+    -------
+    tuple
+        (train vDataFrame, test vDataFrame)
+        """
+        check_types(
+            [
+                ("test_size", test_size, [float],),
+                ("order_by", order_by, [list, dict],),
+                ("random_state", random_state, [int],),
+            ]
+        )
+        order_by = sort_str(order_by, self)
+        random_seed = (
+            random_state
+            if isinstance(random_state, int)
+            else random.randint(-10e6, 10e6)
+        )
+        random_func = "SEEDED_RANDOM({})".format(random_seed)
+        test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
+            self.__genSQL__(), random_func, test_size, order_by
+        )
+        train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
+            self.__genSQL__(), random_func, test_size, order_by
+        )
+        return (
+            vdf_from_relation(
+                relation=train_table, cursor=self._VERTICAPY_VARIABLES_["cursor"]
+            ),
+            vdf_from_relation(
+                relation=test_table, cursor=self._VERTICAPY_VARIABLES_["cursor"]
+            ),
+        )
 
     # ---#
     def var(self, columns: list = []):

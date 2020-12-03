@@ -71,10 +71,14 @@ class TestvDFUtilities:
         str(3 < titanic_vd["age"]) == '3 < "age"'
         str(titanic_vd["age"] <= 3) == '"age" <= 3'
         str(3 <= titanic_vd["age"]) == '3 <= "age"'
-        str((3 >= titanic_vd["age"]) & (titanic_vd["age"] <= 50)) == '"age" <= 3 AND "age" <= 50'
-        str((3 >= titanic_vd["age"]) | (titanic_vd["age"] <= 50)) == '"age" <= 3 OR "age" <= 50'
-        str("Mr " + titanic_vd["name"]) == '\'Mr \' || "name"'
-        str(titanic_vd["name"] + " .") == '"name" || \' .\''
+        str(
+            (3 >= titanic_vd["age"]) & (titanic_vd["age"] <= 50)
+        ) == '"age" <= 3 AND "age" <= 50'
+        str(
+            (3 >= titanic_vd["age"]) | (titanic_vd["age"] <= 50)
+        ) == '"age" <= 3 OR "age" <= 50'
+        str("Mr " + titanic_vd["name"]) == "'Mr ' || \"name\""
+        str(titanic_vd["name"] + " .") == "\"name\" || ' .'"
         str(3 * titanic_vd["name"]) == 'REPEAT("name", 3)'
         str(titanic_vd["name"] * 3) == 'REPEAT("name", 3)'
         str(titanic_vd["age"] == 3) == '"age" = 3'

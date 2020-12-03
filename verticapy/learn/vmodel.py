@@ -1328,6 +1328,7 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -1335,11 +1336,7 @@ class Supervised(vModel):
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
                 str_column(schema), get_session(self.cursor)
             )
-            self.cursor.execute(
-                "DROP VIEW IF EXISTS {}".format(
-                    relation
-                )
-            )
+            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
             self.cursor.execute(
                 "CREATE VIEW {} AS SELECT * FROM {}".format(
                     relation, input_relation.__genSQL__()
@@ -2551,6 +2548,7 @@ class Unsupervised(vModel):
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -2558,11 +2556,7 @@ class Unsupervised(vModel):
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
                 str_column(schema), get_session(self.cursor)
             )
-            self.cursor.execute(
-                "DROP VIEW IF EXISTS {}".format(
-                    relation
-                )
-            )
+            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
             self.cursor.execute(
                 "CREATE VIEW {} AS SELECT * FROM {}".format(
                     relation, input_relation.__genSQL__()
