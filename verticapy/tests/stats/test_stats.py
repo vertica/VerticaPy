@@ -30,6 +30,7 @@ def titanic_vd(base):
         )
 
 
+@pytest.fixture(scope="module")
 def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
