@@ -370,7 +370,7 @@ Attributes
 
     agg = aggregate
     # ---#
-    def apply(self, func: str, copy: bool = False, copy_name: str = ""):
+    def apply(self, func: str, copy_name: str = ""):
         """
 	---------------------------------------------------------------------------
 	Applies a function to the vcolumn.
@@ -381,11 +381,8 @@ Attributes
  		Function to use to transform the vcolumn. It must be pure SQL.
  		The function variable must be composed of two flower brackets {}. For 
  		example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
- 	copy: bool, optional
- 		If set to True, a copy of the vcolumn will be created. The function
- 		will be applied on the copy.
  	copy_name: str, optional
- 		Name of the copy if the 'copy' parameter is set to True.
+ 		If not empty, a copy will be created using the input Name.
 
  	Returns
  	-------
@@ -398,12 +395,10 @@ Attributes
 	vDataFrame.applymap : Applies a function to all the vcolumns.
 	vDataFrame.eval     : Evaluates a customized expression.
 		"""
+        if isinstance(func, str_sql):
+            func = str(func)
         check_types(
-            [
-                ("func", func, [str],),
-                ("copy", copy, [bool],),
-                ("copy_name", copy_name, [str],),
-            ]
+            [("func", func, [str],), ("copy_name", copy_name, [str],),]
         )
         try:
             try:
@@ -437,7 +432,7 @@ Attributes
                 ):
                     max_floor = max(len(self.parent[column].transformations), max_floor)
             max_floor -= len(self.transformations)
-            if copy:
+            if copy_name:
                 self.add_copy(name=copy_name)
                 for k in range(max_floor):
                     self.parent[copy_name].transformations += [
@@ -860,20 +855,18 @@ Attributes
         return self.apply(func="DATE_PART('{}', {})".format(field, "{}"))
 
     # ---#
-    def decode(self, values: dict, others=None):
+    def decode(self, *argv):
         """
 	---------------------------------------------------------------------------
 	Encodes the vcolumn using a User Defined Encoding.
 
 	Parameters
  	----------
- 	values: dict
- 		Dictionary of values representing the bijection to use to encode the data.
- 		The dictionary must be similar to the following:
- 		{category1: val1, ... categoryk: valk}
- 	others: int/float/str, optional
- 		If the category does not belong to the dictionary, the 'others' parameter
- 		will be to use to encode it. 
+ 	argv: object
+        Infinite Number of Expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN vcolumn = argv[2 * i] THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN vcolumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
 
  	Returns
  	-------
@@ -888,29 +881,9 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vcolumn using the One Hot Encoding.
 	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
 		"""
-        check_types([("values", values, [dict],)])
-        new_dict = {}
-        for elem in values:
-            if isinstance(values[elem], str):
-                val = "'{}'".format(values[elem].replace("'", "''"))
-            elif values[elem] == None:
-                val = "NULL"
-            else:
-                val = values[elem]
-            if str(elem).upper() in ("NULL", "NONE"):
-                new_dict["NULL"] = val
-            else:
-                new_dict["'{}'".format(elem)] = val
-        if isinstance(others, str):
-            others = "'{}'".format(others.replace("'", "''"))
-        if others == None:
-            others = "NULL"
-        fun = (
-            "DECODE({}, "
-            + ", ".join(["{}, {}".format(item, new_dict[item]) for item in new_dict])
-            + ", {})".format(others)
-        )
-        return self.apply(func=fun)
+        import verticapy.stats as st
+
+        return self.apply(func=st.decode(str_sql("{}"), *argv))
 
     # ---#
     def density(

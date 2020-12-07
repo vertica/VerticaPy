@@ -585,14 +585,16 @@ class TestvDFFeatureEngineering:
     def test_vDF_case_when(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy.case_when(
-            name="age_category",
-            conditions={
-                "age < 12": "children",
-                "age < 18": "teenagers",
-                "age > 60": "seniors",
-                "age < 25": "young adults",
-            },
-            others="adults",
+            "age_category",
+            titanic_copy["age"] < 12,
+            "children",
+            titanic_copy["age"] < 18,
+            "teenagers",
+            titanic_copy["age"] > 60,
+            "seniors",
+            titanic_copy["age"] < 25,
+            "young adults",
+            "adults",
         )
 
         assert titanic_copy["age_category"].distinct() == [
@@ -658,14 +660,8 @@ class TestvDFFeatureEngineering:
         titanic_copy["age"].apply(func="POWER({}, 2)")
         assert titanic_copy["age"].min() == pytest.approx(0.1089)
 
-        # expected exception
-        with pytest.raises(errors.QueryError) as exception_info:
-            titanic_copy["age"].apply(func="POWER({}, 2)", copy=True)
-        # checking the error message
-        assert exception_info.match("The parameter 'name' must not be empty")
-
         titanic_copy = titanic_vd.copy()
-        titanic_copy["age"].apply(func="POWER({}, 2)", copy=True, copy_name="age_pow_2")
+        titanic_copy["age"].apply(func="POWER({}, 2)", copy_name="age_pow_2")
         assert titanic_copy["age_pow_2"].min() == pytest.approx(0.1089)
 
     def test_vDF_apply_fun(self, titanic_vd):

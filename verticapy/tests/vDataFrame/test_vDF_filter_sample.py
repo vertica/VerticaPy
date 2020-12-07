@@ -128,14 +128,10 @@ class TestvDFFilterSample:
         assert result2.shape() == (900, 14)
 
     def test_vDF_select(self, titanic_vd):
-        # testing with check=True
         result = titanic_vd.select(columns=["age", "fare", "pclass"])
         assert result.shape() == (1234, 3)
-
-        # testing with check=False
         result = titanic_vd.select(
             columns=["age", "fare", "pclass", "parch + sibsp + 1 AS family_size"],
-            check=False,
         )
         assert result.shape() == (1234, 4)
 

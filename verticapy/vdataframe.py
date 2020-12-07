@@ -3193,7 +3193,7 @@ vcolumns : vcolumn
 
     # ---#
     def case_when(
-        self, name: str, conditions: dict, others=None, auto_quote: bool = True
+        self, name: str, *argv,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3203,16 +3203,11 @@ vcolumns : vcolumn
     ----------
     name: str
         Name of the new feature.
-    conditions: dict
-        Dictionary of the conditions. The dictionary must be similar to the 
-        following: {"condition1": "value1", ... "conditionk": "valuek"}
-        Each key is a condition and each value is the value returned when
-        the condition is valid.
-    others: str / int / float, optional
-        last condition: The ELSE in the CASE WHEN statement.
-    auto_quote: bool, optional
-        If set to True, all the str values of the dictionary will not be considered
-        as expressions. Otherwise, you'll have to manage by yourself all the quotations.
+    argv: object
+        Infinite Number of Expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
 
     Returns
     -------
@@ -3224,22 +3219,10 @@ vcolumns : vcolumn
     vDataFrame[].decode : Encodes the vcolumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        check_types([("conditions", conditions, [dict],), ("name", name, [str],)])
-        for elem in conditions:
-            if (isinstance(conditions[elem], str)) and auto_quote:
-                val = conditions[elem]
-                conditions[elem] = "'{}'".format(val.replace("'", "''"))
-            elif conditions[elem] == None:
-                conditions[elem] = "NULL"
-        if (isinstance(others, str)) and auto_quote:
-            others = "'{}'".format(others.replace("'", "''"))
-        elif others == None:
-            others = "NULL"
-        expr = " ".join(
-            ["WHEN {} THEN {}".format(elem, conditions[elem]) for elem in conditions]
-        )
-        expr = "(CASE {} ELSE {} END)".format(expr, others)
-        return self.eval(name=name, expr=expr)
+        import verticapy.stats as st
+
+        check_types([("name", name, [str],)])
+        return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
     def corr(
@@ -3642,7 +3625,9 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def cummax(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
+    def cummax(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative maximum of
@@ -3681,7 +3666,9 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cummin(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
+    def cummin(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative minimum of
@@ -3720,7 +3707,9 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cumprod(self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""):
+    def cumprod(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
@@ -4516,6 +4505,8 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+        if isinstance(expr, str_sql):
+            expr = str(expr)
         check_types([("name", name, [str],), ("expr", expr, [str],)])
         name = str_column(name.replace('"', "_"))
         if column_check_ambiguous(name, self.get_columns()):
@@ -5030,7 +5021,9 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def groupby(self, columns: list, expr: list = [], check: bool = True):
+    def groupby(
+        self, columns: list, expr: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame by grouping the elements.
@@ -5038,7 +5031,8 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns used for the grouping.
+        List of the vcolumns used for the grouping. It can also be customized 
+        expressions.
     expr: list, optional
         List of the different aggregations. Pure SQL must be written. Aliases can
         also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
@@ -5046,9 +5040,6 @@ vcolumns : vcolumn
         the different features and not have ambiguous names. The function MODE does
         not exist in SQL for example but can be obtained using the 'analytic' method
         first and then by grouping the result.
-    check: bool, optional
-        Do a columns checking before the computation. Set it to False to do
-        customized selection.
 
     Returns
     -------
@@ -5064,9 +5055,10 @@ vcolumns : vcolumn
     vDataFrame.sort     : Sorts the vDataFrame.
         """
         check_types([("columns", columns, [list],), ("expr", expr, [list],)])
-        if check:
-            columns_check(columns, self)
-            columns = vdf_columns_names(columns, self)
+        for i in range(len(columns)):
+            column = vdf_columns_names([columns[i]], self)
+            if column:
+                columns[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns + expr),
             self.__genSQL__(),
@@ -5751,6 +5743,7 @@ vcolumns : vcolumn
         self,
         input_relation,
         on: dict = {},
+        on_interpolate: dict = {},
         how: str = "natural",
         expr1: list = ["*"],
         expr2: list = ["*"],
@@ -5771,6 +5764,14 @@ vcolumns : vcolumn
         Relation to use to do the merging.
     on: dict, optional
         Dictionary of all the different keys. The dict must be similar to the following:
+        {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
+        where relationA is the current vDataFrame and relationB is the input relation
+        or the input vDataFrame.
+    on_interpolate: dict, optional
+        Dictionary of all the different keys. Used to join two event series together 
+        using some ordered attribute, event series joins let you compare values from 
+        two series directly, rather than having to normalize the series to the same 
+        measurement interval. The dict must be similar to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
         or the input vDataFrame.
@@ -5858,6 +5859,14 @@ vcolumns : vcolumn
                 + on[elem].replace('"', "")
                 + '"'
                 for elem in on
+            ]
+            + [
+                'x."'
+                + elem.replace('"', "")
+                + '" INTERPOLATE PREVIOUS VALUE y."'
+                + on_interpolate[elem].replace('"', "")
+                + '"'
+                for elem in on_interpolate
             ]
         )
         on_join = " ON {}".format(on_join) if (on_join) else ""
@@ -7783,7 +7792,9 @@ vcolumns : vcolumn
         return result.sort(order_by)
 
     # ---#
-    def select(self, columns: list, check: bool = True):
+    def select(
+        self, columns: list,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns a copy of the vDataFrame with only the selected vcolumns.
@@ -7791,9 +7802,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns to select.
-    check: bool, optional
-        Set it to False to do customized expressions selection.
+        List of the vcolumns to select. It can also be customized expressions.
 
     Returns
     -------
@@ -7805,9 +7814,10 @@ vcolumns : vcolumn
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
         check_types([("columns", columns, [list],)])
-        if check:
-            columns_check(columns, self)
-            columns = vdf_columns_names(columns, self)
+        for i in range(len(columns)):
+            column = vdf_columns_names([columns[i]], self)
+            if column:
+                columns[i] = column[0]
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), self.__genSQL__()
         )
