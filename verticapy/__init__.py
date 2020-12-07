@@ -62,6 +62,9 @@ from verticapy.utilities import *
 # Connect
 from verticapy.connections.connect import *
 
+# SQL Functions
+from verticapy.stats import *
+
 # Learn
 import verticapy.learn
 import verticapy.learn.tsa
@@ -75,4 +78,5 @@ verticapy.options = {
     "query_on": False,
     "time_on": False,
     "mode": None,
+    "random_state": None,
 }

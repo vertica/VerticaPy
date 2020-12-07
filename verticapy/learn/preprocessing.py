@@ -209,6 +209,7 @@ max_text_size: int, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.get_columns()

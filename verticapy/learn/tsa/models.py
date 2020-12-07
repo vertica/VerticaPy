@@ -347,6 +347,7 @@ papprox_ma: int, optional
                 ("ts", ts, [str],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
         self.input_relation = (
@@ -1297,6 +1298,7 @@ solver: str, optional
                 ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
         self.input_relation = (

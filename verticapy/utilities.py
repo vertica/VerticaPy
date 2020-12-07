@@ -1595,27 +1595,29 @@ def set_option(option: str, value: (bool, int, str) = None):
     ----------
     option: str
         Option to use.
-        cache       : bool
+        cache        : bool
             If set to True, the vDataFrame will save in memory the computed
             aggregations.
-        max_rows    : int
+        max_rows     : int
             Maximum number of rows to display. If the parameter is incorrect, 
             nothing will be changed.
-        max_columns : int
+        max_columns  : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing will be changed.
-        mode        : str
+        mode         : str
             How to display VerticaPy outputs.
                 full  : VerticaPy regular display mode.
                 light : Minimalist display mode.
-        percent_bar : bool
+        percent_bar  : bool
             If set to True, it displays the percent of non-missing values.
-        print_info  : bool
+        print_info   : bool
             If set to True, information will be printed each time the vDataFrame is 
             modified.
-        sql_on      : bool
+        random_state : int
+            Integer used to seed the random number generation in VerticaPy.
+        sql_on       : bool
             If set to True, displays all the SQL queries.
-        time_on     : bool
+        time_on      : bool
             If set to True, displays all the SQL queries elapsed time.
     value: object, optional
         New value of option.
@@ -1635,6 +1637,7 @@ def set_option(option: str, value: (bool, int, str) = None):
                     "max_columns",
                     "percent_bar",
                     "print_info",
+                    "random_state",
                     "sql_on",
                     "time_on",
                     "mode",
@@ -1662,6 +1665,10 @@ def set_option(option: str, value: (bool, int, str) = None):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options["percent_bar"] = value
+    elif option == "random_state":
+        check_types([("value", value, [int])])
+        if isinstance(value, int) or value == None:
+            verticapy.options["random_state"] = value
     elif option == "sql_on":
         check_types([("value", value, [bool])])
         if isinstance(value, bool):

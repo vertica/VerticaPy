@@ -50,9 +50,16 @@ def market_vd(base):
 
 
 class TestvDFPreprocessing:
+    def test_vDF_train_test_split(self, titanic_vd):
+        train, test = titanic_vd.train_test_split(
+            test_size=0.33, order_by={"name": "asc"}, random_state=1
+        )
+        assert train.shape() == (pytest.approx(809), 14)
+        assert test.shape() == (pytest.approx(425), 14)
+
     def test_vDF_decode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["sex"].decode(values={"female": 1, "male": 0}, others=2)
+        titanic_copy["sex"].decode("female", 1, "male", 0, 2)
 
         assert titanic_copy["sex"].distinct() == [0, 1]
 

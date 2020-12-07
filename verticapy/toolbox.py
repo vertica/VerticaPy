@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, os, math, shutil, re, sys, warnings
+import os, math, shutil, re, sys, warnings
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -148,13 +148,13 @@ def category_from_type(ctype: str = ""):
 
 
 # ---#
-def check_cursor(cursor, vdf = ""):
+def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
     from verticapy.connections.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
-        if not (cursor):
+        if not (cursor) or vdf_cursor:
             try:
                 cursor = vdf._VERTICAPY_VARIABLES_["cursor"]
                 cursor.execute("SELECT 1;")
@@ -413,8 +413,9 @@ def executeSQL(cursor, query: str, title: str = ""):
         print_time(elapsed_time)
     return cursor
 
+
 # ---#
-def format_magic(x):
+def format_magic(x, return_cat: bool = False):
 
     from verticapy.vcolumn import vColumn
 
@@ -422,9 +423,15 @@ def format_magic(x):
         val = x.alias
     elif isinstance(x, (int, float, str_sql)):
         val = x
+    elif isinstance(x, type(None)):
+        val = "NULL"
     else:
-        val = "'{}'".format(x)
-    return val
+        val = "'{}'".format(x.replace("'", "''"))
+    if return_cat:
+        return (val, str_category(x))
+    else:
+        return val
+
 
 # ---#
 def gen_name(L: list):
@@ -914,6 +921,22 @@ def print_table(
 
 
 # ---#
+def random_function(rand_int=None):
+    random_state = verticapy.options["random_state"]
+    if isinstance(rand_int, int):
+        if isinstance(random_state, int):
+            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
+        else:
+            random_func = "RANDOMINT({})".format(rand_int)
+    else:
+        if isinstance(random_state, int):
+            random_func = "SEEDED_RANDOM({})".format(random_state)
+        else:
+            random_func = "RANDOM()"
+    return random_func
+
+
+# ---#
 def schema_relation(relation):
     from verticapy import vDataFrame
 
@@ -1143,17 +1166,37 @@ def vertica_param_dict(model):
 
 
 # ---#
+def str_category(expr):
+    try:
+        category = expr.category()
+    except:
+        import datetime
+
+        if isinstance(expr, (float)):
+            category = "float"
+        elif isinstance(expr, (int)):
+            category = "int"
+        elif isinstance(expr, (str)):
+            category = "text"
+        elif isinstance(expr, (datetime.date, datetime.datetime)):
+            category = "date"
+        else:
+            category = ""
+    return category
+
+
+# ---#
 class str_sql:
     # ---#
-    def __init__(self, alias, category="text"):
+    def __init__(self, alias, category=""):
         self.alias = alias
         self.category_ = category
 
     def __repr__(self):
-        return self.alias
+        return str(self.alias)
 
     def __str__(self):
-        return self.alias
+        return str(self.alias)
 
     # ---#
     def __abs__(self):
@@ -1162,81 +1205,108 @@ class str_sql:
     # ---#
     def __add__(self, x):
         val = format_magic(x)
-        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
-        return str_sql("{} {} {}".format(self.alias, op, val), self.category())
+        op = (
+            "||"
+            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            else "+"
+        )
+        return str_sql("({}) {} ({})".format(self.alias, op, val), self.category())
 
     # ---#
     def __radd__(self, x):
         val = format_magic(x)
-        op = "||" if self.category() in ("text",) and isinstance(x, str) else "+"
-        return str_sql("{} {} {}".format(val, op, self.alias), self.category())
+        op = (
+            "||"
+            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            else "+"
+        )
+        return str_sql("({}) {} ({})".format(val, op, self.alias), self.category())
 
     # ---#
     def __and__(self, x):
         val = format_magic(x)
-        return str_sql("{} AND {}".format(self.alias, val), self.category())
+        return str_sql("({}) AND ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rand__(self, x):
         val = format_magic(x)
-        return str_sql("{} AND {}".format(val, self.alias), self.category())
+        return str_sql("({}) AND ({})".format(val, self.alias), self.category())
+
+    # ---#
+    def between_(self, x, y):
+        val1 = str(format_magic(x))
+        val2 = str(format_magic(y))
+        return str_sql(
+            "({}) BETWEEN ({}) AND ({})".format(self.alias, val1, val2), self.category()
+        )
+
+    # ---#
+    def in_(self, x):
+        assert isinstance(x, Iterable) and not (
+            isinstance(x, str)
+        ), "Method 'in_' only works on iterable elements other than str. Found {}.".format(
+            x
+        )
+        val = [str(format_magic(elem)) for elem in x]
+        val = ", ".join(val)
+        return str_sql("({}) IN ({})".format(self.alias, val), self.category())
 
     # ---#
     def __eq__(self, x):
         val = format_magic(x)
-        return str_sql("{} = {}".format(self.alias, val), self.category())
+        return str_sql("({}) = ({})".format(self.alias, val), self.category())
 
     # ---#
     def __ge__(self, x):
         val = format_magic(x)
-        return str_sql("{} >= {}".format(self.alias, val), self.category())
+        return str_sql("({}) >= ({})".format(self.alias, val), self.category())
 
     # ---#
     def __gt__(self, x):
         val = format_magic(x)
-        return str_sql("{} > {}".format(self.alias, val), self.category())
+        return str_sql("({}) > ({})".format(self.alias, val), self.category())
 
     # ---#
     def __le__(self, x):
         val = format_magic(x)
-        return str_sql("{} <= {}".format(self.alias, val), self.category())
+        return str_sql("({}) <= ({})".format(self.alias, val), self.category())
 
     # ---#
     def __lt__(self, x):
         val = format_magic(x)
-        return str_sql("{} < {}".format(self.alias, val), self.category())
+        return str_sql("({}) < ({})".format(self.alias, val), self.category())
 
     # ---#
     def __mul__(self, x):
         if self.category() in ("text",) and isinstance(x, (int)):
             return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
         val = format_magic(x)
-        return str_sql("{} * {}".format(self.alias, val), self.category())
+        return str_sql("({}) * ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rmul__(self, x):
         if self.category() in ("text",) and isinstance(x, (int)):
             return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
         val = format_magic(x)
-        return str_sql("{} * {}".format(val, self.alias), self.category())
+        return str_sql("({}) * ({})".format(val, self.alias), self.category())
 
     # ---#
     def __or__(self, x):
         val = format_magic(x)
-        return str_sql("{} OR {}".format(self.alias, val), self.category())
+        return str_sql("({}) OR ({})".format(self.alias, val), self.category())
 
     # ---#
     def __ror__(self, x):
         val = format_magic(x)
-        return str_sql("{} OR {}".format(val, self.alias), self.category())
+        return str_sql("({}) OR ({})".format(val, self.alias), self.category())
 
     # ---#
     def __pos__(self):
-        return str_sql("+{}".format(self.alias), self.category())
+        return str_sql("+({})".format(self.alias), self.category())
 
     # ---#
     def __neg__(self):
-        return str_sql("-{}".format(self.alias), self.category())
+        return str_sql("-({})".format(self.alias), self.category())
 
     # ---#
     def __pow__(self, x):
@@ -1261,32 +1331,32 @@ class str_sql:
     # ---#
     def __sub__(self, x):
         val = format_magic(x)
-        return str_sql("{} - {}".format(self.alias, val), self.category())
+        return str_sql("({}) - ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rsub__(self, x):
         val = format_magic(x)
-        return str_sql("{} - {}".format(val, self.alias), self.category())
+        return str_sql("({}) - ({})".format(val, self.alias), self.category())
 
     # ---#
     def __truediv__(self, x):
         val = format_magic(x)
-        return str_sql("{} / {}".format(self.alias, val), self.category())
+        return str_sql("({}) / ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rtruediv__(self, x):
         val = format_magic(x)
-        return str_sql("{} / {}".format(val, self.alias), self.category())
+        return str_sql("({}) / ({})".format(val, self.alias), self.category())
 
     # ---#
     def __floordiv__(self, x):
         val = format_magic(x)
-        return str_sql("{} // {}".format(self.alias, val), self.category())
+        return str_sql("({}) // ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rfloordiv__(self, x):
         val = format_magic(x)
-        return str_sql("{} // {}".format(val, self.alias), self.category())
+        return str_sql("({}) // ({})".format(val, self.alias), self.category())
 
     # ---#
     def __ceil__(self):
@@ -1295,6 +1365,14 @@ class str_sql:
     # ---#
     def __floor__(self):
         return str_sql("FLOOR({})".format(self.alias), self.category())
+
+    # ---#
+    def __trunc__(self):
+        return str_sql("TRUNC({})".format(self.alias), self.category())
+
+    # ---#
+    def __invert__(self):
+        return str_sql("-({}) - 1".format(self.alias), self.category())
 
     # ---#
     def __round__(self, x):

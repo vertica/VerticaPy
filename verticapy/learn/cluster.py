@@ -250,6 +250,7 @@ p: int, optional
                 ("index", index, [str],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             if not (X):

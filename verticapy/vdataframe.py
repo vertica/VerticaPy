@@ -1251,7 +1251,8 @@ vcolumns : vcolumn
             "___VERTICAPY_UNDEFINED___",
         ]:
             table = table.replace(vml_undefined, "")
-        split = ", RANDOM() AS __verticapy_split__" if (split) else ""
+        random_func = random_function()
+        split = ", {} AS __verticapy_split__".format(random_func) if (split) else ""
         if (where_final == "") and (order_final == ""):
             if split:
                 table = "SELECT *{} FROM ({}) VERTICAPY_SUBTABLE".format(split, table)
@@ -3192,7 +3193,7 @@ vcolumns : vcolumn
 
     # ---#
     def case_when(
-        self, name: str, conditions: dict, others=None, auto_quote: bool = True
+        self, name: str, *argv,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3202,16 +3203,11 @@ vcolumns : vcolumn
     ----------
     name: str
         Name of the new feature.
-    conditions: dict
-        Dictionary of the conditions. The dictionary must be similar to the 
-        following: {"condition1": "value1", ... "conditionk": "valuek"}
-        Each key is a condition and each value is the value returned when
-        the condition is valid.
-    others: str / int / float, optional
-        last condition: The ELSE in the CASE WHEN statement.
-    auto_quote: bool, optional
-        If set to True, all the str values of the dictionary will not be considered
-        as expressions. Otherwise, you'll have to manage by yourself all the quotations.
+    argv: object
+        Infinite Number of Expressions.
+        The expression generated will look like:
+        even: CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
 
     Returns
     -------
@@ -3223,22 +3219,10 @@ vcolumns : vcolumn
     vDataFrame[].decode : Encodes the vcolumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        check_types([("conditions", conditions, [dict],), ("name", name, [str],)])
-        for elem in conditions:
-            if (isinstance(conditions[elem], str)) and auto_quote:
-                val = conditions[elem]
-                conditions[elem] = "'{}'".format(val.replace("'", "''"))
-            elif conditions[elem] == None:
-                conditions[elem] = "NULL"
-        if (isinstance(others, str)) and auto_quote:
-            others = "'{}'".format(others.replace("'", "''"))
-        elif others == None:
-            others = "NULL"
-        expr = " ".join(
-            ["WHEN {} THEN {}".format(elem, conditions[elem]) for elem in conditions]
-        )
-        expr = "(CASE {} ELSE {} END)".format(expr, others)
-        return self.eval(name=name, expr=expr)
+        import verticapy.stats as st
+
+        check_types([("name", name, [str],)])
+        return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
     def corr(
@@ -3641,7 +3625,9 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def cummax(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cummax(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative maximum of
@@ -3680,7 +3666,9 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cummin(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cummin(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative minimum of
@@ -3719,7 +3707,9 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def cumprod(self, column: str, by: list = [], order_by=[], name: str = ""):
+    def cumprod(
+        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+    ):
         """
     ---------------------------------------------------------------------------
     Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
@@ -4515,6 +4505,8 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+        if isinstance(expr, str_sql):
+            expr = str(expr)
         check_types([("name", name, [str],), ("expr", expr, [str],)])
         name = str_column(name.replace('"', "_"))
         if column_check_ambiguous(name, self.get_columns()):
@@ -5029,7 +5021,9 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def groupby(self, columns: list, expr: list = [], check: bool = True):
+    def groupby(
+        self, columns: list, expr: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame by grouping the elements.
@@ -5037,7 +5031,8 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns used for the grouping.
+        List of the vcolumns used for the grouping. It can also be customized 
+        expressions.
     expr: list, optional
         List of the different aggregations. Pure SQL must be written. Aliases can
         also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
@@ -5045,9 +5040,6 @@ vcolumns : vcolumn
         the different features and not have ambiguous names. The function MODE does
         not exist in SQL for example but can be obtained using the 'analytic' method
         first and then by grouping the result.
-    check: bool, optional
-        Do a columns checking before the computation. Set it to False to do
-        customized selection.
 
     Returns
     -------
@@ -5063,9 +5055,10 @@ vcolumns : vcolumn
     vDataFrame.sort     : Sorts the vDataFrame.
         """
         check_types([("columns", columns, [list],), ("expr", expr, [list],)])
-        if check:
-            columns_check(columns, self)
-            columns = vdf_columns_names(columns, self)
+        for i in range(len(columns)):
+            column = vdf_columns_names([columns[i]], self)
+            if column:
+                columns[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns + expr),
             self.__genSQL__(),
@@ -5750,6 +5743,7 @@ vcolumns : vcolumn
         self,
         input_relation,
         on: dict = {},
+        on_interpolate: dict = {},
         how: str = "natural",
         expr1: list = ["*"],
         expr2: list = ["*"],
@@ -5770,6 +5764,14 @@ vcolumns : vcolumn
         Relation to use to do the merging.
     on: dict, optional
         Dictionary of all the different keys. The dict must be similar to the following:
+        {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
+        where relationA is the current vDataFrame and relationB is the input relation
+        or the input vDataFrame.
+    on_interpolate: dict, optional
+        Dictionary of all the different keys. Used to join two event series together 
+        using some ordered attribute, event series joins let you compare values from 
+        two series directly, rather than having to normalize the series to the same 
+        measurement interval. The dict must be similar to the following:
         {"relationA_key1": "relationB_key1" ..., "relationA_keyk": "relationB_keyk"}
         where relationA is the current vDataFrame and relationB is the input relation
         or the input vDataFrame.
@@ -5857,6 +5859,14 @@ vcolumns : vcolumn
                 + on[elem].replace('"', "")
                 + '"'
                 for elem in on
+            ]
+            + [
+                'x."'
+                + elem.replace('"', "")
+                + '" INTERPOLATE PREVIOUS VALUE y."'
+                + on_interpolate[elem].replace('"', "")
+                + '"'
+                for elem in on_interpolate
             ]
         )
         on_join = " ON {}".format(on_join) if (on_join) else ""
@@ -7437,9 +7447,8 @@ vcolumns : vcolumn
     ---------------------------------------------------------------------------
     Downsamples the input vDataFrame.
 
-    \u26A0 Warning : The result might change for each SQL code generation as the 
-                     random numbers are not memorized. You can use this method to 
-                     downsample before saving the final relation to the DataBase.
+    \u26A0 Warning : The result might change for each SQL code generation if the
+                     data are not ordered.
 
     Parameters
      ----------
@@ -7455,6 +7464,7 @@ vcolumns : vcolumn
             stratified : stratified sampling.
     by: list, optional
         vcolumns used in the partition.
+
     Returns
     -------
     vDataFrame
@@ -7494,7 +7504,14 @@ vcolumns : vcolumn
         if (x <= 0) or (x >= 1):
             raise ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
-            vdf.eval(name, "RANDOM()")
+            random_state = verticapy.options["random_state"]
+            random_seed = (
+                random_state
+                if isinstance(random_state, int)
+                else random.randint(-10e6, 10e6)
+            )
+            random_func = "SEEDED_RANDOM({})".format(random_seed)
+            vdf.eval(name, random_func)
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
             vdf.filter("{} < {}".format(name, x),)
@@ -7775,7 +7792,9 @@ vcolumns : vcolumn
         return result.sort(order_by)
 
     # ---#
-    def select(self, columns: list, check: bool = True):
+    def select(
+        self, columns: list,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns a copy of the vDataFrame with only the selected vcolumns.
@@ -7783,9 +7802,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns to select.
-    check: bool, optional
-        Set it to False to do customized expressions selection.
+        List of the vcolumns to select. It can also be customized expressions.
 
     Returns
     -------
@@ -7797,9 +7814,10 @@ vcolumns : vcolumn
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
         check_types([("columns", columns, [list],)])
-        if check:
-            columns_check(columns, self)
-            columns = vdf_columns_names(columns, self)
+        for i in range(len(columns)):
+            column = vdf_columns_names([columns[i]], self)
+            if column:
+                columns[i] = column[0]
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), self.__genSQL__()
         )
@@ -8569,10 +8587,9 @@ vcolumns : vcolumn
             if not (usecols)
             else ", ".join([str_column(column) for column in usecols])
         )
+        random_func = random_function(nb_split)
         nb_split = (
-            ", RANDOMINT({}) AS _verticapy_split_".format(nb_split)
-            if (nb_split > 0)
-            else ""
+            ", {} AS _verticapy_split_".format(random_func) if (nb_split > 0) else ""
         )
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
@@ -8782,6 +8799,67 @@ vcolumns : vcolumn
         file.write(self._VERTICAPY_VARIABLES_["saving"][-1])
         file.close()
         return self
+
+    # ---#
+    def train_test_split(
+        self,
+        test_size: float = 0.33,
+        order_by: (list, dict) = {},
+        random_state: int = None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Creates 2 vDataFrame (train/test) which can be to use to evaluate a model.
+    The intersection between the train and the test is empty only if a unique
+    order is specified.
+
+    Parameters
+    ----------
+    test_size: float, optional
+        Proportion of the test set comparint to the training set.
+    order_by: dict / list, optional
+        List of the vcolumns to use to sort the data using asc order or
+        dictionary of all the sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+        Without this parameter, the seeded random number used to split the data
+        into train and test can not garanty that no collision occurs. Use this
+        parameter to avoid collisions.
+    random_state: int, optional
+        Integer used to seed the randomness.
+
+    Returns
+    -------
+    tuple
+        (train vDataFrame, test vDataFrame)
+        """
+        check_types(
+            [
+                ("test_size", test_size, [float],),
+                ("order_by", order_by, [list, dict],),
+                ("random_state", random_state, [int],),
+            ]
+        )
+        order_by = sort_str(order_by, self)
+        random_seed = (
+            random_state
+            if isinstance(random_state, int)
+            else random.randint(-10e6, 10e6)
+        )
+        random_func = "SEEDED_RANDOM({})".format(random_seed)
+        test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
+            self.__genSQL__(), random_func, test_size, order_by
+        )
+        train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
+            self.__genSQL__(), random_func, test_size, order_by
+        )
+        return (
+            vdf_from_relation(
+                relation=train_table, cursor=self._VERTICAPY_VARIABLES_["cursor"]
+            ),
+            vdf_from_relation(
+                relation=test_table, cursor=self._VERTICAPY_VARIABLES_["cursor"]
+            ),
+        )
 
     # ---#
     def var(self, columns: list = []):

@@ -173,11 +173,7 @@ def sql(line, cell=""):
                 if options["vdf"]:
                     result = vdf_from_relation("({}) x".format(query), cursor=cursor)
                 else:
-                    result = readSQL(
-                        query,
-                        cursor=cursor,
-                        limit=options["limit"],
-                    )
+                    result = readSQL(query, cursor=cursor, limit=options["limit"],)
             except:
                 raise
                 try:

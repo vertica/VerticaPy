@@ -611,6 +611,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
@@ -815,6 +816,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -955,6 +957,7 @@ xlim: list, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             if not (X):
@@ -1349,6 +1352,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -1502,6 +1506,7 @@ p: int, optional
                 ("index", index, [str], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         self.key_columns = [str_column(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
