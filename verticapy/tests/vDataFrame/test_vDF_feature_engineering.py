@@ -813,7 +813,7 @@ class TestvDFFeatureEngineering:
         smart_meters_copy = smart_meters_vd.copy()
         smart_meters_copy["val"].round(n=1)
 
-        assert smart_meters_copy["val"].mode() == "0.1000000"
+        assert smart_meters_copy["val"].mode() == 0.1000000
 
     def test_vDF_slice(self, smart_meters_vd):
         # start = True

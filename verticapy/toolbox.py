@@ -199,7 +199,10 @@ def check_types(types_list: list = [],):
                 )
                 warnings.warn(warning_message, Warning)
         else:
-            if not (isinstance(elem[1], tuple(elem[2] + [type(None)]))):
+            all_types = elem[2] + [type(None)]
+            if str in all_types:
+                all_types += [str_sql]
+            if not (isinstance(elem[1], tuple(all_types))) :
                 if (
                     (list in elem[2])
                     and isinstance(elem[1], Iterable)
@@ -790,6 +793,7 @@ def print_table(
                     val = val.replace(">", "&gt;")
                     val = val.replace("'", "&apos;")
                     val = val.replace(" ", "&nbsp;")
+                    val = val.replace('"', "&quot;")
                 if val == None:
                     val = "[null]"
                     color = "#999999"
@@ -990,7 +994,7 @@ def sort_str(columns, vdf):
 
 # ---#
 def str_column(column: str):
-    return '"{}"'.format(column.replace('"', ""))
+    return '"{}"'.format(str(column).replace('"', ""))
 
 
 # ---#
@@ -1192,9 +1196,11 @@ class str_sql:
         self.alias = alias
         self.category_ = category
 
+    # ---#
     def __repr__(self):
         return str(self.alias)
 
+    # ---#
     def __str__(self):
         return str(self.alias)
 
@@ -1233,7 +1239,7 @@ class str_sql:
         return str_sql("({}) AND ({})".format(val, self.alias), self.category())
 
     # ---#
-    def between_(self, x, y):
+    def _between(self, x, y):
         val1 = str(format_magic(x))
         val2 = str(format_magic(y))
         return str_sql(
@@ -1241,7 +1247,7 @@ class str_sql:
         )
 
     # ---#
-    def in_(self, x):
+    def _in(self, x):
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
         ), "Method 'in_' only works on iterable elements other than str. Found {}.".format(
@@ -1252,9 +1258,36 @@ class str_sql:
         return str_sql("({}) IN ({})".format(self.alias, val), self.category())
 
     # ---#
+    def _as(self, x):
+        return str_sql("({}) AS {}".format(self.alias, x), self.category())
+
+    # ---#
+    def _distinct(self):
+        return str_sql("DISTINCT ({})".format(self.alias), self.category())
+
+    # ---#
+    def _over(self, by=[], order_by=[]):
+        by = ", ".join([str(elem) for elem in by])
+        if by:
+            by = "PARTITION BY {}".format(by)
+        order_by = ", ".join([str(elem) for elem in order_by])
+        if order_by:
+            order_by = "ORDER BY {}".format(order_by)
+        return str_sql("{} OVER ({} {})".format(self.alias, by, order_by), self.category())
+
+    # ---#
     def __eq__(self, x):
+        op = "IS" if (x == None) and not(isinstance(x, str_sql)) else "="
         val = format_magic(x)
-        return str_sql("({}) = ({})".format(self.alias, val), self.category())
+        if val != "NULL": val = "({})".format(val)
+        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
+
+    # ---#
+    def __ne__(self, x):
+        op = "IS NOT" if (x == None) and not(isinstance(x, str_sql)) else "!="
+        val = format_magic(x)
+        if val != "NULL": val = "({})".format(val)
+        return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
 
     # ---#
     def __ge__(self, x):
