@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import statistics
+import statistics, random
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -208,8 +208,8 @@ tablesample
             ("cutoff", cutoff, [int, float],),
         ]
     )
-    if isinstance(input_relation, vDataFrame):
-        input_relation = input_relation.__genSQL__()
+    if isinstance(input_relation, str):
+        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if estimator.type in (
@@ -256,62 +256,28 @@ tablesample
             "Cross Validation is only possible for Regressors and Classifiers"
         )
     try:
-        schema, relation = schema_relation(estimator.name)
-        schema = str_column(schema)
+        schema = schema_relation(estimator.name)[0]
     except:
-        schema, relation = schema_relation(input_relation)
-        schema, relation = str_column(schema), "model_{}".format(relation)
-    test_name, train_name = (
-        "{}_{}".format(get_session(cursor), int(1 / cv * 100)),
-        "{}_{}".format(get_session(cursor), int(100 - 1 / cv * 100)),
-    )
+        schema = schema_relation(input_relation)[0]
     try:
-        estimator.cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(
-                get_session(cursor)
-            )
-        )
+        input_relation.set_schema_writing(str_column(schema)[1:-1])
     except:
         pass
-    random_func = random_function(cv)
-    query = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, {} AS test FROM {}".format(
-        get_session(cursor), random_func, input_relation
-    )
-    estimator.cursor.execute(query)
     for i in range(cv):
         try:
             estimator.drop()
         except:
             pass
-        estimator.cursor.execute(
-            "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TEST".format(
-                schema, test_name
-            )
-        )
-        estimator.cursor.execute(
-            "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(
-                schema, train_name
-            )
-        )
-        query = "CREATE VIEW {}.VERTICAPY_CV_SPLIT_{}_TEST AS SELECT * FROM {} WHERE (test = {})".format(
-            schema,
-            test_name,
-            "v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(get_session(cursor)),
-            i,
-        )
-        estimator.cursor.execute(query)
-        query = "CREATE VIEW {}.VERTICAPY_CV_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE (test != {})".format(
-            schema,
-            train_name,
-            "v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(get_session(cursor)),
-            i,
-        )
-        estimator.cursor.execute(query)
+        random_state = verticapy.options["random_state"]
+        random_state = random.randint(-10e6, 10e6) if not(random_state) else random_state + i
+        train, test = input_relation.train_test_split(test_size=float(1/cv),
+                                                      order_by = [X[0]],
+                                                      random_state=random_state)
         estimator.fit(
-            "{}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name),
+            train,
             X,
             y,
-            "{}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name),
+            test,
         )
         if estimator.type in (
             "RandomForestRegressor",
@@ -364,17 +330,6 @@ tablesample
     for item in total:
         result["avg"] += [statistics.mean([float(elem) for elem in item])]
         result["std"] += [statistics.stdev([float(elem) for elem in item])]
-    estimator.cursor.execute(
-        "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(
-            get_session(cursor)
-        )
-    )
-    estimator.cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name)
-    )
-    estimator.cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name)
-    )
     return tablesample(values=result).transpose()
 
 

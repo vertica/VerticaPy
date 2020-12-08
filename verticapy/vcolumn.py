@@ -441,8 +441,7 @@ Attributes
                 self.parent[copy_name].transformations += [(func, ctype, category)]
                 self.parent[copy_name].catalog = self.catalog
                 self.parent.__add_to_history__(
-                    "[{}]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
-                        func.replace("{}", ""),
+                    "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
                         copy_name.replace('"', ""),
                         func.replace("{}", "x"),
                     )
@@ -453,8 +452,7 @@ Attributes
                 self.transformations += [(func, ctype, category)]
                 self.parent.__update_catalog__(erase=True, columns=[self.alias])
                 self.parent.__add_to_history__(
-                    "[{}]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
-                        func.replace("{}", ""),
+                    "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
                         self.alias.replace('"', ""),
                         func.replace("{}", "x"),
                     )
@@ -2657,7 +2655,8 @@ Attributes
             top = None
         if not (dropna):
             n = "" if (n == 1) else str(int(n))
-            top = str(top) if (top != None) else None
+            if isinstance(top, decimal.Decimal):
+                top = float(top)
             self.parent.__update_catalog__(
                 {"index": ["top{}".format(n)], self.alias: [top]}
             )

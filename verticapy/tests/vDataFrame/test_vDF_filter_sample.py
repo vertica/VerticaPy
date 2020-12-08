@@ -18,6 +18,7 @@ from verticapy import drop_table
 from verticapy import set_option
 
 set_option("print_info", False)
+set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")

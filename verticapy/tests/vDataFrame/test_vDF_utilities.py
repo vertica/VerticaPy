@@ -15,6 +15,7 @@ import pytest, os, warnings
 from math import ceil, floor
 from verticapy import vDataFrame, get_session, read_vdf, drop_table, drop_view
 from verticapy import set_option
+import verticapy.stats as st
 
 set_option("print_info", False)
 
@@ -46,10 +47,13 @@ def amazon_vd(base):
 class TestvDFUtilities:
     def test_vDF_magic(self, titanic_vd):
         assert (
-            str(titanic_vd["name"].in_(["Madison", "Ashley", None]))
+            str(titanic_vd["name"]._in(["Madison", "Ashley", None]))
             == "(\"name\") IN ('Madison', 'Ashley', NULL)"
         )
-        assert str(titanic_vd["age"].between_(1, 4)) == '("age") BETWEEN (1) AND (4)'
+        assert str(titanic_vd["age"]._between(1, 4)) == '("age") BETWEEN (1) AND (4)'
+        assert str(titanic_vd["age"]._as("age2")) == '("age") AS age2'
+        assert str(titanic_vd["age"]._distinct()) == 'DISTINCT ("age")'
+        assert str(st.sum(titanic_vd["age"])._over(by=[titanic_vd["pclass"], titanic_vd["sex"]], order_by=[titanic_vd["fare"]])) == 'SUM("age") OVER (PARTITION BY "pclass", "sex" ORDER BY "fare")'
         assert str(abs(titanic_vd["age"])) == 'ABS("age")'
         assert str(ceil(titanic_vd["age"])) == 'CEIL("age")'
         assert str(floor(titanic_vd["age"])) == 'FLOOR("age")'
@@ -90,6 +94,8 @@ class TestvDFUtilities:
         assert str(titanic_vd["name"] * 3) == 'REPEAT("name", 3)'
         assert str(titanic_vd["age"] == 3) == '("age") = (3)'
         assert str(3 == titanic_vd["age"]) == '("age") = (3)'
+        assert str(titanic_vd["age"] != 3) == '("age") != (3)'
+        assert str(None != titanic_vd["age"]) == '("age") IS NOT NULL'
 
     def test_vDF_to_csv(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])

@@ -58,6 +58,7 @@ from verticapy.utilities import *
 from verticapy.connections.connect import read_auto_connect
 from verticapy.toolbox import *
 from verticapy.errors import *
+import verticapy.stats as st
 
 ##
 #                                           _____
@@ -1736,8 +1737,6 @@ vcolumns : vcolumn
                     nb_precomputed += 1
                     if pre_comp == None or pre_comp != pre_comp:
                         expr = "NULL"
-                    elif isinstance(pre_comp, str):
-                        expr = "'{}'".format(pre_comp.replace("'", "''"))
                     elif isinstance(pre_comp, (int, float)):
                         expr = pre_comp
                     else:
@@ -1776,9 +1775,9 @@ vcolumns : vcolumn
                                 fun
                             )
                         )
-                    expr = "'{}'".format(self[column].mode(n=n))
+                    expr = format_magic(self[column].mode(n=n))
                 elif fun.lower() in ("mode"):
-                    expr = "'{}'".format(self[column].mode(n=1))
+                    expr = format_magic(self[column].mode(n=1))
                 elif fun.lower() in ("kurtosis", "kurt"):
                     count, avg, std = (
                         self.aggregate(func=["count", "avg", "stddev"], columns=columns)
@@ -1942,13 +1941,13 @@ vcolumns : vcolumn
             if nb_precomputed == len(func) * len(columns):
                 self._VERTICAPY_VARIABLES_["cursor"].execute(
                     "SELECT {}".format(
-                        ", ".join([item for sublist in agg for item in sublist])
+                        ", ".join([str(item) for sublist in agg for item in sublist])
                     )
                 )
             else:
                 self.__executeSQL__(
                     "SELECT {} FROM {} LIMIT 1".format(
-                        ", ".join([item for sublist in agg for item in sublist]),
+                        ", ".join([str(item) for sublist in agg for item in sublist]),
                         self.__genSQL__(),
                     ),
                     title="Computes the different aggregations.",
@@ -2024,7 +2023,7 @@ vcolumns : vcolumn
                                 )
                                 self.__executeSQL__(
                                     query,
-                                    title="Computes the different aggregations one vcolumn at a time.",
+                                    title="Computes the different aggregations one vcolumn & one agg at a time.",
                                 )
                                 result = self._VERTICAPY_VARIABLES_[
                                     "cursor"
@@ -3219,7 +3218,6 @@ vcolumns : vcolumn
     vDataFrame[].decode : Encodes the vcolumn using a User Defined Encoding.
     vDataFrame.eval : Evaluates a customized expression.
         """
-        import verticapy.stats as st
 
         check_types([("name", name, [str],)])
         return self.eval(name=name, expr=st.case_when(*argv))
@@ -5060,14 +5058,14 @@ vcolumns : vcolumn
             if column:
                 columns[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
-            ", ".join(columns + expr),
+            ", ".join([str(elem) for elem in columns] + [str(elem) for elem in expr]),
             self.__genSQL__(),
-            ", ".join([str(i + 1) for i in range(len(columns))]),
+            ", ".join([str(i + 1) for i in range(len([str(elem) for elem in columns]))]),
         )
         return self.__vdf_from_relation__(
             relation,
             "groupby",
-            "[Groupby]: The columns were grouped by {}".format(", ".join(columns)),
+            "[Groupby]: The columns were grouped by {}".format(", ".join([str(elem) for elem in columns])),
         )
 
     # ---#
@@ -7818,6 +7816,8 @@ vcolumns : vcolumn
             column = vdf_columns_names([columns[i]], self)
             if column:
                 columns[i] = column[0]
+            else:
+                columns[i] = str(columns[i])
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), self.__genSQL__()
         )

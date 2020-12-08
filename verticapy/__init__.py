@@ -63,7 +63,7 @@ from verticapy.utilities import *
 from verticapy.connections.connect import *
 
 # SQL Functions
-from verticapy.stats import *
+import verticapy.stats
 
 # Learn
 import verticapy.learn

@@ -1393,13 +1393,16 @@ class Supervised(vModel):
         ):
             self.coef_ = self.get_model_attribute("details")
         elif self.type in ("RandomForestClassifier", "MultinomialNB"):
-            self.cursor.execute(
-                "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                    self.y, input_relation, self.y
+            if not(isinstance(input_relation, vDataFrame)):
+                self.cursor.execute(
+                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                        self.y, input_relation, self.y
+                    )
                 )
-            )
-            classes = self.cursor.fetchall()
-            self.classes_ = [item[0] for item in classes]
+                classes = self.cursor.fetchall()
+                self.classes_ = [item[0] for item in classes]
+            else:
+                self.classes_ = input_relation[self.y].distinct()
         return self
 
 

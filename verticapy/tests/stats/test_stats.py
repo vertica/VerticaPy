@@ -43,6 +43,42 @@ def amazon_vd(base):
 
 
 class TestStats:
+    def test_avg(self, titanic_vd):
+        assert str(st.avg(titanic_vd["age"])) == 'AVG("age")'
+
+    def test_bool_and(self, titanic_vd):
+        assert str(st.bool_and(titanic_vd["age"])) == 'BOOL_AND("age")'
+
+    def test_bool_or(self, titanic_vd):
+        assert str(st.bool_or(titanic_vd["age"])) == 'BOOL_OR("age")'
+
+    def test_bool_xor(self, titanic_vd):
+        assert str(st.bool_xor(titanic_vd["age"])) == 'BOOL_XOR("age")'
+
+    def test_count(self, titanic_vd):
+        assert str(st.count(titanic_vd["age"])) == 'COUNT("age")'
+
+    def test_max(self, titanic_vd):
+        assert str(st.max(titanic_vd["age"])) == 'MAX("age")'
+
+    def test_median(self, titanic_vd):
+        assert str(st.median(titanic_vd["age"])) == 'APPROXIMATE_MEDIAN("age")'
+
+    def test_min(self, titanic_vd):
+        assert str(st.min(titanic_vd["age"])) == 'MIN("age")'
+
+    def test_quantile(self, titanic_vd):
+        assert str(st.quantile(titanic_vd["age"], 0.3)) == 'APPROXIMATE_PERCENTILE("age" USING PARAMETERS percentile = 0.3)'
+
+    def test_std(self, titanic_vd):
+        assert str(st.std(titanic_vd["age"])) == 'STDDEV("age")'
+
+    def test_sum(self, titanic_vd):
+        assert str(st.sum(titanic_vd["age"])) == 'SUM("age")'
+
+    def test_var(self, titanic_vd):
+        assert str(st.var(titanic_vd["age"])) == 'VARIANCE("age")'
+
     def test_abs(self, titanic_vd):
         assert str(st.abs(titanic_vd["age"])) == 'ABS("age")'
 

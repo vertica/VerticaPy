@@ -655,7 +655,7 @@ tablesample
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if estimator:
         num_classes = len(estimator.classes_)
-        labels = labels if (num_classes > 2) else [estimator.classes_[1]]
+        labels = labels if (num_classes != 2) else [estimator.classes_[1]]
     else:
         cursor, conn = check_cursor(cursor)[0:2]
         labels = [1] if not (labels) else labels

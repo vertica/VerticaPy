@@ -57,6 +57,7 @@ import vertica_python
 from verticapy.toolbox import *
 
 #
+# Variables
 # ---#
 pi = str_sql("PI()")
 e = str_sql("EXP(1)")
@@ -64,6 +65,257 @@ tau = str_sql("2 * PI()")
 inf = str_sql("'inf'::float")
 nan = str_sql("'nan'::float")
 
+# Aggregate & Analytical functions
+# ---#
+def avg(expr):
+    """
+---------------------------------------------------------------------------
+Computes the average (arithmetic mean) of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("AVG({})".format(expr), "float")
+mean=avg
+
+# ---#
+def bool_and(expr):
+    """
+---------------------------------------------------------------------------
+Processes Boolean values and returns a Boolean value result. If all input 
+values are true, BOOL_AND returns True. Otherwise it returns False.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("BOOL_AND({})".format(expr), "int")
+
+# ---#
+def bool_or(expr):
+    """
+---------------------------------------------------------------------------
+Processes Boolean values and returns a Boolean value result. If at least one 
+input value is true, BOOL_OR returns True. Otherwise, it returns False.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("BOOL_OR({})".format(expr), "int")
+
+
+# ---#
+def bool_xor(expr):
+    """
+---------------------------------------------------------------------------
+Processes Boolean values and returns a Boolean value result. If specifically 
+only one input value is true, BOOL_XOR returns True. Otherwise, it returns 
+False.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("BOOL_XOR({})".format(expr), "int")
+
+
+# ---#
+def count(expr):
+    """
+---------------------------------------------------------------------------
+Returns as a BIGINT the number of rows in each group where the expression is 
+not NULL.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("COUNT({})".format(expr), "int")
+
+# ---#
+def max(expr):
+    """
+---------------------------------------------------------------------------
+Returns the greatest value of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("MAX({})".format(expr), "float")
+
+
+# ---#
+def median(expr):
+    """
+---------------------------------------------------------------------------
+Computes the approximate median of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("APPROXIMATE_MEDIAN({})".format(expr), "float")
+
+
+# ---#
+def min(expr):
+    """
+---------------------------------------------------------------------------
+Returns the smallest value of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("MIN({})".format(expr), "float")
+
+
+# ---#
+def quantile(expr, number: float):
+    """
+---------------------------------------------------------------------------
+Computes the approximate percentile of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+number: float
+    Percentile value, which must be a FLOAT constant ranging from 0 to 1 
+    (inclusive).
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(expr, number), "float")
+
+
+# ---#
+def std(expr):
+    """
+---------------------------------------------------------------------------
+Evaluates the statistical sample standard deviation for each member of the 
+group.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("STDDEV({})".format(expr), "float")
+stddev=std
+
+
+# ---#
+def sum(expr):
+    """
+---------------------------------------------------------------------------
+Computes the sum of an expression over a group of rows.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("SUM({})".format(expr), "float")
+
+
+# ---#
+def var(expr):
+    """
+---------------------------------------------------------------------------
+Evaluates the sample variance for each row of the group.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("VARIANCE({})".format(expr), "float")
+variance=var
+
+
+# Mathematical Functions
 # ---#
 def abs(expr):
     """

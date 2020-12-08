@@ -441,6 +441,7 @@ def readSQL(
     except:
         verticapy.options["time_on"] = time_on_init
         verticapy.options["query_on"] = query_on_init
+        raise
     verticapy.options["time_on"] = time_on_init
     verticapy.options["query_on"] = query_on_init
     result.count = count
