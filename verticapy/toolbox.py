@@ -1247,7 +1247,13 @@ class str_sql:
         )
 
     # ---#
-    def _in(self, x):
+    def _in(self, *argv):
+        if (len(argv) == 1) and (isinstance(argv[0], list)):
+            x = argv[0]
+        elif (len(argv) == 0):
+            ParameterError("Method 'in_' doesn't work with no parameters.")
+        else:
+            x = [elem for elem in argv]
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
         ), "Method 'in_' only works on iterable elements other than str. Found {}.".format(

@@ -1709,6 +1709,13 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+        def agg_format(item):
+            if isinstance(item, (float, int)):
+                return "'{}'".format(item)
+            elif isinstance(item, type(None)):
+                return 'NULL'
+            else:
+                return str(item)
         check_types([("func", func, [list],), ("columns", columns, [list],)])
         columns_check(columns, self)
         if not (columns):
@@ -1965,7 +1972,7 @@ vcolumns : vcolumn
         except:
             try:
                 query = [
-                    "SELECT {} FROM vdf_table LIMIT 1".format(", ".join(elem))
+                    "SELECT {} FROM vdf_table LIMIT 1".format(", ".join([agg_format(item) for item in elem]))
                     for elem in agg
                 ]
                 query = (
@@ -1994,7 +2001,7 @@ vcolumns : vcolumn
                             pre_comp = self.__get_catalog_value__(columns[i], fun)
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 query = "SELECT {} FROM {}".format(
-                                    ", ".join(elem), self.__genSQL__()
+                                    ", ".join([agg_format(item) for item in elem]), self.__genSQL__()
                                 )
                                 self.__executeSQL__(
                                     query,
@@ -2035,6 +2042,11 @@ vcolumns : vcolumn
             for idx in range(len(values[elem])):
                 if isinstance(values[elem][idx], decimal.Decimal):
                     values[elem][idx] = float(values[elem][idx])
+                elif isinstance(values[elem][idx], str) and "top" not in elem:
+                    try:
+                        values[elem][idx] = float(values[elem][idx])
+                    except:
+                        pass
         self.__update_catalog__(values)
         return tablesample(values=values).transpose()
 
