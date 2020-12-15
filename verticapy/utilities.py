@@ -599,7 +599,7 @@ model
                 from verticapy.learn.preprocessing import Normalizer
 
                 model = Normalizer(name, cursor)
-                model.param_ = self.get_model_attribute("details")
+                model.param_ = self.get_attr("details")
                 model.X = [
                     '"' + item + '"' for item in model.param_.values["column_name"]
                 ]
@@ -849,9 +849,9 @@ model
             float(parameters_dict["alpha"]),
         )
     elif model_type == "naive_bayes":
-        from verticapy.learn.naive_bayes import MultinomialNB
+        from verticapy.learn.naive_bayes import NaiveBayes
 
-        model = MultinomialNB(name, cursor, float(parameters_dict["alpha"]))
+        model = NaiveBayes(name, cursor, float(parameters_dict["alpha"]))
     elif model_type == "svm_regressor":
         from verticapy.learn.svm import LinearSVR
 
@@ -892,8 +892,8 @@ model
             float(parameters_dict["epsilon"]),
         )
         model.parameters["n_cluster"] = int(info.split(",")[-1])
-        model.cluster_centers_ = model.get_model_attribute("centers")
-        result = model.get_model_attribute("metrics").values["metrics"][0]
+        model.cluster_centers_ = model.get_attr("centers")
+        result = model.get_attr("metrics").values["metrics"][0]
         values = {
             "index": [
                 "Between-Cluster Sum of Squares",
@@ -930,21 +930,21 @@ model
             float(parameters_dict["epsilon"]),
         )
         model.parameters["n_cluster"] = int(info.split(",")[-1])
-        self.metrics_ = self.get_model_attribute("Metrics")
-        self.cluster_centers_ = self.get_model_attribute("BKTree")
+        self.metrics_ = self.get_attr("Metrics")
+        self.cluster_centers_ = self.get_attr("BKTree")
     elif model_type == "pca":
         from verticapy.learn.decomposition import PCA
 
         model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
-        model.components_ = model.get_model_attribute("principal_components")
-        model.explained_variance_ = model.get_model_attribute("singular_values")
-        model.mean_ = model.get_model_attribute("columns")
+        model.components_ = model.get_attr("principal_components")
+        model.explained_variance_ = model.get_attr("singular_values")
+        model.mean_ = model.get_attr("columns")
     elif model_type == "svd":
         from verticapy.learn.decomposition import SVD
 
         model = SVD(name, cursor)
-        model.singular_values_ = model.get_model_attribute("right_singular_vectors")
-        model.explained_variance_ = model.get_model_attribute("singular_values")
+        model.singular_values_ = model.get_attr("right_singular_vectors")
+        model.explained_variance_ = model.get_attr("singular_values")
     elif model_type == "one_hot_encoder_fit":
         from verticapy.learn.preprocessing import OneHotEncoder
 
@@ -965,7 +965,7 @@ model
                     cursor=model.cursor,
                 )
             except:
-                model.param_ = model.get_model_attribute("varchar_categories")
+                model.param_ = model.get_attr("varchar_categories")
     model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
     model.test_relation = test_relation if (test_relation) else model.input_relation
     if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
@@ -993,7 +993,7 @@ model
     elif model_type in ("svm_classifier", "logistic_reg"):
         model.classes_ = [0, 1]
     if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
-        model.coef_ = model.get_model_attribute("details")
+        model.coef_ = model.get_attr("details")
     return model
 
 
@@ -1599,6 +1599,8 @@ def set_option(option: str, value: (bool, int, str) = None):
         cache        : bool
             If set to True, the vDataFrame will save in memory the computed
             aggregations.
+        colors       : list
+            List of the colors used to draw the graphics.
         max_rows     : int
             Maximum number of rows to display. If the parameter is incorrect, 
             nothing will be changed.
@@ -1634,6 +1636,7 @@ def set_option(option: str, value: (bool, int, str) = None):
                 option,
                 [
                     "cache",
+                    "colors",
                     "max_rows",
                     "max_columns",
                     "percent_bar",
@@ -1650,6 +1653,10 @@ def set_option(option: str, value: (bool, int, str) = None):
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
             verticapy.options["cache"] = value
+    elif option == "colors":
+        check_types([("value", value, [list])])
+        if isinstance(value, list):
+            verticapy.options["colors"] = [str(elem) for elem in value]
     elif option == "max_rows":
         check_types([("value", value, [int, float])])
         if value >= 0:
@@ -1904,6 +1911,44 @@ The tablesample attributes are the same than the parameters.
             values[item[0]] = item[1 : len(item)]
         self.values = values
         return self
+
+    # ---#
+    def to_list(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the tablesample to a list.
+
+    Returns
+    -------
+    list
+        Python list.
+        """
+        result = []
+        all_cols = [elem for elem in self.values]
+        if all_cols == []:
+            return []
+        for i in range(len(self.values[all_cols[0]])):
+            result_tmp = []
+            for elem in self.values:
+                if elem != "index":
+                    result_tmp += [self.values[elem][i]]
+            result += [result_tmp]
+        return result
+
+    # ---#
+    def to_numpy(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the tablesample to a numpy array.
+
+    Returns
+    -------
+    numpy.array
+        Numpy Array.
+        """
+        import numpy as np
+
+        return np.array(self.to_list())
 
     # ---#
     def to_pandas(self):

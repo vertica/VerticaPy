@@ -45,6 +45,18 @@ def titanic_vd(base):
         )
 
 
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    yield amazon
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
+
+
 class TestvDFFilterSample:
     def test_vDF_search(self, titanic_vd):
         # testing with one condition
@@ -99,6 +111,17 @@ class TestvDFFilterSample:
     def test_vDF_first(self, smart_meters_vd):
         result = smart_meters_vd.copy().first(ts="time", offset="6 months",)
         assert result.shape() == (3427, 3)
+
+    def test_vDF_isin(self, amazon_vd):
+        # testing vDataFrame.isin
+        assert amazon_vd.isin(
+            {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
+        ).shape() == (90, 3)
+
+        # testing vDataFrame[].isin
+        assert amazon_vd["state"].isin(
+            val=["SERGIPE", "TOCANTINS", "PARIS"]
+        ).shape() == (478, 3)
 
     def test_vDF_last(self, smart_meters_vd):
         result = smart_meters_vd.copy().last(ts="time", offset="1 year",)

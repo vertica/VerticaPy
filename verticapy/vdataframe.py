@@ -1709,13 +1709,15 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+
         def agg_format(item):
             if isinstance(item, (float, int)):
                 return "'{}'".format(item)
             elif isinstance(item, type(None)):
-                return 'NULL'
+                return "NULL"
             else:
                 return str(item)
+
         check_types([("func", func, [list],), ("columns", columns, [list],)])
         columns_check(columns, self)
         if not (columns):
@@ -1972,7 +1974,9 @@ vcolumns : vcolumn
         except:
             try:
                 query = [
-                    "SELECT {} FROM vdf_table LIMIT 1".format(", ".join([agg_format(item) for item in elem]))
+                    "SELECT {} FROM vdf_table LIMIT 1".format(
+                        ", ".join([agg_format(item) for item in elem])
+                    )
                     for elem in agg
                 ]
                 query = (
@@ -2001,7 +2005,8 @@ vcolumns : vcolumn
                             pre_comp = self.__get_catalog_value__(columns[i], fun)
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 query = "SELECT {} FROM {}".format(
-                                    ", ".join([agg_format(item) for item in elem]), self.__genSQL__()
+                                    ", ".join([agg_format(item) for item in elem]),
+                                    self.__genSQL__(),
                                 )
                                 self.__executeSQL__(
                                     query,
@@ -3864,7 +3869,6 @@ vcolumns : vcolumn
         kernel: str = "gaussian",
         nbins: int = 50,
         xlim: tuple = None,
-        color: str = "#FE5016",
         ax=None,
     ):
         """
@@ -3890,8 +3894,6 @@ vcolumns : vcolumn
         the time of the learning and the scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
-    color: str, optional
-        The Density Plot color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
 
@@ -3909,7 +3911,6 @@ vcolumns : vcolumn
                 ("columns", columns, [list],),
                 ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
                 ("bandwidth", bandwidth, [int, float],),
-                ("color", color, [str],),
                 ("nbins", nbins, [float, int],),
             ]
         )
@@ -5072,12 +5073,16 @@ vcolumns : vcolumn
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
             ", ".join([str(elem) for elem in columns] + [str(elem) for elem in expr]),
             self.__genSQL__(),
-            ", ".join([str(i + 1) for i in range(len([str(elem) for elem in columns]))]),
+            ", ".join(
+                [str(i + 1) for i in range(len([str(elem) for elem in columns]))]
+            ),
         )
         return self.__vdf_from_relation__(
             relation,
             "groupby",
-            "[Groupby]: The columns were grouped by {}".format(", ".join([str(elem) for elem in columns])),
+            "[Groupby]: The columns were grouped by {}".format(
+                ", ".join([str(elem) for elem in columns])
+            ),
         )
 
     # ---#
@@ -5710,7 +5715,8 @@ vcolumns : vcolumn
     def isin(self, val: dict):
         """
     ---------------------------------------------------------------------------
-    Looks if some specific records are in the vDataFrame.
+    Looks if some specific records are in the vDataFrame and it returns the new 
+    vDataFrame of the search.
 
     Parameters
     ----------
@@ -5722,13 +5728,13 @@ vcolumns : vcolumn
 
     Returns
     -------
-    list
-        List containing the bools of the different searches.
+    vDataFrame
+        The vDataFrame of the search.
         """
         check_types([("val", val, [dict],)])
         columns_check([elem for elem in val], self)
         n = len(val[list(val.keys())[0]])
-        isin = []
+        result = []
         for i in range(n):
             tmp_query = []
             for column in val:
@@ -5739,14 +5745,8 @@ vcolumns : vcolumn
                         str_column(column)
                         + " = '{}'".format(str(val[column][i]).replace("'", "''"))
                     ]
-            query = "SELECT * FROM {} WHERE {} LIMIT 1".format(
-                self.__genSQL__(), " AND ".join(tmp_query)
-            )
-            self.__executeSQL__(
-                query, title="Checks if the input value is in the vDataFrame."
-            )
-            isin += [self._VERTICAPY_VARIABLES_["cursor"].fetchone() != None]
-        return isin
+            result += [" AND ".join(tmp_query)]
+        return self.search(" OR ".join(result))
 
     # ---#
     def join(
@@ -8640,6 +8640,57 @@ vcolumns : vcolumn
         return self
 
     # ---#
+    def to_geopandas(self, geometry: str):
+        """
+    ---------------------------------------------------------------------------
+    Converts the vDataFrame to a Geopandas DataFrame.
+
+    \u26A0 Warning : The data will be loaded in memory.
+
+    Parameters
+    ----------
+    geometry: str
+        Geometry object used to create the GeoDataFrame.
+        It can also be a Geography object but it will be casted to Geometry.
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        The geopandas.GeoDataFrame of the current vDataFrame relation.
+        """
+        try:
+            from geopandas import GeoDataFrame
+            from shapely import wkt
+        except:
+            raise ImportError(
+                "The geopandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install geopandas' in your terminal to install the module."
+            )
+        try:
+            import pandas as pd
+        except:
+            raise ImportError(
+                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
+            )
+        columns = self.get_columns(exclude_columns=[geometry])
+        columns = ", ".join(columns)
+        if columns:
+            columns += ", "
+        columns += "ST_AsText({}) AS {}".format(geometry, geometry)
+        query = "SELECT {} FROM {}{}".format(
+            columns, self.__genSQL__(), last_order_by(self)
+        )
+        self.__executeSQL__(query, title="Gets the vDataFrame values.")
+        column_names = [
+            column[0] for column in self._VERTICAPY_VARIABLES_["cursor"].description
+        ]
+        data = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        df = pd.DataFrame(data)
+        df.columns = column_names
+        df[geometry] = df[geometry].apply(wkt.loads)
+        df = GeoDataFrame(df, geometry=geometry)
+        return df
+
+    # ---#
     def to_json(
         self,
         name: str,
@@ -8753,6 +8804,23 @@ vcolumns : vcolumn
                 ]
             ]
         return final_result
+
+    # ---#
+    def to_numpy(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the vDataFrame to a Numpy array.
+
+    \u26A0 Warning : The data will be loaded in memory.
+
+    Returns
+    -------
+    numpy.array
+        The numpy array of the current vDataFrame relation.
+        """
+        import numpy as np
+
+        return np.array(self.to_list())
 
     # ---#
     def to_pandas(self):

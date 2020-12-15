@@ -392,6 +392,36 @@ method: str, optional
 
 
 # ---#
+class StandardScaler(Normalizer):
+    """i.e. Normalizer with param method = 'zscore'"""
+
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "zscore")
+
+
+# ---#
+class RobustScaler(Normalizer):
+    """i.e. Normalizer with param method = 'robust_zscore'"""
+
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "robust_zscore")
+
+
+# ---#
+class MinMaxScaler(Normalizer):
+    """i.e. Normalizer with param method = 'minmax'"""
+
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "minmax")
+
+
+# ---#
 class OneHotEncoder(Preprocessing):
     """
 ---------------------------------------------------------------------------
@@ -411,7 +441,7 @@ Attributes
 After the object creation, all the parameters become attributes. 
 The model will also create extra attributes when fitting the model:
 
-param: tablesample
+param_: tablesample
 	The One Hot Encoder parameters.
 input_relation: str
 	Train relation.

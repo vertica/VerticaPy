@@ -123,8 +123,29 @@ class TestLogisticRegression:
     def test_plot(self):
         pass
 
-    def test_get_model_attribute(self, model):
-        attr = model.get_model_attribute()
+    def test_to_sklearn(self, model):
+        md = model.to_sklearn()
+        model.cursor.execute(
+            "SELECT PREDICT_LOGISTIC_REG(11.0, 1993. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
+        model.cursor.execute(
+            "SELECT PREDICT_LOGISTIC_REG(11.0, 1993. USING PARAMETERS model_name = '{}', match_by_pos=True, type='probability')".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict_proba([[11.0, 1993.0]])[0][1])
+
+    def test_shapExplainer(self, model):
+        explainer = model.shapExplainer()
+        assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
+
+    def test_get_attr(self, model):
+        attr = model.get_attr()
         assert attr["attr_name"] == [
             "details",
             "regularization",
@@ -143,7 +164,7 @@ class TestLogisticRegression:
         ]
         assert attr["#_of_rows"] == [3, 1, 1, 1, 1, 1]
 
-        details = model.get_model_attribute("details")
+        details = model.get_attr("details")
         assert details["predictor"] == ["Intercept", "age", "fare"]
         assert details["coefficient"][0] == pytest.approx(-0.477190254617772)
         assert details["coefficient"][1] == pytest.approx(-0.0152670631243078)
@@ -158,21 +179,15 @@ class TestLogisticRegression:
         assert details["p_value"][1] == pytest.approx(0.00174410802172094)
         assert details["p_value"][2] == pytest.approx(2.99885239324552e-13)
 
-        reg = model.get_model_attribute("regularization")
+        reg = model.get_attr("regularization")
         assert reg["type"][0] == "none"
         assert reg["lambda"][0] == 1.0
 
-        assert model.get_model_attribute("iteration_count")["iteration_count"][0] == 4
+        assert model.get_attr("iteration_count")["iteration_count"][0] == 4
+        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 238
+        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 996
         assert (
-            model.get_model_attribute("rejected_row_count")["rejected_row_count"][0]
-            == 238
-        )
-        assert (
-            model.get_model_attribute("accepted_row_count")["accepted_row_count"][0]
-            == 996
-        )
-        assert (
-            model.get_model_attribute("call_string")["call_string"][0]
+            model.get_attr("call_string")["call_string"][0]
             == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
         )
 
@@ -184,6 +199,8 @@ class TestLogisticRegression:
             "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
+            "C": 1.0,
+            "l1_ratio": None,
         }
 
     def test_prc_curve(self, model):

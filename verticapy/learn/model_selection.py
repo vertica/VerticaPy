@@ -57,6 +57,7 @@ from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
+from verticapy.plot import gen_colors
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -229,7 +230,7 @@ tablesample
             ]
         }
     elif estimator.type in (
-        "MultinomialNB",
+        "NaiveBayes",
         "RandomForestClassifier",
         "LinearSVC",
         "LogisticRegression",
@@ -269,15 +270,14 @@ tablesample
         except:
             pass
         random_state = verticapy.options["random_state"]
-        random_state = random.randint(-10e6, 10e6) if not(random_state) else random_state + i
-        train, test = input_relation.train_test_split(test_size=float(1/cv),
-                                                      order_by = [X[0]],
-                                                      random_state=random_state)
+        random_state = (
+            random.randint(-10e6, 10e6) if not (random_state) else random_state + i
+        )
+        train, test = input_relation.train_test_split(
+            test_size=float(1 / cv), order_by=[X[0]], random_state=random_state
+        )
         estimator.fit(
-            train,
-            X,
-            y,
-            test,
+            train, X, y, test,
         )
         if estimator.type in (
             "RandomForestRegressor",
@@ -431,7 +431,7 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_facecolor("#F5F5F5")
     ax.grid()
-    ax.plot(L, all_within_cluster_SS, marker="s", color="#FE5016")
+    ax.plot(L, all_within_cluster_SS, marker="s", color=gen_colors()[0])
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
@@ -508,12 +508,12 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Cumulative Data Fraction")
-    ax.plot(decision_boundary, lift, color="#FE5016")
+    ax.plot(decision_boundary, lift, color=gen_colors()[0])
     ax.plot(decision_boundary, positive_prediction_ratio, color="#444444")
     ax.set_title("Lift Table")
     ax.set_axisbelow(True)
     ax.grid()
-    color1 = mpatches.Patch(color="#FE5016", label="Cumulative Lift")
+    color1 = mpatches.Patch(color=gen_colors()[0], label="Cumulative Lift")
     color2 = mpatches.Patch(color="#444444", label="Cumulative Capture Rate")
     ax.legend(handles=[color1, color2])
     return tablesample(
@@ -612,7 +612,7 @@ tablesample
     ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    ax.plot(recall, precision, color="#FE5016")
+    ax.plot(recall, precision, color=gen_colors()[0])
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     ax.set_title("PRC Curve\nAUC = " + str(auc))
@@ -729,7 +729,7 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_xlabel("False Positive Rate (1-Specificity)")
     ax.set_ylabel("True Positive Rate (Sensitivity)")
-    ax.plot(false_positive, true_positive, color="#FE5016")
+    ax.plot(false_positive, true_positive, color=gen_colors()[0])
     ax.plot([0, 1], [0, 1], color="#444444")
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)

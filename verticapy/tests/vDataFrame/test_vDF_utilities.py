@@ -44,6 +44,18 @@ def amazon_vd(base):
         )
 
 
+@pytest.fixture(scope="module")
+def world_vd(base):
+    from verticapy.learn.datasets import load_world
+
+    world = load_world(cursor=base.cursor)
+    yield world
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.world", cursor=base.cursor,
+        )
+
+
 class TestvDFUtilities:
     def test_vDF_magic(self, titanic_vd):
         assert (
@@ -53,7 +65,15 @@ class TestvDFUtilities:
         assert str(titanic_vd["age"]._between(1, 4)) == '("age") BETWEEN (1) AND (4)'
         assert str(titanic_vd["age"]._as("age2")) == '("age") AS age2'
         assert str(titanic_vd["age"]._distinct()) == 'DISTINCT ("age")'
-        assert str(st.sum(titanic_vd["age"])._over(by=[titanic_vd["pclass"], titanic_vd["sex"]], order_by=[titanic_vd["fare"]])) == 'SUM("age") OVER (PARTITION BY "pclass", "sex" ORDER BY "fare")'
+        assert (
+            str(
+                st.sum(titanic_vd["age"])._over(
+                    by=[titanic_vd["pclass"], titanic_vd["sex"]],
+                    order_by=[titanic_vd["fare"]],
+                )
+            )
+            == 'SUM("age") OVER (PARTITION BY "pclass", "sex" ORDER BY "fare")'
+        )
         assert str(abs(titanic_vd["age"])) == 'ABS("age")'
         assert str(ceil(titanic_vd["age"])) == 'CEIL("age")'
         assert str(floor(titanic_vd["age"])) == 'FLOOR("age")'
@@ -274,12 +294,23 @@ class TestvDFUtilities:
         assert len(result) == 20
         assert len(result[0]) == 2
 
+    def test_vDF_to_numpy(self, titanic_vd):
+        result = titanic_vd.select(["age", "survived"])[:20].to_numpy()
+        result.shape == (20, 2)
+
     def test_vDF_to_pandas(self, titanic_vd):
         import pandas
 
         result = titanic_vd.to_pandas()
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
+
+    def test_vDF_to_geopandas(self, world_vd):
+        import geopandas
+
+        result = world_vd.to_geopandas(geometry="geometry")
+        assert isinstance(result, geopandas.GeoDataFrame)
+        assert result.shape == (177, 4)
 
     def test_vDF_to_vdf(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])

@@ -65,7 +65,300 @@ tau = str_sql("2 * PI()")
 inf = str_sql("'inf'::float")
 nan = str_sql("'nan'::float")
 
+# Regular Expressions
+# ---#
+def regexp_count(
+    expr, pattern, position: int = 1,
+):
+    """
+---------------------------------------------------------------------------
+Returns the number times a regular expression matches a string.
+
+Parameters
+----------
+expr: object
+    Expression.
+pattern: object
+    The regular expression to search for within string.
+position: int, optional
+    The number of characters from the start of the string where the function 
+    should start searching for matches.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    pattern = format_magic(pattern)
+    return str_sql("REGEXP_COUNT({}, {}, {})".format(expr, pattern, position), "int")
+
+
+# ---#
+def regexp_ilike(expr, pattern):
+    """
+---------------------------------------------------------------------------
+Returns true if the string contains a match for the regular expression.
+
+Parameters
+----------
+expr: object
+    Expression.
+pattern: object
+    A string containing the regular expression to match against the string.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    pattern = format_magic(pattern)
+    return str_sql("REGEXP_ILIKE({}, {})".format(expr, pattern))
+
+
+# ---#
+def regexp_instr(
+    expr, pattern, position: int = 1, occurrence: int = 1, return_position: int = 0
+):
+    """
+---------------------------------------------------------------------------
+Returns the starting or ending position in a string where a regular 
+expression matches.
+
+Parameters
+----------
+expr: object
+    Expression.
+pattern: object
+    The regular expression to search for within the string.
+position: int, optional
+    The number of characters from the start of the string where the function 
+    should start searching for matches.
+occurrence: int, optional
+    Controls which occurrence of a pattern match in the string to return.
+return_position: int, optional
+    Sets the position within the string to return.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    pattern = format_magic(pattern)
+    return str_sql(
+        "REGEXP_INSTR({}, {}, {}, {}, {})".format(
+            expr, pattern, position, occurrence, return_position
+        )
+    )
+
+
+# ---#
+def regexp_like(expr, pattern):
+    """
+---------------------------------------------------------------------------
+Returns true if the string matches the regular expression.
+
+Parameters
+----------
+expr: object
+    Expression.
+pattern: object
+    A string containing the regular expression to match against the string.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    pattern = format_magic(pattern)
+    return str_sql("REGEXP_LIKE({}, {})".format(expr, pattern))
+
+
+# ---#
+def regexp_replace(expr, target, replacement, position: int = 1, occurrence: int = 1):
+    """
+---------------------------------------------------------------------------
+Replace all occurrences of a substring that match a regular expression 
+with another substring.
+
+Parameters
+----------
+expr: object
+    Expression.
+target: object
+    The regular expression to search for within the string.
+replacement: object
+    The string to replace matched substrings.
+position: int, optional
+    The number of characters from the start of the string where the function 
+    should start searching for matches.
+occurrence: int, optional
+    Controls which occurrence of a pattern match in the string to return.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    target = format_magic(target)
+    replacement = format_magic(replacement)
+    return str_sql(
+        "REGEXP_REPLACE({}, {}, {}, {}, {})".format(
+            expr, target, replacement, position, occurrence
+        )
+    )
+
+
+# ---#
+def regexp_substr(expr, pattern, position: int = 1, occurrence: int = 1):
+    """
+---------------------------------------------------------------------------
+Returns the substring that matches a regular expression within a string.
+
+Parameters
+----------
+expr: object
+    Expression.
+pattern: object
+    The regular expression to find a substring to extract.
+position: int, optional
+    The number of characters from the start of the string where the function 
+    should start searching for matches.
+occurrence: int, optional
+    Controls which occurrence of a pattern match in the string to return.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    pattern = format_magic(pattern)
+    return str_sql(
+        "REGEXP_SUBSTR({}, {}, {}, {})".format(expr, pattern, position, occurrence)
+    )
+
+
+# String Functions
+# ---#
+def length(expr):
+    """
+---------------------------------------------------------------------------
+Returns the length of a string.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("LENGTH({})".format(expr), "int")
+
+
+# ---#
+def lower(expr):
+    """
+---------------------------------------------------------------------------
+Returns a VARCHAR value containing the argument converted to 
+lowercase letters. 
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("LOWER({})".format(expr), "text")
+
+
+# ---#
+def substr(expr, position: int, extent: int = None):
+    """
+---------------------------------------------------------------------------
+Returns VARCHAR or VARBINARY value representing a substring of a specified 
+string.
+
+Parameters
+----------
+expr: object
+    Expression.
+position: int
+    Starting position of the substring.
+extent: int, optional
+    Length of the substring to extract.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    if extent:
+        position = "{}, {}".format(position, extent)
+    return str_sql("SUBSTR({}, {})".format(expr, position), "text")
+
+
+# ---#
+def upper(expr):
+    """
+---------------------------------------------------------------------------
+Returns a VARCHAR value containing the argument converted to uppercase 
+letters. 
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("UPPER({})".format(expr), "text")
+
+
 # Aggregate & Analytical functions
+# ---#
+def apply(func: str, *args):
+    """
+---------------------------------------------------------------------------
+Applies any Vertica function on the input expressions.
+
+Parameters
+----------
+func: str
+    Vertica Function.
+args: object
+    Expressions.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    if len(args) > 0:
+        expr = ", ".join([format_magic(elem) for elem in args])
+    else:
+        expr = ""
+    return str_sql("{}({})".format(func.upper(), expr))
+
+
 # ---#
 def avg(expr):
     """
@@ -84,7 +377,9 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql("AVG({})".format(expr), "float")
-mean=avg
+
+
+mean = avg
 
 # ---#
 def bool_and(expr):
@@ -105,6 +400,7 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql("BOOL_AND({})".format(expr), "int")
+
 
 # ---#
 def bool_or(expr):
@@ -150,6 +446,50 @@ str_sql
 
 
 # ---#
+def conditional_change_event(expr):
+    """
+---------------------------------------------------------------------------
+Assigns an event window number to each row, starting from 0, and increments 
+by 1 when the result of evaluating the argument expression on the current 
+row differs from that on the previous row.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("CONDITIONAL_CHANGE_EVENT({})".format(expr), "int")
+
+
+# ---#
+def conditional_true_event(expr):
+    """
+---------------------------------------------------------------------------
+Assigns an event window number to each row, starting from 0, and increments 
+the number by 1 when the result of the boolean argument expression evaluates 
+true.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("CONDITIONAL_TRUE_EVENT({})".format(expr), "int")
+
+
+# ---#
 def count(expr):
     """
 ---------------------------------------------------------------------------
@@ -168,6 +508,53 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql("COUNT({})".format(expr), "int")
+
+
+# ---#
+def lag(expr, offset: int = 1):
+    """
+---------------------------------------------------------------------------
+Returns the value of the input expression at the given offset before the 
+current row within a window. 
+
+Parameters
+----------
+expr: object
+    Expression.
+offset: int
+    Indicates how great is the lag.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("LAG({}, {})".format(expr, offset))
+
+
+# ---#
+def lead(expr, offset: int = 1):
+    """
+---------------------------------------------------------------------------
+Returns values from the row after the current row within a window, letting 
+you access more than one row in a table at the same time. 
+
+Parameters
+----------
+expr: object
+    Expression.
+offset: int
+    Indicates how great is the lead.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("LEAD({}, {})".format(expr, offset))
+
 
 # ---#
 def max(expr):
@@ -230,6 +617,29 @@ str_sql
 
 
 # ---#
+def nth_value(expr, row_number: int):
+    """
+---------------------------------------------------------------------------
+Returns the value evaluated at the row that is the nth row of the window 
+(counting from 1).
+
+Parameters
+----------
+expr: object
+    Expression.
+row_number: int
+    Specifies the row to evaluate.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("NTH_VALUE({}, {})".format(expr, row_number), "int")
+
+
+# ---#
 def quantile(expr, number: float):
     """
 ---------------------------------------------------------------------------
@@ -249,7 +659,42 @@ str_sql
     SQL expression.
     """
     expr = format_magic(expr)
-    return str_sql("APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(expr, number), "float")
+    return str_sql(
+        "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
+            expr, number
+        ),
+        "float",
+    )
+
+
+# ---#
+def rank():
+    """
+---------------------------------------------------------------------------
+Within each window partition, ranks all rows in the query results set 
+according to the order specified by the window's ORDER BY clause.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    return str_sql("RANK()", "int")
+
+
+# ---#
+def row_number():
+    """
+---------------------------------------------------------------------------
+Assigns a sequence of unique numbers, starting from 1, to each row in a 
+window partition.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    return str_sql("ROW_NUMBER()", "int")
 
 
 # ---#
@@ -271,7 +716,9 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql("STDDEV({})".format(expr), "float")
-stddev=std
+
+
+stddev = std
 
 
 # ---#
@@ -312,7 +759,9 @@ str_sql
     """
     expr = format_magic(expr)
     return str_sql("VARIANCE({})".format(expr), "float")
-variance=var
+
+
+variance = var
 
 
 # Mathematical Functions

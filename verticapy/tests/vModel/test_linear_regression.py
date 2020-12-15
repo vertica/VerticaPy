@@ -73,8 +73,8 @@ class TestLogisticRegression:
         assert fim["sign"] == [1, 1, 1]
         plt.close()
 
-    def test_get_model_attribute(self, model):
-        m_att = model.get_model_attribute()
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
             "details",
@@ -94,7 +94,7 @@ class TestLogisticRegression:
         ]
         assert m_att["#_of_rows"] == [4, 1, 1, 1, 1, 1]
 
-        m_att_details = model.get_model_attribute(attr_name="details")
+        m_att_details = model.get_attr(attr_name="details")
 
         assert m_att_details["predictor"] == [
             "Intercept",
@@ -110,22 +110,16 @@ class TestLogisticRegression:
         assert m_att_details["t_value"][3] == pytest.approx(41.8089205202906, abs=1e-6)
         assert m_att_details["p_value"][3] == pytest.approx(0)
 
-        m_att_regularization = model.get_model_attribute("regularization")
+        m_att_regularization = model.get_attr("regularization")
 
         assert m_att_regularization["type"][0] == "none"
         assert m_att_regularization["lambda"][0] == 1
 
-        assert model.get_model_attribute("iteration_count")["iteration_count"][0] == 1
+        assert model.get_attr("iteration_count")["iteration_count"][0] == 1
+        assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
+        assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
         assert (
-            model.get_model_attribute("rejected_row_count")["rejected_row_count"][0]
-            == 0
-        )
-        assert (
-            model.get_model_attribute("accepted_row_count")["accepted_row_count"][0]
-            == 6497
-        )
-        assert (
-            model.get_model_attribute("call_string")["call_string"][0]
+            model.get_attr("call_string")["call_string"][0]
             == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
         )
 
@@ -140,6 +134,20 @@ class TestLogisticRegression:
     @pytest.mark.skip(reason="test not implemented")
     def test_get_plot(self):
         pass
+
+    def test_to_sklearn(self, model):
+        md = model.to_sklearn()
+        model.cursor.execute(
+            "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
+
+    def test_shapExplainer(self, model):
+        explainer = model.shapExplainer()
+        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
