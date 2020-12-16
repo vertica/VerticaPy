@@ -305,6 +305,7 @@ class TestvDFUtilities:
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
 
+    @pytest.mark.skip(reason="geopandas doesn't want to work on python3.6")
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas
 
