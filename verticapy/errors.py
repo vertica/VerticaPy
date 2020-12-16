@@ -84,6 +84,11 @@ class MissingSchema(Exception):
 
 
 # ---#
+class ModelError(Exception):
+    pass
+
+
+# ---#
 class ParameterError(Exception):
     pass
 

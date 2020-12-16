@@ -11,8 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, os
+import pytest, os, warnings
+from math import ceil, floor
 from verticapy import vDataFrame, get_session, read_vdf, drop_table, drop_view
+from verticapy import set_option
+import verticapy.stats as st
+
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -20,11 +25,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -32,21 +37,95 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
+
+
+@pytest.fixture(scope="module")
+def world_vd(base):
+    from verticapy.learn.datasets import load_world
+
+    world = load_world(cursor=base.cursor)
+    yield world
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.world", cursor=base.cursor,
+        )
 
 
 class TestvDFUtilities:
+    def test_vDF_magic(self, titanic_vd):
+        assert (
+            str(titanic_vd["name"]._in(["Madison", "Ashley", None]))
+            == "(\"name\") IN ('Madison', 'Ashley', NULL)"
+        )
+        assert str(titanic_vd["age"]._between(1, 4)) == '("age") BETWEEN (1) AND (4)'
+        assert str(titanic_vd["age"]._as("age2")) == '("age") AS age2'
+        assert str(titanic_vd["age"]._distinct()) == 'DISTINCT ("age")'
+        assert (
+            str(
+                st.sum(titanic_vd["age"])._over(
+                    by=[titanic_vd["pclass"], titanic_vd["sex"]],
+                    order_by=[titanic_vd["fare"]],
+                )
+            )
+            == 'SUM("age") OVER (PARTITION BY "pclass", "sex" ORDER BY "fare")'
+        )
+        assert str(abs(titanic_vd["age"])) == 'ABS("age")'
+        assert str(ceil(titanic_vd["age"])) == 'CEIL("age")'
+        assert str(floor(titanic_vd["age"])) == 'FLOOR("age")'
+        assert str(round(titanic_vd["age"], 2)) == 'ROUND("age", 2)'
+        assert str(-titanic_vd["age"]) == '-("age")'
+        assert str(+titanic_vd["age"]) == '+("age")'
+        assert str(titanic_vd["age"] % 2) == 'MOD("age", 2)'
+        assert str(2 % titanic_vd["age"]) == 'MOD(2, "age")'
+        assert str(titanic_vd["age"] ** 2) == 'POWER("age", 2)'
+        assert str(2 ** titanic_vd["age"]) == 'POWER(2, "age")'
+        assert str(titanic_vd["age"] + 3) == '("age") + (3)'
+        assert str(3 + titanic_vd["age"]) == '(3) + ("age")'
+        assert str(titanic_vd["age"] - 3) == '("age") - (3)'
+        assert str(3 - titanic_vd["age"]) == '(3) - ("age")'
+        assert str(titanic_vd["age"] * 3) == '("age") * (3)'
+        assert str(3 * titanic_vd["age"]) == '(3) * ("age")'
+        assert str(titanic_vd["age"] // 3) == '("age") // (3)'
+        assert str(3 // titanic_vd["age"]) == '(3) // ("age")'
+        assert str(titanic_vd["age"] > 3) == '("age") > (3)'
+        assert str(3 > titanic_vd["age"]) == '("age") < (3)'
+        assert str(titanic_vd["age"] >= 3) == '("age") >= (3)'
+        assert str(3 >= titanic_vd["age"]) == '("age") <= (3)'
+        assert str(titanic_vd["age"] < 3) == '("age") < (3)'
+        assert str(3 < titanic_vd["age"]) == '("age") > (3)'
+        assert str(titanic_vd["age"] <= 3) == '("age") <= (3)'
+        assert str(3 <= titanic_vd["age"]) == '("age") >= (3)'
+        assert (
+            str((3 >= titanic_vd["age"]) & (titanic_vd["age"] <= 50))
+            == '(("age") <= (3)) AND (("age") <= (50))'
+        )
+        assert (
+            str((3 >= titanic_vd["age"]) | (titanic_vd["age"] <= 50))
+            == '(("age") <= (3)) OR (("age") <= (50))'
+        )
+        assert str("Mr " + titanic_vd["name"]) == "('Mr ') || (\"name\")"
+        assert str(titanic_vd["name"] + " .") == "(\"name\") || (' .')"
+        assert str(3 * titanic_vd["name"]) == 'REPEAT("name", 3)'
+        assert str(titanic_vd["name"] * 3) == 'REPEAT("name", 3)'
+        assert str(titanic_vd["age"] == 3) == '("age") = (3)'
+        assert str(3 == titanic_vd["age"]) == '("age") = (3)'
+        assert str(titanic_vd["age"] != 3) == '("age") != (3)'
+        assert str(None != titanic_vd["age"]) == '("age") IS NOT NULL'
+
     def test_vDF_to_csv(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-        titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[0:2].to_csv("verticapy_test_{}".format(session_id))
+        titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
+            0:2
+        ].to_csv("verticapy_test_{}".format(session_id))
         try:
             file = open("verticapy_test_{}.csv".format(session_id), "r")
             result = file.read()
-            assert result == 'age,fare\n80.000,30.00000\n76.000,78.85000'
+            assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
         except:
             os.remove("verticapy_test_{}.csv".format(session_id))
             file.close()
@@ -56,76 +135,153 @@ class TestvDFUtilities:
 
     def test_vDF_to_db(self, titanic_vd):
         try:
-            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_view(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
+                drop_table(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
         except:
             pass
         # testing relation_type = view
         try:
-            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "view", db_filter = "age > 40", nb_split = 3)
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            titanic_vd.copy().to_db(
+                name="verticapy_titanic_tmp",
+                usecols=["age", "fare", "survived"],
+                relation_type="view",
+                db_filter="age > 40",
+                nb_split=3,
+            )
+            titanic_tmp = vDataFrame(
+                "verticapy_titanic_tmp",
+                cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM view_columns WHERE table_name = 'verticapy_titanic_tmp'")
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute(
+                "SELECT table_name FROM view_columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_view(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
             raise
-        drop_view("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_view(
+                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+            )
         # testing relation_type = table
         try:
-            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "table", db_filter = "age > 40", nb_split = 3)
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            titanic_vd.copy().to_db(
+                name="verticapy_titanic_tmp",
+                usecols=["age", "fare", "survived"],
+                relation_type="table",
+                db_filter="age > 40",
+                nb_split=3,
+            )
+            titanic_tmp = vDataFrame(
+                "verticapy_titanic_tmp",
+                cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute(
+                "SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+            )
         # testing relation_type = temporary table
         try:
-            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "temporary", db_filter = "age > 40", nb_split = 3)
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            titanic_vd.copy().to_db(
+                name="verticapy_titanic_tmp",
+                usecols=["age", "fare", "survived"],
+                relation_type="temporary",
+                db_filter="age > 40",
+                nb_split=3,
+            )
+            titanic_tmp = vDataFrame(
+                "verticapy_titanic_tmp",
+                cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute(
+                "SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+            )
         # testing relation_type = temporary local table
         try:
-            titanic_vd.copy().to_db(name="verticapy_titanic_tmp", usecols = ["age", "fare", "survived"], relation_type = "local", db_filter = "age > 40", nb_split = 3)
-            titanic_tmp = vDataFrame("v_temp_schema.verticapy_titanic_tmp", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            titanic_vd.copy().to_db(
+                name="verticapy_titanic_tmp",
+                usecols=["age", "fare", "survived"],
+                relation_type="local",
+                db_filter="age > 40",
+                nb_split=3,
+            )
+            titanic_tmp = vDataFrame(
+                "v_temp_schema.verticapy_titanic_tmp",
+                cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            titanic_vd._VERTICAPY_VARIABLES_["cursor"].execute(
+                "SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = titanic_vd._VERTICAPY_VARIABLES_["cursor"].fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+            with warnings.catch_warnings(record=True) as w:
+                drop_table(
+                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                )
             raise
-        drop_table("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+            )
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-        titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[0:2].to_json("verticapy_test_{}".format(session_id))
+        titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
+            0:2
+        ].to_json("verticapy_test_{}".format(session_id))
         try:
             file = open("verticapy_test_{}.json".format(session_id), "r")
             result = file.read()
             print(result)
-            assert result == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+            assert (
+                result
+                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+            )
         except:
             os.remove("verticapy_test_{}.json".format(session_id))
             file.close()
@@ -134,11 +290,13 @@ class TestvDFUtilities:
         file.close()
 
     def test_vDF_to_list(self, titanic_vd):
-        result = (
-            titanic_vd.select(["age", "survived"])[:20].to_list()
-        )
+        result = titanic_vd.select(["age", "survived"])[:20].to_list()
         assert len(result) == 20
         assert len(result[0]) == 2
+
+    def test_vDF_to_numpy(self, titanic_vd):
+        result = titanic_vd.select(["age", "survived"])[:20].to_numpy()
+        result.shape == (20, 2)
 
     def test_vDF_to_pandas(self, titanic_vd):
         import pandas
@@ -146,6 +304,14 @@ class TestvDFUtilities:
         result = titanic_vd.to_pandas()
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
+
+    @pytest.mark.skip(reason="geopandas doesn't want to work on python3.6")
+    def test_vDF_to_geopandas(self, world_vd):
+        import geopandas
+
+        result = world_vd.to_geopandas(geometry="geometry")
+        assert isinstance(result, geopandas.GeoDataFrame)
+        assert result.shape == (177, 4)
 
     def test_vDF_to_vdf(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
@@ -194,30 +360,10 @@ class TestvDFUtilities:
         result.set_cursor(cursor)
         assert isinstance(result._VERTICAPY_VARIABLES_["cursor"], type(cursor))
 
-    def test_vDF_set_display_parameters(self, titanic_vd):
-        result = titanic_vd.copy()
-        result.set_display_parameters(rows=50, columns=5, percent_bar=True, print_info=False)
-        assert result._VERTICAPY_VARIABLES_["display"]["rows"] == 50
-        assert result._VERTICAPY_VARIABLES_["display"]["columns"] == 5
-        assert result._VERTICAPY_VARIABLES_["display"]["percent_bar"] == True
-        assert result._VERTICAPY_VARIABLES_["display"]["print_info"] == False
-
     def test_vDF_set_schema_writing(self, titanic_vd):
         result = titanic_vd.copy()
         result.set_schema_writing("test")
         assert result._VERTICAPY_VARIABLES_["schema_writing"] == "test"
-
-    def test_vDF_sql_on_off(self, titanic_vd):
-        result = titanic_vd.copy()
-        query_on = result._VERTICAPY_VARIABLES_["query_on"]
-        result.sql_on_off()
-        assert result._VERTICAPY_VARIABLES_["query_on"] != query_on
-
-    def test_vDF_time_on_off(self, titanic_vd):
-        result = titanic_vd.copy()
-        time_on = result._VERTICAPY_VARIABLES_["time_on"]
-        result.time_on_off()
-        assert result._VERTICAPY_VARIABLES_["time_on"] != time_on
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -387,11 +533,11 @@ class TestvDFUtilities:
 
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
-        assert result2["value"][0] == pytest.approx(1031, 5e-2)
+        assert result2["value"][0] == pytest.approx(862, 5e-2)
         assert result2["value"][1] == pytest.approx(1712, 5e-2)
         assert result2["value"][2] == pytest.approx(1713, 5e-2)
         assert result2["value"][3] == pytest.approx(1714, 5e-2)
-        assert result2["value"][4] == pytest.approx(6170, 5e-2)
+        assert result2["value"][4] == pytest.approx(6001, 5e-2)
 
     def test_vDF_numcol(self, titanic_vd):
         result = [elem.replace('"', "") for elem in titanic_vd.numcol()]

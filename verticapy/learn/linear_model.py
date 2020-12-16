@@ -52,7 +52,6 @@
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -71,12 +70,6 @@ name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-penalty: str, optional
-	Determines the method of regularization.
-		None : No Regularization
-		L1   : L1 Regularization
-		L2   : L2 Regularization
-		ENet : Combination between L1 and L2
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -98,8 +91,7 @@ l1_ratio: float, optional
         self,
         name: str,
         cursor=None,
-        penalty: str = "ENet",
-        tol: float = 1e-4,
+        tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
@@ -109,7 +101,7 @@ l1_ratio: float, optional
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": str(penalty).lower(),
+                "penalty": "enet",
                 "tol": tol,
                 "C": C,
                 "max_iter": max_iter,
@@ -117,10 +109,7 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -141,6 +130,8 @@ cursor: DBcursor, optional
 	Vertica DB cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
+C: float, optional
+    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
 	achieving the specified accuracy result.
@@ -155,7 +146,8 @@ solver: str, optional
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
+        C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
     ):
@@ -163,16 +155,16 @@ solver: str, optional
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "L1",
+                "penalty": "l1",
                 "tol": tol,
+                "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio"]:
+            del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -199,31 +191,31 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
 	"""
 
     def __init__(
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
     ):
-        check_types([("name", name, [str],)])
+        check_types(
+            [("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "None",
+                "penalty": "none",
                 "tol": tol,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio", "C"]:
+            del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -268,11 +260,11 @@ l1_ratio: float, optional
         self,
         name: str,
         cursor=None,
-        penalty: str = "L2",
-        tol: float = 1e-4,
+        penalty: str = "None",
+        tol: float = 1e-6,
         C: int = 1,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
         l1_ratio: float = 0.5,
     ):
         check_types([("name", name, [str],)])
@@ -287,10 +279,15 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        if penalty.lower() == "none":
+            for elem in ["l1_ratio", "C"]:
+                del self.parameters[elem]
+            check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
+        elif penalty.lower() == "l2":
+            for elem in ["l1_ratio"]:
+                del self.parameters[elem]
+            check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -311,6 +308,8 @@ cursor: DBcursor, optional
 	Vertica DB cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
+C: float, optional
+    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
 	achieving the specified accuracy result.
@@ -318,30 +317,32 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
 	"""
 
     def __init__(
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
+        C: float = 1.0,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
     ):
-        check_types([("name", name, [str],)])
+        check_types(
+            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "L2",
+                "penalty": "l2",
                 "tol": tol,
+                "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio"]:
+            del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])

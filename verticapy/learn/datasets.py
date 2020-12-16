@@ -56,8 +56,50 @@ import verticapy
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 
+# ---#
+def load_dataset(
+    cursor, schema: str, name: str, str_create: str, str_copy: str, dataset_name: str
+):
+    """
+    General Function to ingest a dataset
+    """
+    check_types([("schema", schema, [str],), ("name", name, [str],)])
+    cursor = check_cursor(cursor)[0]
+    try:
+        vdf = vDataFrame(name, cursor, schema=schema)
+    except:
+        cursor.execute(
+            "CREATE TABLE {}.{}({});".format(
+                str_column(schema), str_column(name), str_create,
+            )
+        )
+        try:
+            path = os.path.dirname(verticapy.__file__) + "/learn/data/{}.csv".format(
+                dataset_name
+            )
+            query = "COPY {}.{}({}) FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
+                str_column(schema), str_column(name), str_copy, "{}"
+            )
+            import vertica_python
+
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
+                with open(path, "r") as fs:
+                    cursor.copy(query.format("STDIN"), fs)
+            else:
+                cursor.execute(query.format("LOCAL '{}'".format(path)))
+            cursor.execute("COMMIT;")
+            vdf = vDataFrame(name, cursor, schema=schema)
+        except:
+            cursor.execute(
+                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
+            )
+            raise
+    return vdf
+
+
+#
+#
 # ---#
 def load_amazon(cursor=None, schema: str = "public", name: str = "amazon"):
     """
@@ -95,39 +137,50 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("date" Date, "state" Varchar(32), "number" Integer);'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/amazon.csv"
-            query = "COPY {}.{}(\"date\", \"state\", \"number\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"date" Date, "state" Varchar(32), "number" Integer',
+        '"date", "state", "number"',
+        "amazon",
+    )
 
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+
+# ---#
+def load_cities(cursor=None, schema: str = "public", name: str = "cities"):
+    """
+---------------------------------------------------------------------------
+Ingests the Cities dataset in the Vertica DB (Dataset ideal for Geospatial). 
+If a table with the same name and schema already exists, this function will 
+create a vDataFrame from the input relation.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor. 
+schema: str, optional
+    Schema of the new relation. The default schema is public.
+name: str, optional
+    Name of the new relation.
+
+Returns
+-------
+vDataFrame
+    the Cities vDataFrame.
+
+See Also
+--------
+load_world : Ingests the World dataset in the Vertica DB (Geospatial).
+    """
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"city" Varchar(82), "geometry" Geometry',
+        '"city", gx FILLER LONG VARCHAR(65000), "geometry" AS ST_GeomFromText(gx)',
+        "cities",
+    )
 
 
 # ---#
@@ -167,39 +220,14 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
     (Regression / Classification).
     """
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("date" Date, "Gold" Float, "Oil" Float, "Spread" Float, "Vix" Float, "Dol_Eur" Float, "SP500" Float);'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/commodities.csv"
-            query = 'COPY {}.{}("date", "Gold", "Oil", "Spread", "Vix", "Dol_Eur", "SP500") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
-
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"date" Date, "Gold" Float, "Oil" Float, "Spread" Float, "Vix" Float, "Dol_Eur" Float, "SP500" Float',
+        '"date", "Gold", "Oil", "Spread", "Vix", "Dol_Eur", "SP500"',
+        "commodities",
+    )
 
 
 # ---#
@@ -239,39 +267,14 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("SepalLengthCm" Numeric(5,2), "SepalWidthCm" Numeric(5,2), "PetalLengthCm" Numeric(5,2), "PetalWidthCm" Numeric(5,2), "Species" Varchar(30));'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/iris.csv"
-            query = 'COPY {}.{}("Id" FILLER Integer, "SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
-
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"SepalLengthCm" Numeric(5,2), "SepalWidthCm" Numeric(5,2), "PetalLengthCm" Numeric(5,2), "PetalWidthCm" Numeric(5,2), "Species" Varchar(30)',
+        '"Id" FILLER Integer, "SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm", "Species"',
+        "iris",
+    )
 
 
 # ---#
@@ -311,39 +314,14 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("Name" Varchar(32), "Form" Varchar(32), "Price" Float);'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/market.csv"
-            query = "COPY {}.{}(\"Form\", \"Name\", \"Price\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
-
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"Name" Varchar(32), "Form" Varchar(32), "Price" Float',
+        '"Form", "Name", "Price"',
+        "market",
+    )
 
 
 # ---#
@@ -383,39 +361,14 @@ load_titanic      : Ingests the titanic dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("time" Timestamp, "val" Numeric(11,7), "id" Integer);'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/smart_meters.csv"
-            query = "COPY {}.{}(\"time\", \"val\", \"id\") FROM {} DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
-
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"time" Timestamp, "val" Numeric(11,7), "id" Integer',
+        '"time", "val", "id"',
+        "smart_meters",
+    )
 
 
 # ---#
@@ -455,39 +408,14 @@ load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
 load_winequality  : Ingests the winequality dataset in the Vertica DB.
 	(Regression / Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("pclass" Integer, "survived" Integer, "name" Varchar(164), "sex" Varchar(20), "age" Numeric(6,3), "sibsp" Integer, "parch" Integer, "ticket" Varchar(36), "fare" Numeric(10,5), "cabin" Varchar(30), "embarked" Varchar(20), "boat" Varchar(100), "body" Integer, "home.dest" Varchar(100));'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/titanic.csv"
-            query = 'COPY {}.{}("pclass", "survived", "name", "sex", "age", "sibsp", "parch", "ticket", "fare", "cabin", "embarked", "boat", "body", "home.dest") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
-
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"pclass" Integer, "survived" Integer, "name" Varchar(164), "sex" Varchar(20), "age" Numeric(6,3), "sibsp" Integer, "parch" Integer, "ticket" Varchar(36), "fare" Numeric(10,5), "cabin" Varchar(30), "embarked" Varchar(20), "boat" Varchar(100), "body" Integer, "home.dest" Varchar(100)',
+        '"pclass", "survived", "name", "sex", "age", "sibsp", "parch", "ticket", "fare", "cabin", "embarked", "boat", "body", "home.dest"',
+        "titanic",
+    )
 
 
 # ---#
@@ -527,36 +455,47 @@ load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
 load_titanic      : Ingests the titanic dataset in the Vertica DB.
 	(Classification).
 	"""
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
-    try:
-        vdf = vDataFrame(name, cursor, schema=schema)
-    except:
-        cursor.execute(
-            'CREATE TABLE {}.{}("fixed_acidity" Numeric(6,3), "volatile_acidity" Numeric(7,4), "citric_acid" Numeric(6,3), "residual_sugar" Numeric(7,3), "chlorides" Float, "free_sulfur_dioxide" Numeric(7,2), "total_sulfur_dioxide" Numeric(7,2), "density" Float, "pH" Numeric(6,3), "sulphates" Numeric(6,3), "alcohol" Float, "quality" Integer, "good" Integer, "color" Varchar(20));'.format(
-                str_column(schema), str_column(name)
-            )
-        )
-        try:
-            path = os.path.dirname(verticapy.__file__) + "/learn/data/winequality.csv"
-            query = 'COPY {}.{}("fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "free_sulfur_dioxide", "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol", "quality", "good", "color") FROM {} DELIMITER \',\' NULL \'\' ENCLOSED BY \'"\' ESCAPE AS \'\\\' SKIP 1;'.format(
-                str_column(schema), str_column(name), "{}"
-            )
-            import vertica_python
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"fixed_acidity" Numeric(6,3), "volatile_acidity" Numeric(7,4), "citric_acid" Numeric(6,3), "residual_sugar" Numeric(7,3), "chlorides" Float, "free_sulfur_dioxide" Numeric(7,2), "total_sulfur_dioxide" Numeric(7,2), "density" Float, "pH" Numeric(6,3), "sulphates" Numeric(6,3), "alcohol" Float, "quality" Integer, "good" Integer, "color" Varchar(20)',
+        '"fixed_acidity", "volatile_acidity", "citric_acid", "residual_sugar", "chlorides", "free_sulfur_dioxide", "total_sulfur_dioxide", "density", "pH", "sulphates", "alcohol", "quality", "good", "color"',
+        "winequality",
+    )
 
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
-            else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
-        except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
-            raise
-    return vdf
+
+# ---#
+def load_world(cursor=None, schema: str = "public", name: str = "world"):
+    """
+---------------------------------------------------------------------------
+Ingests the World dataset in the Vertica DB (Dataset ideal for Geospatial). 
+If a table with the same name and schema already exists, this function will 
+create a vDataFrame from the input relation.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor. 
+schema: str, optional
+    Schema of the new relation. The default schema is public.
+name: str, optional
+    Name of the new relation.
+
+Returns
+-------
+vDataFrame
+    the World vDataFrame.
+
+See Also
+--------
+load_cities : Ingests the cities dataset in the Vertica DB (Geospatial).
+    """
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"pop_est" Int, "continent" Varchar(32), "country" Varchar(82), "geometry" Geometry',
+        '"pop_est", "continent", "country", gx FILLER LONG VARCHAR(65000), "geometry" AS ST_GeomFromText(gx)',
+        "world",
+    )

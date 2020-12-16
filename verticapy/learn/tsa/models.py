@@ -53,8 +53,7 @@ import math, warnings
 
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.connections.connect import read_auto_connect
-from verticapy.learn.linear_model import ElasticNet
+from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
 # Other Python Modules
@@ -89,16 +88,8 @@ Q: int, optional
     Order of the seasonal MA (Moving-Average) part.
 s: int, optional
     Span of the seasonality.
-penalty: str, optional
-    Determines the method of regularization.
-        None : No Regularization
-        L1   : L1 Regularization
-        L2   : L2 Regularization
-        ENet : Combination between L1 and L2
 tol: float, optional
     Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
     Determines the maximum number of iterations the algorithm performs before 
     achieving the specified accuracy result.
@@ -106,10 +97,6 @@ solver: str, optional
     The optimizer method to use to train the model. 
         Newton : Newton Method
         BFGS   : Broyden Fletcher Goldfarb Shanno
-        CGD    : Coordinate Gradient Descent
-l1_ratio: float, optional
-    ENet mixture parameter that defines how much L1 versus L2 regularization 
-    to provide.
 max_pik: int, optional
     Number of inverse MA coefficient used to approximate the MA.
 papprox_ma: int, optional
@@ -127,12 +114,9 @@ papprox_ma: int, optional
         D: int = 0,
         Q: int = 0,
         s: int = 0,
-        penalty: str = "None",
         tol: float = 1e-4,
-        C: float = 1.0,
         max_iter: int = 1000,
         solver: str = "Newton",
-        l1_ratio: float = 0.5,
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
@@ -147,12 +131,9 @@ papprox_ma: int, optional
                 "D": D,
                 "Q": Q,
                 "s": s,
-                "penalty": penalty,
                 "tol": tol,
-                "C": C,
                 "max_iter": max_iter,
                 "solver": solver,
-                "l1_ratio": l1_ratio,
                 "max_pik": max_pik,
                 "papprox_ma": papprox_ma,
             }
@@ -173,10 +154,7 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -333,11 +311,11 @@ papprox_ma: int, optional
     # ---#
     def fit(
         self,
-        input_relation: str,
+        input_relation: (vDataFrame, str),
         y: str,
         ts: str,
         X: list = [],
-        test_relation: str = "",
+        test_relation: (vDataFrame, str) = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -345,7 +323,7 @@ papprox_ma: int, optional
 
     Parameters
     ----------
-    input_relation: str
+    input_relation: str/vDataFrame
         Train relation.
     y: str
         Response column.
@@ -353,8 +331,8 @@ papprox_ma: int, optional
         vcolumn used to order the data.
     X: list, optional
         exogenous columns used to fit the model.
-    test_relation: str, optional
-        Relation to use to test the self.
+    test_relation: str/vDataFrame, optional
+        Relation to use to test the model.
 
     Returns
     -------
@@ -363,16 +341,26 @@ papprox_ma: int, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("y", y, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
                 ("ts", ts, [str],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        self.input_relation = (
+            input_relation
+            if isinstance(input_relation, str)
+            else input_relation.__genSQL__()
+        )
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.y, self.ts, self.deploy_predict_ = str_column(y), str_column(ts), ""
         self.coef_ = tablesample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
@@ -381,14 +369,11 @@ papprox_ma: int, optional
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "
         )
-        model = ElasticNet(
+        model = LinearRegression(
             name=self.name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
-            penalty=self.parameters["penalty"],
-            l1_ratio=self.parameters["l1_ratio"],
-            C=self.parameters["C"],
         )
 
         if (
@@ -574,7 +559,7 @@ papprox_ma: int, optional
                     "[X{}]".format(idx), elem
                 )
             query = "SELECT COUNT(*), AVG({}) FROM {}".format(
-                self.y, transform_relation.format(input_relation)
+                self.y, transform_relation.format(self.input_relation)
             )
             result = self.cursor.execute(query).fetchone()
             self.ma_avg_ = result[1]
@@ -726,12 +711,9 @@ papprox_ma: int, optional
             "D": self.parameters["D"],
             "Q": self.parameters["Q"],
             "s": self.parameters["s"],
-            "penalty": self.parameters["penalty"],
             "tol": self.parameters["tol"],
-            "C": self.parameters["C"],
             "max_iter": self.parameters["max_iter"],
             "solver": self.parameters["solver"],
-            "l1_ratio": self.parameters["l1_ratio"],
             "max_pik": self.parameters["max_pik"],
             "papprox_ma": self.parameters["papprox_ma"],
         }
@@ -746,7 +728,7 @@ papprox_ma: int, optional
     # ---#
     def plot(
         self,
-        vdf=None,
+        vdf: vDataFrame = None,
         y: str = "",
         ts: str = "",
         X: list = [],
@@ -798,7 +780,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -842,14 +824,20 @@ papprox_ma: int, optional
             vdf=vdf, y=y, ts=ts, X=X, nlead=0, name="_verticapy_prediction_"
         )
         error_eps = 1.96 * math.sqrt(self.score(method="mse"))
-        result.set_display_parameters(print_info=False)
-        result = (
-            result.select([ts, y, "_verticapy_prediction_"])
-            .dropna()
-            .sort([ts])
-            .tail(limit)
-            .values
-        )
+        print_info = verticapy.options["print_info"]
+        verticapy.options["print_info"] = False
+        try:
+            result = (
+                result.select([ts, y, "_verticapy_prediction_"])
+                .dropna()
+                .sort([ts])
+                .tail(limit)
+                .values
+            )
+        except:
+            verticapy.options["print_info"] = print_info
+            raise
+        verticapy.options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -996,7 +984,7 @@ papprox_ma: int, optional
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: vDataFrame,
         y: str = "",
         ts: str = "",
         X: list = [],
@@ -1146,16 +1134,8 @@ cursor: DBcursor, optional
     Vertica DB cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
-penalty: str, optional
-    Determines the method of regularization.
-        None : No Regularization
-        L1   : L1 Regularization
-        L2   : L2 Regularization
-        ENet : Combination between L1 and L2
 tol: float, optional
     Determines whether the algorithm has reached the specified accuracy result.
-C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
     Determines the maximum number of iterations the algorithm performs before 
     achieving the specified accuracy result.
@@ -1163,10 +1143,6 @@ solver: str, optional
     The optimizer method to use to train the model. 
         Newton : Newton Method
         BFGS   : Broyden Fletcher Goldfarb Shanno
-        CGD    : Coordinate Gradient Descent
-l1_ratio: float, optional
-    ENet mixture parameter that defines how much L1 versus L2 regularization 
-    to provide.
     """
 
     def __init__(
@@ -1174,12 +1150,9 @@ l1_ratio: float, optional
         name: str,
         cursor=None,
         p: int = 1,
-        penalty: str = "None",
         tol: float = 1e-4,
-        C: float = 1.0,
         max_iter: int = 1000,
         solver: str = "Newton",
-        l1_ratio: float = 0.5,
     ):
         check_types([("name", name, [str],)])
         self.type, self.name = "VAR", name
@@ -1187,20 +1160,9 @@ l1_ratio: float, optional
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
         self.set_params(
-            {
-                "p": p,
-                "penalty": penalty,
-                "tol": tol,
-                "C": C,
-                "max_iter": max_iter,
-                "solver": solver,
-                "l1_ratio": l1_ratio,
-            }
+            {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -1272,7 +1234,7 @@ l1_ratio: float, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
             .values
@@ -1301,20 +1263,26 @@ l1_ratio: float, optional
         return tablesample(values=importances).transpose()
 
     # ---#
-    def fit(self, input_relation: str, X: list, ts: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (vDataFrame, str),
+        X: list,
+        ts: str,
+        test_relation: (vDataFrame, str) = "",
+    ):
         """
     ---------------------------------------------------------------------------
     Trains the model.
 
     Parameters
     ----------
-    input_relation: str
+    input_relation: str/vDataFrame
         Train relation.
     X: list
         List of the response columns.
     ts: str
         vcolumn used to order the data.
-    test_relation: str, optional
+    test_relation: str/vDataFrame, optional
         Relation to use to test the model.
 
     Returns
@@ -1324,26 +1292,33 @@ l1_ratio: float, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("ts", ts, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        self.input_relation = (
+            input_relation
+            if isinstance(input_relation, str)
+            else input_relation.__genSQL__()
+        )
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.ts, self.deploy_predict_ = str_column(ts), []
         self.X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
-        model = ElasticNet(
+        model = LinearRegression(
             name=self.name,
             solver=self.parameters["solver"],
             max_iter=self.parameters["max_iter"],
             tol=self.parameters["tol"],
-            penalty=self.parameters["penalty"],
-            l1_ratio=self.parameters["l1_ratio"],
-            C=self.parameters["C"],
         )
 
         # AR(p)
@@ -1360,7 +1335,7 @@ l1_ratio: float, optional
             ", ".join(columns), "{}"
         )
         relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts).format(
-            input_relation
+            self.input_relation
         )
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
@@ -1407,12 +1382,9 @@ l1_ratio: float, optional
             "X": self.X,
             "ts": self.ts,
             "p": self.parameters["p"],
-            "penalty": self.parameters["penalty"],
             "tol": self.parameters["tol"],
-            "C": self.parameters["C"],
             "max_iter": self.parameters["max_iter"],
             "solver": self.parameters["solver"],
-            "l1_ratio": self.parameters["l1_ratio"],
         }
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values
@@ -1465,7 +1437,7 @@ l1_ratio: float, optional
     # ---#
     def plot(
         self,
-        vdf=None,
+        vdf: vDataFrame = None,
         X: list = [],
         ts: str = "",
         X_idx: int = 0,
@@ -1518,7 +1490,7 @@ l1_ratio: float, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vDataFrame(input_relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -1570,14 +1542,20 @@ l1_ratio: float, optional
         )
         y, prediction = X[X_idx], "_verticapy_prediction_{}_".format(X_idx)
         error_eps = 1.96 * math.sqrt(self.score(method="mse").values["mse"][X_idx])
-        result_all.set_display_parameters(print_info=False)
-        result = (
-            result_all.select([ts, y, prediction])
-            .dropna()
-            .sort([ts])
-            .tail(limit)
-            .values
-        )
+        print_info = verticapy.options["print_info"]
+        verticapy.options["print_info"] = False
+        try:
+            result = (
+                result_all.select([ts, y, prediction])
+                .dropna()
+                .sort([ts])
+                .tail(limit)
+                .values
+            )
+        except:
+            verticapy.options["print_info"] = print_info
+            raise
+        verticapy.options["print_info"] = print_info
         columns = [elem for elem in result]
         if isinstance(result[columns[0]][0], str):
             result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1594,8 +1572,16 @@ l1_ratio: float, optional
             ],
         )
         if dynamic:
-            result_all.set_display_parameters(print_info=False)
-            result = result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
+            print_info = verticapy.options["print_info"]
+            verticapy.options["print_info"] = False
+            try:
+                result = (
+                    result_all.select([ts] + X).dropna().sort([ts]).tail(limit).values
+                )
+            except:
+                verticapy.options["print_info"] = print_info
+                raise
+            verticapy.options["print_info"] = print_info
             columns = [elem for elem in result]
             if isinstance(result[columns[0]][0], str):
                 result[columns[0]] = [parse(elem) for elem in result[columns[0]]]
@@ -1709,7 +1695,14 @@ l1_ratio: float, optional
         return ax
 
     # ---#
-    def predict(self, vdf, X: list = [], ts: str = "", nlead: int = 0, name: list = []):
+    def predict(
+        self,
+        vdf: vDataFrame,
+        X: list = [],
+        ts: str = "",
+        nlead: int = 0,
+        name: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1738,8 +1731,8 @@ l1_ratio: float, optional
                 ("ts", ts, [str],),
                 ("nlead", nlead, [int, float],),
                 ("X", X, [list],),
+                ("vdf", vdf, [vDataFrame],),
             ],
-            ("vdf", vdf, [vDataFrame],),
         )
         if not (ts):
             ts = self.ts

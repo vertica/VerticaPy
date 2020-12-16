@@ -56,7 +56,6 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.learn.plot import *
 from verticapy.learn.model_selection import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -67,7 +66,7 @@ import warnings
 class NeighborsClassifier(vModel):
 
     # ---#
-    def classification_report(self, cutoff=[], labels: list = []):
+    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
@@ -98,7 +97,7 @@ class NeighborsClassifier(vModel):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def confusion_matrix(self, pos_label=None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
         """
     ---------------------------------------------------------------------------
     Computes the model confusion matrix.
@@ -150,7 +149,7 @@ class NeighborsClassifier(vModel):
             )
 
     # ---#
-    def lift_chart(self, pos_label=None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -186,7 +185,7 @@ class NeighborsClassifier(vModel):
         )
 
     # ---#
-    def prc_curve(self, pos_label=None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -224,7 +223,7 @@ class NeighborsClassifier(vModel):
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: (str, vDataFrame),
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -236,8 +235,10 @@ class NeighborsClassifier(vModel):
 
     Parameters
     ----------
-    vdf: vDataFrame
-        Object to use to run the prediction.
+    vdf: str/vDataFrame
+        Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -262,9 +263,11 @@ class NeighborsClassifier(vModel):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         name = (
@@ -328,7 +331,7 @@ class NeighborsClassifier(vModel):
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
     # ---#
-    def roc_curve(self, pos_label=None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -364,7 +367,12 @@ class NeighborsClassifier(vModel):
         )
 
     # ---#
-    def score(self, method: str = "accuracy", pos_label=None, cutoff: float = -1):
+    def score(
+        self,
+        method: str = "accuracy",
+        pos_label: (int, float, str) = None,
+        cutoff: float = -1,
+    ):
         """
     ---------------------------------------------------------------------------
     Computes the model score.
@@ -482,10 +490,7 @@ p: int, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
         self.set_params({"p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
@@ -571,20 +576,26 @@ p: int, optional
         return sql
 
     # ---#
-    def fit(self, input_relation: str, X: list, y: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (str, vDataFrame),
+        X: list,
+        y: str,
+        test_relation: (str, vDataFrame) = "",
+    ):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str, optional
+	test_relation: str/vDataFrame, optional
 		Relation to use to test the model.
 
 	Returns
@@ -594,16 +605,25 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
+                ("input_relation", input_relation, [str, vDataFrame], False),
                 ("X", X, [list], False),
                 ("y", y, [str], False),
-                ("test_relation", test_relation, [str], False),
+                ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC".format(
@@ -611,12 +631,14 @@ p: int, optional
                 ["{}({}) AS {}".format(func, column, column) for column in self.X]
             ),
             self.y,
-            input_relation,
+            self.input_relation,
             self.y,
             self.y,
             self.y,
         )
-        self.centroids_ = to_tablesample(query=query, cursor=self.cursor)
+        self.centroids_ = to_tablesample(
+            query=query, cursor=self.cursor, title="Getting Model Centroids.",
+        )
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -666,10 +688,7 @@ p: int, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
@@ -762,20 +781,26 @@ p: int, optional
         return sql
 
     # ---#
-    def fit(self, input_relation: str, X: list, y: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (str, vDataFrame),
+        X: list,
+        y: str,
+        test_relation: (str, vDataFrame) = "",
+    ):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str, optional
+	test_relation: str/vDataFrame, optional
 		Relation to use to test the model.
 
 	Returns
@@ -785,20 +810,29 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
+                ("input_relation", input_relation, [str, vDataFrame], False),
                 ("X", X, [list], False),
                 ("y", y, [str], False),
-                ("test_relation", test_relation, [str], False),
+                ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
         self.cursor.execute(
             "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
-                self.y, input_relation, self.y, self.y
+                self.y, self.input_relation, self.y, self.y
             )
         )
         classes = self.cursor.fetchall()
@@ -820,6 +854,7 @@ p: int, optional
             cursor=self.cursor,
         )
         return self
+
 
 # ---#
 class KernelDensity(Regressor, Tree):
@@ -858,58 +893,90 @@ xlim: list, optional
     List of tuples use to compute the kernel window.
     """
 
-    def __init__(self, 
-                 name: str, 
-                 cursor=None,
-                 bandwidth: float = 1,
-                 kernel: str = "gaussian",
-                 p: int = 2,
-                 max_leaf_nodes: int = 1e9,
-                 max_depth: int = 5,
-                 min_samples_leaf: int = 1,
-                 nbins: int = 5,
-                 xlim: list = []):
-        check_types([("name", name, [str], False), ("bandwidth", bandwidth, [int, float], False), ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]), 
-                     ("max_leaf_nodes", max_leaf_nodes, [int, float], False), ("max_depth", max_depth, [int, float], False), ("min_samples_leaf", min_samples_leaf, [int, float], False),
-                     ("nbins", nbins, [int, float], False), ("xlim", xlim, [list], False),])
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        bandwidth: float = 1,
+        kernel: str = "gaussian",
+        p: int = 2,
+        max_leaf_nodes: int = 1e9,
+        max_depth: int = 5,
+        min_samples_leaf: int = 1,
+        nbins: int = 5,
+        xlim: list = [],
+    ):
+        check_types(
+            [
+                ("name", name, [str], False),
+                ("bandwidth", bandwidth, [int, float], False),
+                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]),
+                ("max_leaf_nodes", max_leaf_nodes, [int, float], False),
+                ("max_depth", max_depth, [int, float], False),
+                ("min_samples_leaf", min_samples_leaf, [int, float], False),
+                ("nbins", nbins, [int, float], False),
+                ("xlim", xlim, [list], False),
+            ]
+        )
         self.type, self.name = "KernelDensity", name
-        self.set_params({"nbins": nbins, "p": p, "bandwidth": bandwidth, "kernel": kernel, "max_leaf_nodes": int(max_leaf_nodes), "max_depth": int(max_depth), "min_samples_leaf": int(min_samples_leaf), "xlim": xlim})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        self.set_params(
+            {
+                "nbins": nbins,
+                "p": p,
+                "bandwidth": bandwidth,
+                "kernel": kernel,
+                "max_leaf_nodes": int(max_leaf_nodes),
+                "max_depth": int(max_depth),
+                "min_samples_leaf": int(min_samples_leaf),
+                "xlim": xlim,
+            }
+        )
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
-    def fit(self, input_relation: str, X: list,):
+    def fit(
+        self, input_relation: (str, vDataFrame), X: list = [],
+    ):
         """
     ---------------------------------------------------------------------------
     Trains the model.
 
     Parameters
     ----------
-    input_relation: str
+    input_relation: str/vDataFrame
         Train relation.
-    X: list
-        List of the predictors. Only 1D KDE is currently supported.
+    X: list, optional
+        List of the predictors.
 
     Returns
     -------
     object
         self
         """
-        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
+        check_types(
+            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+        )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
-        try:
-            vdf = vDataFrame(input_relation, cursor=self.cursor)
-        except:
-            vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+        if isinstance(input_relation, vDataFrame):
+            if not (X):
+                X = input_relation.numcol()
+            vdf = input_relation
+            input_relation = input_relation.__genSQL__()
+        else:
+            try:
+                vdf = vDataFrame(input_relation, cursor=self.cursor)
+            except:
+                vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+            if not (X):
+                X = vdf.numcol()
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
 
         # ---#
         def density_compute(
-            vdf,
+            vdf: vDataFrame,
             columns: list,
             h=None,
             kernel: str = "gaussian",
@@ -918,15 +985,15 @@ xlim: list, optional
         ):
             # ---#
             def density_kde(
-                vdf,
-                columns: list,
-                kernel: str,
-                x,
-                p: int,
-                h=None,):
+                vdf, columns: list, kernel: str, x, p: int, h=None,
+            ):
                 for elem in columns:
                     if not (vdf[elem].isnum()):
-                        raise TypeError("Cannot compute KDE for non-numerical columns. {} is not numerical.".format(elem))
+                        raise TypeError(
+                            "Cannot compute KDE for non-numerical columns. {} is not numerical.".format(
+                                elem
+                            )
+                        )
                 if kernel == "gaussian":
                     fkernel = "EXP(-1 / 2 * POWER({}, 2)) / SQRT(2 * PI())"
 
@@ -951,10 +1018,14 @@ xlim: list, optional
                     for elem in x:
                         distance = []
                         for i in range(len(columns)):
-                            distance += ["POWER({} - {}, {})".format(columns[i], elem[i], p)]
+                            distance += [
+                                "POWER({} - {}, {})".format(columns[i], elem[i], p)
+                            ]
                         distance = " + ".join(distance)
                         distance = "POWER({}, {})".format(distance, 1.0 / p)
-                        fkernel_tmp = fkernel.replace("{}", "{} / {}".format(distance, h))
+                        fkernel_tmp = fkernel.replace(
+                            "{}", "{} / {}".format(distance, h)
+                        )
                         L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
                     query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
                     vdf.__executeSQL__(query, "Computing the KDE")
@@ -974,14 +1045,25 @@ xlim: list, optional
                         N = vdf[column].count()
                     except:
                         warning_message = "Wrong xlim for the vcolumn {}.\nThe max and the min will be used instead.".format(
-                            column, 
+                            column,
                         )
                         warnings.warn(warning_message, Warning)
-                        x_min, x_max, N = vdf[column].min(), vdf[column].max(), vdf[column].count()
+                        x_min, x_max, N = (
+                            vdf[column].min(),
+                            vdf[column].max(),
+                            vdf[column].count(),
+                        )
                 else:
-                    x_min, x_max, N = vdf[column].min(), vdf[column].max(), vdf[column].count()
-                x_vars += [[(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]]
+                    x_min, x_max, N = (
+                        vdf[column].min(),
+                        vdf[column].max(),
+                        vdf[column].count(),
+                    )
+                x_vars += [
+                    [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
+                ]
             import itertools
+
             x = list(itertools.product(*x_vars))
             try:
                 y = density_kde(vdf, columns, kernel, x, p, h)
@@ -991,32 +1073,46 @@ xlim: list, optional
                     y += [K]
             return [x, y]
 
-        x, y = density_compute(vdf, X, self.parameters["bandwidth"], self.parameters["kernel"], self.parameters["nbins"], self.parameters["p"])
-        query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(self.name.replace('"', ''), ", ".join(X), vdf.__genSQL__())
+        x, y = density_compute(
+            vdf,
+            X,
+            self.parameters["bandwidth"],
+            self.parameters["kernel"],
+            self.parameters["nbins"],
+            self.parameters["p"],
+        )
+        query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
+            self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
+        )
         self.cursor.execute(query)
-        r = 0
-        while (r < len(y)):
+        r, idx = 0, 0
+        while r < len(y):
             values = []
             m = min(r + 100, len(y))
             for i in range(r, m):
                 values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-            query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(self.name.replace('"', ''), ", ".join(X), " UNION ".join(values))
-            self.cursor.execute(query)
+            query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
+                self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+            )
+            executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
             self.cursor.execute("COMMIT;")
             r += 100
+            idx += 1
         self.X, self.input_relation = X, input_relation
-        self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ''))
-        self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ''))
+        self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
+        self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
         self.y = "KDE"
 
         from verticapy.learn.tree import DecisionTreeRegressor
 
-        model = DecisionTreeRegressor(name=self.tree_name,
-                                      cursor=self.cursor,
-                                      max_leaf_nodes=self.parameters["max_leaf_nodes"],
-                                      max_depth=self.parameters["max_depth"],
-                                      min_samples_leaf=self.parameters["min_samples_leaf"],
-                                      nbins = 1000)
+        model = DecisionTreeRegressor(
+            name=self.tree_name,
+            cursor=self.cursor,
+            max_leaf_nodes=self.parameters["max_leaf_nodes"],
+            max_depth=self.parameters["max_depth"],
+            min_samples_leaf=self.parameters["min_samples_leaf"],
+            nbins=1000,
+        )
         model.fit(self.map, self.X, "KDE")
         model_save = {
             "type": "KernelDensity",
@@ -1042,7 +1138,9 @@ xlim: list, optional
         return self
 
     # ---#
-    def plot(self, color: str = "#FE5016", ax=None,):
+    def plot(
+        self, color: str = "#FE5016", ax=None,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Model.
@@ -1059,7 +1157,7 @@ xlim: list, optional
     ax
         Matplotlib axes object
         """
-        if (len(self.X) == 1):
+        if len(self.X) == 1:
             query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
             self.cursor.execute(query)
             result = self.cursor.fetchall()
@@ -1076,14 +1174,24 @@ xlim: list, optional
             ax.set_ylim(bottom=0,)
             ax.fill_between(x, y, facecolor=color, alpha=0.7)
             ax.set_ylabel("density")
-            ax.set_title("Distribution of {} ({} kernel)".format(self.X[0], self.parameters["kernel"]))
+            ax.set_title(
+                "Distribution of {} ({} kernel)".format(
+                    self.X[0], self.parameters["kernel"]
+                )
+            )
             return ax
-        elif (len(self.X) == 2):
-            query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(self.X[0], self.X[1], self.map,)
+        elif len(self.X) == 2:
+            query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
+                self.X[0], self.X[1], self.map,
+            )
             self.cursor.execute(query)
             result = self.cursor.fetchall()
             n = self.parameters["nbins"]
-            x, y, z = [elem[0] for elem in result], [elem[1] for elem in result], [elem[2] for elem in result]
+            x, y, z = (
+                [elem[0] for elem in result],
+                [elem[1] for elem in result],
+                [elem[2] for elem in result],
+            )
             result, idx = [], 0
             while idx < (n + 1) * (n + 1):
                 result += [[z[idx + i] for i in range(n + 1)]]
@@ -1094,8 +1202,13 @@ xlim: list, optional
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt
-            im = ax.imshow(result, interpolation='bilinear', cmap="Reds",
-                           origin='lower', extent=[min(x), max(x), min(y), max(y)],)
+            im = ax.imshow(
+                result,
+                interpolation="bilinear",
+                cmap="Reds",
+                origin="lower",
+                extent=[min(x), max(x), min(y), max(y)],
+            )
             fig.colorbar(im, ax=ax)
             ax.set_title("Kernel Density Estimation")
             ax.set_ylabel(self.X[1])
@@ -1103,6 +1216,7 @@ xlim: list, optional
             return ax
         else:
             raise Exception("KDE Plots are only available in 1D or 2D.")
+
 
 # ---#
 class KNeighborsRegressor(Regressor):
@@ -1133,10 +1247,7 @@ p: int, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
@@ -1206,20 +1317,26 @@ p: int, optional
         return sql
 
     # ---#
-    def fit(self, input_relation: str, X: list, y: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (str, vDataFrame),
+        X: list,
+        y: str,
+        test_relation: (str, vDataFrame) = "",
+    ):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str, optional
+	test_relation: str/vDataFrame, optional
 		Relation to use to test the model.
 
 	Returns
@@ -1229,15 +1346,24 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
+                ("input_relation", input_relation, [str, vDataFrame], False),
                 ("X", X, [list], False),
                 ("y", y, [str], False),
-                ("test_relation", test_relation, [str], False),
+                ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
         model_save = {
@@ -1258,15 +1384,17 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf, X: list = [], name: str = ""):
+    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = ""):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
 
     Parameters
     ----------
-    vdf: vDataFrame
-        Object to use to run the prediction.
+    vdf: str/vDataFrame
+        Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -1279,7 +1407,11 @@ p: int, optional
         the vDataFrame of the prediction
         """
         check_types(
-            [("name", name, [str], False), ("X", X, [list], False),], vdf=["vdf", vdf],
+            [
+                ("name", name, [str],),
+                ("X", X, [list],),
+                ("vdf", vdf, [str, vDataFrame]),
+            ],
         )
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
@@ -1333,15 +1465,16 @@ p: int, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
     def fit(
-        self, input_relation: str, X: list, key_columns: list = [], index: str = ""
+        self,
+        input_relation: (str, vDataFrame),
+        X: list = [],
+        key_columns: list = [],
+        index: str = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -1349,9 +1482,9 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
-	X: list
+	X: list, optional
 		List of the predictors.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
@@ -1367,51 +1500,57 @@ p: int, optional
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str], False),
+                ("input_relation", input_relation, [str, vDataFrame], False),
                 ("X", X, [list], False),
                 ("key_columns", key_columns, [list], False),
                 ("index", index, [str], False),
             ]
         )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
+        self.key_columns = [str_column(column) for column in key_columns]
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+            if not (X):
+                X = input_relation.numcol()
+        else:
+            self.input_relation = input_relation
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).numcol()
         X = [str_column(column) for column in X]
         self.X = X
-        self.key_columns = [str_column(column) for column in key_columns]
-        self.input_relation = input_relation
         cursor = self.cursor
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
-        relation_alpha = "".join(ch for ch in input_relation if ch.isalnum())
         schema, relation = schema_relation(input_relation)
 
-        def drop_temp_elem(cursor, relation_alpha):
+        def drop_temp_elem(cursor):
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                    relation_alpha
+                    get_session(cursor)
                 )
             )
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
-                    relation_alpha
+                    get_session(cursor)
                 )
             )
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
-                    relation_alpha
+                    get_session(cursor)
                 )
             )
             cursor.execute(
                 "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
-                    relation_alpha
+                    get_session(cursor)
                 )
             )
 
-        drop_temp_elem(cursor, relation_alpha)
+        drop_temp_elem(cursor)
         try:
             if not (index):
                 index = "id"
-                relation_alpha = "".join(ch for ch in relation if ch.isalnum())
-                main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
+                main_table = "VERTICAPY_MAIN_{}".format(get_session(self.cursor))
                 schema = "v_temp_schema"
                 try:
                     cursor.execute(
@@ -1422,12 +1561,12 @@ p: int, optional
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
-                    input_relation,
+                    self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
                 cursor.execute(sql)
             else:
-                main_table = input_relation
+                main_table = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], p)
                 for i in range(len(X))
@@ -1450,62 +1589,72 @@ p: int, optional
             try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
-                        relation_alpha
+                        get_session(self.cursor)
                     )
                 )
             except:
                 pass
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                relation_alpha, sql
+                get_session(self.cursor), sql
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 0.")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
-                relation_alpha, n_neighbors + 1
+                get_session(self.cursor), n_neighbors + 1
             )
             lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICAPY_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
-                n_neighbors, relation_alpha, kdistance
+                n_neighbors, get_session(self.cursor), kdistance
             )
             try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
-                        relation_alpha
+                        get_session(self.cursor)
                     )
                 )
             except:
                 pass
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                relation_alpha, lrd
+                get_session(self.cursor), lrd
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 1.")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
-                n_neighbors, relation_alpha, relation_alpha, relation_alpha
+                n_neighbors,
+                get_session(self.cursor),
+                get_session(self.cursor),
+                get_session(self.cursor),
             )
             try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
-                        relation_alpha
+                        get_session(self.cursor)
                     )
                 )
             except:
                 pass
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                relation_alpha, sql
+                get_session(self.cursor), sql
             )
-            cursor.execute(sql)
+            executeSQL(self.cursor, sql, "Computing the LOF - STEP 2.")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
-                ", ".join(X + self.key_columns), main_table, relation_alpha, index
+                ", ".join(X + self.key_columns),
+                main_table,
+                get_session(self.cursor),
+                index,
             )
-            cursor.execute("CREATE TABLE {} AS {}".format(self.name, sql))
+            executeSQL(
+                self.cursor,
+                "CREATE TABLE {} AS {}".format(self.name, sql),
+                "Computing the LOF - STEP 3.",
+            )
             cursor.execute(
                 "SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(
-                    schema, relation_alpha
+                    schema, get_session(self.cursor)
                 )
             )
             self.n_errors_ = cursor.fetchone()[0]
         except:
-            drop_temp_elem(cursor, relation_alpha)
+            drop_temp_elem(cursor)
             raise
-        drop_temp_elem(cursor, relation_alpha)
+        drop_temp_elem(cursor)
         model_save = {
             "type": "LocalOutlierFactor",
             "input_relation": self.input_relation,

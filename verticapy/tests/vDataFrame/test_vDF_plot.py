@@ -11,9 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, datetime
-from verticapy import vDataFrame, drop_table
+import pytest, datetime, warnings
+from verticapy import vDataFrame, drop_table, create_verticapy_schema
 import matplotlib.pyplot as plt
+
+from verticapy import set_option
+
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +25,11 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -33,18 +37,17 @@ def amazon_vd(base):
     from verticapy.learn.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
     drop_table(
         name="public.amazon", cursor=base.cursor,
     )
+
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
     from verticapy.learn.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
-    iris.set_display_parameters(print_info=False)
     yield iris
     drop_table(
         name="public.iris", cursor=base.cursor,
@@ -123,25 +126,38 @@ class TestvDFPlot:
 
     def test_vDF_bubble(self, iris_vd):
         # testing vDataFrame.bubble
-        result = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm")
+        result = iris_vd.bubble(
+            columns=["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm"
+        )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
         # testing vDataFrame.scatter using parameter catcol
-        result2 = iris_vd.bubble(columns = ["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", catcol="Species")
+        result2 = iris_vd.bubble(
+            columns=["PetalLengthCm", "SepalLengthCm"],
+            size_bubble_col="PetalWidthCm",
+            catcol="Species",
+        )
         result2 = result2.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result2.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close()
 
-    @pytest.mark.skip(reason="new version of density")
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
+        try:
+            create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
+        except:
+            pass
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
-            result = iris_vd["PetalLengthCm"].density(kernel=kernel)
+            result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
-        plt.close()
+            plt.close()
         # testing vDataFrame.density
+        for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
+            result = iris_vd.density(kernel=kernel, nbins=20)
+            assert max(result.get_default_bbox_extra_artists()[5].get_data()[1]) < 0.37
+            plt.close()
 
     def test_vDF_donut(self, titanic_vd):
         result = titanic_vd["sex"].donut(method="sum", of="survived")
@@ -155,15 +171,25 @@ class TestvDFPlot:
     def test_vDF_hchart(self):
         pass
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_vDF_heatmap(self, iris_vd):
-        pass
+        result = iris_vd.heatmap(
+            ["PetalLengthCm", "SepalLengthCm"],
+            method="avg",
+            of="SepalWidthCm",
+            h=(1, 1),
+        )
+        assert result.get_default_bbox_extra_artists()[-2].get_size() == (5, 4)
+        plt.close()
 
     def test_vDF_hexbin(self, titanic_vd):
-        result = titanic_vd.hexbin(columns = ["age", "fare"], method="avg", of="survived")
+        result = titanic_vd.hexbin(columns=["age", "fare"], method="avg", of="survived")
         result = result.get_default_bbox_extra_artists()[0]
-        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(78.0082500756865, 1e-2)
-        assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(512.3292, 1e-2)
+        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(
+            78.0082500756865, 1e-2
+        )
+        assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(
+            512.3292, 1e-2
+        )
         plt.close()
 
     def test_vDF_hist(self, titanic_vd):
@@ -252,21 +278,27 @@ class TestvDFPlot:
 
     def test_vDF_scatter(self, iris_vd):
         # testing vDataFrame.scatter
-        result = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"])
+        result = iris_vd.scatter(columns=["PetalLengthCm", "SepalLengthCm"])
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
-        result2 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"])
+        result2 = iris_vd.scatter(
+            columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"]
+        )
         result2 = result2.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result2.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
 
         # testing vDataFrame.scatter using parameter catcol
-        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm"], catcol="Species")
+        result3 = iris_vd.scatter(
+            columns=["PetalLengthCm", "SepalLengthCm"], catcol="Species"
+        )
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
-        result3 = iris_vd.scatter(columns = ["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species")
+        result3 = iris_vd.scatter(
+            columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species"
+        )
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9

@@ -60,8 +60,8 @@ import numpy
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
+from verticapy.plot import gen_colors
 
 # ---#
 def logit_plot(
@@ -82,12 +82,7 @@ def logit_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
 
     def logit(x):
         return 1 / (1 + math.exp(-x))
@@ -129,7 +124,7 @@ def logit_plot(
                 [logit(coefficients[0] + coefficients[1] * item) for item in x0],
                 alpha=1,
                 marker="o",
-                color="#263133",
+                color=gen_colors()[1],
             )
         ]
         all_scatter += [
@@ -138,7 +133,7 @@ def logit_plot(
                 [logit(coefficients[0] + coefficients[1] * item) for item in x1],
                 alpha=0.8,
                 marker="^",
-                color="#FE5016",
+                color=gen_colors()[0],
             )
         ]
         ax.set_xlabel(X[0])
@@ -208,7 +203,7 @@ def logit_plot(
                 ],
                 alpha=1,
                 marker="o",
-                color="#263133",
+                color=gen_colors()[1],
             )
         ]
         all_scatter += [
@@ -225,7 +220,7 @@ def logit_plot(
                 ],
                 alpha=0.8,
                 marker="^",
-                color="#FE5016",
+                color=gen_colors()[0],
             )
         ]
         ax.set_xlabel(X[0])
@@ -265,12 +260,7 @@ def lof_plot(
             ("tablesample", tablesample, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     tablesample = (
         "TABLESAMPLE({})".format(tablesample)
         if (tablesample > 0 and tablesample < 100)
@@ -298,11 +288,11 @@ def lof_plot(
         ax.set_title("Local Outlier Factor (LOF)")
         ax.set_xlabel(column)
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color="#263133", s=14, label="Data points")
+        ax.scatter(column1, column2, color=gen_colors()[1], s=14, label="Data points")
         ax.scatter(
             column1,
             column2,
-            color="#FE5016",
+            color=gen_colors()[0],
             s=radius,
             label="Outlier scores",
             facecolors="none",
@@ -336,11 +326,11 @@ def lof_plot(
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color="#263133", s=14, label="Data points")
+        ax.scatter(column1, column2, color=gen_colors()[1], s=14, label="Data points")
         ax.scatter(
             column1,
             column2,
-            color="#FE5016",
+            color=gen_colors()[0],
             s=radius,
             label="Outlier scores",
             facecolors="none",
@@ -374,8 +364,10 @@ def lof_plot(
         ax.set_ylabel(columns[1])
         ax.set_zlabel(columns[2])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, column3, color="#263133", label="Data points")
-        ax.scatter(column1, column2, column3, color="#FE5016", s=radius)
+        ax.scatter(
+            column1, column2, column3, color=gen_colors()[1], label="Data points"
+        )
+        ax.scatter(column1, column2, column3, color=gen_colors()[0], s=radius)
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -416,11 +408,11 @@ def plot_importance(
         ax.grid()
     color = []
     for item in signs:
-        color += ["#FE5016"] if (item == 1) else ["#263133"]
+        color += [gen_colors()[0]] if (item == 1) else [gen_colors()[1]]
     ax.barh(range(0, len(importances)), importances, 0.9, color=color, alpha=0.86)
     if print_legend:
-        orange = mpatches.Patch(color="#263133", label="sign -")
-        blue = mpatches.Patch(color="#FE5016", label="sign +")
+        orange = mpatches.Patch(color=gen_colors()[1], label="sign -")
+        blue = mpatches.Patch(color=gen_colors()[0], label="sign +")
         ax.legend(handles=[orange, blue], loc="lower right")
     ax.set_ylabel("Features")
     ax.set_xlabel("Importance")
@@ -568,12 +560,7 @@ def regression_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if len(X) == 1:
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
@@ -595,7 +582,7 @@ def regression_plot(
         x_reg = [min_reg, max_reg]
         y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
         ax.plot(x_reg, y_reg, alpha=1, color="black")
-        ax.scatter(x0, y0, alpha=1, marker="o", color="#FE5016")
+        ax.scatter(x0, y0, alpha=1, marker="o", color=gen_colors()[0])
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
         ax.set_title(y + " = f(" + X[0] + ")")
@@ -633,7 +620,7 @@ def regression_plot(
         ax.plot_surface(
             X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
-        ax.scatter(x0, y0, z0, alpha=1, marker="o", color="#FE5016")
+        ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[0])
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
@@ -663,12 +650,7 @@ def svm_classifier_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if len(X) == 1:
         query = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
@@ -696,8 +678,12 @@ def svm_classifier_plot(
             [-1, 1],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
-        all_scatter = [ax.scatter(x0, [0 for item in x0], marker="o", color="#263133")]
-        all_scatter += [ax.scatter(x1, [0 for item in x1], marker="^", color="#FE5016")]
+        all_scatter = [
+            ax.scatter(x0, [0 for item in x0], marker="o", color=gen_colors()[1])
+        ]
+        all_scatter += [
+            ax.scatter(x1, [0 for item in x1], marker="^", color=gen_colors()[0])
+        ]
         ax.set_xlabel(X[0])
         ax.legend(all_scatter, [0, 1], scatterpoints=1)
         ax.set_title("svm(" + X[0] + ")")
@@ -734,8 +720,8 @@ def svm_classifier_plot(
             ],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
-        all_scatter = [ax.scatter(x0, y0, marker="o", color="#263133")]
-        all_scatter += [ax.scatter(x1, y1, marker="^", color="#FE5016")]
+        all_scatter = [ax.scatter(x0, y0, marker="o", color=gen_colors()[1])]
+        all_scatter += [ax.scatter(x1, y1, marker="^", color=gen_colors()[0])]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.legend(all_scatter, [0, 1], scatterpoints=1)
@@ -800,8 +786,12 @@ def svm_classifier_plot(
         ax.plot_surface(
             X_svm, Y_svm, Z_svm, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
-        all_scatter = [ax.scatter(x0, y0, z0, alpha=1, marker="o", color="#263133")]
-        all_scatter += [ax.scatter(x1, y1, z1, alpha=0.8, marker="^", color="#FE5016")]
+        all_scatter = [
+            ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[1])
+        ]
+        all_scatter += [
+            ax.scatter(x1, y1, z1, alpha=0.8, marker="^", color=gen_colors()[0])
+        ]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(X[2])

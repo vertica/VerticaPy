@@ -65,7 +65,11 @@ VerticaPy is compatible with several clients.
 import vertica_python
 
 # Connection using all the DSN information
-conn_info = {'host': "10.211.55.14", 'port': 5433, 'user': "dbadmin", 'password': "XxX", 'database': "testdb"}
+conn_info = {'host': "10.211.55.14", 
+             'port': 5433, 
+             'user': "dbadmin", 
+             'password': "XxX", 
+             'database': "testdb"}
 cur = vertica_python.connect(** conn_info).cursor()
 
 # Connection using directly the DSN
@@ -162,9 +166,9 @@ pclass             3.0         3
 sibsp              8.0         7  
 survived           1.0         2 
 ```
-Print the SQL query with the <b>sql_on_off</b> method:
+Print the SQL query with the <b>set_option</b> function:
 ```python
-vdf.sql_on_off()
+set_option("sql_on", True)
 vdf.describe()
 
 # Output
@@ -180,11 +184,11 @@ from verticapy.learn.model_selection import cross_validate
 from verticapy.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
-vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
+vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna()
 
 # Model Evaluation
 cross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), 
-               "titanic_clean", 
+               vdf, 
                ["age", "family_size", "sex", "pclass", "fare", "boat"], 
                "survived", 
                cutoff = 0.35)

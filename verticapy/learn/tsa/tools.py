@@ -52,6 +52,7 @@
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.learn.linear_model import LinearRegression
+from verticapy import vDataFrame
 
 # Other modules
 import math
@@ -60,7 +61,7 @@ from scipy.stats import chi2, norm
 
 # ---#
 def adfuller(
-    vdf,
+    vdf: vDataFrame,
     column: str,
     ts: str,
     by: list = [],
@@ -217,8 +218,8 @@ tablesample
             ("by", by, [list],),
             ("with_trend", with_trend, [bool],),
             ("regresults", regresults, [bool],),
+            ("vdf", vdf, [vDataFrame,],),
         ],
-        vdf=["vdf", vdf],
     )
     columns_check([ts, column] + by, vdf)
     ts = vdf_columns_names([ts], vdf)[0]
@@ -326,7 +327,7 @@ tablesample
 
 # ---#
 def durbin_watson(
-    vdf, column: str, ts: str, X: list, by: list = [],
+    vdf: vDataFrame, column: str, ts: str, X: list, by: list = [],
 ):
     """
 ---------------------------------------------------------------------------
@@ -358,8 +359,8 @@ tablesample
             ("column", column, [str],),
             ("X", X, [list],),
             ("by", by, [list],),
+            ("vdf", vdf, [vDataFrame,],),
         ],
-        vdf=["vdf", vdf],
     )
     columns_check(X + [column] + [ts] + by, vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -430,7 +431,7 @@ tablesample
 
 
 # ---#
-def jarque_bera(vdf, column: str, alpha: float = 0.05):
+def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
 Jarque Bera test (Distribution Normality).
@@ -451,7 +452,11 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("column", column, [str],), ("alpha", alpha, [int, float],),], vdf=["vdf", vdf]
+        [
+            ("column", column, [str],),
+            ("alpha", alpha, [int, float],),
+            ("vdf", vdf, [vDataFrame,],),
+        ],
     )
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -474,7 +479,7 @@ tablesample
 
 # ---#
 def ljungbox(
-    vdf,
+    vdf: vDataFrame,
     column: str,
     ts: str,
     by: list = [],
@@ -519,8 +524,8 @@ tablesample
             ("p", p, [int, float],),
             ("alpha", alpha, [int, float],),
             ("box_pierce", box_pierce, [bool],),
+            ("vdf", vdf, [vDataFrame,],),
         ],
-        vdf=["vdf", vdf],
     )
     columns_check([column] + [ts] + by, vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -552,7 +557,7 @@ tablesample
 
 
 # ---#
-def mkt(vdf, column: str, ts: str, alpha: float = 0.05):
+def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
@@ -585,8 +590,8 @@ tablesample
             ("ts", ts, [str],),
             ("column", column, [str],),
             ("alpha", alpha, [int, float],),
+            ("vdf", vdf, [vDataFrame,],),
         ],
-        vdf=["vdf", vdf],
     )
     columns_check([column, ts], vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -615,21 +620,21 @@ tablesample
         return None
     if S > 0:
         ZMK = (S - 1) / STDS
-        trend = 'increasing'
+        trend = "increasing"
     elif S < 0:
         ZMK = (S + 1) / STDS
-        trend = 'decreasing'
+        trend = "decreasing"
     else:
         ZMK = 0
-        trend = 'no trend'
+        trend = "no trend"
     pvalue = norm.pdf(ZMK)
     result = (
         True
         if (ZMK <= 0 and pvalue < alpha) or (ZMK >= 0 and pvalue < alpha)
         else False
     )
-    if not(result):
-        trend = 'no trend'
+    if not (result):
+        trend = "no trend"
     result = tablesample(
         {
             "index": [
@@ -638,7 +643,7 @@ tablesample
                 "STDS",
                 "p_value",
                 "Monotonic Trend",
-                "Trend"
+                "Trend",
             ],
             "value": [ZMK, S, STDS, pvalue, result, trend],
         }
@@ -648,7 +653,7 @@ tablesample
 
 # ---#
 def plot_acf_pacf(
-    vdf, column: str, ts: str, by: list = [], p=15,
+    vdf: vDataFrame, column: str, ts: str, by: list = [], p: (int, list) = 15,
 ):
     """
 ---------------------------------------------------------------------------
@@ -683,6 +688,7 @@ tablesample
             ("ts", ts, [str],),
             ("by", by, [list],),
             ("p", p, [int, float],),
+            ("vdf", vdf, [vDataFrame,],),
         ]
     )
     columns_check([column, ts] + by, vdf)

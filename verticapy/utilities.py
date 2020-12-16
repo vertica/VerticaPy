@@ -52,8 +52,10 @@
 import os, math, shutil, re, time, decimal, warnings
 
 # VerticaPy Modules
+import verticapy
+import vertica_python
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
+from verticapy.connections.connect import read_auto_connect, vertica_conn
 from verticapy.errors import *
 
 # Other Modules
@@ -77,12 +79,7 @@ cursor: DBcursor, optional
     Vertica DB cursor.
     """
     check_types([("name", name, [str],)])
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     cursor.execute("SELECT * FROM MODELS WHERE model_name='{}'".format(name))
     result = cursor.fetchone()
     if result:
@@ -117,12 +114,7 @@ Parameters
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     sql = "CREATE SCHEMA verticapy;"
     cursor.execute(sql)
     sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
@@ -144,14 +136,43 @@ Parameters
 cursor: DBcursor, optional
     Vertica DB cursor.
     """
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     sql = "DROP SCHEMA verticapy CASCADE;"
     cursor.execute(sql)
+    if conn:
+        conn.close()
+
+
+# ---#
+def drop_verticapy_temp(cursor=None):
+    """
+---------------------------------------------------------------------------
+Drops VerticaPy temporary elements.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor.
+    """
+    cursor, conn = check_cursor(cursor)[0:2]
+    sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+    cursor.execute(sql)
+    all_tables = cursor.fetchall()
+    for elem in all_tables:
+        table = '"{}"."{}"'.format(
+            elem[0].replace('"', '""'), elem[1].replace('"', '""')
+        )
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(table, cursor)
+    sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+    cursor.execute(sql)
+    all_views = cursor.fetchall()
+    for elem in all_views:
+        view = '"{}"."{}"'.format(
+            elem[0].replace('"', '""'), elem[1].replace('"', '""')
+        )
+        with warnings.catch_warnings(record=True) as w:
+            drop_view(view, cursor)
     if conn:
         conn.close()
 
@@ -180,12 +201,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP MODEL {};".format(name)
         cursor.execute(query)
@@ -207,9 +223,16 @@ bool
                 drop_table(name, cursor)
             elif model_type in ("CountVectorizer"):
                 drop_text_index(name, cursor)
+                sql = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(
+                    str_column(name).lower()
+                )
+                cursor.execute(sql)
+                drop_table(cursor.fetchone()[0], cursor)
             elif model_type in ("KernelDensity"):
-                drop_table(name.replace('"', '') + "_KernelDensity_Map", cursor)
-                drop_model("{}_KernelDensity_Tree".format(name.replace('"', '')), cursor)
+                drop_table(name.replace('"', "") + "_KernelDensity_Map", cursor)
+                drop_model(
+                    "{}_KernelDensity_Tree".format(name.replace('"', "")), cursor
+                )
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
@@ -259,12 +282,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP TABLE {};".format(name)
         cursor.execute(query)
@@ -277,7 +295,7 @@ bool
         if raise_error:
             raise
         warning_message = "The table '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -307,12 +325,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP TEXT INDEX {};".format(name)
         cursor.execute(query)
@@ -325,7 +338,7 @@ bool
         if raise_error:
             raise
         warning_message = "The text index '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -355,12 +368,7 @@ bool
     check_types(
         [("name", name, [str],), ("raise_error", raise_error, [bool],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     try:
         query = "DROP VIEW {};".format(name)
         cursor.execute(query)
@@ -373,7 +381,7 @@ bool
         if raise_error:
             raise
         warning_message = "The view '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-                name
+            name
         )
         warnings.warn(warning_message, Warning)
         return False
@@ -381,13 +389,7 @@ bool
 
 # ---#
 def readSQL(
-    query: str,
-    cursor=None,
-    dsn: str = "",
-    time_on: bool = False,
-    limit: int = 100,
-    display_ncols: int = 100,
-    percent_bar: bool = False,
+    query: str, cursor=None, dsn: str = "", time_on: bool = False, limit: int = 100,
 ):
     """
 	---------------------------------------------------------------------------
@@ -405,10 +407,6 @@ def readSQL(
 		If set to True, displays the query elapsed time.
 	limit: int, optional
 		Number maximum of elements to display.
-    display_ncols: int, optional
-        Number maximum of columns to display.
-    percent_bar: bool, optional
-        If set to True, displays the percent of missing values.
 
  	Returns
  	-------
@@ -421,8 +419,6 @@ def readSQL(
             ("dsn", dsn, [str],),
             ("time_on", time_on, [bool],),
             ("limit", limit, [int, float],),
-            ("display_ncols", display_ncols, [int, float],),
-            ("percent_bar", percent_bar, [bool],),
         ]
     )
     conn = False
@@ -430,18 +426,26 @@ def readSQL(
         conn = read_auto_connect()
         cursor = conn.cursor()
     elif not (cursor):
-        cursor = vertica_cursor(dsn)
+        cursor = vertica_conn(dsn).cursor()
     cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
-    result = to_tablesample(
-        "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT {}".format(query, limit),
-        cursor,
-        False,
-        time_on,
-    )
+    query_on_init = verticapy.options["query_on"]
+    time_on_init = verticapy.options["time_on"]
+    try:
+        verticapy.options["time_on"] = time_on
+        verticapy.options["query_on"] = False
+        result = to_tablesample(
+            "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT {}".format(query, limit),
+            cursor,
+        )
+    except:
+        verticapy.options["time_on"] = time_on_init
+        verticapy.options["query_on"] = query_on_init
+        raise
+    verticapy.options["time_on"] = time_on_init
+    verticapy.options["query_on"] = query_on_init
     result.count = count
-    result.display_ncols = display_ncols
-    if percent_bar:
+    if verticapy.options["percent_bar"]:
         vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query), cursor=cursor)
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
@@ -477,13 +481,7 @@ Returns
 list of tuples
 	The list of the different columns and their respective type.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    import vertica_python
+    cursor, conn = check_cursor(cursor)[0:2]
 
     if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
         try:
@@ -574,10 +572,7 @@ model
 	The model.
 	"""
     check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     try:
         check_model(name=name, cursor=cursor)
         raise NameError("The model '{}' doesn't exist.".format(name))
@@ -604,7 +599,7 @@ model
                 from verticapy.learn.preprocessing import Normalizer
 
                 model = Normalizer(name, cursor)
-                model.param_ = self.get_model_attribute("details")
+                model.param_ = self.get_attr("details")
                 model.X = [
                     '"' + item + '"' for item in model.param_.values["column_name"]
                 ]
@@ -670,9 +665,15 @@ model
                     from verticapy.learn.neighbors import KernelDensity
 
                     model = KernelDensity(
-                        name, cursor, model_save["bandwidth"], model_save["kernel"], model_save["leaf_size"]
+                        name,
+                        cursor,
+                        model_save["bandwidth"],
+                        model_save["kernel"],
+                        model_save["leaf_size"],
                     )
-                    model.map_ = tablesample({"x": model_save["map"][0], "y": model_save["map"][1]})
+                    model.map_ = tablesample(
+                        {"x": model_save["map"][0], "y": model_save["map"][1]}
+                    )
                 elif model_save["type"] == "LocalOutlierFactor":
                     from verticapy.learn.neighbors import LocalOutlierFactor
 
@@ -720,12 +721,9 @@ model
                         model_save["D"],
                         model_save["Q"],
                         model_save["s"],
-                        model_save["penalty"],
                         model_save["tol"],
-                        model_save["C"],
                         model_save["max_iter"],
                         model_save["solver"],
-                        model_save["l1_ratio"],
                         model_save["max_pik"],
                         model_save["papprox_ma"],
                     )
@@ -746,12 +744,9 @@ model
                         name,
                         cursor,
                         model_save["p"],
-                        model_save["penalty"],
                         model_save["tol"],
-                        model_save["C"],
                         model_save["max_iter"],
                         model_save["solver"],
-                        model_save["l1_ratio"],
                     )
                     model.transform_relation = model_save["transform_relation"]
                     model.coef_ = []
@@ -854,9 +849,9 @@ model
             float(parameters_dict["alpha"]),
         )
     elif model_type == "naive_bayes":
-        from verticapy.learn.naive_bayes import MultinomialNB
+        from verticapy.learn.naive_bayes import NaiveBayes
 
-        model = MultinomialNB(name, cursor, float(parameters_dict["alpha"]))
+        model = NaiveBayes(name, cursor, float(parameters_dict["alpha"]))
     elif model_type == "svm_regressor":
         from verticapy.learn.svm import LinearSVR
 
@@ -897,8 +892,8 @@ model
             float(parameters_dict["epsilon"]),
         )
         model.parameters["n_cluster"] = int(info.split(",")[-1])
-        model.cluster_centers_ = model.get_model_attribute("centers")
-        result = model.get_model_attribute("metrics").values["metrics"][0]
+        model.cluster_centers_ = model.get_attr("centers")
+        result = model.get_attr("metrics").values["metrics"][0]
         values = {
             "index": [
                 "Between-Cluster Sum of Squares",
@@ -935,21 +930,21 @@ model
             float(parameters_dict["epsilon"]),
         )
         model.parameters["n_cluster"] = int(info.split(",")[-1])
-        self.metrics_ = self.get_model_attribute("Metrics")
-        self.cluster_centers_ = self.get_model_attribute("BKTree")
+        self.metrics_ = self.get_attr("Metrics")
+        self.cluster_centers_ = self.get_attr("BKTree")
     elif model_type == "pca":
         from verticapy.learn.decomposition import PCA
 
         model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
-        model.components_ = model.get_model_attribute("principal_components")
-        model.explained_variance_ = model.get_model_attribute("singular_values")
-        model.mean_ = model.get_model_attribute("columns")
+        model.components_ = model.get_attr("principal_components")
+        model.explained_variance_ = model.get_attr("singular_values")
+        model.mean_ = model.get_attr("columns")
     elif model_type == "svd":
         from verticapy.learn.decomposition import SVD
 
         model = SVD(name, cursor)
-        model.singular_values_ = model.get_model_attribute("right_singular_vectors")
-        model.explained_variance_ = model.get_model_attribute("singular_values")
+        model.singular_values_ = model.get_attr("right_singular_vectors")
+        model.explained_variance_ = model.get_attr("singular_values")
     elif model_type == "one_hot_encoder_fit":
         from verticapy.learn.preprocessing import OneHotEncoder
 
@@ -970,7 +965,7 @@ model
                     cursor=model.cursor,
                 )
             except:
-                model.param_ = model.get_model_attribute("varchar_categories")
+                model.param_ = model.get_attr("varchar_categories")
     model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
     model.test_relation = test_relation if (test_relation) else model.input_relation
     if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
@@ -998,7 +993,7 @@ model
     elif model_type in ("svm_classifier", "logistic_reg"):
         model.classes_ = [0, 1]
     if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
-        model.coef_ = model.get_model_attribute("details")
+        model.coef_ = model.get_attr("details")
     return model
 
 
@@ -1044,12 +1039,7 @@ read_json : Ingests a JSON file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     path = "verticapy_{}.csv".format(gen_name([name]))
     try:
         df.to_csv(path, index=False)
@@ -1109,12 +1099,7 @@ See Also
 read_csv  : Ingests a CSV file in the Vertica DB.
 read_json : Ingests a JSON file in the Vertica DB.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -1189,19 +1174,14 @@ See Also
 read_csv  : Ingests a CSV file in the Vertica DB.
 read_json : Ingests a JSON file in the Vertica DB.
 	"""
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     cursor.execute(
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
         )
     )
-    if "vertica_python" in str(type(cursor)):
+    if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
         with open(path, "r") as fs:
             cursor.copy(
                 "COPY {} FROM STDIN PARSER FJSONPARSER();".format(flex_name), fs
@@ -1306,10 +1286,7 @@ read_json : Ingests a JSON file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
         sep.replace("'", "''"),
@@ -1388,7 +1365,7 @@ read_json : Ingests a JSON file in the Vertica DB.
         else:
             if query1:
                 cursor.execute(query1)
-            if "vertica_python" in str(type(cursor)):
+            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                 with open(path, "r") as fs:
                     cursor.copy(query2.format("STDIN"), fs)
             else:
@@ -1459,10 +1436,7 @@ read_csv : Ingests a CSV file in the Vertica DB.
             ("insert", insert, [bool],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     file = path.split("/")[-1]
     file_extension = file[-4 : len(file)]
     if file_extension != "json":
@@ -1492,7 +1466,7 @@ read_csv : Ingests a CSV file in the Vertica DB.
                 flex_name
             )
         )
-        if "vertica_python" in str(type(cursor)):
+        if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
             with open(path, "r") as fs:
                 cursor.copy(
                     "COPY {} FROM STDIN PARSER FJSONPARSER();".format(flex_name), fs
@@ -1599,10 +1573,7 @@ vDataFrame.to_vdf : Saves the vDataFrame to a .vdf text file.
 vdf_from_relation : Creates a vDataFrame based on a customized relation.
 	"""
     check_types([("path", path, [str],)])
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     file = open(path, "r")
     save = (
         "from verticapy import vDataFrame\nfrom verticapy.vcolumn import vColumn\n"
@@ -1614,6 +1585,112 @@ vdf_from_relation : Creates a vDataFrame based on a customized relation.
     vdf = vdf["vdf_save"]
     vdf._VERTICAPY_VARIABLES_["cursor"] = cursor
     return vdf
+
+
+def set_option(option: str, value: (bool, int, str) = None):
+    """
+    ---------------------------------------------------------------------------
+    Sets new VerticaPy options.
+
+    Parameters
+    ----------
+    option: str
+        Option to use.
+        cache        : bool
+            If set to True, the vDataFrame will save in memory the computed
+            aggregations.
+        colors       : list
+            List of the colors used to draw the graphics.
+        max_rows     : int
+            Maximum number of rows to display. If the parameter is incorrect, 
+            nothing will be changed.
+        max_columns  : int
+            Maximum number of columns to display. If the parameter is incorrect, 
+            nothing will be changed.
+        mode         : str
+            How to display VerticaPy outputs.
+                full  : VerticaPy regular display mode.
+                light : Minimalist display mode.
+        percent_bar  : bool
+            If set to True, it displays the percent of non-missing values.
+        print_info   : bool
+            If set to True, information will be printed each time the vDataFrame is 
+            modified.
+        random_state : int
+            Integer used to seed the random number generation in VerticaPy.
+        sql_on       : bool
+            If set to True, displays all the SQL queries.
+        time_on      : bool
+            If set to True, displays all the SQL queries elapsed time.
+    value: object, optional
+        New value of option.
+    """
+    try:
+        option = option.lower()
+    except:
+        pass
+    check_types(
+        [
+            (
+                "option",
+                option,
+                [
+                    "cache",
+                    "colors",
+                    "max_rows",
+                    "max_columns",
+                    "percent_bar",
+                    "print_info",
+                    "random_state",
+                    "sql_on",
+                    "time_on",
+                    "mode",
+                ],
+            ),
+        ]
+    )
+    if option == "cache":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["cache"] = value
+    elif option == "colors":
+        check_types([("value", value, [list])])
+        if isinstance(value, list):
+            verticapy.options["colors"] = [str(elem) for elem in value]
+    elif option == "max_rows":
+        check_types([("value", value, [int, float])])
+        if value >= 0:
+            verticapy.options["max_rows"] = int(value)
+    elif option == "max_columns":
+        check_types([("value", value, [int, float])])
+        if value > 0:
+            verticapy.options["max_columns"] = int(value)
+    elif option == "print_info":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["print_info"] = value
+    elif option == "percent_bar":
+        check_types([("value", value, [bool])])
+        if value in (True, False, None):
+            verticapy.options["percent_bar"] = value
+    elif option == "random_state":
+        check_types([("value", value, [int])])
+        if isinstance(value, int) or value == None:
+            verticapy.options["random_state"] = value
+    elif option == "sql_on":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["query_on"] = value
+    elif option == "time_on":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["time_on"] = value
+    elif option == "mode":
+        check_types([("value", value, ["light", "full"])])
+        if value.lower() in ["light", "full", None]:
+            verticapy.options["mode"] = value.lower()
+    else:
+        raise ParameterError("")
 
 
 # ---#
@@ -1642,8 +1719,6 @@ offset: int, optional
 	dataset. It is used only for rendering purposes.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
-display_ncols: int, optional
-    Number maximum of columns to display.
 
 Attributes
 ----------
@@ -1661,7 +1736,6 @@ The tablesample attributes are the same than the parameters.
         count: int = 0,
         offset: int = 0,
         percent: dict = {},
-        display_ncols: int = 50,
     ):
         check_types(
             [
@@ -1669,6 +1743,7 @@ The tablesample attributes are the same than the parameters.
                 ("dtype", dtype, [dict],),
                 ("count", count, [int],),
                 ("offset", offset, [int],),
+                ("percent", percent, [dict],),
             ]
         )
         self.values = values
@@ -1676,7 +1751,6 @@ The tablesample attributes are the same than the parameters.
         self.count = count
         self.offset = offset
         self.percent = percent
-        self.display_ncols = display_ncols
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
@@ -1696,16 +1770,16 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        if n < self.display_ncols:
+        if n < verticapy.options["max_columns"]:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
-            k = int(self.display_ncols / 2)
+            k = int(verticapy.options["max_columns"] / 2)
             columns = [elem for elem in self.values]
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
                 [columns[i]] + self.values[columns[i]]
-                for i in range(n - self.display_ncols + k, n)
+                for i in range(n - verticapy.options["max_columns"] + k, n)
             ]
             data_columns = values0 + values1 + values2
             dtype["..."] = "undefined"
@@ -1760,16 +1834,16 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        if n < self.display_ncols:
+        if n < verticapy.options["max_columns"]:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
-            k = int(self.display_ncols / 2)
+            k = int(verticapy.options["max_columns"] / 2)
             columns = [elem for elem in self.values]
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
                 [columns[i]] + self.values[columns[i]]
-                for i in range(n - self.display_ncols + k, n)
+                for i in range(n - verticapy.options["max_columns"] + k, n)
             ]
             data_columns = values0 + values1 + values2
             dtype["..."] = "undefined"
@@ -1837,6 +1911,44 @@ The tablesample attributes are the same than the parameters.
             values[item[0]] = item[1 : len(item)]
         self.values = values
         return self
+
+    # ---#
+    def to_list(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the tablesample to a list.
+
+    Returns
+    -------
+    list
+        Python list.
+        """
+        result = []
+        all_cols = [elem for elem in self.values]
+        if all_cols == []:
+            return []
+        for i in range(len(self.values[all_cols[0]])):
+            result_tmp = []
+            for elem in self.values:
+                if elem != "index":
+                    result_tmp += [self.values[elem][i]]
+            result += [result_tmp]
+        return result
+
+    # ---#
+    def to_numpy(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the tablesample to a numpy array.
+
+    Returns
+    -------
+    numpy.array
+        Numpy Array.
+        """
+        import numpy as np
+
+        return np.array(self.to_list())
 
     # ---#
     def to_pandas(self):
@@ -1926,9 +2038,7 @@ The tablesample attributes are the same than the parameters.
         if not (cursor) and not (dsn):
             cursor = read_auto_connect().cursor()
         elif not (cursor):
-            from verticapy import vertica_cursor
-
-            cursor = vertica_cursor(dsn)
+            cursor = vertica_conn(dsn).cursor()
         else:
             check_cursor(cursor)
         relation = "({}) sql_relation".format(self.to_sql())
@@ -1937,11 +2047,7 @@ The tablesample attributes are the same than the parameters.
 
 # ---#
 def to_tablesample(
-    query: str,
-    cursor=None,
-    query_on: bool = False,
-    time_on: bool = False,
-    title: str = "",
+    query: str, cursor=None, title: str = "",
 ):
     """
 	---------------------------------------------------------------------------
@@ -1953,10 +2059,6 @@ def to_tablesample(
 		SQL Query. 
 	cursor: DBcursor, optional
 		Vertica DB cursor.
-	query_on: bool, optional
-		If set to True, display the query.
-	time_on: bool, optional
-		If set to True, display the query elapsed time.
 	title: str, optional
 		Query title when the query is displayed.
 
@@ -1970,13 +2072,8 @@ def to_tablesample(
 	tablesample : Object in memory created for rendering purposes.
 	"""
     check_types([("query", query, [str],)])
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    if query_on:
+    cursor, conn = check_cursor(cursor)[0:2]
+    if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
     cursor.execute(query)
@@ -1986,7 +2083,7 @@ def to_tablesample(
             type_code=elem[1], display_size=elem[2], precision=elem[4], scale=elem[5]
         )
     elapsed_time = time.time() - start_time
-    if time_on:
+    if verticapy.options["time_on"]:
         print_time(elapsed_time)
     result = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
@@ -2018,9 +2115,6 @@ def vdf_from_relation(
     schema_writing: str = "",
     history: list = [],
     saving: list = [],
-    query_on: bool = False,
-    time_on: bool = False,
-    display_params: dict = {},
 ):
     """
 ---------------------------------------------------------------------------
@@ -2055,13 +2149,7 @@ history: list, optional
 	vDataFrame history (user modifications). to use to keep the previous vDataFrame
 	history.
 saving: list, optional
-	List to use to reconstruct the vDataFrame from previous transformations. 
-query_on: bool, optional
-	If set to True, all the query will be printed.
-time_on: bool, optional
-	If set to True, all the query elapsed time will be printed.
-display_params: dict, optional
-    Parameters used to display the output vDataFrame.
+	List to use to reconstruct the vDataFrame from previous transformations.
 
 Returns
 -------
@@ -2076,9 +2164,6 @@ vDataFrame
             ("schema", schema, [str],),
             ("history", history, [list],),
             ("saving", saving, [list],),
-            ("query_on", query_on, [bool],),
-            ("time_on", time_on, [bool],),
-            ("display_params", display_params, [dict],),
         ]
     )
     name = gen_name([name])
@@ -2089,9 +2174,7 @@ vDataFrame
     if not (cursor) and not (dsn):
         cursor = read_auto_connect().cursor()
     elif not (cursor):
-        from verticapy import vertica_cursor
-
-        cursor = vertica_cursor(dsn)
+        cursor = vertica_conn(dsn).cursor()
     else:
         check_cursor(cursor)
     vdf._VERTICAPY_VARIABLES_["input_relation"] = name
@@ -2099,15 +2182,11 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["schema"] = schema
     vdf._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
     vdf._VERTICAPY_VARIABLES_["cursor"] = cursor
-    vdf._VERTICAPY_VARIABLES_["query_on"] = query_on
-    vdf._VERTICAPY_VARIABLES_["time_on"] = time_on
     vdf._VERTICAPY_VARIABLES_["where"] = []
     vdf._VERTICAPY_VARIABLES_["order_by"] = {}
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
-    for elem in display_params:
-        vdf._VERTICAPY_VARIABLES_["display"][elem] = display_params[elem]
     try:
         cursor.execute(
             "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_{}_TEST;".format(name)
@@ -2174,12 +2253,7 @@ list
     check_types(
         [("condition", condition, [list],),]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor)[0:2]
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     version = (
@@ -2280,14 +2354,14 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 1:
         message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic(db_cursor)\n```"
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>sql_on_off</b> method:\n```python\nvdf.sql_on_off()\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
         else:
             message = "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>https://github.com/vertica/VerticaPy/</a>"
     elif response == 4:
-        message = "You can Display the SQL Code generation of the Virtual DataFrame using the <b>sql_on_off</b> method. You can also Display the query elapsed time using the <b>time_on_off</b> method.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
+        message = "You can Display the SQL Code generation & elapsed time of the Virtual DataFrame using the <b>set_option</b> function.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
     elif response == 5:
         message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
     elif response == 6:

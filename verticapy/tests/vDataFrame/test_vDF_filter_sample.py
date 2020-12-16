@@ -11,9 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import pytest, warnings
 from verticapy import vDataFrame
 from verticapy import drop_table
+
+from verticapy import set_option
+
+set_option("print_info", False)
+set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
@@ -21,11 +26,11 @@ def smart_meters_vd(base):
     from verticapy.learn.datasets import load_smart_meters
 
     smart_meters = load_smart_meters(cursor=base.cursor)
-    smart_meters.set_display_parameters(print_info=False)
     yield smart_meters
-    drop_table(
-        name="public.smart_meters", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.smart_meters", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
@@ -33,11 +38,23 @@ def titanic_vd(base):
     from verticapy.learn.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.titanic", cursor=base.cursor,
+        )
+
+
+@pytest.fixture(scope="module")
+def amazon_vd(base):
+    from verticapy.learn.datasets import load_amazon
+
+    amazon = load_amazon(cursor=base.cursor)
+    yield amazon
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFFilterSample:
@@ -95,6 +112,17 @@ class TestvDFFilterSample:
         result = smart_meters_vd.copy().first(ts="time", offset="6 months",)
         assert result.shape() == (3427, 3)
 
+    def test_vDF_isin(self, amazon_vd):
+        # testing vDataFrame.isin
+        assert amazon_vd.isin(
+            {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
+        ).shape() == (90, 3)
+
+        # testing vDataFrame[].isin
+        assert amazon_vd["state"].isin(
+            val=["SERGIPE", "TOCANTINS", "PARIS"]
+        ).shape() == (478, 3)
+
     def test_vDF_last(self, smart_meters_vd):
         result = smart_meters_vd.copy().last(ts="time", offset="1 year",)
         assert result.shape() == (7018, 3)
@@ -124,17 +152,30 @@ class TestvDFFilterSample:
         assert result2.shape() == (900, 14)
 
     def test_vDF_select(self, titanic_vd):
-        # testing with check=True
         result = titanic_vd.select(columns=["age", "fare", "pclass"])
         assert result.shape() == (1234, 3)
-
-        # testing with check=False
         result = titanic_vd.select(
             columns=["age", "fare", "pclass", "parch + sibsp + 1 AS family_size"],
-            check=False,
         )
         assert result.shape() == (1234, 4)
 
     def test_vDF_sample(self, titanic_vd):
-        result = titanic_vd.copy().sample(0.33)
+        # testing with x
+        result = titanic_vd.copy().sample(x=0.33, method="random")
         assert result.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+        result2 = titanic_vd.copy().sample(
+            x=0.33, method="stratified", by=["age", "pclass",]
+        )
+        assert result2.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+        result3 = titanic_vd.copy().sample(x=0.33, method="systematic")
+        assert result3.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
+
+        # testing with n
+        result = titanic_vd.copy().sample(n=200, method="random")
+        assert result.shape()[0] == pytest.approx(200, 0.12)
+        result2 = titanic_vd.copy().sample(
+            n=200, method="stratified", by=["age", "pclass",]
+        )
+        assert result2.shape()[0] == pytest.approx(200, 0.12)
+        result3 = titanic_vd.copy().sample(n=200, method="systematic")
+        assert result3.shape()[0] == pytest.approx(200, 0.12)

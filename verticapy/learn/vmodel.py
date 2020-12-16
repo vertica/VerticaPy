@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import os, warnings
+import numpy as np
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -57,7 +58,6 @@ from verticapy.learn.plot import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.metrics import *
 
@@ -94,18 +94,23 @@ Main Class for Vertica Model
                 "LocalOutlierFactor",
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
+                "CountVectorizer",
             ):
                 name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
                     version(cursor=self.cursor, condition=[9, 0, 0])
-                    self.cursor.execute(
+                    executeSQL(
+                        self.cursor,
                         "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
                             name
-                        )
+                        ),
+                        "Summarizing the model.",
                     )
                 except:
-                    self.cursor.execute(
-                        "SELECT SUMMARIZE_MODEL('{}')".format(name)
+                    executeSQL(
+                        self.cursor,
+                        "SELECT SUMMARIZE_MODEL('{}')".format(name),
+                        "Summarizing the model.",
                     )
                 return self.cursor.fetchone()[0]
             elif self.type == "DBSCAN":
@@ -141,6 +146,22 @@ Main Class for Vertica Model
                     )
                 if self.ma_avg_:
                     rep += "\nMA AVG : {}".format(self.ma_avg_)
+            elif self.type == "CountVectorizer":
+                rep = "=======\ndetails\n======="
+                if self.vocabulary_:
+                    voc = [str(elem) for elem in self.vocabulary_]
+                    if len(voc) > 100:
+                        voc = voc[0:100] + [
+                            "... ({} more)".format(len(self.vocabulary_) - 100)
+                        ]
+                    rep += "\n\n# Vocabulary\n\n" + ", ".join(voc)
+                if self.stop_words_:
+                    rep += "\n\n# Stop Words\n\n" + ", ".join(
+                        [str(elem) for elem in self.stop_words_]
+                    )
+                rep += "\n\n===============\nAdditional Info\n==============="
+                rep += "\nInput Relation : {}".format(self.input_relation)
+                rep += "\nX : {}".format(", ".join(self.X))
             if self.type in (
                 "DBSCAN",
                 "NearestCentroid",
@@ -202,7 +223,7 @@ Main Class for Vertica Model
             )
 
     # ---#
-    def features_importance(self, ax=None):
+    def features_importance(self, ax=None, tree_id: int = None, show: bool = True):
         """
 		---------------------------------------------------------------------------
 		Computes the model features importance.
@@ -211,6 +232,10 @@ Main Class for Vertica Model
         ----------
         ax: Matplotlib axes object, optional
             The axes to plot on.
+        tree_id: int
+            Tree ID in case of Tree Based models.
+        show: bool
+            If set to True, draw the feature importance.
 
 		Returns
 		-------
@@ -218,11 +243,17 @@ Main Class for Vertica Model
 			An object containing the result. For more information, see
 			utilities.tablesample.
 		"""
-        if self.type in ("RandomForestClassifier", "RandomForestRegressor", "KernelDensity"):
+        if self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "KernelDensity",
+        ):
+            check_types([("tree_id", tree_id, [int])])
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[9, 1, 1])
-            query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2) AS importance, SIGN(importance_value) AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}')) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
-                name
+            tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
+            query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}'{})) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
+                name, tree_id,
             )
             print_legend = False
         elif self.type in (
@@ -245,7 +276,7 @@ Main Class for Vertica Model
                 relation = self.input_relation
             version(cursor=self.cursor, condition=[8, 1, 1])
             query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
-            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min)) AS importance, SIGN(coefficient) AS sign FROM "
+            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
             query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
                 ", ".join(self.X)
             )
@@ -258,25 +289,23 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
             )
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Computing Features Importance.")
         result = self.cursor.fetchall()
         coeff_importances, coeff_sign = {}, {}
         for elem in result:
             coeff_importances[elem[0]] = elem[1]
             coeff_sign[elem[0]] = elem[2]
-        try:
+        if show:
             plot_importance(
                 coeff_importances, coeff_sign, print_legend=print_legend, ax=ax
             )
-        except:
-            pass
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
         return tablesample(values=importances).transpose()
 
     # ---#
-    def get_model_attribute(self, attr_name: str = ""):
+    def get_attr(self, attr_name: str = ""):
         """
 	---------------------------------------------------------------------------
 	Returns the model attribute.
@@ -296,10 +325,10 @@ Main Class for Vertica Model
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
-                    name,
-                    ", attr_name = '{}'".format(attr_name) if attr_name else "",
+                    name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 cursor=self.cursor,
+                title="Getting Model Attributes.",
             )
             return result
         elif self.type in ("DBSCAN"):
@@ -360,7 +389,7 @@ Main Class for Vertica Model
                 raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
         else:
             raise FunctionError(
-                "Method 'get_model_attribute' for '{}' doesn't exist.".format(self.type)
+                "Method 'get_attr' for '{}' doesn't exist.".format(self.type)
             )
 
     # ---#
@@ -386,7 +415,7 @@ Main Class for Vertica Model
             return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
         elif self.type == "RandomForestClassifier":
             return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
-        elif self.type == "MultinomialNB":
+        elif self.type == "NaiveBayes":
             return ("NAIVE_BAYES", "PREDICT_NAIVE_BAYES", "")
         elif self.type == "KMeans":
             return ("KMEANS", "APPLY_KMEANS", "")
@@ -557,14 +586,17 @@ Main Class for Vertica Model
                     "bfgs",
                     "cgd",
                 ], ParameterError(
-                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGC | CGD), found '{}'.".format(
+                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGS | CGD), found '{}'.".format(
                         parameters["solver"]
                     )
                 )
                 model_parameters["solver"] = parameters["solver"]
             else:
                 model_parameters["solver"] = default_parameters["solver"]
-            if "penalty" in parameters:
+            if "penalty" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("penalty", parameters["penalty"], [str],)])
                 assert str(parameters["penalty"]).lower() in [
                     "none",
@@ -577,7 +609,7 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["penalty"] = parameters["penalty"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["penalty"] = default_parameters["penalty"]
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
@@ -587,21 +619,27 @@ Main Class for Vertica Model
                 model_parameters["max_iter"] = parameters["max_iter"]
             else:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
-            if "l1_ratio" in parameters:
+            if "l1_ratio" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("l1_ratio", parameters["l1_ratio"], [int, float],)])
                 assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
-            if "C" in parameters:
+            if "C" in parameters and self.type in (
+                "LinearRegression",
+                "LogisticRegression",
+            ):
                 check_types([("C", parameters["C"], [int, float],)])
                 assert 0 <= parameters["C"], ParameterError(
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            else:
+            elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["C"] = default_parameters["C"]
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
@@ -693,9 +731,24 @@ Main Class for Vertica Model
             else:
                 model_parameters["bandwidth"] = default_parameters["bandwidth"]
             if "kernel" in parameters:
-                check_types([("kernel", parameters["kernel"], ["gaussian", "logistic", "sigmoid", "silverman"],)])
-                assert parameters["kernel"] in ["gaussian", "logistic", "sigmoid", "silverman"], ParameterError(
-                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(kernel)
+                check_types(
+                    [
+                        (
+                            "kernel",
+                            parameters["kernel"],
+                            ["gaussian", "logistic", "sigmoid", "silverman"],
+                        )
+                    ]
+                )
+                assert parameters["kernel"] in [
+                    "gaussian",
+                    "logistic",
+                    "sigmoid",
+                    "silverman",
+                ], ParameterError(
+                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(
+                        kernel
+                    )
                 )
                 model_parameters["kernel"] = parameters["kernel"]
             else:
@@ -878,7 +931,7 @@ Main Class for Vertica Model
                 model_parameters["nbins"] = parameters["nbins"]
             else:
                 model_parameters["nbins"] = default_parameters["nbins"]
-        elif self.type in ("MultinomialNB"):
+        elif self.type in ("NaiveBayes"):
             if "alpha" in parameters:
                 check_types([("alpha", parameters["alpha"], [int, float],)])
                 assert 0 <= parameters["alpha"], ParameterError(
@@ -887,6 +940,23 @@ Main Class for Vertica Model
                 model_parameters["alpha"] = parameters["alpha"]
             else:
                 model_parameters["alpha"] = default_parameters["alpha"]
+            if "nbtype" in parameters:
+                check_types([("nbtype", parameters["nbtype"], [str],)])
+                if isinstance(parameters["nbtype"], str):
+                    assert str(parameters["nbtype"]).lower() in [
+                        "bernoulli",
+                        "categorical",
+                        "multinomial",
+                        "gaussian",
+                        "auto",
+                    ], ParameterError(
+                        "Incorrect parameter 'nbtype'.\nThe Naive Bayes type must be in (bernoulli | categorical | multinomial | gaussian | auto), found '{}'.".format(
+                            parameters["init"]
+                        )
+                    )
+                model_parameters["nbtype"] = parameters["nbtype"]
+            else:
+                model_parameters["nbtype"] = default_parameters["nbtype"]
         elif self.type in ("KMeans", "BisectingKMeans"):
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
@@ -1127,8 +1197,9 @@ Main Class for Vertica Model
             if "method" in parameters:
                 check_types([("method", parameters["method"], [str],)])
                 assert str(parameters["method"]).lower() in [
-                    "size",
-                    "sum_squares",
+                    "zscore",
+                    "robust_zscore",
+                    "minmax",
                 ], ParameterError(
                     "Incorrect parameter 'method'.\nThe normalization method must be in (zscore | robust_zscore | minmax), found '{}'.".format(
                         parameters["method"]
@@ -1239,25 +1310,573 @@ Main Class for Vertica Model
                 model_parameters["max_features"] = default_parameters["max_features"]
         self.parameters = model_parameters
 
+    # ---#
+    def shapExplainer(self):
+        """
+    ---------------------------------------------------------------------------
+    Creates the Model shapExplainer. Only linear models are supported.
+
+    Returns
+    -------
+    shap.Explainer
+        the shap Explainer.
+        """
+        try:
+            import shap
+        except:
+            raise ImportError(
+                "The shap module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install shap' in your terminal to install the module."
+            )
+        if self.type in (
+            "LinearRegression",
+            "LogisticRegression",
+            "LinearSVC",
+            "LinearSVR",
+        ):
+            vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+            cov_matrix = vdf.cov(self.X, show=False)
+            if len(self.X) == 1:
+                cov_matrix = np.array([[1]])
+            elif len(self.X) == 2:
+                cov_matrix = np.array([[1, cov_matrix], [cov_matrix, 1]])
+            else:
+                cov_matrix = cov_matrix.to_numpy()
+            data = (vdf.avg(self.X).to_numpy(), cov_matrix)
+            model = self.to_sklearn()
+            with warnings.catch_warnings(record=True) as w:
+                return shap.LinearExplainer(
+                    model, data, feature_perturbation="correlation_dependent"
+                )
+        else:
+            raise FunctionError(
+                "The method 'to_shapExplainer' is not available for model type '{}'.".format(
+                    self.type
+                )
+            )
+
+    # ---#
+    def to_sklearn(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts the Vertica Model to sklearn model.
+
+    Returns
+    -------
+    object
+        sklearn model.
+        """
+        import verticapy.learn.linear_model as lm
+        import verticapy.learn.svm as svm
+        import verticapy.learn.naive_bayes as vnb
+        import verticapy.learn.cluster as vcl
+        import verticapy.learn.ensemble as vens
+        import verticapy.learn.neighbors as vng
+        import verticapy.learn.preprocessing as vpp
+        import verticapy.learn.decomposition as vdcp
+
+        try:
+            import sklearn
+        except:
+            raise ImportError(
+                "The scikit-learn module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install scikit-learn' in your terminal to install the module."
+            )
+        params = self.get_params()
+        if self.type in (
+            "LinearRegression",
+            "LogisticRegression",
+            "LinearSVC",
+            "LinearSVR",
+        ):
+            import sklearn.linear_model as sklm
+            import sklearn.svm as sksvm
+
+            if isinstance(self, lm.LinearRegression):
+                model = sklm.LinearRegression()
+            elif isinstance(self, lm.ElasticNet):
+                model = sklm.ElasticNet(
+                    alpha=params["C"],
+                    l1_ratio=params["l1_ratio"],
+                    max_iter=params["max_iter"],
+                    tol=params["tol"],
+                )
+            elif isinstance(self, lm.Lasso):
+                model = sklm.Lasso(max_iter=params["max_iter"], tol=params["tol"],)
+            elif isinstance(self, lm.Ridge):
+                model = sklm.Ridge(max_iter=params["max_iter"], tol=params["tol"],)
+            elif isinstance(self, lm.LogisticRegression):
+                if "C" not in params:
+                    params["C"] = 1.0
+                if "l1_ratio" not in params:
+                    params["l1_ratio"] = None
+                model = sklm.LogisticRegression(
+                    penalty=params["penalty"].lower(),
+                    C=float(1 / params["C"]),
+                    l1_ratio=params["l1_ratio"],
+                    max_iter=params["max_iter"],
+                    tol=params["tol"],
+                )
+            elif isinstance(self, svm.LinearSVC):
+                if params["intercept_mode"] == "regularized":
+                    params["penalty"] = "l2"
+                else:
+                    params["penalty"] = "l1"
+                model = sksvm.LinearSVC(
+                    penalty=params["penalty"],
+                    C=params["C"],
+                    fit_intercept=params["fit_intercept"],
+                    intercept_scaling=params["intercept_scaling"],
+                    max_iter=params["max_iter"],
+                    tol=params["tol"],
+                )
+            elif isinstance(self, svm.LinearSVR):
+                if params["intercept_mode"] == "regularized":
+                    params["loss"] = "epsilon_insensitive"
+                else:
+                    params["loss"] = "squared_epsilon_insensitive"
+                model = sksvm.LinearSVR(
+                    loss=params["loss"],
+                    C=params["C"],
+                    fit_intercept=params["fit_intercept"],
+                    intercept_scaling=params["intercept_scaling"],
+                    max_iter=params["max_iter"],
+                    tol=params["tol"],
+                )
+            if isinstance(self, (lm.LogisticRegression, svm.LinearSVC)):
+                model.classes_ = np.array([0, 1])
+            model.coef_ = np.array([self.coef_["coefficient"][1:]])
+            model.intercept_ = self.coef_["coefficient"][0]
+            try:
+                model.n_iter_ = self.get_attr("iteration_count")["iteration_count"][0]
+            except:
+                model.n_iter_ = 1
+        elif self.type in ("Normalizer", "OneHotEncoder"):
+            import sklearn.preprocessing as skpp
+
+            if isinstance(self, (vpp.Normalizer,)):
+                attr = self.get_attr("details")
+                if "avg" in attr.values:
+                    model = skpp.StandardScaler()
+                    model.mean_ = np.array(attr["avg"])
+                    model.scale_ = np.array(attr["std_dev"])
+                    model.var_ = model.scale_ ** 2
+                    model.n_features_in_ = len(self.X)
+                    model.n_samples_seen_ = np.array(
+                        vdf_from_relation(
+                            self.input_relation, cursor=self.cursor
+                        ).count(columns=self.X)["count"]
+                    )
+                elif "median" in attr.values:
+                    model = skpp.RobustScaler()
+                    model.center_ = np.array(attr["median"])
+                    model.scale_ = np.array(attr["mad"])
+                    model.n_features_in_ = len(self.X)
+                elif "min" in attr.values:
+                    model = skpp.MinMaxScaler()
+                    model.data_min_ = np.array(attr["min"])
+                    model.data_max_ = np.array(attr["max"])
+                    model.data_range_ = np.array(attr["max"]) - np.array(attr["min"])
+                    model.scale_ = 1 / model.data_range_
+                    model.min_ = 0 - model.data_min_ * model.scale_
+                    model.n_features_in_ = len(self.X)
+                    self.cursor.execute(
+                        "SELECT COUNT(*) FROM {} WHERE {}".format(
+                            self.input_relation,
+                            " AND ".join(
+                                ["{} IS NOT NULL".format(elem) for elem in self.X]
+                            ),
+                        )
+                    )
+                    model.n_samples_seen_ = self.cursor.fetchone()[0]
+            elif isinstance(self, (vpp.OneHotEncoder,)):
+                model = skpp.OneHotEncoder()
+                model.drop_idx_ = None
+                params = self.param_
+                vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+                categories = []
+                for column in self.X:
+                    idx = []
+                    for i in range(len(params["category_name"])):
+                        if str_column(params["category_name"][i]) == str_column(column):
+                            idx += [i]
+                    cat_tmp = []
+                    for i in idx:
+                        elem = params["category_level"][i]
+                        if vdf[column].dtype() == "int":
+                            try:
+                                elem = int(elem)
+                            except:
+                                pass
+                        cat_tmp += [elem]
+                    categories += [np.array(cat_tmp)]
+                model.categories_ = categories
+        elif self.type in ("PCA", "SVD"):
+            import sklearn.decomposition as skdcp
+
+            if isinstance(self, (vdcp.PCA,)):
+                model = skdcp.PCA(n_components=params["n_components"])
+                model.components_ = []
+                all_pc = self.get_attr("principal_components")
+                for idx, elem in enumerate(all_pc.values):
+                    if idx > 0:
+                        model.components_ += [np.array(all_pc.values[elem])]
+                model.components_ = np.array(model.components_)
+                model.explained_variance_ratio_ = np.array(
+                    self.get_attr("singular_values")["explained_variance"]
+                )
+                model.explained_variance_ = np.array(
+                    self.get_attr("singular_values")["explained_variance"]
+                )
+                model.singular_values_ = np.array(
+                    self.get_attr("singular_values")["value"]
+                )
+                model.mean_ = np.array(self.get_attr("columns")["mean"])
+                model.n_components_ = params["n_components"]
+                model.n_features_ = len(self.X)
+                model.n_samples_ = self.get_attr("counters")["counter_value"][0]
+                model.noise_variance_ = 0.0
+            elif isinstance(self, (vdcp.SVD,)):
+                model = skdcp.TruncatedSVD(n_components=params["n_components"])
+                model.components_ = []
+                all_pc = self.get_attr("right_singular_vectors")
+                for idx, elem in enumerate(all_pc.values):
+                    if idx > 0:
+                        model.components_ += [np.array(all_pc.values[elem])]
+                model.components_ = np.array(model.components_)
+                model.explained_variance_ratio_ = np.array(
+                    self.get_attr("singular_values")["explained_variance"]
+                )
+                model.explained_variance_ = np.array(
+                    self.get_attr("singular_values")["explained_variance"]
+                )
+                model.singular_values_ = np.array(
+                    self.get_attr("singular_values")["value"]
+                )
+        elif self.type in ("NaiveBayes",):
+            import sklearn.naive_bayes as sknb
+
+            if isinstance(self, (vnb.NaiveBayes,)):
+                all_attr = self.get_attr()
+                current_type = None
+                for elem in all_attr["attr_name"][6:]:
+                    if current_type is None:
+                        if "gaussian" in elem.lower():
+                            current_type = "gaussian"
+                        elif "multinomial" in elem.lower():
+                            current_type = "multinomial"
+                        elif "bernoulli" in elem.lower():
+                            current_type = "bernoulli"
+                        else:
+                            current_type = "categorical"
+                    elif current_type not in elem.lower():
+                        raise ModelError(
+                            "Naive Bayes Models using different variables types (multinomial, categorical, gaussian...) is not supported by Scikit Learn."
+                        )
+                self.cursor.execute(
+                    "SELECT COUNT(*) FROM {} WHERE {}".format(
+                        self.input_relation,
+                        " AND ".join(
+                            ["{} IS NOT NULL".format(elem) for elem in self.X]
+                        ),
+                    )
+                )
+                total_count = self.cursor.fetchone()[0]
+                classes = np.array(self.get_attr("prior")["class"])
+                class_prior = np.array(self.get_attr("prior")["probability"])
+                if current_type == "gaussian":
+                    model = sknb.GaussianNB()
+                    model.epsilon_ = 0.0
+                    model.sigma_, model.theta_ = [], []
+                    for elem in classes:
+                        model.sigma_ += [
+                            self.get_attr("gaussian.{}".format(elem))["sigma_sq"]
+                        ]
+                        model.theta_ += [
+                            self.get_attr("gaussian.{}".format(elem))["mu"]
+                        ]
+                    model.sigma_, model.theta_ = (
+                        np.array(model.sigma_),
+                        np.array(model.theta_),
+                    )
+                    model.class_prior_ = class_prior
+                elif current_type in ("multinomial", "bernoulli"):
+                    if current_type == "multinomial":
+                        model = sknb.MultinomialNB(alpha=params["alpha"])
+                    else:
+                        model = sknb.BernoulliNB(alpha=params["alpha"])
+                    model.class_log_prior_ = np.log(class_prior)
+                    model.n_features_ = len(self.X)
+                    model.feature_count_, model.feature_log_prob_ = [], []
+                    for elem in classes:
+                        model.feature_count_ += [
+                            self.get_attr("{}.{}".format(current_type, elem))[
+                                "probability"
+                            ]
+                        ]
+                        model.feature_log_prob_ += [
+                            self.get_attr("{}.{}".format(current_type, elem))[
+                                "probability"
+                            ]
+                        ]
+                    model.feature_count_, model.feature_log_prob_ = (
+                        (total_count * np.array(model.feature_count_)).astype(int),
+                        np.log(np.array(model.feature_log_prob_)),
+                    )
+                elif current_type == "categorical":
+                    model = sknb.CategoricalNB(alpha=params["alpha"])
+                    model.class_log_prior_ = np.log(class_prior)
+                    model.n_features_ = len(self.X)
+                    model.feature_log_prob_, model.category_count_ = [], []
+                    for elem in self.get_attr("details")["predictor"]:
+                        if str_column(elem) != str_column(self.y):
+                            column_class = []
+                            categorical = self.get_attr("categorical.{}".format(elem))
+                            for idx in classes:
+                                column_class += [categorical[idx]]
+                            model.feature_log_prob_ += [np.log(np.array(column_class))]
+                            model.category_count_ += [np.array(column_class)]
+                    for idx in range(len(model.category_count_)):
+                        for i in range(len(model.category_count_[idx])):
+                            for j in range(len(model.category_count_[idx][i])):
+                                model.category_count_[idx][i][j] = int(
+                                    model.category_count_[idx][i][j]
+                                    * class_prior[i]
+                                    * total_count
+                                )
+                model.classes_ = classes
+                model.class_count_ = (total_count * class_prior).astype(int)
+        elif self.type in ("NearestCentroid",):
+            import sklearn.neighbors as skng
+
+            if isinstance(self, (vng.NearestCentroid,)):
+                if params["p"] == 1:
+                    metric = "manhattan"
+                elif params["p"] == 2:
+                    metric = "euclidean"
+                else:
+                    raise ModelError(
+                        "Model Conversion failed. NearestCentroid using parameter 'p' > 2 is not supported."
+                    )
+                model = skng.NearestCentroid(metric=metric,)
+                model.classes_ = np.array(self.classes_)
+                model.centroids_ = []
+                for i in range(len(self.classes_)):
+                    raw = []
+                    for idx, elem in enumerate(self.X):
+                        raw += [self.centroids_[elem][i]]
+                    model.centroids_ += [raw]
+                model.centroids_ = np.array(model.centroids_)
+        elif self.type in ("KMeans"):
+            import sklearn.cluster as skcl
+
+            if isinstance(self, (vcl.KMeans,)):
+                if params["init"] == "kmeanspp":
+                    params["init"] = "k-means++"
+                model = skcl.KMeans(
+                    n_clusters=params["n_cluster"],
+                    init=params["init"],
+                    max_iter=params["max_iter"],
+                    tol=params["tol"],
+                )
+                centers_attribute = self.get_attr("centers").values
+                model.cluster_centers_ = []
+                for i in range(params["n_cluster"]):
+                    model.cluster_centers_ += [
+                        [centers_attribute[elem][i] for elem in centers_attribute]
+                    ]
+                model.cluster_centers_ = np.array(model.cluster_centers_)
+                model.inertia_ = self.metrics_["value"][2]
+                model.n_iter_ = int(
+                    self.get_attr("metrics")["metrics"][0]
+                    .split("Number of iterations performed: ")[1]
+                    .split("\n")[0]
+                )
+                model._n_threads = None
+        elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+            if isinstance(self, (vens.RandomForestClassifier,)):
+                raise ModelError(
+                    "Model Conversion failed. RandomForestClassifier is not yet supported."
+                )
+            import sklearn.tree._tree as sktree
+            import sklearn.tree as skdtree
+            import sklearn.ensemble as skens
+
+            features = {}
+            parameters = {
+                "max_depth": params["max_depth"],
+                "min_samples_leaf": params["min_samples_leaf"],
+                "max_features": params["max_features"],
+                "min_impurity_split": params["min_info_gain"],
+                "max_leaf_nodes": params["max_leaf_nodes"],
+            }
+            for i in range(len(self.X)):
+                features[str_column(self.X[i]).lower()] = i
+            if isinstance(self, (vens.RandomForestRegressor,)):
+                model = skens.RandomForestRegressor(
+                    n_estimators=params["n_estimators"], **parameters
+                )
+                model.base_estimator_ = skdtree.DecisionTreeRegressor(**parameters)
+            elif isinstance(self, (vens.RandomForestClassifier,)):
+                model = skens.RandomForestClassifier(
+                    n_estimators=params["n_estimators"], **parameters
+                )
+                model.base_estimator_ = skdtree.DecisionTreeClassifier(**parameters)
+                model.classes_ = np.array(self.classes_)
+                model.n_classes_ = len(self.classes_)
+            model.n_features_ = len(self.X)
+            model.n_outputs_ = 1
+            model.features_importance_ = np.array(
+                [
+                    elem / 100
+                    for elem in self.features_importance(show=False,)["importance"]
+                ]
+            )
+            model.estimators_ = []
+            for i in range(params["n_estimators"]):
+                vtree = self.get_tree(i)
+                ti = sktree.Tree(
+                    model.n_features_,
+                    np.array([1] * model.n_outputs_, dtype=np.intp),
+                    model.n_outputs_,
+                )
+                ti.capacity = len(vtree["node_id"])
+                d = {}
+                d["max_depth"] = max(vtree["node_depth"])
+                d["node_count"] = len(vtree["node_id"])
+                d["nodes"] = []
+                left_child = np.array(
+                    [
+                        elem - 1 if elem is not None else -1
+                        for elem in vtree["left_child_id"]
+                    ]
+                )
+                right_child = np.array(
+                    [
+                        elem - 1 if elem is not None else -1
+                        for elem in vtree["right_child_id"]
+                    ]
+                )
+                feature = np.array(
+                    [
+                        features[str_column(elem).lower()] if elem is not None else -2
+                        for elem in vtree["split_predictor"]
+                    ]
+                )
+                impurity = np.array(vtree["weighted_information_gain"])
+                threshold = np.array(
+                    [elem if elem is not None else -2 for elem in vtree["split_value"]]
+                )
+                n_node_samples = np.array([100 for elem in vtree["right_child_id"]])
+                weighted_n_node_samples = np.array(
+                    [100.0 for elem in vtree["right_child_id"]]
+                )
+                for k in range(len(left_child)):
+                    d["nodes"] += [
+                        (
+                            left_child[k],
+                            right_child[k],
+                            feature[k],
+                            threshold[k],
+                            impurity[k],
+                            n_node_samples[k],
+                            weighted_n_node_samples[k],
+                        )
+                    ]
+                dtype = [
+                    ("left_child", "<i8"),
+                    ("right_child", "<i8"),
+                    ("feature", "<i8"),
+                    ("threshold", "<f8"),
+                    ("impurity", "<f8"),
+                    ("n_node_samples", "<i8"),
+                    ("weighted_n_node_samples", "<f8"),
+                ]
+                d["nodes"] = np.array(d["nodes"], dtype=dtype)
+                if isinstance(self, (vens.RandomForestClassifier,)):
+                    dtree = skdtree.DecisionTreeClassifier(**parameters)
+                    dtree.classes_ = np.array(self.classes_)
+                    dtree.n_classes_ = len(self.classes_)
+                    ti.max_n_classes = len(self.classes_)
+                    d["values"] = [
+                        [[None for id0 in range(len(self.classes_))]]
+                        for id1 in range(len(left_child))
+                    ]
+                    for k in range(len(left_child)):
+                        if left_child[k] == right_child[k] == -1:
+                            proba = vtree["probability/variance"][k]
+                            for j in range(len(self.classes_)):
+                                if int(self.classes_[j]) == int(vtree["prediction"][k]):
+                                    d["values"][k][0][j] = (
+                                        int((len(self.classes_) - 1) / (1 - proba))
+                                        if 1 - proba != 0
+                                        else 0
+                                    )
+                                else:
+                                    d["values"][k][0][j] = (
+                                        int(1 / proba) if proba != 0 else 0
+                                    )
+                    d["values"] = np.array(d["values"], dtype=np.float64)
+                elif isinstance(self, (vens.RandomForestRegressor,)):
+                    dtree = skdtree.DecisionTreeRegressor(**parameters)
+                    d["values"] = np.array(
+                        [
+                            [[vtree["prediction"][id1]]]
+                            for id1 in range(len(left_child))
+                        ],
+                        dtype=np.float64,
+                    )
+                ti.__setstate__(d)
+                dtree.features_importance_ = np.array(
+                    [
+                        elem / 100
+                        for elem in self.features_importance(show=False, tree_id=i)[
+                            "importance"
+                        ]
+                    ]
+                )
+                if isinstance(parameters["max_features"], str):
+                    if parameters["max_features"].lower() == "max":
+                        dtree.max_features_ = len(self.X)
+                    else:
+                        dtree.max_features_ = int(len(self.X) / 3 + 1)
+                else:
+                    dtree.max_features_ = params["max_features"]
+                dtree.n_features_ = len(self.X)
+                dtree.n_outputs_ = 1
+                dtree.tree_ = ti
+                model.estimators_ += [dtree]
+        else:
+            raise FunctionError(
+                "The method 'to_sklearn' is not available for model type '{}'.".format(
+                    self.type
+                )
+            )
+        return model
+
 
 # ---#
 class Supervised(vModel):
 
     # ---#
-    def fit(self, input_relation: str, X: list, y: str, test_relation: str = ""):
+    def fit(
+        self,
+        input_relation: (str, vDataFrame),
+        X: list,
+        y: str,
+        test_relation: (str, vDataFrame) = "",
+    ):
         """
 	---------------------------------------------------------------------------
 	Trains the self.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
-	test_relation: str, optional
+	test_relation: str/vDataFrame, optional
 		Relation to use to test the self.
 
 	Returns
@@ -1267,15 +1886,52 @@ class Supervised(vModel):
 		"""
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("y", y, [str],),
-                ("test_relation", test_relation, [str],),
+                ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
+        if (self.type == "NaiveBayes") and (
+            self.parameters["nbtype"]
+            in ("bernoulli", "categorical", "multinomial", "gaussian")
+        ):
+            new_types = {}
+            for elem in X:
+                if self.parameters["nbtype"] == "bernoulli":
+                    new_types[elem] = "bool"
+                elif self.parameters["nbtype"] == "categorical":
+                    new_types[elem] = "varchar"
+                elif self.parameters["nbtype"] == "multinomial":
+                    new_types[elem] = "int"
+                elif self.parameters["nbtype"] == "gaussian":
+                    new_types[elem] = "float"
+            if not (isinstance(input_relation, vDataFrame)):
+                input_relation = vdf_from_relation(input_relation, cursor=self.cursor)
+            input_relation.astype(new_types)
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
-        self.test_relation = test_relation if (test_relation) else input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+            schema, relation = schema_relation(self.name)
+            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
+                str_column(schema), get_session(self.cursor)
+            )
+            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
+            self.cursor.execute(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                )
+            )
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
         parameters = vertica_param_dict(self)
@@ -1294,14 +1950,21 @@ class Supervised(vModel):
                 parameters["mtry"] = len(self.X)
         fun = self.get_model_fun()[0]
         query = "SELECT {}('{}', '{}', '{}', '{}' USING PARAMETERS "
-        query = query.format(fun, self.name, input_relation, self.y, ", ".join(self.X))
+        query = query.format(fun, self.name, relation, self.y, ", ".join(self.X))
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         if alpha != None:
             query += ", alpha = {}".format(alpha)
         query += ")"
-        self.cursor.execute(query)
+        try:
+            executeSQL(self.cursor, query, "Fitting the model.")
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+        except:
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+            raise
         if self.type in (
             "LinearSVC",
             "LinearSVR",
@@ -1309,15 +1972,18 @@ class Supervised(vModel):
             "LinearRegression",
             "SARIMAX",
         ):
-            self.coef_ = self.get_model_attribute("details")
-        elif self.type in ("RandomForestClassifier", "MultinomialNB"):
-            self.cursor.execute(
-                "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                    self.y, input_relation, self.y
+            self.coef_ = self.get_attr("details")
+        elif self.type in ("RandomForestClassifier", "NaiveBayes"):
+            if not (isinstance(input_relation, vDataFrame)):
+                self.cursor.execute(
+                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                        self.y, input_relation, self.y
+                    )
                 )
-            )
-            classes = self.cursor.fetchall()
-            self.classes_ = [item[0] for item in classes]
+                classes = self.cursor.fetchall()
+                self.classes_ = [item[0] for item in classes]
+            else:
+                self.classes_ = input_relation[self.y].distinct()
         return self
 
 
@@ -1346,7 +2012,7 @@ class Tree:
         query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(
             name, tree_id
         )
-        self.cursor.execute(query)
+        executeSQL(self.cursor, query, "Exporting to graphviz.")
         return self.cursor.fetchone()[1]
 
     # ---#
@@ -1369,10 +2035,10 @@ class Tree:
         check_types([("tree_id", tree_id, [int, float],)])
         version(cursor=self.cursor, condition=[9, 1, 1])
         name = self.tree_name if self.type in ("KernelDensity") else self.name
-        query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular');".format(
+        query = "SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular')) x ORDER BY node_id;".format(
             name, tree_id
         )
-        result = to_tablesample(query=query, cursor=self.cursor)
+        result = to_tablesample(query=query, cursor=self.cursor, title="Reading Tree.",)
         return result
 
     # ---#
@@ -1432,6 +2098,7 @@ class BinaryClassifier(Classifier):
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
             self.cursor,
+            cutoff=cutoff,
         )
 
     # ---#
@@ -1529,7 +2196,7 @@ class BinaryClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: (str, vDataFrame),
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -1541,8 +2208,10 @@ class BinaryClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -1563,9 +2232,11 @@ class BinaryClassifier(Classifier):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -1696,7 +2367,7 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
-    def classification_report(self, cutoff=[], labels: list = []):
+    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -1727,7 +2398,7 @@ class MulticlassClassifier(Classifier):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def confusion_matrix(self, pos_label=None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
         """
 	---------------------------------------------------------------------------
 	Computes the model confusion matrix.
@@ -1768,7 +2439,11 @@ class MulticlassClassifier(Classifier):
 
     # ---#
     def deploySQL(
-        self, pos_label=None, cutoff: float = -1, allSQL: bool = False, X: list = []
+        self,
+        pos_label: (int, float, str) = None,
+        cutoff: float = -1,
+        allSQL: bool = False,
+        X: list = [],
     ):
         """
 	---------------------------------------------------------------------------
@@ -1842,7 +2517,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
-    def lift_chart(self, pos_label=None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -1880,7 +2555,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def prc_curve(self, pos_label=None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -1920,7 +2595,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf,
+        vdf: (str, vDataFrame),
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -1933,8 +2608,10 @@ class MulticlassClassifier(Classifier):
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -1959,9 +2636,11 @@ class MulticlassClassifier(Classifier):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -1980,7 +2659,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
-    def roc_curve(self, pos_label=None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2018,7 +2697,12 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def score(self, method: str = "accuracy", pos_label=None, cutoff: float = -1):
+    def score(
+        self,
+        method: str = "accuracy",
+        pos_label: (int, float, str) = None,
+        cutoff: float = -1,
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes the model score.
@@ -2176,15 +2860,19 @@ class MulticlassClassifier(Classifier):
 class Regressor(Supervised):
 
     # ---#
-    def predict(self, vdf, X: list = [], name: str = "", inplace: bool = True):
+    def predict(
+        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+    ):
         """
 	---------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -2199,8 +2887,14 @@ class Regressor(Supervised):
 		the input object.
 		"""
         check_types(
-            [("name", name, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame],),],
+            [
+                ("name", name, [str],),
+                ("X", X, [list],),
+                ("vdf", vdf, [str, vDataFrame],),
+            ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -2418,33 +3112,54 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def fit(self, input_relation: str, X: list):
+    def fit(self, input_relation: (str, vDataFrame), X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the self.
 
 	Parameters
 	----------
-	input_relation: str
+	input_relation: str/vDataFrame
 		Train relation.
-	X: list
-		List of the predictors.
+	X: list, optional
+		List of the predictors. If empty, all the numerical columns will be used.
 
 	Returns
 	-------
 	object
 		model
 		"""
-        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
+        check_types(
+            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+        )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         check_model(name=self.name, cursor=self.cursor)
-        self.input_relation = input_relation
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+            schema, relation = schema_relation(self.name)
+            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
+                str_column(schema), get_session(self.cursor)
+            )
+            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
+            self.cursor.execute(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                )
+            )
+            if not (X):
+                X = input_relation.numcol()
+        else:
+            self.input_relation = input_relation
+            relation = input_relation
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).numcol()
         self.X = [str_column(column) for column in X]
         parameters = vertica_param_dict(self)
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self.get_model_fun()[0]
         query = "SELECT {}('{}', '{}', '{}'".format(
-            fun, self.name, input_relation, ", ".join(self.X)
+            fun, self.name, relation, ", ".join(self.X)
         )
         if self.type in ("BisectingKMeans", "KMeans"):
             query += ", {}".format(parameters["n_cluster"])
@@ -2497,14 +3212,21 @@ class Unsupervised(vModel):
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
         query += ")"
-        self.cursor.execute(query)
+        try:
+            executeSQL(self.cursor, query, "Fitting the model.")
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+        except:
+            if isinstance(input_relation, vDataFrame):
+                self.cursor.execute("DROP VIEW {};".format(relation))
+            raise
         if self.type == "KMeans":
             try:
                 self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
             except:
                 pass
-            self.cluster_centers_ = self.get_model_attribute("centers")
-            result = self.get_model_attribute("metrics").values["metrics"][0]
+            self.cluster_centers_ = self.get_attr("centers")
+            result = self.get_attr("metrics").values["metrics"][0]
             values = {
                 "index": [
                     "Between-Cluster Sum of Squares",
@@ -2532,17 +3254,17 @@ class Unsupervised(vModel):
             ]
             self.metrics_ = tablesample(values)
         elif self.type in ("BisectingKMeans"):
-            self.metrics_ = self.get_model_attribute("Metrics")
-            self.cluster_centers_ = self.get_model_attribute("BKTree")
+            self.metrics_ = self.get_attr("Metrics")
+            self.cluster_centers_ = self.get_attr("BKTree")
         elif self.type in ("PCA"):
-            self.components_ = self.get_model_attribute("principal_components")
-            self.explained_variance_ = self.get_model_attribute("singular_values")
-            self.mean_ = self.get_model_attribute("columns")
+            self.components_ = self.get_attr("principal_components")
+            self.explained_variance_ = self.get_attr("singular_values")
+            self.mean_ = self.get_attr("columns")
         elif self.type in ("SVD"):
-            self.singular_values_ = self.get_model_attribute("right_singular_vectors")
-            self.explained_variance_ = self.get_model_attribute("singular_values")
+            self.singular_values_ = self.get_attr("right_singular_vectors")
+            self.explained_variance_ = self.get_attr("singular_values")
         elif self.type in ("Normalizer"):
-            self.param_ = self.get_model_attribute("details")
+            self.param_ = self.get_attr("details")
         elif self.type == "OneHotEncoder":
             try:
                 self.param_ = to_tablesample(
@@ -2550,6 +3272,7 @@ class Unsupervised(vModel):
                         self.name, self.name
                     ),
                     cursor=self.cursor,
+                    title="Getting Model Attributes.",
                 )
             except:
                 try:
@@ -2558,9 +3281,10 @@ class Unsupervised(vModel):
                             self.name
                         ),
                         cursor=self.cursor,
+                        title="Getting Model Attributes.",
                     )
                 except:
-                    self.param_ = self.get_model_attribute("varchar_categories")
+                    self.param_ = self.get_attr("varchar_categories")
         return self
 
 
@@ -2653,15 +3377,19 @@ class Decomposition(Unsupervised):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def inverse_transform(self, vdf=None, X: list = [], key_columns: list = []):
+    def inverse_transform(
+        self, vdf: (str, vDataFrame) = None, X: list = [], key_columns: list = []
+    ):
         """
 	---------------------------------------------------------------------------
 	Applies the Inverse Model on a vDataFrame.
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		input vDataFrame.
+	vdf: str/vDataFrame, optional
+		input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 	key_columns: list, optional
@@ -2674,7 +3402,9 @@ class Decomposition(Unsupervised):
 		"""
         check_types([("key_columns", key_columns, [list],), ("X", X, [list],)])
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],),],)
+            check_types([("vdf", vdf, [str, vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2774,13 +3504,15 @@ class Decomposition(Unsupervised):
             ),
             query,
         )
-        result = to_tablesample(query, cursor=self.cursor).transpose()
+        result = to_tablesample(
+            query, cursor=self.cursor, title="Getting Model Score.",
+        ).transpose()
         return result
 
     # ---#
     def transform(
         self,
-        vdf=None,
+        vdf: (str, vDataFrame) = None,
         X: list = [],
         n_components: int = 0,
         cutoff: float = 1,
@@ -2792,8 +3524,10 @@ class Decomposition(Unsupervised):
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		Input vDataFrame.
+	vdf: str/vDataFrame, optional
+		Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 	n_components: int, optional
@@ -2819,7 +3553,9 @@ class Decomposition(Unsupervised):
             ]
         )
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],),],)
+            check_types([("vdf", vdf, [str, vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2836,15 +3572,17 @@ class Decomposition(Unsupervised):
 class Preprocessing(Unsupervised):
 
     # ---#
-    def transform(self, vdf=None, X: list = []):
+    def transform(self, vdf: (str, vDataFrame) = None, X: list = []):
         """
 	---------------------------------------------------------------------------
 	Applies the model on a vDataFrame.
 
 	Parameters
 	----------
-	vdf: vDataFrame, optional
-		Input vDataFrame.
+	vdf: str/vDataFrame, optional
+		Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the input vcolumns.
 
@@ -2856,6 +3594,8 @@ class Preprocessing(Unsupervised):
         check_types([("X", X, [list],)])
         if vdf:
             check_types([("vdf", vdf, [vDataFrame],),],)
+            if isinstance(vdf, str):
+                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
             relation = vdf.__genSQL__()
         else:
@@ -2874,15 +3614,19 @@ class Preprocessing(Unsupervised):
 class Clustering(Unsupervised):
 
     # ---#
-    def predict(self, vdf, X: list = [], name: str = "", inplace: bool = True):
+    def predict(
+        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+    ):
         """
 	---------------------------------------------------------------------------
 	Predicts using the input relation.
 
 	Parameters
 	----------
-	vdf: vDataFrame
-		Object to use to run the prediction.
+	vdf: str/vDataFrame
+		Object to use to run the prediction. It can also be a customized relation 
+        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -2897,8 +3641,14 @@ class Clustering(Unsupervised):
 		the input object.
 		"""
         check_types(
-            [("name", name, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame],),],
+            [
+                ("name", name, [str],),
+                ("X", X, [list],),
+                ("vdf", vdf, [str, vDataFrame],),
+            ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())

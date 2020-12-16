@@ -49,14 +49,15 @@
 # Modules
 #
 # Standard Python Modules
-import statistics
+import statistics, random
 from collections.abc import Iterable
 
 # VerticaPy Modules
+from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
+from verticapy.plot import gen_colors
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -64,11 +65,11 @@ import matplotlib.patches as mpatches
 
 # ---#
 def best_k(
-    X: list,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
+    X: list = [],
     cursor=None,
-    n_cluster=(1, 100),
-    init="kmeanspp",
+    n_cluster: (tuple, list) = (1, 100),
+    init: (str, list) = "kmeanspp",
     max_iter: int = 50,
     tol: float = 1e-4,
     elbow_score_stop: float = 0.8,
@@ -79,13 +80,14 @@ Finds the KMeans K based on a score.
 
 Parameters
 ----------
-X: list
-	List of the predictor columns.
-input_relation: str
-	Relation to use to train the model.
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list, optional
+	List of the predictor columns. If empty, all the numerical columns will
+    be used.
 cursor: DBcursor, optional
 	Vertica DB cursor.
-n_cluster: int, optional
+n_cluster: tuple/list, optional
 	Tuple representing the number of cluster to start with and to end with.
 	It can also be customized list with the different K to test.
 init: str/list, optional
@@ -110,7 +112,7 @@ int
     check_types(
         [
             ("X", X, [list],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("n_cluster", n_cluster, [list],),
             ("init", init, ["kmeanspp", "random"],),
             ("max_iter", max_iter, [int, float],),
@@ -121,28 +123,25 @@ int
 
     from verticapy.learn.cluster import KMeans
 
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    if not (isinstance(n_cluster, Iterable)):
+    cursor, conn = check_cursor(cursor, input_relation)[0:2]
+    if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
+    if isinstance(input_relation, vDataFrame):
+        if not (schema):
+            schema = "public"
     schema = str_column(schema)
-    relation_alpha = "".join(ch for ch in relation if ch.isalnum())
     for i in L:
         cursor.execute(
-            "DROP MODEL IF EXISTS {}.__vpython_kmeans_tmp_model_{}__".format(
-                schema, relation_alpha
+            "DROP MODEL IF EXISTS {}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(
+                schema, get_session(cursor)
             )
         )
         model = KMeans(
-            "{}.__vpython_kmeans_tmp_model_{}__".format(schema, relation_alpha),
+            "{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session(cursor)),
             cursor,
             i,
             init,
@@ -150,7 +149,7 @@ int
             tol,
         )
         model.fit(input_relation, X)
-        score = model.metrics.values["value"][3]
+        score = model.metrics_.values["value"][3]
         if score > elbow_score_stop:
             return i
         score_prev = score
@@ -167,11 +166,11 @@ int
 # ---#
 def cross_validate(
     estimator,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
     X: list,
     y: str,
     cv: int = 3,
-    pos_label=None,
+    pos_label: (int, float, str) = None,
     cutoff: float = -1,
 ):
     """
@@ -182,7 +181,7 @@ Parameters
 ----------
 estimator: object
 	Vertica estimator having a fit method and a DB cursor.
-input_relation: str
+input_relation: str/vDataFrame
 	Relation to use to train the model.
 X: list
 	List of the predictor columns.
@@ -204,12 +203,14 @@ tablesample
     check_types(
         [
             ("X", X, [list],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("y", y, [str],),
             ("cv", cv, [int, float],),
             ("cutoff", cutoff, [int, float],),
         ]
     )
+    if isinstance(input_relation, str):
+        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if estimator.type in (
@@ -229,7 +230,7 @@ tablesample
             ]
         }
     elif estimator.type in (
-        "MultinomialNB",
+        "NaiveBayes",
         "RandomForestClassifier",
         "LinearSVC",
         "LogisticRegression",
@@ -256,62 +257,27 @@ tablesample
             "Cross Validation is only possible for Regressors and Classifiers"
         )
     try:
-        schema, relation = schema_relation(estimator.name)
-        schema = str_column(schema)
+        schema = schema_relation(estimator.name)[0]
     except:
-        schema, relation = schema_relation(input_relation)
-        schema, relation = str_column(schema), "model_{}".format(relation)
-    relation_alpha = "".join(ch for ch in relation if ch.isalnum())
-    test_name, train_name = (
-        "{}_{}".format(relation_alpha, int(1 / cv * 100)),
-        "{}_{}".format(relation_alpha, int(100 - 1 / cv * 100)),
-    )
+        schema = schema_relation(input_relation)[0]
     try:
-        estimator.cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(
-                relation_alpha
-            )
-        )
+        input_relation.set_schema_writing(str_column(schema)[1:-1])
     except:
         pass
-    query = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_CV_SPLIT_{} ON COMMIT PRESERVE ROWS AS SELECT *, RANDOMINT({}) AS test FROM {}".format(
-        relation_alpha, cv, input_relation
-    )
-    estimator.cursor.execute(query)
     for i in range(cv):
         try:
             estimator.drop()
         except:
             pass
-        estimator.cursor.execute(
-            "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TEST".format(
-                schema, test_name
-            )
+        random_state = verticapy.options["random_state"]
+        random_state = (
+            random.randint(-10e6, 10e6) if not (random_state) else random_state + i
         )
-        estimator.cursor.execute(
-            "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(
-                schema, train_name
-            )
+        train, test = input_relation.train_test_split(
+            test_size=float(1 / cv), order_by=[X[0]], random_state=random_state
         )
-        query = "CREATE VIEW {}.VERTICAPY_CV_SPLIT_{}_TEST AS SELECT * FROM {} WHERE (test = {})".format(
-            schema,
-            test_name,
-            "v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(relation_alpha),
-            i,
-        )
-        estimator.cursor.execute(query)
-        query = "CREATE VIEW {}.VERTICAPY_CV_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE (test != {})".format(
-            schema,
-            train_name,
-            "v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(relation_alpha),
-            i,
-        )
-        estimator.cursor.execute(query)
         estimator.fit(
-            "{}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name),
-            X,
-            y,
-            "{}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name),
+            train, X, y, test,
         )
         if estimator.type in (
             "RandomForestRegressor",
@@ -364,27 +330,16 @@ tablesample
     for item in total:
         result["avg"] += [statistics.mean([float(elem) for elem in item])]
         result["std"] += [statistics.stdev([float(elem) for elem in item])]
-    estimator.cursor.execute(
-        "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_CV_SPLIT_{}".format(
-            relation_alpha
-        )
-    )
-    estimator.cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TEST".format(schema, test_name)
-    )
-    estimator.cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_CV_SPLIT_{}_TRAIN".format(schema, train_name)
-    )
     return tablesample(values=result).transpose()
 
 
 # ---#
 def elbow(
-    X: list,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
+    X: list = [],
     cursor=None,
-    n_cluster=(1, 15),
-    init="kmeanspp",
+    n_cluster: (tuple, list) = (1, 15),
+    init: (str, list) = "kmeanspp",
     max_iter: int = 50,
     tol: float = 1e-4,
     ax=None,
@@ -395,13 +350,14 @@ Draws an Elbow Curve.
 
 Parameters
 ----------
-X: list
-    List of the predictor columns.
-input_relation: str
+input_relation: str/vDataFrame
     Relation to use to train the model.
+X: list, optional
+    List of the predictor columns. If empty all the numerical vcolumns will
+    be used.
 cursor: DBcursor, optional
     Vertica DB cursor.
-n_cluster: int, optional
+n_cluster: tuple/list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
 init: str/list, optional
@@ -427,23 +383,21 @@ tablesample
     check_types(
         [
             ("X", X, [list],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("n_cluster", n_cluster, [list],),
             ("init", init, ["kmeanspp", "random"],),
             ("max_iter", max_iter, [int, float],),
             ("tol", tol, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn = check_cursor(cursor, input_relation)[0:2]
     version(cursor=cursor, condition=[8, 0, 0])
+    if isinstance(n_cluster, tuple):
+        L = range(n_cluster[0], n_cluster[1])
+    else:
+        L = n_cluster
+        L.sort()
     schema, relation = schema_relation(input_relation)
-    schema = str_column(schema)
-    relation_alpha = "".join(ch for ch in relation if ch.isalnum())
     all_within_cluster_SS = []
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
@@ -453,13 +407,13 @@ tablesample
     for i in L:
         cursor.execute(
             "DROP MODEL IF EXISTS {}.VERTICAPY_KMEANS_TMP_{}".format(
-                schema, relation_alpha
+                schema, get_session(cursor)
             )
         )
         from verticapy.learn.cluster import KMeans
 
         model = KMeans(
-            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, relation_alpha),
+            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session(cursor)),
             cursor,
             i,
             init,
@@ -477,7 +431,7 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_facecolor("#F5F5F5")
     ax.grid()
-    ax.plot(L, all_within_cluster_SS, marker="s", color="#FE5016")
+    ax.plot(L, all_within_cluster_SS, marker="s", color=gen_colors()[0])
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
@@ -489,9 +443,9 @@ tablesample
 def lift_chart(
     y_true: str,
     y_score: str,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
     cursor=None,
-    pos_label=1,
+    pos_label: (int, float, str) = 1,
     nbins: int = 1000,
     ax=None,
 ):
@@ -505,7 +459,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
     Relation to use to do the scoring. The relation can be a view or a table
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -530,20 +484,15 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("nbins", nbins, [int, float],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the Lift Table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()
@@ -559,12 +508,12 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Cumulative Data Fraction")
-    ax.plot(decision_boundary, lift, color="#FE5016")
+    ax.plot(decision_boundary, lift, color=gen_colors()[0])
     ax.plot(decision_boundary, positive_prediction_ratio, color="#444444")
     ax.set_title("Lift Table")
     ax.set_axisbelow(True)
     ax.grid()
-    color1 = mpatches.Patch(color="#FE5016", label="Cumulative Lift")
+    color1 = mpatches.Patch(color=gen_colors()[0], label="Cumulative Lift")
     color2 = mpatches.Patch(color="#444444", label="Cumulative Capture Rate")
     ax.legend(handles=[color1, color2])
     return tablesample(
@@ -580,9 +529,9 @@ tablesample
 def prc_curve(
     y_true: str,
     y_score: str,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
     cursor=None,
-    pos_label=1,
+    pos_label: (int, float, str) = 1,
     nbins: int = 1000,
     auc_prc: bool = False,
     ax=None,
@@ -597,7 +546,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
     Relation to use to do the scoring. The relation can be a view or a table
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -625,21 +574,16 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("nbins", nbins, [int, float],),
             ("auc_prc", auc_prc, [bool],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the PRC table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()
@@ -668,7 +612,7 @@ tablesample
     ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    ax.plot(recall, precision, color="#FE5016")
+    ax.plot(recall, precision, color=gen_colors()[0])
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     ax.set_title("PRC Curve\nAUC = " + str(auc))
@@ -683,9 +627,9 @@ tablesample
 def roc_curve(
     y_true: str,
     y_score: str,
-    input_relation: str,
+    input_relation: (str, vDataFrame),
     cursor=None,
-    pos_label=1,
+    pos_label: (int, float, str) = 1,
     nbins: int = 1000,
     auc_roc: bool = False,
     best_threshold: bool = False,
@@ -701,7 +645,7 @@ y_true: str
     Response column.
 y_score: str
     Prediction Probability.
-input_relation: str
+input_relation: str/vDataFrame
     Relation to use to do the scoring. The relation can be a view or a table
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
@@ -733,22 +677,17 @@ tablesample
         [
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
             ("nbins", nbins, [int, float],),
             ("auc_roc", auc_roc, [bool],),
             ("best_threshold", best_threshold, [bool],),
         ]
     )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    cursor.execute(query)
+    executeSQL(cursor, query, "Computing the ROC Table.")
     query_result = cursor.fetchall()
     if conn:
         conn.close()
@@ -790,7 +729,7 @@ tablesample
             fig.set_size_inches(8, 6)
     ax.set_xlabel("False Positive Rate (1-Specificity)")
     ax.set_ylabel("True Positive Rate (Sensitivity)")
-    ax.plot(false_positive, true_positive, color="#FE5016")
+    ax.plot(false_positive, true_positive, color=gen_colors()[0])
     ax.plot([0, 1], [0, 1], color="#444444")
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
@@ -803,82 +742,4 @@ tablesample
             "false_positive": false_positive,
             "true_positive": true_positive,
         },
-    )
-
-
-# ---#
-def train_test_split(
-    input_relation: str, cursor=None, test_size: float = 0.33, schema_writing: str = ""
-):
-    """
----------------------------------------------------------------------------
-Creates a temporary table and 2 views which can be to use to evaluate a model. 
-The table will include all the main relation information with a test column 
-(boolean) which represents if the data belong to the test or train set.
-
-Parameters
-----------
-input_relation: str
-	Input Relation.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-test_size: float, optional
-	Proportion of the test set comparint to the training set.
-schema_writing: str, optional
-	Schema to use to write the main relation.
-
-Returns
--------
-tuple
- 	(name of the train view, name of the test view)
-	"""
-    check_types(
-        [
-            ("test_size", test_size, [float],),
-            ("schema_writing", schema_writing, [str],),
-            ("input_relation", input_relation, [str],),
-        ]
-    )
-    if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-    else:
-        conn = False
-        check_cursor(cursor)
-    schema, relation = schema_relation(input_relation)
-    schema = str_column(schema) if not (schema_writing) else schema_writing
-    relation_alpha = "".join(ch for ch in relation if ch.isalnum())
-    test_name, train_name = (
-        "{}_{}".format(relation_alpha, int(test_size * 100)),
-        "{}_{}".format(relation_alpha, int(100 - test_size * 100)),
-    )
-    try:
-        cursor.execute(
-            "DROP TABLE IF EXISTS {}.VERTICAPY_SPLIT_{}".format(schema, relation_alpha)
-        )
-    except:
-        pass
-    cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_SPLIT_{}_TEST".format(schema, test_name)
-    )
-    cursor.execute(
-        "DROP VIEW IF EXISTS {}.VERTICAPY_SPLIT_{}_TRAIN".format(schema, train_name)
-    )
-    query = "CREATE TABLE {}.VERTICAPY_SPLIT_{} AS SELECT *, (CASE WHEN RANDOM() < {} THEN True ELSE False END) AS test FROM {}".format(
-        schema, relation_alpha, test_size, input_relation
-    )
-    cursor.execute(query)
-    query = "CREATE VIEW {}.VERTICAPY_SPLIT_{}_TEST AS SELECT * FROM {} WHERE test".format(
-        schema, test_name, "{}.VERTICAPY_SPLIT_{}".format(schema, relation_alpha)
-    )
-    cursor.execute(query)
-    query = "CREATE VIEW {}.VERTICAPY_SPLIT_{}_TRAIN AS SELECT * FROM {} WHERE NOT(test)".format(
-        schema, train_name, "{}.VERTICAPY_SPLIT_{}".format(schema, relation_alpha)
-    )
-    cursor.execute(query)
-    if conn:
-        conn.close()
-    return (
-        "{}.VERTICAPY_SPLIT_{}_TRAIN".format(schema, train_name),
-        "{}.VERTICAPY_SPLIT_{}_TEST".format(schema, test_name),
     )
