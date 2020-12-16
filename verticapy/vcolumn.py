@@ -442,8 +442,7 @@ Attributes
                 self.parent[copy_name].catalog = self.catalog
                 self.parent.__add_to_history__(
                     "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
-                        copy_name.replace('"', ""),
-                        func.replace("{}", "x"),
+                        copy_name.replace('"', ""), func.replace("{}", "x"),
                     )
                 )
             else:
@@ -453,8 +452,7 @@ Attributes
                 self.parent.__update_catalog__(erase=True, columns=[self.alias])
                 self.parent.__add_to_history__(
                     "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
-                        self.alias.replace('"', ""),
-                        func.replace("{}", "x"),
+                        self.alias.replace('"', ""), func.replace("{}", "x"),
                     )
                 )
             return self.parent
@@ -619,7 +617,7 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = "#FE5016",
+        color: str = None,
         ax=None,
     ):
         """
@@ -671,6 +669,10 @@ Attributes
                 ("color", color, [str],),
             ]
         )
+        if not color:
+            from verticapy.plot import gen_colors
+
+            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -891,7 +893,7 @@ Attributes
         kernel: str = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
-        color: str = "#FE5016",
+        color: str = None,
         ax=None,
     ):
         """
@@ -939,6 +941,10 @@ Attributes
                 ("nbins", nbins, [float, int],),
             ]
         )
+        if not color:
+            from verticapy.plot import gen_colors
+
+            color = gen_colors()[0]
         if by:
             columns_check([by], self.parent)
             by = vdf_columns_names([by], self.parent)[0]
@@ -2144,7 +2150,7 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = "#FE5016",
+        color: str = None,
         ax=None,
     ):
         """
@@ -2196,6 +2202,10 @@ Attributes
                 ("color", color, [str],),
             ]
         )
+        if not color:
+            from verticapy.plot import gen_colors
+
+            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
@@ -2291,7 +2301,8 @@ Attributes
     def isin(self, val: list):
         """
 	---------------------------------------------------------------------------
-	Looks if some specific records are in the vcolumn.
+	Looks if some specific records are in the vcolumn and it returns the new 
+    vDataFrame of the search.
 
 	Parameters
  	----------
@@ -2301,8 +2312,8 @@ Attributes
 
  	Returns
  	-------
- 	list
- 		List containing the bools of the different searches.
+ 	vDataFrame
+ 		The vDataFrame of the search.
 
  	See Also
  	--------
@@ -3235,7 +3246,7 @@ Attributes
         by: str = "",
         start_date: str = "",
         end_date: str = "",
-        color: str = "#FE5016",
+        color: str = None,
         area: bool = False,
         ax=None,
     ):
@@ -3282,6 +3293,10 @@ Attributes
                 ("area", area, [bool],),
             ]
         )
+        if not color:
+            from verticapy.plot import gen_colors
+
+            color = gen_colors()[0]
         ts = vdf_columns_names([ts], self.parent)[0]
         if by:
             columns_check([by], self.parent)

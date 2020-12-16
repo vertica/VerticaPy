@@ -85,7 +85,7 @@ def category_from_model_type(model_type: str):
     if model_type in ["LogisticRegression", "LinearSVC"]:
         return ("classifier", "binary")
     elif model_type in [
-        "MultinomialNB",
+        "NaiveBayes",
         "RandomForestClassifier",
         "KNeighborsClassifier",
         "NearestCentroid",
@@ -202,7 +202,7 @@ def check_types(types_list: list = [],):
             all_types = elem[2] + [type(None)]
             if str in all_types:
                 all_types += [str_sql]
-            if not (isinstance(elem[1], tuple(all_types))) :
+            if not (isinstance(elem[1], tuple(all_types))):
                 if (
                     (list in elem[2])
                     and isinstance(elem[1], Iterable)
@@ -376,8 +376,11 @@ def default_model_parameters(model_type: str):
             "class_weight": [1, 1],
             "max_iter": 100,
         }
-    elif model_type in ("MultinomialNB"):
-        return {"alpha": 1.0}
+    elif model_type in ("NaiveBayes"):
+        return {
+            "alpha": 1.0,
+            "nbtype": "auto",
+        }
     elif model_type in ("KMeans"):
         return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
     elif model_type in ("BisectingKMeans"):
@@ -429,7 +432,7 @@ def format_magic(x, return_cat: bool = False):
     elif isinstance(x, type(None)):
         val = "NULL"
     else:
-        val = "'{}'".format(x.replace("'", "''"))
+        val = "'{}'".format(str(x).replace("'", "''"))
     if return_cat:
         return (val, str_category(x))
     else:
@@ -1250,7 +1253,7 @@ class str_sql:
     def _in(self, *argv):
         if (len(argv) == 1) and (isinstance(argv[0], list)):
             x = argv[0]
-        elif (len(argv) == 0):
+        elif len(argv) == 0:
             ParameterError("Method 'in_' doesn't work with no parameters.")
         else:
             x = [elem for elem in argv]
@@ -1279,20 +1282,24 @@ class str_sql:
         order_by = ", ".join([str(elem) for elem in order_by])
         if order_by:
             order_by = "ORDER BY {}".format(order_by)
-        return str_sql("{} OVER ({} {})".format(self.alias, by, order_by), self.category())
+        return str_sql(
+            "{} OVER ({} {})".format(self.alias, by, order_by), self.category()
+        )
 
     # ---#
     def __eq__(self, x):
-        op = "IS" if (x == None) and not(isinstance(x, str_sql)) else "="
+        op = "IS" if (x == None) and not (isinstance(x, str_sql)) else "="
         val = format_magic(x)
-        if val != "NULL": val = "({})".format(val)
+        if val != "NULL":
+            val = "({})".format(val)
         return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
 
     # ---#
     def __ne__(self, x):
-        op = "IS NOT" if (x == None) and not(isinstance(x, str_sql)) else "!="
+        op = "IS NOT" if (x == None) and not (isinstance(x, str_sql)) else "!="
         val = format_magic(x)
-        if val != "NULL": val = "({})".format(val)
+        if val != "NULL":
+            val = "({})".format(val)
         return str_sql("({}) {} {}".format(self.alias, op, val), self.category())
 
     # ---#

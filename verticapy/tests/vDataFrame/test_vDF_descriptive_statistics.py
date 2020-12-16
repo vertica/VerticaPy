@@ -585,19 +585,6 @@ class TestvDFDescriptiveStat:
         assert result.count == 151
         assert len(result.values) == 3
 
-    def test_vDF_isin(self, amazon_vd):
-        # testing vDataFrame.isin
-        assert amazon_vd.isin(
-            {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
-        ) == [True, True,]
-
-        # testing vDataFrame[].isin
-        assert amazon_vd["state"].isin(val=["SERGIPE", "TOCANTINS", "PARIS"]) == [
-            True,
-            True,
-            False,
-        ]
-
     def test_vDF_kurt(self, titanic_vd):
         # testing vDataFrame.kurt
         result1 = titanic_vd.kurt(columns=["age", "fare", "parch"])

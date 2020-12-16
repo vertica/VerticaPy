@@ -62,6 +62,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
+import verticapy
 
 #
 ##
@@ -1018,34 +1019,39 @@ def compute_plot_variables(
 
 # ---#
 def gen_cmap():
-    cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", "#FE5016"], N=1000)
+    cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", gen_colors()[0]], N=1000)
     cm2 = LinearSegmentedColormap.from_list(
-        "vml", ["#263133", "#FFFFFF", "#FE5016"], N=1000
+        "vml", [gen_colors()[1], "#FFFFFF", gen_colors()[0]], N=1000
     )
     return (cm1, cm2)
 
 
 # ---#
 def gen_colors():
-    colors = [
-        "#FE5016",
-        "#263133",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
-    all_colors = [item for item in plt_colors.cnames]
-    shuffle(all_colors)
-    for c in all_colors:
-        if c not in colors:
-            colors += [c]
-    return colors
+    if not (verticapy.options["colors"]) or not (
+        isinstance(verticapy.options["colors"], list)
+    ):
+        colors = [
+            "#FE5016",
+            "#263133",
+            "#0073E7",
+            "#19A26B",
+            "#FCDB1F",
+            "#2A6A74",
+            "#861889",
+            "#00B4E0",
+            "#90EE90",
+            "#FF7F50",
+            "#B03A89",
+        ]
+        all_colors = [item for item in plt_colors.cnames]
+        shuffle(all_colors)
+        for c in all_colors:
+            if c not in colors:
+                colors += [c]
+        return colors
+    else:
+        return verticapy.options["colors"]
 
 
 # ---#
@@ -1835,7 +1841,7 @@ def scatter_matrix(vdf, columns: list = []):
                 axes[i, j].scatter(
                     all_scatter_columns[j],
                     all_scatter_columns[i],
-                    color="#263133",
+                    color=gen_colors()[1],
                     s=4,
                     marker="o",
                 )

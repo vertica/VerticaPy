@@ -43,6 +43,58 @@ def amazon_vd(base):
 
 
 class TestStats:
+    def test_regexp_instr(self, titanic_vd):
+        assert (
+            str(st.regexp_instr(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_INSTR(\"name\", '([A-Za-z])+\\. ', 1, 1, 0)"
+        )
+
+    def test_regexp_like(self, titanic_vd):
+        assert (
+            str(st.regexp_like(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_LIKE(\"name\", '([A-Za-z])+\\. ')"
+        )
+
+    def test_regexp_replace(self, titanic_vd):
+        assert (
+            str(st.regexp_replace(titanic_vd["name"], "([A-Za-z])+\\. ", "\\.\\."))
+            == "REGEXP_REPLACE(\"name\", '([A-Za-z])+\\. ', '\\.\\.', 1, 1)"
+        )
+
+    def test_regexp_substr(self, titanic_vd):
+        assert (
+            str(st.regexp_substr(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_SUBSTR(\"name\", '([A-Za-z])+\\. ', 1, 1)"
+        )
+
+    def test_regexp_count(self, titanic_vd):
+        assert (
+            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
+        )
+
+    def test_regexp_ilike(self, titanic_vd):
+        assert (
+            str(st.regexp_ilike(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_ILIKE(\"name\", '([A-Za-z])+\\. ')"
+        )
+
+    def test_length(self, titanic_vd):
+        assert str(st.length(titanic_vd["name"])) == 'LENGTH("name")'
+
+    def test_lower(self, titanic_vd):
+        assert str(st.lower(titanic_vd["name"])) == 'LOWER("name")'
+
+    def test_substr(self, titanic_vd):
+        assert str(st.substr(titanic_vd["name"], 1, 2)) == 'SUBSTR("name", 1, 2)'
+
+    def test_upper(self, titanic_vd):
+        assert str(st.upper(titanic_vd["name"])) == 'UPPER("name")'
+
+    def test_apply(self, titanic_vd):
+        assert str(st.apply("avg", titanic_vd["age"])) == 'AVG("age")'
+        assert str(st.apply("dense_rank")) == "DENSE_RANK()"
+
     def test_avg(self, titanic_vd):
         assert str(st.avg(titanic_vd["age"])) == 'AVG("age")'
 
@@ -54,6 +106,18 @@ class TestStats:
 
     def test_bool_xor(self, titanic_vd):
         assert str(st.bool_xor(titanic_vd["age"])) == 'BOOL_XOR("age")'
+
+    def test_conditional_change_event(self, titanic_vd):
+        assert (
+            str(st.conditional_change_event(titanic_vd["age"] > 5))
+            == 'CONDITIONAL_CHANGE_EVENT(("age") > (5))'
+        )
+
+    def test_conditional_true_event(self, titanic_vd):
+        assert (
+            str(st.conditional_true_event(titanic_vd["age"] > 5))
+            == 'CONDITIONAL_TRUE_EVENT(("age") > (5))'
+        )
 
     def test_count(self, titanic_vd):
         assert str(st.count(titanic_vd["age"])) == 'COUNT("age")'
@@ -67,8 +131,26 @@ class TestStats:
     def test_min(self, titanic_vd):
         assert str(st.min(titanic_vd["age"])) == 'MIN("age")'
 
+    def test_nth_value(self, titanic_vd):
+        assert str(st.nth_value(titanic_vd["age"], 2)) == 'NTH_VALUE("age", 2)'
+
+    def test_lag(self, titanic_vd):
+        assert str(st.lag(titanic_vd["age"])) == 'LAG("age", 1)'
+
+    def test_lead(self, titanic_vd):
+        assert str(st.lead(titanic_vd["age"])) == 'LEAD("age", 1)'
+
     def test_quantile(self, titanic_vd):
-        assert str(st.quantile(titanic_vd["age"], 0.3)) == 'APPROXIMATE_PERCENTILE("age" USING PARAMETERS percentile = 0.3)'
+        assert (
+            str(st.quantile(titanic_vd["age"], 0.3))
+            == 'APPROXIMATE_PERCENTILE("age" USING PARAMETERS percentile = 0.3)'
+        )
+
+    def test_rank(self):
+        assert str(st.rank()) == "RANK()"
+
+    def test_row_number(self):
+        assert str(st.row_number()) == "ROW_NUMBER()"
 
     def test_std(self, titanic_vd):
         assert str(st.std(titanic_vd["age"])) == 'STDDEV("age")'
