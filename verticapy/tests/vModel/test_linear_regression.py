@@ -42,7 +42,7 @@ def model(base, winequality_vd):
     model_class.drop()
 
 
-class TestLogisticRegression:
+class TestLinearRegression:
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'linreg_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
