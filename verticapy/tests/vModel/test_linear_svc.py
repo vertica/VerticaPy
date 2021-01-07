@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, math
+import pytest, warnings, math, sys
 from verticapy.learn.svm import LinearSVC
 from verticapy import drop_table
 import matplotlib.pyplot as plt
@@ -133,7 +133,7 @@ class TestLinearSVC:
 
         # 'LinearSVC' object (md) has no attribute 'predict_proba'
 
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
+    @pytest.mark.skipif(sys.version_info < (3, 7), reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
