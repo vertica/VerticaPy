@@ -57,7 +57,7 @@ from verticapy import vDataFrame
 # Other modules
 import math
 import matplotlib.pyplot as plt
-from scipy.stats import chi2, norm
+from scipy.stats import chi2, norm, f
 
 # ---#
 def adfuller(
@@ -324,10 +324,9 @@ tablesample
     )
     return result
 
-
 # ---#
 def durbin_watson(
-    vdf: vDataFrame, column: str, ts: str, X: list, by: list = [],
+    vdf: vDataFrame, eps: str, ts: str, by: list = [],
 ):
     """
 ---------------------------------------------------------------------------
@@ -336,16 +335,68 @@ Durbin Watson test (residuals autocorrelation).
 Parameters
 ----------
 vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn used as response.
+    Input vDataFrame.
+eps: str
+    Input residual vcolumn.
 ts: str
     vcolumn used as timeline. It will be to use to order the data. It can be
     a numerical or type date like (date, datetime, timestamp...) vcolumn.
-X: list
-    Input vcolumns used as predictors.
 by: list, optional
     vcolumns used in the partition.
+
+Returns
+-------
+float
+    Durbin Watson statistic
+    """
+    check_types(
+        [
+            ("ts", ts, [str],),
+            ("eps", eps, [str],),
+            ("by", by, [list],),
+            ("vdf", vdf, [vDataFrame, str,],),
+        ],
+    )
+    columns_check([eps] + [ts] + by, vdf)
+    eps = vdf_columns_names([eps], vdf)[0]
+    ts = vdf_columns_names([ts], vdf)[0]
+    by = vdf_columns_names(by, vdf)
+    query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {} AS et, {}{} FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
+        "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
+        ts,
+        eps,
+        ts,
+        (", " + ", ".join(by)) if (by) else "",
+        vdf.__genSQL__(),
+    )
+    vdf.__executeSQL__(
+        "SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
+        title="Computes the Durbin Watson d.",
+    )
+    d = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    return d
+
+# ---#
+def het_arch(
+    vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1,
+):
+    """
+---------------------------------------------------------------------------
+Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+eps: str
+    Input residual vcolumn.
+ts: str
+    vcolumn used as timeline. It will be to use to order the data. It can be
+    a numerical or type date like (date, datetime, timestamp...) vcolumn.
+by: list, optional
+    vcolumns used in the partition.
+p: int, optional
+    Number of lags to consider in the test.
 
 Returns
 -------
@@ -355,80 +406,301 @@ tablesample
     """
     check_types(
         [
+            ("eps", eps, [str],),
             ("ts", ts, [str],),
-            ("column", column, [str],),
-            ("X", X, [list],),
-            ("by", by, [list],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("p", p, [int, float],),
+            ("vdf", vdf, [vDataFrame, str,],),
         ],
     )
-    columns_check(X + [column] + [ts] + by, vdf)
-    column = vdf_columns_names([column], vdf)[0]
+    columns_check([eps, ts] + by, vdf)
+    eps = vdf_columns_names([eps], vdf)[0]
     ts = vdf_columns_names([ts], vdf)[0]
-    X = vdf_columns_names(X, vdf)
     by = vdf_columns_names(by, vdf)
-    schema = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema):
-        schema = "public"
-    name = "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        schema, gen_name([column]).upper()
-    )
-    relation_name = "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-        schema, gen_name([column]).upper()
-    )
+    X = []
+    X_names = []
+    for i in range(0, p + 1):
+        X += ["LAG(POWER({}, 2), {}) OVER({}ORDER BY {}) AS lag_{}".format(eps, i, ("PARTITION BY " + ", ".join(by)) if (by) else "", ts, i)]
+        X_names += ["lag_{}".format(i)]
+    query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(", ".join(X), vdf.__genSQL__())
+    vdf_lags = vdf_from_relation(query, cursor = vdf._VERTICAPY_VARIABLES_["cursor"])
+    from verticapy.learn.linear_model import LinearRegression
+    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+    if not(schema_writing):
+        schema_writing = "public"
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    model = LinearRegression(name)
     try:
-        vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-            "DROP MODEL IF EXISTS {}".format(name)
-        )
-        vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-            "DROP VIEW IF EXISTS {}".format(relation_name)
-        )
+        model.fit(vdf_lags, X_names[1:], X_names[0])
+        R2 = model.score("r2")
+        model.drop()
     except:
-        pass
-    query = "CREATE VIEW {} AS SELECT {}, {}, {}{} FROM {}".format(
-        relation_name,
-        ", ".join(X),
-        column,
-        ts,
-        ", {}".format(", ".join(by)) if by else "",
-        vdf.__genSQL__(),
-    )
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute(query)
-    model = LinearRegression(
-        name, vdf._VERTICAPY_VARIABLES_["cursor"], solver="Newton", max_iter=1000
-    )
-    model.fit(relation_name, X, column)
-    query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {}{}, {} - PREDICT_LINEAR_REG({} USING PARAMETERS model_name = '{}') AS et FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
-        "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
-        ts,
-        "{}, ".format(", ".join(by)) if by else "",
-        ts,
-        column,
-        ", ".join(X),
-        name,
-        relation_name,
-    )
-    vdf.__executeSQL__(
-        "SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
-        title="Computes the Durbin Watson d.",
-    )
-    d = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute("DROP MODEL IF EXISTS {}".format(name))
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-        "DROP VIEW IF EXISTS {}".format(relation_name)
-    )
-    if d > 2.5 or d < 1.5:
-        result = False
-    else:
-        result = True
+        try:
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf_lags, X_names[1:], X_names[0])
+            R2 = model.score("r2")
+            model.drop()
+        except:
+            model.drop()
+            raise
+    n = vdf.shape()[0]
+    k = len(X)
+    LM = (n - p) * R2
+    lm_pvalue = chi2.sf(LM, p)
+    F = (n - 2 * p - 1) * R2 / (1 - R2) / p
+    f_pvalue = f.sf(F, p, n - 2 * p - 1)
     result = tablesample(
         {
-            "index": ["Durbin Watson Index", "Residuals Stationarity"],
-            "value": [d, result],
+            "index": [
+                "Lagrange Multiplier Statistic",
+                "lm_p_value",
+                "F Value",
+                "f_p_value",
+            ],
+            "value": [LM, lm_pvalue, F, f_pvalue],
         }
     )
     return result
 
+# ---#
+def het_breuschpagan(
+    vdf: vDataFrame, eps: str, X: list,
+):
+    """
+---------------------------------------------------------------------------
+Breusch-Pagan test for heteroscedasticity.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+eps: str
+    Input residual vcolumn.
+X: str
+    Exogenous Variables to test the heteroscedasticity on.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("eps", eps, [str],),
+            ("X", X, [list],),
+            ("vdf", vdf, [vDataFrame, str,],),
+        ],
+    )
+    columns_check([eps] + X, vdf)
+    eps = vdf_columns_names([eps], vdf)[0]
+    X = vdf_columns_names(X, vdf)
+
+    from verticapy.learn.linear_model import LinearRegression
+    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+    if not(schema_writing):
+        schema_writing = "public"
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    model = LinearRegression(name)
+    vdf_copy = vdf.copy()
+    vdf_copy["VERTICAPY_TEMP_eps2"] = vdf_copy[eps] ** 2
+    try:
+        model.fit(vdf_copy, X, "VERTICAPY_TEMP_eps2")
+        R2 = model.score("r2")
+        model.drop()
+    except:
+        try:
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf_copy, X, "VERTICAPY_TEMP_eps2")
+            R2 = model.score("r2")
+            model.drop()
+        except:
+            model.drop()
+            raise
+    n = vdf.shape()[0]
+    k = len(X)
+    LM = n * R2
+    lm_pvalue = chi2.sf(LM, k)
+    F = (n - k - 1) * R2 / (1 - R2) / k
+    f_pvalue = f.sf(F, k, n - k - 1)
+    result = tablesample(
+        {
+            "index": [
+                "Lagrange Multiplier Statistic",
+                "lm_p_value",
+                "F Value",
+                "f_p_value",
+            ],
+            "value": [LM, lm_pvalue, F, f_pvalue],
+        }
+    )
+    return result
+
+# ---#
+def het_goldfeldquandt(
+    vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5
+):
+    """
+---------------------------------------------------------------------------
+Goldfeld-Quandt homoscedasticity test.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+y: str
+    Response Column.
+X: str
+    Exogenous Variables.
+idx: int, optional
+    Column index of variable according to which observations are sorted 
+    for the split.
+split: float, optional
+    Float to indicate where to split (Example: 0.5 to split on the median).
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    def model_fit(input_relation, X, y, model):
+        var = []
+        for vdf_tmp in input_relation:
+            model.drop()
+            model.fit(vdf_tmp, X, y)
+            model.predict(vdf_tmp, name = "verticapy_prediction")
+            vdf_tmp["residual_0"] = vdf_tmp[y] - vdf_tmp["verticapy_prediction"]
+            var += [vdf_tmp["residual_0"].var()]
+            model.drop()
+        return var
+    check_types(
+        [
+            ("y", y, [str],),
+            ("X", X, [list],),
+            ("idx", idx, [int, float],),
+            ("split", split, [int, float],),
+            ("vdf", vdf, [vDataFrame, str,],),
+        ],
+    )
+    columns_check([y] + X, vdf)
+    y = vdf_columns_names([y], vdf)[0]
+    X = vdf_columns_names(X, vdf)
+    split_value = vdf[X[idx]].quantile(split)
+    vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
+    vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
+    from verticapy.learn.linear_model import LinearRegression
+    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+    if not(schema_writing):
+        schema_writing = "public"
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    model = LinearRegression(name)
+    try:
+        var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+    except:
+        try:
+            model.set_params({"solver": "bfgs"})
+            var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+        except:
+            model.drop()
+            raise
+    n, m = vdf_0_half.shape()[0], vdf_1_half.shape()[0]
+    F = var0 / var1
+    f_pvalue = f.sf(F, n, m)
+    result = tablesample(
+        {
+            "index": [
+                "F Value",
+                "f_p_value",
+            ],
+            "value": [F, f_pvalue],
+        }
+    )
+    return result
+
+# ---#
+def het_white(
+    vdf: vDataFrame, eps: str, X: list,
+):
+    """
+---------------------------------------------------------------------------
+White’s Lagrange Multiplier Test for heteroscedasticity.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+eps: str
+    Input residual vcolumn.
+X: str
+    Exogenous Variables to test the heteroscedasticity on.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("eps", eps, [str],),
+            ("X", X, [list],),
+            ("vdf", vdf, [vDataFrame, str,],),
+        ],
+    )
+    columns_check([eps] + X, vdf)
+    eps = vdf_columns_names([eps], vdf)[0]
+    X = vdf_columns_names(X, vdf)
+    X_0 = ["1"] + X
+    variables = []
+    variables_names = []
+    for i in range(len(X_0)):
+        for j in range(i, len(X_0)):
+            if i != 0 or j != 0:
+                variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
+                variables_names += ["var_{}_{}".format(i, j)]
+    query = "(SELECT {}, POWER({}, 2) AS VERTICAPY_TEMP_eps2 FROM {}) VERTICAPY_SUBTABLE".format(", ".join(variables), eps, vdf.__genSQL__())
+    vdf_white = vdf_from_relation(query, cursor = vdf._VERTICAPY_VARIABLES_["cursor"])
+
+    from verticapy.learn.linear_model import LinearRegression
+    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+    if not(schema_writing):
+        schema_writing = "public"
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    model = LinearRegression(name)
+    try:
+        model.fit(vdf_white, variables_names, "VERTICAPY_TEMP_eps2")
+        R2 = model.score("r2")
+        model.drop()
+    except:
+        try:
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf_white, variables_names, "VERTICAPY_TEMP_eps2")
+            R2 = model.score("r2")
+            model.drop()
+        except:
+            model.drop()
+            raise
+    n = vdf.shape()[0]
+    if len(X) > 1:
+        k = 2 * len(X) + math.factorial(len(X)) / 2 / (math.factorial(len(X) - 2))
+    else:
+        k = 1
+    LM = n * R2
+    lm_pvalue = chi2.sf(LM, k)
+    F = (n - k - 1) * R2 / (1 - R2) / k
+    f_pvalue = f.sf(F, k, n - k - 1)
+    result = tablesample(
+        {
+            "index": [
+                "Lagrange Multiplier Statistic",
+                "lm_p_value",
+                "F Value",
+                "f_p_value",
+            ],
+            "value": [LM, lm_pvalue, F, f_pvalue],
+        }
+    )
+    return result
 
 # ---#
 def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
@@ -460,18 +732,68 @@ tablesample
     )
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
-    jb, n = vdf[column].agg(["jb", "count"]).values[column]
-    pvalue = chi2.cdf(jb, n)
-    result = True if pvalue < alpha else False
+    jb, kurtosis, skewness, n = vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
+    pvalue = chi2.sf(jb, 2)
+    result = False if pvalue < alpha else True
     result = tablesample(
         {
             "index": [
                 "Jarque Bera Test Statistic",
                 "p_value",
                 "# Observations Used",
+                "Kurtosis - 3",
+                "Skewness",
                 "Distribution Normality",
             ],
-            "value": [jb, pvalue, n, result],
+            "value": [jb, pvalue, n, kurtosis, skewness, result],
+        }
+    )
+    return result
+
+
+# ---#
+def kurtosistest(vdf: vDataFrame, column: str):
+    """
+---------------------------------------------------------------------------
+Test whether the kurtosis is different from the normal distribution.
+
+Parameters
+----------
+vdf: vDataFrame
+    input vDataFrame.
+column: str
+    Input vcolumn to test.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("column", column, [str],),
+            ("vdf", vdf, [vDataFrame,],),
+        ],
+    )
+    columns_check([column], vdf)
+    column = vdf_columns_names([column], vdf)[0]
+    g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
+    mu1 = - 6 / (n + 1)
+    mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
+    gamma1 = 6 * (n ** 2 - 5 * n + 2) / ((n + 7) * (n + 9)) * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
+    A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1 ** 2)))
+    B = (1 - 2 / A) / (1 + (g2 - mu1) / math.sqrt(mu2) * math.sqrt(2 / (A - 4)))
+    B = B ** (1 / 3) if B > 0 else (- B) ** (1 / 3)
+    Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
+    pvalue = 2 * norm.sf(abs(Z2))
+    result = tablesample(
+        {
+            "index": [
+                "Statistic",
+                "p_value",
+            ],
+            "value": [Z2, pvalue],
         }
     )
     return result
@@ -627,7 +949,7 @@ tablesample
     else:
         ZMK = 0
         trend = "no trend"
-    pvalue = norm.pdf(ZMK)
+    pvalue = 2 * norm.sf(abs(ZMK))
     result = (
         True
         if (ZMK <= 0 and pvalue < alpha) or (ZMK >= 0 and pvalue < alpha)
@@ -646,6 +968,40 @@ tablesample
                 "Trend",
             ],
             "value": [ZMK, S, STDS, pvalue, result, trend],
+        }
+    )
+    return result
+
+
+# ---#
+def normaltest(vdf: vDataFrame, column: str):
+    """
+---------------------------------------------------------------------------
+Test whether a sample differs from a normal distribution.
+
+Parameters
+----------
+vdf: vDataFrame
+    input vDataFrame.
+column: str
+    Input vcolumn to test.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
+    Z = Z1 ** 2 + Z2 ** 2
+    pvalue = chi2.sf(Z, 2)
+    result = tablesample(
+        {
+            "index": [
+                "Statistic",
+                "p_value",
+            ],
+            "value": [Z, pvalue],
         }
     )
     return result
@@ -742,4 +1098,52 @@ tablesample
     ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
     ax2.set_title("Partial Autocorrelation")
     plt.show()
+    return result
+
+# ---#
+def skewtest(vdf: vDataFrame, column: str):
+    """
+---------------------------------------------------------------------------
+Test whether the skewness is different from the normal distribution.
+
+Parameters
+----------
+vdf: vDataFrame
+    input vDataFrame.
+column: str
+    Input vcolumn to test.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("column", column, [str],),
+            ("vdf", vdf, [vDataFrame,],),
+        ],
+    )
+    columns_check([column], vdf)
+    column = vdf_columns_names([column], vdf)[0]
+    g1, n = vdf[column].agg(["skewness", "count"]).values[column]
+    mu1 = 0
+    mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
+    gamma1 = 0
+    gamma2 = 36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
+    W2 = math.sqrt(2 * gamma2 + 4) - 1
+    delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
+    alpha2 = 2 / (W2 - 1)
+    Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
+    pvalue = 2 * norm.sf(abs(Z1))
+    result = tablesample(
+        {
+            "index": [
+                "Statistic",
+                "p_value",
+            ],
+            "value": [Z1, pvalue],
+        }
+    )
     return result

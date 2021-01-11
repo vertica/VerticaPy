@@ -63,6 +63,76 @@ from verticapy.toolbox import *
 # Regression
 #
 # ---#
+def anova_table(
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), k: int = 1, cursor=None
+):
+    """
+---------------------------------------------------------------------------
+Computes the Anova Table.
+
+Parameters
+----------
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str/vDataFrame
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+k: int, optional
+    Number of predictors
+cursor: DBcursor, optional
+    Vertica DB cursor.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
+            ("k", k, [int],),
+        ]
+    )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
+    query = "SELECT COUNT(*), AVG({}) FROM {}".format(
+        y_true, input_relation
+    )
+    executeSQL(cursor, query, "Computing n and the average of y.")
+    n, avg = cursor.fetchone()[0:2]
+    query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {}".format(
+        y_score, avg, y_true, y_score, y_true, avg, input_relation
+    )
+    executeSQL(cursor, query, "Computing SSR, SSE, SST.")
+    SSR, SSE, SST = cursor.fetchone()[0:3]
+    dfr, dfe, dft = k, n - 1 - k, n - 1
+    MSR, MSE = SSR / dfr, SSE / dfe
+    if MSE == 0:
+        F = float('inf')
+    else:
+        F = MSR / MSE
+    from scipy.stats import f
+    pvalue = f.sf(F, k, n)
+    if conn:
+        conn.close()
+    return tablesample(
+            {
+                "index": ["Regression", "Residual", "Total"],
+                "Df": [dfr, dfe, dft],
+                "SS": [SSR, SSE, SST],
+                "MS": [MSR, MSE, ""],
+                "F": [F, "", ""],
+                "p_value": [pvalue, "", ""],
+            }
+        )
+
+# ---#
 def explained_variance(
     y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
 ):
@@ -199,7 +269,7 @@ float
 
 # ---#
 def mean_squared_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, root: bool = False
 ):
     """
 ---------------------------------------------------------------------------
@@ -218,6 +288,8 @@ input_relation: str/vDataFrame
 	relation.
 cursor: DBcursor, optional
 	Vertica DB cursor.
+root: bool, optional
+    If set to True, returns the RMSE (Root Mean Squared Error)
 
 Returns
 -------
@@ -229,12 +301,15 @@ float
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
             ("input_relation", input_relation, [str, vDataFrame],),
+            ("root", root, [bool],),
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT MSE({}, {}) OVER () FROM {}".format(y_true, y_score, input_relation)
     executeSQL(cursor, query, "Computing the MSE.")
     result = cursor.fetchone()[0]
+    if root:
+        result = math.sqrt(result)
     if conn:
         conn.close()
     return result
@@ -379,7 +454,7 @@ float
 
 
 # ---#
-def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None):
+def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 1, adj: bool = False):
     """
 ---------------------------------------------------------------------------
 Computes the R2 Score.
@@ -397,6 +472,10 @@ input_relation: str/vDataFrame
 	relation.
 cursor: DBcursor, optional
 	Vertica DB cursor.
+k: int, optional
+    Number of predictors. Only used to compute the R2 adjusted.
+adj: bool, optional
+    If set to True, computes the R2 adjusted.
 
 Returns
 -------
@@ -408,6 +487,8 @@ float
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
             ("input_relation", input_relation, [str, vDataFrame],),
+            ("k", k, [int],),
+            ("adj", adj, [bool],),
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
@@ -416,6 +497,13 @@ float
     )
     executeSQL(cursor, query, "Computing the R2 Score.")
     result = cursor.fetchone()[0]
+    if adj:
+        query = "SELECT COUNT(*) FROM {}".format(
+            input_relation
+        )
+        executeSQL(cursor, query, "Computing the table number of elements.")
+        n = cursor.fetchone()[0]
+        result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
     if conn:
         conn.close()
     return result
@@ -423,7 +511,7 @@ float
 
 # ---#
 def regression_report(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -442,6 +530,8 @@ input_relation: str/vDataFrame
 	relation.
 cursor: DBcursor, optional
 	Vertica DB cursor.
+k: int, optional
+    Number of predictors. Used to compute the adjusted R2.
 
 Returns
 -------
@@ -454,6 +544,7 @@ tablesample
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
             ("input_relation", input_relation, [str, vDataFrame],),
+            ("k", k, [int],),
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
@@ -463,7 +554,7 @@ tablesample
     query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(
         y_true, y_score, y_true, y_score
     )
-    query += "AVG(POW({} - {}, 2)) FROM {}".format(y_true, y_score, input_relation)
+    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {}".format(y_true, y_score, input_relation)
     r2 = r2_score(y_true, y_score, input_relation, cursor)
     values = {
         "index": [
@@ -472,11 +563,15 @@ tablesample
             "median_absolute_error",
             "mean_absolute_error",
             "mean_squared_error",
+            "root_mean_squared_error",
             "r2",
+            "r2_adj",
         ]
     }
     executeSQL(cursor, query, "Computing the Regression Report.")
-    values["value"] = [item for item in cursor.fetchone()] + [r2]
+    result = cursor.fetchone()
+    n = result[5]
+    values["value"] = [result[0], result[1], result[2], result[3], result[4], math.sqrt(result[4]), r2, 1 - ((1 - r2) * (n - 1) / (n - k - 1))]
     if conn:
         conn.close()
     return tablesample(values)

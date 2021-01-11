@@ -51,18 +51,66 @@ class TestvDFStatsTools:
         assert result["value"][-1] == False
 
     def test_durbin_watson(self, amazon_vd):
-        result = amazon_vd.copy()
-        result["number_lag"] = "LAG(number) OVER (PARTITION BY state ORDER BY date)"
         result = durbin_watson(
-            result, column="number", ts="date", by=["state"], X=["number_lag"]
+            amazon_vd, eps="number", ts="date", by=["state"]
         )
-        assert result["value"][0] == pytest.approx(1.74223305056269, 1e-2)
-        assert result["value"][1] == True
+        assert result == pytest.approx(0.583991056156811, 1e-2)
+
+    def test_het_arch(self, amazon_vd):
+        result = het_arch(
+            amazon_vd, eps="number", ts="date", by=["state"], p=2
+        )
+        assert result["value"] == [pytest.approx(883.1042774059952), 
+                                   pytest.approx(1.7232277858576802e-192), 
+                                   pytest.approx(511.3347213420665), 
+                                   pytest.approx(7.463757606288815e-207)]
+
+    def test_het_breuschpagan(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = het_breuschpagan(
+            result, eps="number", X=["lag_number"]
+        )
+        assert result["value"] == [pytest.approx(68.30346484950417), 
+                                   pytest.approx(1.4017446778018072e-16), 
+                                   pytest.approx(94.83450355369129), 
+                                   pytest.approx(4.572276908758215e-19)]
+
+    def test_het_goldfeldquandt(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = het_goldfeldquandt(
+            result, y="number", X=["lag_number"]
+        )
+        assert result["value"] == [pytest.approx(0.0331426182368922), 
+                                   pytest.approx(0.9999999999999999),]
+
+    def test_het_white(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = het_white(
+            result, eps="number", X=["lag_number"]
+        )
+        assert result["value"] == [pytest.approx(72.93515335650999), 
+                                   pytest.approx(1.3398039866815678e-17), 
+                                   pytest.approx(104.08964747730063), 
+                                   pytest.approx(1.7004013245871353e-20)]
 
     def test_jarque_bera(self, amazon_vd):
         result = jarque_bera(amazon_vd, column="number")
         assert result["value"][0] == pytest.approx(930829.520860999, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
         assert result["value"][-1] == False
+
+    def test_kurtosistest(self, amazon_vd):
+        result = kurtosistest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(47.31605467852915, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+
+    def test_normaltest(self, amazon_vd):
+        result = normaltest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(7645.980976250067, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
 
     def test_ljungbox(self, amazon_vd):
         # testing Ljung–Box
@@ -91,6 +139,11 @@ class TestvDFStatsTools:
         assert result["value"][0] == pytest.approx(2.579654773618437, 1e-2)
         assert result["value"][1] == pytest.approx(3188.0, 1e-2)
         assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
-        assert result["value"][3] == pytest.approx(0.014317855149496753, 1e-2)
+        assert result["value"][3] == pytest.approx(0.009889912917327177, 1e-2)
         assert result["value"][4] == True
         assert result["value"][5] == "increasing"
+
+    def test_skewtest(self, amazon_vd):
+        result = skewtest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(73.53347500226347, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)

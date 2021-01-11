@@ -154,7 +154,6 @@ class TestRidge:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.81837771)
@@ -180,14 +179,33 @@ class TestRidge:
             "median_absolute_error",
             "mean_absolute_error",
             "mean_squared_error",
+            "root_mean_squared_error",
             "r2",
+            "r2_adj",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219816244842147, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.59213874427945, abs=1e-6)
         assert reg_rep["value"][2] == pytest.approx(0.495516023908698, abs=1e-3)
         assert reg_rep["value"][3] == pytest.approx(0.60908330928705, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.594856874272792, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.219816244842152, abs=1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.7712696508179172, abs=1e-6)
+        assert reg_rep["value"][6] == pytest.approx(0.219816244842152, abs=1e-6)
+        assert reg_rep["value"][7] == pytest.approx(0.21945577183037412, abs=1e-6)
+
+        reg_rep_details = model.regression_report("details")
+        assert reg_rep_details["value"][2:] == [6497.0,
+                                                3,
+                                                pytest.approx(0.219816244842152),
+                                                pytest.approx(0.21945577183037412),
+                                                pytest.approx(609.4456850593101),
+                                                pytest.approx(0.0),
+                                                pytest.approx(0.232322269343305),
+                                                pytest.approx(0.189622693372695),
+                                                pytest.approx(53.1115447611131)]
+
+        reg_rep_anova = model.regression_report("anova")
+        assert reg_rep_anova["SS"] == [pytest.approx(1088.2688789226), pytest.approx(3864.78511215033), pytest.approx(4953.68570109281)]
+        assert reg_rep_anova["MS"][:-1] == [pytest.approx(362.7562929742), pytest.approx(0.5952233346912568)]
 
     def test_score(self, model):
         # method = "max"
@@ -199,13 +217,17 @@ class TestRidge:
             0.495516023908698, abs=1e-3
         )
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.60908330928705, abs=1e-6)
+        assert model.score(method="mse") == pytest.approx(0.594856874272793, abs=1e-6)
+        # method = "rmse"
+        assert model.score(method="rmse") == pytest.approx(0.7712696508179179, abs=1e-6)
         # method = "msl"
         assert model.score(method="msle") == pytest.approx(
             0.00250970549028931, abs=1e-6
         )
         # method = "r2"
         assert model.score(method="r2") == pytest.approx(0.219816244842152, abs=1e-6)
+        # method = "r2a"
+        assert model.score(method="r2a") == pytest.approx(0.21945577183037412, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.219816244842147, abs=1e-6)
 

@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings
+import random, time, shutil, re, decimal, warnings, pickle
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -5993,9 +5993,7 @@ vcolumns : vcolumn
         """
         check_types([("offset", offset, [int, float],)])
         save = self._VERTICAPY_VARIABLES_["saving"][offset]
-        vdf = {}
-        exec(save, globals(), vdf)
-        vdf = vdf["vdf_save"]
+        vdf = pickle.loads(save)
         vdf._VERTICAPY_VARIABLES_["cursor"] = self._VERTICAPY_VARIABLES_["cursor"]
         return vdf
 
@@ -7560,54 +7558,9 @@ vcolumns : vcolumn
     --------
     vDataFrame.load : Loads a saving.
         """
-        save = 'vdf_save = vDataFrame("", empty = True)'
-        save += "\nvdf_save._VERTICAPY_VARIABLES_[\"dsn\"] = '{}'".format(
-            self._VERTICAPY_VARIABLES_["dsn"].replace("'", "\\'")
-        )
-        save += "\nvdf_save._VERTICAPY_VARIABLES_[\"input_relation\"] = '{}'".format(
-            self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "\\'")
-        )
-        save += "\nvdf_save._VERTICAPY_VARIABLES_[\"main_relation\"] = '{}'".format(
-            self._VERTICAPY_VARIABLES_["main_relation"].replace("'", "\\'")
-        )
-        save += "\nvdf_save._VERTICAPY_VARIABLES_[\"schema\"] = '{}'".format(
-            self._VERTICAPY_VARIABLES_["schema"].replace("'", "\\'")
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["columns"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["columns"]
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["exclude_columns"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["exclude_columns"]
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["where"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["where"]
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["order_by"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["order_by"]
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["history"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["history"]
-        )
-        save += '\nvdf_save._VERTICAPY_VARIABLES_["saving"] = {}'.format(
-            self._VERTICAPY_VARIABLES_["saving"]
-        )
-        save += "\nvdf_save._VERTICAPY_VARIABLES_[\"schema_writing\"] = '{}'".format(
-            self._VERTICAPY_VARIABLES_["schema_writing"].replace("'", "\\'")
-        )
-        columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
-        for column in columns:
-            save += "\nsave_vColumn = vColumn('{}', parent = vdf_save, transformations = {}, catalog = {})".format(
-                column.replace("'", "\\'"),
-                self[column].transformations,
-                self[column].catalog,
-            )
-            save += "\nsetattr(vdf_save, '{}', save_vColumn)".format(
-                column.replace("'", "\\'")
-            )
-            save += "\nsetattr(vdf_save, '{}', save_vColumn)".format(
-                column[1:-1].replace("'", "\\'")
-            )
-        self._VERTICAPY_VARIABLES_["saving"] += [save]
+        vdf = self.copy()
+        vdf._VERTICAPY_VARIABLES_["cursor"] = None
+        self._VERTICAPY_VARIABLES_["saving"] += [pickle.dumps(vdf)]
         return self
 
     # ---#
@@ -8852,32 +8805,25 @@ vcolumns : vcolumn
         return df
 
     # ---#
-    def to_vdf(self, name: str):
+    def to_pickle(self, name: str):
         """
     ---------------------------------------------------------------------------
-    Saves the vDataFrame to a .vdf text file.
-    The saving can be loaded using the 'read_vdf' function.
+    Saves the vDataFrame to a Python pickle file.
 
     Parameters
     ----------
     name: str
-        Name of the file. Be careful: if a VDF file with the same name exists, it 
+        Name of the file. Be careful: if a file with the same name exists, it 
         will over-write it.
 
     Returns
     -------
     vDataFrame
         self
-
-    See Also
-    --------
-    read_vdf : Loads a .vdf text file and returns a vDataFrame.
         """
-        check_types([("name", name, [str],)])
-        self.save()
-        file = open("{}.vdf".format(name), "w+")
-        file.write(self._VERTICAPY_VARIABLES_["saving"][-1])
-        file.close()
+        vdf = self.copy()
+        vdf._VERTICAPY_VARIABLES_["cursor"] = None
+        pickle.dump(vdf, open(name, 'wb'))
         return self
 
     # ---#

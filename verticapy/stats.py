@@ -335,28 +335,119 @@ str_sql
 
 # Aggregate & Analytical functions
 # ---#
-def apply(func: str, *args):
+def apply(func: str, *args, **kwargs):
     """
 ---------------------------------------------------------------------------
 Applies any Vertica function on the input expressions.
+Please check-out Vertica Documentation to see the available functions:
+
+https://www.vertica.com/docs/10.0.x/HTML/Content/Authoring/
+SQLReferenceManual/Functions/SQLFunctions.htm?tocpath=
+SQL%20Reference%20Manual|SQL%20Functions|_____0
 
 Parameters
 ----------
-func: str
-    Vertica Function.
-args: object
+func : str
+    Vertica Function. In case of geospatial, you can write the function name
+    without the prefix ST_ or STV_.
+args : object, optional
     Expressions.
+kwargs: object, optional
+    Optional Parameters Expressions.
 
 Returns
 -------
 str_sql
     SQL expression.
     """
+    ST_f = ["Area",
+            "AsBinary",
+            "Boundary",
+            "Buffer",
+            "Centroid",
+            "Contains",
+            "ConvexHull",
+            "Crosses",
+            "Difference",
+            "Disjoint",
+            "Distance",
+            "Envelope",
+            "Equals",
+            "GeographyFromText",
+            "GeographyFromWKB",
+            "GeoHash",
+            "GeometryN",
+            "GeometryType",
+            "GeomFromGeoHash",
+            "GeomFromText",
+            "GeomFromWKB",
+            "Intersection",
+            "Intersects",
+            "IsEmpty",
+            "IsSimple",
+            "IsValid",
+            "Length",
+            "NumGeometries",
+            "NumPoints",
+            "Overlaps",
+            "PointFromGeoHash",
+            "PointN",
+            "Relate",
+            "SRID",
+            "SymDifference",
+            "Touches",
+            "Transform",
+            "Union",
+            "Within",
+            "X",
+            "XMax",
+            "XMin",
+            "YMax",
+            "YMin",
+            "Y"]
+    STV_f = ["AsGeoJSON",
+             "Create_Index",
+             "Describe_Index",
+             "Drop_Index",
+             "DWithin",
+             "Export2Shapefile",
+             "Extent",
+             "ForceLHR",
+             "Geography",
+             "GeographyPoint",
+             "Geometry",
+             "GeometryPoint",
+             "GetExportShapefileDirectory",
+             "Intersect",
+             "IsValidReason",
+             "LineStringPoint",
+             "MemSize",
+             "NN",
+             "PolygonPoint",
+             "Reverse",
+             "Rename_Index",
+             "Refresh_Index",
+             "SetExportShapefileDirectory",
+             "ShpSource",
+             "ShpParser",
+             "ShpCreateTable"]
+    ST_f_lower = [elem.lower() for elem in ST_f]
+    STV_f_lower = [elem.lower() for elem in STV_f]
+    if func.lower() in ST_f_lower:
+        func = "ST_" + func
+    elif func.lower() in STV_f_lower:
+        func = "STV_" + func
     if len(args) > 0:
-        expr = ", ".join([format_magic(elem) for elem in args])
+        expr = ", ".join([str(format_magic(elem)) for elem in args])
     else:
         expr = ""
-    return str_sql("{}({})".format(func.upper(), expr))
+    if len(kwargs) > 0:
+        param_expr = ", ".join([str((elem + " = ") + str(format_magic(kwargs[elem]))) for elem in kwargs])
+    else:
+        param_expr = ""
+    if (param_expr):
+        param_expr = " USING PARAMETERS " + param_expr
+    return str_sql("{}({}{})".format(func.upper(), expr, param_expr))
 
 
 # ---#
