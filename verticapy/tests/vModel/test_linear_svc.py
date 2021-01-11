@@ -133,7 +133,7 @@ class TestLinearSVC:
 
         # 'LinearSVC' object (md) has no attribute 'predict_proba'
 
-    @pytest.mark.skipif(sys.version_info < (3, 7), reason="shap doesn't want to work on python3.6")
+    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)

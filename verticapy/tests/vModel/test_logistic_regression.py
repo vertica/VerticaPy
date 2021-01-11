@@ -140,7 +140,7 @@ class TestLogisticRegression:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict_proba([[11.0, 1993.0]])[0][1])
 
-    @pytest.mark.skipif(sys.version_info < (3, 7), reason="shap doesn't want to work on python3.6")
+    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
