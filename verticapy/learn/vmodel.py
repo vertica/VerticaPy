@@ -2395,7 +2395,7 @@ class MulticlassClassifier(Classifier):
         )
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+        return classification_report(cutoff=cutoff, estimator=self, labels=labels, cursor=self.cursor)
 
     # ---#
     def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):

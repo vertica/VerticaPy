@@ -428,7 +428,7 @@ tablesample
     if not(schema_writing):
         schema_writing = "public"
     name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
-    model = LinearRegression(name)
+    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score("r2")
@@ -500,7 +500,7 @@ tablesample
     if not(schema_writing):
         schema_writing = "public"
     name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
-    model = LinearRegression(name)
+    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     vdf_copy = vdf.copy()
     vdf_copy["VERTICAPY_TEMP_eps2"] = vdf_copy[eps] ** 2
     try:
@@ -593,7 +593,7 @@ tablesample
     if not(schema_writing):
         schema_writing = "public"
     name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
-    model = LinearRegression(name)
+    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
@@ -666,7 +666,7 @@ tablesample
     if not(schema_writing):
         schema_writing = "public"
     name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
-    model = LinearRegression(name)
+    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         model.fit(vdf_white, variables_names, "VERTICAPY_TEMP_eps2")
         R2 = model.score("r2")
