@@ -168,7 +168,7 @@ class TestLinearSVR:
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219641599658795, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.61156861855927, abs=1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.49469564704003, abs=1e-6)
+        assert reg_rep["value"][2] == pytest.approx(0.49469564704003, abs=1e-3)
         assert reg_rep["value"][3] == pytest.approx(0.608521836351418, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.594990575399229, abs=1e-6)
         assert reg_rep["value"][5] == pytest.approx(0.219640889304706, abs=1e-6)
@@ -179,7 +179,7 @@ class TestLinearSVR:
         # method = "mae"
         assert model.score(method="mae") == pytest.approx(0.608521836351418, abs=1e-6)
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.49469564704003, abs=1e-6)
+        assert model.score(method="median") == pytest.approx(0.49469564704003, abs=1e-3)
         # method = "mse"
         assert model.score(method="mse") == pytest.approx(0.608521836351418, abs=1e-6)
         # method = "msl"

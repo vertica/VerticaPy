@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, math
+import pytest, warnings, math, sys
 from verticapy.learn.svm import LinearSVC
 from verticapy import drop_table
 import matplotlib.pyplot as plt
