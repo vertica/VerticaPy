@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import pytest, sys
 from verticapy.learn.linear_model import ElasticNet
 from verticapy import drop_table
 import matplotlib.pyplot as plt
@@ -158,7 +158,7 @@ class TestElasticNet:
         model.predict(
             winequality_copy,
             X=["total_sulfur_dioxide", "residual_sugar", "alcohol"],
-            name="predicted_quality",
+           name="predicted_quality",
         )
 
         assert winequality_copy["predicted_quality"].mean() == pytest.approx(

@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
+import pytest, warnings, sys
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import drop_table
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ def model(base, winequality_vd):
     model_class.drop()
 
 
-class TestLogisticRegression:
+class TestLinearRegression:
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'linreg_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
