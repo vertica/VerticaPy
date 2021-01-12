@@ -131,6 +131,8 @@ steps: list
         """
         if isinstance(input_relation, str):
             vdf = vdf_from_relation(relation=input_relation, cursor=self.steps[0][1].cursor)
+        else:
+            vdf = input_relation
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -139,8 +141,8 @@ steps: list
             else:
                 step[1].fit(current_vdf, X_new)
             if (idx < len(self.steps) - 1):
-                X_new = step[1].deployStdSQL(return_names = True)
                 current_vdf = step[1].transform(current_vdf, X_new)
+                X_new = step[1].get_names()
         self.input_relation = self.steps[0][1].input_relation
         self.X = [column for column in self.steps[0][1].X]
         try:
@@ -207,7 +209,7 @@ steps: list
                 step[1].predict(current_vdf, X_new, name = name)
             else:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].deployStdSQL(return_names = True)
+                X_new = step[1].get_names()
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
@@ -287,9 +289,49 @@ steps: list
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             current_vdf = step[1].transform(current_vdf, X_new)
-            X_new = step[1].deployStdSQL(return_names = True)
+            X_new = step[1].get_names()
             X_all += X_new
-        return current_vdf[vdf.get_columns() + X_new]
+        return current_vdf
+
+    # ---#
+    def inverse_transform(self, 
+                          vdf: (str, vDataFrame) = None, 
+                          X: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Applies the inverse model transformation on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame, optional
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
+    X: list, optional
+        List of the input vcolumns.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model inverse transformation.
+        """
+        try:
+            for idx in range(len(self.steps)):
+                self.steps[idx][1].inverse_transform
+        except:
+            raise ModelError("The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(idx))
+        if not(vdf):
+            vdf = self.input_relation
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+        X_new, X_all = [elem for elem in X], []
+        current_vdf = vdf
+        for idx in range(1, len(self.steps) + 1):
+            step = self.steps[-idx]
+            current_vdf = step[1].inverse_transform(current_vdf, X_new)
+            X_new = step[1].get_names(inverse = True)
+            X_all += X_new
+        return current_vdf
 
     # ---#
     def to_sklearn(self):

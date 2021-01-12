@@ -353,7 +353,12 @@ def default_model_parameters(model_type: str):
     elif model_type in ("PCA"):
         return {"n_components": 0, "scale": False, "method": "lapack"}
     elif model_type in ("OneHotEncoder"):
-        return {"extra_levels": {}}
+        return {"extra_levels": {},
+                "drop_first": True,
+                "ignore_null": True,
+                "separator": '_',
+                "column_naming": "indices",
+                "null_column_name": "null"}
     elif model_type in ("Normalizer"):
         return {"method": "zscore"}
     elif model_type in ("LinearSVR"):
