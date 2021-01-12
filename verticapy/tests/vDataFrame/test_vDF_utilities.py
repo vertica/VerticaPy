@@ -13,7 +13,7 @@
 
 import pytest, os, warnings
 from math import ceil, floor
-from verticapy import vDataFrame, get_session, read_vdf, drop_table, drop_view
+from verticapy import vDataFrame, get_session, drop_table, drop_view
 from verticapy import set_option
 import verticapy.stats as st
 
@@ -305,27 +305,19 @@ class TestvDFUtilities:
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
 
-    @pytest.mark.skip(reason="geopandas doesn't want to work on python3.6")
+    def test_vDF_to_pickle(self, titanic_vd):
+        result = titanic_vd.select(["age", "survived"])[:20].to_pickle("save.p")
+        import pickle
+        result_tmp = pickle.load(open("save.p", "rb"))
+        result_tmp.set_cursor(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        result_tmp.shape == (20, 2)
+
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas
 
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)
-
-    def test_vDF_to_vdf(self, titanic_vd):
-        session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-        titanic_vd.to_vdf("verticapy_test_{}".format(session_id))
-        try:
-            result = read_vdf(
-                "verticapy_test_{}.vdf".format(session_id),
-                cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
-            )
-        except:
-            result = False
-        os.remove("verticapy_test_{}.vdf".format(session_id))
-        assert isinstance(result, vDataFrame)
-        assert result.shape() == (1234, 14)
 
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()

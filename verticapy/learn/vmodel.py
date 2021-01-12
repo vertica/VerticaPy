@@ -1866,7 +1866,7 @@ class Supervised(vModel):
     ):
         """
 	---------------------------------------------------------------------------
-	Trains the self.
+	Trains the model.
 
 	Parameters
 	----------
@@ -1877,7 +1877,7 @@ class Supervised(vModel):
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the self.
+		Relation to use to test the model.
 
 	Returns
 	-------
@@ -2395,7 +2395,7 @@ class MulticlassClassifier(Classifier):
         )
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+        return classification_report(cutoff=cutoff, estimator=self, labels=labels, cursor=self.cursor)
 
     # ---#
     def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
@@ -2907,11 +2907,19 @@ class Regressor(Supervised):
             return vdf.copy().eval(name, self.deploySQL(X=X))
 
     # ---#
-    def regression_report(self):
+    def regression_report(self, method: str = "metrics"):
         """
 	---------------------------------------------------------------------------
 	Computes a regression report using multiple metrics to evaluate the model
 	(r2, mse, max error...). 
+
+    Parameters
+    ----------
+    method: str, optional
+        The method to use to compute the regression report.
+            anova   : Computes the model ANOVA table.
+            details : Computes the model details.
+            metrics : Computes the model different metrics.
 
 	Returns
 	-------
@@ -2919,6 +2927,9 @@ class Regressor(Supervised):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
+        check_types([("method", method, ["anova", "metrics", "details"],)])
+        if method in ("anova", "details") and self.type in ("SARIMAX", "VAR", "KernelDensity"):
+            raise ModelError("'{}' method is not available for {} models.".format(method, self.type))
         prediction = self.deploySQL()
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
@@ -2953,20 +2964,42 @@ class Regressor(Supervised):
                     "median_absolute_error",
                     "mean_absolute_error",
                     "mean_squared_error",
+                    "root_mean_squared_error",
                     "r2",
+                    "r2_adj",
                 ]
             }
             result = tablesample(values)
             for idx, y in enumerate(self.X):
                 result.values[y] = regression_report(
-                    y, self.deploySQL()[idx], relation, self.cursor
+                    y, self.deploySQL()[idx], relation, self.cursor, len(self.X) * self.parameters["p"]
                 ).values["value"]
             return result
         elif self.type == "KernelDensity":
             test_relation = self.map
         else:
             test_relation = self.test_relation
-        return regression_report(self.y, prediction, test_relation, self.cursor)
+        if method == "metrics":
+            return regression_report(self.y, prediction, test_relation, self.cursor, len(self.X))
+        elif method == "anova":
+            return anova_table(self.y, prediction, test_relation, len(self.X), self.cursor)
+        elif method == "details":
+            vdf = vdf_from_relation("(SELECT {} FROM ".format(self.y) + self.input_relation + ") VERTICAPY_SUBTABLE", cursor = self.cursor)
+            n = vdf[self.y].count()
+            kurt = vdf[self.y].kurt()
+            skew = vdf[self.y].skew()
+            jb = vdf[self.y].agg(["jb"])[self.y][0]
+            R2 = self.score()
+            R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
+            anova_T = anova_table(self.y, prediction, test_relation, len(self.X), self.cursor)
+            F = anova_T["F"][0]
+            p_F = anova_T["p_value"][0]
+            return tablesample(
+                {
+                    "index": ["Dep. Variable", "Model", "No. Observations", "No. Predictors", "R-squared", "Adj. R-squared", "F-statistic", "Prob (F-statistic)", "Kurtosis", "Skewness", "Jarque-Bera (JB)",],
+                    "value": [self.y, self.type, n, len(self.X), R2, R2_adj, F, p_F, kurt, skew, jb,],
+                }
+            )
 
     # ---#
     def score(self, method: str = "r2"):
@@ -2984,6 +3017,8 @@ class Regressor(Supervised):
 			mse	   : Mean Squared Error
 			msle   : Mean Squared Log Error
 			r2	   : R squared coefficient
+            r2a    : R2 adjusted
+            rmse   : Root Mean Squared Error
 			var	   : Explained Variance 
 
 	Returns
@@ -2992,6 +3027,17 @@ class Regressor(Supervised):
 		score
 		"""
         check_types([("method", method, [str],)])
+        method = method.lower()
+        if method in ("r2a", "r2adj", "r2adjusted"):
+            method = "r2"
+            adj = True
+        else:
+            adj = False
+        if method in ("rmse",):
+            method = "mse"
+            root = True
+        else:
+            root = False
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
             test_relation = "(SELECT {} AS prediction, {} FROM {}) VERTICAPY_SUBTABLE".format(
@@ -3029,10 +3075,10 @@ class Regressor(Supervised):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        r2_score(y, self.deploySQL()[idx], relation, self.cursor)
+                        r2_score(y, self.deploySQL()[idx], relation, self.cursor, len(self.X) * self.parameters["p"], adj)
                     ]
             else:
-                return r2_score(self.y, prediction, test_relation, self.cursor)
+                return r2_score(self.y, prediction, test_relation, self.cursor, len(self.X), adj)
         elif method in ("mae", "mean_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
@@ -3049,13 +3095,13 @@ class Regressor(Supervised):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        mean_absolute_error(
-                            y, self.deploySQL()[idx], relation, self.cursor
+                        mean_squared_error(
+                            y, self.deploySQL()[idx], relation, self.cursor, root
                         )
                     ]
             else:
-                return mean_absolute_error(
-                    self.y, prediction, test_relation, self.cursor
+                return mean_squared_error(
+                    self.y, prediction, test_relation, self.cursor, root
                 )
         elif method in ("msle", "mean_squared_log_error"):
             if self.type == "VAR":
@@ -3112,10 +3158,92 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
+    def deployStdSQL(self, X: list = [], return_names: bool = False):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Standard SQL code needed to deploy the model.
+
+    Parameters
+    ----------
+    X: list, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+    return_names: bool, optional
+        returns the list of the transformation names.
+
+    Returns
+    -------
+    list
+        the SQL code needed to deploy the model.
+        """
+        if not X: X = self.X
+        L = []
+        names = []
+        if self.type == "Normalizer":
+            params = self.get_attr("details")
+            for i in range(len(X)):
+                if self.parameters["method"] == "zscore":
+                    std = params["std_dev"][i]
+                    center = params["avg"][i]
+                elif self.parameters["method"] == "minmax":
+                    std = params["max"][i] - params["min"][i]
+                    center = params["min"][i]
+                elif self.parameters["method"] == "robust_zscore":
+                    std = params["mad"][i]
+                    center = params["median"][i]
+                L += ["({} - {}) / {} AS \"{}_{}\"".format(X[i], center, std, self.parameters["method"], str_column(X[i])[1:-1])]
+                names += ["\"{}_{}\"".format(self.parameters["method"], str_column(X[i])[1:-1])]
+        elif self.type == "OneHotEncoder":
+            vdf = vdf_from_relation(self.input_relation, cursor = self.cursor)
+            params = self.param_
+            categories = []
+            for column in self.X:
+                idx = []
+                for i in range(len(params["category_name"])):
+                    if str_column(params["category_name"][i]) == str_column(column):
+                        idx += [i]
+                cat_tmp = []
+                for i in idx:
+                    elem = params["category_level"][i]
+                    if vdf[column].dtype() == "int":
+                        try:
+                            elem = int(elem)
+                        except:
+                            pass
+                    cat_tmp += [elem]
+                categories += [cat_tmp]
+            for idx, elem in enumerate(categories):
+                for item in elem:
+                    L += ["DECODE({}, {}, 1, 0) AS \"{}_{}\"".format(X[idx], format_magic(item), str_column(X[idx])[1:-1], str(item).replace('"', ''))]
+                    names += ["\"{}_{}\"".format(str_column(X[i])[1:-1], str(item).replace('"', ''))]
+        elif self.type in ("PCA"):
+            all_pc = self.get_attr("principal_components").values
+            all_mean = self.get_attr("columns")["mean"]
+            for idx, pc in enumerate(all_pc):
+                if idx > 0:
+                    L_tmp = []
+                    for i in range(len(self.X)):
+                        L_tmp += ["({} - {}) * {}".format(X[i], all_mean[i], all_pc[pc][i])]
+                    L += [" + ".join(L_tmp) + " AS col{}".format(idx)]
+                    names += ["col{}".format(idx)]
+        elif self.type in ("SVD"):
+            all_pc = self.get_attr("right_singular_vectors").values
+            for idx, pc in enumerate(all_pc):
+                if idx > 0:
+                    L_tmp = []
+                    for i in range(len(self.X)):
+                        L_tmp += ["({}) * {}".format(X[i], all_pc[pc][i])]
+                    L += [" + ".join(L_tmp) + " AS col{}".format(idx)]
+                    names += ["col{}".format(idx)]
+        if return_names:
+            return names
+        return L
+
+    # ---#
     def fit(self, input_relation: (str, vDataFrame), X: list = []):
         """
 	---------------------------------------------------------------------------
-	Trains the self.
+	Trains the model.
 
 	Parameters
 	----------
@@ -3516,7 +3644,6 @@ class Decomposition(Unsupervised):
         X: list = [],
         n_components: int = 0,
         cutoff: float = 1,
-        key_columns: list = [],
     ):
         """
 	---------------------------------------------------------------------------
@@ -3536,8 +3663,6 @@ class Decomposition(Unsupervised):
 	cutoff: float, optional
 		Specifies the minimum accumulated explained variance. Components are 
 		taken until the accumulated explained variance reaches this value.
-	key_columns: list, optional
-		Predictors to keep unchanged during the transformation.
 
 	Returns
 	-------
@@ -3548,12 +3673,11 @@ class Decomposition(Unsupervised):
             [
                 ("n_components", n_components, [int, float],),
                 ("cutoff", cutoff, [int, float],),
-                ("key_columns", key_columns, [list],),
                 ("X", X, [list],),
             ]
         )
         if vdf:
-            check_types([("vdf", vdf, [str, vDataFrame],),],)
+            check_types([("vdf", vdf, [vDataFrame, str],),],)
             if isinstance(vdf, str):
                 vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
@@ -3561,18 +3685,32 @@ class Decomposition(Unsupervised):
         else:
             relation = self.input_relation
             X = [str_column(elem) for elem in X]
-        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deploySQL(n_components, cutoff, key_columns, self.X if not (X) else X),
-            relation,
+        if 0 <= cutoff <= 1:
+            acc_variance = self.get_attr("singular_values")["accumulated_explained_variance"]
+            i = 0
+            acc = 0
+            while acc < cutoff:
+                acc = acc_variance[i]
+                i += 1
+            n_components = i + 1
+        elif n_components <= 0:
+            n_components = len(self.get_attr("principal_components").values) - 1
+        return vdf_from_relation(
+            "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
+                ", ".join(self.deployStdSQL(X)[:n_components]), relation
+            ),
+            self.name,
+            self.cursor,
         )
-        return vdf_from_relation(main_relation, "Transformation", self.cursor,)
 
 
 # ---#
 class Preprocessing(Unsupervised):
 
     # ---#
-    def transform(self, vdf: (str, vDataFrame) = None, X: list = []):
+    def transform(self, 
+                  vdf: (str, vDataFrame) = None, 
+                  X: list = []):
         """
 	---------------------------------------------------------------------------
 	Applies the model on a vDataFrame.
@@ -3593,7 +3731,7 @@ class Preprocessing(Unsupervised):
 		"""
         check_types([("X", X, [list],)])
         if vdf:
-            check_types([("vdf", vdf, [vDataFrame],),],)
+            check_types([("vdf", vdf, [vDataFrame, str],),],)
             if isinstance(vdf, str):
                 vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
             X = vdf_columns_names(X, vdf)
@@ -3602,13 +3740,12 @@ class Preprocessing(Unsupervised):
             relation = self.input_relation
             X = [str_column(elem) for elem in X]
         return vdf_from_relation(
-            "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deploySQL(self.X if not (X) else X), relation
+            "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
+                ", ".join(self.deployStdSQL(X)), relation
             ),
             self.name,
             self.cursor,
         )
-
 
 # ---#
 class Clustering(Unsupervised):

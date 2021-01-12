@@ -142,7 +142,7 @@ class TestRFR:
     def test_get_plot(self):
         pass
 
-    @pytest.mark.xfail(reason = "ValueError: could not convert string to float: 'Male'")
+    @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
         model.cursor.execute(
@@ -153,7 +153,7 @@ class TestRFR:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([['Male', 0, 'Cheap', 'Low']])[0])
 
-    @pytest.mark.skip(reason="The method to_shapExplainer is not available for model type RandomForestRegressor")
+    @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.81837771)
@@ -179,14 +179,33 @@ class TestRFR:
             "median_absolute_error",
             "mean_absolute_error",
             "mean_squared_error",
+            "root_mean_squared_error",
             "r2",
+            "r2_adj",
         ]
         assert reg_rep["value"][0] == pytest.approx(1.0, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(0.0, abs=1e-6)
         assert reg_rep["value"][2] == pytest.approx(0.0, abs=1e-6)
         assert reg_rep["value"][3] == pytest.approx(0.0, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.0, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(1.0, abs=1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.0, abs=1e-6)
+        assert reg_rep["value"][6] == pytest.approx(1.0, abs=1e-6)
+        assert reg_rep["value"][7] == pytest.approx(1.0, abs=1e-6)
+
+        reg_rep_details = model.regression_report("details")
+        assert reg_rep_details["value"][2:] == [10.0,
+                                                4,
+                                                pytest.approx(1.0),
+                                                pytest.approx(1.0),
+                                                float("inf"),
+                                                pytest.approx(0.0),
+                                                pytest.approx(-1.73372940858763),
+                                                pytest.approx(0.223450528977454),
+                                                pytest.approx(3.76564442746721)]
+
+        reg_rep_anova = model.regression_report("anova")
+        assert reg_rep_anova["SS"] == [pytest.approx(6.9), pytest.approx(0.0), pytest.approx(6.9)]
+        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
 
     def test_score(self, model):
         # method = "max"
@@ -197,10 +216,14 @@ class TestRFR:
         assert model.score(method="median") == pytest.approx(0, abs=1e-6)
         # method = "mse"
         assert model.score(method="mse") == pytest.approx(0.0, abs=1e-6)
+        # method = "rmse"
+        assert model.score(method="rmse") == pytest.approx(0.0, abs=1e-6)
         # method = "msl"
         assert model.score(method="msle") == pytest.approx(0.0, abs=1e-6)
         # method = "r2"
         assert model.score() == pytest.approx(1.0, abs=1e-6)
+        # method = "r2a"
+        assert model.score(method="r2a") == pytest.approx(1.0, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(1.0, abs=1e-6)
 

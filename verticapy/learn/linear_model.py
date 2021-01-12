@@ -283,7 +283,7 @@ l1_ratio: float, optional
             for elem in ["l1_ratio", "C"]:
                 del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
-        elif penalty.lower() == "l2":
+        elif penalty.lower() in ("l1", "l2"):
             for elem in ["l1_ratio"]:
                 del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])

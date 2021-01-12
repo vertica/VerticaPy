@@ -1549,44 +1549,6 @@ read_csv : Ingests a CSV file in the Vertica DB.
         return vDataFrame(table_name, cursor, schema=schema)
 
 
-# ---#
-def read_vdf(path: str, cursor=None):
-    """
----------------------------------------------------------------------------
-Reads a VDF file and create the associated vDataFrame.
-
-Parameters
-----------
-path: str
-	Absolute path where the VDF file is located.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-
-Returns
--------
-vDataFrame
-	The vDataFrame associated to the vdf file.
-
-See Also
---------
-vDataFrame.to_vdf : Saves the vDataFrame to a .vdf text file.
-vdf_from_relation : Creates a vDataFrame based on a customized relation.
-	"""
-    check_types([("path", path, [str],)])
-    cursor = check_cursor(cursor)[0]
-    file = open(path, "r")
-    save = (
-        "from verticapy import vDataFrame\nfrom verticapy.vcolumn import vColumn\n"
-        + "".join(file.readlines())
-    )
-    file.close()
-    vdf = {}
-    exec(save, globals(), vdf)
-    vdf = vdf["vdf_save"]
-    vdf._VERTICAPY_VARIABLES_["cursor"] = cursor
-    return vdf
-
-
 def set_option(option: str, value: (bool, int, str) = None):
     """
     ---------------------------------------------------------------------------

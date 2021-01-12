@@ -3297,6 +3297,7 @@ Attributes
             from verticapy.plot import gen_colors
 
             color = gen_colors()[0]
+        columns_check([ts], self.parent)
         ts = vdf_columns_names([ts], self.parent)[0]
         if by:
             columns_check([by], self.parent)

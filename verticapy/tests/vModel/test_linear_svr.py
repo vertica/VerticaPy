@@ -138,7 +138,6 @@ class TestLinearSVR:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.819113657580594)
@@ -164,14 +163,33 @@ class TestLinearSVR:
             "median_absolute_error",
             "mean_absolute_error",
             "mean_squared_error",
+            "root_mean_squared_error",
             "r2",
+            "r2_adj",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219641599658795, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.61156861855927, abs=1e-6)
         assert reg_rep["value"][2] == pytest.approx(0.49469564704003, abs=1e-3)
         assert reg_rep["value"][3] == pytest.approx(0.608521836351418, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.594990575399229, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.219640889304706, abs=1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.7713563219415707, abs=1e-6)
+        assert reg_rep["value"][6] == pytest.approx(0.219640889304706, abs=1e-6)
+        assert reg_rep["value"][7] == pytest.approx(0.21928033527235014, abs=1e-6)
+
+        reg_rep_details = model.regression_report("details")
+        assert reg_rep_details["value"][2:] == [6497.0,
+                                                3,
+                                                pytest.approx(0.219640889304706),
+                                                pytest.approx(0.21928033527235014),
+                                                pytest.approx(640.932567311251),
+                                                pytest.approx(0.0),
+                                                pytest.approx(0.232322269343305),
+                                                pytest.approx(0.189622693372695),
+                                                pytest.approx(53.1115447611131)]
+
+        reg_rep_anova = model.regression_report("anova")
+        assert reg_rep_anova["SS"] == [pytest.approx(1144.75129867412), pytest.approx(3865.65376836879), pytest.approx(4953.68570109281)]
+        assert reg_rep_anova["MS"][:-1] == [pytest.approx(381.5837662247067), pytest.approx(0.595357118184012)]
 
     def test_score(self, model):
         # method = "max"
@@ -181,11 +199,15 @@ class TestLinearSVR:
         # method = "median"
         assert model.score(method="median") == pytest.approx(0.49469564704003, abs=1e-3)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.608521836351418, abs=1e-6)
+        assert model.score(method="mse") == pytest.approx(0.594990575399229, abs=1e-6)
+        # method = "rmse"
+        assert model.score(method="rmse") == pytest.approx(0.7713563219415712, abs=1e-6)
         # method = "msl"
         assert model.score(method="msle") == pytest.approx(0.00251024411036473, abs=1e-6)
         # method = "r2"
         assert model.score() == pytest.approx(0.219640889304706, abs=1e-6)
+        # method = "r2a"
+        assert model.score(method="r2a") == pytest.approx(0.21928033527235014, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.219641599658795, abs=1e-6)
 

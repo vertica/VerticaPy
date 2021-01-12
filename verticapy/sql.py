@@ -175,7 +175,6 @@ def sql(line, cell=""):
                 else:
                     result = readSQL(query, cursor=cursor, limit=options["limit"],)
             except:
-                raise
                 try:
                     cursor.execute(query)
                     final_result = cursor.fetchone()

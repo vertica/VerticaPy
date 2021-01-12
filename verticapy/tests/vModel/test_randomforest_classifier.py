@@ -67,26 +67,26 @@ def model(base, rfc_data_vd):
 
 
 class TestRFC:
-    @pytest.mark.xfail
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788)
-        assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491)
-        assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258)
-        assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667)
-        assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.30906081919735207)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453)
-        assert cls_rep1["csi"][0] == pytest.approx(0.1704312114989733)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
+        assert cls_rep1["auc"][0] == pytest.approx(1.0)
+        assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
+        assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
+        assert cls_rep1["log_loss"][0] == pytest.approx(0.0)
+        assert cls_rep1["precision"][0] == pytest.approx(1.0)
+        assert cls_rep1["recall"][0] == pytest.approx(1.0)
+        assert cls_rep1["f1_score"][0] == pytest.approx(1.0)
+        assert cls_rep1["mcc"][0] == pytest.approx(1.0)
+        assert cls_rep1["informedness"][0] == pytest.approx(1.0)
+        assert cls_rep1["markedness"][0] == pytest.approx(1.0)
+        assert cls_rep1["csi"][0] == pytest.approx(1.0)
+        assert cls_rep1["cutoff"][0] == pytest.approx(0.999)
 
-        cls_rep2 = model.classification_report(cutoff=0.2).transpose()
+        cls_rep2 = model.classification_report(cutoff=0.999).transpose()
 
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
+        assert cls_rep2["cutoff"][0] == pytest.approx(0.999)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -161,7 +161,7 @@ class TestRFC:
 
         # 'predict_proba'
 
-    @pytest.mark.skip(reason="to_shapExplainer is not available for RandomForestClassifier")
+    @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
