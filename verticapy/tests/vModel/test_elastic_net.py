@@ -148,7 +148,6 @@ class TestElasticNet:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.81837771)
@@ -174,14 +173,33 @@ class TestElasticNet:
             "median_absolute_error",
             "mean_absolute_error",
             "mean_squared_error",
+            "root_mean_squared_error",
             "r2",
+            "r2_adj",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.001610, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.192849, abs=1e-6)
         assert reg_rep["value"][2] == pytest.approx(0.788321, abs=1e-6)
         assert reg_rep["value"][3] == pytest.approx(0.684299, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(0.761229, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.001610, abs=1e-6)
+        assert reg_rep["value"][5] == pytest.approx(0.872484, abs=1e-6)
+        assert reg_rep["value"][6] == pytest.approx(0.001610, abs=1e-6)
+        assert reg_rep["value"][7] == pytest.approx(0.001148, abs=1e-6)
+
+        reg_rep_details = model.regression_report("details")
+        assert reg_rep_details["value"][2:] == [6497.0,
+                                                3,
+                                                pytest.approx(0.00161000676361089),
+                                                pytest.approx(0.001148714605947454),
+                                                pytest.approx(2.116870802238774),
+                                                pytest.approx(0.0958537016435304),
+                                                pytest.approx(0.232322269343305),
+                                                pytest.approx(0.189622693372695),
+                                                pytest.approx(53.1115447611131)]
+
+        reg_rep_anova = model.regression_report("anova")
+        assert reg_rep_anova["SS"] == [pytest.approx(4.83725377631033), pytest.approx(4945.71023360928), pytest.approx(4953.68570109281)]
+        assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.6124179254367768), pytest.approx(0.7616987884813307)]
 
     def test_score(self, model):
         # method = "max"
@@ -191,11 +209,15 @@ class TestElasticNet:
         # method = "median"
         assert model.score(method="median") == pytest.approx(0.788321, abs=1e-6)
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.684299, abs=1e-6)
+        assert model.score(method="mse") == pytest.approx(0.761229, abs=1e-6)
+        # method = "rmse"
+        assert model.score(method="rmse") == pytest.approx(0.8724848619460168, abs=1e-6)
         # method = "msl"
         assert model.score(method="msle") == pytest.approx(0.003171, abs=1e-6)
         # method = "r2"
         assert model.score(method="r2") == pytest.approx(0.001610, abs=1e-6)
+        # method = "r2a"
+        assert model.score(method="r2a") == pytest.approx(0.001148714605947454, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.001610, abs=1e-6)
 

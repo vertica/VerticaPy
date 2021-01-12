@@ -82,7 +82,7 @@ def logit_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    cursor = check_cursor(cursor)[0]
+    cursor, conn = check_cursor(cursor)[0:2]
 
     def logit(x):
         return 1 / (1 + math.exp(-x))
