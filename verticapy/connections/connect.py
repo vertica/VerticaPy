@@ -225,7 +225,7 @@ dict
         options = confparser.items(section)
         conn_info = {"port": 5433, "user": "dbadmin"}
         for elem in options:
-            if elem[0].lower() == "servername":
+            if elem[0].lower() in ("servername", "server"):
                 conn_info["host"] = elem[1]
             elif elem[0].lower() == "uid":
                 conn_info["user"] = elem[1]
