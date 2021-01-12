@@ -15,6 +15,9 @@
 import collections
 from setuptools import setup, find_packages
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 
 ReqOpts = collections.namedtuple('ReqOpts', ['skip_requirements_regex', 'default_vcs'])
 
@@ -23,10 +26,12 @@ setup(
     name='VerticaPy',
     version='0.4.0',
     description='A Python library that exposes sci-kit like functionality to conduct data science projects on data stored in Vertica.',
+    long_description = long_description,
+    long_description_content_type = "text/markdown",
     author='Badr Ouali',
     author_email='badr.ouali@vertica.com',
     url='https://github.com/vertica/VerticaPy',
-    keywords="machine-learning database vertica",
+    keywords="machine-learning database vertica python data-science statistics",
     packages=find_packages(),
     license="Apache License 2.0",
     install_requires=[
