@@ -3441,7 +3441,7 @@ class Preprocessing(Unsupervised):
     exclude_columns: list, optional
         Columns to exclude from the prediction.
     X: list, optional
-        List of the columns used to deploy the self. If empty, the model
+        List of the columns used to deploy the inverse model. If empty, the model
         predictors will be used.
 
     Returns
@@ -3467,7 +3467,7 @@ class Preprocessing(Unsupervised):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def get_names(self, inverse: bool = False):
+    def get_names(self, inverse: bool = False, X: list = []):
         """
     ---------------------------------------------------------------------------
     Returns the Transformation output names.
@@ -3476,12 +3476,18 @@ class Preprocessing(Unsupervised):
     ----------
     inverse: bool, optional
         If set to True, it returns the inverse transform output names.
+    X: list, optional
+        List of the columns used to get the model output names. If empty, 
+        the model predictors names will be used.
 
     Returns
     -------
     list
         Python list.
         """
+        X = [str_column(elem) for elem in X]
+        if not(X):
+            X = self.X
         if self.type in ("PCA", "SVD") and not(inverse):
             n = self.parameters["n_components"]
             if not(n):
@@ -3501,7 +3507,7 @@ class Preprocessing(Unsupervised):
                         k += 1
             return names
         else:
-            return self.X
+            return X
 
 
     # ---#

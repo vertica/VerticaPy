@@ -51,6 +51,8 @@
 import random, time, shutil, re, decimal, warnings, pickle
 from collections.abc import Iterable
 
+pickle.DEFAULT_PROTOCOL = 4
+
 # VerticaPy Modules
 import verticapy
 from verticapy.vcolumn import vColumn
