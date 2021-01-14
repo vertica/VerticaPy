@@ -318,7 +318,7 @@ class TestvDFUtilities:
         pickle.DEFAULT_PROTOCOL = 4
         result_tmp = pickle.load(open("save.p", "rb"))
         result_tmp.set_cursor(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-        result_tmp.shape == (20, 2)
+        assert result_tmp.shape == (20, 2)
 
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas
