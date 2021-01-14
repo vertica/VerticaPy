@@ -57,6 +57,7 @@ def world_vd(base):
 
 
 class TestvDFUtilities:
+
     def test_vDF_magic(self, titanic_vd):
         assert (
             str(titanic_vd["name"]._in(["Madison", "Ashley", None]))
@@ -116,6 +117,12 @@ class TestvDFUtilities:
         assert str(3 == titanic_vd["age"]) == '("age") = (3)'
         assert str(titanic_vd["age"] != 3) == '("age") != (3)'
         assert str(None != titanic_vd["age"]) == '("age") IS NOT NULL'
+        assert titanic_vd["fare"][0] >= 0
+        assert titanic_vd[["fare"]][0][0] >= 0
+        assert titanic_vd[titanic_vd["fare"] > 500].shape()[0] == 4
+        assert titanic_vd[titanic_vd["fare"] < 500].shape()[0] == 1229
+        assert titanic_vd[titanic_vd["fare"] * 4 + 2 < 500].shape()[0] == 1167
+        assert titanic_vd[titanic_vd["fare"] / 4 - 2 < 500].shape()[0] == 1233
 
     def test_vDF_to_csv(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
@@ -296,7 +303,7 @@ class TestvDFUtilities:
 
     def test_vDF_to_numpy(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_numpy()
-        result.shape == (20, 2)
+        assert result.shape == (20, 2)
 
     def test_vDF_to_pandas(self, titanic_vd):
         import pandas
@@ -308,9 +315,10 @@ class TestvDFUtilities:
     def test_vDF_to_pickle(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_pickle("save.p")
         import pickle
+        pickle.DEFAULT_PROTOCOL = 4
         result_tmp = pickle.load(open("save.p", "rb"))
         result_tmp.set_cursor(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
-        result_tmp.shape == (20, 2)
+        assert result_tmp.shape() == (20, 2)
 
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas

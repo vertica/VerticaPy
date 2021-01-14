@@ -931,7 +931,7 @@ Main Class for Vertica Model
                 model_parameters["nbins"] = parameters["nbins"]
             else:
                 model_parameters["nbins"] = default_parameters["nbins"]
-        elif self.type in ("NaiveBayes"):
+        elif self.type in ("NaiveBayes",):
             if "alpha" in parameters:
                 check_types([("alpha", parameters["alpha"], [int, float],)])
                 assert 0 <= parameters["alpha"], ParameterError(
@@ -1193,6 +1193,40 @@ Main Class for Vertica Model
                 model_parameters["extra_levels"] = parameters["extra_levels"]
             else:
                 model_parameters["extra_levels"] = default_parameters["extra_levels"]
+            if "drop_first" in parameters:
+                check_types([("drop_first", parameters["drop_first"], [bool],)])
+                model_parameters["drop_first"] = parameters["drop_first"]
+            else:
+                model_parameters["drop_first"] = default_parameters["drop_first"]
+            if "ignore_null" in parameters:
+                check_types([("ignore_null", parameters["ignore_null"], [bool],)])
+                model_parameters["ignore_null"] = parameters["ignore_null"]
+            else:
+                model_parameters["ignore_null"] = default_parameters["ignore_null"]
+            if "separator" in parameters:
+                check_types([("separator", parameters["separator"], [str],)])
+                model_parameters["separator"] = parameters["separator"]
+            else:
+                model_parameters["separator"] = default_parameters["separator"]
+            if "null_column_name" in parameters:
+                check_types([("null_column_name", parameters["null_column_name"], [str],)])
+                model_parameters["null_column_name"] = parameters["null_column_name"]
+            else:
+                model_parameters["null_column_name"] = default_parameters["null_column_name"]
+            if "column_naming" in parameters:
+                check_types([("column_naming", parameters["column_naming"], [str],)])
+                assert str(parameters["column_naming"]).lower() in [
+                    "indices",
+                    "values",
+                    "values_relaxed",
+                ], ParameterError(
+                    "Incorrect parameter 'column_naming'.\nThe column_naming method must be in (indices | values | values_relaxed), found '{}'.".format(
+                        parameters["column_naming"]
+                    )
+                )
+                model_parameters["column_naming"] = parameters["column_naming"]
+            else:
+                model_parameters["column_naming"] = default_parameters["column_naming"]
         elif self.type in ("Normalizer"):
             if "method" in parameters:
                 check_types([("method", parameters["method"], [str],)])
@@ -3158,88 +3192,6 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def deployStdSQL(self, X: list = [], return_names: bool = False):
-        """
-    ---------------------------------------------------------------------------
-    Returns the Standard SQL code needed to deploy the model.
-
-    Parameters
-    ----------
-    X: list, optional
-        List of the columns used to deploy the self. If empty, the model
-        predictors will be used.
-    return_names: bool, optional
-        returns the list of the transformation names.
-
-    Returns
-    -------
-    list
-        the SQL code needed to deploy the model.
-        """
-        if not X: X = self.X
-        L = []
-        names = []
-        if self.type == "Normalizer":
-            params = self.get_attr("details")
-            for i in range(len(X)):
-                if self.parameters["method"] == "zscore":
-                    std = params["std_dev"][i]
-                    center = params["avg"][i]
-                elif self.parameters["method"] == "minmax":
-                    std = params["max"][i] - params["min"][i]
-                    center = params["min"][i]
-                elif self.parameters["method"] == "robust_zscore":
-                    std = params["mad"][i]
-                    center = params["median"][i]
-                L += ["({} - {}) / {} AS \"{}_{}\"".format(X[i], center, std, self.parameters["method"], str_column(X[i])[1:-1])]
-                names += ["\"{}_{}\"".format(self.parameters["method"], str_column(X[i])[1:-1])]
-        elif self.type == "OneHotEncoder":
-            vdf = vdf_from_relation(self.input_relation, cursor = self.cursor)
-            params = self.param_
-            categories = []
-            for column in self.X:
-                idx = []
-                for i in range(len(params["category_name"])):
-                    if str_column(params["category_name"][i]) == str_column(column):
-                        idx += [i]
-                cat_tmp = []
-                for i in idx:
-                    elem = params["category_level"][i]
-                    if vdf[column].dtype() == "int":
-                        try:
-                            elem = int(elem)
-                        except:
-                            pass
-                    cat_tmp += [elem]
-                categories += [cat_tmp]
-            for idx, elem in enumerate(categories):
-                for item in elem:
-                    L += ["DECODE({}, {}, 1, 0) AS \"{}_{}\"".format(X[idx], format_magic(item), str_column(X[idx])[1:-1], str(item).replace('"', ''))]
-                    names += ["\"{}_{}\"".format(str_column(X[i])[1:-1], str(item).replace('"', ''))]
-        elif self.type in ("PCA"):
-            all_pc = self.get_attr("principal_components").values
-            all_mean = self.get_attr("columns")["mean"]
-            for idx, pc in enumerate(all_pc):
-                if idx > 0:
-                    L_tmp = []
-                    for i in range(len(self.X)):
-                        L_tmp += ["({} - {}) * {}".format(X[i], all_mean[i], all_pc[pc][i])]
-                    L += [" + ".join(L_tmp) + " AS col{}".format(idx)]
-                    names += ["col{}".format(idx)]
-        elif self.type in ("SVD"):
-            all_pc = self.get_attr("right_singular_vectors").values
-            for idx, pc in enumerate(all_pc):
-                if idx > 0:
-                    L_tmp = []
-                    for i in range(len(self.X)):
-                        L_tmp += ["({}) * {}".format(X[i], all_pc[pc][i])]
-                    L += [" + ".join(L_tmp) + " AS col{}".format(idx)]
-                    names += ["col{}".format(idx)]
-        if return_names:
-            return names
-        return L
-
-    # ---#
     def fit(self, input_relation: (str, vDataFrame), X: list = []):
         """
 	---------------------------------------------------------------------------
@@ -3415,47 +3367,40 @@ class Unsupervised(vModel):
                     self.param_ = self.get_attr("varchar_categories")
         return self
 
-
 # ---#
-class Decomposition(Unsupervised):
+class Preprocessing(Unsupervised):
 
     # ---#
     def deploySQL(
         self,
-        n_components: int = 0,
-        cutoff: float = 1,
         key_columns: list = [],
+        exclude_columns: list = [],
         X: list = [],
     ):
         """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model. 
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model. 
 
-	Parameters
-	----------
-	n_components: int, optional
-		Number of components to return. If set to 0, all the components will be
-		deployed.
-	cutoff: float, optional
-		Specifies the minimum accumulated explained variance. Components are taken 
-		until the accumulated explained variance reaches this value.
-	key_columns: list, optional
-		Predictors used during the algorithm computation which will be deployed
-		with the principal components.
-	X: list, optional
-		List of the columns used to deploy the self. If empty, the model
-		predictors will be used.
+    Parameters
+    ----------
+    key_columns: list, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: list, optional
+        Columns to exclude from the prediction.
+    X: list, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
 
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the model.
-		"""
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the model.
+        """
         check_types(
             [
-                ("n_components", n_components, [int, float],),
-                ("cutoff", cutoff, [int, float],),
                 ("key_columns", key_columns, [list],),
+                ("exclude_columns", exclude_columns, [list],),
                 ("X", X, [list],),
             ]
         )
@@ -3466,33 +3411,46 @@ class Decomposition(Unsupervised):
             sql += ", key_columns = '{}'".format(
                 ", ".join([str_column(item) for item in key_columns])
             )
-        if n_components:
-            sql += ", num_components = {}".format(n_components)
-        else:
-            sql += ", cutoff = {}".format(cutoff)
+        if exclude_columns:
+            sql += ", exclude_columns = '{}'".format(
+                ", ".join([str_column(item) for item in exclude_columns])
+            )
+        if self.type == "OneHotEncoder":
+            separator = "NULL" if self.parameters["separator"] == None else "'{}'".format(self.parameters["separator"])
+            null_column_name = "NULL" if self.parameters["null_column_name"] == None else "'{}'".format(self.parameters["null_column_name"])
+            sql += ", drop_first = {}, ignore_null = {}, separator = {}, column_naming = '{}'".format(self.parameters["drop_first"],
+                                                                                                      self.parameters["ignore_null"],
+                                                                                                      separator,
+                                                                                                      self.parameters["column_naming"],)
+            if self.parameters["column_naming"].lower() in ("values", "values_relaxed"):
+                sql += ", null_column_name = {}".format(null_column_name,)
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def deployInverseSQL(self, key_columns: list = [], X: list = []):
+    def deployInverseSQL(self, key_columns: list = [], exclude_columns: list = [], X: list = []):
         """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the inverse model. 
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the inverse model. 
 
-	Parameters
-	----------
-	key_columns: list, optional
-		Predictors used during the algorithm computation which will be deployed
-		with the principal components.
-	X: list, optional
-		List of the columns used to deploy the self. If empty, the model
-		predictors will be used.
+    Parameters
+    ----------
+    key_columns: list, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: list, optional
+        Columns to exclude from the prediction.
+    X: list, optional
+        List of the columns used to deploy the inverse model. If empty, the model
+        predictors will be used.
 
-	Returns
-	-------
-	str
-		the SQL code needed to deploy the inverse model.
-		"""
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the inverse model.
+        """
+        if self.type == "OneHotEncoder":
+            raise ModelError("method 'inverse_transform' is not supported for OneHotEncoder models.")
         check_types([("key_columns", key_columns, [list],), ("X", X, [list],)])
         X = [str_column(elem) for elem in X]
         fun = self.get_model_fun()[2]
@@ -3501,78 +3459,240 @@ class Decomposition(Unsupervised):
             sql += ", key_columns = '{}'".format(
                 ", ".join([str_column(item) for item in key_columns])
             )
+        if exclude_columns:
+            sql += ", exclude_columns = '{}'".format(
+                ", ".join([str_column(item) for item in exclude_columns])
+            )
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    def get_names(self, inverse: bool = False, X: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Transformation output names.
+
+    Parameters
+    ----------
+    inverse: bool, optional
+        If set to True, it returns the inverse transform output names.
+    X: list, optional
+        List of the columns used to get the model output names. If empty, 
+        the model predictors names will be used.
+
+    Returns
+    -------
+    list
+        Python list.
+        """
+        X = [str_column(elem) for elem in X]
+        if not(X):
+            X = self.X
+        if self.type in ("PCA", "SVD") and not(inverse):
+            n = self.parameters["n_components"]
+            if not(n):
+                n = len(self.X)
+            return [f"col{i}" for i in range(1, n + 1)]
+        elif self.type in ("OneHotEncoder") and not(inverse):
+            names = []
+            for column in self.X:
+                k = 0
+                for i in range(len(self.param_["category_name"])):
+                    if str_column(self.param_["category_name"][i]) == str_column(column):
+                        if (k != 0 or not(self.parameters["drop_first"])) and (not(self.parameters["ignore_null"]) or self.param_["category_level"][i] != None):
+                            if self.parameters["column_naming"] == "indices":
+                                names += ['"' + str_column(column)[1:-1] + "{}{}".format(self.parameters["separator"], self.param_["category_level_index"][i]) + '"']
+                            else:
+                                names += ['"' + str_column(column)[1:-1] + "{}{}".format(self.parameters["separator"], self.param_["category_level"][i].lower() if self.param_["category_level"][i] != None else self.parameters["null_column_name"]) + '"']
+                        k += 1
+            return names
+        else:
+            return X
+
+
+    # ---#
     def inverse_transform(
-        self, vdf: (str, vDataFrame) = None, X: list = [], key_columns: list = []
+        self, vdf: (str, vDataFrame) = None, X: list = [],
     ):
         """
-	---------------------------------------------------------------------------
-	Applies the Inverse Model on a vDataFrame.
+    ---------------------------------------------------------------------------
+    Applies the Inverse Model on a vDataFrame.
 
-	Parameters
-	----------
-	vdf: str/vDataFrame, optional
-		input vDataFrame. It can also be a customized relation but you need to 
+    Parameters
+    ----------
+    vdf: str/vDataFrame, optional
+        input vDataFrame. It can also be a customized relation but you need to 
         englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
         "(SELECT 1)" or "SELECT 1" are incorrect.
-	X: list, optional
-		List of the input vcolumns.
-	key_columns: list, optional
-		Predictors to keep unchanged during the transformation.
+    X: list, optional
+        List of the input vcolumns.
 
-	Returns
-	-------
-	vDataFrame
-		object result of the model transformation.
-		"""
-        check_types([("key_columns", key_columns, [list],), ("X", X, [list],)])
-        if vdf:
-            check_types([("vdf", vdf, [str, vDataFrame],),],)
-            if isinstance(vdf, str):
-                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
-            X = vdf_columns_names(X, vdf)
-            relation = vdf.__genSQL__()
-        else:
-            relation = self.input_relation
-            X = [str_column(elem) for elem in X]
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
+        if self.type == "OneHotEncoder":
+            raise ModelError("method 'inverse_transform' is not supported for OneHotEncoder models.")
+        check_types([("X", X, [list],)])
+        if not(vdf):
+            vdf = self.input_relation
+        if not(X):
+            X = self.X
+        check_types([("vdf", vdf, [str, vDataFrame],),],)
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+        columns_check(X, vdf)
+        X = vdf_columns_names(X, vdf)
+        relation = vdf.__genSQL__()
+        exclude_columns = vdf.get_columns(exclude_columns = X)
+        all_columns = vdf.get_columns()
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deployInverseSQL(key_columns, self.X if not (X) else X), relation
+            self.deployInverseSQL(exclude_columns, exclude_columns, all_columns), relation
         )
         return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+
+    # ---#
+    def transform(
+        self,
+        vdf: (str, vDataFrame) = None,
+        X: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Applies the model on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame, optional
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
+    X: list, optional
+        List of the input vcolumns.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
+        check_types(
+            [
+                ("X", X, [list],),
+            ]
+        )
+        if not(vdf):
+            vdf = self.input_relation
+        if not(X):
+            X = self.X
+        check_types([("vdf", vdf, [str, vDataFrame],),],)
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+        columns_check(X, vdf)
+        X = vdf_columns_names(X, vdf)
+        relation = vdf.__genSQL__()
+        exclude_columns = vdf.get_columns(exclude_columns = X)
+        all_columns = vdf.get_columns()
+        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
+            self.deploySQL(exclude_columns, exclude_columns, all_columns), relation
+        )
+        return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+
+# ---#
+class Decomposition(Preprocessing):
+
+    # ---#
+    def deploySQL(
+        self,
+        n_components: int = 0,
+        cutoff: float = 1,
+        key_columns: list = [],
+        exclude_columns: list = [],
+        X: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model. 
+
+    Parameters
+    ----------
+    n_components: int, optional
+        Number of components to return. If set to 0, all the components will be
+        deployed.
+    cutoff: float, optional
+        Specifies the minimum accumulated explained variance. Components are taken 
+        until the accumulated explained variance reaches this value.
+    key_columns: list, optional
+        Predictors used during the algorithm computation which will be deployed
+        with the principal components.
+    exclude_columns: list, optional
+        Columns to exclude from the prediction.
+    X: list, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the model.
+        """
+        check_types(
+            [
+                ("n_components", n_components, [int, float],),
+                ("cutoff", cutoff, [int, float],),
+                ("key_columns", key_columns, [list],),
+                ("exclude_columns", exclude_columns, [list],),
+                ("X", X, [list],),
+            ]
+        )
+        X = [str_column(elem) for elem in X]
+        fun = self.get_model_fun()[1]
+        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
+        if key_columns:
+            sql += ", key_columns = '{}'".format(
+                ", ".join([str_column(item) for item in key_columns])
+            )
+        if exclude_columns:
+            sql += ", exclude_columns = '{}'".format(
+                ", ".join([str_column(item) for item in exclude_columns])
+            )
+        if n_components:
+            sql += ", num_components = {}".format(n_components)
+        else:
+            sql += ", cutoff = {}".format(cutoff)
+        sql += ")"
+        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
     def score(
         self, X: list = [], input_relation: str = "", method: str = "avg", p: int = 2
     ):
         """
-	---------------------------------------------------------------------------
-	Returns the decomposition Score on a dataset for each trasformed column. It 
-	is the average / median of the p-distance between the real column and its 
-	result after applying the decomposition model and its inverse.  
+    ---------------------------------------------------------------------------
+    Returns the decomposition Score on a dataset for each trasformed column. It 
+    is the average / median of the p-distance between the real column and its 
+    result after applying the decomposition model and its inverse.  
 
-	Parameters
-	----------
-	X: list, optional
-		List of the columns used to deploy the self. If empty, the model
-		predictors will be used.
-	input_relation: str, optional
-		Input Relation. If empty, the model input relation will be used.
-	method: str, optional
-		Distance Method used to do the scoring.
-			avg	: The average is used as aggregation.
-			median : The mdeian is used as aggregation.
-	p: int, optional
-		The p of the p-distance.
+    Parameters
+    ----------
+    X: list, optional
+        List of the columns used to deploy the self. If empty, the model
+        predictors will be used.
+    input_relation: str, optional
+        Input Relation. If empty, the model input relation will be used.
+    method: str, optional
+        Distance Method used to do the scoring.
+            avg : The average is used as aggregation.
+            median : The mdeian is used as aggregation.
+    p: int, optional
+        The p of the p-distance.
 
-	Returns
-	-------
-	tablesample
-		An object containing the result. For more information, see
-		utilities.tablesample.
-		"""
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
         check_types(
             [
                 ("X", X, [list],),
@@ -3646,29 +3766,29 @@ class Decomposition(Unsupervised):
         cutoff: float = 1,
     ):
         """
-	---------------------------------------------------------------------------
-	Applies the model on a vDataFrame.
+    ---------------------------------------------------------------------------
+    Applies the model on a vDataFrame.
 
-	Parameters
-	----------
-	vdf: str/vDataFrame, optional
-		Input vDataFrame. It can also be a customized relation but you need to 
+    Parameters
+    ----------
+    vdf: str/vDataFrame, optional
+        Input vDataFrame. It can also be a customized relation but you need to 
         englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
         "(SELECT 1)" or "SELECT 1" are incorrect.
-	X: list, optional
-		List of the input vcolumns.
-	n_components: int, optional
-		Number of components to return. If set to 0, all the components will 
-		be deployed.
-	cutoff: float, optional
-		Specifies the minimum accumulated explained variance. Components are 
-		taken until the accumulated explained variance reaches this value.
+    X: list, optional
+        List of the input vcolumns.
+    n_components: int, optional
+        Number of components to return. If set to 0, all the components will 
+        be deployed.
+    cutoff: float, optional
+        Specifies the minimum accumulated explained variance. Components are 
+        taken until the accumulated explained variance reaches this value.
 
-	Returns
-	-------
-	vDataFrame
-		object result of the model transformation.
-		"""
+    Returns
+    -------
+    vDataFrame
+        object result of the model transformation.
+        """
         check_types(
             [
                 ("n_components", n_components, [int, float],),
@@ -3676,76 +3796,22 @@ class Decomposition(Unsupervised):
                 ("X", X, [list],),
             ]
         )
-        if vdf:
-            check_types([("vdf", vdf, [vDataFrame, str],),],)
-            if isinstance(vdf, str):
-                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
-            X = vdf_columns_names(X, vdf)
-            relation = vdf.__genSQL__()
-        else:
-            relation = self.input_relation
-            X = [str_column(elem) for elem in X]
-        if 0 <= cutoff <= 1:
-            acc_variance = self.get_attr("singular_values")["accumulated_explained_variance"]
-            i = 0
-            acc = 0
-            while acc < cutoff:
-                acc = acc_variance[i]
-                i += 1
-            n_components = i + 1
-        elif n_components <= 0:
-            n_components = len(self.get_attr("principal_components").values) - 1
-        return vdf_from_relation(
-            "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                ", ".join(self.deployStdSQL(X)[:n_components]), relation
-            ),
-            self.name,
-            self.cursor,
+        if not(vdf):
+            vdf = self.input_relation
+        if not(X):
+            X = self.X
+        check_types([("vdf", vdf, [str, vDataFrame],),],)
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+        columns_check(X, vdf)
+        X = vdf_columns_names(X, vdf)
+        relation = vdf.__genSQL__()
+        exclude_columns = vdf.get_columns(exclude_columns = X)
+        all_columns = vdf.get_columns()
+        main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
+            self.deploySQL(n_components, cutoff, exclude_columns, exclude_columns, all_columns), relation
         )
-
-
-# ---#
-class Preprocessing(Unsupervised):
-
-    # ---#
-    def transform(self, 
-                  vdf: (str, vDataFrame) = None, 
-                  X: list = []):
-        """
-	---------------------------------------------------------------------------
-	Applies the model on a vDataFrame.
-
-	Parameters
-	----------
-	vdf: str/vDataFrame, optional
-		Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
-	X: list, optional
-		List of the input vcolumns.
-
-	Returns
-	-------
-	vDataFrame
-		object result of the model transformation.
-		"""
-        check_types([("X", X, [list],)])
-        if vdf:
-            check_types([("vdf", vdf, [vDataFrame, str],),],)
-            if isinstance(vdf, str):
-                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
-            X = vdf_columns_names(X, vdf)
-            relation = vdf.__genSQL__()
-        else:
-            relation = self.input_relation
-            X = [str_column(elem) for elem in X]
-        return vdf_from_relation(
-            "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
-                ", ".join(self.deployStdSQL(X)), relation
-            ),
-            self.name,
-            self.cursor,
-        )
+        return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
 
 # ---#
 class Clustering(Unsupervised):
