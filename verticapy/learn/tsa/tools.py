@@ -475,7 +475,7 @@ vdf: vDataFrame
     Input vDataFrame.
 eps: str
     Input residual vcolumn.
-X: str
+X: list
     Exogenous Variables to test the heteroscedasticity on.
 
 Returns
@@ -549,7 +549,7 @@ vdf: vDataFrame
     Input vDataFrame.
 y: str
     Response Column.
-X: str
+X: list
     Exogenous Variables.
 idx: int, optional
     Column index of variable according to which observations are sorted 
