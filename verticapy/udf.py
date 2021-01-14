@@ -143,6 +143,8 @@ library_name: str
 include_dependencies: list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
+file_path: str, optional
+	Path to the UDF file.
 create_file: bool, optional
 	If set to True, instead of returning the str of the UDx, the function will
 	create two files: one UDF py file and one SQL file to install it.

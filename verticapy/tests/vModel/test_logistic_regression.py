@@ -41,6 +41,7 @@ def model(base, titanic_vd):
 
 
 class TestLogisticRegression:
+    
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 

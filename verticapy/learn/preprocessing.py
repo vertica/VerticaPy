@@ -327,70 +327,6 @@ method: str, optional
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 0])
 
-    # ---#
-    def deployInverseSQL(self, X: list = []):
-        """
-    ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy the inverse model. 
-
-    Parameters
-    ----------
-    X: list, optional
-        List of the columns used to deploy the self. If empty, the model
-        predictors will be used.
-
-    Returns
-    -------
-    str
-        the SQL code needed to deploy the inverse self.
-        """
-        check_types([("X", X, [list],)])
-        X = [str_column(elem) for elem in X]
-        fun = self.get_model_fun()[2]
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
-
-    # ---#
-    def inverse_transform_preprocessing(
-        self, vdf: (str, vDataFrame) = None, X: list = []
-    ):
-        """
-    ---------------------------------------------------------------------------
-    Creates a vDataFrame of the model.
-
-    Parameters
-    ----------
-    vdf: str/vDataFrame, optional
-        input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
-    X: list, optional
-        List of the input vcolumns.
-
-    Returns
-    -------
-    vDataFrame
-        object result of the model transformation.
-        """
-        check_types([("X", X, [list],)])
-        if vdf:
-            check_types([("vdf", vdf, [str, vDataFrame],)])
-            if isinstance(vdf, str):
-                vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
-            X = vdf_columns_names(X, vdf)
-            relation = vdf.__genSQL__()
-        else:
-            relation = self.input_relation
-            X = [str_column(elem) for elem in X]
-        return vdf_from_relation(
-            "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deployInverseSQL(self.X if not (X) else X), relation
-            ),
-            self.name,
-            self.cursor,
-        )
-
-
 # ---#
 class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
@@ -435,6 +371,27 @@ cursor: DBcursor, optional
 	Vertica DB cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
+drop_first: bool, optional
+    If set to True, it treats the first level of the categorical variable 
+    as the reference level. Otherwise, every level of the categorical variable 
+    has a corresponding column in the output view.
+ignore_null: bool, optional
+    If set to True, Null values set all corresponding one-hot binary columns to null. 
+    Otherwise, Null values in the input columns are treated as a categorical level.
+separator: str, optional
+    The character that separates the input variable name and the indicator variable 
+    level in the output table.To avoid using any separator, set this parameter to 
+    null value.
+column_naming: str, optional
+    Appends categorical levels to column names according to the specified method:
+        indices                : Uses integer indices to represent categorical levels.
+        values/values_relaxed  : Both methods use categorical level names. If duplicate 
+                                 column names occur, the function attempts to disambiguate 
+                                 them by appending _n, where n is a zero-based integer 
+                                 index (_0, _1,…).
+null_column_name: str, optional
+    The string used in naming the indicator column for null values, used only if 
+    ignore_null is set to false and column_naming is set to values or values_relaxed.
 
 Attributes
 ----------
@@ -449,10 +406,29 @@ X: list
 	List of the predictors.
 	"""
 
-    def __init__(self, name: str, cursor=None, extra_levels: dict = {}):
-        check_types([("name", name, [str],)])
+    def __init__(self, 
+                 name: str, 
+                 cursor=None, 
+                 extra_levels: dict = {}, 
+                 drop_first: bool = True,
+                 ignore_null: bool = True,
+                 separator: str = '_',
+                 column_naming: str = "indices",
+                 null_column_name: str = "null"):
+        check_types([("name", name, [str],),
+                     ("extra_levels", extra_levels, [dict],),
+                     ("drop_first", drop_first, [bool],),
+                     ("ignore_null", ignore_null, [bool],),
+                     ("separator", separator, [str],),
+                     ("column_naming", column_naming, ["indices", "values", "values_relaxed"],),
+                     ("null_column_name", null_column_name, [str],),])
         self.type, self.name = "OneHotEncoder", name
-        self.set_params({"extra_levels": extra_levels})
+        self.set_params({"extra_levels": extra_levels,
+                         "drop_first": drop_first,
+                         "ignore_null": ignore_null,
+                         "separator": separator,
+                         "column_naming": column_naming,
+                         "null_column_name": null_column_name})
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 0])

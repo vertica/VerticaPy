@@ -91,6 +91,16 @@ steps: list
                     else:
                         raise ParameterError("The last estimator of the Pipeline must have a 'fit' method.")
             self.steps += [elem]
+        self.cursor = self.steps[-1][1].cursor
+
+    # ---#
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return self.steps[index]
+        elif isinstance(index, int):
+            return self.steps[index][1]
+        else:
+            return getattr(self, index)
 
     # ---#
     def drop(self):
@@ -131,6 +141,8 @@ steps: list
         """
         if isinstance(input_relation, str):
             vdf = vdf_from_relation(relation=input_relation, cursor=self.steps[0][1].cursor)
+        else:
+            vdf = input_relation
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -139,8 +151,8 @@ steps: list
             else:
                 step[1].fit(current_vdf, X_new)
             if (idx < len(self.steps) - 1):
-                X_new = step[1].deployStdSQL(return_names = True)
                 current_vdf = step[1].transform(current_vdf, X_new)
+                X_new = step[1].get_names(X = X)
         self.input_relation = self.steps[0][1].input_relation
         self.X = [column for column in self.steps[0][1].X]
         try:
@@ -204,10 +216,10 @@ steps: list
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             if idx == len(self.steps) - 1:
-                step[1].predict(current_vdf, X_new, name = name)
+                current_vdf = step[1].predict(current_vdf, X_new, name = name)
             else:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].deployStdSQL(return_names = True)
+                X_new = step[1].get_names(X = X)
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
@@ -287,9 +299,88 @@ steps: list
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             current_vdf = step[1].transform(current_vdf, X_new)
-            X_new = step[1].deployStdSQL(return_names = True)
+            X_new = step[1].get_names(X = X)
             X_all += X_new
-        return current_vdf[vdf.get_columns() + X_new]
+        return current_vdf
+
+    # ---#
+    def inverse_transform(self, 
+                          vdf: (str, vDataFrame) = None, 
+                          X: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Applies the inverse model transformation on a vDataFrame.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame, optional
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
+    X: list, optional
+        List of the input vcolumns.
+
+    Returns
+    -------
+    vDataFrame
+        object result of the model inverse transformation.
+        """
+        try:
+            for idx in range(len(self.steps)):
+                self.steps[idx][1].inverse_transform
+        except:
+            raise ModelError("The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(idx))
+        if not(vdf):
+            vdf = self.input_relation
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+        X_new, X_all = [elem for elem in X], []
+        current_vdf = vdf
+        for idx in range(1, len(self.steps) + 1):
+            step = self.steps[-idx]
+            current_vdf = step[1].inverse_transform(current_vdf, X_new)
+            X_new = step[1].get_names(inverse = True, X = X)
+            X_all += X_new
+        return current_vdf
+
+    # ---#
+    def set_cursor(self, cursor):
+        """
+    ---------------------------------------------------------------------------
+    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
+    lost.
+
+    Parameters
+    ----------
+    cursor: DBcursor
+        New cursor.
+
+    Returns
+    -------
+    model
+        self
+        """
+        for step in self.steps:
+            step[1].set_cursor(cursor)
+        return self
+
+    # ---#
+    def set_params(self, parameters: dict = {}):
+        """
+    ---------------------------------------------------------------------------
+    Sets the parameters of the model.
+
+    Parameters
+    ----------
+    parameters: dict, optional
+        New parameters. It must be a dictionary with as keys the Pipeline names
+        and as value the parameters dictionary.
+        """
+        for param in parameters:
+            for step in self.steps:
+                if param.lower() == step[0].lower():
+                    step[1].set_params(parameters[param])
+
 
     # ---#
     def to_sklearn(self):
