@@ -576,6 +576,10 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
+        try:
+            self.parameters
+        except:
+            self.parameters = {}
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
@@ -591,8 +595,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["solver"] = parameters["solver"]
-            else:
+            elif "solver" not in self.parameters:
                 model_parameters["solver"] = default_parameters["solver"]
+            else:
+                model_parameters["solver"] = self.parameters["solver"]
             if "penalty" in parameters and self.type in (
                 "LinearRegression",
                 "LogisticRegression",
@@ -609,16 +615,20 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["penalty"] = parameters["penalty"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
+            elif self.type in ("LinearRegression", "LogisticRegression") and "penalty" not in self.parameters:
                 model_parameters["penalty"] = default_parameters["penalty"]
+            elif self.type in ("LinearRegression", "LogisticRegression"):
+                model_parameters["penalty"] = self.parameters["penalty"]
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
                 assert 0 <= parameters["max_iter"], ParameterError(
                     "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
-            else:
+            elif "max_iter" not in self.parameters:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
+            else:
+                model_parameters["max_iter"] = self.parameters["max_iter"]
             if "l1_ratio" in parameters and self.type in (
                 "LinearRegression",
                 "LogisticRegression",
@@ -628,8 +638,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
+            elif self.type in ("LinearRegression", "LogisticRegression") and "l1_ratio" not in self.parameters:
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
+            elif self.type in ("LinearRegression", "LogisticRegression"):
+                model_parameters["l1_ratio"] = self.parameters["l1_ratio"]
             if "C" in parameters and self.type in (
                 "LinearRegression",
                 "LogisticRegression",
@@ -639,88 +651,110 @@ Main Class for Vertica Model
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            elif self.type in ("LinearRegression", "LogisticRegression"):
+            elif self.type in ("LinearRegression", "LogisticRegression") and "C" not in self.parameters:
                 model_parameters["C"] = default_parameters["C"]
+            elif self.type in ("LinearRegression", "LogisticRegression"):
+                model_parameters["C"] = self.parameters["C"]
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
                 assert 0 <= parameters["tol"], ParameterError(
                     "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
-            else:
+            elif "tol" not in self.parameters:
                 model_parameters["tol"] = default_parameters["tol"]
+            else:
+                model_parameters["tol"] = self.parameters["tol"]
             if "p" in parameters and self.type in ("SARIMAX", "VAR"):
                 check_types([("p", parameters["p"], [int, float],)])
                 assert 0 <= parameters["p"], ParameterError(
                     "Incorrect parameter 'p'.\nThe order of the AR part must be positive."
                 )
                 model_parameters["p"] = parameters["p"]
-            elif self.type in ("SARIMAX", "VAR"):
+            elif self.type in ("SARIMAX", "VAR") and "p" not in self.parameters:
                 model_parameters["p"] = default_parameters["p"]
+            elif self.type in ("SARIMAX", "VAR"):
+                model_parameters["p"] = self.parameters["p"]
             if "q" in parameters and self.type == "SARIMAX":
                 check_types([("q", parameters["q"], [int, float],)])
                 assert 0 <= parameters["q"], ParameterError(
                     "Incorrect parameter 'q'.\nThe order of the MA part must be positive."
                 )
                 model_parameters["q"] = parameters["q"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "q" not in self.parameters:
                 model_parameters["q"] = default_parameters["q"]
+            elif self.type == "SARIMAX":
+                model_parameters["q"] = self.parameters["q"]
             if "d" in parameters and self.type == "SARIMAX":
                 check_types([("d", parameters["d"], [int, float],)])
                 assert 0 <= parameters["d"], ParameterError(
                     "Incorrect parameter 'd'.\nThe order of the I part must be positive."
                 )
                 model_parameters["d"] = parameters["d"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "d" not in self.parameters:
                 model_parameters["d"] = default_parameters["d"]
+            elif self.type == "SARIMAX":
+                model_parameters["d"] = self.parameters["d"]
             if "P" in parameters and self.type == "SARIMAX":
                 check_types([("P", parameters["P"], [int, float],)])
                 assert 0 <= parameters["P"], ParameterError(
                     "Incorrect parameter 'P'.\nThe seasonal order of the AR part must be positive."
                 )
                 model_parameters["P"] = parameters["P"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "P" not in self.parameters:
                 model_parameters["P"] = default_parameters["P"]
+            elif self.type == "SARIMAX":
+                model_parameters["P"] = self.parameters["P"]
             if "Q" in parameters and self.type == "SARIMAX":
                 check_types([("Q", parameters["Q"], [int, float],)])
                 assert 0 <= parameters["Q"], ParameterError(
                     "Incorrect parameter 'Q'.\nThe seasonal order of the MA part must be positive."
                 )
                 model_parameters["Q"] = parameters["Q"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "Q" not in self.parameters:
                 model_parameters["Q"] = default_parameters["Q"]
+            elif self.type == "SARIMAX":
+                model_parameters["Q"] = self.parameters["Q"]
             if "D" in parameters and self.type == "SARIMAX":
                 check_types([("D", parameters["D"], [int, float],)])
                 assert 0 <= parameters["D"], ParameterError(
                     "Incorrect parameter 'D'.\nThe seasonal order of the I part must be positive."
                 )
                 model_parameters["D"] = parameters["D"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "D" not in self.parameters:
                 model_parameters["D"] = default_parameters["D"]
+            elif self.type == "SARIMAX":
+                model_parameters["D"] = self.parameters["D"]
             if "s" in parameters and self.type == "SARIMAX":
                 check_types([("s", parameters["s"], [int, float],)])
                 assert 0 <= parameters["s"], ParameterError(
                     "Incorrect parameter 's'.\nThe Span of the seasonality must be positive."
                 )
                 model_parameters["s"] = parameters["s"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "s" not in self.parameters:
                 model_parameters["s"] = default_parameters["s"]
+            elif self.type == "SARIMAX":
+                model_parameters["s"] = self.parameters["s"]
             if "max_pik" in parameters and self.type == "SARIMAX":
                 check_types([("max_pik", parameters["max_pik"], [int, float],)])
                 assert 0 <= parameters["max_pik"], ParameterError(
                     "Incorrect parameter 'max_pik'.\nThe Maximum number of inverse MA coefficients took during the computation must be positive."
                 )
                 model_parameters["max_pik"] = parameters["max_pik"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "max_pik" not in self.parameters:
                 model_parameters["max_pik"] = default_parameters["max_pik"]
+            elif self.type == "SARIMAX":
+                model_parameters["max_pik"] = self.parameters["max_pik"]
             if "papprox_ma" in parameters and self.type == "SARIMAX":
                 check_types([("papprox_ma", parameters["papprox_ma"], [int, float],)])
                 assert 0 <= parameters["papprox_ma"], ParameterError(
                     "Incorrect parameter 'papprox_ma'.\nThe Maximum number of AR(P) used to approximate the MA during the computation must be positive."
                 )
                 model_parameters["papprox_ma"] = parameters["papprox_ma"]
-            elif self.type == "SARIMAX":
+            elif self.type == "SARIMAX" and "papprox_ma" not in self.parameters:
                 model_parameters["papprox_ma"] = default_parameters["papprox_ma"]
+            elif self.type == "SARIMAX":
+                model_parameters["papprox_ma"] = self.parameters["papprox_ma"]
         elif self.type in ("KernelDensity"):
             if "bandwidth" in parameters:
                 check_types([("bandwidth", parameters["bandwidth"], [int, float],)])
@@ -728,8 +762,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'bandwidth'.\nThe bandwidth must be positive."
                 )
                 model_parameters["bandwidth"] = parameters["bandwidth"]
-            else:
+            elif "bandwidth" not in self.parameters:
                 model_parameters["bandwidth"] = default_parameters["bandwidth"]
+            else:
+                model_parameters["bandwidth"] = self.parameters["bandwidth"]
             if "kernel" in parameters:
                 check_types(
                     [
@@ -751,8 +787,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["kernel"] = parameters["kernel"]
-            else:
+            elif "kernel" not in self.parameters:
                 model_parameters["kernel"] = default_parameters["kernel"]
+            else:
+                model_parameters["kernel"] = self.parameters["kernel"]
             if "max_leaf_nodes" in parameters:
                 check_types(
                     [
@@ -768,18 +806,22 @@ Main Class for Vertica Model
                     "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of leaf nodes must be between 1 and 1e9, inclusive."
                 )
                 model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
-            else:
+            elif "max_leaf_nodes" not in self.parameters:
                 model_parameters["max_leaf_nodes"] = default_parameters[
                     "max_leaf_nodes"
                 ]
+            else:
+                model_parameters["max_leaf_nodes"] = self.parameters["max_leaf_nodes"]
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int],)])
                 assert 1 <= parameters["max_depth"] <= 100, ParameterError(
                     "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 100, inclusive."
                 )
                 model_parameters["max_depth"] = parameters["max_depth"]
-            else:
+            elif "max_depth" not in self.parameters:
                 model_parameters["max_depth"] = default_parameters["max_depth"]
+            else:
+                model_parameters["max_depth"] = self.parameters["max_depth"]
             if "min_samples_leaf" in parameters:
                 check_types(
                     [
@@ -795,31 +837,39 @@ Main Class for Vertica Model
                     "Incorrect parameter 'min_samples_leaf'.\nThe minimum number of samples each branch must have after splitting a node must be between 1 and 1e6, inclusive."
                 )
                 model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
-            else:
+            elif "min_samples_leaf" not in self.parameters:
                 model_parameters["min_samples_leaf"] = default_parameters[
                     "min_samples_leaf"
                 ]
+            else:
+                model_parameters["min_samples_leaf"] = self.parameters["min_samples_leaf"]
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float],)])
                 assert 2 <= parameters["nbins"], ParameterError(
                     "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be greater than 2."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
-            else:
+            elif "nbins" not in self.parameters:
                 model_parameters["nbins"] = default_parameters["nbins"]
+            else:
+                model_parameters["nbins"] = self.parameters["nbins"]
             if "p" in parameters:
                 check_types([("p", parameters["p"], [int, float],)])
                 assert 0 < parameters["p"], ParameterError(
                     "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
-            else:
+            elif "p" not in self.parameters:
                 model_parameters["p"] = default_parameters["p"]
+            else:
+                model_parameters["p"] = self.parameters["p"]
             if "xlim" in parameters:
                 check_types([("xlim", parameters["xlim"], [list],)])
                 model_parameters["xlim"] = parameters["xlim"]
-            else:
+            elif "xlim" not in self.parameters:
                 model_parameters["xlim"] = default_parameters["xlim"]
+            else:
+                model_parameters["xlim"] = self.parameters["xlim"]
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
             if "n_estimators" in parameters:
                 check_types([("n_estimators", parameters["n_estimators"], [int],)])
@@ -827,8 +877,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'n_estimators'.\nThe number of trees must be lesser than 1000."
                 )
                 model_parameters["n_estimators"] = parameters["n_estimators"]
-            else:
+            elif "n_estimators" not in self.parameters:
                 model_parameters["n_estimators"] = default_parameters["n_estimators"]
+            else:
+                model_parameters["n_estimators"] = self.parameters["n_estimators"]
             if "max_features" in parameters:
                 check_types(
                     [
@@ -850,8 +902,10 @@ Main Class for Vertica Model
                         )
                     )
                 model_parameters["max_features"] = parameters["max_features"]
-            else:
+            elif "max_features" not in self.parameters:
                 model_parameters["max_features"] = default_parameters["max_features"]
+            else:
+                model_parameters["max_features"] = self.parameters["max_features"]
             if "max_leaf_nodes" in parameters:
                 check_types(
                     [
@@ -867,26 +921,32 @@ Main Class for Vertica Model
                     "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of leaf nodes must be between 1 and 1e9, inclusive."
                 )
                 model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
-            else:
+            elif "max_leaf_nodes" not in self.parameters:
                 model_parameters["max_leaf_nodes"] = default_parameters[
                     "max_leaf_nodes"
                 ]
+            else:
+                model_parameters["max_leaf_nodes"] = self.parameters["max_leaf_nodes"]
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float],)])
                 assert 0 <= parameters["sample"] <= 1, ParameterError(
                     "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0, inclusive."
                 )
                 model_parameters["sample"] = parameters["sample"]
-            else:
+            elif "sample" not in self.parameters:
                 model_parameters["sample"] = default_parameters["sample"]
+            else:
+                model_parameters["sample"] = self.parameters["sample"]
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int],)])
                 assert 1 <= parameters["max_depth"] <= 100, ParameterError(
                     "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 100, inclusive."
                 )
                 model_parameters["max_depth"] = parameters["max_depth"]
-            else:
+            elif "max_depth" not in self.parameters:
                 model_parameters["max_depth"] = default_parameters["max_depth"]
+            else:
+                model_parameters["max_depth"] = self.parameters["max_depth"]
             if "min_samples_leaf" in parameters:
                 check_types(
                     [
@@ -902,10 +962,12 @@ Main Class for Vertica Model
                     "Incorrect parameter 'min_samples_leaf'.\nThe minimum number of samples each branch must have after splitting a node must be between 1 and 1e6, inclusive."
                 )
                 model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
-            else:
+            elif "min_samples_leaf" not in self.parameters:
                 model_parameters["min_samples_leaf"] = default_parameters[
                     "min_samples_leaf"
                 ]
+            else:
+                model_parameters["min_samples_leaf"] = self.parameters["min_samples_leaf"]
             if "min_info_gain" in parameters:
                 check_types(
                     [
@@ -921,16 +983,20 @@ Main Class for Vertica Model
                     "Incorrect parameter 'min_info_gain'.\nThe minimum threshold for including a split must be between 0.0 and 1.0, inclusive."
                 )
                 model_parameters["min_info_gain"] = parameters["min_info_gain"]
-            else:
+            elif "min_info_gain" not in self.parameters:
                 model_parameters["min_info_gain"] = default_parameters["min_info_gain"]
+            else:
+                model_parameters["min_info_gain"] = self.parameters["min_info_gain"]
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float],)])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
                     "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
-            else:
+            elif "nbins" not in self.parameters:
                 model_parameters["nbins"] = default_parameters["nbins"]
+            else:
+                model_parameters["nbins"] = self.parameters["nbins"]
         elif self.type in ("NaiveBayes",):
             if "alpha" in parameters:
                 check_types([("alpha", parameters["alpha"], [int, float],)])
@@ -938,8 +1004,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'alpha'.\nThe smoothing factor must be positive."
                 )
                 model_parameters["alpha"] = parameters["alpha"]
-            else:
+            elif "alpha" not in self.parameters:
                 model_parameters["alpha"] = default_parameters["alpha"]
+            else:
+                model_parameters["alpha"] = self.parameters["alpha"]
             if "nbtype" in parameters:
                 check_types([("nbtype", parameters["nbtype"], [str],)])
                 if isinstance(parameters["nbtype"], str):
@@ -955,8 +1023,10 @@ Main Class for Vertica Model
                         )
                     )
                 model_parameters["nbtype"] = parameters["nbtype"]
-            else:
+            elif "nbtype" not in self.parameters:
                 model_parameters["nbtype"] = default_parameters["nbtype"]
+            else:
+                model_parameters["nbtype"] = self.parameters["nbtype"]
         elif self.type in ("KMeans", "BisectingKMeans"):
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
@@ -964,24 +1034,30 @@ Main Class for Vertica Model
                     "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
-            else:
+            elif "max_iter" not in self.parameters:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
+            else:
+                model_parameters["max_iter"] = self.parameters["max_iter"]
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
                 assert 0 <= parameters["tol"], ParameterError(
                     "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
-            else:
+            elif "tol" not in self.parameters:
                 model_parameters["tol"] = default_parameters["tol"]
+            else:
+                model_parameters["tol"] = self.parameters["tol"]
             if "n_cluster" in parameters:
                 check_types([("n_cluster", parameters["n_cluster"], [int, float],)])
                 assert 1 <= parameters["n_cluster"] <= 10000, ParameterError(
                     "Incorrect parameter 'n_cluster'.\nThe number of clusters must be between 1 and 10000, inclusive."
                 )
                 model_parameters["n_cluster"] = parameters["n_cluster"]
-            else:
+            elif "n_cluster" not in self.parameters:
                 model_parameters["n_cluster"] = default_parameters["n_cluster"]
+            else:
+                model_parameters["n_cluster"] = self.parameters["n_cluster"]
             if "init" in parameters:
                 check_types([("init", parameters["init"], [str, list],)])
                 if isinstance(parameters["init"], str):
@@ -994,8 +1070,10 @@ Main Class for Vertica Model
                         )
                     )
                 model_parameters["init"] = parameters["init"]
-            else:
+            elif "init" not in self.parameters:
                 model_parameters["init"] = default_parameters["init"]
+            else:
+                model_parameters["init"] = self.parameters["init"]
             if "bisection_iterations" in parameters:
                 check_types(
                     [
@@ -1015,10 +1093,12 @@ Main Class for Vertica Model
                 model_parameters["bisection_iterations"] = parameters[
                     "bisection_iterations"
                 ]
-            elif self.type == "BisectingKMeans":
+            elif self.type == "BisectingKMeans" and "bisection_iterations" not in self.parameters:
                 model_parameters["bisection_iterations"] = default_parameters[
                     "bisection_iterations"
                 ]
+            elif self.type == "BisectingKMeans":
+                model_parameters["bisection_iterationss"] = self.parameters["bisection_iterations"]
             if "split_method" in parameters:
                 check_types([("split_method", parameters["split_method"], [str],)])
                 assert str(parameters["split_method"]).lower() in [
@@ -1030,8 +1110,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["split_method"] = parameters["split_method"]
-            elif self.type == "BisectingKMeans":
+            elif self.type == "BisectingKMeans" and "split_method" not in self.parameters:
                 model_parameters["split_method"] = default_parameters["split_method"]
+            elif self.type == "BisectingKMeans":
+                model_parameters["split_method"] = self.parameters["split_method"]
             if "min_divisible_cluster_size" in parameters:
                 check_types(
                     [
@@ -1049,10 +1131,12 @@ Main Class for Vertica Model
                 model_parameters["min_divisible_cluster_size"] = parameters[
                     "min_divisible_cluster_size"
                 ]
-            elif self.type == "BisectingKMeans":
+            elif self.type == "BisectingKMeans" and "min_divisible_cluster_size" not in self.parameters:
                 model_parameters["min_divisible_cluster_size"] = default_parameters[
                     "min_divisible_cluster_size"
                 ]
+            elif self.type == "BisectingKMeans":
+                model_parameters["min_divisible_cluster_size"] = self.parameters["min_divisible_cluster_size"]
             if "distance_method" in parameters:
                 check_types(
                     [("distance_method", parameters["distance_method"], [str],)]
@@ -1065,10 +1149,12 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["distance_method"] = parameters["distance_method"]
-            elif self.type == "BisectingKMeans":
+            elif self.type == "BisectingKMeans" and "distance_method" not in self.parameters:
                 model_parameters["distance_method"] = default_parameters[
                     "distance_method"
                 ]
+            elif self.type == "BisectingKMeans":
+                model_parameters["distance_method"] = self.parameters["distance_method"]
         elif self.type in ("LinearSVC", "LinearSVR"):
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float],)])
@@ -1076,29 +1162,37 @@ Main Class for Vertica Model
                     "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
-            else:
+            elif "tol" not in self.parameters:
                 model_parameters["tol"] = default_parameters["tol"]
+            else:
+                model_parameters["tol"] = self.parameters["tol"]
             if "C" in parameters:
                 check_types([("C", parameters["C"], [int, float],)])
                 assert 0 <= parameters["C"], ParameterError(
                     "Incorrect parameter 'C'.\nThe weight for misclassification cost must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            else:
+            elif "C" not in self.parameters:
                 model_parameters["C"] = default_parameters["C"]
+            else:
+                model_parameters["C"] = self.parameters["C"]
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float],)])
                 assert 0 <= parameters["max_iter"], ParameterError(
                     "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
-            else:
+            elif "max_iter" not in self.parameters:
                 model_parameters["max_iter"] = default_parameters["max_iter"]
+            else:
+                model_parameters["max_iter"] = self.parameters["max_iter"]
             if "fit_intercept" in parameters:
                 check_types([("fit_intercept", parameters["fit_intercept"], [bool],)])
                 model_parameters["fit_intercept"] = parameters["fit_intercept"]
-            else:
+            elif "fit_intercept" not in self.parameters:
                 model_parameters["fit_intercept"] = default_parameters["fit_intercept"]
+            else:
+                model_parameters["fit_intercept"] = self.parameters["fit_intercept"]
             if "intercept_scaling" in parameters:
                 check_types(
                     [
@@ -1114,10 +1208,12 @@ Main Class for Vertica Model
                     "Incorrect parameter 'intercept_scaling'.\nThe Intercept Scaling parameter value must be positive."
                 )
                 model_parameters["intercept_scaling"] = parameters["intercept_scaling"]
-            else:
+            elif "intercept_scaling" not in self.parameters:
                 model_parameters["intercept_scaling"] = default_parameters[
                     "intercept_scaling"
                 ]
+            else:
+                model_parameters["intercept_scaling"] = self.parameters["intercept_scaling"]
             if "intercept_mode" in parameters:
                 check_types([("intercept_mode", parameters["intercept_mode"], [str],)])
                 assert str(parameters["intercept_mode"]).lower() in [
@@ -1129,17 +1225,21 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["intercept_mode"] = parameters["intercept_mode"]
-            else:
+            elif "intercept_mode" not in self.parameters:
                 model_parameters["intercept_mode"] = default_parameters[
                     "intercept_mode"
                 ]
+            else:
+                model_parameters["intercept_mode"] = self.parameters["intercept_mode"]
             if ("class_weight" in parameters) and self.type in ("LinearSVC"):
                 check_types(
                     [("class_weight", parameters["class_weight"], [list, tuple],)]
                 )
                 model_parameters["class_weight"] = parameters["class_weight"]
-            elif self.type in ("LinearSVC"):
+            elif self.type in ("LinearSVC",) and "class_weight" not in self.parameters:
                 model_parameters["class_weight"] = default_parameters["class_weight"]
+            elif self.type in ("LinearSVC",):
+                model_parameters["class_weight"] = self.parameters["class_weight"]
             if ("acceptable_error_margin" in parameters) and self.type in ("LinearSVR"):
                 check_types(
                     [
@@ -1157,16 +1257,20 @@ Main Class for Vertica Model
                 model_parameters["acceptable_error_margin"] = parameters[
                     "acceptable_error_margin"
                 ]
-            elif self.type in ("LinearSVR"):
+            elif self.type in ("LinearSVR",) and "acceptable_error_margin" not in self.parameters:
                 model_parameters["acceptable_error_margin"] = default_parameters[
                     "acceptable_error_margin"
                 ]
+            elif self.type in ("LinearSVR",):
+                model_parameters["acceptable_error_margin"] = self.parameters["acceptable_error_margin"]
         elif self.type in ("PCA", "SVD"):
             if ("scale" in parameters) and self.type in ("PCA"):
                 check_types([("scale", parameters["scale"], [bool],)])
                 model_parameters["scale"] = parameters["scale"]
-            elif self.type in ("PCA"):
+            elif self.type in ("PCA",) and "scale" not in self.parameters:
                 model_parameters["scale"] = default_parameters["scale"]
+            elif self.type in ("PCA",):
+                model_parameters["scale"] = self.parameters["scale"]
             if "method" in parameters:
                 check_types([("method", parameters["method"], [str],)])
                 assert str(parameters["method"]).lower() in ["lapack"], ParameterError(
@@ -1175,8 +1279,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["method"] = parameters["method"]
-            else:
+            elif "method" not in self.parameters:
                 model_parameters["method"] = default_parameters["method"]
+            else:
+                model_parameters["method"] = self.parameters["method"]
             if "n_components" in parameters:
                 check_types(
                     [("n_components", parameters["n_components"], [int, float],)]
@@ -1185,34 +1291,46 @@ Main Class for Vertica Model
                     "Incorrect parameter 'n_components'.\nThe number of components must be positive. If it is equal to 0, all the components will be considered."
                 )
                 model_parameters["n_components"] = parameters["n_components"]
-            else:
+            elif "n_components" not in self.parameters:
                 model_parameters["n_components"] = default_parameters["n_components"]
-        elif self.type in ("OneHotEncoder"):
+            else:
+                model_parameters["n_components"] = self.parameters["n_components"]
+        elif self.type in ("OneHotEncoder",):
             if "extra_levels" in parameters:
                 check_types([("extra_levels", parameters["extra_levels"], [dict],)])
                 model_parameters["extra_levels"] = parameters["extra_levels"]
-            else:
+            elif "extra_levels" not in self.parameters:
                 model_parameters["extra_levels"] = default_parameters["extra_levels"]
+            else:
+                model_parameters["extra_levels"] = self.parameters["extra_levels"]
             if "drop_first" in parameters:
                 check_types([("drop_first", parameters["drop_first"], [bool],)])
                 model_parameters["drop_first"] = parameters["drop_first"]
-            else:
+            elif "drop_first" not in self.parameters:
                 model_parameters["drop_first"] = default_parameters["drop_first"]
+            else:
+                model_parameters["drop_first"] = self.parameters["drop_first"]
             if "ignore_null" in parameters:
                 check_types([("ignore_null", parameters["ignore_null"], [bool],)])
                 model_parameters["ignore_null"] = parameters["ignore_null"]
-            else:
+            elif "ignore_null" not in self.parameters:
                 model_parameters["ignore_null"] = default_parameters["ignore_null"]
+            else:
+                model_parameters["ignore_null"] = self.parameters["ignore_null"]
             if "separator" in parameters:
                 check_types([("separator", parameters["separator"], [str],)])
                 model_parameters["separator"] = parameters["separator"]
-            else:
+            elif "separator" not in self.parameters:
                 model_parameters["separator"] = default_parameters["separator"]
+            else:
+                model_parameters["separator"] = self.parameters["separator"]
             if "null_column_name" in parameters:
                 check_types([("null_column_name", parameters["null_column_name"], [str],)])
                 model_parameters["null_column_name"] = parameters["null_column_name"]
-            else:
+            elif "null_column_name" not in self.parameters:
                 model_parameters["null_column_name"] = default_parameters["null_column_name"]
+            else:
+                model_parameters["null_column_name"] = self.parameters["null_column_name"]
             if "column_naming" in parameters:
                 check_types([("column_naming", parameters["column_naming"], [str],)])
                 assert str(parameters["column_naming"]).lower() in [
@@ -1225,9 +1343,11 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["column_naming"] = parameters["column_naming"]
-            else:
+            elif "column_naming" not in self.parameters:
                 model_parameters["column_naming"] = default_parameters["column_naming"]
-        elif self.type in ("Normalizer"):
+            else:
+                model_parameters["column_naming"] = self.parameters["column_naming"]
+        elif self.type in ("Normalizer",):
             if "method" in parameters:
                 check_types([("method", parameters["method"], [str],)])
                 assert str(parameters["method"]).lower() in [
@@ -1240,33 +1360,41 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["method"] = parameters["method"]
-            else:
+            elif "method" not in self.parameters:
                 model_parameters["method"] = default_parameters["method"]
-        elif self.type in ("DBSCAN"):
+            else:
+                model_parameters["method"] = self.parameters["method"]
+        elif self.type in ("DBSCAN",):
             if "eps" in parameters:
                 check_types([("eps", parameters["eps"], [int, float],)])
                 assert 0 < parameters["eps"], ParameterError(
                     "Incorrect parameter 'eps'.\nThe radius of a neighborhood must be strictly positive."
                 )
                 model_parameters["eps"] = parameters["eps"]
-            else:
+            elif "eps" not in self.parameters:
                 model_parameters["eps"] = default_parameters["eps"]
+            else:
+                model_parameters["eps"] = self.parameters["eps"]
             if "p" in parameters:
                 check_types([("p", parameters["p"], [int, float],)])
                 assert 0 < parameters["p"], ParameterError(
                     "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
-            else:
+            elif "p" not in self.parameters:
                 model_parameters["p"] = default_parameters["p"]
+            else:
+                model_parameters["p"] = self.parameters["p"]
             if "min_samples" in parameters:
                 check_types([("min_samples", parameters["min_samples"], [int, float],)])
                 assert 0 < parameters["min_samples"], ParameterError(
                     "Incorrect parameter 'min_samples'.\nThe minimum number of points required to form a dense region must be strictly positive."
                 )
                 model_parameters["min_samples"] = parameters["min_samples"]
-            else:
+            elif "min_samples" not in self.parameters:
                 model_parameters["min_samples"] = default_parameters["min_samples"]
+            else:
+                model_parameters["min_samples"] = self.parameters["min_samples"]
         elif self.type in (
             "NearestCentroid",
             "KNeighborsClassifier",
@@ -1279,45 +1407,57 @@ Main Class for Vertica Model
                     "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
-            else:
+            elif "p" not in self.parameters:
                 model_parameters["p"] = default_parameters["p"]
+            else:
+                model_parameters["p"] = self.parameters["p"]
             if ("n_neighbors" in parameters) and (self.type != "NearestCentroid"):
                 check_types([("n_neighbors", parameters["n_neighbors"], [int, float],)])
                 assert 0 < parameters["n_neighbors"], ParameterError(
                     "Incorrect parameter 'n_neighbors'.\nThe number of neighbors must be strictly positive."
                 )
                 model_parameters["n_neighbors"] = parameters["n_neighbors"]
-            elif self.type != "NearestCentroid":
+            elif self.type != "NearestCentroid" and "n_neighbors" not in self.parameters:
                 model_parameters["n_neighbors"] = default_parameters["n_neighbors"]
-        elif self.type in ("CountVectorizer"):
+            elif self.type != "NearestCentroid":
+                model_parameters["n_neighbors"] = self.parameters["n_neighbors"]
+        elif self.type in ("CountVectorizer",):
             if "max_df" in parameters:
                 check_types([("max_df", parameters["max_df"], [int, float],)])
                 assert 0 <= parameters["max_df"] <= 1, ParameterError(
                     "Incorrect parameter 'max_df'.\nIt must be between 0 and 1, inclusive."
                 )
                 model_parameters["max_df"] = parameters["max_df"]
-            else:
+            elif "max_df" not in self.parameters:
                 model_parameters["max_df"] = default_parameters["max_df"]
+            else:
+                model_parameters["max_df"] = self.parameters["max_df"]
             if "min_df" in parameters:
                 check_types([("min_df", parameters["min_df"], [int, float],)])
                 assert 0 <= parameters["min_df"] <= 1, ParameterError(
                     "Incorrect parameter 'min_df'.\nIt must be between 0 and 1, inclusive."
                 )
                 model_parameters["min_df"] = parameters["min_df"]
-            else:
+            elif "min_df" not in self.parameters:
                 model_parameters["min_df"] = default_parameters["min_df"]
+            else:
+                model_parameters["min_df"] = self.parameters["min_df"]
             if "lowercase" in parameters:
                 check_types([("lowercase", parameters["lowercase"], [bool],)])
                 model_parameters["lowercase"] = parameters["lowercase"]
-            else:
+            elif "lowercase" not in self.parameters:
                 model_parameters["lowercase"] = default_parameters["lowercase"]
+            else:
+                model_parameters["lowercase"] = self.parameters["lowercase"]
             if "ignore_special" in parameters:
                 check_types([("ignore_special", parameters["ignore_special"], [bool],)])
                 model_parameters["ignore_special"] = parameters["ignore_special"]
-            else:
+            elif "ignore_special" not in self.parameters:
                 model_parameters["ignore_special"] = default_parameters[
                     "ignore_special"
                 ]
+            else:
+                model_parameters["ignore_special"] = self.parameters["ignore_special"]
             if "max_text_size" in parameters:
                 check_types(
                     [
@@ -1333,15 +1473,44 @@ Main Class for Vertica Model
                     "Incorrect parameter 'max_text_size'.\nThe maximum text size must be positive."
                 )
                 model_parameters["max_text_size"] = parameters["max_text_size"]
-            else:
+            elif "max_text_size" not in self.parameters:
                 model_parameters["max_text_size"] = default_parameters["max_text_size"]
+            else:
+                model_parameters["max_text_size"] = self.parameters["max_text_size"]
             if "max_features" in parameters:
                 check_types(
                     [("max_features", parameters["max_features"], [int, float],)]
                 )
                 model_parameters["max_features"] = parameters["max_features"]
-            else:
+            elif "max_features" not in self.parameters:
                 model_parameters["max_features"] = default_parameters["max_features"]
+            else:
+                model_parameters["max_features"] = self.parameters["max_features"]
+        from verticapy.learn.linear_model import Lasso, Ridge, LinearRegression
+        from verticapy.learn.tree import DecisionTreeClassifier, DecisionTreeRegressor, DummyTreeClassifier, DummyTreeRegressor
+        if isinstance(self, Lasso):
+            model_parameters["penalty"] = "l1"
+            if "l1_ratio" in model_parameters:
+                del model_parameters["l1_ratio"]
+        elif isinstance(self, Ridge):
+            model_parameters["penalty"] = "l2"
+            if "l1_ratio" in model_parameters:
+                del model_parameters["l1_ratio"]
+        elif isinstance(self, LinearRegression):
+            model_parameters["penalty"] = "none"
+            if "l1_ratio" in model_parameters:
+                del model_parameters["l1_ratio"]
+            if "C" in model_parameters:
+                del model_parameters["C"]
+        elif isinstance(self, (DecisionTreeClassifier, DecisionTreeRegressor, DummyTreeClassifier, DummyTreeRegressor)):
+            model_parameters["n_estimators"] = 1
+            model_parameters["sample"] = 1.0
+            if isinstance(self, (DummyTreeClassifier, DummyTreeRegressor)):
+                model_parameters["max_features"] = "max"
+                model_parameters["max_leaf_nodes"] = 1e9
+                model_parameters["max_depth"] = 100
+                model_parameters["min_samples_leaf"] = 1
+                model_parameters["min_info_gain"] = 0.0
         self.parameters = model_parameters
 
     # ---#
@@ -1726,7 +1895,7 @@ Main Class for Vertica Model
                 )
                 model._n_threads = None
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
-            if isinstance(self, (vens.RandomForestClassifier,)):
+            if isinstance(self, (vens.RandomForestClassifier,)) or self.type == "RandomForestClassifier":
                 raise ModelError(
                     "Model Conversion failed. RandomForestClassifier is not yet supported."
                 )
@@ -1744,12 +1913,12 @@ Main Class for Vertica Model
             }
             for i in range(len(self.X)):
                 features[str_column(self.X[i]).lower()] = i
-            if isinstance(self, (vens.RandomForestRegressor,)):
+            if isinstance(self, (vens.RandomForestRegressor,)) or self.type == "RandomForestRegressor":
                 model = skens.RandomForestRegressor(
                     n_estimators=params["n_estimators"], **parameters
                 )
                 model.base_estimator_ = skdtree.DecisionTreeRegressor(**parameters)
-            elif isinstance(self, (vens.RandomForestClassifier,)):
+            elif isinstance(self, (vens.RandomForestClassifier,)) or self.type == "RandomForestClassifier":
                 model = skens.RandomForestClassifier(
                     n_estimators=params["n_estimators"], **parameters
                 )
@@ -3538,7 +3707,7 @@ class Preprocessing(Unsupervised):
         if not(vdf):
             vdf = self.input_relation
         if not(X):
-            X = self.X
+            X = self.get_names()
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)

@@ -275,7 +275,7 @@ class TestDummyTreeClassifier:
 
     def test_set_params(self, model):
         model.set_params({"nbins": 100})
-
+        # Nothing will change as Dummy Trees have no parameters
         assert model.get_params()["nbins"] == 100
 
     def test_model_from_vDF(self, base, dtc_data_vd):

@@ -100,8 +100,9 @@ skip_nonindexable_polygons: bool, optional
 
 Returns
 -------
-vDataFrame
-    object result of the join.
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
     """
     check_types(
         [
