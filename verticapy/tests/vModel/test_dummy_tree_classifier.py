@@ -23,6 +23,7 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def dtc_data_vd(base):
+    
     base.cursor.execute("DROP TABLE IF EXISTS public.dtc_data")
     base.cursor.execute("CREATE TABLE IF NOT EXISTS public.dtc_data(Id INT, transportation VARCHAR, gender VARCHAR, \"owned cars\" INT, cost VARCHAR, income CHAR(4))")
     base.cursor.execute("INSERT INTO dtc_data VALUES (1, 'Bus', 'Male', 0, 'Cheap', 'Low')")
