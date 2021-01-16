@@ -1691,18 +1691,21 @@ Main Class for Vertica Model
                     )
                     model.n_samples_seen_ = self.cursor.fetchone()[0]
             elif isinstance(self, (vpp.OneHotEncoder,)):
+                drop = None
                 model = skpp.OneHotEncoder()
                 model.drop_idx_ = None
+                if self.parameters["drop_first"]:
+                    model.drop_idx_ = np.array([0 for elem in range(len(self.X))])
                 params = self.param_
                 vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
                 categories = []
                 for column in self.X:
                     idx = []
                     for i in range(len(params["category_name"])):
-                        if str_column(params["category_name"][i]) == str_column(column):
+                        if str_column(params["category_name"][i]) == str_column(column) and (not(self.parameters["ignore_null"]) or params["category_level"][i] != None):
                             idx += [i]
                     cat_tmp = []
-                    for i in idx:
+                    for j, i in enumerate(idx):
                         elem = params["category_level"][i]
                         if vdf[column].dtype() == "int":
                             try:
@@ -1754,6 +1757,9 @@ Main Class for Vertica Model
                 model.singular_values_ = np.array(
                     self.get_attr("singular_values")["value"]
                 )
+                for i in range(len(model.components_)):
+                    for j in range(len(model.components_[0])):
+                        model.components_[i][j] /= model.singular_values_[i]
         elif self.type in ("NaiveBayes",):
             import sklearn.naive_bayes as sknb
 
@@ -1895,9 +1901,9 @@ Main Class for Vertica Model
                 )
                 model._n_threads = None
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
-            if isinstance(self, (vens.RandomForestClassifier,)) or self.type == "RandomForestClassifier":
+            if isinstance(self, (vens.RandomForestClassifier,)) or self.type in ("RandomForestClassifier", "RandomForestRegressor"):
                 raise ModelError(
-                    "Model Conversion failed. RandomForestClassifier is not yet supported."
+                    "Model Conversion failed. Tree Based Models are not yet supported."
                 )
             import sklearn.tree._tree as sktree
             import sklearn.tree as skdtree

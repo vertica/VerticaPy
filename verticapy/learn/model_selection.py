@@ -226,7 +226,9 @@ tablesample
                 "median_absolute_error",
                 "mean_absolute_error",
                 "mean_squared_error",
+                "root_mean_squared_error",
                 "r2",
+                "r2_adj",
             ]
         }
     elif estimator.type in (
@@ -310,7 +312,7 @@ tablesample
         except:
             pass
     n = (
-        6
+        8
         if (
             estimator.type
             in (
