@@ -48,6 +48,12 @@ class TestSVD:
 
         assert result_sql == expected_sql
 
+    def test_deployInverseSQL(self, model):
+        expected_sql = "APPLY_INVERSE_SVD(\"citric_acid\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'SVD_model_test', match_by_pos = 'true')"
+        result_sql = model.deployInverseSQL()
+
+        assert result_sql == expected_sql
+
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS SVD_model_test_drop")
         model_test = SVD("SVD_model_test_drop", cursor=base.cursor)
@@ -93,7 +99,6 @@ class TestSVD:
         assert model.get_params() == {'method': 'lapack', 'n_components': 0}
 
     def test_to_sklearn(self, model):
-        # Zscore
         md = model.to_sklearn()
         model.cursor.execute(
             "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(

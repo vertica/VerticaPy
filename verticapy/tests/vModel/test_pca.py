@@ -48,6 +48,12 @@ class TestPCA:
 
         assert result_sql == expected_sql
 
+    def test_deployInverseSQL(self, model):
+        expected_sql = "APPLY_INVERSE_PCA(\"citric_acid\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'pca_model_test', match_by_pos = 'true')"
+        result_sql = model.deployInverseSQL()
+
+        assert result_sql == expected_sql
+
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS pca_model_test_drop")
         model_test = PCA("pca_model_test_drop", cursor=base.cursor)

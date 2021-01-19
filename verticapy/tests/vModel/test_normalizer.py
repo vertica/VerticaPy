@@ -49,6 +49,12 @@ class TestNormalizer:
 
         assert result_sql == expected_sql
 
+    def test_deployInverseSQL(self, model):
+        expected_sql = "REVERSE_NORMALIZE(\"citric_acid\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'norm_model_test', match_by_pos = 'true')"
+        result_sql = model.deployInverseSQL()
+
+        assert result_sql == expected_sql
+
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS norm_model_test_drop")
         model_test = Normalizer("norm_model_test_drop", cursor=base.cursor)
@@ -116,6 +122,7 @@ class TestNormalizer:
             )
         )
         prediction = model2.cursor.fetchone()[0]
+        model2.drop()
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0][0])
         # Robust Zscore
         model3 = Normalizer("norm_model_test2", cursor=model.cursor, method = "robust_zscore")
@@ -130,6 +137,7 @@ class TestNormalizer:
             )
         )
         prediction = model3.cursor.fetchone()[0]
+        model3.drop()
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0][0])
 
     def test_get_transform(self, winequality_vd, model):
