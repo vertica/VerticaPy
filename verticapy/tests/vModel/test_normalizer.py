@@ -174,6 +174,7 @@ class TestNormalizer:
         assert winequality_trans["alcohol"].min() == pytest.approx(
             0.0, abs=1e-6
         )
+        model2.drop()
         # Robust Zscore
         model3 = Normalizer("norm_model_test2", cursor=model.cursor, method = "robust_zscore")
         model3.drop()
@@ -193,6 +194,7 @@ class TestNormalizer:
         assert winequality_trans["alcohol"].median() == pytest.approx(
             0.0, abs=1e-6
         )
+        model3.drop()
 
     def test_get_inverse_transform(self, winequality_vd, model):
         winequality_trans = model.inverse_transform(
