@@ -82,7 +82,7 @@ input_relation: str/vDataFrame
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
 k: int, optional
-    Number of predictors
+    Number of predictors.
 cursor: DBcursor, optional
     Vertica DB cursor.
 
@@ -454,7 +454,7 @@ float
 
 
 # ---#
-def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 1, adj: bool = False):
+def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 0, adj: bool = True):
     """
 ---------------------------------------------------------------------------
 Computes the R2 Score.
@@ -497,7 +497,7 @@ float
     )
     executeSQL(cursor, query, "Computing the R2 Score.")
     result = cursor.fetchone()[0]
-    if adj:
+    if adj and k > 0:
         query = "SELECT COUNT(*) FROM {}".format(
             input_relation
         )

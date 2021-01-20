@@ -140,7 +140,7 @@ class TestDummyTreeRegressor:
     def test_get_plot(self):
         pass
 
-    @pytest.mark.xfail(reason = "vmodel.py, line 1725, in to_sklearn: local variable 'model' referenced before assignment")
+    @pytest.mark.xfail(reason = "pb with sklearn trees")
     def test_to_sklearn(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS tr_model_sk_test")
 
@@ -253,9 +253,9 @@ class TestDummyTreeRegressor:
         model_test.drop()
 
     def test_set_params(self, model):
+        # Nothing will change as Dummy Trees have no parameters
         model.set_params({"max_features": 100})
-
-        assert model.get_params()["max_features"] == 100
+        assert model.get_params()["max_features"] == "max"
 
     def test_model_from_vDF(self, base, tr_data_vd):
         base.cursor.execute("DROP MODEL IF EXISTS tr_from_vDF")

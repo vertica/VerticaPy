@@ -60,7 +60,7 @@ class Pipeline:
     """
 ---------------------------------------------------------------------------
 Creates a Pipeline object. Sequentially apply a list of transforms and a 
-final estimator. 
+final estimator. The intermediate steps must implement a transform method.
 
 Parameters
 ----------
@@ -216,7 +216,10 @@ steps: list
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             if idx == len(self.steps) - 1:
-                current_vdf = step[1].predict(current_vdf, X_new, name = name)
+                try:
+                    current_vdf = step[1].predict(current_vdf, X_new, name = name, inplace = False)
+                except:
+                    current_vdf = step[1].predict(current_vdf, X_new, name = name)
             else:
                 current_vdf = step[1].transform(current_vdf, X_new)
                 X_new = step[1].get_names(X = X)
