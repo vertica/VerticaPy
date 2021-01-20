@@ -176,7 +176,9 @@ udx_str, sql
 			if not(isinstance(dep_file_path, str)):
 				raise ValueError(f"The parameter include_dependencies type must be <list> of <str>. Found {type(dep_file_path)} inside.")
 			f = open(dep_file_path)
-			udx_str += "\n" + f.read() + "\n"
+			file_str = f.read()
+			exec(file_str)
+			udx_str += "\n" + file_str + "\n"
 			f.close()
 	udx_str += "\n"
 	sql = []

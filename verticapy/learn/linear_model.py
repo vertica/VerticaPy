@@ -163,7 +163,8 @@ solver: str, optional
             }
         )
         for elem in ["l1_ratio"]:
-            del self.parameters[elem]
+            if elem in self.parameters:
+                del self.parameters[elem]
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
@@ -214,7 +215,8 @@ solver: str, optional
             }
         )
         for elem in ["l1_ratio", "C"]:
-            del self.parameters[elem]
+            if elem in self.parameters:
+                del self.parameters[elem]
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
@@ -342,7 +344,8 @@ solver: str, optional
             }
         )
         for elem in ["l1_ratio"]:
-            del self.parameters[elem]
+            if elem in self.parameters:
+                del self.parameters[elem]
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
