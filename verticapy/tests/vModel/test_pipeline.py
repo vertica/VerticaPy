@@ -138,6 +138,8 @@ class TestPipeline:
         assert cls_rep1["csi"][0] == pytest.approx(0.19602649006622516)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
 
+        model_class.drop()
+
     def test_score(self, model):
         # method = "max"
         assert model.score(method="max") == pytest.approx(3.592465, abs=1e-6)
@@ -184,6 +186,8 @@ class TestPipeline:
             0.361130555239542, abs=1e-6
         )
 
+        model_class.drop()
+
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline([("NormalizerWine", StandardScaler("logstd_model_test", cursor=model.cursor)),
                                 ("NormalizerWine", MinMaxScaler("logmm_model_test", cursor=model.cursor)),])
@@ -197,6 +201,8 @@ class TestPipeline:
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             80.3934257349546, abs=1e-6
         )
+
+        model_class.drop()
 
     def test_model_from_vDF(self, base, winequality_vd):
         model_test = Pipeline([("NormalizerWine", StandardScaler("std_model_test_vdf", cursor=base.cursor)),

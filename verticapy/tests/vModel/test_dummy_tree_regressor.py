@@ -140,7 +140,7 @@ class TestDummyTreeRegressor:
     def test_get_plot(self):
         pass
 
-    @pytest.mark.xfail(reason = "pb with sklearn trees")
+    @pytest.mark.skip(reason = "pb with sklearn trees")
     def test_to_sklearn(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS tr_model_sk_test")
 
