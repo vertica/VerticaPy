@@ -70,8 +70,7 @@ class TestModelSelection:
                                 "quality",
                                 "r2",
                                 cv=3,
-                                training_score=True,
-                                cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
+                                training_score=True,)
         assert result[0]["r2"][3] == pytest.approx(0.21464568751357532, 5e-1)
         assert result[1]["r2"][3] == pytest.approx(0.207040342625429, 5e-1)
         result2 = cross_validate(LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
@@ -80,8 +79,7 @@ class TestModelSelection:
                                  "good",
                                  "auc",
                                  cv=3,
-                                 training_score=True,
-                                 cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
+                                 training_score=True,)
         assert result2[0]["auc"][3] == pytest.approx(0.7604040062168419, 5e-1)
         assert result2[1]["auc"][3] == pytest.approx(0.7749948214599245, 5e-1)
         result3 = cross_validate(NaiveBayes("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
@@ -91,8 +89,7 @@ class TestModelSelection:
                                  "auc",
                                  cv=3,
                                  training_score=True,
-                                 pos_label=7,
-                                 cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
+                                 pos_label=7,)
         assert result3[0]["auc"][3] == pytest.approx(0.7405650946597986, 5e-1)
         assert result3[1]["auc"][3] == pytest.approx(0.7386519406866139, 5e-1)
 
@@ -123,7 +120,6 @@ class TestModelSelection:
             "good",
             "auc",
             cv=3,
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
         )
         assert len(result.values) == 6
         assert len(result["parameters"]) == 6
@@ -202,7 +198,6 @@ class TestModelSelection:
             "auc",
             cv=3,
             ax=None,
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
         )
         assert len(result["tol"]) == 3
         assert len(result["test_score"]) == 3
