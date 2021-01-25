@@ -64,32 +64,35 @@ class TestModelSelection:
         assert result in [3, 4]
 
     def test_cross_validate(self, winequality_vd):
-        result = cross_validate(LinearRegression("model_test"),
+        result = cross_validate(LinearRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
                                 winequality_vd,
                                 ["residual_sugar", "alcohol"],
                                 "quality",
                                 "r2",
                                 cv=3,
-                                training_score=True,)
+                                training_score=True,
+                                cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         assert result[0]["r2"][3] == pytest.approx(0.21464568751357532, 5e-1)
         assert result[1]["r2"][3] == pytest.approx(0.207040342625429, 5e-1)
-        result2 = cross_validate(LogisticRegression("model_test"),
+        result2 = cross_validate(LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
                                  "public.winequality",
                                  ["residual_sugar", "alcohol"],
                                  "good",
                                  "auc",
                                  cv=3,
-                                 training_score=True,)
+                                 training_score=True,
+                                 cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         assert result2[0]["auc"][3] == pytest.approx(0.7604040062168419, 5e-1)
         assert result2[1]["auc"][3] == pytest.approx(0.7749948214599245, 5e-1)
-        result3 = cross_validate(NaiveBayes("model_test"),
+        result3 = cross_validate(NaiveBayes("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
                                  "public.winequality",
                                  ["residual_sugar", "alcohol"],
                                  "quality",
                                  "auc",
                                  cv=3,
                                  training_score=True,
-                                 pos_label=7,)
+                                 pos_label=7,
+                                 cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         assert result3[0]["auc"][3] == pytest.approx(0.7405650946597986, 5e-1)
         assert result3[1]["auc"][3] == pytest.approx(0.7386519406866139, 5e-1)
 
@@ -113,19 +116,20 @@ class TestModelSelection:
 
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
-            LogisticRegression("model_test"),
+            LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
             {"solver": ["Newton", "BFGS", "CGD"], "tol": [0.1, 0.01]},
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "good",
             "auc",
             cv=3,
+            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
         )
         assert len(result.values) == 6
         assert len(result["parameters"]) == 6
 
     def test_lift_chart(self, winequality_vd):
-        model = LogisticRegression("model_test")
+        model = LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         model.drop()
         model.fit("public.winequality", 
                   ["residual_sugar", "alcohol"],
@@ -146,7 +150,7 @@ class TestModelSelection:
         plt.close()
 
     def test_prc_curve(self, winequality_vd):
-        model = LogisticRegression("model_test")
+        model = LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         model.drop()
         model.fit("public.winequality", 
                   ["residual_sugar", "alcohol"],
@@ -167,7 +171,7 @@ class TestModelSelection:
         plt.close()
 
     def test_roc_curve(self, winequality_vd):
-        model = LogisticRegression("model_test")
+        model = LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],)
         model.drop()
         model.fit("public.winequality", 
                   ["residual_sugar", "alcohol"],
@@ -189,7 +193,7 @@ class TestModelSelection:
 
     def test_validation_curve(self, winequality_vd):
         result = validation_curve(
-            LogisticRegression("model_test"),
+            LogisticRegression("model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],),
             "tol",
             [0.1, 0.01, 0.001],
             winequality_vd,
@@ -198,6 +202,7 @@ class TestModelSelection:
             "auc",
             cv=3,
             ax=None,
+            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
         )
         assert len(result["tol"]) == 3
         assert len(result["test_score"]) == 3
