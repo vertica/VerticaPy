@@ -760,7 +760,7 @@ class TestvDFDescriptiveStat:
 
         # Drawing ROC Curve
         roc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="roc"
+            y_true="survived", y_score="survived_pred", method="roc", nbins=1000,
         )
         assert roc_res["threshold"][3] == 0.003
         assert roc_res["false_positive"][3] == 1.0
@@ -774,7 +774,7 @@ class TestvDFDescriptiveStat:
 
         # Drawing PRC Curve
         prc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="prc"
+            y_true="survived", y_score="survived_pred", method="prc", nbins=1000,
         )
         assert prc_res["threshold"][3] == 0.002
         assert prc_res["recall"][3] == 1.0

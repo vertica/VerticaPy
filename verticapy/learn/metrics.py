@@ -797,28 +797,18 @@ tablesample
                 "DECODE({}, '{}', 1, 0)".format(y_true, elem),
             )
             matrix = confusion_matrix(y_true, y_p, input_relation, cursor, pos_label)
-        try:
-            tn, fn, fp, tp = (
-                matrix.values[non_pos_label][0],
-                matrix.values[non_pos_label][1],
-                matrix.values[pos_label][0],
-                matrix.values[pos_label][1],
-            )
-        except:
-            try:
-                tn, fn, fp, tp = (
-                    matrix.values[0][0],
-                    matrix.values[0][1],
-                    matrix.values[1][0],
-                    matrix.values[1][1],
-                )
-            except:
-                tn, fn, fp, tp = (
-                    matrix.values["0"][0],
-                    matrix.values["0"][1],
-                    matrix.values["1"][0],
-                    matrix.values["1"][1],
-                )
+        if non_pos_label in matrix.values and pos_label in matrix.values:
+            non_pos_label_, pos_label_ = non_pos_label, pos_label
+        elif 0 in matrix.values and 1 in matrix.values:
+            non_pos_label_, pos_label_ = 0, 1
+        else:
+            non_pos_label_, pos_label_ = "0", "1"
+        tn, fn, fp, tp = (
+            matrix.values[non_pos_label_][0],
+            matrix.values[non_pos_label_][1],
+            matrix.values[pos_label_][0],
+            matrix.values[pos_label_][1],
+        )
         ppv = tp / (tp + fp) if (tp + fp != 0) else 0  # precision
         tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
         tnr = tn / (tn + fp) if (tn + fp != 0) else 0

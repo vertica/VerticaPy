@@ -3350,6 +3350,71 @@ Attributes
         return self.aggregate(func=["{}%".format(x * 100)]).values[self.alias][0]
 
     # ---#
+    def range_plot(
+        self,
+        ts: str,
+        q: tuple = (0.25, 0.75),
+        start_date: str = "",
+        end_date: str = "",
+        plot_median: bool = False,
+        color: str = None,
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Range Plot of the vcolumn. The aggregations used is Median and 2
+    input quantiles.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the Plot.
+    start_date: str, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    plot_median: bool, optional
+        If set to True, the Median will be drawn.
+    color: str, optional
+        Color of the TS.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.plot : Draws the Time Series.
+        """
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("q", q, [tuple],),
+                ("start_date", start_date, [str],),
+                ("end_date", end_date, [str],),
+                ("color", color, [str],),
+                ("plot_median", plot_median, [bool],),
+            ]
+        )
+        if not color:
+            from verticapy.plot import gen_colors
+
+            color = gen_colors()[0]
+        columns_check([ts], self.parent)
+        ts = vdf_columns_names([ts], self.parent)[0]
+        from verticapy.plot import range_curve_vdf
+
+        return range_curve_vdf(self, ts, q, start_date, end_date, plot_median, color, ax=ax)
+
+    # ---#
     def rename(self, new_name: str):
         """
 	---------------------------------------------------------------------------

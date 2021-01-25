@@ -1061,14 +1061,25 @@ Main Class for Vertica Model
             if "init" in parameters:
                 check_types([("init", parameters["init"], [str, list],)])
                 if isinstance(parameters["init"], str):
-                    assert str(parameters["init"]).lower() in [
-                        "random",
-                        "kmeanspp",
-                    ], ParameterError(
-                        "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp) or a list of the initial clusters position, found '{}'.".format(
-                            parameters["init"]
+                    if self.type in ("BisectingKMeans",):
+                        assert str(parameters["init"]).lower() in [
+                            "random",
+                            "kmeanspp",
+                            "pseudo",
+                        ], ParameterError(
+                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp | pseudo) or a list of the initial clusters position, found '{}'.".format(
+                                parameters["init"]
+                            )
                         )
-                    )
+                    else:
+                        assert str(parameters["init"]).lower() in [
+                            "random",
+                            "kmeanspp",
+                        ], ParameterError(
+                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp) or a list of the initial clusters position, found '{}'.".format(
+                                parameters["init"]
+                            )
+                        )
                 model_parameters["init"] = parameters["init"]
             elif "init" not in self.parameters:
                 model_parameters["init"] = default_parameters["init"]
@@ -2361,7 +2372,7 @@ class BinaryClassifier(Classifier):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def lift_chart(self, ax=None):
+    def lift_chart(self, ax=None, nbins=1000):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2378,11 +2389,11 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return lift_chart(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax, nbins=nbins,
         )
 
     # ---#
-    def prc_curve(self, ax=None):
+    def prc_curve(self, ax=None, nbins: int = 30):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2399,7 +2410,7 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return prc_curve(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax, nbins=nbins,
         )
 
     # ---#
@@ -2458,7 +2469,28 @@ class BinaryClassifier(Classifier):
             return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
-    def roc_curve(self, ax=None):
+    def cutoff_curve(self, ax=None, nbins: int = 30):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model Cutoff curve.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        return roc_curve(
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax, cutoff_curve=True, nbins=nbins,
+        )
+
+    # ---#
+    def roc_curve(self, ax=None, nbins: int = 30):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2475,7 +2507,7 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return roc_curve(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax, nbins=nbins,
         )
 
     # ---#
@@ -2527,6 +2559,7 @@ class BinaryClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
+                nbins=1000,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
@@ -2633,7 +2666,7 @@ class MulticlassClassifier(Classifier):
             if (pos_label == None and len(self.classes_) == 2)
             else pos_label
         )
-        if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+        if pos_label:
             return confusion_matrix(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
@@ -2645,6 +2678,46 @@ class MulticlassClassifier(Classifier):
             return multilabel_confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, self.classes_, self.cursor
             )
+
+    # ---#
+    def cutoff_curve(self, pos_label: (int, float, str) = None, ax=None, nbins: int = 30):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model Cutoff curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str, optional
+        To draw the ROC curve, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        return roc_curve(
+            self.y,
+            self.deploySQL(allSQL=True)[0].format(pos_label),
+            self.test_relation,
+            self.cursor,
+            pos_label,
+            ax=ax,
+            cutoff_curve=True,
+            nbins=nbins,
+        )
 
     # ---#
     def deploySQL(
@@ -2726,7 +2799,7 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
-    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None, nbins=1000):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2761,10 +2834,11 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins,
         )
 
     # ---#
-    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None, nbins: int = 30):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2799,6 +2873,7 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins,
         )
 
     # ---#
@@ -2868,7 +2943,7 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
-    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None, nbins: int = 30):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2903,6 +2978,7 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins
         )
 
     # ---#
@@ -2988,6 +3064,7 @@ class MulticlassClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
+                nbins=1000,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
@@ -3426,10 +3503,10 @@ class Unsupervised(vModel):
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))
-            and self.type == "KMeans"
+            and self.type in ("KMeans", "BisectingKMeans")
         ):
             schema = schema_relation(self.name)[0]
-            name = "VERTICAPY_KMEANS_INITIAL"
+            name = "VERTICAPY_KMEANS_INITIAL_{}".format(get_session(self.cursor))
             del parameters["init_method"]
             try:
                 self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))

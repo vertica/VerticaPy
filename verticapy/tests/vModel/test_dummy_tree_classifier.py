@@ -131,7 +131,7 @@ class TestDummyTreeClassifier:
         plt.close()
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart(pos_label = "Bus")
+        lift_ch = model.lift_chart(pos_label = "Bus", nbins=1000)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
         assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(1.0)
@@ -208,7 +208,7 @@ class TestDummyTreeClassifier:
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve(pos_label = 'Car')
+        prc = model.prc_curve(pos_label = 'Car', nbins=1000)
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(1.0)
@@ -231,7 +231,7 @@ class TestDummyTreeClassifier:
         assert dtc_data_copy["pred_class2"].mode() == 'Bus'
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve(pos_label = 'Train')
+        roc = model.roc_curve(pos_label = 'Train', nbins=1000)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(0.0)
@@ -239,6 +239,17 @@ class TestDummyTreeClassifier:
         assert roc["threshold"][700] == pytest.approx(0.7)
         assert roc["false_positive"][700] == pytest.approx(0.0)
         assert roc["true_positive"][700] == pytest.approx(1.0)
+        plt.close()
+
+    def test_cutoff_curve(self, model):
+        cutoff_curve = model.cutoff_curve(pos_label = 'Train', nbins=1000)
+
+        assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
+        assert cutoff_curve["false_positive"][100] == pytest.approx(0.0)
+        assert cutoff_curve["true_positive"][100] == pytest.approx(1.0)
+        assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
+        assert cutoff_curve["false_positive"][700] == pytest.approx(0.0)
+        assert cutoff_curve["true_positive"][700] == pytest.approx(1.0)
         plt.close()
 
     def test_score(self, model):
