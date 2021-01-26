@@ -33,7 +33,6 @@ jobs:
       - name: Run tests
         run: |
           export VP_TEST_USER=dbadmin
-          pip install pytest-cov
           tox -e py -- --cov=./ --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
