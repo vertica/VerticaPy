@@ -353,12 +353,14 @@ def default_model_parameters(model_type: str):
     elif model_type in ("PCA"):
         return {"n_components": 0, "scale": False, "method": "lapack"}
     elif model_type in ("OneHotEncoder"):
-        return {"extra_levels": {},
-                "drop_first": True,
-                "ignore_null": True,
-                "separator": '_',
-                "column_naming": "indices",
-                "null_column_name": "null"}
+        return {
+            "extra_levels": {},
+            "drop_first": True,
+            "ignore_null": True,
+            "separator": "_",
+            "column_naming": "indices",
+            "null_column_name": "null",
+        }
     elif model_type in ("Normalizer"):
         return {"method": "zscore"}
     elif model_type in ("LinearSVR"):
@@ -1095,6 +1097,39 @@ def type_code_dtype(
         return result
     else:
         return "Undefined"
+
+
+# ---#
+def updated_dict(
+    d1: dict, d2: dict, color_idx: int = 0,
+):
+    d = {}
+    for elem in d1:
+        d[elem] = d1[elem]
+    for elem in d2:
+        if elem == "color":
+            if isinstance(d2["color"], str):
+                d["color"] = d2["color"]
+            elif color_idx < 0:
+                d["color"] = [elem for elem in d2["color"]]
+            else:
+                d["color"] = d2["color"][color_idx % len(d2["color"])]
+        else:
+            d[elem] = d2[elem]
+    return d
+
+
+# ---#
+def color_dict(d: dict, idx: int = 0):
+    if "color" in d:
+        if isinstance(d["color"], str):
+            return d["color"]
+        else:
+            return d["color"][idx % len(d["color"])]
+    else:
+        from verticapy.plot import gen_colors
+
+        return gen_colors()[idx % len(gen_colors())]
 
 
 # ---#

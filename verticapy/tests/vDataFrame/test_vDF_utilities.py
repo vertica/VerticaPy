@@ -14,7 +14,7 @@
 import pytest, os, warnings
 from math import ceil, floor
 from verticapy import vDataFrame, get_session, drop_table, drop_view
-from verticapy import set_option
+from verticapy import set_option, read_shp
 import verticapy.stats as st
 
 set_option("print_info", False)
@@ -29,6 +29,18 @@ def titanic_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop_table(
             name="public.titanic", cursor=base.cursor,
+        )
+
+
+@pytest.fixture(scope="module")
+def cities_vd(base):
+    from verticapy.learn.datasets import load_cities
+
+    cities = load_cities(cursor=base.cursor)
+    yield cities
+    with warnings.catch_warnings(record=True) as w:
+        drop_table(
+            name="public.cities", cursor=base.cursor,
         )
 
 
@@ -57,7 +69,6 @@ def world_vd(base):
 
 
 class TestvDFUtilities:
-
     def test_vDF_magic(self, titanic_vd):
         assert (
             str(titanic_vd["name"]._in(["Madison", "Ashley", None]))
@@ -315,6 +326,7 @@ class TestvDFUtilities:
     def test_vDF_to_pickle(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_pickle("save.p")
         import pickle
+
         pickle.DEFAULT_PROTOCOL = 4
         result_tmp = pickle.load(open("save.p", "rb"))
         result_tmp.set_cursor(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
@@ -326,6 +338,29 @@ class TestvDFUtilities:
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)
+
+    def test_vDF_to_shp(self, cities_vd):
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                name="public.cities_test",
+                cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
+        cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
+        vdf = read_shp(
+            "/home/dbadmin/cities_test.shp", cities_vd._VERTICAPY_VARIABLES_["cursor"]
+        )
+        assert vdf.shape() == (202, 3)
+        try:
+            os.remove("/home/dbadmin/cities_test.shp")
+            os.remove("/home/dbadmin/cities_test.shx")
+            os.remove("/home/dbadmin/cities_test.dbf")
+        except:
+            pass
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                name="public.cities_test",
+                cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
 
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()

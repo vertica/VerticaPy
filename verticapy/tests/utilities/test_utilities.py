@@ -34,42 +34,43 @@ def cities_vd(base):
 def world_vd(base):
     from verticapy.learn.datasets import load_world
 
-    world = load_world(cursor=base.cursor)
-    yield world
+    cities = load_world(cursor=base.cursor)
+    yield cities
     with warnings.catch_warnings(record=True) as w:
         drop_table(
             name="public.world", cursor=base.cursor,
         )
 
 
-class TestGeo:
-    def test_index_create_describe_rename_intersect(self, world_vd, cities_vd):
+class TestUtilities:
+    def test_drop_geo_index(self, world_vd):
         world_copy = world_vd.copy()
         world_copy["id"] = "ROW_NUMBER() OVER (ORDER BY pop_est)"
         result = create_index(world_copy, "id", "geometry", "world_polygons", True)
-        assert result["polygons"][0] == 177
-        assert result["min_x"][0] == pytest.approx(-180.0)
-        assert result["min_y"][0] == pytest.approx(-90.0)
-        assert result["max_x"][0] == pytest.approx(180.0)
-        assert result["max_y"][0] == pytest.approx(83.64513)
-        rename_index(
-            "world_polygons",
-            "world_polygons_rename",
-            world_vd._VERTICAPY_VARIABLES_["cursor"],
-            True,
+        result = drop_geo_index(
+            "world_polygons", world_vd._VERTICAPY_VARIABLES_["cursor"],
         )
-        result2 = describe_index(
-            "world_polygons_rename", world_vd._VERTICAPY_VARIABLES_["cursor"], True
+        assert result == True
+
+    def test_read_shp(self, cities_vd):
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                name="public.cities_test",
+                cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
+        cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
+        vdf = read_shp(
+            "/home/dbadmin/cities_test.shp", cities_vd._VERTICAPY_VARIABLES_["cursor"]
         )
-        assert result2.shape() == (177, 3)
-        cities_copy = cities_vd.copy()
-        cities_copy["id"] = "ROW_NUMBER() OVER (ORDER BY city)"
-        result3 = intersect(cities_copy, "world_polygons_rename", "id", "geometry")
-        assert result3.shape() == (172, 2)
-        cities_copy["x"] = "ST_X(geometry)"
-        cities_copy["y"] = "ST_Y(geometry)"
-        result4 = intersect(cities_copy, "world_polygons_rename", "id", x="x", y="y")
-        assert result4.shape() == (172, 2)
-        drop_geo_index(
-            "world_polygons_rename", world_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
+        assert vdf.shape() == (202, 3)
+        try:
+            os.remove("/home/dbadmin/cities_test.shp")
+            os.remove("/home/dbadmin/cities_test.shx")
+            os.remove("/home/dbadmin/cities_test.dbf")
+        except:
+            pass
+        with warnings.catch_warnings(record=True) as w:
+            drop_table(
+                name="public.cities_test",
+                cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
+            )

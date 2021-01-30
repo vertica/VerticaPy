@@ -141,6 +141,7 @@ dsn: dict
 		password : User Password
 		port     : Database Port (optional, default: 5433)
 		user     : User ID (optional, default: dbadmin)
+        ...
 name: str, optional
 	Name of the auto connection.
 

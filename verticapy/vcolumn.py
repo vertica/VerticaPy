@@ -617,8 +617,8 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -645,10 +645,10 @@ Attributes
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
- 	color: str, optional
- 		Histogram color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -666,19 +666,14 @@ Attributes
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("bins", bins, [int, float],),
                 ("h", h, [int, float],),
-                ("color", color, [str],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import bar
 
-        return bar(self, method, of, max_cardinality, bins, h, color, ax=ax)
+        return bar(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
 
     # ---#
     def boxplot(
@@ -732,7 +727,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import boxplot
 
-        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax)
+        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax,)
 
     # ---#
     def category(self):
@@ -895,6 +890,7 @@ Attributes
         xlim: tuple = None,
         color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -922,6 +918,8 @@ Attributes
  		The Density Plot color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -969,6 +967,7 @@ Attributes
                     xlim=(xmin, xmax),
                     color=colors[idx % len(colors)],
                     ax=ax,
+                    **style_kwds,
                 )
                 custom_lines += [
                     Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
@@ -1391,7 +1390,7 @@ Attributes
             result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
-            if h <= 0:
+            if not (h) or h <= 0:
                 if bins <= 0:
                     h = self.numh()
                 else:
@@ -1513,6 +1512,7 @@ Attributes
         max_cardinality: int = 6,
         h: float = 0,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -1539,6 +1539,8 @@ Attributes
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -1562,7 +1564,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, True, ax=ax)
+        return pie(self, method, of, max_cardinality, h, True, ax=ax, **style_kwds,)
 
     # ---#
     def drop(self, add_history: bool = True):
@@ -2008,6 +2010,54 @@ Attributes
         return self.parent
 
     # ---#
+    def geo_plot(
+        self, *args, **kwargs,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Geospatial Object.
+
+    Parameters
+    ----------
+    *args / **kwargs
+        Any optional parameter to pass to the geopandas plot function.
+        For more information, see: 
+        https://geopandas.readthedocs.io/en/latest/docs/reference/api/
+                geopandas.GeoDataFrame.plot.html
+    
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        columns = [self.alias]
+        check = True
+        if len(args) > 0:
+            column = args[0]
+        elif "column" in kwargs:
+            column = kwargs["column"]
+        else:
+            check = False
+        if check:
+            columns_check([column], self.parent)
+            column = vdf_columns_names([column], self.parent)[0]
+            columns += [column]
+            if not ("cmap" in kwargs):
+                from verticapy.plot import gen_cmap
+
+                kwargs["cmap"] = gen_cmap()[0]
+        else:
+            if not ("color" in kwargs):
+                from verticapy.plot import gen_colors
+
+                kwargs["color"] = gen_colors()[0]
+        if not ("legend" in kwargs):
+            kwargs["legend"] = True
+        if not ("figsize" in kwargs):
+            kwargs["figsize"] = (14, 10)
+        return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs,)
+
+    # ---#
     def get_dummies(
         self,
         prefix: str = "",
@@ -2152,6 +2202,7 @@ Attributes
         h: float = 0,
         color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -2182,6 +2233,8 @@ Attributes
  		Histogram color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -2211,7 +2264,9 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import hist
 
-        return hist(self, method, of, max_cardinality, bins, h, color, ax=ax)
+        return hist(
+            self, method, of, max_cardinality, bins, h, color, ax=ax, **style_kwds,
+        )
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -3188,6 +3243,7 @@ Attributes
         max_cardinality: int = 6,
         h: float = 0,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3214,6 +3270,8 @@ Attributes
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3237,7 +3295,7 @@ Attributes
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, False, ax=None)
+        return pie(self, method, of, max_cardinality, h, False, ax=None, **style_kwds,)
 
     # ---#
     def plot(
@@ -3246,9 +3304,10 @@ Attributes
         by: str = "",
         start_date: str = "",
         end_date: str = "",
-        color: str = None,
         area: bool = False,
+        step: bool = False,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3267,12 +3326,14 @@ Attributes
  	end_date: str, optional
  		Input End Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is greater than November 1993 the 3rd.
- 	color: str, optional
- 		Color of the TS.
  	area: bool, optional
  		If set to True, draw an Area Plot.
+    step: bool, optional
+        If set to True, draw a Step Plot.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3289,14 +3350,10 @@ Attributes
                 ("by", by, [str],),
                 ("start_date", start_date, [str],),
                 ("end_date", end_date, [str],),
-                ("color", color, [str],),
                 ("area", area, [bool],),
+                ("step", step, [bool],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         columns_check([ts], self.parent)
         ts = vdf_columns_names([ts], self.parent)[0]
         if by:
@@ -3304,7 +3361,9 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import ts_plot
 
-        return ts_plot(self, ts, by, start_date, end_date, color, area, ax=ax)
+        return ts_plot(
+            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
+        )
 
     # ---#
     def product(self):
@@ -3348,6 +3407,68 @@ Attributes
 		"""
         check_types([("x", x, [int, float],)])
         return self.aggregate(func=["{}%".format(x * 100)]).values[self.alias][0]
+
+    # ---#
+    def range_plot(
+        self,
+        ts: str,
+        q: tuple = (0.25, 0.75),
+        start_date: str = "",
+        end_date: str = "",
+        plot_median: bool = False,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Range Plot of the vcolumn. The aggregations used is Median and 2
+    input quantiles.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    q: tuple, optional
+        Tuple including the 2 quantiles used to draw the Plot.
+    start_date: str, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    plot_median: bool, optional
+        If set to True, the Median will be drawn.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.plot : Draws the Time Series.
+        """
+        check_types(
+            [
+                ("ts", ts, [str],),
+                ("q", q, [tuple],),
+                ("start_date", start_date, [str],),
+                ("end_date", end_date, [str],),
+                ("plot_median", plot_median, [bool],),
+            ]
+        )
+        columns_check([ts], self.parent)
+        ts = vdf_columns_names([ts], self.parent)[0]
+        from verticapy.plot import range_curve_vdf
+
+        return range_curve_vdf(
+            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
+        )
 
     # ---#
     def rename(self, new_name: str):

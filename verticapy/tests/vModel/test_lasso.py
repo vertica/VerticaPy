@@ -147,7 +147,7 @@ class TestLasso:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="problem with shap installation")
+    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.81837771)
@@ -187,19 +187,28 @@ class TestLasso:
         assert reg_rep["value"][7] == pytest.approx(0.0008407218505677161, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
-        assert reg_rep_details["value"][2:] == [6497.0,
-                                                3,
-                                                pytest.approx(0.00130215624626484),
-                                                pytest.approx(0.0008407218505677161),
-                                                pytest.approx(0.9668703628035513),
-                                                pytest.approx(0.40727177684393245),
-                                                pytest.approx(0.232322269343305),
-                                                pytest.approx(0.189622693372695),
-                                                pytest.approx(53.1115447611131)]
+        assert reg_rep_details["value"][2:] == [
+            6497.0,
+            3,
+            pytest.approx(0.00130215624626484),
+            pytest.approx(0.0008407218505677161),
+            pytest.approx(0.9668703628035513),
+            pytest.approx(0.40727177684393245),
+            pytest.approx(0.232322269343305),
+            pytest.approx(0.189622693372695),
+            pytest.approx(53.1115447611131),
+        ]
 
         reg_rep_anova = model.regression_report("anova")
-        assert reg_rep_anova["SS"] == [pytest.approx(2.21007321118539), pytest.approx(4947.23522831515), pytest.approx(4953.68570109281)]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(0.73669107039513), pytest.approx(0.7619336559857001)]
+        assert reg_rep_anova["SS"] == [
+            pytest.approx(2.21007321118539),
+            pytest.approx(4947.23522831515),
+            pytest.approx(4953.68570109281),
+        ]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(0.73669107039513),
+            pytest.approx(0.7619336559857001),
+        ]
 
     def test_score(self, model):
         # method = "max"
@@ -217,7 +226,9 @@ class TestLasso:
         # method = "r2"
         assert model.score(method="r2") == pytest.approx(0.001302, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(0.0008407218505677161, abs=1e-6)
+        assert model.score(method="r2a") == pytest.approx(
+            0.0008407218505677161, abs=1e-6
+        )
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.001302, abs=1e-6)
 
