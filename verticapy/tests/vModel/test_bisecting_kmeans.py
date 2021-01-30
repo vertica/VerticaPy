@@ -23,7 +23,9 @@ set_option("print_info", False)
 @pytest.fixture(scope="module")
 def bsk_data_vd(base):
     base.cursor.execute("DROP TABLE IF EXISTS public.bsk_data")
-    base.cursor.execute("CREATE TABLE IF NOT EXISTS public.bsk_data(Id INT, col1 FLOAT, col2 FLOAT, col3 FLOAT, col4 FLOAT)")
+    base.cursor.execute(
+        "CREATE TABLE IF NOT EXISTS public.bsk_data(Id INT, col1 FLOAT, col2 FLOAT, col3 FLOAT, col4 FLOAT)"
+    )
     base.cursor.execute("INSERT INTO bsk_data VALUES (1, 7.2, 3.6, 6.1, 2.5)")
     base.cursor.execute("INSERT INTO bsk_data VALUES (2, 7.7, 2.8, 6.7, 2.0)")
     base.cursor.execute("INSERT INTO bsk_data VALUES (3, 7.7, 3.0, 6.1, 2.3)")
@@ -36,7 +38,7 @@ def bsk_data_vd(base):
     base.cursor.execute("INSERT INTO bsk_data VALUES (10, 7.0, 3.2, 4.7, 1.4)")
     base.cursor.execute("COMMIT")
 
-    bsk_data = vDataFrame(input_relation = "public.bsk_data", cursor=base.cursor)
+    bsk_data = vDataFrame(input_relation="public.bsk_data", cursor=base.cursor)
     yield bsk_data
     with warnings.catch_warnings(record=True) as w:
         drop_table(name="public.bsk_data", cursor=base.cursor)
@@ -46,9 +48,13 @@ def bsk_data_vd(base):
 def model(base, bsk_data_vd):
     base.cursor.execute("DROP MODEL IF EXISTS bsk_model_test")
 
-    base.cursor.execute("SELECT BISECTING_KMEANS('bsk_model_test', 'public.bsk_data', '*', 3 USING PARAMETERS exclude_columns='id', kmeans_seed=11, id_column='id')")
+    base.cursor.execute(
+        "SELECT BISECTING_KMEANS('bsk_model_test', 'public.bsk_data', '*', 3 USING PARAMETERS exclude_columns='id', kmeans_seed=11, id_column='id')"
+    )
 
-    model_class = BisectingKMeans("bsk_model_test", cursor = base.cursor, n_cluster = 3, max_iter = 10)
+    model_class = BisectingKMeans(
+        "bsk_model_test", cursor=base.cursor, n_cluster=3, max_iter=10
+    )
     model_class.metrics_ = model_class.get_attr("Metrics")
     model_class.cluster_centers_ = model_class.get_attr("BKTree")
     model_class.X = ["col1", "col2", "col3", "col4"]
@@ -58,7 +64,6 @@ def model(base, bsk_data_vd):
 
 
 class TestBisectingKMeans:
-
     def test_deploySQL(self, model):
         expected_sql = "APPLY_BISECTING_KMEANS(col1, col2, col3, col4 USING PARAMETERS model_name = 'bsk_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
@@ -85,15 +90,23 @@ class TestBisectingKMeans:
         m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
-            'num_of_clusters',
-            'dimensions_of_dataset',
-            'num_of_clusters_found',
-            'height_of_BKTree',
-            'BKTree',
-            'Metrics',
-            'call_string'
+            "num_of_clusters",
+            "dimensions_of_dataset",
+            "num_of_clusters_found",
+            "height_of_BKTree",
+            "BKTree",
+            "Metrics",
+            "call_string",
         ]
-        assert m_att["attr_fields"] == ['num_of_clusters', 'dimensions_of_dataset', 'num_of_clusters_found', 'height_of_BKTree', 'center_id, col1, col2, col3, col4, withinss, totWithinss, bisection_level, cluster_size, parent, left_child, right_child', 'Measure, Value', 'call_string']
+        assert m_att["attr_fields"] == [
+            "num_of_clusters",
+            "dimensions_of_dataset",
+            "num_of_clusters_found",
+            "height_of_BKTree",
+            "center_id, col1, col2, col3, col4, withinss, totWithinss, bisection_level, cluster_size, parent, left_child, right_child",
+            "Measure, Value",
+            "call_string",
+        ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 5, 7, 1]
 
         assert model.get_attr("num_of_clusters")["num_of_clusters"][0] == 3
@@ -105,7 +118,16 @@ class TestBisectingKMeans:
         assert m_att_bktree["bisection_level"] == [0, 1, 1, 2, 2]
 
     def test_get_params(self, model):
-        assert model.get_params() == {'max_iter': 10, 'tol': 0.0001, 'n_cluster': 3, 'init': 'kmeanspp', 'bisection_iterations': 1, 'split_method': 'sum_squares', 'min_divisible_cluster_size': 2, 'distance_method': 'euclidean'}
+        assert model.get_params() == {
+            "max_iter": 10,
+            "tol": 0.0001,
+            "n_cluster": 3,
+            "init": "kmeanspp",
+            "bisection_iterations": 1,
+            "split_method": "sum_squares",
+            "min_divisible_cluster_size": 2,
+            "distance_method": "euclidean",
+        }
 
     @pytest.mark.skip(reason="not yet available")
     def test_to_sklearn(self, model):
@@ -114,11 +136,7 @@ class TestBisectingKMeans:
     def test_get_predict(self, bsk_data_vd, model):
         bsk_data_copy = bsk_data_vd.copy()
 
-        model.predict(
-            bsk_data_copy,
-            X = ["col1", "col2", "col3", "col4"],
-            name = "pred"
-        )
+        model.predict(bsk_data_copy, X=["col1", "col2", "col3", "col4"], name="pred")
 
         assert len(bsk_data_copy["pred"].distinct()) == 3
 
@@ -150,18 +168,28 @@ class TestBisectingKMeans:
         model_test.drop()
 
     def test_init_method(self, base):
-        model_test_kmeanspp = BisectingKMeans("bsk_kmeanspp_test", cursor = base.cursor, init = "kmeanspp")
+        model_test_kmeanspp = BisectingKMeans(
+            "bsk_kmeanspp_test", cursor=base.cursor, init="kmeanspp"
+        )
         model_test_kmeanspp.drop()
         model_test_kmeanspp.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
-        assert model_test_kmeanspp.get_attr("call_string")["call_string"][0] == 'bisecting_kmeans(\'bsk_kmeanspp_test\', \'public.bsk_data\', \'"col1", "col2", "col3", "col4"\', 8\nUSING PARAMETERS bisection_iterations=1, split_method=\'SUM_SQUARES\', min_divisible_cluster_size=2, distance_method=\'euclidean\', kmeans_center_init_method=\'kmeanspp\', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=\'\'"col1", "col2", "col3", "col4"\'\')'
+        assert (
+            model_test_kmeanspp.get_attr("call_string")["call_string"][0]
+            == "bisecting_kmeans('bsk_kmeanspp_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='kmeanspp', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+        )
         model_test_kmeanspp.drop()
 
-        model_test_pseudo = BisectingKMeans("bsk_pseudo_test", cursor = base.cursor, init = "pseudo")
+        model_test_pseudo = BisectingKMeans(
+            "bsk_pseudo_test", cursor=base.cursor, init="pseudo"
+        )
         model_test_pseudo.drop()
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
-        assert model_test_pseudo.get_attr("call_string")["call_string"][0] == 'bisecting_kmeans(\'bsk_pseudo_test\', \'public.bsk_data\', \'"col1", "col2", "col3", "col4"\', 8\nUSING PARAMETERS bisection_iterations=1, split_method=\'SUM_SQUARES\', min_divisible_cluster_size=2, distance_method=\'euclidean\', kmeans_center_init_method=\'pseudo\', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=\'\'"col1", "col2", "col3", "col4"\'\')'
+        assert (
+            model_test_pseudo.get_attr("call_string")["call_string"][0]
+            == "bisecting_kmeans('bsk_pseudo_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='pseudo', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+        )
         model_test_pseudo.drop()
 
     @pytest.mark.skip(reason="test not implemented")

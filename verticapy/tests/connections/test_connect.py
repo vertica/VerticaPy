@@ -17,7 +17,6 @@ import verticapy.connections.connect
 
 
 class TestConnect(VerticaPyTestBase):
-    
     @pytest.mark.skip(reason="test not implemented")
     def test_available_auto_connection(self):
         pass

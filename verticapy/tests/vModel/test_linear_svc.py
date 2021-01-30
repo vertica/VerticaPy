@@ -41,7 +41,6 @@ def model(base, titanic_vd):
 
 
 class TestLinearSVC:
-
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
@@ -174,14 +173,14 @@ class TestLinearSVC:
         params = model.get_params()
 
         assert params == {
-            'tol': 0.0001,
-            'C': 1.0,
+            "tol": 0.0001,
+            "C": 1.0,
             "max_iter": 100,
-            'fit_intercept': True,
-            'intercept_scaling': 1.0,
-            'intercept_mode': 'regularized',
-            'class_weight': [1, 1],
-            'penalty': 'l2'
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "class_weight": [1, 1],
+            "penalty": "l2",
         }
 
     def test_prc_curve(self, model):
@@ -199,9 +198,7 @@ class TestLinearSVC:
         titanic_copy = titanic_vd.copy()
 
         model.predict(titanic_copy, name="pred_probability")
-        assert titanic_copy["pred_probability"].min() == pytest.approx(
-            0.33841486903496
-        )
+        assert titanic_copy["pred_probability"].min() == pytest.approx(0.33841486903496)
 
         model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
         assert titanic_copy["pred_class1"].sum() == 23.0
@@ -272,16 +269,14 @@ class TestLinearSVC:
         assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
             0.11858662456854734
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
-            0.4701827451261984
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.4701827451261984)
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
+            0.14467112146063243
         )
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.14467112146063243)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.8260869565217391
         )
-        assert model.score(cutoff=0.3, method="npv") == pytest.approx(
-            0.392570281124498
-        )
+        assert model.score(cutoff=0.3, method="npv") == pytest.approx(0.392570281124498)
         assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
             0.5976470350144453
         )

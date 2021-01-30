@@ -34,15 +34,12 @@ def winequality_vd(base):
 def model(base, winequality_vd):
     base.cursor.execute("DROP MODEL IF EXISTS norm_model_test")
     model_class = Normalizer("norm_model_test", cursor=base.cursor)
-    model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
-    )
+    model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
 
 
 class TestNormalizer:
-
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_NORMALIZE("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'norm_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
@@ -50,7 +47,7 @@ class TestNormalizer:
         assert result_sql == expected_sql
 
     def test_deployInverseSQL(self, model):
-        expected_sql = "REVERSE_NORMALIZE(\"citric_acid\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'norm_model_test', match_by_pos = 'true')"
+        expected_sql = 'REVERSE_NORMALIZE("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'norm_model_test\', match_by_pos = \'true\')'
         result_sql = model.deployInverseSQL()
 
         assert result_sql == expected_sql
@@ -97,7 +94,7 @@ class TestNormalizer:
         assert m_att_details["std_dev"][2] == pytest.approx(1.192711748871)
 
     def test_get_params(self, model):
-        assert model.get_params() == {'method': 'zscore'}
+        assert model.get_params() == {"method": "zscore"}
 
     def test_to_sklearn(self, model):
         # Zscore
@@ -110,11 +107,9 @@ class TestNormalizer:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0][0])
         # Minmax
-        model2 = Normalizer("norm_model_test2", cursor=model.cursor, method = "minmax")
+        model2 = Normalizer("norm_model_test2", cursor=model.cursor, method="minmax")
         model2.drop()
-        model2.fit(
-            "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
-        )
+        model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         md = model2.to_sklearn()
         model2.cursor.execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
@@ -125,11 +120,11 @@ class TestNormalizer:
         model2.drop()
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0][0])
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", cursor=model.cursor, method = "robust_zscore")
-        model3.drop()
-        model3.fit(
-            "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
+        model3 = Normalizer(
+            "norm_model_test2", cursor=model.cursor, method="robust_zscore"
         )
+        model3.drop()
+        model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         md = model3.to_sklearn()
         model3.cursor.execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
@@ -143,63 +138,43 @@ class TestNormalizer:
     def test_get_transform(self, winequality_vd, model):
         # Zscore
         winequality_trans = model.transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
-        assert winequality_trans["citric_acid"].mean() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert winequality_trans["citric_acid"].mean() == pytest.approx(0.0, abs=1e-6)
         assert winequality_trans["residual_sugar"].mean() == pytest.approx(
             0.0, abs=1e-6
         )
-        assert winequality_trans["alcohol"].mean() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert winequality_trans["alcohol"].mean() == pytest.approx(0.0, abs=1e-6)
         # Minmax
-        model2 = Normalizer("norm_model_test2", cursor=model.cursor, method = "minmax")
+        model2 = Normalizer("norm_model_test2", cursor=model.cursor, method="minmax")
         model2.drop()
-        model2.fit(
-            "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
-        )
+        model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         winequality_trans = model2.transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
-        assert winequality_trans["citric_acid"].min() == pytest.approx(
-            0.0, abs=1e-6
-        )
-        assert winequality_trans["residual_sugar"].max() == pytest.approx(
-            1.0, abs=1e-6
-        )
-        assert winequality_trans["alcohol"].min() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert winequality_trans["citric_acid"].min() == pytest.approx(0.0, abs=1e-6)
+        assert winequality_trans["residual_sugar"].max() == pytest.approx(1.0, abs=1e-6)
+        assert winequality_trans["alcohol"].min() == pytest.approx(0.0, abs=1e-6)
         model2.drop()
         # Robust Zscore
-        model3 = Normalizer("norm_model_test2", cursor=model.cursor, method = "robust_zscore")
+        model3 = Normalizer(
+            "norm_model_test2", cursor=model.cursor, method="robust_zscore"
+        )
         model3.drop()
-        model3.fit(
-            "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
-        )
+        model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
         winequality_trans = model3.transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
-        assert winequality_trans["citric_acid"].median() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert winequality_trans["citric_acid"].median() == pytest.approx(0.0, abs=1e-6)
         assert winequality_trans["residual_sugar"].median() == pytest.approx(
             0.0, abs=1e-6
         )
-        assert winequality_trans["alcohol"].median() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert winequality_trans["alcohol"].median() == pytest.approx(0.0, abs=1e-6)
         model3.drop()
 
     def test_get_inverse_transform(self, winequality_vd, model):
         winequality_trans = model.inverse_transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
         assert winequality_trans["citric_acid"].mean() == pytest.approx(
             0.364936313867385, abs=1e-6

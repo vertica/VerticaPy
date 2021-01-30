@@ -64,7 +64,11 @@ from verticapy.toolbox import *
 #
 # ---#
 def anova_table(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), k: int = 1, cursor=None
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    k: int = 1,
+    cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -101,9 +105,7 @@ tablesample
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT COUNT(*), AVG({}) FROM {}".format(
-        y_true, input_relation
-    )
+    query = "SELECT COUNT(*), AVG({}) FROM {}".format(y_true, input_relation)
     executeSQL(cursor, query, "Computing n and the average of y.")
     n, avg = cursor.fetchone()[0:2]
     query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {}".format(
@@ -114,23 +116,25 @@ tablesample
     dfr, dfe, dft = k, n - 1 - k, n - 1
     MSR, MSE = SSR / dfr, SSE / dfe
     if MSE == 0:
-        F = float('inf')
+        F = float("inf")
     else:
         F = MSR / MSE
     from scipy.stats import f
+
     pvalue = f.sf(F, k, n)
     if conn:
         conn.close()
     return tablesample(
-            {
-                "index": ["Regression", "Residual", "Total"],
-                "Df": [dfr, dfe, dft],
-                "SS": [SSR, SSE, SST],
-                "MS": [MSR, MSE, ""],
-                "F": [F, "", ""],
-                "p_value": [pvalue, "", ""],
-            }
-        )
+        {
+            "index": ["Regression", "Residual", "Total"],
+            "Df": [dfr, dfe, dft],
+            "SS": [SSR, SSE, SST],
+            "MS": [MSR, MSE, ""],
+            "F": [F, "", ""],
+            "p_value": [pvalue, "", ""],
+        }
+    )
+
 
 # ---#
 def explained_variance(
@@ -269,7 +273,11 @@ float
 
 # ---#
 def mean_squared_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, root: bool = False
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    root: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -454,7 +462,14 @@ float
 
 
 # ---#
-def r2_score(y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 0, adj: bool = True):
+def r2_score(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    k: int = 0,
+    adj: bool = True,
+):
     """
 ---------------------------------------------------------------------------
 Computes the R2 Score.
@@ -498,9 +513,7 @@ float
     executeSQL(cursor, query, "Computing the R2 Score.")
     result = cursor.fetchone()[0]
     if adj and k > 0:
-        query = "SELECT COUNT(*) FROM {}".format(
-            input_relation
-        )
+        query = "SELECT COUNT(*) FROM {}".format(input_relation)
         executeSQL(cursor, query, "Computing the table number of elements.")
         n = cursor.fetchone()[0]
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
@@ -511,7 +524,11 @@ float
 
 # ---#
 def regression_report(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None, k: int = 1,
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    k: int = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -554,7 +571,9 @@ tablesample
     query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(
         y_true, y_score, y_true, y_score
     )
-    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {}".format(y_true, y_score, input_relation)
+    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {}".format(
+        y_true, y_score, input_relation
+    )
     r2 = r2_score(y_true, y_score, input_relation, cursor)
     values = {
         "index": [
@@ -571,7 +590,16 @@ tablesample
     executeSQL(cursor, query, "Computing the Regression Report.")
     result = cursor.fetchone()
     n = result[5]
-    values["value"] = [result[0], result[1], result[2], result[3], result[4], math.sqrt(result[4]), r2, 1 - ((1 - r2) * (n - 1) / (n - k - 1))]
+    values["value"] = [
+        result[0],
+        result[1],
+        result[2],
+        result[3],
+        result[4],
+        math.sqrt(result[4]),
+        r2,
+        1 - ((1 - r2) * (n - 1) / (n - k - 1)),
+    ]
     if conn:
         conn.close()
     return tablesample(values)

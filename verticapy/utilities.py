@@ -178,6 +178,47 @@ cursor: DBcursor, optional
 
 
 # ---#
+def drop_geo_index(name: str, cursor=None, raise_error: bool = False):
+    """
+---------------------------------------------------------------------------
+Drops the input Geo Index.
+
+Parameters
+----------
+name: str
+    Index name.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+raise_error: bool, optional
+    If the table couldn't be dropped, raises the entire error instead of
+    displaying a warning.
+
+Returns
+-------
+bool
+    True if the Geo Index was dropped, False otherwise.
+    """
+    check_types(
+        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
+    )
+    cursor, conn = check_cursor(cursor)[0:2]
+    try:
+        query = f"SELECT STV_Drop_Index(USING PARAMETERS index ='{name}') OVER ();"
+        cursor.execute(query)
+        if conn:
+            conn.close()
+        return True
+    except:
+        if conn:
+            conn.close()
+        if raise_error:
+            raise
+        warning_message = f"The Geo Index '{name}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information."
+        warnings.warn(warning_message, Warning)
+        return False
+
+
+# ---#
 def drop_model(name: str, cursor=None, raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
@@ -1273,6 +1314,7 @@ read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
+            ("path", path, [str],),
             ("schema", schema, [str],),
             ("table_name", table_name, [str],),
             ("sep", sep, [str],),
@@ -1549,6 +1591,61 @@ read_csv : Ingests a CSV file in the Vertica DB.
         return vDataFrame(table_name, cursor, schema=schema)
 
 
+# ---#
+def read_shp(
+    path: str, cursor=None, schema: str = "public", table_name: str = "",
+):
+    """
+---------------------------------------------------------------------------
+Ingests a SHP file. For the moment, only files located in the Vertica server 
+can be ingested.
+
+Parameters
+----------
+path: str
+    Absolute path where the CSV file is located.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+schema: str, optional
+    Schema where the CSV file will be ingested.
+table_name: str, optional
+    Final relation name.
+
+Returns
+-------
+vDataFrame
+    The vDataFrame of the relation.
+    """
+    check_types(
+        [
+            ("path", path, [str],),
+            ("schema", schema, [str],),
+            ("table_name", table_name, [str],),
+        ]
+    )
+    file = path.split("/")[-1]
+    file_extension = file[-3 : len(file)]
+    if file_extension != "shp":
+        raise ExtensionError("The file extension is incorrect !")
+    cursor = check_cursor(cursor)[0]
+    query = f"SELECT STV_ShpCreateTable(USING PARAMETERS file='{path}') OVER() AS create_shp_table;"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    if not (table_name):
+        table_name = file[:-4]
+    result[0] = [f'CREATE TABLE "{schema}"."{table_name}"(']
+    result = [elem[0] for elem in result]
+    result = "".join(result)
+    cursor.execute(result)
+    query = f'COPY "{schema}"."{table_name}" WITH SOURCE STV_ShpSource(file=\'{path}\') PARSER STV_ShpParser();'
+    cursor.execute(query)
+    print(f'The table "{schema}"."{table_name}" has been successfully created.')
+    from verticapy import vDataFrame
+
+    return vDataFrame(table_name, cursor, schema=schema)
+
+
+# ---#
 def set_option(option: str, value: (bool, int, str) = None):
     """
     ---------------------------------------------------------------------------

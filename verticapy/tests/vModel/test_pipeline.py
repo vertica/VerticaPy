@@ -36,8 +36,15 @@ def winequality_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, winequality_vd):
-    model_class = Pipeline([("NormalizerWine", StandardScaler("std_model_test", cursor=base.cursor)),
-                            ("LinearRegressionWine", LinearRegression("linreg_model_test", cursor=base.cursor))])
+    model_class = Pipeline(
+        [
+            ("NormalizerWine", StandardScaler("std_model_test", cursor=base.cursor)),
+            (
+                "LinearRegressionWine",
+                LinearRegression("linreg_model_test", cursor=base.cursor),
+            ),
+        ]
+    )
     model_class.drop()
     model_class.fit(
         "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
@@ -47,14 +54,23 @@ def model(base, winequality_vd):
 
 
 class TestPipeline:
-
     def test_index(self, model):
         assert model[0].type == "Normalizer"
         assert model[0:][0][0] == "NormalizerWine"
 
     def test_drop(self, base, winequality_vd):
-        model_class = Pipeline([("NormalizerWine", StandardScaler("std_model_test_drop", cursor=base.cursor)),
-                                ("LinearRegressionWine", LinearRegression("linreg_model_test_drop", cursor=base.cursor))])
+        model_class = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("std_model_test_drop", cursor=base.cursor),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression("linreg_model_test_drop", cursor=base.cursor),
+                ),
+            ]
+        )
         model_class.drop()
         model_class.fit(winequality_vd, ["alcohol"], "quality")
         model_class.cursor.execute(
@@ -68,22 +84,29 @@ class TestPipeline:
         assert model_class.cursor.fetchone() is None
 
     def test_get_params(self, model):
-        assert model.get_params() == {'LinearRegressionWine': {'max_iter': 100,
-                                                               'penalty': 'none',
-                                                               'solver': 'newton',
-                                                               'tol': 1e-06},
-                                      'NormalizerWine': {'method': 'zscore'}}
+        assert model.get_params() == {
+            "LinearRegressionWine": {
+                "max_iter": 100,
+                "penalty": "none",
+                "solver": "newton",
+                "tol": 1e-06,
+            },
+            "NormalizerWine": {"method": "zscore"},
+        }
 
     def test_set_params(self, model):
-        model.set_params({'NormalizerWine': {'method': 'robust_zscore'}}) 
-        assert model.get_params()['NormalizerWine'] == {'method': 'robust_zscore'}
-        model.set_params({'NormalizerWine': {'method': 'zscore'}})
-
+        model.set_params({"NormalizerWine": {"method": "robust_zscore"}})
+        assert model.get_params()["NormalizerWine"] == {"method": "robust_zscore"}
+        model.set_params({"NormalizerWine": {"method": "zscore"}})
 
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
-        test_record = tablesample({"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.]}).to_vdf(cursor = model.cursor)
-        prediction = model.predict(test_record, ["citric_acid", "residual_sugar", "alcohol"])[0][-1]
+        test_record = tablesample(
+            {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
+        ).to_vdf(cursor=model.cursor)
+        prediction = model.predict(
+            test_record, ["citric_acid", "residual_sugar", "alcohol"]
+        )[0][-1]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
     def test_get_predicts(self, winequality_vd, model):
@@ -120,8 +143,18 @@ class TestPipeline:
         assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
 
-        model_class = Pipeline([("NormalizerWine", StandardScaler("logstd_model_test", cursor=model.cursor)),
-                                ("LogisticRegressionWine", LogisticRegression("logreg_model_test", cursor=model.cursor))])
+        model_class = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("logstd_model_test", cursor=model.cursor),
+                ),
+                (
+                    "LogisticRegressionWine",
+                    LogisticRegression("logreg_model_test", cursor=model.cursor),
+                ),
+            ]
+        )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"], "good")
         cls_rep1 = model_class.report().transpose()
@@ -161,8 +194,18 @@ class TestPipeline:
         assert model.score(method="var") == pytest.approx(0.219816, abs=1e-6)
 
     def test_set_cursor(self, base):
-        model_test = Pipeline([("NormalizerWine", StandardScaler("std_model_test_vdf", cursor=base.cursor)),
-                               ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf", cursor=base.cursor))])
+        model_test = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("std_model_test_vdf", cursor=base.cursor),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression("linreg_model_test_vdf", cursor=base.cursor),
+                ),
+            ]
+        )
         model_test.drop()
         model_test.set_cursor(base.cursor)
         model_test.fit("public.winequality", ["alcohol"], "quality")
@@ -173,15 +216,22 @@ class TestPipeline:
         model_test.drop()
 
     def test_transform(self, winequality_vd, model):
-        model_class = Pipeline([("NormalizerWine", StandardScaler("logstd_model_test", cursor=model.cursor)),
-                                ("NormalizerWine", MinMaxScaler("logmm_model_test", cursor=model.cursor)),])
+        model_class = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("logstd_model_test", cursor=model.cursor),
+                ),
+                (
+                    "NormalizerWine",
+                    MinMaxScaler("logmm_model_test", cursor=model.cursor),
+                ),
+            ]
+        )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"])
         winequality_copy = winequality_vd.copy()
-        winequality_copy = model_class.transform(
-            winequality_copy,
-            X=["alcohol"],
-        )
+        winequality_copy = model_class.transform(winequality_copy, X=["alcohol"],)
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             0.361130555239542, abs=1e-6
         )
@@ -189,14 +239,23 @@ class TestPipeline:
         model_class.drop()
 
     def test_inverse_transform(self, winequality_vd, model):
-        model_class = Pipeline([("NormalizerWine", StandardScaler("logstd_model_test", cursor=model.cursor)),
-                                ("NormalizerWine", MinMaxScaler("logmm_model_test", cursor=model.cursor)),])
+        model_class = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("logstd_model_test", cursor=model.cursor),
+                ),
+                (
+                    "NormalizerWine",
+                    MinMaxScaler("logmm_model_test", cursor=model.cursor),
+                ),
+            ]
+        )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"])
         winequality_copy = winequality_vd.copy()
         winequality_copy = model_class.inverse_transform(
-            winequality_copy,
-            X=["alcohol"],
+            winequality_copy, X=["alcohol"],
         )
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             80.3934257349546, abs=1e-6
@@ -205,8 +264,18 @@ class TestPipeline:
         model_class.drop()
 
     def test_model_from_vDF(self, base, winequality_vd):
-        model_test = Pipeline([("NormalizerWine", StandardScaler("std_model_test_vdf", cursor=base.cursor)),
-                               ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf", cursor=base.cursor))])
+        model_test = Pipeline(
+            [
+                (
+                    "NormalizerWine",
+                    StandardScaler("std_model_test_vdf", cursor=base.cursor),
+                ),
+                (
+                    "LinearRegressionWine",
+                    LinearRegression("linreg_model_test_vdf", cursor=base.cursor),
+                ),
+            ]
+        )
         model_test.drop()
         model_test.fit(
             winequality_vd, ["citric_acid", "residual_sugar", "alcohol"], "quality"
