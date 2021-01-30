@@ -43,6 +43,7 @@ def model(base, winequality_vd):
 
 
 class TestLinearRegression:
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'linreg_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
@@ -145,7 +146,7 @@ class TestLinearRegression:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="problem with shap installation")
+    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(5.81837771)

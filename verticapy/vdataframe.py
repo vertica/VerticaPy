@@ -50,6 +50,7 @@
 # Standard Python Modules
 import random, time, shutil, re, decimal, warnings, pickle
 from collections.abc import Iterable
+from itertools import combinations_with_replacement
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -1565,6 +1566,8 @@ vcolumns : vcolumn
     vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
     vDataFrame.pacf   : Computes the Partial Autocorrelations of the input vcolumn.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("by", by, [list],),
@@ -1585,7 +1588,6 @@ vcolumns : vcolumn
                 ("show", show, [bool],),
             ]
         )
-        method = method.lower()
         columns_check([column, ts] + by, self)
         by = vdf_columns_names(by, self)
         column = vdf_columns_names([column], self)[0]
@@ -2904,6 +2906,10 @@ vcolumns : vcolumn
      vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
      vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(method, str):
+            method = method.lower()
+        if isinstance(hist_type, str):
+            hist_type = hist_type.lower()
         check_types(
             [
                 ("columns", columns, [list],),
@@ -2918,7 +2924,6 @@ vcolumns : vcolumn
                 ),
             ]
         )
-        method, hist_type = method.lower(), hist_type.lower()
         columns_check(columns, self, [1, 2])
         columns = vdf_columns_names(columns, self)
         if of:
@@ -2933,7 +2938,6 @@ vcolumns : vcolumn
             elif hist_type.lower() == "stacked":
                 stacked = True
             from verticapy.plot import bar2D
-
             return bar2D(
                 self,
                 columns,
@@ -3297,6 +3301,8 @@ vcolumns : vcolumn
     vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
     vDataFrame.regr : Computes the Regression Matrix of the vDataFrame. 
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3311,7 +3317,6 @@ vcolumns : vcolumn
                 ("show", show, [bool],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
         if focus == "":
@@ -3373,6 +3378,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("column1", column1, [str],),
@@ -3383,9 +3390,9 @@ vcolumns : vcolumn
                     [
                         "pearson",
                         "kendall",
-                        "kendallA",
-                        "kendallB",
-                        "kendallC",
+                        "kendalla",
+                        "kendallb",
+                        "kendallc",
                         "spearman",
                         "biserial",
                         "cramer",
@@ -3396,8 +3403,6 @@ vcolumns : vcolumn
 
         from scipy.stats import t, norm, chi2
         from numpy import log
-
-        method = method.lower()
         columns_check([column1, column2], self)
         column1, column2 = vdf_columns_names([column1, column2], self)
         if method[0:7] == "kendall":
@@ -3997,6 +4002,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 (
@@ -4016,7 +4023,6 @@ vcolumns : vcolumn
                 ("unique", unique, [bool],),
             ]
         )
-        method = method.lower()
         if method == "auto":
             method = "numerical" if (self.numcol()) else "categorical"
         columns_check(columns, self)
@@ -5490,6 +5496,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5502,7 +5510,6 @@ vcolumns : vcolumn
                 ("img", img, [str],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self, [2])
         columns = vdf_columns_names(columns, self)
         if of:
@@ -6234,13 +6241,14 @@ vcolumns : vcolumn
     vDataFrame[].normalize : Normalizes the vcolumn. This method is more complete 
         than the vDataFrame.normalize method by allowing more parameters.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("columns", columns, [list],),
                 ("method", method, ["zscore", "robust_zscore", "minmax"],),
             ]
         )
-        method = method.lower()
         columns_check(columns, self)
         no_cols = True if not (columns) else False
         columns = self.numcol() if not (columns) else vdf_columns_names(columns, self)
@@ -6372,6 +6380,58 @@ vcolumns : vcolumn
             name, "(CASE WHEN {} THEN 1 ELSE 0 END)".format(" OR ".join(conditions))
         )
         return self
+
+    # ---#
+    def outliers_plot(
+        self,
+        columns: list,
+        cmap: str = None,
+        max_nb_points: int = 500,
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Global Outliers Plot of one or two columns based on their ZSCORE.
+
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have one or two elements.
+    cmap: str, optional
+        Color Map.
+    max_nb_points: int, optional
+        Maximum number of points to display.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("cmap", cmap, [str],),
+                ("max_nb_points", max_nb_points, [int],),
+            ]
+        )
+        columns_check(columns, self, [1, 2])
+        columns = vdf_columns_names(columns, self)
+        if not (cmap):
+            from verticapy.plot import gen_cmap
+
+            cmap = gen_cmap()[0]
+        from verticapy.plot import outliers_contour_plot, gen_colors
+
+        return outliers_contour_plot(
+            self,
+            columns,
+            cmap,
+            max_nb_points = max_nb_points,
+            color = gen_colors()[0],
+            ax=ax,
+        )
 
     # ---#
     def pacf(
@@ -6589,6 +6649,51 @@ vcolumns : vcolumn
                     ax=ax,
                 )
             return result
+
+    # ---#
+    def pie(
+        self,
+        columns: list,
+        max_cardinality: tuple = (6, 6),
+        h: tuple = (None, None),
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the nested Density Pie Chart of the input vcolumns.
+
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have two elements.
+    max_cardinality: int, optional
+        Maximum number of the vcolumn distinct elements to be used as categorical 
+        (No h will be picked or computed)
+    h: float, optional
+        Interval width of the bar. If empty, an optimized h will be computed.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame[].pie : Draws the Pie Chart of the vcolumn based on an aggregation.
+        """
+        check_types(
+            [
+                ("max_cardinality", max_cardinality, [list],),
+                ("h", h, [list],),
+            ]
+        )
+        columns_check(columns, self, [2])
+        columns = vdf_columns_names(columns, self)
+        from verticapy.plot import nested_pie
+
+        return nested_pie(self, columns, max_cardinality, h, ax=None)
 
     # ---#
     def pivot(
@@ -6830,6 +6935,48 @@ vcolumns : vcolumn
         return multi_ts_plot(self, ts, columns, start_date, end_date, ax=ax)
 
     # ---#
+    def polynomial_comb(
+        self,
+        columns: list = [],
+        r: int = 2,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns a vDataFrame containing different input columns product combination.
+    This function is ideal for Bivariate Analysis.
+
+    Parameters
+    ----------
+    r: int, optional
+        Degree of the Polynomial.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used.
+
+    Returns
+    -------
+    vDataFrame
+        the Polynomial object.
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("r", r, [int],),
+            ]
+        )
+        columns_check(columns, self)
+        if not(columns):
+            numcol = self.numcol()
+        else:
+            numcol = vdf_columns_names(columns, self)
+        vdf = self.copy()
+        all_comb = combinations_with_replacement(numcol, r=r)
+        for elem in all_comb:
+            name = "_".join(elem)
+            vdf.eval(name.replace('"', ''), expr = " * ".join(elem))
+        return vdf
+
+    # ---#
     def product(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
@@ -6883,6 +7030,129 @@ vcolumns : vcolumn
         return self.aggregate(
             func=["{}%".format(float(item) * 100) for item in q], columns=columns
         )
+
+    # ---#
+    def recommend(self,
+                  unique_id: str,
+                  item_id: str,
+                  method: str = "count",
+                  rating: (str, tuple) = "",
+                  ts: str = "",
+                  start_date: str = "",
+                  end_date: str = ""):
+        """
+    ---------------------------------------------------------------------------
+    Recommend items based on the Collaborative Filtering (CF) technique.
+
+    Parameters
+    ----------
+    unique_id: str, optional
+        Input vcolumn corresponding to a unique ID. It is a primary key.
+    item_id: str
+        Input vcolumn corresponding to an item ID. It is a secondary key used to 
+        compute the different pairs.
+    method: str, optional
+        Method used to recommend.
+            count  : Each item will be recommended based on frequencies of the
+                     different items pair.
+            avg    : Each item will be recommended based on the average rating
+                     of the different items pair second element.
+            median : Each item will be recommended based on the median rating
+                     of the different items pair second element.
+    rating: str/tuple, optional
+        Input vcolumn including the items rating.
+        If the 'rating' type is 'tuple', it must composed of 3 elements: 
+        (r_vdf, r_item_id, r_name) where:
+            r_vdf is an input vDataFrame.
+            r_item_id is an input vcolumn which must includes the same id as 'item_id'.
+            r_name is an input vcolumn including the items rating. 
+    ts: str, optional
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    start_date: str, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+
+    Returns
+    -------
+    vDataFrame
+        The vDataFrame of the recommendation
+        """
+        if isinstance(method, str):
+            method = method.lower()
+        check_types(
+            [
+                ("unique_id", unique_id, [str],),
+                ("item_id", item_id, [str],),
+                (
+                    "method",
+                    method,
+                    [
+                        "count",
+                        "avg",
+                        "median",
+                    ],
+                ),
+                ("rating", rating, [str, list, tuple],),
+                ("ts", ts, [str],),
+                ("start_date", start_date, [str],),
+                ("end_date", end_date, [str],),
+            ]
+        )
+        columns_check([unique_id, item_id], self)
+        unique_id, item_id = vdf_columns_names([unique_id, item_id], self)
+        vdf = self.copy()
+        if method != "count" and not(rating):
+            raise ParameterError(f"Method '{method}' can not be used if parameter 'rating' is empty.")
+        if (rating):
+            if isinstance(rating, str) or len(rating) == 3:
+                if method == "count":
+                    raise ParameterError("Method 'count' can not be used if parameter 'rating' is defined.")
+                columns_check([rating], self)
+                rating = vdf_columns_names([rating], self)[0]
+            else:
+                raise ParameterError(f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name).")
+        if (ts):
+            columns_check([ts], self)
+            ts = vdf_columns_names([ts], self)[0]
+            if (start_date and end_date):
+                vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
+            elif (start_date):
+                vdf = self.search(f"{ts} >= '{start_date}'")
+            elif (end_date):
+                vdf = self.search(f"{ts} <= '{end_date}'")
+        vdf = vdf.join(vdf,
+                       how = "left",
+                       on = {unique_id: unique_id},
+                       expr1 = [f"{item_id} AS item1"],
+                       expr2 = [f"{item_id} AS item2"]).groupby(
+                                    ["item1", "item2"],
+                                    ["COUNT(*) AS cnt"]).search("item1 != item2 AND cnt > 1")
+        order_columns = "cnt DESC"
+        if method in ("avg", "median"):
+            fun = "AVG" if method == "avg" else "APPROXIMATE_MEDIAN"
+            if isinstance(rating, str):
+                r_vdf = self.groupby([item_id], [f"{fun}({rating}) AS score"])
+                r_item_id = item_id
+                r_name = "score"
+            else:
+                r_vdf, r_item_id, r_name = rating
+                r_vdf = r_vdf.groupby([r_item_id], [f"{fun}({r_name}) AS {r_name}"])
+            vdf = vdf.join(r_vdf,
+                           how = "left",
+                           on = {"item1": r_item_id},
+                           expr2 = [f"{r_name} AS score1"]).join(
+                           r_vdf,
+                           how = "left",
+                           on = {"item2": r_item_id},
+                           expr2 = [f"{r_name} AS score2"])
+            order_columns = "score2 DESC, score1 DESC, cnt DESC"
+        vdf["rank"] = f"ROW_NUMBER() OVER (PARTITION BY item1 ORDER BY {order_columns})"
+        return vdf
+
 
     # ---#
     def regexp(
@@ -7283,6 +7553,8 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("name", name, [str],),
@@ -7297,7 +7569,6 @@ vcolumns : vcolumn
                 ("rule", rule.lower(), ["auto", "past", "future"],),
             ]
         )
-        method = method.lower()
         columns_check([column] + by + [elem for elem in order_by], self)
         rule = rule.lower()
         if not (name):
@@ -7939,7 +8210,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def score(self, y_true: str, y_score: str, method: str):
+    def score(self, y_true: str, y_score: str, method: str, nbins: int = 30,):
         """
     ---------------------------------------------------------------------------
     Computes the score using the input columns and the input method.
@@ -8070,6 +8341,7 @@ vcolumns : vcolumn
                 self.__genSQL__(),
                 self._VERTICAPY_VARIABLES_["cursor"],
                 best_threshold=True,
+                nbins=nbins,
             )
         elif method in ("recall", "tpr"):
             from verticapy.learn.metrics import recall_score
@@ -8135,19 +8407,19 @@ vcolumns : vcolumn
             from verticapy.learn.model_selection import roc_curve
 
             return roc_curve(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
+                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
             )
         elif method in ("prc_curve", "prc"):
             from verticapy.learn.model_selection import prc_curve
 
             return prc_curve(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
+                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
             )
         elif method in ("lift_chart", "lift"):
             from verticapy.learn.model_selection import lift_chart
 
             return lift_chart(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"]
+                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
             )
         else:
             raise ParameterError(
@@ -8235,6 +8507,65 @@ vcolumns : vcolumn
             max_pos = max(max_pos, len(self[column].transformations) - 1)
         self._VERTICAPY_VARIABLES_["order_by"][max_pos] = sort_str(columns, self)
         return self
+
+    # ---#
+    def stacked_area(
+        self,
+        ts: str,
+        columns: list = [],
+        start_date: str = "",
+        end_date: str = "",
+        fully: bool = False,
+        ax=None,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Time Series Stacked Area Chart.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    columns: list, optional
+        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        used. They must all include only positive values.
+    start_date: str, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    fully: bool, optional
+        If set to True, a Fully Stacked Area Chart will be drawn.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("ts", ts, [str],),
+                ("start_date", start_date, [str],),
+                ("end_date", end_date, [str],),
+            ]
+        )
+        if fully:
+            kind = "area_percent"
+        else:
+            kind = "area_stacked"
+        if min(self.min(columns)["min"]) < 0:
+            raise ValueError("Columns having negative values can not be processed by the 'stacked_area' method.")
+        columns_check(columns + [ts], self)
+        columns = vdf_columns_names(columns, self)
+        ts = vdf_columns_names([ts], self)[0]
+        from verticapy.plot import multi_ts_plot
+
+        return multi_ts_plot(self, ts, columns, start_date, end_date, kind=kind, ax=ax)
 
     # ---#
     def std(self, columns: list = []):

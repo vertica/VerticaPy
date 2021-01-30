@@ -57,6 +57,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as plt_colors
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.lines import Line2D
+import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -93,7 +95,6 @@ def acf_plot(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(10, 3)
-        ax.set_facecolor("#F5F5F5")
     if type_bar:
         ax.bar(x, y, width=0.007 * len(x), color=color, zorder=1, linewidth=0)
         ax.scatter(
@@ -108,7 +109,6 @@ def acf_plot(
         ax.set_xlim(-1, x[-1] + 1)
     else:
         ax.plot(x, y, color=color)
-    ax.set_title(title)
     ax.set_xticks(x)
     ax.set_xticklabels(x, rotation=90)
     if confidence:
@@ -136,7 +136,6 @@ def bar(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(10, min(int(len(x) / 1.8) + 1, 600))
-        ax.set_facecolor("#F5F5F5")
         ax.xaxis.grid()
         ax.set_axisbelow(True)
     ax.barh(x, y, h, color=color, alpha=0.86)
@@ -191,7 +190,6 @@ def bar2D(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
-        ax.set_facecolor("#F5F5F5")
         ax.set_axisbelow(True)
         ax.xaxis.grid()
     if not (fully_stacked):
@@ -321,7 +319,6 @@ def boxplot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(6, 4)
-            ax.set_facecolor("#F5F5F5")
             ax.xaxis.grid()
         if not (vdf.isnum()):
             raise TypeError("The column must be numerical in order to draw a boxplot")
@@ -459,7 +456,6 @@ def boxplot(
                 fig, ax = plt.subplots()
                 if isnotebook():
                     fig.set_size_inches(10, 6)
-                ax.set_facecolor("#F5F5F5")
                 ax.yaxis.grid()
             ax.set_ylabel(vdf.alias)
             ax.set_xlabel(by)
@@ -555,7 +551,6 @@ def boxplot2D(vdf, columns: list = [], ax=None):
                 fig, ax = plt.subplots()
                 if isnotebook():
                     fig.set_size_inches(10, 6)
-                ax.set_facecolor("#F5F5F5")
             box = ax.boxplot(
                 result,
                 notch=False,
@@ -621,7 +616,6 @@ def bubble(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(10, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.grid()
             ax.set_axisbelow(True)
         if bbox:
@@ -636,19 +630,16 @@ def bubble(
             ax.imshow(im, extent=bbox)
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
-        scatter = ax.scatter(column1, column2, color=colors[0], s=size, alpha=0.5)
-        kw = dict(
-            prop="sizes",
-            num=6,
-            color=colors[0],
-            alpha=0.6,
-            func=lambda s: (s * (max_size - min_size) + min_size) / 1000,
-        )
-        ax.legend(
-            *scatter.legend_elements(**kw),
+        scatter = ax.scatter(column1, column2, color=colors[0], s=size, alpha=0.5, edgecolors = "black",)
+        leg1 = ax.legend(
+            [Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[0], label='Scatter', markersize=min(size) / 100 + 15),
+             Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[0], label='Scatter', markersize=max(size) / 100 + 15)],
+            [min([item[2] for item in query_result]),
+             max([item[2] for item in query_result])],
             bbox_to_anchor=[1, 0.5],
             loc="center left",
-            title=columns[2]
+            title=columns[2],
+            labelspacing=1
         )
     else:
         count = vdf.shape()[0]
@@ -657,7 +648,6 @@ def bubble(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(12, 7)
-            ax.set_facecolor("#F5F5F5")
             ax.grid()
             ax.set_axisbelow(True)
         if bbox:
@@ -682,6 +672,7 @@ def bubble(
         tablesample = 0.1 if (count > 10000) else 0.9
         all_columns, all_scatter = [], []
         max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+        custom_lines = []
         for idx, category in enumerate(all_categories):
             query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
             query = query.format(
@@ -717,29 +708,27 @@ def bubble(
             all_columns += [[column1, column2, size]]
             all_scatter += [
                 ax.scatter(
-                    column1, column2, s=size, alpha=0.8, color=colors[idx % len(colors)]
+                    column1, column2, s=size, alpha=0.8, color=colors[idx % len(colors)], edgecolors = "black",
                 )
             ]
+            custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
         for idx, item in enumerate(all_categories):
             if len(str(item)) > 20:
                 all_categories[idx] = str(item)[0:20] + "..."
-        kw = dict(
-            prop="sizes",
-            num=6,
-            color=colors[0],
-            alpha=0.6,
-            func=lambda s: (s * (max_size - min_size) + min_size) / 1000,
-        )
         leg1 = ax.legend(
-            *all_scatter[0].legend_elements(**kw),
+            [Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[0], label='Scatter', markersize=min(size) / 100 + 15),
+             Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[0], label='Scatter', markersize=max(size) / 100 + 15)],
+            [min([item[2] for item in query_result]),
+             max([item[2] for item in query_result])],
             bbox_to_anchor=[1, 0.5],
             loc="center left",
-            title=columns[2]
+            title=columns[2],
+            labelspacing=1
         )
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
         leg2 = ax.legend(
-            all_scatter,
+            custom_lines,
             all_categories,
             title=catcol,
             loc="center right",
@@ -803,7 +792,6 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
-    ax.set_title(title)
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
             matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
@@ -1018,12 +1006,15 @@ def compute_plot_variables(
 
 
 # ---#
-def gen_cmap():
-    cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", gen_colors()[0]], N=1000)
-    cm2 = LinearSegmentedColormap.from_list(
-        "vml", [gen_colors()[1], "#FFFFFF", gen_colors()[0]], N=1000
-    )
-    return (cm1, cm2)
+def gen_cmap(color: str = ""):
+    if not(color):
+        cm1 = LinearSegmentedColormap.from_list("vml", ["#FFFFFF", gen_colors()[0]], N=1000)
+        cm2 = LinearSegmentedColormap.from_list(
+            "vml", [gen_colors()[1], "#FFFFFF", gen_colors()[0]], N=1000
+        )
+        return (cm1, cm2)
+    else:
+        return LinearSegmentedColormap.from_list("vml", ["#FFFFFF", color], N=1000)
 
 
 # ---#
@@ -1177,7 +1168,6 @@ def hist(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(min(int(len(x) / 1.8) + 1, 600), 6)
-        ax.set_facecolor("#F5F5F5")
         ax.set_axisbelow(True)
         ax.yaxis.grid()
     ax.bar(x, y, h, color=color, alpha=0.86)
@@ -1231,7 +1221,6 @@ def hist2D(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(min(600, 3 * m) / 2 + 1, 6)
-        ax.set_facecolor("#F5F5F5")
         ax.set_axisbelow(True)
         ax.yaxis.grid()
     for i in range(1, n):
@@ -1294,6 +1283,53 @@ def hist2D(
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
 
+# ---#
+def nested_pie(
+    vdf,
+    columns: list,
+    max_cardinality: tuple = (6, 6),
+    h: tuple = (None, None),
+    ax=None,
+):
+    columns = [columns[1], columns[0]]
+    colors = gen_colors()
+    all_columns = vdf.pivot_table(
+        columns, method = "count", h=h, max_cardinality=max_cardinality, show=False
+    ).values
+    all_categories_name = [elem for elem in all_columns][1:]
+    n, m = len(all_categories_name), len(all_columns[all_categories_name[0]])
+    vals = np.array([all_columns[elem] for elem in all_categories_name])
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+    colors = gen_colors()
+    group1, color1 = vals.sum(axis=1), colors[:n]
+    for i in range(len(color1)):
+        color1[i] = gen_cmap(color1[i])(0.85)
+    group2, color2 = vals.flatten(), colors[n:n+m]
+    for i in range(len(color2)):
+        color2[i] = gen_cmap(color2[i])(0.65)
+    ax.pie(group1, radius=1,   colors=color1, wedgeprops=dict(width=0.3, edgecolor='w'), autopct='%1.1f%%', pctdistance=0.85)
+    ax.pie(group2, radius=0.7, colors=color2, wedgeprops=dict(width=0.3, edgecolor='w'), autopct='%1.1f%%', pctdistance=0.8)
+    first_legend = plt.legend(
+        [Line2D([0], [0], color=color, lw=4) for color in color1],
+        all_categories_name,
+        bbox_to_anchor=[1, 0.5],
+        loc="center left",
+        title=columns[1],
+        labelspacing=1
+    )
+    plt.gca().add_artist(first_legend)
+    plt.legend(
+        [Line2D([0], [0], color=color, lw=4) for color in color2],
+        all_columns[[elem for elem in all_columns][0]],
+        bbox_to_anchor=[0, 0.5],
+        loc="center right",
+        title=columns[0],
+        labelspacing=1
+    )
+    return ax
 
 # ---#
 def multiple_hist(
@@ -1309,7 +1345,6 @@ def multiple_hist(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.set_axisbelow(True)
             ax.yaxis.grid()
         alpha, all_columns, all_h = 1, [], []
@@ -1357,11 +1392,16 @@ def multi_ts_plot(
     columns: list = [],
     order_by_start: str = "",
     order_by_end: str = "",
+    kind: str = "line",
     ax=None,
 ):
-    if len(columns) == 1:
+    if len(columns) == 1 and kind != "area_percent":
+        if kind == "line":
+            area = False
+        else:
+            area = True
         return vdf[columns[0]].plot(
-            ts=order_by, start_date=order_by_start, end_date=order_by_end, area=False
+            ts=order_by, start_date=order_by_start, end_date=order_by_end, area=area
         )
     if not (columns):
         columns = vdf.numcol()
@@ -1402,22 +1442,175 @@ def multi_ts_plot(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-        ax.set_facecolor("#F5F5F5")
-        ax.grid()
+        ax.grid(axis = "y")
+        ax.set_axisbelow(True)
+    prec = [0 for item in query_result]
     for i in range(0, len(columns)):
+        if kind == "area_percent":
+            points = [sum(item[1:i + 2]) / max(sum(item[1:]), 1e-70) for item in query_result]
+        elif kind == "area_stacked":
+            points = [sum(item[1:i + 2]) for item in query_result]
+        else:
+            points = [item[i + 1] for item in query_result]
+        label = {}
+        if kind == "line":
+            color = colors[i]
+            if len(order_by_values) < 20:
+                label = {"marker": "o", "markevery": 0.05, "markerfacecolor": colors[i], "markersize": 7, "markeredgecolor": "black"}
+            label["label"] = columns[i]
+        elif kind == "area_percent":
+            color = "white"
+            if len(order_by_values) < 20:
+                label = {"marker": "o", "markevery": 0.05, "markerfacecolor": colors[i], "markersize": 7, "markeredgecolor": "white"}
+        else:
+            color = "black"
+            if len(order_by_values) < 20:
+                label = {"marker": "o", "markevery": 0.05, "markerfacecolor": colors[i], "markersize": 7, "markeredgecolor": "black"}
         ax.plot(
             order_by_values,
-            [item[i + 1] for item in query_result],
-            color=colors[i],
-            label=columns[i],
-            linewidth=2,
+            points,
+            color=color,
+            linewidth=2 if kind == "line" else 1,
+            **label,
         )
+        if kind != "line":
+            ax.fill_between(
+                order_by_values,
+                prec,
+                points,
+                color=colors[i],
+                label=columns[i],
+                linewidth=2,
+            )
+            prec = points
     for tick in ax.get_xticklabels():
         tick.set_rotation(90)
+    if kind == "area_percent":
+        ax.set_ylim(0, 1)
+    elif kind == "area_stacked":
+        ax.set_ylim(0)
+    ax.set_xlim(min(order_by_values), max(order_by_values))
     ax.set_xlabel(order_by)
-    ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
+    ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
 
+# ---#
+def range_curve(X, Y, param_name = "", score_name = "score", ax=None, labels = [], color: str = "#FE5016", without_scatter: bool = False, plot_median: bool = True):
+    if color:
+        colors = [color]
+    else:
+        colors = gen_colors()
+    n = len(colors)
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.grid()
+    for i, elem in enumerate(Y):
+        if labels:
+            label = labels[i]
+        else:
+            label = ""
+        if plot_median:
+            alpha1, alpha2 = 0.3, 0.5
+        else:
+            alpha1, alpha2 = 0.5, 0.9
+        ax.fill_between(X, elem[0], elem[2], facecolor = colors[i % n], alpha = alpha1)
+        ax.plot(X, elem[0], color = colors[i % n], alpha = alpha2)
+        ax.plot(X, elem[2], color = colors[i % n], alpha = alpha2)
+        if (plot_median):
+            ax.plot(X, elem[1], color = colors[i % n], label = label)
+        if (not(without_scatter) or len(X) < 20) and plot_median:
+            ax.scatter(X, elem[1], c = 'white', marker = 'o', s = 60, edgecolors = "black", zorder = 3)
+    ax.set_xlabel(param_name)
+    ax.set_ylabel(score_name)
+    if labels:
+        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(90)
+    ax.set_xlim(X[0], X[-1])
+    return ax
+
+# ---#
+def range_curve_vdf(vdf,
+                    order_by: str,
+                    q: tuple = (0.25, 0.75),
+                    order_by_start: str = "",
+                    order_by_end: str = "",
+                    plot_median: bool = True,
+                    color: str = "#FE5016",
+                    ax=None):
+    query = "SELECT {}, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}), APPROXIMATE_MEDIAN({}), APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
+        order_by, vdf.alias, q[0], vdf.alias, vdf.alias, q[1], vdf.parent.__genSQL__(), order_by, vdf.alias
+    )
+    query += (
+        " AND {} > '{}'".format(order_by, order_by_start)
+        if (order_by_start)
+        else ""
+    )
+    query += (
+        " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+    )
+    query += " GROUP BY 1 ORDER BY 1"
+    query_result = vdf.__executeSQL__(
+        query=query, title="Select points to draw the curve"
+    ).fetchall()
+    order_by_values = [item[0] for item in query_result]
+    try:
+        if isinstance(order_by_values[0], str):
+            from dateutil.parser import parse
+
+            order_by_values = [parse(elem) for elem in order_by_values]
+    except:
+        pass
+    column_values = [[[float(item[1]) for item in query_result], [float(item[2]) for item in query_result], [float(item[3]) for item in query_result]]]
+    return range_curve(order_by_values, column_values, order_by, vdf.alias, ax, [], color, True, plot_median)
+
+# ---#
+def outliers_contour_plot(
+    vdf,
+    columns: list,
+    cmap: str = "Reds",
+    color: str = "#FE5016",
+    max_nb_points: int = 1000,
+    ax=None,
+):
+    all_agg = vdf.agg(["avg", "std", "min", "max"],
+                      columns)
+    xlist = np.linspace(all_agg["min"][0], all_agg["max"][0], 1000)
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+    if len(columns) == 1:
+        min_zscore = (all_agg["min"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
+        max_zscore = (all_agg["max"][0] - all_agg["avg"][0]) / (all_agg["std"][0])
+        for i in range(int(min_zscore) - 1, int(max_zscore) + 1):
+            if i <= -1:
+                alpha = (abs(i) - 1) / 20
+            else:
+                alpha = i / (int(max_zscore) + 1)
+            ax.fill_between([all_agg["min"][0], all_agg["max"][0]], [i, i], [i + 1, i + 1], facecolor=color, alpha=alpha)
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
+        ax.set_xlabel(columns[0])
+        ax.set_ylabel("ZSCORE")
+        ax.set_xlim(all_agg["min"][0], all_agg["max"][0])
+        ax.set_ylim(int(min_zscore) - 1, int(max_zscore) + 1)
+        vdf_temp = vdf[columns]
+        vdf_temp["ZSCORE"] = (vdf_temp[columns[0]] - all_agg["avg"][0]) / all_agg["std"][0]
+        vdf_temp["ZSCORE"] = "ZSCORE + 1.5 * RANDOM()"
+        vdf_temp.scatter([columns[0], "ZSCORE"], max_nb_points=max_nb_points, ax=ax,)
+    elif len(columns) == 2:
+        ylist = np.linspace(all_agg["min"][1], all_agg["max"][1], 1000)
+        X, Y = np.meshgrid(xlist, ylist)
+        Z = np.sqrt(((X - all_agg["avg"][0]) / all_agg["std"][0]) ** 2 + ((Y - all_agg["avg"][1]) / all_agg["std"][1]) ** 2)
+        cp = ax.contourf(X, Y, Z, cmap = cmap)
+        fig.colorbar(cp).set_label("ZSCORE")
+        ax.set_xlabel(columns[0])
+        ax.set_ylabel(columns[1])
+        vdf.scatter(columns, max_nb_points=max_nb_points, ax=ax,)
+    return ax
 
 # ---#
 def pie(
@@ -1430,6 +1623,8 @@ def pie(
     ax=None,
 ):
     colors = gen_colors() * 100
+    for i in range(len(colors)):
+        colors[i] = gen_cmap(colors[i])(0.85)
     x, y, z, h, is_categorical = compute_plot_variables(
         vdf, max_cardinality=max_cardinality, method=method, of=of, pie=True
     )
@@ -1446,7 +1641,6 @@ def pie(
     if method.lower() == "density":
         autopct = "%1.1f%%"
     else:
-
         def make_autopct(values, category):
             def my_autopct(pct):
                 total = sum(values)
@@ -1470,7 +1664,6 @@ def pie(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-        ax.set_facecolor("#F5F5F5")
     if donut:
         explode = None
         centre_circle = plt.Circle(
@@ -1486,16 +1679,6 @@ def pie(
         startangle=290,
         explode=explode,
     )
-    if method.lower() == "density":
-        ax.set_title("Density")
-    elif (
-        method.lower() in ["avg", "min", "max", "sum", "mean"] or ("%" == method[-1])
-    ) and (of):
-        ax.set_title(method + "(" + of + ")")
-    elif method.lower() == "count":
-        ax.set_title("Frequency")
-    else:
-        ax.set_title(method)
     return ax
 
 
@@ -1802,10 +1985,10 @@ def scatter_matrix(vdf, columns: list = []):
         return vdf[columns[0]].hist()
     n = len(columns)
     fig, axes = (
-        plt.subplots(nrows=n, ncols=n, figsize=(min(1.5 * n, 500), min(1.5 * n, 500)))
+        plt.subplots(nrows=n, ncols=n, figsize=(min(1.5 * (n + 1), 500), min(1.5 * (n + 1), 500)))
         if isnotebook()
         else plt.subplots(
-            nrows=n, ncols=n, figsize=(min(int(n / 1.1), 500), min(int(n / 1.1), 500))
+            nrows=n, ncols=n, figsize=(min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500))
         )
     )
     random_func = random_function()
@@ -1816,10 +1999,6 @@ def scatter_matrix(vdf, columns: list = []):
         query=query, title="Select random points to draw the scatter plot"
     ).fetchall()
     all_scatter_columns = []
-    all_h = []
-    for idx, column in enumerate(columns):
-        all_h += [vdf[column].numh()]
-    h = min(all_h)
     for i in range(n):
         all_scatter_columns += [[item[i] for item in all_scatter_points]]
     for i in range(n):
@@ -1830,24 +2009,22 @@ def scatter_matrix(vdf, columns: list = []):
         for j in range(n):
             axes[i][j].get_xaxis().set_ticks([])
             axes[i][j].get_yaxis().set_ticks([])
-            axes[i][j].set_facecolor("#F0F0F0")
             y = columns[j]
             if x == y:
                 x0, y0, z0, h0, is_categorical = compute_plot_variables(
-                    vdf[x], method="density", h=h, max_cardinality=1
+                    vdf[x], method="density", max_cardinality=1
                 )
-                axes[i, j].bar(x0, y0, h0 / 0.94, color="#FE5016")
+                axes[i, j].bar(x0, y0, h0 / 0.94, color="#FE5016", edgecolor="black")
             else:
                 axes[i, j].scatter(
                     all_scatter_columns[j],
                     all_scatter_columns[i],
                     color=gen_colors()[1],
-                    s=4,
+                    alpha=0.9,
+                    s=40,
                     marker="o",
+                    edgecolors = "black",
                 )
-    fig.suptitle(
-        "Scatter Plot Matrix of {}".format(vdf._VERTICAPY_VARIABLES_["input_relation"])
-    )
     return axes
 
 
@@ -1899,8 +2076,8 @@ def scatter2D(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.grid()
+            ax.set_axisbelow(True)
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
@@ -1911,11 +2088,9 @@ def scatter2D(
                 ax.set_xlim(bbox[0], bbox[1])
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(im, extent=bbox)
-            ax.grid()
-            ax.set_axisbelow(True)
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
-        ax.scatter(column1, column2, color=colors[0], s=14)
+        ax.scatter(column1, column2, color=colors[0], s=50, marker="o", edgecolors = "black",)
         return ax
     else:
         column_groupby = columns[2]
@@ -1939,7 +2114,6 @@ def scatter2D(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.grid()
             ax.set_axisbelow(True)
         if bbox:
@@ -2000,8 +2174,10 @@ def scatter2D(
                     column1,
                     column2,
                     alpha=0.8,
-                    marker=markers[idx],
+                    marker="o",
                     color=colors[idx % len(colors)],
+                    s=50,
+                    edgecolors = "black",
                 )
             ]
         if with_others and idx + 1 < groupby_cardinality:
@@ -2031,8 +2207,10 @@ def scatter2D(
                     column1,
                     column2,
                     alpha=0.8,
-                    marker=markers[idx + 1],
+                    marker="o",
                     color=colors[(idx + 1) % len(colors)],
+                    s=50,
+                    edgecolors = "black",
                 )
             ]
         for idx, item in enumerate(all_categories):
@@ -2103,7 +2281,7 @@ def scatter3D(
                 if isnotebook():
                     plt.figure(figsize=(8, 6))
                 ax = plt.axes(projection="3d")
-            ax.scatter(column1, column2, column3, color=colors[0])
+            ax.scatter(column1, column2, column3, color=colors[0], s=50, edgecolors = "black",)
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
@@ -2180,8 +2358,10 @@ def scatter3D(
                         column2,
                         column3,
                         alpha=0.8,
-                        marker=markers[idx],
+                        marker="o",
                         color=colors[idx % len(colors)],
+                        s=50,
+                        edgecolors = "black",
                     )
                 ]
             if with_others and idx + 1 < groupby_cardinality:
@@ -2213,8 +2393,10 @@ def scatter3D(
                         column1,
                         column2,
                         alpha=0.8,
-                        marker=markers[idx + 1],
+                        marker="o",
                         color=colors[(idx + 1) % len(colors)],
+                        s=50,
+                        edgecolors = "black",
                     )
                 ]
             for idx, item in enumerate(all_categories):
@@ -2232,10 +2414,9 @@ def scatter3D(
                 scatterpoints=1,
                 title=column_groupby,
                 loc="center left",
-                bbox_to_anchor=[1, 0.5],
+                bbox_to_anchor=[1.1, 0.5],
             )
             return ax
-
 
 # ---#
 def ts_plot(
@@ -2277,20 +2458,17 @@ def ts_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
-            ax.grid()
+            ax.grid(axis = "y")
         ax.plot(
-            order_by_values, column_values, color=color, linewidth=2,
+            order_by_values, column_values, color=color, linewidth=2, marker="o", markevery=0.05, markerfacecolor="white", markersize=7
         )
         if area:
-            area_label = "Area "
-            ax.fill_between(order_by_values, column_values, facecolor=color)
-        else:
-            area_label = ""
+            ax.fill_between(order_by_values, column_values, facecolor=color, alpha=0.2)
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
+        ax.set_xlim(min(order_by_values), max(order_by_values))
         return ax
     else:
         colors = gen_colors()
@@ -2334,10 +2512,12 @@ def ts_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
-            ax.grid()
+            ax.grid(axis = "y")
         for idx, elem in enumerate(all_data):
-            ax.plot(elem[0], elem[1], color=colors[idx % len(colors)], label=elem[2])
+            param = {}
+            if len(elem[0]) < 20:
+                param = {"marker": "o", "markevery": 0.05, "markerfacecolor": colors[idx % len(colors)], "markersize": 7, "markeredgecolor": "black"}
+            ax.plot(elem[0], elem[1], color=colors[idx % len(colors)], label=elem[2], **param)
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])

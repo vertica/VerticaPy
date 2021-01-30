@@ -55,6 +55,12 @@ def iris_vd(base):
 
 
 class TestvDFPlot:
+
+    def test_vDF_stacked_area(self, amazon_vd):
+        assert len(amazon_vd.pivot("date", "state", "number").stacked_area("date", ["ACRE", "BAHIA"]).get_default_bbox_extra_artists()) == 12
+        assert len(amazon_vd.pivot("date", "state", "number").stacked_area("date", ["ACRE", "BAHIA"], fully=True).get_default_bbox_extra_artists()) == 12
+        plt.close()
+    
     def test_vDF_bar(self, titanic_vd):
         # testing vDataFrame[].bar
         # auto
@@ -240,12 +246,16 @@ class TestvDFPlot:
         plt.close()
 
     def test_vDF_pie(self, titanic_vd):
+        # testing vDataFrame[].pie
         result = titanic_vd["pclass"].pie(method="avg", of="survived")
         assert int(result.get_default_bbox_extra_artists()[6].get_text()) == 3
         assert float(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(0.227753)
         plt.close()
+        # testing vDataFrame.pie
+        result = titanic_vd.pie(["sex", "pclass"])
+        assert result.get_default_bbox_extra_artists()[9].get_text() == '34.0%'
 
     def test_vDF_pivot_table(self, titanic_vd):
         result = titanic_vd.pivot_table(
@@ -258,6 +268,11 @@ class TestvDFPlot:
         assert result[2][1] == pytest.approx(0.875)
         assert result[2][2] == pytest.approx(0.375)
         assert len(result[1]) == 12
+        plt.close()
+
+    def test_vDF_outliers_plot(self, titanic_vd):
+        assert len(titanic_vd.outliers_plot(["fare"]).get_default_bbox_extra_artists()) == 19
+        assert len(titanic_vd.outliers_plot(["fare", "age"]).get_default_bbox_extra_artists()) == 15
         plt.close()
 
     def test_vDF_plot(self, amazon_vd):
@@ -274,6 +289,11 @@ class TestvDFPlot:
         assert result[0][-1] == datetime.date(2017, 11, 1)
         assert result[1][0] == pytest.approx(0.0)
         assert result[1][-1] == pytest.approx(651.2962963)
+        plt.close()
+
+    def test_vDF_range_plot(self, amazon_vd):
+        assert len(amazon_vd["number"].range_plot(ts = "date").get_default_bbox_extra_artists()) == 10
+        assert len(amazon_vd["number"].range_plot(ts = "date").get_default_bbox_extra_artists()) == 10
         plt.close()
 
     def test_vDF_scatter(self, iris_vd):

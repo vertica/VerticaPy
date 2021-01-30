@@ -100,7 +100,6 @@ def logit_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.set_axisbelow(True)
             ax.grid()
         x0, x1 = [], []
@@ -125,6 +124,8 @@ def logit_plot(
                 alpha=1,
                 marker="o",
                 color=gen_colors()[1],
+                s=50, 
+                edgecolors = "black",
             )
         ]
         all_scatter += [
@@ -132,14 +133,15 @@ def logit_plot(
                 x1,
                 [logit(coefficients[0] + coefficients[1] * item) for item in x1],
                 alpha=0.8,
-                marker="^",
+                marker="o",
                 color=gen_colors()[0],
+                s=50, 
+                edgecolors = "black",
             )
         ]
         ax.set_xlabel(X[0])
         ax.set_ylabel("logit")
         ax.legend(all_scatter, [0, 1], scatterpoints=1)
-        ax.set_title(y + " = logit(" + X[0] + ")")
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -204,6 +206,8 @@ def logit_plot(
                 alpha=1,
                 marker="o",
                 color=gen_colors()[1],
+                s=50, 
+                edgecolors = "black",
             )
         ]
         all_scatter += [
@@ -219,8 +223,10 @@ def logit_plot(
                     for i in range(len(x1))
                 ],
                 alpha=0.8,
-                marker="^",
+                marker="o",
                 color=gen_colors()[0],
+                s=50, 
+                edgecolors = "black",
             )
         ]
         ax.set_xlabel(X[0])
@@ -282,13 +288,11 @@ def lof_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 2)
-            ax.set_facecolor("#F5F5F5")
             ax.set_axisbelow(True)
             ax.grid()
-        ax.set_title("Local Outlier Factor (LOF)")
         ax.set_xlabel(column)
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color=gen_colors()[1], s=14, label="Data points")
+        ax.scatter(column1, column2, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",)
         ax.scatter(
             column1,
             column2,
@@ -319,14 +323,12 @@ def lof_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F5F5F5")
             ax.set_axisbelow(True)
             ax.grid()
-        ax.set_title("Local Outlier Factor (LOF)")
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color=gen_colors()[1], s=14, label="Data points")
+        ax.scatter(column1, column2, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",)
         ax.scatter(
             column1,
             column2,
@@ -359,13 +361,12 @@ def lof_plot(
             if isnotebook():
                 plt.figure(figsize=(8, 6))
             ax = plt.axes(projection="3d")
-        ax.set_title("Local Outlier Factor (LOF)")
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
         ax.set_zlabel(columns[2])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
         ax.scatter(
-            column1, column2, column3, color=gen_colors()[1], label="Data points"
+            column1, column2, column3, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",
         )
         ax.scatter(column1, column2, column3, color=gen_colors()[0], s=radius)
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -403,7 +404,6 @@ def plot_importance(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(12, int(len(importances) / 2) + 1)
-        ax.set_facecolor("#F5F5F5")
         ax.set_axisbelow(True)
         ax.grid()
     color = []
@@ -582,10 +582,9 @@ def regression_plot(
         x_reg = [min_reg, max_reg]
         y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
         ax.plot(x_reg, y_reg, alpha=1, color="black")
-        ax.scatter(x0, y0, alpha=1, marker="o", color=gen_colors()[0])
+        ax.scatter(x0, y0, alpha=1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
-        ax.set_title(y + " = f(" + X[0] + ")")
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
@@ -620,7 +619,7 @@ def regression_plot(
         ax.plot_surface(
             X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
-        ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[0])
+        ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
@@ -679,14 +678,13 @@ def svm_classifier_plot(
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
         all_scatter = [
-            ax.scatter(x0, [0 for item in x0], marker="o", color=gen_colors()[1])
+            ax.scatter(x0, [0 for item in x0], marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)
         ]
         all_scatter += [
-            ax.scatter(x1, [0 for item in x1], marker="^", color=gen_colors()[0])
+            ax.scatter(x1, [0 for item in x1], marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
         ]
         ax.set_xlabel(X[0])
         ax.legend(all_scatter, [0, 1], scatterpoints=1)
-        ax.set_title("svm(" + X[0] + ")")
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -720,12 +718,11 @@ def svm_classifier_plot(
             ],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
-        all_scatter = [ax.scatter(x0, y0, marker="o", color=gen_colors()[1])]
-        all_scatter += [ax.scatter(x1, y1, marker="^", color=gen_colors()[0])]
+        all_scatter = [ax.scatter(x0, y0, marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)]
+        all_scatter += [ax.scatter(x1, y1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.legend(all_scatter, [0, 1], scatterpoints=1)
-        ax.set_title("svm(" + X[0] + ", " + X[1] + ")")
     elif len(X) == 3:
         query = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0],
@@ -787,23 +784,22 @@ def svm_classifier_plot(
             X_svm, Y_svm, Z_svm, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
         all_scatter = [
-            ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[1])
+            ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)
         ]
         all_scatter += [
-            ax.scatter(x1, y1, z1, alpha=0.8, marker="^", color=gen_colors()[0])
+            ax.scatter(x1, y1, z1, alpha=0.8, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
         ]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(X[2])
-        ax.set_title("svm(" + X[0] + ", " + X[1] + ", " + X[2] + ")")
         ax.legend(
             all_scatter,
             [0, 1],
             scatterpoints=1,
-            loc="lower left",
             title=y,
-            bbox_to_anchor=(0.9, 1),
-            ncol=2,
+            loc="center left", 
+            bbox_to_anchor=[1.1, 0.5],
+            ncol=1,
             fontsize=8,
         )
     else:
@@ -811,7 +807,6 @@ def svm_classifier_plot(
     if conn:
         conn.close()
     return ax
-
 
 # ---#
 def voronoi_plot(clusters: list, columns: list, ax=None):
