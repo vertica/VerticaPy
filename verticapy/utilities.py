@@ -828,7 +828,10 @@ model
         parameters = [item.split("=") for item in parameters]
         parameters_dict = {}
         for item in parameters:
-            parameters_dict[item[0]] = item[1]
+            try:
+                parameters_dict[item[0]] = item[1]
+            except:
+                pass
     info = info[0]
     for elem in parameters_dict:
         if isinstance(parameters_dict[elem], str):
@@ -877,18 +880,49 @@ model
             float(parameters_dict["alpha"]),
         )
     elif model_type == "linear_reg":
-        from verticapy.learn.linear_model import ElasticNet
-
-        model = ElasticNet(
-            name,
-            cursor,
-            parameters_dict["regularization"],
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["lambda"]),
-            int(parameters_dict["max_iterations"]),
-            parameters_dict["optimizer"],
-            float(parameters_dict["alpha"]),
+        from verticapy.learn.linear_model import (
+            LinearRegression,
+            Lasso,
+            Ridge,
+            ElasticNet,
         )
+
+        if parameters_dict["regularization"] == "none":
+            model = LinearRegression(
+                name,
+                cursor,
+                float(parameters_dict["epsilon"]),
+                int(parameters_dict["max_iterations"]),
+                parameters_dict["optimizer"],
+            )
+        elif parameters_dict["regularization"] == "l1":
+            model = Lasso(
+                name,
+                cursor,
+                float(parameters_dict["epsilon"]),
+                float(parameters_dict["lambda"]),
+                int(parameters_dict["max_iterations"]),
+                parameters_dict["optimizer"],
+            )
+        elif parameters_dict["regularization"] == "l2":
+            model = Ridge(
+                name,
+                cursor,
+                float(parameters_dict["epsilon"]),
+                float(parameters_dict["lambda"]),
+                int(parameters_dict["max_iterations"]),
+                parameters_dict["optimizer"],
+            )
+        else:
+            model = ElasticNet(
+                name,
+                cursor,
+                float(parameters_dict["epsilon"]),
+                float(parameters_dict["lambda"]),
+                int(parameters_dict["max_iterations"]),
+                parameters_dict["optimizer"],
+                float(parameters_dict["alpha"]),
+            )
     elif model_type == "naive_bayes":
         from verticapy.learn.naive_bayes import NaiveBayes
 
@@ -910,6 +944,12 @@ model
     elif model_type == "svm_classifier":
         from verticapy.learn.svm import LinearSVC
 
+        class_weights = parameters_dict["class_weights"].split(",")
+        for idx, elem in enumerate(class_weights):
+            try:
+                class_weights[idx] = float(class_weights[idx])
+            except:
+                class_weights[idx] = None
         model = LinearSVC(
             name,
             cursor,
@@ -918,7 +958,7 @@ model
             True,
             float(parameters_dict["intercept_scaling"]),
             parameters_dict["intercept_mode"],
-            [float(item) for item in parameters_dict["class_weights"].split(",")],
+            class_weights,
             int(parameters_dict["max_iterations"]),
         )
     elif model_type == "kmeans":
@@ -927,12 +967,11 @@ model
         model = KMeans(
             name,
             cursor,
-            -1,
+            int(info.split(",")[-1]),
             parameters_dict["init_method"],
             int(parameters_dict["max_iterations"]),
             float(parameters_dict["epsilon"]),
         )
-        model.parameters["n_cluster"] = int(info.split(",")[-1])
         model.cluster_centers_ = model.get_attr("centers")
         result = model.get_attr("metrics").values["metrics"][0]
         values = {
@@ -955,24 +994,23 @@ model
             result.split("Converged: ")[1].split("\n")[0] == "True",
         ]
         model.metrics_ = tablesample(values)
-    elif model_type == "bisectingkmeans":
+    elif model_type == "bisecting_kmeans":
         from verticapy.learn.cluster import BisectingKMeans
 
         model = BisectingKMeans(
             name,
             cursor,
-            -1,
+            int(info.split(",")[-1]),
             int(parameters_dict["bisection_iterations"]),
             parameters_dict["split_method"],
             int(parameters_dict["min_divisible_cluster_size"]),
             parameters_dict["distance_method"],
-            parameters_dict["init_method"],
-            int(parameters_dict["max_iterations"]),
-            float(parameters_dict["epsilon"]),
+            parameters_dict["kmeans_center_init_method"],
+            int(parameters_dict["kmeans_max_iterations"]),
+            float(parameters_dict["kmeans_epsilon"]),
         )
-        model.parameters["n_cluster"] = int(info.split(",")[-1])
-        self.metrics_ = self.get_attr("Metrics")
-        self.cluster_centers_ = self.get_attr("BKTree")
+        model.metrics_ = model.get_attr("Metrics")
+        model.cluster_centers_ = model.get_attr("BKTree")
     elif model_type == "pca":
         from verticapy.learn.decomposition import PCA
 
@@ -1024,13 +1062,16 @@ model
         model.X = info.split(",")[2 : len(info.split(","))]
         model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
     if model_type in ("naive_bayes", "rf_classifier"):
-        cursor.execute(
-            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                model.y, model.input_relation, model.y
+        try:
+            cursor.execute(
+                "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                    model.y, model.input_relation, model.y
+                )
             )
-        )
-        classes = cursor.fetchall()
-        model.classes_ = [item[0] for item in classes]
+            classes = cursor.fetchall()
+            model.classes_ = [item[0] for item in classes]
+        except:
+            model.classes_ = None
     elif model_type in ("svm_classifier", "logistic_reg"):
         model.classes_ = [0, 1]
     if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):

@@ -138,6 +138,14 @@ class TestvDFPlot:
             0.6121794871794872
         )
         plt.close()
+        # pyramid
+        result5 = titanic_vd.bar(columns=["pclass", "survived"], hist_type="pyramid")
+        assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
+            0.09805510534846029
+        )
+        assert result5.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
+            -0.1547811993517018
+        )
 
     def test_vDF_boxplot(self, titanic_vd):
         # testing vDataFrame[].boxplot
@@ -195,14 +203,6 @@ class TestvDFPlot:
             result = iris_vd.density(kernel=kernel, nbins=20)
             assert max(result.get_default_bbox_extra_artists()[5].get_data()[1]) < 0.37
             plt.close()
-
-    def test_vDF_donut(self, titanic_vd):
-        result = titanic_vd["sex"].donut(method="sum", of="survived")
-        assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
-        assert int(
-            result.get_default_bbox_extra_artists()[7].get_text()
-        ) == pytest.approx(302)
-        plt.close()
 
     def test_vDF_geo_plot(self, world_vd):
         assert (
@@ -301,6 +301,13 @@ class TestvDFPlot:
         # testing vDataFrame.pie
         result = titanic_vd.pie(["sex", "pclass"])
         assert result.get_default_bbox_extra_artists()[9].get_text() == "11.3%"
+        plt.close()
+        # testing vDataFrame[].pie . donut
+        result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="donut")
+        assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
+        assert int(
+            result.get_default_bbox_extra_artists()[7].get_text()
+        ) == pytest.approx(302)
         plt.close()
 
     def test_vDF_pivot_table(self, titanic_vd):
@@ -404,3 +411,7 @@ class TestvDFPlot:
         result = iris_vd.scatter_matrix()
         assert len(result) == 4
         plt.close()
+
+    def test_vDF_spider(self, titanic_vd):
+        result = titanic_vd["pclass"].spider("survived")
+        assert len(result.get_default_bbox_extra_artists()) == 9

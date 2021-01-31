@@ -58,6 +58,7 @@ import matplotlib.colors as plt_colors
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.lines import Line2D
+import matplotlib.ticker as mticker
 import numpy as np
 
 # VerticaPy Modules
@@ -196,10 +197,21 @@ def bar2D(
     h: tuple = (None, None),
     stacked: bool = False,
     fully_stacked: bool = False,
+    density: bool = False,
     ax=None,
     **style_kwds,
 ):
     colors = gen_colors()
+    if density:
+        if method != "density":
+            raise ParameterError("Pyramid Bar works only with the 'density' method.")
+        unique = vdf.nunique(columns)["unique"]
+        if unique[1] != 2 and unique[0] != 2:
+            raise ParameterError(
+                "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
+            )
+        if unique[1] != 2:
+            columns = [columns[1], columns[0]]
     all_columns = vdf.pivot_table(
         columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
     ).values
@@ -211,7 +223,10 @@ def bar2D(
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
-            fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
+            if density:
+                fig.set_size_inches(10, min(m * 3, 600) / 8 + 1)
+            else:
+                fig.set_size_inches(10, min(m * 3, 600) / 2 + 1)
         ax.set_axisbelow(True)
         ax.xaxis.grid()
     if not (fully_stacked):
@@ -239,6 +254,16 @@ def bar2D(
                     bar_width,
                     label=current_label,
                     left=last_column,
+                    **updated_dict(param, style_kwds, i - 1),
+                )
+            elif density:
+                if i == 2:
+                    current_column = [-elem for elem in current_column]
+                ax.barh(
+                    [elem for elem in range(n_groups)],
+                    current_column,
+                    bar_width / 1.5,
+                    label=current_label,
                     **updated_dict(param, style_kwds, i - 1),
                 )
             else:
@@ -321,6 +346,11 @@ def bar2D(
         ax.set_yticks([elem for elem in range(n_groups)])
         ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
+    if density:
+        vals = ax.get_xticks()
+        max_val = max([abs(x) for x in vals])
+        ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
+        ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
     return ax
 
@@ -2017,21 +2047,25 @@ def pie(
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-    if donut:
-        explode = None
-        centre_circle = plt.Circle(
-            (0, 0), 0.72, color="#666666", fc="white", linewidth=1.25
-        )
-        ax.add_artist(centre_circle)
     param = {
         "autopct": autopct,
         "colors": colors,
         "shadow": True,
         "startangle": 290,
         "explode": explode,
+        "textprops": {"color": "w"},
     }
+    if donut:
+        param["wedgeprops"] = dict(width=0.4, edgecolor="w")
+        param["explode"] = None
+        param["pctdistance"] = 0.8
     ax.pie(
         y, labels=z, **updated_dict(param, style_kwds),
+    )
+    handles, labels = ax.get_legend_handles_labels()
+    labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+    ax.legend(
+        handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
     )
     return ax
 
@@ -2173,10 +2207,12 @@ def pivot_table(
                 where += ["({} IS NOT NULL)".format(column)]
     where = " WHERE {}".format(" AND ".join(where))
     if len(columns) == 1:
-        query = "SELECT {} AS {}, {} FROM {}{} GROUP BY 1 {}".format(
+        over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
+        query = "SELECT {} AS {}, {}{} FROM {}{} GROUP BY 1 {}".format(
             convert_special_type(vdf[columns[0]].category(), True, all_columns[-1]),
             columns[0],
             aggregate,
+            over,
             vdf.__genSQL__(),
             where,
             order_by,
@@ -2802,6 +2838,77 @@ def scatter3D(
                 bbox_to_anchor=[1.1, 0.5],
             )
             return ax
+
+
+# ---#
+def spider(
+    vdf,
+    columns: list,
+    method: str = "density",
+    of: str = "",
+    max_cardinality: tuple = (6, 6),
+    h: tuple = (None, None),
+    ax=None,
+    **style_kwds,
+):
+    unique = vdf[columns[0]].nunique()
+    if unique < 3:
+        raise ParameterError(
+            f"The first column of the Spider Plot must have at least 3 categories. Found {int(unique)}."
+        )
+    colors = gen_colors()
+    all_columns = vdf.pivot_table(
+        columns, method=method, of=of, h=h, max_cardinality=max_cardinality, show=False
+    ).values
+    all_cat = [category for category in all_columns]
+    n = len(all_columns)
+    m = len(all_columns[all_cat[0]])
+    angles = [i / float(m) * 2 * math.pi for i in range(m)]
+    angles += angles[:1]
+    categories = all_columns[all_cat[0]]
+    fig = plt
+    if not (ax):
+        fig = plt.figure()
+        ax = fig.add_subplot(111, polar=True)
+    all_vals = []
+    for idx, category in enumerate(all_columns):
+        if idx != 0:
+            values = all_columns[category]
+            all_vals += values
+            values += values[:1]
+            plt.xticks(angles[:-1], categories, color="grey", size=8)
+            ax.set_rlabel_position(0)
+            param = {"linewidth": 1, "linestyle": "solid", "color": colors[idx - 1]}
+            ax.plot(
+                angles,
+                values,
+                label=category,
+                **updated_dict(param, style_kwds, idx - 1),
+            )
+            color = updated_dict(param, style_kwds)["color"]
+            ax.fill(angles, values, alpha=0.1, color=color)
+    ax.set_yticks([min(all_vals), (max(all_vals) + min(all_vals)) / 2, max(all_vals)])
+    ax.set_rgrids(
+        [min(all_vals), (max(all_vals) + min(all_vals)) / 2, max(all_vals)],
+        angle=180.0,
+        fmt="%0.1f",
+    )
+    ax.set_xlabel(columns[0])
+    if method.lower() == "mean":
+        method = "avg"
+    if method.lower() == "density":
+        ax.set_ylabel("Density")
+    elif (method.lower() in ["avg", "min", "max", "sum"]) and (of != None):
+        ax.set_ylabel("{}({})".format(method, of))
+    elif method.lower() == "count":
+        ax.set_ylabel("Frequency")
+    else:
+        ax.set_ylabel(method)
+    if len(columns) > 1:
+        ax.legend(
+            title=columns[1], loc="center left", bbox_to_anchor=[1.1, 0.5],
+        )
+    return ax
 
 
 # ---#

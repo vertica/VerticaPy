@@ -2895,6 +2895,9 @@ vcolumns : vcolumn
     hist_type: str, optional
         The Histogram Type.
             auto          : Regular Bar Chart based on 1 or 2 vcolumns.
+            pyramid       : Pyramid Density Bar Chart. Only works if one of
+                            the two vcolumns is binary and the 'method' is 
+                            set to 'density'.
             stacked       : Stacked Bar Chart based on 2 vcolumns.
             fully_stacked : Fully Stacked Bar Chart based on 2 vcolumns.
     ax: Matplotlib axes object, optional
@@ -2927,7 +2930,15 @@ vcolumns : vcolumn
                 (
                     "hist_type",
                     hist_type,
-                    ["auto", "fully_stacked", "stacked", "fully", "fully stacked"],
+                    [
+                        "auto",
+                        "fully_stacked",
+                        "stacked",
+                        "fully",
+                        "fully stacked",
+                        "pyramid",
+                        "density",
+                    ],
                 ),
             ]
         )
@@ -2939,11 +2950,13 @@ vcolumns : vcolumn
         if len(columns) == 1:
             return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds,)
         else:
-            stacked, fully_stacked = False, False
+            stacked, fully_stacked, density = False, False, False
             if hist_type.lower() in ("fully", "fully stacked", "fully_stacked"):
                 fully_stacked = True
             elif hist_type.lower() == "stacked":
                 stacked = True
+            elif hist_type.lower() in ("pyramid", "density"):
+                density = True
             from verticapy.plot import bar2D
 
             return bar2D(
@@ -2955,6 +2968,7 @@ vcolumns : vcolumn
                 h,
                 stacked,
                 fully_stacked,
+                density,
                 ax=ax,
                 **style_kwds,
             )

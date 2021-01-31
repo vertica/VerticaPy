@@ -1505,68 +1505,6 @@ Attributes
             raise ValueError("Division by 0 is forbidden !")
 
     # ---#
-    def donut(
-        self,
-        method: str = "density",
-        of: str = "",
-        max_cardinality: int = 6,
-        h: float = 0,
-        ax=None,
-        **style_kwds,
-    ):
-        """
-	---------------------------------------------------------------------------
-	Draws the Donut Chart of the vcolumn based on an aggregation.
-
-	Parameters
- 	----------
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
-	max_cardinality: int, optional
- 		Maximum number of the vcolumn distinct elements to be used as categorical 
- 		(No h will be picked or computed)
- 	h: float, optional
- 		Interval width of the bar. If empty, an optimized h will be computed.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
-
- 	See Also
- 	--------
- 	vDataFrame.pie : Draws the Pie Chart of the vcolumn based on an aggregation.
-		"""
-        check_types(
-            [
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("h", h, [int, float],),
-            ]
-        )
-        if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
-        from verticapy.plot import pie
-
-        return pie(self, method, of, max_cardinality, h, True, ax=ax, **style_kwds,)
-
-    # ---#
     def drop(self, add_history: bool = True):
         """
 	---------------------------------------------------------------------------
@@ -3242,6 +3180,7 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         h: float = 0,
+        pie_type: str = "auto",
         ax=None,
         **style_kwds,
     ):
@@ -3268,6 +3207,11 @@ Attributes
  		(No h will be picked or computed)
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
+    pie_type: str, optional
+        The Pie Type.
+            auto   : Regular Pie Chart.
+            donut  : Donut Chart.
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -3282,20 +3226,24 @@ Attributes
  	--------
  	vDataFrame.donut : Draws the Donut Chart of the vcolumn based on an aggregation.
 		"""
+        if isinstance(pie_type, str):
+            pie_type = pie_type.lower()
         check_types(
             [
                 ("method", method, [str],),
                 ("of", of, [str],),
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("h", h, [int, float],),
+                ("pie_type", pie_type, ["auto", "donut"]),
             ]
         )
+        donut = True if pie_type == "donut" else False
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, False, ax=None, **style_kwds,)
+        return pie(self, method, of, max_cardinality, h, donut, ax=None, **style_kwds,)
 
     # ---#
     def plot(
@@ -3606,6 +3554,82 @@ Attributes
             func="TIME_SLICE({}, {}, '{}', '{}')".format(
                 "{}", length, unit.upper(), start_or_end
             )
+        )
+
+    # ---#
+    def spider(
+        self,
+        by: str = "",
+        method: str = "density",
+        of: str = "",
+        max_cardinality: tuple = (6, 6),
+        h: (int, float, tuple) = (None, None),
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Spider Plot of the input vcolumn based on an aggregation.
+
+    Parameters
+    ----------
+    by: str, optional
+        vcolumn to use to partition the data.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    h: int/float/tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
+        vcolumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    max_cardinality: tuple, optional
+        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.bar : Draws the Bar Chart of the input vcolumns based on an aggregation.
+        """
+        check_types(
+            [
+                ("by", by, [str],),
+                ("method", method, [str],),
+                ("of", of, [str],),
+                ("max_cardinality", max_cardinality, [list],),
+                ("h", h, [list, float, int],),
+            ]
+        )
+        if by:
+            columns_check([by], self.parent)
+            by = vdf_columns_names([by], self.parent)[0]
+            columns = [self.alias, by]
+        else:
+            columns = [self.alias]
+        if of:
+            columns_check([of], self)
+            of = vdf_columns_names([of], self.parent)[0]
+        from verticapy.plot import spider as spider_plot
+
+        return spider_plot(
+            self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )
 
     # ---#
