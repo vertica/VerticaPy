@@ -3211,6 +3211,7 @@ Attributes
         The Pie Type.
             auto   : Regular Pie Chart.
             donut  : Donut Chart.
+            rose   : Rose Chart.
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3234,16 +3235,19 @@ Attributes
                 ("of", of, [str],),
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("h", h, [int, float],),
-                ("pie_type", pie_type, ["auto", "donut"]),
+                ("pie_type", pie_type, ["auto", "donut", "rose"]),
             ]
         )
         donut = True if pie_type == "donut" else False
+        rose = True if pie_type == "rose" else False
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, donut, ax=None, **style_kwds,)
+        return pie(
+            self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
+        )
 
     # ---#
     def plot(

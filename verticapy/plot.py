@@ -2003,6 +2003,7 @@ def pie(
     max_cardinality: int = 6,
     h: float = 0,
     donut: bool = False,
+    rose: bool = False,
     ax=None,
     **style_kwds,
 ):
@@ -2043,30 +2044,82 @@ def pie(
         else:
             category = None
         autopct = make_autopct(y, category)
-    if not (ax):
-        fig, ax = plt.subplots()
-        if isnotebook():
-            fig.set_size_inches(8, 6)
-    param = {
-        "autopct": autopct,
-        "colors": colors,
-        "shadow": True,
-        "startangle": 290,
-        "explode": explode,
-        "textprops": {"color": "w"},
-    }
-    if donut:
-        param["wedgeprops"] = dict(width=0.4, edgecolor="w")
-        param["explode"] = None
-        param["pctdistance"] = 0.8
-    ax.pie(
-        y, labels=z, **updated_dict(param, style_kwds),
-    )
-    handles, labels = ax.get_legend_handles_labels()
-    labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
-    ax.legend(
-        handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
-    )
+    if not (rose):
+        if not (ax):
+            fig, ax = plt.subplots()
+            if isnotebook():
+                fig.set_size_inches(8, 6)
+        param = {
+            "autopct": autopct,
+            "colors": colors,
+            "shadow": True,
+            "startangle": 290,
+            "explode": explode,
+            "textprops": {"color": "w"},
+        }
+        if donut:
+            param["wedgeprops"] = dict(width=0.4, edgecolor="w")
+            param["explode"] = None
+            param["pctdistance"] = 0.8
+        ax.pie(
+            y, labels=z, **updated_dict(param, style_kwds),
+        )
+        handles, labels = ax.get_legend_handles_labels()
+        labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+        ax.legend(
+            handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
+        )
+    else:
+        try:
+            y, z = zip(*sorted(zip(y, z), key=lambda t: t[0]))
+        except:
+            pass
+        N = len(z)
+        width = 2 * np.pi / N
+        rad = np.cumsum([width] * N)
+
+        fig = plt.figure()
+        if not (ax):
+            ax = fig.add_subplot(111, polar=True)
+        ax.grid(False)
+        ax.spines["polar"].set_visible(False)
+        ax.set_yticks([])
+        ax.set_thetagrids([])
+        ax.set_theta_zero_location("N")
+        param = {
+            "color": colors,
+        }
+        colors = updated_dict(param, style_kwds, -1)["color"]
+        if isinstance(colors, str):
+            colors = [colors] + gen_colors()
+        else:
+            colors = colors + gen_colors()
+        style_kwds["color"] = colors
+        ax.bar(
+            rad, y, width=width, **updated_dict(param, style_kwds, -1),
+        )
+        for i in np.arange(N):
+            ax.text(
+                rad[i] + 0.1,
+                [elem * 1.02 for elem in y][i],
+                [round(elem, 2) for elem in y][i],
+                rotation=rad[i] * 180 / np.pi,
+                rotation_mode="anchor",
+                alpha=1,
+                color="black",
+            )
+        try:
+            z, colors = zip(*sorted(zip(z, colors[:N]), key=lambda t: t[0]))
+        except:
+            pass
+        ax.legend(
+            [Line2D([0], [0], color=color,) for color in colors],
+            z,
+            bbox_to_anchor=[1.1, 0.5],
+            loc="center left",
+            title=vdf.alias,
+            labelspacing=1,
+        )
     return ax
 
 
@@ -2866,9 +2919,8 @@ def spider(
     angles = [i / float(m) * 2 * math.pi for i in range(m)]
     angles += angles[:1]
     categories = all_columns[all_cat[0]]
-    fig = plt
+    fig = plt.figure()
     if not (ax):
-        fig = plt.figure()
         ax = fig.add_subplot(111, polar=True)
     all_vals = []
     for idx, category in enumerate(all_columns):

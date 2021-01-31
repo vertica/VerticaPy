@@ -302,12 +302,16 @@ class TestvDFPlot:
         result = titanic_vd.pie(["sex", "pclass"])
         assert result.get_default_bbox_extra_artists()[9].get_text() == "11.3%"
         plt.close()
-        # testing vDataFrame[].pie . donut
+        # testing vDataFrame[].pie - donut
         result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="donut")
         assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
         assert int(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(302)
+        plt.close()
+        # testing vDataFrame[].pie - rose
+        result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="rose")
+        assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close()
 
     def test_vDF_pivot_table(self, titanic_vd):
