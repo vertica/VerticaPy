@@ -202,6 +202,11 @@ def bar2D(
     **style_kwds,
 ):
     colors = gen_colors()
+    if fully_stacked:
+        if method != "density":
+            raise ParameterError(
+                "Fully Stacked Bar works only with the 'density' method."
+            )
     if density:
         if method != "density":
             raise ParameterError("Pyramid Bar works only with the 'density' method.")
@@ -346,7 +351,8 @@ def bar2D(
         ax.set_yticks([elem for elem in range(n_groups)])
         ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
-    if density:
+        ax.set_xlabel("Density")
+    if density or fully_stacked:
         vals = ax.get_xticks()
         max_val = max([abs(x) for x in vals])
         ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
@@ -363,7 +369,22 @@ def boxplot(
     max_cardinality: int = 8,
     cat_priority: list = [],
     ax=None,
+    **style_kwds,
 ):
+    colors = []
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            colors = [style_kwds["color"]]
+        else:
+            colors = style_kwds["color"]
+        del style_kwds["color"]
+    elif "colors" in style_kwds:
+        if isinstance(style_kwds["colors"], str):
+            colors = [style_kwds["colors"]]
+        else:
+            colors = style_kwds["colors"]
+        del style_kwds["colors"]
+    colors += gen_colors()
     # SINGLE BOXPLOT
     if by == "":
         if not (ax):
@@ -390,13 +411,14 @@ def boxplot(
             widths=0.7,
             labels=[""],
             patch_artist=True,
+            **style_kwds,
         )
         for median in box["medians"]:
             median.set(
                 color="black", linewidth=1,
             )
         for patch in box["boxes"]:
-            patch.set_facecolor("#FE5016")
+            patch.set_facecolor(colors[0])
         ax.set_axisbelow(True)
         return ax
     # MULTI BOXPLOT
@@ -557,9 +579,9 @@ def boxplot(
                 widths=0.5,
                 labels=labels,
                 patch_artist=True,
+                **style_kwds,
             )
             ax.set_xticklabels(labels, rotation=90)
-            colors = gen_colors()
             for median in box["medians"]:
                 median.set(
                     color="black", linewidth=1,
@@ -575,8 +597,22 @@ def boxplot(
 
 # ---#
 def boxplot2D(
-    vdf, columns: list = [], ax=None,
+    vdf, columns: list = [], ax=None, **style_kwds,
 ):
+    colors = []
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            colors = [style_kwds["color"]]
+        else:
+            colors = style_kwds["color"]
+        del style_kwds["color"]
+    elif "colors" in style_kwds:
+        if isinstance(style_kwds["colors"], str):
+            colors = [style_kwds["colors"]]
+        else:
+            colors = style_kwds["colors"]
+        del style_kwds["colors"]
+    colors += gen_colors()
     if not (columns):
         columns = vdf.numcol()
     for column in columns:
@@ -591,7 +627,9 @@ def boxplot2D(
         raise MissingColumn("No numerical columns found to draw the multi boxplot")
     # SINGLE BOXPLOT
     if len(columns) == 1:
-        vdf[columns[0]].boxplot(ax=ax,)
+        vdf[columns[0]].boxplot(
+            ax=ax, **style_kwds,
+        )
     # MULTI BOXPLOT
     else:
         try:
@@ -612,9 +650,9 @@ def boxplot2D(
                 widths=0.5,
                 labels=columns,
                 patch_artist=True,
+                **style_kwds,
             )
             ax.set_xticklabels(columns, rotation=90)
-            colors = gen_colors()
             for median in box["medians"]:
                 median.set(
                     color="black", linewidth=1,
@@ -696,7 +734,9 @@ def bubble(
             "alpha": 0.5,
             "edgecolors": "black",
         }
-        scatter = ax.scatter(column1, column2, **updated_dict(param, style_kwds),)
+        scatter = ax.scatter(
+            column1, column2, s=size, **updated_dict(param, style_kwds),
+        )
         leg1 = ax.legend(
             [
                 Line2D(
@@ -1168,11 +1208,10 @@ def hexbin(
     method: str = "count",
     of: str = "",
     cmap: str = "Reds",
-    gridsize: int = 10,
-    color: str = "white",
     bbox: list = [],
     img: str = "",
     ax=None,
+    **style_kwds,
 ):
     if len(columns) != 2:
         raise ParameterError(
@@ -1247,16 +1286,13 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
+    param = {"cmap": cmap, "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
         C=column3,
         reduce_C_function=reduce_C_function,
-        gridsize=gridsize,
-        color=color,
-        cmap=cmap,
-        mincnt=1,
-        edgecolors=None,
+        **updated_dict(param, style_kwds),
     )
     if method.lower() == "density":
         fig.colorbar(imh).set_label(method)
@@ -1580,14 +1616,14 @@ def multi_ts_plot(
     **style_kwds,
 ):
     if len(columns) == 1 and kind != "area_percent":
-        if kind == "line":
+        if kind in ("line", "step"):
             area = False
         else:
             area = True
         if kind == "step":
-            step = False
-        else:
             step = True
+        else:
+            step = False
         return vdf[columns[0]].plot(
             ts=order_by,
             start_date=order_by_start,
@@ -2056,6 +2092,7 @@ def pie(
             "startangle": 290,
             "explode": explode,
             "textprops": {"color": "w"},
+            "normalize": True,
         }
         if donut:
             param["wedgeprops"] = dict(width=0.4, edgecolor="w")
@@ -2668,7 +2705,7 @@ def scatter2D(
             param = {
                 "alpha": 0.8,
                 "marker": "o",
-                "color": colors[idx % len(colors)],
+                "color": colors[idx + 1 % len(colors)],
                 "s": 50,
                 "edgecolors": "black",
             }
@@ -2926,8 +2963,13 @@ def spider(
     for idx, category in enumerate(all_columns):
         if idx != 0:
             values = all_columns[category]
-            all_vals += values
             values += values[:1]
+            for i, elem in enumerate(values):
+                if isinstance(elem, str) or elem == None:
+                    values[i] = 0
+                else:
+                    values[i] = float(elem)
+            all_vals += values
             plt.xticks(angles[:-1], categories, color="grey", size=8)
             ax.set_rlabel_position(0)
             param = {"linewidth": 1, "linestyle": "solid", "color": colors[idx - 1]}
@@ -2937,7 +2979,7 @@ def spider(
                 label=category,
                 **updated_dict(param, style_kwds, idx - 1),
             )
-            color = updated_dict(param, style_kwds)["color"]
+            color = updated_dict(param, style_kwds, idx - 1)["color"]
             ax.fill(angles, values, alpha=0.1, color=color)
     ax.set_yticks([min(all_vals), (max(all_vals) + min(all_vals)) / 2, max(all_vals)])
     ax.set_rgrids(

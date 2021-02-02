@@ -606,7 +606,7 @@ def grid_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold cross validation of an estimator.
+Computes the K-Fold grid search of an estimator.
 
 Parameters
 ----------
@@ -672,8 +672,23 @@ tablesample
             ("skip_error", skip_error, [bool]),
         ]
     )
+    if (
+        estimator.type
+        in (
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearRegression",
+            "KNeighborsRegressor",
+        )
+        and metric == "auto"
+    ):
+        metric = "rmse"
+    elif metric == "auto":
+        metric = "logloss"
     for param in param_grid:
-        assert isinstance(param_grid[param], list), ParameterError(
+        assert isinstance(param_grid[param], Iterable) and not (
+            isinstance(param_grid[param], str)
+        ), ParameterError(
             f"The parameter 'param_grid' must be a dictionary where each value is a list of parameters, found {type(param_grid[param])} for parameter '{param}'."
         )
     all_configuration = [
@@ -1173,7 +1188,7 @@ def validation_curve(
 ):
     """
 ---------------------------------------------------------------------------
-Draw the Validation curve.
+Draws the Validation curve.
 
 Parameters
 ----------

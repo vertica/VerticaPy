@@ -55,7 +55,7 @@ import warnings
 import verticapy, vertica_python
 from verticapy.toolbox import *
 from verticapy.utilities import *
-from verticapy.stats import apply
+from verticapy.stats import *
 from verticapy import vDataFrame
 
 # ---#

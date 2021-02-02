@@ -233,7 +233,7 @@ class TestvDFPlot:
         result = titanic_vd.hexbin(columns=["age", "fare"], method="avg", of="survived")
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(
-            78.0082500756865, 1e-2
+            80.00000007967, 1e-2
         )
         assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(
             512.3292, 1e-2

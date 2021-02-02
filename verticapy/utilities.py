@@ -190,7 +190,7 @@ name: str
 cursor: DBcursor, optional
     Vertica DB cursor.
 raise_error: bool, optional
-    If the table couldn't be dropped, raises the entire error instead of
+    If the geo index couldn't be dropped, raises the entire error instead of
     displaying a warning.
 
 Returns
@@ -1644,11 +1644,11 @@ can be ingested.
 Parameters
 ----------
 path: str
-    Absolute path where the CSV file is located.
+    Absolute path where the SHP file is located.
 cursor: DBcursor, optional
     Vertica DB cursor.
 schema: str, optional
-    Schema where the CSV file will be ingested.
+    Schema where the SHP file will be ingested.
 table_name: str, optional
     Final relation name.
 

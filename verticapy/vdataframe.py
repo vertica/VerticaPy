@@ -3043,7 +3043,7 @@ vcolumns : vcolumn
 
     # ---#
     def boxplot(
-        self, columns: list = [], ax=None,
+        self, columns: list = [], ax=None, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3056,6 +3056,8 @@ vcolumns : vcolumn
         be used.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3074,7 +3076,7 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
         from verticapy.plot import boxplot2D
 
-        return boxplot2D(self, columns, ax=ax,)
+        return boxplot2D(self, columns, ax=ax, **style_kwds,)
 
     # ---#
     def bubble(
@@ -5489,11 +5491,10 @@ vcolumns : vcolumn
         method: str = "count",
         of: str = "",
         cmap: str = "",
-        gridsize: int = 20,
-        color: str = "white",
         bbox: list = [],
         img: str = "",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5515,10 +5516,6 @@ vcolumns : vcolumn
         The vcolumn to use to compute the aggregation.
     cmap: str, optional
         Color Map.
-    gridsize: int, optional
-        Hexbin grid size.
-    color: str, optional
-        Color of the Hexbin borders.
     bbox: list, optional
         List of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
@@ -5526,6 +5523,8 @@ vcolumns : vcolumn
          Path to the image to display as background.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -5544,8 +5543,6 @@ vcolumns : vcolumn
                 ("method", method, ["density", "count", "avg", "min", "max", "sum"],),
                 ("of", of, [str],),
                 ("cmap", cmap, [str],),
-                ("gridsize", gridsize, [int, float],),
-                ("color", color, [str],),
                 ("bbox", bbox, [list],),
                 ("img", img, [str],),
             ]
@@ -5561,9 +5558,7 @@ vcolumns : vcolumn
             cmap = gen_cmap()[0]
         from verticapy.plot import hexbin
 
-        return hexbin(
-            self, columns, method, of, cmap, gridsize, color, bbox, img, ax=ax,
-        )
+        return hexbin(self, columns, method, of, cmap, bbox, img, ax=ax, **style_kwds,)
 
     # ---#
     def hist(
@@ -6748,10 +6743,10 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns names. The list must have two elements.
+        List of the vcolumns names.
     max_cardinality: int/tuple, optional
         Maximum number of the vcolumn distinct elements to be used as categorical 
-        (No h will be picked or computed)
+        (No h will be picked or computed).
         If of type tuple, it must represent each column 'max_cardinality'.
     h: float/tuple, optional
         Interval width of the bar. If empty, an optimized h will be computed.
@@ -7027,7 +7022,7 @@ vcolumns : vcolumn
         from verticapy.plot import multi_ts_plot
 
         return multi_ts_plot(
-            self, ts, columns, start_date, end_date, step, ax=ax, **style_kwds,
+            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -7041,11 +7036,11 @@ vcolumns : vcolumn
 
     Parameters
     ----------
-    r: int, optional
-        Degree of the Polynomial.
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
+    r: int, optional
+        Degree of the Polynomial.
 
     Returns
     -------
@@ -7136,10 +7131,12 @@ vcolumns : vcolumn
         """
     ---------------------------------------------------------------------------
     Recommend items based on the Collaborative Filtering (CF) technique.
+    The implementation is the same as APRIORI algorithm but it is limited to 
+    items pair.
 
     Parameters
     ----------
-    unique_id: str, optional
+    unique_id: str
         Input vcolumn corresponding to a unique ID. It is a primary key.
     item_id: str
         Input vcolumn corresponding to an item ID. It is a secondary key used to 
@@ -7172,7 +7169,7 @@ vcolumns : vcolumn
     Returns
     -------
     vDataFrame
-        The vDataFrame of the recommendation
+        The vDataFrame of the recommendation.
         """
         if isinstance(method, str):
             method = method.lower()
@@ -9316,7 +9313,7 @@ vcolumns : vcolumn
     shape: str, optional
         Must be one of the following spatial classes: 
             Point, Polygon, Linestring, Multipoint, Multipolygon, Multilinestring. 
-        Polygons and multipolygons always have a clockwise orientation.
+        Polygons and Multipolygons always have a clockwise orientation.
 
     Returns
     -------

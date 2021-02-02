@@ -1166,7 +1166,6 @@ xlim: list, optional
                 fig, ax = plt.subplots()
                 if isnotebook():
                     fig.set_size_inches(7, 5)
-                ax.set_facecolor("#F5F5F5")
                 ax.grid()
                 ax.set_axisbelow(True)
             ax.plot(x, y, color="#222222")

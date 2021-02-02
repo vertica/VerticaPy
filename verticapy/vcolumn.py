@@ -683,6 +683,7 @@ Attributes
         max_cardinality: int = 8,
         cat_priority: list = [],
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -704,6 +705,8 @@ Attributes
  		The other categories will be filtered.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -727,7 +730,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import boxplot
 
-        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax,)
+        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds,)
 
     # ---#
     def category(self):
@@ -3566,7 +3569,7 @@ Attributes
         by: str = "",
         method: str = "density",
         of: str = "",
-        max_cardinality: tuple = (6, 6),
+        max_cardinality: (int, tuple) = (6, 6),
         h: (int, float, tuple) = (None, None),
         ax=None,
         **style_kwds,
@@ -3595,7 +3598,7 @@ Attributes
         Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
         vcolumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
-    max_cardinality: tuple, optional
+    max_cardinality: int/tuple, optional
         Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Matplotlib axes object, optional
