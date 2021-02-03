@@ -891,7 +891,6 @@ Attributes
         kernel: str = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
-        color: str = None,
         ax=None,
         **style_kwds,
     ):
@@ -917,8 +916,6 @@ Attributes
         the time of the learning and scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
- 	color: str, optional
- 		The Density Plot color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -938,14 +935,9 @@ Attributes
                 ("by", by, [str],),
                 ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
                 ("bandwidth", bandwidth, [int, float],),
-                ("color", color, [str],),
                 ("nbins", nbins, [float, int],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if by:
             columns_check([by], self.parent)
             by = vdf_columns_names([by], self.parent)[0]
@@ -961,6 +953,7 @@ Attributes
             custom_lines = []
             columns = self.parent[by].distinct()
             for idx, column in enumerate(columns):
+                param = {"color": colors[idx % len(colors)]}
                 ax = self.parent.search(
                     "{} = '{}'".format(self.parent[by].alias, column)
                 )[self.alias].density(
@@ -968,12 +961,11 @@ Attributes
                     kernel=kernel,
                     nbins=nbins,
                     xlim=(xmin, xmax),
-                    color=colors[idx % len(colors)],
                     ax=ax,
-                    **style_kwds,
+                    **updated_dict(param, style_kwds, idx),
                 )
                 custom_lines += [
-                    Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
+                    Line2D([0], [0], color=updated_dict(param, style_kwds, idx)["color"], lw=4),
                 ]
             ax.set_title("KernelDensity")
             ax.legend(
@@ -1005,7 +997,7 @@ Attributes
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
-                color=color, ax=ax
+                ax=ax, **style_kwds,
             )
             model.drop()
             return result

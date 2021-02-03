@@ -3986,14 +3986,14 @@ vcolumns : vcolumn
             xmin, xmax = xlim
         custom_lines = []
         for idx, column in enumerate(columns):
+            param = {"color": colors[idx % len(colors)]}
             ax = self[column].density(
                 bandwidth=bandwidth,
                 kernel=kernel,
                 nbins=nbins,
                 xlim=(xmin, xmax),
-                color=colors[idx % len(colors)],
                 ax=ax,
-                **style_kwds,
+                **updated_dict(param, style_kwds, idx),
             )
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),

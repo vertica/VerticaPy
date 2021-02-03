@@ -51,6 +51,7 @@
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.plot import gen_colors
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
@@ -1007,7 +1008,7 @@ tablesample
 
 # ---#
 def plot_acf_pacf(
-    vdf: vDataFrame, column: str, ts: str, by: list = [], p: (int, list) = 15,
+    vdf: vDataFrame, column: str, ts: str, by: list = [], p: (int, list) = 15, **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1029,6 +1030,8 @@ p: int/list, optional
     Int equals to the maximum number of lag to consider during the computation
     or List of the different lags to include during the computation.
     p must be positive or a list of positive integers.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -1045,6 +1048,14 @@ tablesample
             ("vdf", vdf, [vDataFrame,],),
         ]
     )
+    tmp_style = {}
+    for elem in style_kwds:
+        if elem not in ("color", "colors"):
+            tmp_style[elem] = style_kwds[elem]
+    if "color" in style_kwds:
+        color = style_kwds["color"]
+    else:
+        color = gen_colors()[0]
     columns_check([column, ts] + by, vdf)
     by = vdf_columns_names(by, vdf)
     column, ts = vdf_columns_names([column, ts], vdf)
@@ -1067,14 +1078,21 @@ tablesample
         result.values["confidence"],
     )
     plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,)
+    param = {
+            "s": 90,
+            "marker": "o",
+            "facecolors": color,
+            "edgecolors": "black",
+            "zorder": 2,
+        }
     ax1.scatter(
-        x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
+        x, y, **updated_dict(param, tmp_style,),
     )
     ax1.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],
-        color="#FE5016",
+        color=color,
         zorder=0,
     )
     ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
@@ -1084,12 +1102,12 @@ tablesample
     ax2 = fig.add_subplot(212)
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
     ax2.scatter(
-        x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
+        x, y, **updated_dict(param, tmp_style,),
     )
     ax2.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],
-        color="#FE5016",
+        color=color,
         zorder=0,
     )
     ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)

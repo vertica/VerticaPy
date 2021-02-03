@@ -277,8 +277,24 @@ def lof_plot(
         if (tablesample > 0 and tablesample < 100)
         else ""
     )
+    colors = []
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            colors = [style_kwds["color"]]
+        else:
+            colors = style_kwds["color"]
+        del style_kwds["color"]
+    elif "colors" in style_kwds:
+        if isinstance(style_kwds["colors"], str):
+            colors = [style_kwds["colors"]]
+        else:
+            colors = style_kwds["colors"]
+        del style_kwds["colors"]
+    colors += gen_colors()
     param = {
-        "facecolors": "none",
+        "s": 50,
+        "edgecolors": "black",
+        "color": colors[0],
     }
     if len(columns) == 1:
         column = str_column(columns[0])
@@ -299,21 +315,20 @@ def lof_plot(
             ax.set_axisbelow(True)
             ax.grid()
         ax.set_xlabel(column)
-        radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
+        radius = [2 * 1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
         ax.scatter(
             column1,
             column2,
-            color=color_dict(style_kwds, 1),
             label="Data points",
-            s=20,
-            edgecolors="black",
+            **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
             column1,
             column2,
             s=radius,
             label="Outlier scores",
-            **updated_dict(param, style_kwds, 0),
+            facecolors="none",
+            color = colors[1],
         )
     elif len(columns) == 2:
         columns = [str_column(column) for column in columns]
@@ -345,17 +360,16 @@ def lof_plot(
         ax.scatter(
             column1,
             column2,
-            color=color_dict(style_kwds, 1),
             label="Data points",
-            s=20,
-            edgecolors="black",
+            **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
             column1,
             column2,
             s=radius,
             label="Outlier scores",
-            **updated_dict(param, style_kwds, 0),
+            facecolors="none",
+            color = colors[1],
         )
     elif len(columns) == 3:
         query = "SELECT {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
@@ -389,13 +403,11 @@ def lof_plot(
             column1,
             column2,
             column3,
-            color=color_dict(style_kwds, 1),
             label="Data points",
-            s=20,
-            edgecolors="black",
+            **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
-            column1, column2, column3, s=radius, **updated_dict(param, style_kwds, 0),
+            column1, column2, column3, s=radius, facecolors="none", color = colors[1],
         )
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))

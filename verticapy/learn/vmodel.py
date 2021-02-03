@@ -237,7 +237,7 @@ Main Class for Vertica Model
         tree_id: int
             Tree ID in case of Tree Based models.
         show: bool
-            If set to True, draw the feature importance.
+            If set to True, draw the features importance.
         **style_kwds
             Any optional parameter to pass to the Matplotlib functions.
 
