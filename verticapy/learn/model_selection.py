@@ -968,7 +968,6 @@ tablesample
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-    ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
     param = {"color": color_dict(style_kwds, 0)}
