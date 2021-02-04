@@ -54,7 +54,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy import vDataFrame
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *

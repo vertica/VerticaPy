@@ -1008,7 +1008,12 @@ tablesample
 
 # ---#
 def plot_acf_pacf(
-    vdf: vDataFrame, column: str, ts: str, by: list = [], p: (int, list) = 15, **style_kwds,
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: list = [],
+    p: (int, list) = 15,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1078,14 +1083,16 @@ tablesample
         result.values["confidence"],
     )
     plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,)
+    ax1.bar(
+        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
+    )
     param = {
-            "s": 90,
-            "marker": "o",
-            "facecolors": color,
-            "edgecolors": "black",
-            "zorder": 2,
-        }
+        "s": 90,
+        "marker": "o",
+        "facecolors": color,
+        "edgecolors": "black",
+        "zorder": 2,
+    }
     ax1.scatter(
         x, y, **updated_dict(param, tmp_style,),
     )

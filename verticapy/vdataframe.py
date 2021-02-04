@@ -9508,7 +9508,7 @@ vcolumns : vcolumn
         for elem in columns:
             coeff_importances[elem] = self[elem].iv_woe(y=y, bins=bins,)["iv"][-1]
         if show:
-            from verticapy.learn.plot import plot_importance
+            from verticapy.learn.mlplot import plot_importance
 
             ax = plot_importance(coeff_importances, print_legend=False, ax=ax,)
             ax.set_xlabel("IV")

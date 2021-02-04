@@ -487,7 +487,7 @@ tol: float, optional
         Matplotlib Figure
         """
         if len(self.X) == 2:
-            from verticapy.learn.plot import voronoi_plot
+            from verticapy.learn.mlplot import voronoi_plot
 
             query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
                 self.name

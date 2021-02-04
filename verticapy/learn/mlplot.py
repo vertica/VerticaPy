@@ -317,10 +317,7 @@ def lof_plot(
         ax.set_xlabel(column)
         radius = [2 * 1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
         ax.scatter(
-            column1,
-            column2,
-            label="Data points",
-            **updated_dict(param, style_kwds, 0),
+            column1, column2, label="Data points", **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
             column1,
@@ -328,7 +325,7 @@ def lof_plot(
             s=radius,
             label="Outlier scores",
             facecolors="none",
-            color = colors[1],
+            color=colors[1],
         )
     elif len(columns) == 2:
         columns = [str_column(column) for column in columns]
@@ -358,10 +355,7 @@ def lof_plot(
         ax.set_xlabel(columns[0])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
         ax.scatter(
-            column1,
-            column2,
-            label="Data points",
-            **updated_dict(param, style_kwds, 0),
+            column1, column2, label="Data points", **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
             column1,
@@ -369,7 +363,7 @@ def lof_plot(
             s=radius,
             label="Outlier scores",
             facecolors="none",
-            color = colors[1],
+            color=colors[1],
         )
     elif len(columns) == 3:
         query = "SELECT {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
@@ -407,7 +401,7 @@ def lof_plot(
             **updated_dict(param, style_kwds, 0),
         )
         ax.scatter(
-            column1, column2, column3, s=radius, facecolors="none", color = colors[1],
+            column1, column2, column3, s=radius, facecolors="none", color=colors[1],
         )
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))

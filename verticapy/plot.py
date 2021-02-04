@@ -159,7 +159,7 @@ def bar(
         ax.set_axisbelow(True)
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.barh(
-        x, y, h, **updated_dict(param, style_kwds, -1),
+        x, y, h, **updated_dict(param, style_kwds, 0),
     )
     ax.set_ylabel(vdf.alias)
     if is_categorical:
@@ -172,7 +172,7 @@ def bar(
         ax.set_yticks(x)
         ax.set_yticklabels(new_z, rotation=0)
     else:
-        ax.set_yticks([elem - h / 2 / 0.94 for elem in x])
+        ax.set_yticks([elem - round(h / 2 / 0.94, 10) for elem in x])
     if method.lower() == "density":
         ax.set_xlabel("Density")
     elif (method.lower() in ["avg", "min", "max", "sum"] or "%" == method[-1]) and (
@@ -1309,12 +1309,11 @@ def hist(
     max_cardinality: int = 6,
     bins: int = 0,
     h: float = 0,
-    color: str = "#FE5016",
     ax=None,
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method, of, max_cardinality, bins, h
+        vdf, method, of, max_cardinality, bins, h,
     )
     is_numeric = vdf.isnum()
     if not (ax):
@@ -1325,7 +1324,7 @@ def hist(
         ax.yaxis.grid()
     param = {"color": gen_colors()[0], "alpha": 0.86}
     ax.bar(
-        x, y, h, **updated_dict(param, style_kwds, -1),
+        x, y, h, **updated_dict(param, style_kwds),
     )
     ax.set_xlabel(vdf.alias)
     if is_categorical:
@@ -1338,8 +1337,9 @@ def hist(
         ax.set_xticks(x)
         ax.set_xticklabels(new_z, rotation=90)
     else:
-        ax.set_xticks([elem - h / 2 / 0.94 for elem in x])
-        ax.set_xticklabels([elem - h / 2 / 0.94 for elem in x], rotation=90)
+        L = [elem - round(h / 2 / 0.94, 10) for elem in x]
+        ax.set_xticks(L)
+        ax.set_xticklabels(L, rotation=90)
     if method.lower() == "density":
         ax.set_ylabel("Density")
     elif (

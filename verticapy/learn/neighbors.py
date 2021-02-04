@@ -50,11 +50,11 @@
 #
 # VerticaPy Modules
 from verticapy.learn.metrics import *
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
@@ -1169,9 +1169,16 @@ xlim: list, optional
                 ax.grid()
                 ax.set_axisbelow(True)
             from verticapy.plot import gen_colors
-            param = {"color": gen_colors()[0],}
-            ax.plot(x, y, **updated_dict(param, style_kwds,),)
-            ax.fill_between(x, y, facecolor=updated_dict(param, style_kwds,)["color"], alpha=0.7,)
+
+            param = {
+                "color": gen_colors()[0],
+            }
+            ax.plot(
+                x, y, **updated_dict(param, style_kwds,),
+            )
+            ax.fill_between(
+                x, y, facecolor=updated_dict(param, style_kwds,)["color"], alpha=0.7,
+            )
             ax.set_xlim(min(x), max(x))
             ax.set_ylim(bottom=0,)
             ax.set_ylabel("density")
@@ -1198,14 +1205,14 @@ xlim: list, optional
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt
-            param = {"cmap": "Reds", "origin": "lower", "interpolation": "bilinear",}
+            param = {
+                "cmap": "Reds",
+                "origin": "lower",
+                "interpolation": "bilinear",
+            }
             extent = [min(x), max(x), min(y), max(y)]
             extent = [float(elem) for elem in extent]
-            im = ax.imshow(
-                result,
-                extent=extent,
-                **updated_dict(param, style_kwds,)
-            )
+            im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds,))
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
             ax.set_xlabel(self.X[0])

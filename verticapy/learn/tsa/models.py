@@ -777,8 +777,6 @@ papprox_ma: int, optional
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
-    **style_kwds
-        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -905,9 +903,20 @@ papprox_ma: int, optional
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = gen_colors()
-        param1 = {"color": colors[2], "linewidth": 2,}
-        param2 = {"color": colors[3], "linewidth": 2, "linestyle": ":",}
-        param3 = {"color": colors[0], "linewidth": 2, "linestyle": "dashed",}
+        param1 = {
+            "color": colors[2],
+            "linewidth": 2,
+        }
+        param2 = {
+            "color": colors[3],
+            "linewidth": 2,
+            "linestyle": ":",
+        }
+        param3 = {
+            "color": colors[0],
+            "linewidth": 2,
+            "linestyle": "dashed",
+        }
         if dynamic:
             ax.fill_between(
                 dynamic_forecast[0],
@@ -1222,8 +1231,7 @@ solver: str, optional
     ax
         Matplotlib axes object
         """
-        check_types([("X_idx", X_idx, [int, float, str],),
-                     ("show", show, [bool],),],)
+        check_types([("X_idx", X_idx, [int, float, str],), ("show", show, [bool],),],)
         if isinstance(X_idx, str):
             X_idx = str_column(X_idx).lower()
             for idx, elem in enumerate(self.X):
@@ -1263,7 +1271,9 @@ solver: str, optional
         for elem in coeff_importances:
             coeff_importances[elem] = 100 * coeff_importances[elem] / total
         if show:
-            plot_importance(coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds,)
+            plot_importance(
+                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds,
+            )
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
@@ -1632,9 +1642,20 @@ solver: str, optional
                 fig.set_size_inches(10, 6)
             ax.grid()
         colors = gen_colors()
-        param1 = {"color": colors[2], "linewidth": 2,}
-        param2 = {"color": colors[3], "linewidth": 2, "linestyle": ":",}
-        param3 = {"color": colors[0], "linewidth": 2, "linestyle": "dashed",}
+        param1 = {
+            "color": colors[2],
+            "linewidth": 2,
+        }
+        param2 = {
+            "color": colors[3],
+            "linewidth": 2,
+            "linestyle": ":",
+        }
+        param3 = {
+            "color": colors[0],
+            "linewidth": 2,
+            "linestyle": "dashed",
+        }
         if dynamic:
             ax.fill_between(
                 dynamic_forecast[0],

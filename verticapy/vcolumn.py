@@ -965,7 +965,12 @@ Attributes
                     **updated_dict(param, style_kwds, idx),
                 )
                 custom_lines += [
-                    Line2D([0], [0], color=updated_dict(param, style_kwds, idx)["color"], lw=4),
+                    Line2D(
+                        [0],
+                        [0],
+                        color=updated_dict(param, style_kwds, idx)["color"],
+                        lw=4,
+                    ),
                 ]
             ax.set_title("KernelDensity")
             ax.legend(
@@ -2133,7 +2138,6 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = None,
         ax=None,
         **style_kwds,
     ):
@@ -2162,8 +2166,6 @@ Attributes
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
- 	color: str, optional
- 		Histogram color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -2185,21 +2187,14 @@ Attributes
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("h", h, [int, float],),
                 ("bins", bins, [int, float],),
-                ("color", color, [str],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import hist
 
-        return hist(
-            self, method, of, max_cardinality, bins, h, color, ax=ax, **style_kwds,
-        )
+        return hist(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
