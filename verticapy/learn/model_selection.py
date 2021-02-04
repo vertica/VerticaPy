@@ -257,14 +257,16 @@ tablesample
         "LinearRegression",
         "KNeighborsRegressor",
     ):
-        all_metrics = ["explained_variance",
-                       "max_error",
-                       "median_absolute_error",
-                       "mean_absolute_error",
-                       "mean_squared_error",
-                       "root_mean_squared_error",
-                       "r2",
-                       "r2_adj",]
+        all_metrics = [
+            "explained_variance",
+            "max_error",
+            "median_absolute_error",
+            "mean_absolute_error",
+            "mean_squared_error",
+            "root_mean_squared_error",
+            "r2",
+            "r2_adj",
+        ]
     elif estimator.type in (
         "NaiveBayes",
         "RandomForestClassifier",
@@ -273,17 +275,19 @@ tablesample
         "KNeighborsClassifier",
         "NearestCentroid",
     ):
-        all_metrics = ["auc",
-                       "prc_auc",
-                       "accuracy",
-                       "log_loss",
-                       "precision",
-                       "recall",
-                       "f1_score",
-                       "mcc",
-                       "informedness",
-                       "markedness",
-                       "csi",]
+        all_metrics = [
+            "auc",
+            "prc_auc",
+            "accuracy",
+            "log_loss",
+            "precision",
+            "recall",
+            "f1_score",
+            "mcc",
+            "informedness",
+            "markedness",
+            "csi",
+        ]
     else:
         raise Exception(
             "Cross Validation is only possible for Regressors and Classifiers"
@@ -295,7 +299,7 @@ tablesample
     else:
         final_metrics = metric
     result = {"index": final_metrics}
-    if (training_score):
+    if training_score:
         result_train = {"index": final_metrics}
     try:
         schema = schema_relation(estimator.name)[0]
@@ -333,21 +337,23 @@ tablesample
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                     "value"
                 ]
-                if (training_score):
+                if training_score:
                     estimator.test_relation = estimator.input_relation
-                    result_train["{}-fold".format(i + 1)] = estimator.regression_report().values[
-                        "value"
-                    ]
+                    result_train[
+                        "{}-fold".format(i + 1)
+                    ] = estimator.regression_report().values["value"]
             elif isinstance(metric, str):
                 result["{}-fold".format(i + 1)] = [estimator.score(metric)]
-                if (training_score):
+                if training_score:
                     estimator.test_relation = estimator.input_relation
                     result_train["{}-fold".format(i + 1)] = [estimator.score(metric)]
             else:
                 result["{}-fold".format(i + 1)] = [estimator.score(m) for m in metric]
-                if (training_score):
+                if training_score:
                     estimator.test_relation = estimator.input_relation
-                    result_train["{}-fold".format(i + 1)] = [estimator.score(m) for m in metric]
+                    result_train["{}-fold".format(i + 1)] = [
+                        estimator.score(m) for m in metric
+                    ]
         else:
             if (len(estimator.classes_) > 2) and (pos_label not in estimator.classes_):
                 raise ParameterError(
@@ -362,42 +368,70 @@ tablesample
                     result["{}-fold".format(i + 1)] = estimator.classification_report(
                         labels=[pos_label], cutoff=cutoff
                     ).values["value"][0:-1]
-                    if (training_score):
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = estimator.classification_report(
+                        result_train[
+                            "{}-fold".format(i + 1)
+                        ] = estimator.classification_report(
                             labels=[pos_label], cutoff=cutoff
-                        ).values["value"][0:-1]
+                        ).values[
+                            "value"
+                        ][
+                            0:-1
+                        ]
 
                 elif isinstance(metric, str):
-                    result["{}-fold".format(i + 1)] = [estimator.score(metric, pos_label=pos_label, cutoff=cutoff)]
-                    if (training_score):
+                    result["{}-fold".format(i + 1)] = [
+                        estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
+                    ]
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = [estimator.score(metric, pos_label=pos_label, cutoff=cutoff)]
+                        result_train["{}-fold".format(i + 1)] = [
+                            estimator.score(metric, pos_label=pos_label, cutoff=cutoff)
+                        ]
                 else:
-                    result["{}-fold".format(i + 1)] = [estimator.score(m, pos_label=pos_label, cutoff=cutoff) for m in metric]
-                    if (training_score):
+                    result["{}-fold".format(i + 1)] = [
+                        estimator.score(m, pos_label=pos_label, cutoff=cutoff)
+                        for m in metric
+                    ]
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = [estimator.score(m, pos_label=pos_label, cutoff=cutoff) for m in metric]
+                        result_train["{}-fold".format(i + 1)] = [
+                            estimator.score(m, pos_label=pos_label, cutoff=cutoff)
+                            for m in metric
+                        ]
             except:
                 if metric == "all":
                     result["{}-fold".format(i + 1)] = estimator.classification_report(
                         cutoff=cutoff
                     ).values["value"][0:-1]
-                    if (training_score):
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = estimator.classification_report(
-                            cutoff=cutoff
-                        ).values["value"][0:-1]
+                        result_train[
+                            "{}-fold".format(i + 1)
+                        ] = estimator.classification_report(cutoff=cutoff).values[
+                            "value"
+                        ][
+                            0:-1
+                        ]
                 elif isinstance(metric, str):
-                    result["{}-fold".format(i + 1)] = [estimator.score(metric, cutoff=cutoff)]
-                    if (training_score):
+                    result["{}-fold".format(i + 1)] = [
+                        estimator.score(metric, cutoff=cutoff)
+                    ]
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = [estimator.score(metric, cutoff=cutoff)]
+                        result_train["{}-fold".format(i + 1)] = [
+                            estimator.score(metric, cutoff=cutoff)
+                        ]
                 else:
-                    result["{}-fold".format(i + 1)] = [estimator.score(m, cutoff=cutoff) for m in metric]
-                    if (training_score):
+                    result["{}-fold".format(i + 1)] = [
+                        estimator.score(m, cutoff=cutoff) for m in metric
+                    ]
+                    if training_score:
                         estimator.test_relation = estimator.input_relation
-                        result_train["{}-fold".format(i + 1)] = [estimator.score(m, cutoff=cutoff) for m in metric]
+                        result_train["{}-fold".format(i + 1)] = [
+                            estimator.score(m, cutoff=cutoff) for m in metric
+                        ]
         try:
             estimator.drop()
         except:
@@ -407,30 +441,33 @@ tablesample
     for i in range(cv):
         for k in range(n):
             total[k] += [result["{}-fold".format(i + 1)][k]]
-    if (training_score):
+    if training_score:
         total_train = [[] for item in range(n)]
         for i in range(cv):
             for k in range(n):
                 total_train[k] += [result_train["{}-fold".format(i + 1)][k]]
     result["avg"], result["std"] = [], []
-    if (training_score):
+    if training_score:
         result_train["avg"], result_train["std"] = [], []
     for item in total:
         result["avg"] += [statistics.mean([float(elem) for elem in item])]
         result["std"] += [statistics.stdev([float(elem) for elem in item])]
-    if (training_score):
+    if training_score:
         for item in total_train:
             result_train["avg"] += [statistics.mean([float(elem) for elem in item])]
             result_train["std"] += [statistics.stdev([float(elem) for elem in item])]
-    total_time += [statistics.mean([float(elem) for elem in total_time]), statistics.stdev([float(elem) for elem in total_time])]  
+    total_time += [
+        statistics.mean([float(elem) for elem in total_time]),
+        statistics.stdev([float(elem) for elem in total_time]),
+    ]
     result = tablesample(values=result).transpose()
     if show_time:
         result.values["time"] = total_time
-    if (training_score):
+    if training_score:
         result_train = tablesample(values=result_train).transpose()
         if show_time:
             result_train.values["time"] = total_time
-    if (training_score):
+    if training_score:
         return result, result_train
     else:
         return result
@@ -446,6 +483,7 @@ def elbow(
     max_iter: int = 50,
     tol: float = 1e-4,
     ax=None,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -476,6 +514,8 @@ tol: float, optional
     previous iteration.
 ax: Matplotlib axes object, optional
     The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -532,14 +572,23 @@ tablesample
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-    ax.set_facecolor("#F5F5F5")
-    ax.grid()
-    ax.plot(L, all_within_cluster_SS, marker="s", color=gen_colors()[0])
+        ax.grid(axis="y")
+    param = {
+        "color": gen_colors()[0],
+        "marker": "o",
+        "markerfacecolor": "white",
+        "markersize": 7,
+        "markeredgecolor": "black",
+    }
+    ax.plot(
+        L, all_within_cluster_SS, **updated_dict(param, style_kwds),
+    )
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
     return tablesample(values=values)
+
 
 # ---#
 def grid_search_cv(
@@ -557,7 +606,7 @@ def grid_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold cross validation of an estimator.
+Computes the K-Fold grid search of an estimator.
 
 Parameters
 ----------
@@ -615,13 +664,36 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("metric", metric, [str]), 
-                 ("param_grid", param_grid, [dict]),
-                 ("training_score", training_score, [bool]),
-                 ("skip_error", skip_error, [bool])])
+    check_types(
+        [
+            ("metric", metric, [str]),
+            ("param_grid", param_grid, [dict]),
+            ("training_score", training_score, [bool]),
+            ("skip_error", skip_error, [bool]),
+        ]
+    )
+    if (
+        estimator.type
+        in (
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearRegression",
+            "KNeighborsRegressor",
+        )
+        and metric == "auto"
+    ):
+        metric = "rmse"
+    elif metric == "auto":
+        metric = "logloss"
     for param in param_grid:
-        assert isinstance(param_grid[param], list), ParameterError(f"The parameter 'param_grid' must be a dictionary where each value is a list of parameters, found {type(param_grid[param])} for parameter '{param}'.")
-    all_configuration = [dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())]
+        assert isinstance(param_grid[param], Iterable) and not (
+            isinstance(param_grid[param], str)
+        ), ParameterError(
+            f"The parameter 'param_grid' must be a dictionary where each value is a list of parameters, found {type(param_grid[param])} for parameter '{param}'."
+        )
+    all_configuration = [
+        dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
+    ]
     # testing all the config
     for config in all_configuration:
         estimator.set_params(config)
@@ -630,35 +702,71 @@ tablesample
     for config in all_configuration:
         try:
             estimator.set_params(config)
-            current_cv = cross_validate(estimator, input_relation, X, y, metric, cv, pos_label, cutoff, True, training_score)
+            current_cv = cross_validate(
+                estimator,
+                input_relation,
+                X,
+                y,
+                metric,
+                cv,
+                pos_label,
+                cutoff,
+                True,
+                training_score,
+            )
             if training_score:
                 keys = [elem for elem in current_cv[0].values]
-                data += [(config, current_cv[0][keys[1]][cv], current_cv[1][keys[1]][cv], current_cv[0][keys[2]][cv], current_cv[0][keys[1]][cv + 1], current_cv[1][keys[1]][cv + 1])]
+                data += [
+                    (
+                        config,
+                        current_cv[0][keys[1]][cv],
+                        current_cv[1][keys[1]][cv],
+                        current_cv[0][keys[2]][cv],
+                        current_cv[0][keys[1]][cv + 1],
+                        current_cv[1][keys[1]][cv + 1],
+                    )
+                ]
             else:
                 keys = [elem for elem in current_cv.values]
-                data += [(config, current_cv[keys[1]][cv], current_cv[keys[2]][cv], current_cv[keys[1]][cv + 1])]
+                data += [
+                    (
+                        config,
+                        current_cv[keys[1]][cv],
+                        current_cv[keys[2]][cv],
+                        current_cv[keys[1]][cv + 1],
+                    )
+                ]
         except Exception as e:
             if skip_error:
                 print(e)
             else:
-                raise(e)
+                raise (e)
     reverse = True
     if metric in ["logloss", "max", "mae", "median", "mse", "msle", "rmse"]:
         reverse = False
-    data.sort(key=lambda tup: tup[1], reverse = reverse)
+    data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
-        result = tablesample({"parameters"      : [elem[0] for elem in data], 
-                              "avg_score"       : [elem[1] for elem in data],
-                              "avg_train_score" : [elem[2] for elem in data],
-                              "avg_time"        : [elem[3] for elem in data], 
-                              "score_std"       : [elem[4] for elem in data],
-                              "score_train_std" : [elem[5] for elem in data]})
+        result = tablesample(
+            {
+                "parameters": [elem[0] for elem in data],
+                "avg_score": [elem[1] for elem in data],
+                "avg_train_score": [elem[2] for elem in data],
+                "avg_time": [elem[3] for elem in data],
+                "score_std": [elem[4] for elem in data],
+                "score_train_std": [elem[5] for elem in data],
+            }
+        )
     else:
-        result = tablesample({"parameters" : [elem[0] for elem in data], 
-                              "avg_score"  : [elem[1] for elem in data], 
-                              "avg_time"   : [elem[2] for elem in data], 
-                              "score_std"  : [elem[3] for elem in data]})
+        result = tablesample(
+            {
+                "parameters": [elem[0] for elem in data],
+                "avg_score": [elem[1] for elem in data],
+                "avg_time": [elem[2] for elem in data],
+                "score_std": [elem[3] for elem in data],
+            }
+        )
     return result
+
 
 # ---#
 def lift_chart(
@@ -669,6 +777,7 @@ def lift_chart(
     pos_label: (int, float, str) = 1,
     nbins: int = 30,
     ax=None,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -694,6 +803,8 @@ nbins: int, optional
     Curve number of bins.
 ax: Matplotlib axes object, optional
     The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -730,16 +841,35 @@ tablesample
     ax.set_xlabel("Cumulative Data Fraction")
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
-    ax.plot(decision_boundary, lift, color=gen_colors()[0])
-    ax.plot(decision_boundary, positive_prediction_ratio, color=gen_colors()[1])
-    ax.fill_between(decision_boundary, positive_prediction_ratio, lift, facecolor = gen_colors()[0], alpha = 0.2)
-    ax.fill_between(decision_boundary, [0 for elem in decision_boundary], positive_prediction_ratio, facecolor = gen_colors()[1], alpha = 0.2)
+    param1 = {"color": gen_colors()[0]}
+    ax.plot(
+        decision_boundary, lift, **updated_dict(param1, style_kwds, 0),
+    )
+    param2 = {"color": gen_colors()[1]}
+    ax.plot(
+        decision_boundary,
+        positive_prediction_ratio,
+        **updated_dict(param2, style_kwds, 1),
+    )
+    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    if color1 == color2:
+        color2 = gen_colors()[1]
+    ax.fill_between(
+        decision_boundary, positive_prediction_ratio, lift, facecolor=color1, alpha=0.2
+    )
+    ax.fill_between(
+        decision_boundary,
+        [0 for elem in decision_boundary],
+        positive_prediction_ratio,
+        facecolor=color2,
+        alpha=0.2,
+    )
     ax.set_title("Lift Table")
     ax.set_axisbelow(True)
     ax.grid()
-    color1 = mpatches.Patch(color=gen_colors()[0], label="Cumulative Lift")
-    color2 = mpatches.Patch(color="#444444", label="Cumulative Capture Rate")
-    ax.legend(handles=[color1, color2], bbox_to_anchor=[1, 0.5])
+    color1 = mpatches.Patch(color=color1, label="Cumulative Lift")
+    color2 = mpatches.Patch(color=color2, label="Cumulative Capture Rate")
+    ax.legend(handles=[color1, color2], loc="center left", bbox_to_anchor=[1, 0.5])
     ax.set_xlim(0, 1)
     ax.set_ylim(0)
     return tablesample(
@@ -761,6 +891,7 @@ def prc_curve(
     nbins: int = 30,
     auc_prc: bool = False,
     ax=None,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -789,6 +920,8 @@ auc_prc: bool, optional
     curve.
 ax: Matplotlib axes object, optional
     The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -838,12 +971,26 @@ tablesample
     ax.set_facecolor("#F5F5F5")
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-    ax.plot(recall, precision, color=gen_colors()[0])
-    ax.fill_between(recall, [0 for item in recall], precision, facecolor = gen_colors()[0], alpha = 0.1)
+    param = {"color": color_dict(style_kwds, 0)}
+    ax.plot(recall, precision, **updated_dict(param, style_kwds))
+    ax.fill_between(
+        recall,
+        [0 for item in recall],
+        precision,
+        facecolor=color_dict(style_kwds, 0),
+        alpha=0.1,
+    )
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     ax.set_title("PRC Curve")
-    ax.text(0.995, 0, "AUC = " + str(round(auc, 4) * 100) + "%", verticalalignment = 'bottom', horizontalalignment = 'right', fontsize = 11.5)
+    ax.text(
+        0.995,
+        0,
+        "AUC = " + str(round(auc, 4) * 100) + "%",
+        verticalalignment="bottom",
+        horizontalalignment="right",
+        fontsize=11.5,
+    )
     ax.set_axisbelow(True)
     ax.grid()
     return tablesample(
@@ -863,6 +1010,7 @@ def roc_curve(
     best_threshold: bool = False,
     cutoff_curve: bool = False,
     ax=None,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -897,6 +1045,8 @@ cutoff_curve: bool, optional
     If set to True, the Cutoff curve will be drawn.
 ax: Matplotlib axes object, optional
     The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -959,22 +1109,54 @@ tablesample
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
+    color1, color2 = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
+    if color1 == color2:
+        color2 = gen_colors()[1]
     if cutoff_curve:
-        ax.plot(threshold, [1 - item for item in false_positive], color = gen_colors()[0], label = "Specificity")
-        ax.plot(threshold, true_positive, color=gen_colors()[1], label = "Sensitivity")
-        ax.fill_between(threshold, [1 - item for item in false_positive], true_positive, facecolor = "black", alpha = 0.02)
+        ax.plot(
+            threshold,
+            [1 - item for item in false_positive],
+            label="Specificity",
+            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+        )
+        ax.plot(
+            threshold,
+            true_positive,
+            label="Sensitivity",
+            **updated_dict({"color": gen_colors()[1]}, style_kwds),
+        )
+        ax.fill_between(
+            threshold,
+            [1 - item for item in false_positive],
+            true_positive,
+            facecolor="black",
+            alpha=0.02,
+        )
         ax.set_xlabel("Decision Boundary")
         ax.set_title("Cutoff Curve")
         ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
     else:
         ax.set_xlabel("False Positive Rate (1-Specificity)")
         ax.set_ylabel("True Positive Rate (Sensitivity)")
-        ax.plot(false_positive, true_positive, color=gen_colors()[0])
-        ax.fill_between(false_positive, false_positive, true_positive, facecolor = gen_colors()[0], alpha = 0.1)
-        ax.fill_between([0, 1], [0, 0], [0, 1], facecolor = gen_colors()[1], alpha = 0.1)
-        ax.plot([0, 1], [0, 1], color="#444444")
+        ax.plot(
+            false_positive,
+            true_positive,
+            **updated_dict({"color": gen_colors()[0]}, style_kwds),
+        )
+        ax.fill_between(
+            false_positive, false_positive, true_positive, facecolor=color1, alpha=0.1
+        )
+        ax.fill_between([0, 1], [0, 0], [0, 1], facecolor=color2, alpha=0.1)
+        ax.plot([0, 1], [0, 1], color=color2)
         ax.set_title("ROC Curve")
-        ax.text(0.995, 0, "AUC = " + str(round(auc, 4) * 100) + "%", verticalalignment = 'bottom', horizontalalignment = 'right', fontsize = 11.5)
+        ax.text(
+            0.995,
+            0,
+            "AUC = " + str(round(auc, 4) * 100) + "%",
+            verticalalignment="bottom",
+            horizontalalignment="right",
+            fontsize=11.5,
+        )
     ax.set_ylim(0, 1)
     ax.set_xlim(0, 1)
     ax.set_axisbelow(True)
@@ -986,6 +1168,7 @@ tablesample
             "true_positive": true_positive,
         },
     )
+
 
 # ---#
 def validation_curve(
@@ -999,12 +1182,13 @@ def validation_curve(
     cv: int = 3,
     pos_label: (int, float, str) = None,
     cutoff: float = -1,
-    std_coeff: float = 1, 
+    std_coeff: float = 1,
     ax=None,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
-Draw the Validation curve.
+Draws the Validation curve.
 
 Parameters
 ----------
@@ -1058,6 +1242,8 @@ std_coeff: float, optional
     around each score.
 ax: Matplotlib axes object, optional
     The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -1080,17 +1266,42 @@ tablesample
         True,
         False,
     )
-    gs_result_final = [(gs_result["parameters"][i][param_name], gs_result["avg_score"][i], gs_result["avg_train_score"][i], gs_result["score_std"][i], gs_result["score_train_std"][i]) for i in range(len(param_range))]
+    gs_result_final = [
+        (
+            gs_result["parameters"][i][param_name],
+            gs_result["avg_score"][i],
+            gs_result["avg_train_score"][i],
+            gs_result["score_std"][i],
+            gs_result["score_train_std"][i],
+        )
+        for i in range(len(param_range))
+    ]
     gs_result_final.sort(key=lambda tup: tup[0])
     X = [elem[0] for elem in gs_result_final]
-    Y = [[[elem[2] - std_coeff * elem[4] for elem in gs_result_final], [elem[2] for elem in gs_result_final], [elem[2] + std_coeff * elem[4] for elem in gs_result_final]],
-         [[elem[1] - std_coeff * elem[3] for elem in gs_result_final], [elem[1] for elem in gs_result_final], [elem[1] + std_coeff * elem[3] for elem in gs_result_final]]]
-    result = tablesample({param_name: X, 
-                          "training_score_lower": Y[0][0],
-                          "training_score"      : Y[0][1],
-                          "training_score_upper": Y[0][2],
-                          "test_score_lower"    : Y[1][0],
-                          "test_score"          : Y[1][1],
-                          "test_score_upper"    : Y[1][2]})
-    range_curve(X, Y, param_name, metric, ax, ["train", "test"], color=None)
+    Y = [
+        [
+            [elem[2] - std_coeff * elem[4] for elem in gs_result_final],
+            [elem[2] for elem in gs_result_final],
+            [elem[2] + std_coeff * elem[4] for elem in gs_result_final],
+        ],
+        [
+            [elem[1] - std_coeff * elem[3] for elem in gs_result_final],
+            [elem[1] for elem in gs_result_final],
+            [elem[1] + std_coeff * elem[3] for elem in gs_result_final],
+        ],
+    ]
+    result = tablesample(
+        {
+            param_name: X,
+            "training_score_lower": Y[0][0],
+            "training_score": Y[0][1],
+            "training_score_upper": Y[0][2],
+            "test_score_lower": Y[1][0],
+            "test_score": Y[1][1],
+            "test_score_upper": Y[1][2],
+        }
+    )
+    range_curve(
+        X, Y, param_name, metric, ax, ["train", "test"], **style_kwds,
+    )
     return result

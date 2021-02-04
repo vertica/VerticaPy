@@ -24,20 +24,36 @@ set_option("print_info", False)
 @pytest.fixture(scope="module")
 def rfr_data_vd(base):
     base.cursor.execute("DROP TABLE IF EXISTS public.rfr_data")
-    base.cursor.execute("CREATE TABLE IF NOT EXISTS public.rfr_data(Id INT, transportation INT, gender VARCHAR, \"owned cars\" INT, cost VARCHAR, income CHAR(4))")
+    base.cursor.execute(
+        'CREATE TABLE IF NOT EXISTS public.rfr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
+    )
     base.cursor.execute("INSERT INTO rfr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')")
     base.cursor.execute("INSERT INTO rfr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')")
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
+    )
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
+    )
     base.cursor.execute("INSERT INTO rfr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')")
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
+    )
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
+    )
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
+    )
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
+    )
+    base.cursor.execute(
+        "INSERT INTO rfr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
+    )
     base.cursor.execute("COMMIT")
-    
-    rfr_data = vDataFrame(input_relation = 'public.rfr_data', cursor=base.cursor)
+
+    rfr_data = vDataFrame(input_relation="public.rfr_data", cursor=base.cursor)
     yield rfr_data
     with warnings.catch_warnings(record=True) as w:
         drop_table(name="public.rfr_data", cursor=base.cursor)
@@ -47,15 +63,26 @@ def rfr_data_vd(base):
 def model(base, rfr_data_vd):
     base.cursor.execute("DROP MODEL IF EXISTS rfr_model_test")
 
-    base.cursor.execute("SELECT rf_regressor('rfr_model_test', 'public.rfr_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, transportation', mtry=4, ntree=3, max_breadth=100, sampling_size=1, max_depth=6, min_leaf_size=1, min_info_gain=0.0, nbins=40, seed=1, id_column='id')")
+    base.cursor.execute(
+        "SELECT rf_regressor('rfr_model_test', 'public.rfr_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, transportation', mtry=4, ntree=3, max_breadth=100, sampling_size=1, max_depth=6, min_leaf_size=1, min_info_gain=0.0, nbins=40, seed=1, id_column='id')"
+    )
 
     # I could use load_model but it is buggy
-    model_class = RandomForestRegressor("rfr_model_test", cursor=base.cursor, n_estimators = 3,
-                                         max_features = 4, max_leaf_nodes = 100, sample = 1.0,
-                                         max_depth = 6, min_samples_leaf = 1, min_info_gain = 0.0, nbins = 40)
-    model_class.input_relation = 'public.rfr_data'
+    model_class = RandomForestRegressor(
+        "rfr_model_test",
+        cursor=base.cursor,
+        n_estimators=3,
+        max_features=4,
+        max_leaf_nodes=100,
+        sample=1.0,
+        max_depth=6,
+        min_samples_leaf=1,
+        min_info_gain=0.0,
+        nbins=40,
+    )
+    model_class.input_relation = "public.rfr_data"
     model_class.test_relation = model_class.input_relation
-    model_class.X = ["Gender", "\"owned cars\"", "cost", "income"]
+    model_class.X = ["Gender", '"owned cars"', "cost", "income"]
     model_class.y = "TransPortation"
 
     yield model_class
@@ -72,9 +99,11 @@ class TestRFR:
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS rfr_model_test_drop")
         model_test = RandomForestRegressor("rfr_model_test_drop", cursor=base.cursor)
-        model_test.fit("public.rfr_data",
-                       ["Gender", "\"owned cars\"", "cost", "income"],
-                       "TransPortation")
+        model_test.fit(
+            "public.rfr_data",
+            ["Gender", '"owned cars"', "cost", "income"],
+            "TransPortation",
+        )
 
         base.cursor.execute(
             "SELECT model_name FROM models WHERE model_name = 'rfr_model_test_drop'"
@@ -90,7 +119,7 @@ class TestRFR:
     def test_features_importance(self, model):
         fim = model.features_importance()
 
-        assert fim["index"] == ['cost', 'owned cars', 'gender', 'income']
+        assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
         assert fim["sign"] == [1, 1, 1, 0]
         plt.close()
@@ -99,24 +128,30 @@ class TestRFR:
         m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
-            'tree_count',
-            'rejected_row_count',
-            'accepted_row_count',
-            'call_string',
-            'details'
+            "tree_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+            "details",
         ]
         assert m_att["attr_fields"] == [
-            'tree_count',
-            'rejected_row_count',
-            'accepted_row_count',
-            'call_string', 'predictor, type'
+            "tree_count",
+            "rejected_row_count",
+            "accepted_row_count",
+            "call_string",
+            "predictor, type",
         ]
         assert m_att["#_of_rows"] == [1, 1, 1, 1, 4]
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ['gender', 'owned cars', 'cost', 'income']
-        assert m_att_details["type"] == ['char or varchar', 'int', 'char or varchar', 'char or varchar']
+        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+        assert m_att_details["type"] == [
+            "char or varchar",
+            "int",
+            "char or varchar",
+            "char or varchar",
+        ]
 
         assert model.get_attr("tree_count")["tree_count"][0] == 3
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
@@ -128,14 +163,14 @@ class TestRFR:
 
     def test_get_params(self, model):
         assert model.get_params() == {
-            'n_estimators': 3,
-            'max_features': 4,
-            'max_leaf_nodes': 100,
-            'sample': 1,
-            'max_depth': 6,
-            'min_samples_leaf': 1,
-            'min_info_gain': 0,
-            'nbins': 40
+            "n_estimators": 3,
+            "max_features": 4,
+            "max_leaf_nodes": 100,
+            "sample": 1,
+            "max_depth": 6,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0,
+            "nbins": 40,
         }
 
     @pytest.mark.skip(reason="test not implemented")
@@ -151,7 +186,7 @@ class TestRFR:
             )
         )
         prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([['Male', 0, 'Cheap', 'Low']])[0])
+        assert prediction == pytest.approx(md.predict([["Male", 0, "Cheap", "Low"]])[0])
 
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
@@ -162,13 +197,11 @@ class TestRFR:
         rfr_data_copy = rfr_data_vd.copy()
         model.predict(
             rfr_data_copy,
-            X=["Gender", "\"owned cars\"", "cost", "income"],
+            X=["Gender", '"owned cars"', "cost", "income"],
             name="predicted_quality",
         )
 
-        assert rfr_data_copy["predicted_quality"].mean() == pytest.approx(
-            0.9, abs=1e-6
-        )
+        assert rfr_data_copy["predicted_quality"].mean() == pytest.approx(0.9, abs=1e-6)
 
     def test_regression_report(self, model):
         reg_rep = model.regression_report()
@@ -193,18 +226,24 @@ class TestRFR:
         assert reg_rep["value"][7] == pytest.approx(1.0, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
-        assert reg_rep_details["value"][2:] == [10.0,
-                                                4,
-                                                pytest.approx(1.0),
-                                                pytest.approx(1.0),
-                                                float("inf"),
-                                                pytest.approx(0.0),
-                                                pytest.approx(-1.73372940858763),
-                                                pytest.approx(0.223450528977454),
-                                                pytest.approx(3.76564442746721)]
+        assert reg_rep_details["value"][2:] == [
+            10.0,
+            4,
+            pytest.approx(1.0),
+            pytest.approx(1.0),
+            float("inf"),
+            pytest.approx(0.0),
+            pytest.approx(-1.73372940858763),
+            pytest.approx(0.223450528977454),
+            pytest.approx(3.76564442746721),
+        ]
 
         reg_rep_anova = model.regression_report("anova")
-        assert reg_rep_anova["SS"] == [pytest.approx(6.9), pytest.approx(0.0), pytest.approx(6.9)]
+        assert reg_rep_anova["SS"] == [
+            pytest.approx(6.9),
+            pytest.approx(0.0),
+            pytest.approx(6.9),
+        ]
         assert reg_rep_anova["MS"][:-1] == [pytest.approx(1.725), pytest.approx(0.0)]
 
     def test_score(self, model):
@@ -259,15 +298,25 @@ class TestRFR:
         model_test.drop()
 
     def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id = 0)
+        gvz_tree_0 = model.export_graphviz(tree_id=0)
         expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 2.000000, variance: 0", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: 0.000000, variance: 0", color="red"];\n25 [label = "prediction: 1.000000, variance: 0", color="red"];\n13 [label = "prediction: 0.000000, variance: 0", color="red"];\n7 [label = "prediction: 1.000000, variance: 0", color="red"];\n}'
 
         assert gvz_tree_0 == expected_gvz_0
 
     def test_get_tree(self, model):
-        tree_1 = model.get_tree(tree_id = 1)
+        tree_1 = model.get_tree(tree_id=1)
 
-        assert tree_1['prediction'] == [None, '2.000000', None, None, '1.000000', None, '0.000000', '0.000000', '1.000000']
+        assert tree_1["prediction"] == [
+            None,
+            "2.000000",
+            None,
+            None,
+            "1.000000",
+            None,
+            "0.000000",
+            "0.000000",
+            "1.000000",
+        ]
 
     @pytest.mark.skip(reason="test not implemented")
     def test_plot_tree(self, model):

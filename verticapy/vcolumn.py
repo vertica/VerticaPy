@@ -617,8 +617,8 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -645,10 +645,10 @@ Attributes
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
- 	color: str, optional
- 		Histogram color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -666,19 +666,14 @@ Attributes
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("bins", bins, [int, float],),
                 ("h", h, [int, float],),
-                ("color", color, [str],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import bar
 
-        return bar(self, method, of, max_cardinality, bins, h, color, ax=ax)
+        return bar(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
 
     # ---#
     def boxplot(
@@ -688,6 +683,7 @@ Attributes
         max_cardinality: int = 8,
         cat_priority: list = [],
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -709,6 +705,8 @@ Attributes
  		The other categories will be filtered.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -732,7 +730,7 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import boxplot
 
-        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax)
+        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds,)
 
     # ---#
     def category(self):
@@ -893,8 +891,8 @@ Attributes
         kernel: str = "gaussian",
         nbins: int = 200,
         xlim: tuple = None,
-        color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -918,10 +916,10 @@ Attributes
         the time of the learning and scoring phases.
     xlim: tuple, optional
         Set the x limits of the current axes.
- 	color: str, optional
- 		The Density Plot color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -937,14 +935,9 @@ Attributes
                 ("by", by, [str],),
                 ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
                 ("bandwidth", bandwidth, [int, float],),
-                ("color", color, [str],),
                 ("nbins", nbins, [float, int],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if by:
             columns_check([by], self.parent)
             by = vdf_columns_names([by], self.parent)[0]
@@ -960,6 +953,7 @@ Attributes
             custom_lines = []
             columns = self.parent[by].distinct()
             for idx, column in enumerate(columns):
+                param = {"color": colors[idx % len(colors)]}
                 ax = self.parent.search(
                     "{} = '{}'".format(self.parent[by].alias, column)
                 )[self.alias].density(
@@ -967,11 +961,16 @@ Attributes
                     kernel=kernel,
                     nbins=nbins,
                     xlim=(xmin, xmax),
-                    color=colors[idx % len(colors)],
                     ax=ax,
+                    **updated_dict(param, style_kwds, idx),
                 )
                 custom_lines += [
-                    Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
+                    Line2D(
+                        [0],
+                        [0],
+                        color=updated_dict(param, style_kwds, idx)["color"],
+                        lw=4,
+                    ),
                 ]
             ax.set_title("KernelDensity")
             ax.legend(
@@ -1003,7 +1002,7 @@ Attributes
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
-                color=color, ax=ax
+                ax=ax, **style_kwds,
             )
             model.drop()
             return result
@@ -1391,7 +1390,7 @@ Attributes
             result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
-            if h <= 0:
+            if not (h) or h <= 0:
                 if bins <= 0:
                     h = self.numh()
                 else:
@@ -1504,65 +1503,6 @@ Attributes
             return self.apply(func="{} / ({})".format("{}", x))
         else:
             raise ValueError("Division by 0 is forbidden !")
-
-    # ---#
-    def donut(
-        self,
-        method: str = "density",
-        of: str = "",
-        max_cardinality: int = 6,
-        h: float = 0,
-        ax=None,
-    ):
-        """
-	---------------------------------------------------------------------------
-	Draws the Donut Chart of the vcolumn based on an aggregation.
-
-	Parameters
- 	----------
- 	method: str, optional
- 		The method to use to aggregate the data.
- 			count   : Number of elements.
- 			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
-        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
- 	of: str, optional
- 		The vcolumn to use to compute the aggregation.
-	max_cardinality: int, optional
- 		Maximum number of the vcolumn distinct elements to be used as categorical 
- 		(No h will be picked or computed)
- 	h: float, optional
- 		Interval width of the bar. If empty, an optimized h will be computed.
-    ax: Matplotlib axes object, optional
-        The axes to plot on.
-
-    Returns
-    -------
-    ax
-        Matplotlib axes object
-
- 	See Also
- 	--------
- 	vDataFrame.pie : Draws the Pie Chart of the vcolumn based on an aggregation.
-		"""
-        check_types(
-            [
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("h", h, [int, float],),
-            ]
-        )
-        if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
-        from verticapy.plot import pie
-
-        return pie(self, method, of, max_cardinality, h, True, ax=ax)
 
     # ---#
     def drop(self, add_history: bool = True):
@@ -2008,6 +1948,54 @@ Attributes
         return self.parent
 
     # ---#
+    def geo_plot(
+        self, *args, **kwargs,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Geospatial Object.
+
+    Parameters
+    ----------
+    *args / **kwargs
+        Any optional parameter to pass to the geopandas plot function.
+        For more information, see: 
+        https://geopandas.readthedocs.io/en/latest/docs/reference/api/
+                geopandas.GeoDataFrame.plot.html
+    
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        columns = [self.alias]
+        check = True
+        if len(args) > 0:
+            column = args[0]
+        elif "column" in kwargs:
+            column = kwargs["column"]
+        else:
+            check = False
+        if check:
+            columns_check([column], self.parent)
+            column = vdf_columns_names([column], self.parent)[0]
+            columns += [column]
+            if not ("cmap" in kwargs):
+                from verticapy.plot import gen_cmap
+
+                kwargs["cmap"] = gen_cmap()[0]
+        else:
+            if not ("color" in kwargs):
+                from verticapy.plot import gen_colors
+
+                kwargs["color"] = gen_colors()[0]
+        if not ("legend" in kwargs):
+            kwargs["legend"] = True
+        if not ("figsize" in kwargs):
+            kwargs["figsize"] = (14, 10)
+        return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs,)
+
+    # ---#
     def get_dummies(
         self,
         prefix: str = "",
@@ -2150,8 +2138,8 @@ Attributes
         max_cardinality: int = 6,
         bins: int = 0,
         h: float = 0,
-        color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -2178,10 +2166,10 @@ Attributes
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
- 	color: str, optional
- 		Histogram color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -2199,19 +2187,14 @@ Attributes
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("h", h, [int, float],),
                 ("bins", bins, [int, float],),
-                ("color", color, [str],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import hist
 
-        return hist(self, method, of, max_cardinality, bins, h, color, ax=ax)
+        return hist(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -3187,7 +3170,9 @@ Attributes
         of: str = "",
         max_cardinality: int = 6,
         h: float = 0,
+        pie_type: str = "auto",
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3212,8 +3197,16 @@ Attributes
  		(No h will be picked or computed)
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
+    pie_type: str, optional
+        The Pie Type.
+            auto   : Regular Pie Chart.
+            donut  : Donut Chart.
+            rose   : Rose Chart.
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3224,20 +3217,27 @@ Attributes
  	--------
  	vDataFrame.donut : Draws the Donut Chart of the vcolumn based on an aggregation.
 		"""
+        if isinstance(pie_type, str):
+            pie_type = pie_type.lower()
         check_types(
             [
                 ("method", method, [str],),
                 ("of", of, [str],),
                 ("max_cardinality", max_cardinality, [int, float],),
                 ("h", h, [int, float],),
+                ("pie_type", pie_type, ["auto", "donut", "rose"]),
             ]
         )
+        donut = True if pie_type == "donut" else False
+        rose = True if pie_type == "rose" else False
         if of:
             columns_check([of], self.parent)
             of = vdf_columns_names([of], self.parent)[0]
         from verticapy.plot import pie
 
-        return pie(self, method, of, max_cardinality, h, False, ax=None)
+        return pie(
+            self, method, of, max_cardinality, h, donut, rose, ax=None, **style_kwds,
+        )
 
     # ---#
     def plot(
@@ -3246,9 +3246,10 @@ Attributes
         by: str = "",
         start_date: str = "",
         end_date: str = "",
-        color: str = None,
         area: bool = False,
+        step: bool = False,
         ax=None,
+        **style_kwds,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3267,12 +3268,14 @@ Attributes
  	end_date: str, optional
  		Input End Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is greater than November 1993 the 3rd.
- 	color: str, optional
- 		Color of the TS.
  	area: bool, optional
  		If set to True, draw an Area Plot.
+    step: bool, optional
+        If set to True, draw a Step Plot.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3289,14 +3292,10 @@ Attributes
                 ("by", by, [str],),
                 ("start_date", start_date, [str],),
                 ("end_date", end_date, [str],),
-                ("color", color, [str],),
                 ("area", area, [bool],),
+                ("step", step, [bool],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         columns_check([ts], self.parent)
         ts = vdf_columns_names([ts], self.parent)[0]
         if by:
@@ -3304,7 +3303,9 @@ Attributes
             by = vdf_columns_names([by], self.parent)[0]
         from verticapy.plot import ts_plot
 
-        return ts_plot(self, ts, by, start_date, end_date, color, area, ax=ax)
+        return ts_plot(
+            self, ts, by, start_date, end_date, area, step, ax=ax, **style_kwds,
+        )
 
     # ---#
     def product(self):
@@ -3357,8 +3358,8 @@ Attributes
         start_date: str = "",
         end_date: str = "",
         plot_median: bool = False,
-        color: str = None,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3380,10 +3381,10 @@ Attributes
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
         If set to True, the Median will be drawn.
-    color: str, optional
-        Color of the TS.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3400,19 +3401,16 @@ Attributes
                 ("q", q, [tuple],),
                 ("start_date", start_date, [str],),
                 ("end_date", end_date, [str],),
-                ("color", color, [str],),
                 ("plot_median", plot_median, [bool],),
             ]
         )
-        if not color:
-            from verticapy.plot import gen_colors
-
-            color = gen_colors()[0]
         columns_check([ts], self.parent)
         ts = vdf_columns_names([ts], self.parent)[0]
         from verticapy.plot import range_curve_vdf
 
-        return range_curve_vdf(self, ts, q, start_date, end_date, plot_median, color, ax=ax)
+        return range_curve_vdf(
+            self, ts, q, start_date, end_date, plot_median, ax=ax, **style_kwds,
+        )
 
     # ---#
     def rename(self, new_name: str):
@@ -3550,6 +3548,82 @@ Attributes
             func="TIME_SLICE({}, {}, '{}', '{}')".format(
                 "{}", length, unit.upper(), start_or_end
             )
+        )
+
+    # ---#
+    def spider(
+        self,
+        by: str = "",
+        method: str = "density",
+        of: str = "",
+        max_cardinality: (int, tuple) = (6, 6),
+        h: (int, float, tuple) = (None, None),
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Spider Plot of the input vcolumn based on an aggregation.
+
+    Parameters
+    ----------
+    by: str, optional
+        vcolumn to use to partition the data.
+    method: str, optional
+        The method to use to aggregate the data.
+            count   : Number of elements.
+            density : Percentage of the distribution.
+            mean    : Average of the vcolumn 'of'.
+            min     : Minimum of the vcolumn 'of'.
+            max     : Maximum of the vcolumn 'of'.
+            sum     : Sum of the vcolumn 'of'.
+            q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+        It can also be a cutomized aggregation (ex: AVG(column1) + 5).
+    of: str, optional
+        The vcolumn to use to compute the aggregation.
+    h: int/float/tuple, optional
+        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
+        vcolumns are numerical. Optimized h will be computed if the parameter 
+        is empty or invalid.
+    max_cardinality: int/tuple, optional
+        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        categorical (No h will be picked or computed)
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+    See Also
+    --------
+    vDataFrame.bar : Draws the Bar Chart of the input vcolumns based on an aggregation.
+        """
+        check_types(
+            [
+                ("by", by, [str],),
+                ("method", method, [str],),
+                ("of", of, [str],),
+                ("max_cardinality", max_cardinality, [list],),
+                ("h", h, [list, float, int],),
+            ]
+        )
+        if by:
+            columns_check([by], self.parent)
+            by = vdf_columns_names([by], self.parent)[0]
+            columns = [self.alias, by]
+        else:
+            columns = [self.alias]
+        if of:
+            columns_check([of], self)
+            of = vdf_columns_names([of], self.parent)[0]
+        from verticapy.plot import spider as spider_plot
+
+        return spider_plot(
+            self.parent, columns, method, of, max_cardinality, h, ax=ax, **style_kwds,
         )
 
     # ---#

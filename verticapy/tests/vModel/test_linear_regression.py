@@ -43,7 +43,6 @@ def model(base, winequality_vd):
 
 
 class TestLinearRegression:
-
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'linreg_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
@@ -186,19 +185,28 @@ class TestLinearRegression:
         assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
-        assert reg_rep_details["value"][2:] == [6497.0,
-                                                3,
-                                                pytest.approx(0.219816524906085),
-                                                pytest.approx(0.21945605202370688),
-                                                pytest.approx(609.8004472783862),
-                                                pytest.approx(0.0),
-                                                pytest.approx(0.232322269343305),
-                                                pytest.approx(0.189622693372695),
-                                                pytest.approx(53.1115447611131)]
+        assert reg_rep_details["value"][2:] == [
+            6497.0,
+            3,
+            pytest.approx(0.219816524906085),
+            pytest.approx(0.21945605202370688),
+            pytest.approx(609.8004472783862),
+            pytest.approx(0.0),
+            pytest.approx(0.232322269343305),
+            pytest.approx(0.189622693372695),
+            pytest.approx(53.1115447611131),
+        ]
 
         reg_rep_anova = model.regression_report("anova")
-        assert reg_rep_anova["SS"] == [pytest.approx(1088.90197629059), pytest.approx(3864.78372480164), pytest.approx(4953.68570109281)]
-        assert reg_rep_anova["MS"][:-1] == [pytest.approx(362.9673254301967), pytest.approx(0.5952231210228923)]
+        assert reg_rep_anova["SS"] == [
+            pytest.approx(1088.90197629059),
+            pytest.approx(3864.78372480164),
+            pytest.approx(4953.68570109281),
+        ]
+        assert reg_rep_anova["MS"][:-1] == [
+            pytest.approx(362.9673254301967),
+            pytest.approx(0.5952231210228923),
+        ]
 
     def test_score(self, model):
         # method = "max"

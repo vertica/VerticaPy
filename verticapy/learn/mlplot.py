@@ -72,6 +72,7 @@ def logit_plot(
     cursor=None,
     max_nb_points=50,
     ax=None,
+    **style_kwds,
 ):
     check_types(
         [
@@ -83,6 +84,19 @@ def logit_plot(
         ]
     )
     cursor, conn = check_cursor(cursor)[0:2]
+    param0 = {
+        "marker": "o",
+        "s": 50,
+        "color": gen_colors()[0],
+        "edgecolors": "black",
+        "alpha": 0.8,
+    }
+    param1 = {
+        "marker": "o",
+        "s": 50,
+        "color": gen_colors()[1],
+        "edgecolors": "black",
+    }
 
     def logit(x):
         return 1 / (1 + math.exp(-x))
@@ -121,27 +135,25 @@ def logit_plot(
             ax.scatter(
                 x0,
                 [logit(coefficients[0] + coefficients[1] * item) for item in x0],
-                alpha=1,
-                marker="o",
-                color=gen_colors()[1],
-                s=50, 
-                edgecolors = "black",
+                **updated_dict(param1, style_kwds, 1),
             )
         ]
         all_scatter += [
             ax.scatter(
                 x1,
                 [logit(coefficients[0] + coefficients[1] * item) for item in x1],
-                alpha=0.8,
-                marker="o",
-                color=gen_colors()[0],
-                s=50, 
-                edgecolors = "black",
+                **updated_dict(param0, style_kwds, 0),
             )
         ]
         ax.set_xlabel(X[0])
-        ax.set_ylabel("logit")
-        ax.legend(all_scatter, [0, 1], scatterpoints=1)
+        ax.set_ylabel(y)
+        ax.legend(
+            all_scatter,
+            [0, 1],
+            scatterpoints=1,
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
+        )
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -203,11 +215,7 @@ def logit_plot(
                     )
                     for i in range(len(x0))
                 ],
-                alpha=1,
-                marker="o",
-                color=gen_colors()[1],
-                s=50, 
-                edgecolors = "black",
+                **updated_dict(param1, style_kwds, 1),
             )
         ]
         all_scatter += [
@@ -222,23 +230,19 @@ def logit_plot(
                     )
                     for i in range(len(x1))
                 ],
-                alpha=0.8,
-                marker="o",
-                color=gen_colors()[0],
-                s=50, 
-                edgecolors = "black",
+                **updated_dict(param0, style_kwds, 0),
             )
         ]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
-        ax.set_zlabel(y + " = logit(" + X[0] + ", " + X[1] + ")")
+        ax.set_zlabel(y)
         ax.legend(
             all_scatter,
             [0, 1],
             scatterpoints=1,
-            loc="lower left",
+            loc="center left",
+            bbox_to_anchor=[1.1, 0.5],
             title=y,
-            bbox_to_anchor=(0.9, 1),
             ncol=2,
             fontsize=8,
         )
@@ -257,6 +261,7 @@ def lof_plot(
     cursor=None,
     tablesample: float = -1,
     ax=None,
+    **style_kwds,
 ):
     check_types(
         [
@@ -272,6 +277,25 @@ def lof_plot(
         if (tablesample > 0 and tablesample < 100)
         else ""
     )
+    colors = []
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            colors = [style_kwds["color"]]
+        else:
+            colors = style_kwds["color"]
+        del style_kwds["color"]
+    elif "colors" in style_kwds:
+        if isinstance(style_kwds["colors"], str):
+            colors = [style_kwds["colors"]]
+        else:
+            colors = style_kwds["colors"]
+        del style_kwds["colors"]
+    colors += gen_colors()
+    param = {
+        "s": 50,
+        "edgecolors": "black",
+        "color": colors[0],
+    }
     if len(columns) == 1:
         column = str_column(columns[0])
         query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
@@ -291,15 +315,17 @@ def lof_plot(
             ax.set_axisbelow(True)
             ax.grid()
         ax.set_xlabel(column)
-        radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",)
+        radius = [2 * 1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
+        ax.scatter(
+            column1, column2, label="Data points", **updated_dict(param, style_kwds, 0),
+        )
         ax.scatter(
             column1,
             column2,
-            color=gen_colors()[0],
             s=radius,
             label="Outlier scores",
             facecolors="none",
+            color=colors[1],
         )
     elif len(columns) == 2:
         columns = [str_column(column) for column in columns]
@@ -328,14 +354,16 @@ def lof_plot(
         ax.set_ylabel(columns[1])
         ax.set_xlabel(columns[0])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
-        ax.scatter(column1, column2, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",)
+        ax.scatter(
+            column1, column2, label="Data points", **updated_dict(param, style_kwds, 0),
+        )
         ax.scatter(
             column1,
             column2,
-            color=gen_colors()[0],
             s=radius,
             label="Outlier scores",
             facecolors="none",
+            color=colors[1],
         )
     elif len(columns) == 3:
         query = "SELECT {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
@@ -366,9 +394,15 @@ def lof_plot(
         ax.set_zlabel(columns[2])
         radius = [1000 * (item - min(lof)) / (max(lof) - min(lof)) for item in lof]
         ax.scatter(
-            column1, column2, column3, color=gen_colors()[1], label="Data points", s=20, edgecolors = "black",
+            column1,
+            column2,
+            column3,
+            label="Data points",
+            **updated_dict(param, style_kwds, 0),
         )
-        ax.scatter(column1, column2, column3, color=gen_colors()[0], s=radius)
+        ax.scatter(
+            column1, column2, column3, s=radius, facecolors="none", color=colors[1],
+        )
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
         ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
@@ -383,7 +417,11 @@ def lof_plot(
 
 # ---#
 def plot_importance(
-    coeff_importances: dict, coeff_sign: dict = {}, print_legend: bool = True, ax=None
+    coeff_importances: dict,
+    coeff_sign: dict = {},
+    print_legend: bool = True,
+    ax=None,
+    **style_kwds,
 ):
     check_types(
         [
@@ -408,12 +446,17 @@ def plot_importance(
         ax.grid()
     color = []
     for item in signs:
-        color += [gen_colors()[0]] if (item == 1) else [gen_colors()[1]]
-    ax.barh(range(0, len(importances)), importances, 0.9, color=color, alpha=0.86)
+        color += (
+            [color_dict(style_kwds, 0)] if (item == 1) else [color_dict(style_kwds, 1)]
+        )
+    param = {"alpha": 0.86}
+    style_kwds = updated_dict(param, style_kwds)
+    style_kwds["color"] = color
+    ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
     if print_legend:
-        orange = mpatches.Patch(color=gen_colors()[1], label="sign -")
-        blue = mpatches.Patch(color=gen_colors()[0], label="sign +")
-        ax.legend(handles=[orange, blue], loc="lower right")
+        orange = mpatches.Patch(color=color_dict(style_kwds, 1), label="sign -")
+        blue = mpatches.Patch(color=color_dict(style_kwds, 0), label="sign +")
+        ax.legend(handles=[orange, blue], loc="center left", bbox_to_anchor=[1, 0.5])
     ax.set_ylabel("Features")
     ax.set_xlabel("Importance")
     ax.set_yticks(range(0, len(importances)))
@@ -550,6 +593,7 @@ def regression_plot(
     cursor=None,
     max_nb_points: int = 50,
     ax=None,
+    **style_kwds,
 ):
     check_types(
         [
@@ -561,6 +605,12 @@ def regression_plot(
         ]
     )
     cursor, conn = check_cursor(cursor)[0:2]
+    param = {
+        "marker": "o",
+        "color": gen_colors()[0],
+        "s": 50,
+        "edgecolors": "black",
+    }
     if len(X) == 1:
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
@@ -571,7 +621,6 @@ def regression_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F9F9F9")
             ax.set_axisbelow(True)
             ax.grid()
         x0, y0 = (
@@ -582,7 +631,9 @@ def regression_plot(
         x_reg = [min_reg, max_reg]
         y_reg = [coefficients[0] + coefficients[1] * item for item in x_reg]
         ax.plot(x_reg, y_reg, alpha=1, color="black")
-        ax.scatter(x0, y0, alpha=1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
+        ax.scatter(
+            x0, y0, **updated_dict(param, style_kwds, 0),
+        )
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
     elif len(X) == 2:
@@ -619,7 +670,9 @@ def regression_plot(
         ax.plot_surface(
             X_reg, Y_reg, Z_reg, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
-        ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
+        ax.scatter(
+            x0, y0, z0, **updated_dict(param, style_kwds, 0),
+        )
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
@@ -639,6 +692,7 @@ def svm_classifier_plot(
     cursor=None,
     max_nb_points: int = 500,
     ax=None,
+    **style_kwds,
 ):
     check_types(
         [
@@ -650,6 +704,18 @@ def svm_classifier_plot(
         ]
     )
     cursor, conn = check_cursor(cursor)[0:2]
+    param0 = {
+        "marker": "o",
+        "color": gen_colors()[0],
+        "s": 50,
+        "edgecolors": "black",
+    }
+    param1 = {
+        "marker": "o",
+        "color": gen_colors()[1],
+        "s": 50,
+        "edgecolors": "black",
+    }
     if len(X) == 1:
         query = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
@@ -663,7 +729,6 @@ def svm_classifier_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F9F9F9")
             ax.set_axisbelow(True)
             ax.grid()
         x0, x1 = [], []
@@ -678,13 +743,19 @@ def svm_classifier_plot(
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
         all_scatter = [
-            ax.scatter(x0, [0 for item in x0], marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)
+            ax.scatter(x0, [0 for item in x0], **updated_dict(param1, style_kwds, 1),)
         ]
         all_scatter += [
-            ax.scatter(x1, [0 for item in x1], marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
+            ax.scatter(x1, [0 for item in x1], **updated_dict(param0, style_kwds, 0),)
         ]
         ax.set_xlabel(X[0])
-        ax.legend(all_scatter, [0, 1], scatterpoints=1)
+        ax.legend(
+            all_scatter,
+            [0, 1],
+            scatterpoints=1,
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
+        )
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -698,7 +769,6 @@ def svm_classifier_plot(
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(8, 6)
-            ax.set_facecolor("#F9F9F9")
             ax.set_axisbelow(True)
             ax.grid()
         x0, x1, y0, y1 = [], [], [], []
@@ -718,11 +788,17 @@ def svm_classifier_plot(
             ],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
-        all_scatter = [ax.scatter(x0, y0, marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)]
-        all_scatter += [ax.scatter(x1, y1, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)]
+        all_scatter = [ax.scatter(x0, y0, **updated_dict(param1, style_kwds, 1),)]
+        all_scatter += [ax.scatter(x1, y1, **updated_dict(param0, style_kwds, 0),)]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
-        ax.legend(all_scatter, [0, 1], scatterpoints=1)
+        ax.legend(
+            all_scatter,
+            [0, 1],
+            scatterpoints=1,
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
+        )
     elif len(X) == 3:
         query = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0],
@@ -783,12 +859,9 @@ def svm_classifier_plot(
         ax.plot_surface(
             X_svm, Y_svm, Z_svm, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
-        all_scatter = [
-            ax.scatter(x0, y0, z0, alpha=1, marker="o", color=gen_colors()[1], s=50, edgecolors = "black",)
-        ]
-        all_scatter += [
-            ax.scatter(x1, y1, z1, alpha=0.8, marker="o", color=gen_colors()[0], s=50, edgecolors = "black",)
-        ]
+        param0["alpha"] = 0.8
+        all_scatter = [ax.scatter(x0, y0, z0, **updated_dict(param1, style_kwds, 1),)]
+        all_scatter += [ax.scatter(x1, y1, z1, **updated_dict(param0, style_kwds, 0),)]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(X[2])
@@ -797,7 +870,7 @@ def svm_classifier_plot(
             [0, 1],
             scatterpoints=1,
             title=y,
-            loc="center left", 
+            loc="center left",
             bbox_to_anchor=[1.1, 0.5],
             ncol=1,
             fontsize=8,
@@ -808,13 +881,19 @@ def svm_classifier_plot(
         conn.close()
     return ax
 
+
 # ---#
-def voronoi_plot(clusters: list, columns: list, ax=None):
+def voronoi_plot(
+    clusters: list, columns: list, ax=None, **style_kwds,
+):
     check_types([("clusters", clusters, [list],), ("columns", columns, [list],)])
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     v = Voronoi(clusters)
-    voronoi_plot_2d(v, show_vertices=0, ax=ax)
+    param = {"show_vertices": 0}
+    voronoi_plot_2d(
+        v, ax=ax, **updated_dict(param, style_kwds),
+    )
     if not (ax):
         ax = plt
     ax.set_xlabel(columns[0])

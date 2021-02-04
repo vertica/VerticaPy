@@ -1498,6 +1498,7 @@ vcolumns : vcolumn
         round_nb: int = 3,
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1552,6 +1553,8 @@ vcolumns : vcolumn
         If set to True, the Auto Correlation Plot will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -1656,6 +1659,7 @@ vcolumns : vcolumn
                     confidence=acf_band,
                     type_bar=True if acf_type == "bar" else False,
                     ax=ax,
+                    **style_kwds,
                 )
             return result
 
@@ -2859,6 +2863,7 @@ vcolumns : vcolumn
         h: tuple = (None, None),
         hist_type: str = "auto",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -2890,10 +2895,15 @@ vcolumns : vcolumn
     hist_type: str, optional
         The Histogram Type.
             auto          : Regular Bar Chart based on 1 or 2 vcolumns.
+            pyramid       : Pyramid Density Bar Chart. Only works if one of
+                            the two vcolumns is binary and the 'method' is 
+                            set to 'density'.
             stacked       : Stacked Bar Chart based on 2 vcolumns.
             fully_stacked : Fully Stacked Bar Chart based on 2 vcolumns.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -2920,7 +2930,15 @@ vcolumns : vcolumn
                 (
                     "hist_type",
                     hist_type,
-                    ["auto", "fully_stacked", "stacked", "fully", "fully stacked"],
+                    [
+                        "auto",
+                        "fully_stacked",
+                        "stacked",
+                        "fully",
+                        "fully stacked",
+                        "pyramid",
+                        "density",
+                    ],
                 ),
             ]
         )
@@ -2930,14 +2948,17 @@ vcolumns : vcolumn
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
         if len(columns) == 1:
-            return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax)
+            return self[columns[0]].bar(method, of, 6, 0, 0, ax=ax, **style_kwds,)
         else:
-            stacked, fully_stacked = False, False
+            stacked, fully_stacked, density = False, False, False
             if hist_type.lower() in ("fully", "fully stacked", "fully_stacked"):
                 fully_stacked = True
             elif hist_type.lower() == "stacked":
                 stacked = True
+            elif hist_type.lower() in ("pyramid", "density"):
+                density = True
             from verticapy.plot import bar2D
+
             return bar2D(
                 self,
                 columns,
@@ -2947,7 +2968,9 @@ vcolumns : vcolumn
                 h,
                 stacked,
                 fully_stacked,
+                density,
                 ax=ax,
+                **style_kwds,
             )
 
     # ---#
@@ -3019,7 +3042,9 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def boxplot(self, columns: list = [], ax=None):
+    def boxplot(
+        self, columns: list = [], ax=None, **style_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Box Plot of the input vcolumns. 
@@ -3031,6 +3056,8 @@ vcolumns : vcolumn
         be used.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3049,7 +3076,7 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
         from verticapy.plot import boxplot2D
 
-        return boxplot2D(self, columns, ax=ax)
+        return boxplot2D(self, columns, ax=ax, **style_kwds,)
 
     # ---#
     def bubble(
@@ -3061,6 +3088,7 @@ vcolumns : vcolumn
         bbox: list = [],
         img: str = "",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3083,6 +3111,8 @@ vcolumns : vcolumn
         Path to the image to display as background.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3112,7 +3142,14 @@ vcolumns : vcolumn
         from verticapy.plot import bubble
 
         return bubble(
-            self, columns + [size_bubble_col], catcol, max_nb_points, bbox, img, ax=ax
+            self,
+            columns + [size_bubble_col],
+            catcol,
+            max_nb_points,
+            bbox,
+            img,
+            ax=ax,
+            **style_kwds,
         )
 
     # ---#
@@ -3403,6 +3440,7 @@ vcolumns : vcolumn
 
         from scipy.stats import t, norm, chi2
         from numpy import log
+
         columns_check([column1, column2], self)
         column1, column2 = vdf_columns_names([column1, column2], self)
         if method[0:7] == "kendall":
@@ -3877,6 +3915,7 @@ vcolumns : vcolumn
         nbins: int = 50,
         xlim: tuple = None,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3903,6 +3942,8 @@ vcolumns : vcolumn
         Set the x limits of the current axes.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3945,13 +3986,14 @@ vcolumns : vcolumn
             xmin, xmax = xlim
         custom_lines = []
         for idx, column in enumerate(columns):
+            param = {"color": colors[idx % len(colors)]}
             ax = self[column].density(
                 bandwidth=bandwidth,
                 kernel=kernel,
                 nbins=nbins,
                 xlim=(xmin, xmax),
-                color=colors[idx % len(colors)],
                 ax=ax,
+                **updated_dict(param, style_kwds, idx),
             )
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
@@ -5449,11 +5491,10 @@ vcolumns : vcolumn
         method: str = "count",
         of: str = "",
         cmap: str = "",
-        gridsize: int = 20,
-        color: str = "white",
         bbox: list = [],
         img: str = "",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5475,10 +5516,6 @@ vcolumns : vcolumn
         The vcolumn to use to compute the aggregation.
     cmap: str, optional
         Color Map.
-    gridsize: int, optional
-        Hexbin grid size.
-    color: str, optional
-        Color of the Hexbin borders.
     bbox: list, optional
         List of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
@@ -5486,6 +5523,8 @@ vcolumns : vcolumn
          Path to the image to display as background.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -5504,8 +5543,6 @@ vcolumns : vcolumn
                 ("method", method, ["density", "count", "avg", "min", "max", "sum"],),
                 ("of", of, [str],),
                 ("cmap", cmap, [str],),
-                ("gridsize", gridsize, [int, float],),
-                ("color", color, [str],),
                 ("bbox", bbox, [list],),
                 ("img", img, [str],),
             ]
@@ -5521,9 +5558,7 @@ vcolumns : vcolumn
             cmap = gen_cmap()[0]
         from verticapy.plot import hexbin
 
-        return hexbin(
-            self, columns, method, of, cmap, gridsize, color, bbox, img, ax=ax
-        )
+        return hexbin(self, columns, method, of, cmap, bbox, img, ax=ax, **style_kwds,)
 
     # ---#
     def hist(
@@ -5532,9 +5567,10 @@ vcolumns : vcolumn
         method: str = "density",
         of: str = "",
         max_cardinality: tuple = (6, 6),
-        h: tuple = (None, None),
+        h: (int, float, tuple) = (None, None),
         hist_type: str = "auto",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5556,7 +5592,7 @@ vcolumns : vcolumn
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
         The vcolumn to use to compute the aggregation.
-    h: tuple, optional
+    h: int/float/tuple, optional
         Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
         vcolumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
@@ -5570,6 +5606,8 @@ vcolumns : vcolumn
             stacked : Stacked Histogram based on 2 vcolumns.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -5588,7 +5626,7 @@ vcolumns : vcolumn
                 ("method", method, [str],),
                 ("of", of, [str],),
                 ("max_cardinality", max_cardinality, [list],),
-                ("h", h, [list],),
+                ("h", h, [list, float, int],),
                 ("hist_type", hist_type, ["auto", "multi", "stacked"],),
             ]
         )
@@ -5600,18 +5638,31 @@ vcolumns : vcolumn
         stacked = True if (hist_type.lower() == "stacked") else False
         multi = True if (hist_type.lower() == "multi") else False
         if len(columns) == 1:
-            return self[columns[0]].hist(method, of, 6, 0, 0)
+            return self[columns[0]].hist(method, of, 6, 0, 0, **style_kwds,)
         else:
             if multi:
                 from verticapy.plot import multiple_hist
 
-                h_0 = h[0] if (h[0]) else 0
-                return multiple_hist(self, columns, method, of, h_0, ax=ax)
+                if isinstance(h, (int, float)):
+                    h_0 = h
+                else:
+                    h_0 = h[0] if (h[0]) else 0
+                return multiple_hist(
+                    self, columns, method, of, h_0, ax=ax, **style_kwds,
+                )
             else:
                 from verticapy.plot import hist2D
 
                 return hist2D(
-                    self, columns, method, of, max_cardinality, h, stacked, ax=ax
+                    self,
+                    columns,
+                    method,
+                    of,
+                    max_cardinality,
+                    h,
+                    stacked,
+                    ax=ax,
+                    **style_kwds,
                 )
 
     # ---#
@@ -6385,9 +6436,15 @@ vcolumns : vcolumn
     def outliers_plot(
         self,
         columns: list,
+        threshold: float = 3.0,
+        color: str = "orange",
+        outliers_color: str = "black",
+        inliers_color: str = "white",
+        inliers_border_color: str = "red",
         cmap: str = None,
         max_nb_points: int = 500,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6397,12 +6454,24 @@ vcolumns : vcolumn
     ----------
     columns: list
         List of the vcolumns names. The list must have one or two elements.
+    threshold: float, optional
+        ZSCORE threshold used to detect outliers.
+    color: str, optional
+        Inliers Area color.
+    outliers_color: str, optional
+        Outliers color.
+    inliers_color: str, optional
+        Inliers color.
+    inliers_border_color: str, optional
+        Inliers border color.
     cmap: str, optional
         Color Map.
     max_nb_points: int, optional
         Maximum number of points to display.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -6412,25 +6481,29 @@ vcolumns : vcolumn
         check_types(
             [
                 ("columns", columns, [list],),
+                ("color", color, [str],),
+                ("outliers_color", outliers_color, [str],),
+                ("inliers_color", inliers_color, [str],),
+                ("inliers_border_color", inliers_border_color, [str],),
                 ("cmap", cmap, [str],),
                 ("max_nb_points", max_nb_points, [int],),
             ]
         )
         columns_check(columns, self, [1, 2])
         columns = vdf_columns_names(columns, self)
-        if not (cmap):
-            from verticapy.plot import gen_cmap
-
-            cmap = gen_cmap()[0]
-        from verticapy.plot import outliers_contour_plot, gen_colors
+        from verticapy.plot import outliers_contour_plot
 
         return outliers_contour_plot(
             self,
             columns,
-            cmap,
-            max_nb_points = max_nb_points,
-            color = gen_colors()[0],
+            color=color,
+            outliers_color=outliers_color,
+            inliers_color=inliers_color,
+            inliers_border_color=inliers_border_color,
+            cmap=cmap,
+            max_nb_points=max_nb_points,
             ax=ax,
+            **style_kwds,
         )
 
     # ---#
@@ -6445,6 +6518,7 @@ vcolumns : vcolumn
         alpha: float = 0.95,
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6477,6 +6551,8 @@ vcolumns : vcolumn
         If set to True, the Partial Auto Correlation Plot will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -6647,6 +6723,7 @@ vcolumns : vcolumn
                     confidence=pacf_band,
                     type_bar=True,
                     ax=ax,
+                    **style_kwds,
                 )
             return result
 
@@ -6654,9 +6731,10 @@ vcolumns : vcolumn
     def pie(
         self,
         columns: list,
-        max_cardinality: tuple = (6, 6),
-        h: tuple = (None, None),
+        max_cardinality: (int, tuple) = None,
+        h: (float, tuple) = None,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6665,14 +6743,18 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list
-        List of the vcolumns names. The list must have two elements.
-    max_cardinality: int, optional
+        List of the vcolumns names.
+    max_cardinality: int/tuple, optional
         Maximum number of the vcolumn distinct elements to be used as categorical 
-        (No h will be picked or computed)
-    h: float, optional
+        (No h will be picked or computed).
+        If of type tuple, it must represent each column 'max_cardinality'.
+    h: float/tuple, optional
         Interval width of the bar. If empty, an optimized h will be computed.
+        If of type tuple, it must represent each column 'h'.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -6685,15 +6767,15 @@ vcolumns : vcolumn
         """
         check_types(
             [
-                ("max_cardinality", max_cardinality, [list],),
-                ("h", h, [list],),
+                ("max_cardinality", max_cardinality, [int, tuple, list],),
+                ("h", h, [list, tuple, float],),
             ]
         )
-        columns_check(columns, self, [2])
+        columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
         from verticapy.plot import nested_pie
 
-        return nested_pie(self, columns, max_cardinality, h, ax=None)
+        return nested_pie(self, columns, max_cardinality, h, ax=None, **style_kwds,)
 
     # ---#
     def pivot(
@@ -6887,7 +6969,9 @@ vcolumns : vcolumn
         columns: list = [],
         start_date: str = "",
         end_date: str = "",
+        step: bool = False,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6907,8 +6991,12 @@ vcolumns : vcolumn
     end_date: str, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
+    step: bool, optional
+        If set to True, draw a Step Plot.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -6930,15 +7018,16 @@ vcolumns : vcolumn
         columns_check(columns + [ts], self)
         columns = vdf_columns_names(columns, self)
         ts = vdf_columns_names([ts], self)[0]
+        kind = "step" if step else "line"
         from verticapy.plot import multi_ts_plot
 
-        return multi_ts_plot(self, ts, columns, start_date, end_date, ax=ax)
+        return multi_ts_plot(
+            self, ts, columns, start_date, end_date, kind, ax=ax, **style_kwds,
+        )
 
     # ---#
     def polynomial_comb(
-        self,
-        columns: list = [],
-        r: int = 2,
+        self, columns: list = [], r: int = 2,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6947,11 +7036,11 @@ vcolumns : vcolumn
 
     Parameters
     ----------
-    r: int, optional
-        Degree of the Polynomial.
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
+    r: int, optional
+        Degree of the Polynomial.
 
     Returns
     -------
@@ -6959,13 +7048,10 @@ vcolumns : vcolumn
         the Polynomial object.
         """
         check_types(
-            [
-                ("columns", columns, [list],),
-                ("r", r, [int],),
-            ]
+            [("columns", columns, [list],), ("r", r, [int],),]
         )
         columns_check(columns, self)
-        if not(columns):
+        if not (columns):
             numcol = self.numcol()
         else:
             numcol = vdf_columns_names(columns, self)
@@ -6973,7 +7059,7 @@ vcolumns : vcolumn
         all_comb = combinations_with_replacement(numcol, r=r)
         for elem in all_comb:
             name = "_".join(elem)
-            vdf.eval(name.replace('"', ''), expr = " * ".join(elem))
+            vdf.eval(name.replace('"', ""), expr=" * ".join(elem))
         return vdf
 
     # ---#
@@ -7032,21 +7118,25 @@ vcolumns : vcolumn
         )
 
     # ---#
-    def recommend(self,
-                  unique_id: str,
-                  item_id: str,
-                  method: str = "count",
-                  rating: (str, tuple) = "",
-                  ts: str = "",
-                  start_date: str = "",
-                  end_date: str = ""):
+    def recommend(
+        self,
+        unique_id: str,
+        item_id: str,
+        method: str = "count",
+        rating: (str, tuple) = "",
+        ts: str = "",
+        start_date: str = "",
+        end_date: str = "",
+    ):
         """
     ---------------------------------------------------------------------------
     Recommend items based on the Collaborative Filtering (CF) technique.
+    The implementation is the same as APRIORI algorithm but it is limited to 
+    items pair.
 
     Parameters
     ----------
-    unique_id: str, optional
+    unique_id: str
         Input vcolumn corresponding to a unique ID. It is a primary key.
     item_id: str
         Input vcolumn corresponding to an item ID. It is a secondary key used to 
@@ -7079,7 +7169,7 @@ vcolumns : vcolumn
     Returns
     -------
     vDataFrame
-        The vDataFrame of the recommendation
+        The vDataFrame of the recommendation.
         """
         if isinstance(method, str):
             method = method.lower()
@@ -7087,15 +7177,7 @@ vcolumns : vcolumn
             [
                 ("unique_id", unique_id, [str],),
                 ("item_id", item_id, [str],),
-                (
-                    "method",
-                    method,
-                    [
-                        "count",
-                        "avg",
-                        "median",
-                    ],
-                ),
+                ("method", method, ["count", "avg", "median",],),
                 ("rating", rating, [str, list, tuple],),
                 ("ts", ts, [str],),
                 ("start_date", start_date, [str],),
@@ -7105,32 +7187,42 @@ vcolumns : vcolumn
         columns_check([unique_id, item_id], self)
         unique_id, item_id = vdf_columns_names([unique_id, item_id], self)
         vdf = self.copy()
-        if method != "count" and not(rating):
-            raise ParameterError(f"Method '{method}' can not be used if parameter 'rating' is empty.")
-        if (rating):
+        if method != "count" and not (rating):
+            raise ParameterError(
+                f"Method '{method}' can not be used if parameter 'rating' is empty."
+            )
+        if rating:
             if isinstance(rating, str) or len(rating) == 3:
                 if method == "count":
-                    raise ParameterError("Method 'count' can not be used if parameter 'rating' is defined.")
+                    raise ParameterError(
+                        "Method 'count' can not be used if parameter 'rating' is defined."
+                    )
                 columns_check([rating], self)
                 rating = vdf_columns_names([rating], self)[0]
             else:
-                raise ParameterError(f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name).")
-        if (ts):
+                raise ParameterError(
+                    f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name)."
+                )
+        if ts:
             columns_check([ts], self)
             ts = vdf_columns_names([ts], self)[0]
-            if (start_date and end_date):
+            if start_date and end_date:
                 vdf = self.search(f"{ts} BETWEEN '{start_date}' AND '{end_date}'")
-            elif (start_date):
+            elif start_date:
                 vdf = self.search(f"{ts} >= '{start_date}'")
-            elif (end_date):
+            elif end_date:
                 vdf = self.search(f"{ts} <= '{end_date}'")
-        vdf = vdf.join(vdf,
-                       how = "left",
-                       on = {unique_id: unique_id},
-                       expr1 = [f"{item_id} AS item1"],
-                       expr2 = [f"{item_id} AS item2"]).groupby(
-                                    ["item1", "item2"],
-                                    ["COUNT(*) AS cnt"]).search("item1 != item2 AND cnt > 1")
+        vdf = (
+            vdf.join(
+                vdf,
+                how="left",
+                on={unique_id: unique_id},
+                expr1=[f"{item_id} AS item1"],
+                expr2=[f"{item_id} AS item2"],
+            )
+            .groupby(["item1", "item2"], ["COUNT(*) AS cnt"])
+            .search("item1 != item2 AND cnt > 1")
+        )
         order_columns = "cnt DESC"
         if method in ("avg", "median"):
             fun = "AVG" if method == "avg" else "APPROXIMATE_MEDIAN"
@@ -7141,18 +7233,20 @@ vcolumns : vcolumn
             else:
                 r_vdf, r_item_id, r_name = rating
                 r_vdf = r_vdf.groupby([r_item_id], [f"{fun}({r_name}) AS {r_name}"])
-            vdf = vdf.join(r_vdf,
-                           how = "left",
-                           on = {"item1": r_item_id},
-                           expr2 = [f"{r_name} AS score1"]).join(
-                           r_vdf,
-                           how = "left",
-                           on = {"item2": r_item_id},
-                           expr2 = [f"{r_name} AS score2"])
+            vdf = vdf.join(
+                r_vdf,
+                how="left",
+                on={"item1": r_item_id},
+                expr2=[f"{r_name} AS score1"],
+            ).join(
+                r_vdf,
+                how="left",
+                on={"item2": r_item_id},
+                expr2=[f"{r_name} AS score2"],
+            )
             order_columns = "score2 DESC, score1 DESC, cnt DESC"
         vdf["rank"] = f"ROW_NUMBER() OVER (PARTITION BY item1 ORDER BY {order_columns})"
         return vdf
-
 
     # ---#
     def regexp(
@@ -7848,6 +7942,7 @@ vcolumns : vcolumn
         bbox: list = [],
         img: str = "",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -7879,6 +7974,8 @@ vcolumns : vcolumn
         Path to the image to display as background.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -7922,6 +8019,7 @@ vcolumns : vcolumn
                 bbox,
                 img,
                 ax=ax,
+                **style_kwds,
             )
         elif len(columns) == 3:
             from verticapy.plot import scatter3D
@@ -7934,6 +8032,7 @@ vcolumns : vcolumn
                 with_others,
                 max_nb_points,
                 ax=ax,
+                **style_kwds,
             )
         else:
             raise ParameterError(
@@ -7943,7 +8042,9 @@ vcolumns : vcolumn
             )
 
     # ---#
-    def scatter_matrix(self, columns: list = []):
+    def scatter_matrix(
+        self, columns: list = [], **style_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Scatter Matrix of the vDataFrame.
@@ -7953,6 +8054,8 @@ vcolumns : vcolumn
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -7968,7 +8071,7 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         from verticapy.plot import scatter_matrix
 
-        return scatter_matrix(self, columns)
+        return scatter_matrix(self, columns, **style_kwds,)
 
     # ---#
     def search(
@@ -8210,7 +8313,9 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def score(self, y_true: str, y_score: str, method: str, nbins: int = 30,):
+    def score(
+        self, y_true: str, y_score: str, method: str, nbins: int = 30,
+    ):
         """
     ---------------------------------------------------------------------------
     Computes the score using the input columns and the input method.
@@ -8407,19 +8512,31 @@ vcolumns : vcolumn
             from verticapy.learn.model_selection import roc_curve
 
             return roc_curve(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
+                y_true,
+                y_score,
+                self.__genSQL__(),
+                self._VERTICAPY_VARIABLES_["cursor"],
+                nbins=nbins,
             )
         elif method in ("prc_curve", "prc"):
             from verticapy.learn.model_selection import prc_curve
 
             return prc_curve(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
+                y_true,
+                y_score,
+                self.__genSQL__(),
+                self._VERTICAPY_VARIABLES_["cursor"],
+                nbins=nbins,
             )
         elif method in ("lift_chart", "lift"):
             from verticapy.learn.model_selection import lift_chart
 
             return lift_chart(
-                y_true, y_score, self.__genSQL__(), self._VERTICAPY_VARIABLES_["cursor"], nbins=nbins,
+                y_true,
+                y_score,
+                self.__genSQL__(),
+                self._VERTICAPY_VARIABLES_["cursor"],
+                nbins=nbins,
             )
         else:
             raise ParameterError(
@@ -8517,6 +8634,7 @@ vcolumns : vcolumn
         end_date: str = "",
         fully: bool = False,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -8540,6 +8658,8 @@ vcolumns : vcolumn
         If set to True, a Fully Stacked Area Chart will be drawn.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -8559,13 +8679,17 @@ vcolumns : vcolumn
         else:
             kind = "area_stacked"
         if min(self.min(columns)["min"]) < 0:
-            raise ValueError("Columns having negative values can not be processed by the 'stacked_area' method.")
+            raise ValueError(
+                "Columns having negative values can not be processed by the 'stacked_area' method."
+            )
         columns_check(columns + [ts], self)
         columns = vdf_columns_names(columns, self)
         ts = vdf_columns_names([ts], self)[0]
         from verticapy.plot import multi_ts_plot
 
-        return multi_ts_plot(self, ts, columns, start_date, end_date, kind=kind, ax=ax)
+        return multi_ts_plot(
+            self, ts, columns, start_date, end_date, kind=kind, ax=ax, **style_kwds,
+        )
 
     # ---#
     def std(self, columns: list = []):
@@ -8972,6 +9096,8 @@ vcolumns : vcolumn
         data = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
         df = pd.DataFrame(data)
         df.columns = column_names
+        if len(geometry) > 2 and geometry[0] == geometry[-1] == '"':
+            geometry = geometry[1:-1]
         df[geometry] = df[geometry].apply(wkt.loads)
         df = GeoDataFrame(df, geometry=geometry)
         return df
@@ -9156,7 +9282,76 @@ vcolumns : vcolumn
         """
         vdf = self.copy()
         vdf._VERTICAPY_VARIABLES_["cursor"] = None
-        pickle.dump(vdf, open(name, 'wb'))
+        pickle.dump(vdf, open(name, "wb"))
+        return self
+
+    # ---#
+    def to_shp(
+        self,
+        name: str,
+        path: str,
+        usecols: list = [],
+        overwrite: bool = True,
+        shape: str = "Polygon",
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Creates a SHP file of the current vDataFrame relation. For the moment, 
+    files will be exported in the Vertica server.
+
+    Parameters
+    ----------
+    name: str
+        Name of the SHP file.
+    path: str
+        Absolute path where the SHP file will be created.
+    usecols: list, optional
+        vcolumns to select from the final vDataFrame relation. If empty, all the
+        vcolumns will be selected.
+    overwrite: bool, optional
+        If set to True, the function will overwrite the index if an index exists.
+    shape: str, optional
+        Must be one of the following spatial classes: 
+            Point, Polygon, Linestring, Multipoint, Multipolygon, Multilinestring. 
+        Polygons and Multipolygons always have a clockwise orientation.
+
+    Returns
+    -------
+    vDataFrame
+        self
+        """
+        check_types(
+            [
+                ("name", name, [str],),
+                ("path", path, [str],),
+                ("usecols", usecols, [list],),
+                ("overwrite", overwrite, [bool],),
+                (
+                    "shape",
+                    shape,
+                    [
+                        "Point",
+                        "Polygon",
+                        "Linestring",
+                        "Multipoint",
+                        "Multipolygon",
+                        "Multilinestring",
+                    ],
+                ),
+            ]
+        )
+        query = (
+            f"SELECT STV_SetExportShapefileDirectory(USING PARAMETERS path = '{path}');"
+        )
+        self.__executeSQL__(query=query, title="Setting SHP Export directory.")
+        columns = (
+            self.get_columns()
+            if not (usecols)
+            else [str_column(column) for column in usecols]
+        )
+        columns = ", ".join(columns)
+        query = f"SELECT STV_Export2Shapefile({columns} USING PARAMETERS shapefile = '{name}.shp', overwrite = {overwrite}, shape = '{shape}') OVER() FROM {self.__genSQL__()};"
+        self.__executeSQL__(query=query, title="Exporting the SHP.")
         return self
 
     # ---#
@@ -9313,7 +9508,7 @@ vcolumns : vcolumn
         for elem in columns:
             coeff_importances[elem] = self[elem].iv_woe(y=y, bins=bins,)["iv"][-1]
         if show:
-            from verticapy.learn.plot import plot_importance
+            from verticapy.learn.mlplot import plot_importance
 
             ax = plot_importance(coeff_importances, print_legend=False, ax=ax,)
             ax.set_xlabel("IV")

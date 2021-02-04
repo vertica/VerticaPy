@@ -55,6 +55,7 @@ import math, warnings
 from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
+from verticapy.plot import gen_colors
 
 # Other Python Modules
 from dateutil.parser import parse
@@ -740,6 +741,7 @@ papprox_ma: int, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -773,6 +775,8 @@ papprox_ma: int, optional
         Maximum number of past elements to use.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -897,8 +901,22 @@ papprox_ma: int, optional
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(10, 6)
-            ax.set_facecolor("#F2F2F2")
             ax.grid()
+        colors = gen_colors()
+        param1 = {
+            "color": colors[2],
+            "linewidth": 2,
+        }
+        param2 = {
+            "color": colors[3],
+            "linewidth": 2,
+            "linestyle": ":",
+        }
+        param3 = {
+            "color": colors[0],
+            "linewidth": 2,
+            "linestyle": "dashed",
+        }
         if dynamic:
             ax.fill_between(
                 dynamic_forecast[0],
@@ -907,7 +925,7 @@ papprox_ma: int, optional
                 1.02
                 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
                 alpha=0.04,
-                color="#0073E7",
+                color=updated_dict(param3, style_kwds, 2)["color"],
             )
             if confidence:
                 ax.fill_between(
@@ -918,10 +936,8 @@ papprox_ma: int, optional
             ax.plot(
                 dynamic_forecast[0],
                 dynamic_forecast[1],
-                color="#FE5016",
                 label="Dynamic Forecast",
-                linestyle="dashed",
-                linewidth=2,
+                **updated_dict(param3, style_kwds, 2),
             )
         if one_step:
             if confidence:
@@ -947,18 +963,15 @@ papprox_ma: int, optional
             ax.plot(
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
-                color="#19A26B",
                 label="One-step ahead Forecast",
-                linestyle=":",
-                linewidth=2,
+                **updated_dict(param2, style_kwds, 1),
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
-                color="#0073E7",
                 label="Observed",
-                linewidth=2,
+                **updated_dict(param1, style_kwds, 0),
             )
         ax.set_title(
             "SARIMAX({},{},{})({},{},{})_{}".format(
@@ -1195,7 +1208,7 @@ solver: str, optional
 
     # ---#
     def features_importance(
-        self, X_idx: int = 0, ax=None,
+        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1208,13 +1221,17 @@ solver: str, optional
         It can also be the name of a predictor vcolumn.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    show: bool
+        If set to True, draw the features importance.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
     ax
         Matplotlib axes object
         """
-        check_types([("X_idx", X_idx, [int, float, str],),],)
+        check_types([("X_idx", X_idx, [int, float, str],), ("show", show, [bool],),],)
         if isinstance(X_idx, str):
             X_idx = str_column(X_idx).lower()
             for idx, elem in enumerate(self.X):
@@ -1253,10 +1270,10 @@ solver: str, optional
         total = sum(coeff_importances[elem] for elem in coeff_importances)
         for elem in coeff_importances:
             coeff_importances[elem] = 100 * coeff_importances[elem] / total
-        try:
-            plot_importance(coeff_importances, coeff_sign, print_legend=True, ax=ax)
-        except:
-            pass
+        if show:
+            plot_importance(
+                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds,
+            )
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
             importances[elem] = [coeff_importances[elem], coeff_sign[elem]]
@@ -1449,6 +1466,7 @@ solver: str, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1483,6 +1501,8 @@ solver: str, optional
         Maximum number of past elements to use.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -1620,8 +1640,22 @@ solver: str, optional
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(10, 6)
-            ax.set_facecolor("#F2F2F2")
             ax.grid()
+        colors = gen_colors()
+        param1 = {
+            "color": colors[2],
+            "linewidth": 2,
+        }
+        param2 = {
+            "color": colors[3],
+            "linewidth": 2,
+            "linestyle": ":",
+        }
+        param3 = {
+            "color": colors[0],
+            "linewidth": 2,
+            "linestyle": "dashed",
+        }
         if dynamic:
             ax.fill_between(
                 dynamic_forecast[0],
@@ -1630,7 +1664,7 @@ solver: str, optional
                 1.02
                 * float(max(true_value[1] + dynamic_forecast[1] + one_step_ahead[1])),
                 alpha=0.04,
-                color="#0073E7",
+                color=updated_dict(param3, style_kwds, 2)["color"],
             )
             if confidence:
                 ax.fill_between(
@@ -1641,10 +1675,8 @@ solver: str, optional
             ax.plot(
                 dynamic_forecast[0],
                 dynamic_forecast[1],
-                color="#FE5016",
                 label="Dynamic Forecast",
-                linestyle="dashed",
-                linewidth=2,
+                **updated_dict(param3, style_kwds, 2),
             )
         if one_step:
             if confidence:
@@ -1670,18 +1702,15 @@ solver: str, optional
             ax.plot(
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
-                color="#19A26B",
                 label="One-step ahead Forecast",
-                linestyle=":",
-                linewidth=2,
+                **updated_dict(param2, style_kwds, 1),
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
-                color="#0073E7",
                 label="Observed",
-                linewidth=2,
+                **updated_dict(param1, style_kwds, 0),
             )
         ax.set_title("VAR({}) [{}]".format(self.parameters["p"], y))
         ax.set_xlabel(ts)

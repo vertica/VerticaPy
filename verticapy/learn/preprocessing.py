@@ -327,6 +327,7 @@ method: str, optional
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 0])
 
+
 # ---#
 class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
@@ -406,29 +407,43 @@ X: list
 	List of the predictors.
 	"""
 
-    def __init__(self, 
-                 name: str, 
-                 cursor=None, 
-                 extra_levels: dict = {}, 
-                 drop_first: bool = True,
-                 ignore_null: bool = True,
-                 separator: str = '_',
-                 column_naming: str = "indices",
-                 null_column_name: str = "null"):
-        check_types([("name", name, [str],),
-                     ("extra_levels", extra_levels, [dict],),
-                     ("drop_first", drop_first, [bool],),
-                     ("ignore_null", ignore_null, [bool],),
-                     ("separator", separator, [str],),
-                     ("column_naming", column_naming, ["indices", "values", "values_relaxed"],),
-                     ("null_column_name", null_column_name, [str],),])
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        extra_levels: dict = {},
+        drop_first: bool = True,
+        ignore_null: bool = True,
+        separator: str = "_",
+        column_naming: str = "indices",
+        null_column_name: str = "null",
+    ):
+        check_types(
+            [
+                ("name", name, [str],),
+                ("extra_levels", extra_levels, [dict],),
+                ("drop_first", drop_first, [bool],),
+                ("ignore_null", ignore_null, [bool],),
+                ("separator", separator, [str],),
+                (
+                    "column_naming",
+                    column_naming,
+                    ["indices", "values", "values_relaxed"],
+                ),
+                ("null_column_name", null_column_name, [str],),
+            ]
+        )
         self.type, self.name = "OneHotEncoder", name
-        self.set_params({"extra_levels": extra_levels,
-                         "drop_first": drop_first,
-                         "ignore_null": ignore_null,
-                         "separator": separator,
-                         "column_naming": column_naming,
-                         "null_column_name": null_column_name})
+        self.set_params(
+            {
+                "extra_levels": extra_levels,
+                "drop_first": drop_first,
+                "ignore_null": ignore_null,
+                "separator": separator,
+                "column_naming": column_naming,
+                "null_column_name": null_column_name,
+            }
+        )
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 0])
