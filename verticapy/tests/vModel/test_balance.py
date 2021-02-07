@@ -36,7 +36,7 @@ class TestBalance:
 
         bvd = Balance(name = "public.hybrid_balanced", input_relation = "public.titanic", y = "survived", cursor = base.cursor)
 
-        assert bvd["survived"].skew() == pytest.approx(0, abs = 0.1)
+        assert bvd["survived"].skew() == pytest.approx(0, abs = 0.2)
 
         base.cursor.execute(
             "SELECT table_name FROM views WHERE table_name = 'hybrid_balanced'"
@@ -52,7 +52,7 @@ class TestBalance:
 
         bvd = Balance(name = "public.under_balanced", input_relation = "public.titanic", y = "survived", method = "under", ratio = 1.0, cursor = base.cursor)
 
-        assert bvd["survived"].skew() == pytest.approx(0, abs = 0.1)
+        assert bvd["survived"].skew() == pytest.approx(0, abs = 0.2)
 
         base.cursor.execute(
             "SELECT table_name FROM views WHERE table_name = 'under_balanced'"
@@ -68,7 +68,7 @@ class TestBalance:
 
         bvd = Balance(name = "public.over_balanced", input_relation = "public.titanic", y = "survived", method = "under", ratio = 0.75, cursor = base.cursor)
 
-        assert bvd["survived"].skew() == pytest.approx(0.25, abs = 0.1)
+        assert bvd["survived"].skew() == pytest.approx(0.25, abs = 0.2)
 
         base.cursor.execute(
             "SELECT table_name FROM views WHERE table_name = 'over_balanced'"
