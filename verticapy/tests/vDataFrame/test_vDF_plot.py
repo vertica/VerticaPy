@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, datetime, warnings
-from verticapy import vDataFrame, drop_table, create_verticapy_schema
+from verticapy import vDataFrame, drop, create_verticapy_schema
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -22,46 +22,46 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(
+    drop(
         name="public.amazon", cursor=base.cursor,
     )
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
-    drop_table(
+    drop(
         name="public.iris", cursor=base.cursor,
     )
 
 
 @pytest.fixture(scope="module")
 def world_vd(base):
-    from verticapy.learn.datasets import load_world
+    from verticapy.datasets import load_world
 
     cities = load_world(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.world", cursor=base.cursor,
         )
 

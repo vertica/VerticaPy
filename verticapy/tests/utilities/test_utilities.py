@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest
-from verticapy import drop_table, set_option
+from verticapy import drop, set_option
 from verticapy.geo import *
 
 set_option("print_info", False)
@@ -20,41 +20,32 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def cities_vd(base):
-    from verticapy.learn.datasets import load_cities
+    from verticapy.datasets import load_cities
 
     cities = load_cities(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.cities", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def world_vd(base):
-    from verticapy.learn.datasets import load_world
+    from verticapy.datasets import load_world
 
     cities = load_world(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.world", cursor=base.cursor,
         )
 
 
 class TestUtilities:
-    def test_drop_geo_index(self, world_vd):
-        world_copy = world_vd.copy()
-        world_copy["id"] = "ROW_NUMBER() OVER (ORDER BY pop_est)"
-        result = create_index(world_copy, "id", "geometry", "world_polygons", True)
-        result = drop_geo_index(
-            "world_polygons", world_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
-        assert result == True
-
     def test_read_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
+            drop(
                 name="public.cities_test",
                 cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
             )
@@ -70,7 +61,7 @@ class TestUtilities:
         except:
             pass
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
+            drop(
                 name="public.cities_test",
                 cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
             )

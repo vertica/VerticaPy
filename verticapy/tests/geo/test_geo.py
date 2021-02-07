@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest
-from verticapy import drop_table, set_option
+from verticapy import drop, set_option
 from verticapy.geo import *
 
 set_option("print_info", False)
@@ -20,24 +20,24 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def cities_vd(base):
-    from verticapy.learn.datasets import load_cities
+    from verticapy.datasets import load_cities
 
     cities = load_cities(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.cities", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def world_vd(base):
-    from verticapy.learn.datasets import load_world
+    from verticapy.datasets import load_world
 
     world = load_world(cursor=base.cursor)
     yield world
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.world", cursor=base.cursor,
         )
 
@@ -70,6 +70,8 @@ class TestGeo:
         cities_copy["y"] = "ST_Y(geometry)"
         result4 = intersect(cities_copy, "world_polygons_rename", "id", x="x", y="y")
         assert result4.shape() == (172, 2)
-        drop_geo_index(
-            "world_polygons_rename", world_vd._VERTICAPY_VARIABLES_["cursor"],
+        drop(
+            "world_polygons_rename",
+            world_vd._VERTICAPY_VARIABLES_["cursor"],
+            method="geo",
         )

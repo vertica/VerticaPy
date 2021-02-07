@@ -58,6 +58,7 @@ from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # Standard Python Modules
 import warnings

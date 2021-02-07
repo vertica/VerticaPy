@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys
 from verticapy.learn.cluster import KMeans
-from verticapy import drop_table
+from verticapy import drop
 
 from verticapy import set_option
 
@@ -22,12 +22,12 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")

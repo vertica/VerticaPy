@@ -16,7 +16,7 @@ from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
 from verticapy.utilities import tablesample
-from verticapy import drop_table
+from verticapy import drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -26,12 +26,12 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -133,6 +133,8 @@ class TestPipeline:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219816, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.592465, abs=1e-6)
@@ -142,6 +144,8 @@ class TestPipeline:
         assert reg_rep["value"][5] == pytest.approx(0.7712695123858948, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219816, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945605202370688, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3366.7679526773622, abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-3339.65156943384, abs=1e-6)
 
         model_class = Pipeline(
             [
@@ -192,6 +196,10 @@ class TestPipeline:
         assert model.score(method="r2a") == pytest.approx(0.21945605202370688, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.219816, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-3366.7679526773622, abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
 
     def test_set_cursor(self, base):
         model_test = Pipeline(

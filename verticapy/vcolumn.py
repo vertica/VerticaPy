@@ -1283,16 +1283,18 @@ Attributes
             def drop_temp_elem(self, temp_information):
                 with warnings.catch_warnings(record=True) as w:
                     try:
-                        drop_model(
+                        drop(
                             temp_information[1],
                             cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
                     except:
                         pass
                     try:
-                        drop_view(
+                        drop(
                             temp_information[0],
                             cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                            method="view",
                         )
                     except:
                         pass

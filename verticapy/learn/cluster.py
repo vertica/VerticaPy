@@ -58,6 +58,7 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # ---#
 class BisectingKMeans(Clustering):

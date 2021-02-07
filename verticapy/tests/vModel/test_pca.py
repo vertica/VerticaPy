@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys
 from verticapy.learn.decomposition import PCA
-from verticapy import drop_table
+from verticapy import drop
 
 from verticapy import set_option
 
@@ -22,12 +22,12 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")

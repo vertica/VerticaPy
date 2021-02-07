@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys
 from verticapy.learn.cluster import BisectingKMeans
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop
 
 from verticapy import set_option
 
@@ -41,7 +41,7 @@ def bsk_data_vd(base):
     bsk_data = vDataFrame(input_relation="public.bsk_data", cursor=base.cursor)
     yield bsk_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.bsk_data", cursor=base.cursor)
+        drop(name="public.bsk_data", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")

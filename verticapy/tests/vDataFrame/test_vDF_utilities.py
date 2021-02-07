@@ -13,7 +13,7 @@
 
 import pytest, os, warnings
 from math import ceil, floor
-from verticapy import vDataFrame, get_session, drop_table, drop_view
+from verticapy import vDataFrame, get_session, drop
 from verticapy import set_option, read_shp
 import verticapy.stats as st
 
@@ -22,48 +22,48 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def cities_vd(base):
-    from verticapy.learn.datasets import load_cities
+    from verticapy.datasets import load_cities
 
     cities = load_cities(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.cities", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def world_vd(base):
-    from verticapy.learn.datasets import load_world
+    from verticapy.datasets import load_world
 
     world = load_world(cursor=base.cursor)
     yield world
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.world", cursor=base.cursor,
         )
 
@@ -154,11 +154,15 @@ class TestvDFUtilities:
     def test_vDF_to_db(self, titanic_vd):
         try:
             with warnings.catch_warnings(record=True) as w:
-                drop_view(
-                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                drop(
+                    "verticapy_titanic_tmp",
+                    titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+                    method="view",
                 )
-                drop_table(
-                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                drop(
+                    "verticapy_titanic_tmp",
+                    titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+                    method="table",
                 )
         except:
             pass
@@ -185,13 +189,17 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop_view(
-                    "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+                drop(
+                    "verticapy_titanic_tmp",
+                    titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+                    method="view",
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop_view(
-                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
+            drop(
+                "verticapy_titanic_tmp",
+                titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+                method="view",
             )
         # testing relation_type = table
         try:
@@ -216,14 +224,12 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop_table(
+                drop(
                     "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
-                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
-            )
+            drop("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(
@@ -247,14 +253,12 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop_table(
+                drop(
                     "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
-                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
-            )
+            drop("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(
@@ -278,14 +282,12 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop_table(
+                drop(
                     "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
-                "verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"]
-            )
+            drop("verticapy_titanic_tmp", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
@@ -331,6 +333,7 @@ class TestvDFUtilities:
         result_tmp = pickle.load(open("save.p", "rb"))
         result_tmp.set_cursor(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         assert result_tmp.shape() == (20, 2)
+        os.remove("save.p")
 
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas
@@ -341,7 +344,7 @@ class TestvDFUtilities:
 
     def test_vDF_to_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
+            drop(
                 name="public.cities_test",
                 cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
             )
@@ -357,7 +360,7 @@ class TestvDFUtilities:
         except:
             pass
         with warnings.catch_warnings(record=True) as w:
-            drop_table(
+            drop(
                 name="public.cities_test",
                 cursor=cities_vd._VERTICAPY_VARIABLES_["cursor"],
             )

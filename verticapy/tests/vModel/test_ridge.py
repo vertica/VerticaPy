@@ -13,7 +13,7 @@
 
 import pytest, sys
 from verticapy.learn.linear_model import Ridge
-from verticapy import drop_table
+from verticapy import drop
 from decimal import Decimal
 
 from verticapy import set_option
@@ -23,11 +23,11 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
-    drop_table(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -183,6 +183,8 @@ class TestRidge:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219816244842147, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.59213874427945, abs=1e-6)
@@ -192,6 +194,8 @@ class TestRidge:
         assert reg_rep["value"][5] == pytest.approx(0.7712696508179172, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219816244842152, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21945577183037412, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3366.765620437459, abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-3339.6492371939366, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -240,6 +244,10 @@ class TestRidge:
         assert model.score(method="r2a") == pytest.approx(0.21945577183037412, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.219816244842147, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-3366.765620437459, abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-3339.6492371939366, abs=1e-6)
 
     def test_set_cursor(self, base):
         model_test = Ridge("ridge_cursor_test", cursor=base.cursor)

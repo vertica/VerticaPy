@@ -13,7 +13,7 @@
 
 import pytest, warnings
 from verticapy.learn.svm import LinearSVR
-from verticapy import drop_table
+from verticapy import drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -23,12 +23,12 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -175,6 +175,8 @@ class TestLinearSVR:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.219641599658795, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.61156861855927, abs=1e-6)
@@ -184,6 +186,8 @@ class TestLinearSVR:
         assert reg_rep["value"][5] == pytest.approx(0.7713563219415707, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.219640889304706, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.21928033527235014, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-3365.3055068365934, abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-3338.189123593071, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -230,6 +234,10 @@ class TestLinearSVR:
         assert model.score(method="r2a") == pytest.approx(0.21928033527235014, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.219641599658795, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-3365.3055068365934, abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-3338.189123593071, abs=1e-6)
 
     def test_set_cursor(self, base):
         model_test = LinearSVR("lsvr_cursor_test", cursor=base.cursor)

@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys
 from verticapy.learn.ensemble import RandomForestRegressor
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -56,7 +56,7 @@ def rfr_data_vd(base):
     rfr_data = vDataFrame(input_relation="public.rfr_data", cursor=base.cursor)
     yield rfr_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.rfr_data", cursor=base.cursor)
+        drop(name="public.rfr_data", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -215,6 +215,8 @@ class TestRFR:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(1.0, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(0.0, abs=1e-6)
@@ -224,6 +226,8 @@ class TestRFR:
         assert reg_rep["value"][5] == pytest.approx(0.0, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(1.0, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(1.0, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-float("inf"), abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-float("inf"), abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -265,6 +269,10 @@ class TestRFR:
         assert model.score(method="r2a") == pytest.approx(1.0, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(1.0, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-float("inf"), abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
     def test_set_cursor(self, base):
         model_test = RandomForestRegressor("rfr_cursor_test", cursor=base.cursor)

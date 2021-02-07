@@ -13,7 +13,7 @@
 
 import pytest, warnings
 from verticapy.learn.tree import DecisionTreeClassifier
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -62,7 +62,7 @@ def dtc_data_vd(base):
     dtc_data = vDataFrame(input_relation="public.dtc_data", cursor=base.cursor)
     yield dtc_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.dtc_data", cursor=base.cursor)
+        drop(name="public.dtc_data", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")

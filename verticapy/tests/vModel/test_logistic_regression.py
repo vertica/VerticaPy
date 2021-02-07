@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys
 from verticapy.learn.linear_model import LogisticRegression
-from verticapy import drop_table
+from verticapy import drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -23,12 +23,12 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")

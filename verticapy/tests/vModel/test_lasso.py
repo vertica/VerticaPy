@@ -13,7 +13,7 @@
 
 import pytest, sys
 from verticapy.learn.linear_model import Lasso
-from verticapy import drop_table
+from verticapy import drop
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -23,11 +23,11 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
-    drop_table(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -176,6 +176,8 @@ class TestLasso:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(0.001302, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(3.189211, abs=1e-6)
@@ -185,6 +187,8 @@ class TestLasso:
         assert reg_rep["value"][5] == pytest.approx(0.8726193656049263, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.001302, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.0008407218505677161, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-1762.5081971546765, abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-1735.3918139111545, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -231,6 +235,10 @@ class TestLasso:
         )
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.001302, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-1762.5081971546765, abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-1735.3918139111545, abs=1e-6)
 
     def test_set_cursor(self, base):
         model_test = Lasso("lasso_cursor_test", cursor=base.cursor)
