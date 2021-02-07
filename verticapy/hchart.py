@@ -231,6 +231,8 @@ def hchart_from_vdf(
         check_types([("y", y, [str, list],)])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
+        if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
+            y = y[0]
         columns_check([x], vdf)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z):
@@ -433,6 +435,8 @@ def hchart_from_vdf(
             x = x[0]
         columns_check([x], vdf)
         if aggregate:
+            if isinstance(y, Iterable) and not(isinstance(y, str)) and len(y) == 1:
+                y = y[0]
             if isinstance(y, str):
                 query = """SELECT {}::timestamp, 
 			                      APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) AS open,
@@ -464,7 +468,7 @@ def hchart_from_vdf(
         )
     elif kind == "candlestick":
         return candlestick(
-            query=query, cursor=cursor, options=options, width=width, height=height
+            query=query, cursor=cursor, options=options, width=width, height=height,
         )
     elif kind in (
         "area",
@@ -652,6 +656,8 @@ def hchartSQL(
         if len(names) < 2:
             raise ValueError("{} Plots need at least 2 columns.".format(kind))
         x, y, z, c = names[0], names[1:], None, None
+        if kind == "candlestick":
+            aggregate = True
     else:
         if len(names) == 1:
             aggregate = True

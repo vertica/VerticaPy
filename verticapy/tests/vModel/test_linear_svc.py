@@ -107,11 +107,10 @@ class TestLinearSVC:
         plt.close()
 
     def test_lift_chart(self, model):
-        lift_ch = model.lift_chart()
+        lift_ch = model.lift_chart(nbins=1000)
 
         assert lift_ch["decision_boundary"][10] == pytest.approx(0.01)
         assert lift_ch["positive_prediction_ratio"][10] == pytest.approx(0.0)
-        assert math.isnan(lift_ch["lift"][10]) == True
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
         assert lift_ch["lift"][900] == pytest.approx(1.0)
@@ -133,7 +132,7 @@ class TestLinearSVC:
 
         # 'LinearSVC' object (md) has no attribute 'predict_proba'
 
-    @pytest.mark.skip(reason="problem with shap installation")
+    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
@@ -174,18 +173,18 @@ class TestLinearSVC:
         params = model.get_params()
 
         assert params == {
-            'tol': 0.0001,
-            'C': 1.0,
+            "tol": 0.0001,
+            "C": 1.0,
             "max_iter": 100,
-            'fit_intercept': True,
-            'intercept_scaling': 1.0,
-            'intercept_mode': 'regularized',
-            'class_weight': [1, 1],
-            'penalty': 'l2'
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "class_weight": [1, 1],
+            "penalty": "l2",
         }
 
     def test_prc_curve(self, model):
-        prc = model.prc_curve()
+        prc = model.prc_curve(nbins=1000)
 
         assert prc["threshold"][10] == pytest.approx(0.009)
         assert prc["recall"][10] == pytest.approx(1.0)
@@ -199,9 +198,7 @@ class TestLinearSVC:
         titanic_copy = titanic_vd.copy()
 
         model.predict(titanic_copy, name="pred_probability")
-        assert titanic_copy["pred_probability"].min() == pytest.approx(
-            0.33841486903496
-        )
+        assert titanic_copy["pred_probability"].min() == pytest.approx(0.33841486903496)
 
         model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
         assert titanic_copy["pred_class1"].sum() == 23.0
@@ -210,7 +207,7 @@ class TestLinearSVC:
         assert titanic_copy["pred_class2"].sum() == 996.0
 
     def test_roc_curve(self, model):
-        roc = model.roc_curve()
+        roc = model.roc_curve(nbins=1000)
 
         assert roc["threshold"][100] == pytest.approx(0.1)
         assert roc["false_positive"][100] == pytest.approx(1.0)
@@ -218,6 +215,17 @@ class TestLinearSVC:
         assert roc["threshold"][700] == pytest.approx(0.7)
         assert roc["false_positive"][700] == pytest.approx(0.00661157024793388)
         assert roc["true_positive"][700] == pytest.approx(0.0485933503836317)
+        plt.close()
+
+    def test_cutoff_curve(self, model):
+        cutoff_curve = model.cutoff_curve(nbins=1000)
+
+        assert cutoff_curve["threshold"][100] == pytest.approx(0.1)
+        assert cutoff_curve["false_positive"][100] == pytest.approx(1.0)
+        assert cutoff_curve["true_positive"][100] == pytest.approx(1.0)
+        assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
+        assert cutoff_curve["false_positive"][700] == pytest.approx(0.00661157024793388)
+        assert cutoff_curve["true_positive"][700] == pytest.approx(0.0485933503836317)
         plt.close()
 
     def test_score(self, model):
@@ -261,16 +269,14 @@ class TestLinearSVC:
         assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
             0.11858662456854734
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
-            0.4701827451261984
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.4701827451261984)
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
+            0.14467112146063243
         )
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.14467112146063243)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.8260869565217391
         )
-        assert model.score(cutoff=0.3, method="npv") == pytest.approx(
-            0.392570281124498
-        )
+        assert model.score(cutoff=0.3, method="npv") == pytest.approx(0.392570281124498)
         assert model.score(cutoff=0.7, method="prc_auc") == pytest.approx(
             0.5976470350144453
         )

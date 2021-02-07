@@ -68,18 +68,26 @@ steps: list
     List of (name, transform) tuples (implementing fit/transform) that are chained, 
     in the order in which they are chained, with the last object an estimator.
 	"""
+
     def __init__(
-        self,
-        steps: list,
+        self, steps: list,
     ):
         check_types([("steps", steps, [list],)])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):
             if len(elem) != 2:
-                raise ParameterError("The steps of the Pipeline must be composed of 2 elements (name, transform). Found {}.".format(len(elem)))
-            elif not(isinstance(elem[0], str)):
-                raise ParameterError("The steps 'name' of the Pipeline must be of type str. Found {}.".format(type(elem[0])))
+                raise ParameterError(
+                    "The steps of the Pipeline must be composed of 2 elements (name, transform). Found {}.".format(
+                        len(elem)
+                    )
+                )
+            elif not (isinstance(elem[0], str)):
+                raise ParameterError(
+                    "The steps 'name' of the Pipeline must be of type str. Found {}.".format(
+                        type(elem[0])
+                    )
+                )
             else:
                 try:
                     if idx < len(steps) - 1:
@@ -87,9 +95,13 @@ steps: list
                     elem[1].fit
                 except:
                     if idx < len(steps) - 1:
-                        raise ParameterError("The estimators of the Pipeline must have a 'transform' and a 'fit' method.")
+                        raise ParameterError(
+                            "The estimators of the Pipeline must have a 'transform' and a 'fit' method."
+                        )
                     else:
-                        raise ParameterError("The last estimator of the Pipeline must have a 'fit' method.")
+                        raise ParameterError(
+                            "The last estimator of the Pipeline must have a 'fit' method."
+                        )
             self.steps += [elem]
         self.cursor = self.steps[-1][1].cursor
 
@@ -140,7 +152,9 @@ steps: list
         model
         """
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(relation=input_relation, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(
+                relation=input_relation, cursor=self.steps[0][1].cursor
+            )
         else:
             vdf = input_relation
         X_new = [elem for elem in X]
@@ -150,9 +164,9 @@ steps: list
                 step[1].fit(current_vdf, X_new, y, test_relation)
             else:
                 step[1].fit(current_vdf, X_new)
-            if (idx < len(self.steps) - 1):
+            if idx < len(self.steps) - 1:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].get_names(X = X)
+                X_new = step[1].get_names(X=X)
         self.input_relation = self.steps[0][1].input_relation
         self.X = [column for column in self.steps[0][1].X]
         try:
@@ -179,10 +193,7 @@ steps: list
 
     # ---#
     def predict(
-        self,
-        vdf: (str, vDataFrame) = None,
-        X: list = [],
-        name: str = "estimator",
+        self, vdf: (str, vDataFrame) = None, X: list = [], name: str = "estimator",
     ):
         """
     ---------------------------------------------------------------------------
@@ -207,8 +218,10 @@ steps: list
         try:
             self.steps[-1][1].predict
         except:
-            raise ModelError("The last estimator of the Pipeline has no 'predict' method.")
-        if not(vdf):
+            raise ModelError(
+                "The last estimator of the Pipeline has no 'predict' method."
+            )
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
@@ -217,12 +230,14 @@ steps: list
         for idx, step in enumerate(self.steps):
             if idx == len(self.steps) - 1:
                 try:
-                    current_vdf = step[1].predict(current_vdf, X_new, name = name, inplace = False)
+                    current_vdf = step[1].predict(
+                        current_vdf, X_new, name=name, inplace=False
+                    )
                 except:
-                    current_vdf = step[1].predict(current_vdf, X_new, name = name)
+                    current_vdf = step[1].predict(current_vdf, X_new, name=name)
             else:
                 current_vdf = step[1].transform(current_vdf, X_new)
-                X_new = step[1].get_names(X = X)
+                X_new = step[1].get_names(X=X)
                 X_all += X_new
         return current_vdf[vdf.get_columns() + [name]]
 
@@ -261,7 +276,7 @@ steps: list
     float
         score
         """
-        if not(method):
+        if not (method):
             if isinstance(self.steps[-1][1], Regressor):
                 method = "r2"
             else:
@@ -269,9 +284,7 @@ steps: list
         return self.steps[-1][1].score(method)
 
     # ---#
-    def transform(self, 
-                  vdf: (str, vDataFrame) = None, 
-                  X: list = []):
+    def transform(self, vdf: (str, vDataFrame) = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the model on a vDataFrame.
@@ -293,8 +306,10 @@ steps: list
         try:
             self.steps[-1][1].transform
         except:
-            raise ModelError("The last estimator of the Pipeline has no 'transform' method.")
-        if not(vdf):
+            raise ModelError(
+                "The last estimator of the Pipeline has no 'transform' method."
+            )
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
@@ -302,14 +317,12 @@ steps: list
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
             current_vdf = step[1].transform(current_vdf, X_new)
-            X_new = step[1].get_names(X = X)
+            X_new = step[1].get_names(X=X)
             X_all += X_new
         return current_vdf
 
     # ---#
-    def inverse_transform(self, 
-                          vdf: (str, vDataFrame) = None, 
-                          X: list = []):
+    def inverse_transform(self, vdf: (str, vDataFrame) = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the inverse model transformation on a vDataFrame.
@@ -332,8 +345,12 @@ steps: list
             for idx in range(len(self.steps)):
                 self.steps[idx][1].inverse_transform
         except:
-            raise ModelError("The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(idx))
-        if not(vdf):
+            raise ModelError(
+                "The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(
+                    idx
+                )
+            )
+        if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
@@ -342,7 +359,7 @@ steps: list
         for idx in range(1, len(self.steps) + 1):
             step = self.steps[-idx]
             current_vdf = step[1].inverse_transform(current_vdf, X_new)
-            X_new = step[1].get_names(inverse = True, X = X)
+            X_new = step[1].get_names(inverse=True, X=X)
             X_all += X_new
         return current_vdf
 
@@ -384,7 +401,6 @@ steps: list
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])
 
-
     # ---#
     def to_sklearn(self):
         """
@@ -397,8 +413,8 @@ steps: list
         sklearn model.
         """
         import sklearn.pipeline as skp
+
         steps = []
         for step in self.steps:
             steps += [(step[0], step[1].to_sklearn())]
         return skp.Pipeline(steps)
-        

@@ -51,6 +51,7 @@
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.plot import gen_colors
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
@@ -324,6 +325,7 @@ tablesample
     )
     return result
 
+
 # ---#
 def durbin_watson(
     vdf: vDataFrame, eps: str, ts: str, by: list = [],
@@ -376,6 +378,7 @@ float
     d = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
     return d
 
+
 # ---#
 def het_arch(
     vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1,
@@ -419,15 +422,24 @@ tablesample
     X = []
     X_names = []
     for i in range(0, p + 1):
-        X += ["LAG(POWER({}, 2), {}) OVER({}ORDER BY {}) AS lag_{}".format(eps, i, ("PARTITION BY " + ", ".join(by)) if (by) else "", ts, i)]
+        X += [
+            "LAG(POWER({}, 2), {}) OVER({}ORDER BY {}) AS lag_{}".format(
+                eps, i, ("PARTITION BY " + ", ".join(by)) if (by) else "", ts, i
+            )
+        ]
         X_names += ["lag_{}".format(i)]
-    query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(", ".join(X), vdf.__genSQL__())
-    vdf_lags = vdf_from_relation(query, cursor = vdf._VERTICAPY_VARIABLES_["cursor"])
+    query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
+        ", ".join(X), vdf.__genSQL__()
+    )
+    vdf_lags = vdf_from_relation(query, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     from verticapy.learn.linear_model import LinearRegression
+
     schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not(schema_writing):
+    if not (schema_writing):
         schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+    )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
@@ -461,6 +473,7 @@ tablesample
     )
     return result
 
+
 # ---#
 def het_breuschpagan(
     vdf: vDataFrame, eps: str, X: list,
@@ -485,21 +498,20 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [
-            ("eps", eps, [str],),
-            ("X", X, [list],),
-            ("vdf", vdf, [vDataFrame, str,],),
-        ],
+        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
     X = vdf_columns_names(X, vdf)
 
     from verticapy.learn.linear_model import LinearRegression
+
     schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not(schema_writing):
+    if not (schema_writing):
         schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+    )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     vdf_copy = vdf.copy()
     vdf_copy["VERTICAPY_TEMP_eps2"] = vdf_copy[eps] ** 2
@@ -535,6 +547,7 @@ tablesample
     )
     return result
 
+
 # ---#
 def het_goldfeldquandt(
     vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5
@@ -563,16 +576,18 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+
     def model_fit(input_relation, X, y, model):
         var = []
         for vdf_tmp in input_relation:
             model.drop()
             model.fit(vdf_tmp, X, y)
-            model.predict(vdf_tmp, name = "verticapy_prediction")
+            model.predict(vdf_tmp, name="verticapy_prediction")
             vdf_tmp["residual_0"] = vdf_tmp[y] - vdf_tmp["verticapy_prediction"]
             var += [vdf_tmp["residual_0"].var()]
             model.drop()
         return var
+
     check_types(
         [
             ("y", y, [str],),
@@ -589,10 +604,13 @@ tablesample
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
     from verticapy.learn.linear_model import LinearRegression
+
     schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not(schema_writing):
+    if not (schema_writing):
         schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+    )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
@@ -606,16 +624,9 @@ tablesample
     n, m = vdf_0_half.shape()[0], vdf_1_half.shape()[0]
     F = var0 / var1
     f_pvalue = f.sf(F, n, m)
-    result = tablesample(
-        {
-            "index": [
-                "F Value",
-                "f_p_value",
-            ],
-            "value": [F, f_pvalue],
-        }
-    )
+    result = tablesample({"index": ["F Value", "f_p_value",], "value": [F, f_pvalue],})
     return result
+
 
 # ---#
 def het_white(
@@ -641,11 +652,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [
-            ("eps", eps, [str],),
-            ("X", X, [list],),
-            ("vdf", vdf, [vDataFrame, str,],),
-        ],
+        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -658,14 +665,19 @@ tablesample
             if i != 0 or j != 0:
                 variables += ["{} * {} AS var_{}_{}".format(X_0[i], X_0[j], i, j)]
                 variables_names += ["var_{}_{}".format(i, j)]
-    query = "(SELECT {}, POWER({}, 2) AS VERTICAPY_TEMP_eps2 FROM {}) VERTICAPY_SUBTABLE".format(", ".join(variables), eps, vdf.__genSQL__())
-    vdf_white = vdf_from_relation(query, cursor = vdf._VERTICAPY_VARIABLES_["cursor"])
+    query = "(SELECT {}, POWER({}, 2) AS VERTICAPY_TEMP_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
+        ", ".join(variables), eps, vdf.__genSQL__()
+    )
+    vdf_white = vdf_from_relation(query, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
 
     from verticapy.learn.linear_model import LinearRegression
+
     schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not(schema_writing):
+    if not (schema_writing):
         schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+    )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
         model.fit(vdf_white, variables_names, "VERTICAPY_TEMP_eps2")
@@ -702,6 +714,7 @@ tablesample
     )
     return result
 
+
 # ---#
 def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
     """
@@ -732,7 +745,9 @@ tablesample
     )
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
-    jb, kurtosis, skewness, n = vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
+    jb, kurtosis, skewness, n = (
+        vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
+    )
     pvalue = chi2.sf(jb, 2)
     result = False if pvalue < alpha else True
     result = tablesample(
@@ -770,32 +785,24 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("column", column, [str],),
-            ("vdf", vdf, [vDataFrame,],),
-        ],
-    )
+    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
-    mu1 = - 6 / (n + 1)
+    mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
-    gamma1 = 6 * (n ** 2 - 5 * n + 2) / ((n + 7) * (n + 9)) * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
+    gamma1 = (
+        6
+        * (n ** 2 - 5 * n + 2)
+        / ((n + 7) * (n + 9))
+        * math.sqrt(6 * (n + 3) * (n + 5) / (n * (n - 2) * (n - 3)))
+    )
     A = 6 + 8 / gamma1 * (2 / gamma1 + math.sqrt(1 + 4 / (gamma1 ** 2)))
     B = (1 - 2 / A) / (1 + (g2 - mu1) / math.sqrt(mu2) * math.sqrt(2 / (A - 4)))
-    B = B ** (1 / 3) if B > 0 else (- B) ** (1 / 3)
+    B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
     pvalue = 2 * norm.sf(abs(Z2))
-    result = tablesample(
-        {
-            "index": [
-                "Statistic",
-                "p_value",
-            ],
-            "value": [Z2, pvalue],
-        }
-    )
+    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z2, pvalue],})
     return result
 
 
@@ -995,21 +1002,18 @@ tablesample
     Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
-    result = tablesample(
-        {
-            "index": [
-                "Statistic",
-                "p_value",
-            ],
-            "value": [Z, pvalue],
-        }
-    )
+    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z, pvalue],})
     return result
 
 
 # ---#
 def plot_acf_pacf(
-    vdf: vDataFrame, column: str, ts: str, by: list = [], p: (int, list) = 15,
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: list = [],
+    p: (int, list) = 15,
+    **style_kwds,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1031,6 +1035,8 @@ p: int/list, optional
     Int equals to the maximum number of lag to consider during the computation
     or List of the different lags to include during the computation.
     p must be positive or a list of positive integers.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -1047,6 +1053,14 @@ tablesample
             ("vdf", vdf, [vDataFrame,],),
         ]
     )
+    tmp_style = {}
+    for elem in style_kwds:
+        if elem not in ("color", "colors"):
+            tmp_style[elem] = style_kwds[elem]
+    if "color" in style_kwds:
+        color = style_kwds["color"]
+    else:
+        color = gen_colors()[0]
     columns_check([column, ts] + by, vdf)
     by = vdf_columns_names(by, vdf)
     column, ts = vdf_columns_names([column, ts], vdf)
@@ -1069,14 +1083,23 @@ tablesample
         result.values["confidence"],
     )
     plt.xlim(-1, x[-1] + 1)
-    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    ax1.bar(
+        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
+    )
+    param = {
+        "s": 90,
+        "marker": "o",
+        "facecolors": color,
+        "edgecolors": "black",
+        "zorder": 2,
+    }
     ax1.scatter(
-        x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
+        x, y, **updated_dict(param, tmp_style,),
     )
     ax1.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],
-        color="#FE5016",
+        color=color,
         zorder=0,
     )
     ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
@@ -1086,12 +1109,12 @@ tablesample
     ax2 = fig.add_subplot(212)
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
     ax2.scatter(
-        x, y, s=90, marker="o", facecolors="#FE5016", edgecolors="#FE5016", zorder=2
+        x, y, **updated_dict(param, tmp_style,),
     )
     ax2.plot(
         [-1] + x + [x[-1] + 1],
         [0 for elem in range(len(x) + 2)],
-        color="#FE5016",
+        color=color,
         zorder=0,
     )
     ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
@@ -1099,6 +1122,7 @@ tablesample
     ax2.set_title("Partial Autocorrelation")
     plt.show()
     return result
+
 
 # ---#
 def skewtest(vdf: vDataFrame, column: str):
@@ -1119,31 +1143,20 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [
-            ("column", column, [str],),
-            ("vdf", vdf, [vDataFrame,],),
-        ],
-    )
+    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu1 = 0
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
     gamma1 = 0
-    gamma2 = 36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
+    gamma2 = (
+        36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
+    )
     W2 = math.sqrt(2 * gamma2 + 4) - 1
     delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
     alpha2 = 2 / (W2 - 1)
     Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
     pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample(
-        {
-            "index": [
-                "Statistic",
-                "p_value",
-            ],
-            "value": [Z1, pvalue],
-        }
-    )
+    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z1, pvalue],})
     return result

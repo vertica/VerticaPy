@@ -225,6 +225,12 @@ class TestvDFCombineJoinSort:
         assert amazon_pivot.shape() == (239, 28)
         assert amazon_pivot["pv_Acre"].count() == 239
 
+    def testvDF_polynomial_comb(self, iris_vd):
+        assert iris_vd.polynomial_comb(r=3).shape() == (150, 25)
+
+    def testvDF_recommend(self, market_vd):
+        assert market_vd.recommend("Name", "Form").shape() == (126, 4)
+
     def test_vDF_sort(self, iris_vd):
         result1 = iris_vd.copy().sort(columns={"PetalLengthCm": "asc"})
         assert result1["PetalLengthCm"][0] == 1.0

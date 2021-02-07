@@ -33,18 +33,15 @@ def titanic_vd(base):
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
     base.cursor.execute("DROP MODEL IF EXISTS ohe_model_test")
-    model_class = OneHotEncoder("ohe_model_test", cursor=base.cursor, drop_first = False)
-    model_class.fit(
-        "public.titanic", ["pclass", "sex", "embarked"]
-    )
+    model_class = OneHotEncoder("ohe_model_test", cursor=base.cursor, drop_first=False)
+    model_class.fit("public.titanic", ["pclass", "sex", "embarked"])
     yield model_class
     model_class.drop()
 
 
 class TestOneHotEncoder:
-
     def test_deploySQL(self, model):
-        expected_sql = 'APPLY_ONE_HOT_ENCODER("pclass", "sex", "embarked" USING PARAMETERS model_name = \'ohe_model_test\', match_by_pos = \'true\', drop_first = False, ignore_null = True, separator = \'_\', column_naming = \'indices\')'
+        expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = False, ignore_null = True, separator = '_', column_naming = 'indices')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -95,12 +92,14 @@ class TestOneHotEncoder:
         assert m_att_details["category_level_index"][2] == pytest.approx(2)
 
     def test_get_params(self, model):
-        assert model.get_params() == {'column_naming': 'indices',
-                                      'drop_first': False,
-                                      'extra_levels': {},
-                                      'ignore_null': True,
-                                      'null_column_name': 'null',
-                                      'separator': '_'}
+        assert model.get_params() == {
+            "column_naming": "indices",
+            "drop_first": False,
+            "extra_levels": {},
+            "ignore_null": True,
+            "null_column_name": "null",
+            "separator": "_",
+        }
 
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
@@ -110,13 +109,12 @@ class TestOneHotEncoder:
             )
         )
         prediction = model.cursor.fetchone()
-        assert prediction == pytest.approx(md.transform([[1, 'female', 'S']]).toarray()[0])
+        assert prediction == pytest.approx(
+            md.transform([[1, "female", "S"]]).toarray()[0]
+        )
 
     def test_get_transform(self, titanic_vd, model):
-        titanic_trans = model.transform(
-            titanic_vd,
-            X=["pclass", "sex", "embarked"]
-        )
+        titanic_trans = model.transform(titanic_vd, X=["pclass", "sex", "embarked"])
         assert titanic_trans["pclass_1"].mean() == pytest.approx(
             0.209886547811994, abs=1e-6
         )
@@ -132,7 +130,9 @@ class TestOneHotEncoder:
         pass
 
     def test_set_cursor(self, base):
-        model_test = OneHotEncoder("ohe_cursor_test", cursor=base.cursor, drop_first = False)
+        model_test = OneHotEncoder(
+            "ohe_cursor_test", cursor=base.cursor, drop_first=False
+        )
         # TODO: creat a new cursor
         model_test.set_cursor(base.cursor)
         model_test.drop()
@@ -150,7 +150,7 @@ class TestOneHotEncoder:
 
     def test_model_from_vDF(self, base, titanic_vd):
         base.cursor.execute("DROP MODEL IF EXISTS ohe_vDF")
-        model_test = OneHotEncoder("ohe_vDF", cursor=base.cursor, drop_first = False)
+        model_test = OneHotEncoder("ohe_vDF", cursor=base.cursor, drop_first=False)
         model_test.fit(titanic_vd, ["pclass", "embarked"])
         base.cursor.execute(
             "SELECT model_name FROM models WHERE model_name = 'ohe_vDF'"

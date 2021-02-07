@@ -50,11 +50,11 @@
 #
 # VerticaPy Modules
 from verticapy.learn.metrics import *
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
@@ -1139,7 +1139,7 @@ xlim: list, optional
 
     # ---#
     def plot(
-        self, color: str = "#FE5016", ax=None,
+        self, ax=None, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1147,10 +1147,10 @@ xlim: list, optional
 
     Parameters
     ----------
-    color: str
-        The Density Plot color.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -1166,19 +1166,22 @@ xlim: list, optional
                 fig, ax = plt.subplots()
                 if isnotebook():
                     fig.set_size_inches(7, 5)
-                ax.set_facecolor("#F5F5F5")
                 ax.grid()
                 ax.set_axisbelow(True)
-            ax.plot(x, y, color="#222222")
+            from verticapy.plot import gen_colors
+
+            param = {
+                "color": gen_colors()[0],
+            }
+            ax.plot(
+                x, y, **updated_dict(param, style_kwds,),
+            )
+            ax.fill_between(
+                x, y, facecolor=updated_dict(param, style_kwds,)["color"], alpha=0.7,
+            )
             ax.set_xlim(min(x), max(x))
             ax.set_ylim(bottom=0,)
-            ax.fill_between(x, y, facecolor=color, alpha=0.7)
             ax.set_ylabel("density")
-            ax.set_title(
-                "Distribution of {} ({} kernel)".format(
-                    self.X[0], self.parameters["kernel"]
-                )
-            )
             return ax
         elif len(self.X) == 2:
             query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
@@ -1202,15 +1205,15 @@ xlim: list, optional
                     fig.set_size_inches(8, 6)
             else:
                 fig = plt
-            im = ax.imshow(
-                result,
-                interpolation="bilinear",
-                cmap="Reds",
-                origin="lower",
-                extent=[min(x), max(x), min(y), max(y)],
-            )
+            param = {
+                "cmap": "Reds",
+                "origin": "lower",
+                "interpolation": "bilinear",
+            }
+            extent = [min(x), max(x), min(y), max(y)]
+            extent = [float(elem) for elem in extent]
+            im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds,))
             fig.colorbar(im, ax=ax)
-            ax.set_title("Kernel Density Estimation")
             ax.set_ylabel(self.X[1])
             ax.set_xlabel(self.X[0])
             return ax

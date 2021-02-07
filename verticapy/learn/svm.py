@@ -51,7 +51,7 @@
 # VerticaPy Modules
 from verticapy import vDataFrame
 from verticapy.learn.metrics import *
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *

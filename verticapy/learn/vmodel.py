@@ -54,7 +54,7 @@ import numpy as np
 
 # VerticaPy Modules
 from verticapy import vDataFrame
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -223,7 +223,9 @@ Main Class for Vertica Model
             )
 
     # ---#
-    def features_importance(self, ax=None, tree_id: int = None, show: bool = True):
+    def features_importance(
+        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds,
+    ):
         """
 		---------------------------------------------------------------------------
 		Computes the model features importance.
@@ -235,7 +237,9 @@ Main Class for Vertica Model
         tree_id: int
             Tree ID in case of Tree Based models.
         show: bool
-            If set to True, draw the feature importance.
+            If set to True, draw the features importance.
+        **style_kwds
+            Any optional parameter to pass to the Matplotlib functions.
 
 		Returns
 		-------
@@ -297,7 +301,11 @@ Main Class for Vertica Model
             coeff_sign[elem[0]] = elem[2]
         if show:
             plot_importance(
-                coeff_importances, coeff_sign, print_legend=print_legend, ax=ax
+                coeff_importances,
+                coeff_sign,
+                print_legend=print_legend,
+                ax=ax,
+                **style_kwds,
             )
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
@@ -446,7 +454,9 @@ Main Class for Vertica Model
         return self.parameters
 
     # ---#
-    def plot(self, max_nb_points: int = 100, ax=None):
+    def plot(
+        self, max_nb_points: int = 100, ax=None, **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the Model.
@@ -457,6 +467,8 @@ Main Class for Vertica Model
 		Maximum number of points to display.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -480,6 +492,7 @@ Main Class for Vertica Model
                     self.cursor,
                     max_nb_points,
                     ax=ax,
+                    **style_kwds,
                 )
             elif self.type == "LinearSVC":
                 return svm_classifier_plot(
@@ -490,6 +503,7 @@ Main Class for Vertica Model
                     self.cursor,
                     max_nb_points,
                     ax=ax,
+                    **style_kwds,
                 )
             else:
                 return regression_plot(
@@ -500,14 +514,15 @@ Main Class for Vertica Model
                     self.cursor,
                     max_nb_points,
                     ax=ax,
+                    **style_kwds,
                 )
         elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN"):
             if self.type != "DBSCAN":
-                vdf = vDataFrame(self.input_relation, self.cursor)
+                vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
                 self.predict(vdf, name="kmeans_cluster")
                 catcol = "kmeans_cluster"
             else:
-                vdf = vDataFrame(self.name, self.cursor)
+                vdf = vdf_from_relation(self.name, cursor=self.cursor)
                 catcol = "dbscan_cluster"
             if 2 <= len(self.X) <= 3:
                 return vdf.scatter(
@@ -516,6 +531,7 @@ Main Class for Vertica Model
                     max_cardinality=100,
                     max_nb_points=max_nb_points,
                     ax=ax,
+                    **style_kwds,
                 )
             else:
                 raise Exception("Clustering Plots are only available in 2D or 3D.")
@@ -528,7 +544,7 @@ Main Class for Vertica Model
                     for i in range(min(max(self.parameters["n_components"], 2), 3))
                 ]
                 return self.transform().scatter(
-                    columns=X, max_nb_points=max_nb_points, ax=ax
+                    columns=X, max_nb_points=max_nb_points, ax=ax, **style_kwds,
                 )
             else:
                 raise Exception("Decomposition Plots are not available in 1D")
@@ -537,7 +553,9 @@ Main Class for Vertica Model
             tablesample = 100 * min(
                 float(max_nb_points / self.cursor.execute(query).fetchone()[0]), 1
             )
-            return lof_plot(self.name, self.X, "lof_score", self.cursor, 100, ax=ax)
+            return lof_plot(
+                self.name, self.X, "lof_score", self.cursor, 100, ax=ax, **style_kwds,
+            )
         else:
             raise FunctionError(
                 "Method 'plot' for '{}' doesn't exist.".format(self.type)
@@ -615,7 +633,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["penalty"] = parameters["penalty"]
-            elif self.type in ("LinearRegression", "LogisticRegression") and "penalty" not in self.parameters:
+            elif (
+                self.type in ("LinearRegression", "LogisticRegression")
+                and "penalty" not in self.parameters
+            ):
                 model_parameters["penalty"] = default_parameters["penalty"]
             elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["penalty"] = self.parameters["penalty"]
@@ -638,7 +659,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
-            elif self.type in ("LinearRegression", "LogisticRegression") and "l1_ratio" not in self.parameters:
+            elif (
+                self.type in ("LinearRegression", "LogisticRegression")
+                and "l1_ratio" not in self.parameters
+            ):
                 model_parameters["l1_ratio"] = default_parameters["l1_ratio"]
             elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["l1_ratio"] = self.parameters["l1_ratio"]
@@ -651,7 +675,10 @@ Main Class for Vertica Model
                     "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
-            elif self.type in ("LinearRegression", "LogisticRegression") and "C" not in self.parameters:
+            elif (
+                self.type in ("LinearRegression", "LogisticRegression")
+                and "C" not in self.parameters
+            ):
                 model_parameters["C"] = default_parameters["C"]
             elif self.type in ("LinearRegression", "LogisticRegression"):
                 model_parameters["C"] = self.parameters["C"]
@@ -842,7 +869,9 @@ Main Class for Vertica Model
                     "min_samples_leaf"
                 ]
             else:
-                model_parameters["min_samples_leaf"] = self.parameters["min_samples_leaf"]
+                model_parameters["min_samples_leaf"] = self.parameters[
+                    "min_samples_leaf"
+                ]
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float],)])
                 assert 2 <= parameters["nbins"], ParameterError(
@@ -967,7 +996,9 @@ Main Class for Vertica Model
                     "min_samples_leaf"
                 ]
             else:
-                model_parameters["min_samples_leaf"] = self.parameters["min_samples_leaf"]
+                model_parameters["min_samples_leaf"] = self.parameters[
+                    "min_samples_leaf"
+                ]
             if "min_info_gain" in parameters:
                 check_types(
                     [
@@ -1061,14 +1092,25 @@ Main Class for Vertica Model
             if "init" in parameters:
                 check_types([("init", parameters["init"], [str, list],)])
                 if isinstance(parameters["init"], str):
-                    assert str(parameters["init"]).lower() in [
-                        "random",
-                        "kmeanspp",
-                    ], ParameterError(
-                        "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp) or a list of the initial clusters position, found '{}'.".format(
-                            parameters["init"]
+                    if self.type in ("BisectingKMeans",):
+                        assert str(parameters["init"]).lower() in [
+                            "random",
+                            "kmeanspp",
+                            "pseudo",
+                        ], ParameterError(
+                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp | pseudo) or a list of the initial clusters position, found '{}'.".format(
+                                parameters["init"]
+                            )
                         )
-                    )
+                    else:
+                        assert str(parameters["init"]).lower() in [
+                            "random",
+                            "kmeanspp",
+                        ], ParameterError(
+                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp) or a list of the initial clusters position, found '{}'.".format(
+                                parameters["init"]
+                            )
+                        )
                 model_parameters["init"] = parameters["init"]
             elif "init" not in self.parameters:
                 model_parameters["init"] = default_parameters["init"]
@@ -1093,12 +1135,17 @@ Main Class for Vertica Model
                 model_parameters["bisection_iterations"] = parameters[
                     "bisection_iterations"
                 ]
-            elif self.type == "BisectingKMeans" and "bisection_iterations" not in self.parameters:
+            elif (
+                self.type == "BisectingKMeans"
+                and "bisection_iterations" not in self.parameters
+            ):
                 model_parameters["bisection_iterations"] = default_parameters[
                     "bisection_iterations"
                 ]
             elif self.type == "BisectingKMeans":
-                model_parameters["bisection_iterationss"] = self.parameters["bisection_iterations"]
+                model_parameters["bisection_iterationss"] = self.parameters[
+                    "bisection_iterations"
+                ]
             if "split_method" in parameters:
                 check_types([("split_method", parameters["split_method"], [str],)])
                 assert str(parameters["split_method"]).lower() in [
@@ -1110,7 +1157,9 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["split_method"] = parameters["split_method"]
-            elif self.type == "BisectingKMeans" and "split_method" not in self.parameters:
+            elif (
+                self.type == "BisectingKMeans" and "split_method" not in self.parameters
+            ):
                 model_parameters["split_method"] = default_parameters["split_method"]
             elif self.type == "BisectingKMeans":
                 model_parameters["split_method"] = self.parameters["split_method"]
@@ -1131,12 +1180,17 @@ Main Class for Vertica Model
                 model_parameters["min_divisible_cluster_size"] = parameters[
                     "min_divisible_cluster_size"
                 ]
-            elif self.type == "BisectingKMeans" and "min_divisible_cluster_size" not in self.parameters:
+            elif (
+                self.type == "BisectingKMeans"
+                and "min_divisible_cluster_size" not in self.parameters
+            ):
                 model_parameters["min_divisible_cluster_size"] = default_parameters[
                     "min_divisible_cluster_size"
                 ]
             elif self.type == "BisectingKMeans":
-                model_parameters["min_divisible_cluster_size"] = self.parameters["min_divisible_cluster_size"]
+                model_parameters["min_divisible_cluster_size"] = self.parameters[
+                    "min_divisible_cluster_size"
+                ]
             if "distance_method" in parameters:
                 check_types(
                     [("distance_method", parameters["distance_method"], [str],)]
@@ -1149,7 +1203,10 @@ Main Class for Vertica Model
                     )
                 )
                 model_parameters["distance_method"] = parameters["distance_method"]
-            elif self.type == "BisectingKMeans" and "distance_method" not in self.parameters:
+            elif (
+                self.type == "BisectingKMeans"
+                and "distance_method" not in self.parameters
+            ):
                 model_parameters["distance_method"] = default_parameters[
                     "distance_method"
                 ]
@@ -1213,7 +1270,9 @@ Main Class for Vertica Model
                     "intercept_scaling"
                 ]
             else:
-                model_parameters["intercept_scaling"] = self.parameters["intercept_scaling"]
+                model_parameters["intercept_scaling"] = self.parameters[
+                    "intercept_scaling"
+                ]
             if "intercept_mode" in parameters:
                 check_types([("intercept_mode", parameters["intercept_mode"], [str],)])
                 assert str(parameters["intercept_mode"]).lower() in [
@@ -1257,12 +1316,17 @@ Main Class for Vertica Model
                 model_parameters["acceptable_error_margin"] = parameters[
                     "acceptable_error_margin"
                 ]
-            elif self.type in ("LinearSVR",) and "acceptable_error_margin" not in self.parameters:
+            elif (
+                self.type in ("LinearSVR",)
+                and "acceptable_error_margin" not in self.parameters
+            ):
                 model_parameters["acceptable_error_margin"] = default_parameters[
                     "acceptable_error_margin"
                 ]
             elif self.type in ("LinearSVR",):
-                model_parameters["acceptable_error_margin"] = self.parameters["acceptable_error_margin"]
+                model_parameters["acceptable_error_margin"] = self.parameters[
+                    "acceptable_error_margin"
+                ]
         elif self.type in ("PCA", "SVD"):
             if ("scale" in parameters) and self.type in ("PCA"):
                 check_types([("scale", parameters["scale"], [bool],)])
@@ -1325,12 +1389,18 @@ Main Class for Vertica Model
             else:
                 model_parameters["separator"] = self.parameters["separator"]
             if "null_column_name" in parameters:
-                check_types([("null_column_name", parameters["null_column_name"], [str],)])
+                check_types(
+                    [("null_column_name", parameters["null_column_name"], [str],)]
+                )
                 model_parameters["null_column_name"] = parameters["null_column_name"]
             elif "null_column_name" not in self.parameters:
-                model_parameters["null_column_name"] = default_parameters["null_column_name"]
+                model_parameters["null_column_name"] = default_parameters[
+                    "null_column_name"
+                ]
             else:
-                model_parameters["null_column_name"] = self.parameters["null_column_name"]
+                model_parameters["null_column_name"] = self.parameters[
+                    "null_column_name"
+                ]
             if "column_naming" in parameters:
                 check_types([("column_naming", parameters["column_naming"], [str],)])
                 assert str(parameters["column_naming"]).lower() in [
@@ -1417,7 +1487,9 @@ Main Class for Vertica Model
                     "Incorrect parameter 'n_neighbors'.\nThe number of neighbors must be strictly positive."
                 )
                 model_parameters["n_neighbors"] = parameters["n_neighbors"]
-            elif self.type != "NearestCentroid" and "n_neighbors" not in self.parameters:
+            elif (
+                self.type != "NearestCentroid" and "n_neighbors" not in self.parameters
+            ):
                 model_parameters["n_neighbors"] = default_parameters["n_neighbors"]
             elif self.type != "NearestCentroid":
                 model_parameters["n_neighbors"] = self.parameters["n_neighbors"]
@@ -1487,7 +1559,13 @@ Main Class for Vertica Model
             else:
                 model_parameters["max_features"] = self.parameters["max_features"]
         from verticapy.learn.linear_model import Lasso, Ridge, LinearRegression
-        from verticapy.learn.tree import DecisionTreeClassifier, DecisionTreeRegressor, DummyTreeClassifier, DummyTreeRegressor
+        from verticapy.learn.tree import (
+            DecisionTreeClassifier,
+            DecisionTreeRegressor,
+            DummyTreeClassifier,
+            DummyTreeRegressor,
+        )
+
         if isinstance(self, Lasso):
             model_parameters["penalty"] = "l1"
             if "l1_ratio" in model_parameters:
@@ -1502,7 +1580,15 @@ Main Class for Vertica Model
                 del model_parameters["l1_ratio"]
             if "C" in model_parameters:
                 del model_parameters["C"]
-        elif isinstance(self, (DecisionTreeClassifier, DecisionTreeRegressor, DummyTreeClassifier, DummyTreeRegressor)):
+        elif isinstance(
+            self,
+            (
+                DecisionTreeClassifier,
+                DecisionTreeRegressor,
+                DummyTreeClassifier,
+                DummyTreeRegressor,
+            ),
+        ):
             model_parameters["n_estimators"] = 1
             model_parameters["sample"] = 1.0
             if isinstance(self, (DummyTreeClassifier, DummyTreeRegressor)):
@@ -1702,7 +1788,12 @@ Main Class for Vertica Model
                 for column in self.X:
                     idx = []
                     for i in range(len(params["category_name"])):
-                        if str_column(params["category_name"][i]) == str_column(column) and (not(self.parameters["ignore_null"]) or params["category_level"][i] != None):
+                        if str_column(params["category_name"][i]) == str_column(
+                            column
+                        ) and (
+                            not (self.parameters["ignore_null"])
+                            or params["category_level"][i] != None
+                        ):
                             idx += [i]
                     cat_tmp = []
                     for j, i in enumerate(idx):
@@ -1901,7 +1992,10 @@ Main Class for Vertica Model
                 )
                 model._n_threads = None
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
-            if isinstance(self, (vens.RandomForestClassifier,)) or self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+            if isinstance(self, (vens.RandomForestClassifier,)) or self.type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+            ):
                 raise ModelError(
                     "Model Conversion failed. Tree Based Models are not yet supported."
                 )
@@ -1919,12 +2013,18 @@ Main Class for Vertica Model
             }
             for i in range(len(self.X)):
                 features[str_column(self.X[i]).lower()] = i
-            if isinstance(self, (vens.RandomForestRegressor,)) or self.type == "RandomForestRegressor":
+            if (
+                isinstance(self, (vens.RandomForestRegressor,))
+                or self.type == "RandomForestRegressor"
+            ):
                 model = skens.RandomForestRegressor(
                     n_estimators=params["n_estimators"], **parameters
                 )
                 model.base_estimator_ = skdtree.DecisionTreeRegressor(**parameters)
-            elif isinstance(self, (vens.RandomForestClassifier,)) or self.type == "RandomForestClassifier":
+            elif (
+                isinstance(self, (vens.RandomForestClassifier,))
+                or self.type == "RandomForestClassifier"
+            ):
                 model = skens.RandomForestClassifier(
                     n_estimators=params["n_estimators"], **parameters
                 )
@@ -2361,7 +2461,9 @@ class BinaryClassifier(Classifier):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def lift_chart(self, ax=None):
+    def lift_chart(
+        self, ax=None, nbins: int = 1000, **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2370,6 +2472,10 @@ class BinaryClassifier(Classifier):
     ----------
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2378,11 +2484,19 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return lift_chart(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            self.cursor,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
-    def prc_curve(self, ax=None):
+    def prc_curve(
+        self, ax=None, nbins: int = 30, **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2391,6 +2505,10 @@ class BinaryClassifier(Classifier):
     ----------
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2399,7 +2517,13 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return prc_curve(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            self.cursor,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
@@ -2458,7 +2582,43 @@ class BinaryClassifier(Classifier):
             return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
-    def roc_curve(self, ax=None):
+    def cutoff_curve(
+        self, ax=None, nbins: int = 30, **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model Cutoff curve.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        return roc_curve(
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            self.cursor,
+            ax=ax,
+            cutoff_curve=True,
+            nbins=nbins,
+            **style_kwds,
+        )
+
+    # ---#
+    def roc_curve(
+        self, ax=None, nbins: int = 30, **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2467,6 +2627,10 @@ class BinaryClassifier(Classifier):
     ----------
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2475,7 +2639,13 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         return roc_curve(
-            self.y, self.deploySQL(), self.test_relation, self.cursor, ax=ax
+            self.y,
+            self.deploySQL(),
+            self.test_relation,
+            self.cursor,
+            ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
@@ -2527,6 +2697,7 @@ class BinaryClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
+                nbins=1000,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
@@ -2604,7 +2775,9 @@ class MulticlassClassifier(Classifier):
         )
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels, cursor=self.cursor)
+        return classification_report(
+            cutoff=cutoff, estimator=self, labels=labels, cursor=self.cursor
+        )
 
     # ---#
     def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
@@ -2633,7 +2806,7 @@ class MulticlassClassifier(Classifier):
             if (pos_label == None and len(self.classes_) == 2)
             else pos_label
         )
-        if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+        if pos_label:
             return confusion_matrix(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
@@ -2645,6 +2818,57 @@ class MulticlassClassifier(Classifier):
             return multilabel_confusion_matrix(
                 self.y, self.deploySQL(), self.test_relation, self.classes_, self.cursor
             )
+
+    # ---#
+    def cutoff_curve(
+        self,
+        pos_label: (int, float, str) = None,
+        ax=None,
+        nbins: int = 30,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model Cutoff curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str, optional
+        To draw the ROC curve, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        return roc_curve(
+            self.y,
+            self.deploySQL(allSQL=True)[0].format(pos_label),
+            self.test_relation,
+            self.cursor,
+            pos_label,
+            ax=ax,
+            cutoff_curve=True,
+            nbins=nbins,
+            **style_kwds,
+        )
 
     # ---#
     def deploySQL(
@@ -2726,7 +2950,13 @@ class MulticlassClassifier(Classifier):
         return sql
 
     # ---#
-    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
+    def lift_chart(
+        self,
+        pos_label: (int, float, str) = None,
+        ax=None,
+        nbins: int = 1000,
+        **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2738,6 +2968,10 @@ class MulticlassClassifier(Classifier):
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2761,10 +2995,18 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
-    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def prc_curve(
+        self,
+        pos_label: (int, float, str) = None,
+        ax=None,
+        nbins: int = 30,
+        **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2776,6 +3018,10 @@ class MulticlassClassifier(Classifier):
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        Curve number of bins.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2799,6 +3045,8 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
@@ -2868,7 +3116,13 @@ class MulticlassClassifier(Classifier):
             )
 
     # ---#
-    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def roc_curve(
+        self,
+        pos_label: (int, float, str) = None,
+        ax=None,
+        nbins: int = 30,
+        **style_kwds,
+    ):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2880,6 +3134,8 @@ class MulticlassClassifier(Classifier):
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
 	Returns
 	-------
@@ -2903,6 +3159,8 @@ class MulticlassClassifier(Classifier):
             self.cursor,
             pos_label,
             ax=ax,
+            nbins=nbins,
+            **style_kwds,
         )
 
     # ---#
@@ -2988,6 +3246,7 @@ class MulticlassClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
+                nbins=1000,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
@@ -3137,8 +3396,14 @@ class Regressor(Supervised):
 		utilities.tablesample.
 		"""
         check_types([("method", method, ["anova", "metrics", "details"],)])
-        if method in ("anova", "details") and self.type in ("SARIMAX", "VAR", "KernelDensity"):
-            raise ModelError("'{}' method is not available for {} models.".format(method, self.type))
+        if method in ("anova", "details") and self.type in (
+            "SARIMAX",
+            "VAR",
+            "KernelDensity",
+        ):
+            raise ModelError(
+                "'{}' method is not available for {} models.".format(method, self.type)
+            )
         prediction = self.deploySQL()
         if self.type == "SARIMAX":
             test_relation = self.transform_relation
@@ -3181,7 +3446,11 @@ class Regressor(Supervised):
             result = tablesample(values)
             for idx, y in enumerate(self.X):
                 result.values[y] = regression_report(
-                    y, self.deploySQL()[idx], relation, self.cursor, len(self.X) * self.parameters["p"]
+                    y,
+                    self.deploySQL()[idx],
+                    relation,
+                    self.cursor,
+                    len(self.X) * self.parameters["p"],
                 ).values["value"]
             return result
         elif self.type == "KernelDensity":
@@ -3189,24 +3458,59 @@ class Regressor(Supervised):
         else:
             test_relation = self.test_relation
         if method == "metrics":
-            return regression_report(self.y, prediction, test_relation, self.cursor, len(self.X))
+            return regression_report(
+                self.y, prediction, test_relation, self.cursor, len(self.X)
+            )
         elif method == "anova":
-            return anova_table(self.y, prediction, test_relation, len(self.X), self.cursor)
+            return anova_table(
+                self.y, prediction, test_relation, len(self.X), self.cursor
+            )
         elif method == "details":
-            vdf = vdf_from_relation("(SELECT {} FROM ".format(self.y) + self.input_relation + ") VERTICAPY_SUBTABLE", cursor = self.cursor)
+            vdf = vdf_from_relation(
+                "(SELECT {} FROM ".format(self.y)
+                + self.input_relation
+                + ") VERTICAPY_SUBTABLE",
+                cursor=self.cursor,
+            )
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
             skew = vdf[self.y].skew()
             jb = vdf[self.y].agg(["jb"])[self.y][0]
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
-            anova_T = anova_table(self.y, prediction, test_relation, len(self.X), self.cursor)
+            anova_T = anova_table(
+                self.y, prediction, test_relation, len(self.X), self.cursor
+            )
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
             return tablesample(
                 {
-                    "index": ["Dep. Variable", "Model", "No. Observations", "No. Predictors", "R-squared", "Adj. R-squared", "F-statistic", "Prob (F-statistic)", "Kurtosis", "Skewness", "Jarque-Bera (JB)",],
-                    "value": [self.y, self.type, n, len(self.X), R2, R2_adj, F, p_F, kurt, skew, jb,],
+                    "index": [
+                        "Dep. Variable",
+                        "Model",
+                        "No. Observations",
+                        "No. Predictors",
+                        "R-squared",
+                        "Adj. R-squared",
+                        "F-statistic",
+                        "Prob (F-statistic)",
+                        "Kurtosis",
+                        "Skewness",
+                        "Jarque-Bera (JB)",
+                    ],
+                    "value": [
+                        self.y,
+                        self.type,
+                        n,
+                        len(self.X),
+                        R2,
+                        R2_adj,
+                        F,
+                        p_F,
+                        kurt,
+                        skew,
+                        jb,
+                    ],
                 }
             )
 
@@ -3284,10 +3588,19 @@ class Regressor(Supervised):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        r2_score(y, self.deploySQL()[idx], relation, self.cursor, len(self.X) * self.parameters["p"], adj)
+                        r2_score(
+                            y,
+                            self.deploySQL()[idx],
+                            relation,
+                            self.cursor,
+                            len(self.X) * self.parameters["p"],
+                            adj,
+                        )
                     ]
             else:
-                return r2_score(self.y, prediction, test_relation, self.cursor, len(self.X), adj)
+                return r2_score(
+                    self.y, prediction, test_relation, self.cursor, len(self.X), adj
+                )
         elif method in ("mae", "mean_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
@@ -3426,10 +3739,10 @@ class Unsupervised(vModel):
         if (
             "init_method" in parameters
             and not (isinstance(parameters["init_method"], str))
-            and self.type == "KMeans"
+            and self.type in ("KMeans", "BisectingKMeans")
         ):
             schema = schema_relation(self.name)[0]
-            name = "VERTICAPY_KMEANS_INITIAL"
+            name = "VERTICAPY_KMEANS_INITIAL_{}".format(get_session(self.cursor))
             del parameters["init_method"]
             try:
                 self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
@@ -3542,15 +3855,13 @@ class Unsupervised(vModel):
                     self.param_ = self.get_attr("varchar_categories")
         return self
 
+
 # ---#
 class Preprocessing(Unsupervised):
 
     # ---#
     def deploySQL(
-        self,
-        key_columns: list = [],
-        exclude_columns: list = [],
-        X: list = [],
+        self, key_columns: list = [], exclude_columns: list = [], X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -3591,19 +3902,31 @@ class Preprocessing(Unsupervised):
                 ", ".join([str_column(item) for item in exclude_columns])
             )
         if self.type == "OneHotEncoder":
-            separator = "NULL" if self.parameters["separator"] == None else "'{}'".format(self.parameters["separator"])
-            null_column_name = "NULL" if self.parameters["null_column_name"] == None else "'{}'".format(self.parameters["null_column_name"])
-            sql += ", drop_first = {}, ignore_null = {}, separator = {}, column_naming = '{}'".format(self.parameters["drop_first"],
-                                                                                                      self.parameters["ignore_null"],
-                                                                                                      separator,
-                                                                                                      self.parameters["column_naming"],)
+            separator = (
+                "NULL"
+                if self.parameters["separator"] == None
+                else "'{}'".format(self.parameters["separator"])
+            )
+            null_column_name = (
+                "NULL"
+                if self.parameters["null_column_name"] == None
+                else "'{}'".format(self.parameters["null_column_name"])
+            )
+            sql += ", drop_first = {}, ignore_null = {}, separator = {}, column_naming = '{}'".format(
+                self.parameters["drop_first"],
+                self.parameters["ignore_null"],
+                separator,
+                self.parameters["column_naming"],
+            )
             if self.parameters["column_naming"].lower() in ("values", "values_relaxed"):
                 sql += ", null_column_name = {}".format(null_column_name,)
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def deployInverseSQL(self, key_columns: list = [], exclude_columns: list = [], X: list = []):
+    def deployInverseSQL(
+        self, key_columns: list = [], exclude_columns: list = [], X: list = []
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy the inverse model. 
@@ -3625,7 +3948,9 @@ class Preprocessing(Unsupervised):
         the SQL code needed to deploy the inverse model.
         """
         if self.type == "OneHotEncoder":
-            raise ModelError("method 'inverse_transform' is not supported for OneHotEncoder models.")
+            raise ModelError(
+                "method 'inverse_transform' is not supported for OneHotEncoder models."
+            )
         check_types([("key_columns", key_columns, [list],), ("X", X, [list],)])
         X = [str_column(elem) for elem in X]
         fun = self.get_model_fun()[2]
@@ -3661,29 +3986,51 @@ class Preprocessing(Unsupervised):
         Python list.
         """
         X = [str_column(elem) for elem in X]
-        if not(X):
+        if not (X):
             X = self.X
-        if self.type in ("PCA", "SVD") and not(inverse):
+        if self.type in ("PCA", "SVD") and not (inverse):
             n = self.parameters["n_components"]
-            if not(n):
+            if not (n):
                 n = len(self.X)
             return [f"col{i}" for i in range(1, n + 1)]
-        elif self.type in ("OneHotEncoder") and not(inverse):
+        elif self.type in ("OneHotEncoder") and not (inverse):
             names = []
             for column in self.X:
                 k = 0
                 for i in range(len(self.param_["category_name"])):
-                    if str_column(self.param_["category_name"][i]) == str_column(column):
-                        if (k != 0 or not(self.parameters["drop_first"])) and (not(self.parameters["ignore_null"]) or self.param_["category_level"][i] != None):
+                    if str_column(self.param_["category_name"][i]) == str_column(
+                        column
+                    ):
+                        if (k != 0 or not (self.parameters["drop_first"])) and (
+                            not (self.parameters["ignore_null"])
+                            or self.param_["category_level"][i] != None
+                        ):
                             if self.parameters["column_naming"] == "indices":
-                                names += ['"' + str_column(column)[1:-1] + "{}{}".format(self.parameters["separator"], self.param_["category_level_index"][i]) + '"']
+                                names += [
+                                    '"'
+                                    + str_column(column)[1:-1]
+                                    + "{}{}".format(
+                                        self.parameters["separator"],
+                                        self.param_["category_level_index"][i],
+                                    )
+                                    + '"'
+                                ]
                             else:
-                                names += ['"' + str_column(column)[1:-1] + "{}{}".format(self.parameters["separator"], self.param_["category_level"][i].lower() if self.param_["category_level"][i] != None else self.parameters["null_column_name"]) + '"']
+                                names += [
+                                    '"'
+                                    + str_column(column)[1:-1]
+                                    + "{}{}".format(
+                                        self.parameters["separator"],
+                                        self.param_["category_level"][i].lower()
+                                        if self.param_["category_level"][i] != None
+                                        else self.parameters["null_column_name"],
+                                    )
+                                    + '"'
+                                ]
                         k += 1
             return names
         else:
             return X
-
 
     # ---#
     def inverse_transform(
@@ -3708,11 +4055,13 @@ class Preprocessing(Unsupervised):
         object result of the model transformation.
         """
         if self.type == "OneHotEncoder":
-            raise ModelError("method 'inverse_transform' is not supported for OneHotEncoder models.")
+            raise ModelError(
+                "method 'inverse_transform' is not supported for OneHotEncoder models."
+            )
         check_types([("X", X, [list],)])
-        if not(vdf):
+        if not (vdf):
             vdf = self.input_relation
-        if not(X):
+        if not (X):
             X = self.get_names()
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
@@ -3720,18 +4069,17 @@ class Preprocessing(Unsupervised):
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
-        exclude_columns = vdf.get_columns(exclude_columns = X)
+        exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deployInverseSQL(exclude_columns, exclude_columns, all_columns), relation
+            self.deployInverseSQL(exclude_columns, exclude_columns, all_columns),
+            relation,
         )
         return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
 
     # ---#
     def transform(
-        self,
-        vdf: (str, vDataFrame) = None,
-        X: list = [],
+        self, vdf: (str, vDataFrame) = None, X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -3752,13 +4100,11 @@ class Preprocessing(Unsupervised):
         object result of the model transformation.
         """
         check_types(
-            [
-                ("X", X, [list],),
-            ]
+            [("X", X, [list],),]
         )
-        if not(vdf):
+        if not (vdf):
             vdf = self.input_relation
-        if not(X):
+        if not (X):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
@@ -3766,12 +4112,13 @@ class Preprocessing(Unsupervised):
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
-        exclude_columns = vdf.get_columns(exclude_columns = X)
+        exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             self.deploySQL(exclude_columns, exclude_columns, all_columns), relation
         )
         return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+
 
 # ---#
 class Decomposition(Preprocessing):
@@ -3971,9 +4318,9 @@ class Decomposition(Preprocessing):
                 ("X", X, [list],),
             ]
         )
-        if not(vdf):
+        if not (vdf):
             vdf = self.input_relation
-        if not(X):
+        if not (X):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
@@ -3981,12 +4328,16 @@ class Decomposition(Preprocessing):
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
-        exclude_columns = vdf.get_columns(exclude_columns = X)
+        exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-            self.deploySQL(n_components, cutoff, exclude_columns, exclude_columns, all_columns), relation
+            self.deploySQL(
+                n_components, cutoff, exclude_columns, exclude_columns, all_columns
+            ),
+            relation,
         )
         return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+
 
 # ---#
 class Clustering(Unsupervised):

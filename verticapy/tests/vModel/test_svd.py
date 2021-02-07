@@ -34,14 +34,12 @@ def winequality_vd(base):
 def model(base, winequality_vd):
     base.cursor.execute("DROP MODEL IF EXISTS SVD_model_test")
     model_class = SVD("SVD_model_test", cursor=base.cursor)
-    model_class.fit(
-        "public.winequality", ["citric_acid", "residual_sugar", "alcohol"]
-    )
+    model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
 
-class TestSVD:
 
+class TestSVD:
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_SVD("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'SVD_model_test\', match_by_pos = \'true\', cutoff = 1)'
         result_sql = model.deploySQL()
@@ -49,7 +47,7 @@ class TestSVD:
         assert result_sql == expected_sql
 
     def test_deployInverseSQL(self, model):
-        expected_sql = "APPLY_INVERSE_SVD(\"citric_acid\", \"residual_sugar\", \"alcohol\" USING PARAMETERS model_name = 'SVD_model_test', match_by_pos = 'true')"
+        expected_sql = 'APPLY_INVERSE_SVD("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'SVD_model_test\', match_by_pos = \'true\')'
         result_sql = model.deployInverseSQL()
 
         assert result_sql == expected_sql
@@ -96,7 +94,7 @@ class TestSVD:
         assert m_att_details["value"][2] == pytest.approx(11.7281921567471, abs=1e-6)
 
     def test_get_params(self, model):
-        assert model.get_params() == {'method': 'lapack', 'n_components': 0}
+        assert model.get_params() == {"method": "lapack", "n_components": 0}
 
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
@@ -110,8 +108,7 @@ class TestSVD:
 
     def test_get_transform(self, winequality_vd, model):
         winequality_trans = model.transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
         assert winequality_trans["col1"].mean() == pytest.approx(
             0.0121807874344058, abs=1e-6
@@ -125,12 +122,10 @@ class TestSVD:
 
     def test_get_inverse_transform(self, winequality_vd, model):
         winequality_trans = model.transform(
-            winequality_vd,
-            X=["citric_acid", "residual_sugar", "alcohol"]
+            winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]
         )
         winequality_trans = model.inverse_transform(
-            winequality_trans,
-            X=["col1", "col2", "col3"]
+            winequality_trans, X=["col1", "col2", "col3"]
         )
         assert winequality_trans["citric_acid"].mean() == pytest.approx(
             winequality_vd["citric_acid"].mean(), abs=1e-6
