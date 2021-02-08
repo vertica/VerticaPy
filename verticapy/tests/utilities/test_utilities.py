@@ -153,14 +153,14 @@ class TestUtilities:
         except:
             fail = True
         assert fail
-        drop()
+        drop(cursor = base.cursor,)
 
     def test_readSQL(self, base):
         result = readSQL('SELECT 1 AS "verticapy test *+""";', base.cursor,)
         assert result["verticapy test *+\""] == [1]
 
     def test_get_data_types(self, base):
-        result = get_data_types("SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3")
+        result = get_data_types("SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3", base.cursor,)
         assert result == [['col1', 'Integer'], ['col2', 'Varchar(3)'], ['col3', 'Interval']]
 
     def test_pandas_to_vertica(self, titanic_vd):

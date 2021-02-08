@@ -163,7 +163,7 @@ vertica_conn           : Creates a Vertica Database connection.
         confparser.remove_section(name)
     confparser.add_section(name)
     for elem in dsn:
-        confparser.set(name, elem, dsn[elem])
+        confparser.set(name, elem, str(dsn[elem]))
     f = open(path, "w+")
     confparser.write(f)
     f.close()
