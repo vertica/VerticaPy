@@ -18,7 +18,9 @@ import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
-version = version()
+cur = vertica_conn("vp_test_config",
+                   os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+version = version(cur)
 
 if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
     @pytest.fixture(scope="module")
