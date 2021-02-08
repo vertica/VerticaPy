@@ -35,6 +35,22 @@ default_configs = {
     "password": "",
 }
 
+if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")):
+    path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+    confparser = ConfigParser()
+    confparser.optionxform = str
+    try:
+        confparser.read(path)
+    except:
+        pass
+    if confparser.has_section(name):
+        confparser.remove_section(name)
+    confparser.add_section(name)
+    for elem in default_configs:
+        confparser.set(name, elem, dsn[elem])
+    f = open(path, "w+")
+    confparser.write(f)
+    f.close()
 
 class VerticaPyTestBase(unittest.TestCase):
     """
