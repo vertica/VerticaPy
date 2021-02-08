@@ -28,10 +28,10 @@ class TestConnect(VerticaPyTestBase):
         # available_auto_connection
         result = available_auto_connection()
         assert "VerticaDSN_test" in result
-        # read_auto_connect
-        cur = read_auto_connect().cursor()
         # change_auto_connection
         change_auto_connection("VerticaDSN_test")
+        # read_auto_connect
+        cur = read_auto_connect().cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]

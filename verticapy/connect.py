@@ -76,7 +76,7 @@ See Also
 --------
 new_auto_connection : Saves a connection to automatically create DB cursors.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connect/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -105,7 +105,7 @@ new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connect/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
@@ -152,7 +152,7 @@ read_auto_connect      : Automatically creates a connection.
 vertica_conn           : Creates a Vertica Database connection.
 	"""
     check_types([("dsn", dsn, [dict],)])
-    path = os.path.dirname(verticapy.__file__) + "/connect/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -186,7 +186,7 @@ See Also
 new_auto_connection : Saves a connection to automatically create DB cursors.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connect/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
