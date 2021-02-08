@@ -20,6 +20,7 @@ import unittest
 import inspect
 import getpass
 import vertica_python
+import verticapy
 
 from configparser import ConfigParser
 
@@ -43,11 +44,11 @@ if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_te
         confparser.read(path)
     except:
         pass
-    if confparser.has_section(name):
-        confparser.remove_section(name)
-    confparser.add_section(name)
+    if confparser.has_section("vp_test_config"):
+        confparser.remove_section("vp_test_config")
+    confparser.add_section("vp_test_config")
     for elem in default_configs:
-        confparser.set(name, elem, dsn[elem])
+        confparser.set("vp_test_config", elem, dsn[elem])
     f = open(path, "w+")
     confparser.write(f)
     f.close()
