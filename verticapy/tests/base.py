@@ -48,7 +48,7 @@ if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_te
         confparser.remove_section("vp_test_config")
     confparser.add_section("vp_test_config")
     for elem in default_configs:
-        confparser.set("vp_test_config", elem, dsn[elem])
+        confparser.set("vp_test_config", elem, default_configs[elem])
     f = open(path, "w+")
     confparser.write(f)
     f.close()
