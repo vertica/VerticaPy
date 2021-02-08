@@ -11,12 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy import vDataFrame, drop
+from verticapy import vDataFrame, drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
@@ -168,7 +166,7 @@ class TestRFC:
         assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
         assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
         assert f_imp["sign"] == [1, 1, 1, 0]
-        plt.close()
+        plt.close('all')
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
@@ -179,11 +177,7 @@ class TestRFC:
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
         assert lift_ch["lift"][900] == pytest.approx(2.5)
-        plt.close()
-
-    @pytest.mark.skip(reason="test not implemented")
-    def test_plot(self):
-        pass
+        plt.close('all')
 
     @pytest.mark.skip(
         reason="Model Conversion for RandomForestClassifier is not yet supported."
@@ -265,7 +259,7 @@ class TestRFC:
         assert prc["threshold"][800] == pytest.approx(0.799)
         assert prc["recall"][800] == pytest.approx(1.0)
         assert prc["precision"][800] == pytest.approx(1.0)
-        plt.close()
+        plt.close('all')
 
     def test_predict(self, rfc_data_vd, model):
         rfc_data_copy = rfc_data_vd.copy()
@@ -288,7 +282,7 @@ class TestRFC:
         assert roc["threshold"][700] == pytest.approx(0.7)
         assert roc["false_positive"][700] == pytest.approx(0.0)
         assert roc["true_positive"][700] == pytest.approx(1.0)
-        plt.close()
+        plt.close('all')
 
     def test_cutoff_curve(self, model):
         cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
@@ -299,7 +293,7 @@ class TestRFC:
         assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
         assert cutoff_curve["false_positive"][700] == pytest.approx(0.0)
         assert cutoff_curve["true_positive"][700] == pytest.approx(1.0)
-        plt.close()
+        plt.close('all')
 
     def test_score(self, model):
         assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
@@ -377,9 +371,13 @@ class TestRFC:
             cutoff=0.1, method="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_set_cursor(self):
-        pass
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"nbins": 1000})
@@ -421,6 +419,6 @@ class TestRFC:
             "Train",
         ]
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_plot_tree(self, model):
-        pass
+        result = model.plot_tree()
+        assert result.by_attr()[0:3] == "[1]"

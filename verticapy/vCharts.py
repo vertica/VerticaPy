@@ -58,7 +58,7 @@
 #
 # ---#
 def vCharts(line, cell):
-    from verticapy.connections.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect
     from verticapy.hchart import hchartSQL
     from IPython.core.display import HTML, display
     import time

@@ -2505,7 +2505,7 @@ class Tree:
             metric = "log_odds"
         else:
             metric = "variance"
-        plot_tree(
+        return plot_tree(
             self.get_tree(tree_id=tree_id).values, metric=metric, pic_path=pic_path
         )
 

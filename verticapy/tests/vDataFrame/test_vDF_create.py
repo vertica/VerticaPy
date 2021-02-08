@@ -11,10 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame, drop
-
-from verticapy import set_option
+import pytest, warnings, os, verticapy
+from verticapy import vDataFrame, drop, set_option
 
 set_option("print_info", False)
 
@@ -49,6 +47,13 @@ class TestvDFCreate:
 
         assert tvdf["survived"].count() == 1234
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_creating_vDF_using_input_relation_dsn(self):
-        pass
+        os.environ["ODBCINI"] = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+        tvdf = vDataFrame(
+            input_relation="public.titanic",
+            usecols=["age", "survived"],
+            dsn="vp_test_config",
+        )
+
+        assert tvdf["survived"].count() == 1234
+

@@ -151,7 +151,7 @@ def category_from_type(ctype: str = ""):
 def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
-    from verticapy.connections.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
         if not (cursor) or vdf_cursor:

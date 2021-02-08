@@ -11,15 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
 from verticapy.utilities import tablesample
-from verticapy import drop
+from verticapy import drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
@@ -201,27 +199,13 @@ class TestPipeline:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
 
-    def test_set_cursor(self, base):
-        model_test = Pipeline(
-            [
-                (
-                    "NormalizerWine",
-                    StandardScaler("std_model_test_vdf", cursor=base.cursor),
-                ),
-                (
-                    "LinearRegressionWine",
-                    LinearRegression("linreg_model_test_vdf", cursor=base.cursor),
-                ),
-            ]
-        )
-        model_test.drop()
-        model_test.set_cursor(base.cursor)
-        model_test.fit("public.winequality", ["alcohol"], "quality")
-        model_test.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name IN ('std_model_test_vdf', 'linreg_model_test_vdf')"
-        )
-        assert len(base.cursor.fetchall()) == 2
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(

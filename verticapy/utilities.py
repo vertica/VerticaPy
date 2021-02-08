@@ -55,7 +55,7 @@ import os, math, shutil, re, time, decimal, warnings
 import verticapy
 import vertica_python
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect, vertica_conn
+from verticapy.connect import read_auto_connect, vertica_conn
 from verticapy.errors import *
 
 # Other Modules
@@ -329,6 +329,8 @@ def readSQL(
         cursor = conn.cursor()
     elif not (cursor):
         cursor = vertica_conn(dsn).cursor()
+    while len(query) > 0 and query[-1] in (";", ' '):
+        query = query[:-1]
     cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
     query_on_init = verticapy.options["query_on"]
@@ -1384,8 +1386,7 @@ The tablesample attributes are the same than the parameters.
         values = {}
         for item in columns:
             values[item[0]] = item[1 : len(item)]
-        self.values = values
-        return self
+        return tablesample(values, self.dtype, self.count, self.offset, self.percent,)
 
     # ---#
     def to_list(self):

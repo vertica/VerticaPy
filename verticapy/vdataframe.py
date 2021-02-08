@@ -58,7 +58,7 @@ pickle.DEFAULT_PROTOCOL = 4
 import verticapy
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
-from verticapy.connections.connect import read_auto_connect
+from verticapy.connect import read_auto_connect
 from verticapy.toolbox import *
 from verticapy.errors import *
 

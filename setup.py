@@ -53,7 +53,7 @@ setuptools.setup(
                'shap>=0.36.0',
                'pandas>=0.23.0',]
     },
-    package_data = {'': ['*.csv']},
+    package_data = {'': ['*.csv', '*.json']},
     classifiers = [
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",

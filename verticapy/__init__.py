@@ -60,7 +60,7 @@ from verticapy.vdataframe import *
 from verticapy.utilities import *
 
 # Connect
-from verticapy.connections.connect import *
+from verticapy.connect import *
 
 # SQL Functions
 import verticapy.stats

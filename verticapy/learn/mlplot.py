@@ -514,6 +514,7 @@ def plot_BKtree(tree, pic_path: str = ""):
             from IPython.core.display import HTML, display
 
             display(HTML("<img src='{}'>".format(pic_path)))
+    return RenderTree(tree_nodes[0])
 
 
 # ---#
@@ -586,6 +587,7 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
             from IPython.core.display import HTML, display
 
             display(HTML("<img src='{}'>".format(pic_path)))
+    return RenderTree(tree_nodes[1])
 
 
 # ---#

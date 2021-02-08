@@ -11,12 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import RandomForestRegressor
-from verticapy import vDataFrame, drop
+from verticapy import vDataFrame, drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
@@ -122,7 +120,7 @@ class TestRFR:
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
         assert fim["sign"] == [1, 1, 1, 0]
-        plt.close()
+        plt.close('all')
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -172,10 +170,6 @@ class TestRFR:
             "min_info_gain": 0,
             "nbins": 40,
         }
-
-    @pytest.mark.skip(reason="test not implemented")
-    def test_get_plot(self):
-        pass
 
     @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
     def test_to_sklearn(self, model):
@@ -274,19 +268,13 @@ class TestRFR:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
-    def test_set_cursor(self, base):
-        model_test = RandomForestRegressor("rfr_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.rfr_data", ["gender"], "transportation")
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'rfr_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "rfr_cursor_test"
-
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_features": 1000})
@@ -326,6 +314,6 @@ class TestRFR:
             "1.000000",
         ]
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_plot_tree(self, model):
-        pass
+        result = model.plot_tree()
+        assert result.by_attr()[0:3] == "[1]"

@@ -11,12 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys
+import pytest, sys, os, verticapy
 from verticapy.learn.linear_model import Ridge
-from verticapy import drop
+from verticapy import drop, set_option, vertica_conn
 from decimal import Decimal
-
-from verticapy import set_option
+import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
@@ -140,9 +139,14 @@ class TestRidge:
             "tol": 1e-06,
         }
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_get_plot(self):
-        pass
+    def test_get_plot(self, base):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = Ridge("model_test_plot", cursor=base.cursor)
+        model_test.fit("public.winequality", ["alcohol"], "quality")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 9
+        plt.close('all')
+        model_test.drop()
 
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
@@ -154,10 +158,13 @@ class TestRidge:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
+    try:
+        import shap
+        def test_shapExplainer(self, model):
+            explainer = model.shapExplainer()
+            assert explainer.expected_value[0] == pytest.approx(5.81837771)
+    except:
+        pass
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
@@ -249,19 +256,13 @@ class TestRidge:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-3339.6492371939366, abs=1e-6)
 
-    def test_set_cursor(self, base):
-        model_test = Ridge("ridge_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.winequality", ["alcohol"], "quality")
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'ridge_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "ridge_cursor_test"
-
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
