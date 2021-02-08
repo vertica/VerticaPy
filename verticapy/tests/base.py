@@ -36,6 +36,9 @@ default_configs = {
     "password": "",
 }
 
+base_test = VerticaPyTestBase()
+base_test.setUp()
+
 if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")):
     path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
     confparser = ConfigParser()
@@ -47,9 +50,9 @@ if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_te
     if confparser.has_section("vp_test_config"):
         confparser.remove_section("vp_test_config")
     confparser.add_section("vp_test_config")
-    for elem in default_configs:
+    for elem in base_test.test_config:
         if elem != "log_level":
-            confparser.set("vp_test_config", elem, str(default_configs[elem]))
+            confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
     f = open(path, "w+")
     confparser.write(f)
     f.close()
