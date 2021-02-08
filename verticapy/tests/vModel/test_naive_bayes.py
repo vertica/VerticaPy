@@ -11,19 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.naive_bayes import NaiveBayes
-from verticapy import drop_table
+from verticapy import drop_table, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor = base.cursor)
     yield iris
@@ -110,10 +108,6 @@ class TestNB:
         assert lift_ch["lift"][900] == pytest.approx(2.57894736842105)
         plt.close()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_plot(self):
-        pass
-
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
         model.cursor.execute(
@@ -123,11 +117,6 @@ class TestNB:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == md.predict([[1.1, 2.2, 3.3, 4.4]])[0]
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -263,9 +252,13 @@ class TestNB:
             cutoff=0.9, method="specificity", pos_label="Iris-virginica"
         ) == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_set_cursor(self):
-        pass
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"alpha": 0.5})

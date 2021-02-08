@@ -11,23 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.decomposition import PCA
-from verticapy import drop_table
-
-from verticapy import set_option
+from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -142,18 +140,13 @@ class TestPCA:
             winequality_vd["alcohol"].mean(), abs=1e-6
         )
 
-    def test_set_cursor(self, base):
-        model_test = PCA("pca_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.winequality", ["alcohol"])
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'pca_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "pca_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"n_components": 3})

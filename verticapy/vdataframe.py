@@ -58,10 +58,9 @@ pickle.DEFAULT_PROTOCOL = 4
 import verticapy
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
-from verticapy.connections.connect import read_auto_connect
+from verticapy.connect import read_auto_connect
 from verticapy.toolbox import *
 from verticapy.errors import *
-import verticapy.stats as st
 
 ##
 #                                           _____
@@ -3280,6 +3279,8 @@ vcolumns : vcolumn
         """
 
         check_types([("name", name, [str],)])
+        import verticapy.stats as st
+
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
@@ -6612,26 +6613,29 @@ vcolumns : vcolumn
             def drop_temp_elem(self, schema):
                 try:
                     with warnings.catch_warnings(record=True) as w:
-                        drop_model(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
-                        drop_model(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
-                        drop_view(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="view",
                         )
                 except:
                     pass

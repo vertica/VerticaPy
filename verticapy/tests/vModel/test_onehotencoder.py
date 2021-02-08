@@ -11,23 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.preprocessing import OneHotEncoder
-from verticapy import drop_table
-
-from verticapy import set_option
+from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -125,24 +123,17 @@ class TestOneHotEncoder:
             0.086038961038961, abs=1e-6
         )
 
-    @pytest.mark.skip(reason="Vertica OHE has no inverse transform fro now")
+    @pytest.mark.skip(reason="Vertica OHE has no inverse transform from now")
     def test_get_inverse_transform(self, titanic_vd, model):
         pass
 
-    def test_set_cursor(self, base):
-        model_test = OneHotEncoder(
-            "ohe_cursor_test", cursor=base.cursor, drop_first=False
-        )
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.titanic", ["pclass"])
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'ohe_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "ohe_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"ignore_null": False})

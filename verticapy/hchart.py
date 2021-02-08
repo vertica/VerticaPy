@@ -435,7 +435,7 @@ def hchart_from_vdf(
             x = x[0]
         columns_check([x], vdf)
         if aggregate:
-            if isinstance(y, Iterable) and not(isinstance(y, str)) and len(y) == 1:
+            if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
                 y = y[0]
             if isinstance(y, str):
                 query = """SELECT {}::timestamp, 

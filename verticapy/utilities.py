@@ -55,7 +55,7 @@ import os, math, shutil, re, time, decimal, warnings
 import verticapy
 import vertica_python
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect, vertica_conn
+from verticapy.connect import read_auto_connect, vertica_conn
 from verticapy.errors import *
 
 # Other Modules
@@ -65,43 +65,6 @@ except:
     pass
 
 #
-# ---#
-def check_model(name: str, cursor=None):
-    """
----------------------------------------------------------------------------
-Checks if the model already exists.
-
-Parameters
-----------
-name: str
-    Model name.
-cursor: DBcursor, optional
-    Vertica DB cursor.
-    """
-    check_types([("name", name, [str],)])
-    cursor, conn = check_cursor(cursor)[0:2]
-    cursor.execute("SELECT * FROM MODELS WHERE model_name='{}'".format(name))
-    result = cursor.fetchone()
-    if result:
-        if conn:
-            conn.close()
-        raise NameError("The model '{}' already exists !".format(name))
-    else:
-        try:
-            cursor.execute(
-                "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                    str_column(name)
-                )
-            )
-            result = cursor.fetchone()
-        except:
-            result = []
-        if result:
-            raise NameError("The model '{}' already exists !".format(name))
-    if conn:
-        conn.close()
-
-
 # ---#
 def create_verticapy_schema(cursor=None):
     """
@@ -126,130 +89,113 @@ cursor: DBcursor, optional
 
 
 # ---#
-def drop_verticapy_schema(cursor=None):
+def drop(
+    name: str = "", cursor=None, raise_error: bool = False, method: str = "auto",
+):
     """
 ---------------------------------------------------------------------------
-Drops the VerticaPy schema which is used to store extended models.
+Drops the input relation (It can be a Model, a View, a Table, a Text Index, 
+a Schema or a Geo Index).
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica DB cursor.
-    """
-    cursor, conn = check_cursor(cursor)[0:2]
-    sql = "DROP SCHEMA verticapy CASCADE;"
-    cursor.execute(sql)
-    if conn:
-        conn.close()
-
-
-# ---#
-def drop_verticapy_temp(cursor=None):
-    """
----------------------------------------------------------------------------
-Drops VerticaPy temporary elements.
-
-Parameters
-----------
-cursor: DBcursor, optional
-    Vertica DB cursor.
-    """
-    cursor, conn = check_cursor(cursor)[0:2]
-    sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
-    cursor.execute(sql)
-    all_tables = cursor.fetchall()
-    for elem in all_tables:
-        table = '"{}"."{}"'.format(
-            elem[0].replace('"', '""'), elem[1].replace('"', '""')
-        )
-        with warnings.catch_warnings(record=True) as w:
-            drop_table(table, cursor)
-    sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
-    cursor.execute(sql)
-    all_views = cursor.fetchall()
-    for elem in all_views:
-        view = '"{}"."{}"'.format(
-            elem[0].replace('"', '""'), elem[1].replace('"', '""')
-        )
-        with warnings.catch_warnings(record=True) as w:
-            drop_view(view, cursor)
-    if conn:
-        conn.close()
-
-
-# ---#
-def drop_geo_index(name: str, cursor=None, raise_error: bool = False):
-    """
----------------------------------------------------------------------------
-Drops the input Geo Index.
-
-Parameters
-----------
-name: str
-    Index name.
+name: str, optional
+    Relation name. If empty, it will drop all VerticaPy temporary elements.
 cursor: DBcursor, optional
     Vertica DB cursor.
 raise_error: bool, optional
     If the geo index couldn't be dropped, raises the entire error instead of
     displaying a warning.
+method: str, optional
+    Method used to drop.
+        auto   : identifies the table/view/index/model to drop. It will never
+                 drop an entire schema except if the method is set to 'schema'.
+        model  : drops the input model.
+        table  : drops the input table.
+        view   : drops the input view.        
+        geo    : drops the input geo index.
+        text   : drops the input text index.
+        schema : drops the input schema.
 
 Returns
 -------
 bool
-    True if the Geo Index was dropped, False otherwise.
+    True if the relation was dropped, False otherwise.
     """
+    if isinstance(method, str):
+        method = method.lower()
     check_types(
-        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
+        [
+            ("name", name, [str],),
+            ("raise_error", raise_error, [bool],),
+            (
+                "method",
+                method,
+                ["table", "view", "model", "geo", "text", "auto", "schema",],
+            ),
+        ]
     )
     cursor, conn = check_cursor(cursor)[0:2]
-    try:
-        query = f"SELECT STV_Drop_Index(USING PARAMETERS index ='{name}') OVER ();"
+    schema, relation = schema_relation(name)
+    schema, relation = schema[1:-1], relation[1:-1]
+    if not (name):
+        method = "temp"
+    if method == "auto":
+        fail, end_conditions = False, False
+        query = f"SELECT * FROM columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
         cursor.execute(query)
-        if conn:
-            conn.close()
-        return True
-    except:
-        if conn:
-            conn.close()
-        if raise_error:
-            raise
-        warning_message = f"The Geo Index '{name}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information."
-        warnings.warn(warning_message, Warning)
-        return False
-
-
-# ---#
-def drop_model(name: str, cursor=None, raise_error: bool = False):
-    """
----------------------------------------------------------------------------
-Drops the input model.
-
-Parameters
-----------
-name: str
-	Model name.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-raise_error: bool, optional
-	If the model couldn't be dropped, raises the entire error instead of
-	displaying a warning.
-
-Returns
--------
-bool
-    True if the model was dropped, False otherwise.
-	"""
-    check_types(
-        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
-    )
-    cursor, conn = check_cursor(cursor)[0:2]
-    try:
-        query = "DROP MODEL {};".format(name)
-        cursor.execute(query)
-        if conn:
-            conn.close()
-        return True
-    except:
+        result = cursor.fetchone()
+        if not (result):
+            query = f"SELECT * FROM view_columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
+            cursor.execute(query)
+            result = cursor.fetchone()
+        elif not (end_conditions):
+            method = "table"
+            end_conditions = True
+        if not (result):
+            try:
+                sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+                    str_column(name).lower()
+                )
+                cursor.execute(sql)
+                result = cursor.fetchone()
+            except:
+                result = []
+        elif not (end_conditions):
+            method = "view"
+            end_conditions = True
+        if not (result):
+            query = f"SELECT * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
+            cursor.execute(query)
+            result = cursor.fetchone()
+        elif not (end_conditions):
+            method = "model"
+            end_conditions = True
+        if not (result):
+            query = f"SELECT * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN ('{schema}.{relation}', '{relation}', '\"{schema}\".\"{relation}\"', '\"{relation}\"', '{schema}.\"{relation}\"', '\"{schema}\".{relation}')"
+            cursor.execute(query)
+            result = cursor.fetchone()
+        elif not (end_conditions):
+            method = "model"
+            end_conditions = True
+        if not (result):
+            try:
+                query = f'SELECT * FROM "{schema}"."{relation}" LIMIT 1;'
+                cursor.execute(query)
+                method = "text"
+            except:
+                fail = True
+        elif not (end_conditions):
+            method = "geo"
+            end_conditions = True
+        if fail:
+            warning_message = "No relation / index / view / model named '{}' was detected.".format(
+                name
+            )
+            warnings.warn(warning_message, Warning)
+            return False
+    query = ""
+    if method == "model":
         try:
             sql = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 str_column(name).lower()
@@ -261,18 +207,22 @@ bool
         if result:
             model_type = result[0]
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop_table(name, cursor)
+                drop(name, cursor, method="table")
             elif model_type in ("CountVectorizer"):
-                drop_text_index(name, cursor)
+                drop(name, cursor, method="text")
                 sql = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(
                     str_column(name).lower()
                 )
                 cursor.execute(sql)
-                drop_table(cursor.fetchone()[0], cursor)
-            elif model_type in ("KernelDensity"):
-                drop_table(name.replace('"', "") + "_KernelDensity_Map", cursor)
-                drop_model(
-                    "{}_KernelDensity_Tree".format(name.replace('"', "")), cursor
+                drop(cursor.fetchone()[0], cursor, method="table")
+            elif model_type in ("KernelDensity",):
+                drop(
+                    name.replace('"', "") + "_KernelDensity_Map", cursor, method="table"
+                )
+                drop(
+                    "{}_KernelDensity_Tree".format(name.replace('"', "")),
+                    cursor,
+                    method="model",
                 )
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
@@ -284,148 +234,59 @@ bool
             )
             cursor.execute(sql)
             cursor.execute("COMMIT;")
-            if conn:
-                conn.close()
-            return True
         else:
-            if conn:
-                conn.close()
+            query = f"DROP MODEL {name};"
+    elif method == "table":
+        query = f"DROP TABLE {name};"
+    elif method == "view":
+        query = f"DROP VIEW {name};"
+    elif method == "geo":
+        query = f"SELECT STV_Drop_Index(USING PARAMETERS index ='{name}') OVER ();"
+    elif method == "text":
+        query = f"DROP TEXT INDEX {name};"
+    elif method == "schema":
+        query = f"DROP SCHEMA {name} CASCADE;"
+    if query:
+        try:
+            cursor.execute(query)
+            result = True
+        except:
             if raise_error:
                 raise
-            warning_message = "The model '{}' doesn't exist or can not be dropped ! Use parameter: raise_error = True to get more information.".format(
-                name
-            )
+            if method in ("geo", "text"):
+                method += " index"
+            warning_message = f"The {method} '{name}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information."
             warnings.warn(warning_message, Warning)
-            return False
-
-
-# ---#
-def drop_table(name: str, cursor=None, raise_error: bool = False):
-    """
----------------------------------------------------------------------------
-Drops the input table.
-
-Parameters
-----------
-name: str
-	Table name.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-raise_error: bool, optional
-	If the table couldn't be dropped, raises the entire error instead of
-	displaying a warning.
-
-Returns
--------
-bool
-    True if the table was dropped, False otherwise.
-	"""
-    check_types(
-        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
-    )
-    cursor, conn = check_cursor(cursor)[0:2]
-    try:
-        query = "DROP TABLE {};".format(name)
-        cursor.execute(query)
-        if conn:
-            conn.close()
-        return True
-    except:
-        if conn:
-            conn.close()
-        if raise_error:
-            raise
-        warning_message = "The table '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
-        )
-        warnings.warn(warning_message, Warning)
-        return False
-
-
-# ---#
-def drop_text_index(name: str, cursor=None, raise_error: bool = False):
-    """
----------------------------------------------------------------------------
-Drops the input text index.
-
-Parameters
-----------
-name: str
-	Text index name.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-raise_error: bool, optional
-	If the text index couldn't be dropped, raises the entire error instead 
-	of displaying a warning.
-
-Returns
--------
-bool
-    True if the text index was dropped, False otherwise.
-	"""
-    check_types(
-        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
-    )
-    cursor, conn = check_cursor(cursor)[0:2]
-    try:
-        query = "DROP TEXT INDEX {};".format(name)
-        cursor.execute(query)
-        if conn:
-            conn.close()
-        return True
-    except:
-        if conn:
-            conn.close()
-        if raise_error:
-            raise
-        warning_message = "The text index '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
-        )
-        warnings.warn(warning_message, Warning)
-        return False
-
-
-# ---#
-def drop_view(name: str, cursor=None, raise_error: bool = False):
-    """
----------------------------------------------------------------------------
-Drops the input view.
-
-Parameters
-----------
-name: str
-	View name.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-raise_error: bool, optional
-	If the view couldn't be dropped, raises the entire error instead of 
-	displaying a warning.
-
-Returns
--------
-bool
-    True if the view was dropped, False otherwise.
-	"""
-    check_types(
-        [("name", name, [str],), ("raise_error", raise_error, [bool],),]
-    )
-    cursor, conn = check_cursor(cursor)[0:2]
-    try:
-        query = "DROP VIEW {};".format(name)
-        cursor.execute(query)
-        if conn:
-            conn.close()
-        return True
-    except:
-        if conn:
-            conn.close()
-        if raise_error:
-            raise
-        warning_message = "The view '{}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information.".format(
-            name
-        )
-        warnings.warn(warning_message, Warning)
-        return False
+            result = False
+    elif method == "temp":
+        sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+        cursor.execute(sql)
+        all_tables = cursor.fetchall()
+        for elem in all_tables:
+            table = '"{}"."{}"'.format(
+                elem[0].replace('"', '""'), elem[1].replace('"', '""')
+            )
+            with warnings.catch_warnings(record=True) as w:
+                drop(
+                    table, cursor, method="table",
+                )
+        sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+        cursor.execute(sql)
+        all_views = cursor.fetchall()
+        for elem in all_views:
+            view = '"{}"."{}"'.format(
+                elem[0].replace('"', '""'), elem[1].replace('"', '""')
+            )
+            with warnings.catch_warnings(record=True) as w:
+                drop(
+                    view, cursor, method="view",
+                )
+        result = True
+    else:
+        result = True
+    if conn:
+        conn.close()
+    return result
 
 
 # ---#
@@ -468,6 +329,8 @@ def readSQL(
         cursor = conn.cursor()
     elif not (cursor):
         cursor = vertica_conn(dsn).cursor()
+    while len(query) > 0 and query[-1] in (";", ' '):
+        query = query[:-1]
     cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
     query_on_init = verticapy.options["query_on"]
@@ -589,494 +452,6 @@ list of tuples
     if conn:
         conn.close()
     return ctype
-
-
-# ---#
-def load_model(name: str, cursor=None, test_relation: str = ""):
-    """
----------------------------------------------------------------------------
-Loads a Vertica model and returns the associated object.
-
-Parameters
-----------
-name: str
-	Model Name.
-cursor: DBcursor, optional
-	Vertica DB cursor.
-test_relation: str, optional
-	Relation to use to do the testing. All the methods will use this relation 
-	for the scoring. If empty, the training relation will be used as testing.
-
-Returns
--------
-model
-	The model.
-	"""
-    check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
-    cursor = check_cursor(cursor)[0]
-    try:
-        check_model(name=name, cursor=cursor)
-        raise NameError("The model '{}' doesn't exist.".format(name))
-    except:
-        pass
-    try:
-        cursor.execute(
-            "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
-            + name
-            + "', attr_name = 'call_string')"
-        )
-        info = cursor.fetchone()[0].replace("\n", " ")
-    except:
-        try:
-            cursor.execute(
-                "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
-                + name
-                + "')"
-            )
-            info = cursor.fetchone()[0].replace("\n", " ")
-            info = "kmeans(" + info.split("kmeans(")[1]
-        except:
-            try:
-                from verticapy.learn.preprocessing import Normalizer
-
-                model = Normalizer(name, cursor)
-                model.param_ = self.get_attr("details")
-                model.X = [
-                    '"' + item + '"' for item in model.param_.values["column_name"]
-                ]
-                if "avg" in model.param_.values:
-                    model.parameters["method"] = "zscore"
-                elif "max" in model.param_.values:
-                    model.parameters["method"] = "minmax"
-                else:
-                    model.parameters["method"] = "robust_zscore"
-                return model
-            except:
-                try:
-                    cursor.execute(
-                        "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = '{}'".format(
-                            str_column(name.lower())
-                        )
-                    )
-                    result = cursor.fetchall()
-                    model_save = {}
-                    for elem in result:
-                        ldic = {}
-                        try:
-                            exec("result_tmp = {}".format(elem[1]), globals(), ldic)
-                        except:
-                            exec(
-                                "result_tmp = '{}'".format(elem[1].replace("'", "''")),
-                                globals(),
-                                ldic,
-                            )
-                        result_tmp = ldic["result_tmp"]
-                        try:
-                            result_tmp = float(result_tmp)
-                        except:
-                            pass
-                        if result_tmp == None:
-                            result_tmp = "None"
-                        model_save[elem[0]] = result_tmp
-                except:
-                    raise
-                    model_save = {}
-                if not (model_save):
-                    raise NameError("The model named {} doesn't exist.".format(name))
-                if model_save["type"] == "NearestCentroid":
-                    from verticapy.learn.neighbors import NearestCentroid
-
-                    model = NearestCentroid(name, cursor, model_save["p"])
-                    model.centroids_ = tablesample(model_save["centroids"])
-                    model.classes_ = model_save["classes"]
-                elif model_save["type"] == "KNeighborsClassifier":
-                    from verticapy.learn.neighbors import KNeighborsClassifier
-
-                    model = KNeighborsClassifier(
-                        name, cursor, model_save["n_neighbors"], model_save["p"]
-                    )
-                    model.classes_ = model_save["classes"]
-                elif model_save["type"] == "KNeighborsRegressor":
-                    from verticapy.learn.neighbors import KNeighborsRegressor
-
-                    model = KNeighborsRegressor(
-                        name, cursor, model_save["n_neighbors"], model_save["p"]
-                    )
-                elif model_save["type"] == "KernelDensity":
-                    from verticapy.learn.neighbors import KernelDensity
-
-                    model = KernelDensity(
-                        name,
-                        cursor,
-                        model_save["bandwidth"],
-                        model_save["kernel"],
-                        model_save["leaf_size"],
-                    )
-                    model.map_ = tablesample(
-                        {"x": model_save["map"][0], "y": model_save["map"][1]}
-                    )
-                elif model_save["type"] == "LocalOutlierFactor":
-                    from verticapy.learn.neighbors import LocalOutlierFactor
-
-                    model = LocalOutlierFactor(
-                        name, cursor, model_save["n_neighbors"], model_save["p"]
-                    )
-                    model.n_errors_ = model_save["n_errors"]
-                elif model_save["type"] == "DBSCAN":
-                    from verticapy.learn.cluster import DBSCAN
-
-                    model = DBSCAN(
-                        name,
-                        cursor,
-                        model_save["eps"],
-                        model_save["min_samples"],
-                        model_save["p"],
-                    )
-                    model.n_cluster_ = model_save["n_cluster"]
-                    model.n_noise_ = model_save["n_noise"]
-                elif model_save["type"] == "CountVectorizer":
-                    from verticapy.learn.preprocessing import CountVectorizer
-
-                    model = CountVectorizer(
-                        name,
-                        cursor,
-                        model_save["lowercase"],
-                        model_save["max_df"],
-                        model_save["min_df"],
-                        model_save["max_features"],
-                        model_save["ignore_special"],
-                        model_save["max_text_size"],
-                    )
-                    model.vocabulary_ = model_save["vocabulary"]
-                    model.stop_words_ = model_save["stop_words"]
-                elif model_save["type"] == "SARIMAX":
-                    from verticapy.learn.tsa.models import SARIMAX
-
-                    model = SARIMAX(
-                        name,
-                        cursor,
-                        model_save["p"],
-                        model_save["d"],
-                        model_save["q"],
-                        model_save["P"],
-                        model_save["D"],
-                        model_save["Q"],
-                        model_save["s"],
-                        model_save["tol"],
-                        model_save["max_iter"],
-                        model_save["solver"],
-                        model_save["max_pik"],
-                        model_save["papprox_ma"],
-                    )
-                    model.transform_relation = model_save["transform_relation"]
-                    model.coef_ = tablesample(model_save["coef"])
-                    model.ma_avg_ = model_save["ma_avg"]
-                    if isinstance(model_save["ma_piq"], dict):
-                        model.ma_piq_ = tablesample(model_save["ma_piq"])
-                    else:
-                        model.ma_piq_ = None
-                    model.ts = model_save["ts"]
-                    model.exogenous = model_save["exogenous"]
-                    model.deploy_predict_ = model_save["deploy_predict"]
-                elif model_save["type"] == "VAR":
-                    from verticapy.learn.tsa.models import VAR
-
-                    model = VAR(
-                        name,
-                        cursor,
-                        model_save["p"],
-                        model_save["tol"],
-                        model_save["max_iter"],
-                        model_save["solver"],
-                    )
-                    model.transform_relation = model_save["transform_relation"]
-                    model.coef_ = []
-                    for i in range(len(model_save["X"])):
-                        model.coef_ += [tablesample(model_save["coef_{}".format(i)])]
-                    model.ts = model_save["ts"]
-                    model.deploy_predict_ = model_save["deploy_predict"]
-                    model.X = model_save["X"]
-                model.input_relation = model_save["input_relation"]
-                model.X = model_save["X"]
-                if model_save["type"] in (
-                    "KNeighborsRegressor",
-                    "KNeighborsClassifier",
-                    "NearestCentroid",
-                    "SARIMAX",
-                ):
-                    model.y = model_save["y"]
-                    model.test_relation = model_save["test_relation"]
-                elif model_save["type"] not in ("CountVectorizer", "VAR"):
-                    model.key_columns = model_save["key_columns"]
-                return model
-    try:
-        info = info.split("SELECT ")[1].split("(")
-    except:
-        info = info.split("(")
-    model_type = info[0].lower()
-    info = info[1].split(")")[0].replace(" ", "").split("USINGPARAMETERS")
-    if model_type == "svm_classifier":
-        parameters = "".join(info[1].split("class_weights=")[1].split("'"))
-        parameters = parameters[3 : len(parameters)].split(",")
-        del parameters[0]
-        parameters += [
-            "class_weights=" + info[1].split("class_weights=")[1].split("'")[1]
-        ]
-    elif model_type != "svd":
-        parameters = info[1].split(",")
-    if model_type != "svd":
-        parameters = [item.split("=") for item in parameters]
-        parameters_dict = {}
-        for item in parameters:
-            try:
-                parameters_dict[item[0]] = item[1]
-            except:
-                pass
-    info = info[0]
-    for elem in parameters_dict:
-        if isinstance(parameters_dict[elem], str):
-            parameters_dict[elem] = parameters_dict[elem].replace("'", "")
-    if model_type == "rf_regressor":
-        from verticapy.learn.ensemble import RandomForestRegressor
-
-        model = RandomForestRegressor(
-            name,
-            cursor,
-            int(parameters_dict["ntree"]),
-            int(parameters_dict["mtry"]),
-            int(parameters_dict["max_breadth"]),
-            float(parameters_dict["sampling_size"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["min_leaf_size"]),
-            float(parameters_dict["min_info_gain"]),
-            int(parameters_dict["nbins"]),
-        )
-    elif model_type == "rf_classifier":
-        from verticapy.learn.ensemble import RandomForestClassifier
-
-        model = RandomForestClassifier(
-            name,
-            cursor,
-            int(parameters_dict["ntree"]),
-            int(parameters_dict["mtry"]),
-            int(parameters_dict["max_breadth"]),
-            float(parameters_dict["sampling_size"]),
-            int(parameters_dict["max_depth"]),
-            int(parameters_dict["min_leaf_size"]),
-            float(parameters_dict["min_info_gain"]),
-            int(parameters_dict["nbins"]),
-        )
-    elif model_type == "logistic_reg":
-        from verticapy.learn.linear_model import LogisticRegression
-
-        model = LogisticRegression(
-            name,
-            cursor,
-            parameters_dict["regularization"],
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["lambda"]),
-            int(parameters_dict["max_iterations"]),
-            parameters_dict["optimizer"],
-            float(parameters_dict["alpha"]),
-        )
-    elif model_type == "linear_reg":
-        from verticapy.learn.linear_model import (
-            LinearRegression,
-            Lasso,
-            Ridge,
-            ElasticNet,
-        )
-
-        if parameters_dict["regularization"] == "none":
-            model = LinearRegression(
-                name,
-                cursor,
-                float(parameters_dict["epsilon"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        elif parameters_dict["regularization"] == "l1":
-            model = Lasso(
-                name,
-                cursor,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        elif parameters_dict["regularization"] == "l2":
-            model = Ridge(
-                name,
-                cursor,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-            )
-        else:
-            model = ElasticNet(
-                name,
-                cursor,
-                float(parameters_dict["epsilon"]),
-                float(parameters_dict["lambda"]),
-                int(parameters_dict["max_iterations"]),
-                parameters_dict["optimizer"],
-                float(parameters_dict["alpha"]),
-            )
-    elif model_type == "naive_bayes":
-        from verticapy.learn.naive_bayes import NaiveBayes
-
-        model = NaiveBayes(name, cursor, float(parameters_dict["alpha"]))
-    elif model_type == "svm_regressor":
-        from verticapy.learn.svm import LinearSVR
-
-        model = LinearSVR(
-            name,
-            cursor,
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["C"]),
-            True,
-            float(parameters_dict["intercept_scaling"]),
-            parameters_dict["intercept_mode"],
-            float(parameters_dict["error_tolerance"]),
-            int(parameters_dict["max_iterations"]),
-        )
-    elif model_type == "svm_classifier":
-        from verticapy.learn.svm import LinearSVC
-
-        class_weights = parameters_dict["class_weights"].split(",")
-        for idx, elem in enumerate(class_weights):
-            try:
-                class_weights[idx] = float(class_weights[idx])
-            except:
-                class_weights[idx] = None
-        model = LinearSVC(
-            name,
-            cursor,
-            float(parameters_dict["epsilon"]),
-            float(parameters_dict["C"]),
-            True,
-            float(parameters_dict["intercept_scaling"]),
-            parameters_dict["intercept_mode"],
-            class_weights,
-            int(parameters_dict["max_iterations"]),
-        )
-    elif model_type == "kmeans":
-        from verticapy.learn.cluster import KMeans
-
-        model = KMeans(
-            name,
-            cursor,
-            int(info.split(",")[-1]),
-            parameters_dict["init_method"],
-            int(parameters_dict["max_iterations"]),
-            float(parameters_dict["epsilon"]),
-        )
-        model.cluster_centers_ = model.get_attr("centers")
-        result = model.get_attr("metrics").values["metrics"][0]
-        values = {
-            "index": [
-                "Between-Cluster Sum of Squares",
-                "Total Sum of Squares",
-                "Total Within-Cluster Sum of Squares",
-                "Between-Cluster SS / Total SS",
-                "converged",
-            ]
-        }
-        values["value"] = [
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]),
-            float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            float(
-                result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]
-            ),
-            float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0])
-            / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
-            result.split("Converged: ")[1].split("\n")[0] == "True",
-        ]
-        model.metrics_ = tablesample(values)
-    elif model_type == "bisecting_kmeans":
-        from verticapy.learn.cluster import BisectingKMeans
-
-        model = BisectingKMeans(
-            name,
-            cursor,
-            int(info.split(",")[-1]),
-            int(parameters_dict["bisection_iterations"]),
-            parameters_dict["split_method"],
-            int(parameters_dict["min_divisible_cluster_size"]),
-            parameters_dict["distance_method"],
-            parameters_dict["kmeans_center_init_method"],
-            int(parameters_dict["kmeans_max_iterations"]),
-            float(parameters_dict["kmeans_epsilon"]),
-        )
-        model.metrics_ = model.get_attr("Metrics")
-        model.cluster_centers_ = model.get_attr("BKTree")
-    elif model_type == "pca":
-        from verticapy.learn.decomposition import PCA
-
-        model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
-        model.components_ = model.get_attr("principal_components")
-        model.explained_variance_ = model.get_attr("singular_values")
-        model.mean_ = model.get_attr("columns")
-    elif model_type == "svd":
-        from verticapy.learn.decomposition import SVD
-
-        model = SVD(name, cursor)
-        model.singular_values_ = model.get_attr("right_singular_vectors")
-        model.explained_variance_ = model.get_attr("singular_values")
-    elif model_type == "one_hot_encoder_fit":
-        from verticapy.learn.preprocessing import OneHotEncoder
-
-        model = OneHotEncoder(name, cursor)
-        try:
-            model.param_ = to_tablesample(
-                query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                    model.name, model.name
-                ),
-                cursor=model.cursor,
-            )
-        except:
-            try:
-                model.param_ = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
-                        model.name
-                    ),
-                    cursor=model.cursor,
-                )
-            except:
-                model.param_ = model.get_attr("varchar_categories")
-    model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
-    model.test_relation = test_relation if (test_relation) else model.input_relation
-    if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
-        model.X = info.split(",")[3 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-        model.y = info.split(",")[2].replace("'", "").replace("\\", "")
-    elif model_type in (
-        "svd",
-        "pca",
-        "one_hot_encoder_fit",
-        "normalizer",
-        "kmeans",
-        "bisectingkmeans",
-    ):
-        model.X = info.split(",")[2 : len(info.split(","))]
-        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
-    if model_type in ("naive_bayes", "rf_classifier"):
-        try:
-            cursor.execute(
-                "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                    model.y, model.input_relation, model.y
-                )
-            )
-            classes = cursor.fetchall()
-            model.classes_ = [item[0] for item in classes]
-        except:
-            model.classes_ = None
-    elif model_type in ("svm_classifier", "logistic_reg"):
-        model.classes_ = [0, 1]
-    if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
-        model.coef_ = model.get_attr("details")
-    return model
 
 
 # ---#
@@ -1775,6 +1150,8 @@ def set_option(option: str, value: (bool, int, str) = None):
             verticapy.options["percent_bar"] = value
     elif option == "random_state":
         check_types([("value", value, [int])])
+        if value < 0:
+            raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int) or value == None:
             verticapy.options["random_state"] = value
     elif option == "sql_on":
@@ -2009,8 +1386,7 @@ The tablesample attributes are the same than the parameters.
         values = {}
         for item in columns:
             values[item[0]] = item[1 : len(item)]
-        self.values = values
-        return self
+        return tablesample(values, self.dtype, self.count, self.offset, self.percent,)
 
     # ---#
     def to_list(self):
@@ -2454,7 +1830,7 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 1:
         message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic(db_cursor)\n```"
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.learn.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation", cursor = cur)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
@@ -2485,3 +1861,48 @@ VERTICAPY Interactive Help (FAQ).
             "badr.ouali@vertica.com",
         )
     display(Markdown(message)) if (isnotebook()) else print(message)
+
+
+# DEPRECATED
+#########################
+def drop_table(
+    name: str, cursor=None, raise_error: bool = False,
+):
+    warnings.warn(
+        "utilities.drop_table has been deprecated. It will be removed in v0.5.1. Use utilities.drop with parameter 'method' set to 'table' instead",
+        Warning,
+    )
+    return drop(name, cursor, raise_error, "table")
+
+
+def drop_view(
+    name: str, cursor=None, raise_error: bool = False,
+):
+    warnings.warn(
+        "utilities.drop_view has been deprecated. It will be removed in v0.5.1. Use utilities.drop_view with parameter 'method' set to 'view' instead",
+        Warning,
+    )
+    return drop(name, cursor, raise_error, "view")
+
+
+def drop_text_index(
+    name: str, cursor=None, raise_error: bool = False,
+):
+    warnings.warn(
+        "utilities.drop_text_index has been deprecated. It will be removed in v0.5.1. Use utilities.drop_text_index with parameter 'method' set to 'text' instead",
+        Warning,
+    )
+    return drop(name, cursor, raise_error, "text")
+
+
+def drop_model(
+    name: str, cursor=None, raise_error: bool = False,
+):
+    warnings.warn(
+        "utilities.drop_model has been deprecated. It will be removed in v0.5.1. Use utilities.drop with parameter 'method' set to 'model' instead",
+        Warning,
+    )
+    return drop(name, cursor, raise_error, "model")
+
+
+#########################

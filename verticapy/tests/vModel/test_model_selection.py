@@ -11,14 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame
+import pytest, warnings, os, verticapy
+from verticapy import vDataFrame, set_option, vertica_conn
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
 from verticapy.learn.naive_bayes import NaiveBayes
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 set_option("random_state", 0)
@@ -26,24 +24,24 @@ set_option("random_state", 0)
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.winequality", cursor=base.cursor,
         )
 
@@ -118,6 +116,7 @@ class TestModelSelection:
             n_cluster=(1, 5),
             init="kmeanspp",
         )
+        plt.close('all')
         assert result["Within-Cluster SS"][0] == pytest.approx(0.0)
         assert len(result["Within-Cluster SS"]) == 4
         result2 = elbow(
@@ -129,7 +128,7 @@ class TestModelSelection:
         )
         assert result2["Within-Cluster SS"][0] == pytest.approx(0.0)
         assert len(result2["Within-Cluster SS"]) == 4
-        plt.close()
+        plt.close('all')
 
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
@@ -165,7 +164,23 @@ class TestModelSelection:
         assert result["lift"][0] == pytest.approx(3.53927343297811)
         assert len(result["lift"]) == 31
         model.drop()
-        plt.close()
+        plt.close('all')
+
+    def test_plot_acf_pacf(self, amazon_vd):
+        result = plot_acf_pacf(amazon_vd, ts="date", by=["state"], column="number", p=3)
+        plt.close('all')
+        assert result["acf"] == [
+            pytest.approx(1.0),
+            pytest.approx(0.673),
+            pytest.approx(0.349),
+            pytest.approx(0.165),
+        ]
+        assert result["pacf"] == [
+            pytest.approx(1.0),
+            pytest.approx(0.672667529541858),
+            pytest.approx(-0.188727403801382),
+            pytest.approx(0.022206688265849),
+        ]
 
     def test_prc_curve(self, winequality_vd):
         model = LogisticRegression(
@@ -186,7 +201,7 @@ class TestModelSelection:
         assert result["precision"][1] == pytest.approx(0.196552254886871)
         assert len(result["precision"]) == 30
         model.drop()
-        plt.close()
+        plt.close('all')
 
     def test_roc_curve(self, winequality_vd):
         model = LogisticRegression(
@@ -207,7 +222,7 @@ class TestModelSelection:
         assert result["true_positive"][2] == pytest.approx(0.945967110415035)
         assert len(result["true_positive"]) == 31
         model.drop()
-        plt.close()
+        plt.close('all')
 
     def test_validation_curve(self, winequality_vd):
         result = validation_curve(
@@ -223,7 +238,7 @@ class TestModelSelection:
             cv=3,
             ax=None,
         )
+        plt.close('all')
         assert len(result["tol"]) == 3
         assert len(result["test_score"]) == 3
         assert len(result.values) == 7
-        plt.close()

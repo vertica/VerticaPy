@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'verticapy',  
-    version = '0.4.2',
+    version = '0.5.0',
     author = "Badr Ouali",
     author_email = "badr.ouali@vertica.com",
     url = "https://github.com/vertica/VerticaPy",
@@ -53,7 +53,7 @@ setuptools.setup(
                'shap>=0.36.0',
                'pandas>=0.23.0',]
     },
-    package_data = {'': ['*.csv']},
+    package_data = {'': ['*.csv', '*.json']},
     classifiers = [
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",

@@ -11,23 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.cluster import KMeans
-from verticapy import drop_table
-
-from verticapy import set_option
+from verticapy import drop, set_option, vertica_conn
+import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
+
+@pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -122,18 +130,13 @@ class TestKMeans:
         assert iris_copy["pred"].mode() == 1
         assert iris_copy["pred"].distinct() == [0, 1, 2]
 
-    def test_set_cursor(self, base):
-        model_test = KMeans("kmeans_cursor_test", cursor=base.cursor, init="kmeanspp")
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.iris", ["SepalLengthCm", "SepalWidthCm"])
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'kmeans_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "kmeans_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 20})
@@ -172,10 +175,11 @@ class TestKMeans:
         assert base.cursor.fetchone()[0] == "random_test"
         model_test_random.drop()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_get_plot(self):
-        pass
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        pass
+    def test_get_plot(self, base, winequality_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = KMeans("model_test_plot", cursor=base.cursor)
+        model_test.fit(winequality_vd, ["alcohol", "quality"])
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 16
+        plt.close('all')
+        model_test.drop()

@@ -151,7 +151,7 @@ def category_from_type(ctype: str = ""):
 def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
-    from verticapy.connections.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
         if not (cursor) or vdf_cursor:
@@ -347,6 +347,19 @@ def default_model_parameters(model_type: str):
             "min_samples_leaf": 1,
             "min_info_gain": 0.0,
             "nbins": 32,
+        }
+    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
+        return {
+            "max_ntree": 10,
+            "max_depth": 5,
+            "nbins": 32,
+            "objective": "squarederror",
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "learning_rate": 0.1,
+            "min_split_loss": 0,
+            "weight_reg": 0,
+            "sampling_size": 1,
         }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}
@@ -563,7 +576,7 @@ def insert_verticapy_schema(
     cursor.execute(sql)
     result = cursor.fetchone()
     if not (result):
-        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and drop_verticapy_schema to drop it if it is corrupted."
+        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
         warnings.warn(warning_message, Warning)
     else:
         size = sys.getsizeof(model_save)

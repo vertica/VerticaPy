@@ -211,6 +211,8 @@ metric: str/list, optional
         recall      : Recall = tp / (tp + fn)
         specificity : Specificity = tn / (tn + fp)
     For Regression:
+        aic    : Akaike’s Information Criterion
+        bic    : Bayesian Information Criterion
         max    : Max Error
         mae    : Mean Absolute Error
         median : Median Absolute Error
@@ -256,6 +258,7 @@ tablesample
         "LinearSVR",
         "LinearRegression",
         "KNeighborsRegressor",
+        "XGBoostRegressor",
     ):
         all_metrics = [
             "explained_variance",
@@ -266,6 +269,8 @@ tablesample
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
     elif estimator.type in (
         "NaiveBayes",
@@ -274,6 +279,7 @@ tablesample
         "LogisticRegression",
         "KNeighborsClassifier",
         "NearestCentroid",
+        "XGBoostClassifier",
     ):
         all_metrics = [
             "auc",
@@ -332,6 +338,7 @@ tablesample
             "LinearSVR",
             "LinearRegression",
             "KNeighborsRegressor",
+            "XGBoostRegressor",
         ):
             if metric == "all":
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
@@ -679,6 +686,7 @@ tablesample
             "LinearSVR",
             "LinearRegression",
             "KNeighborsRegressor",
+            "XGBoostRegressor",
         )
         and metric == "auto"
     ):
@@ -742,7 +750,17 @@ tablesample
             else:
                 raise (e)
     reverse = True
-    if metric in ["logloss", "max", "mae", "median", "mse", "msle", "rmse"]:
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+    ]:
         reverse = False
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
@@ -879,6 +897,124 @@ tablesample
             "lift": lift,
         },
     )
+
+
+# ---#
+def plot_acf_pacf(
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: list = [],
+    p: (int, list) = 15,
+    **style_kwds,
+):
+    """
+---------------------------------------------------------------------------
+Draws the ACF and PACF Charts.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+column: str
+    Response column.
+ts: str
+    vcolumn used as timeline. It will be to use to order the data. 
+    It can be a numerical or type date like (date, datetime, timestamp...) 
+    vcolumn.
+by: list, optional
+    vcolumns used in the partition.
+p: int/list, optional
+    Int equals to the maximum number of lag to consider during the computation
+    or List of the different lags to include during the computation.
+    p must be positive or a list of positive integers.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [
+            ("column", column, [str],),
+            ("ts", ts, [str],),
+            ("by", by, [list],),
+            ("p", p, [int, float],),
+            ("vdf", vdf, [vDataFrame,],),
+        ]
+    )
+    tmp_style = {}
+    for elem in style_kwds:
+        if elem not in ("color", "colors"):
+            tmp_style[elem] = style_kwds[elem]
+    if "color" in style_kwds:
+        color = style_kwds["color"]
+    else:
+        color = gen_colors()[0]
+    columns_check([column, ts] + by, vdf)
+    by = vdf_columns_names(by, vdf)
+    column, ts = vdf_columns_names([column, ts], vdf)
+    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
+    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
+    result = tablesample(
+        {
+            "index": [i for i in range(0, len(acf.values["value"]))],
+            "acf": acf.values["value"],
+            "pacf": pacf.values["value"],
+            "confidence": pacf.values["confidence"],
+        },
+    )
+    fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
+    plt.rcParams["axes.facecolor"] = "#FCFCFC"
+    ax1 = fig.add_subplot(211)
+    x, y, confidence = (
+        result.values["index"],
+        result.values["acf"],
+        result.values["confidence"],
+    )
+    plt.xlim(-1, x[-1] + 1)
+    ax1.bar(
+        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
+    )
+    param = {
+        "s": 90,
+        "marker": "o",
+        "facecolors": color,
+        "edgecolors": "black",
+        "zorder": 2,
+    }
+    ax1.scatter(
+        x, y, **updated_dict(param, tmp_style,),
+    )
+    ax1.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax1.set_title("Autocorrelation")
+    y = result.values["pacf"]
+    ax2 = fig.add_subplot(212)
+    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
+    ax2.scatter(
+        x, y, **updated_dict(param, tmp_style,),
+    )
+    ax2.plot(
+        [-1] + x + [x[-1] + 1],
+        [0 for elem in range(len(x) + 2)],
+        color=color,
+        zorder=0,
+    )
+    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
+    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
+    ax2.set_title("Partial Autocorrelation")
+    plt.show()
+    return result
 
 
 # ---#

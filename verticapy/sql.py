@@ -57,7 +57,7 @@
 #
 # ---#
 def sql(line, cell=""):
-    from verticapy.connections.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display

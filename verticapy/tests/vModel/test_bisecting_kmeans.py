@@ -11,14 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.cluster import BisectingKMeans
-from verticapy import vDataFrame, drop_table
-
-from verticapy import set_option
+from verticapy import vDataFrame, drop, set_option, vertica_conn
+import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
+@pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    drop(name="public.winequality", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
 def bsk_data_vd(base):
@@ -41,7 +47,7 @@ def bsk_data_vd(base):
     bsk_data = vDataFrame(input_relation="public.bsk_data", cursor=base.cursor)
     yield bsk_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.bsk_data", cursor=base.cursor)
+        drop(name="public.bsk_data", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -129,10 +135,6 @@ class TestBisectingKMeans:
             "distance_method": "euclidean",
         }
 
-    @pytest.mark.skip(reason="not yet available")
-    def test_to_sklearn(self, model):
-        pass
-
     def test_get_predict(self, bsk_data_vd, model):
         bsk_data_copy = bsk_data_vd.copy()
 
@@ -140,18 +142,13 @@ class TestBisectingKMeans:
 
         assert len(bsk_data_copy["pred"].distinct()) == 3
 
-    def test_set_cursor(self, base):
-        model_test = BisectingKMeans("bsk_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'bsk_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "bsk_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn("vp_test_config",
+                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 200})
@@ -192,6 +189,15 @@ class TestBisectingKMeans:
         )
         model_test_pseudo.drop()
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_get_plot(self):
-        pass
+    def test_get_plot(self, base, winequality_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = BisectingKMeans("model_test_plot", cursor=base.cursor)
+        model_test.fit(winequality_vd, ["alcohol", "quality"])
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 16
+        plt.close('all')
+        model_test.drop()
+
+    def test_plot_tree(self, model):
+        result = model.plot_tree()
+        assert result.by_attr()[0:3] == "[0]"

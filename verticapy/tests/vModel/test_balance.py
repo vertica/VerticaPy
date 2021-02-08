@@ -13,10 +13,8 @@
 
 import pytest, warnings
 from verticapy.learn.preprocessing import Balance
-from verticapy import drop_table
+from verticapy import drop_table, set_option
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 

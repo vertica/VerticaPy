@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings
-from verticapy import drop_table, set_option, str_sql
+from verticapy import drop, set_option, str_sql
 import verticapy.stats as st
 
 set_option("print_info", False)
@@ -20,29 +20,189 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
 
 class TestStats:
+    def test_adfuller(self, amazon_vd):
+        # testing without trend
+        result = st.adfuller(
+            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=False
+        )
+        assert result["value"][0] == pytest.approx(-0.4059507552046538, 1e-2)
+        assert result["value"][1] == pytest.approx(0.684795156687264, 1e-2)
+        assert result["value"][-1] == False
+
+        # testing with trend
+        result = st.adfuller(
+            amazon_vd, column="number", ts="date", by=["state"], p=40, with_trend=True
+        )
+        assert result["value"][0] == pytest.approx(-0.4081159118011171, 1e-2)
+        assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
+        assert result["value"][-1] == False
+
+    def test_durbin_watson(self, amazon_vd):
+        result = st.durbin_watson(amazon_vd, eps="number", ts="date", by=["state"])
+        assert result == pytest.approx(0.583991056156811, 1e-2)
+
+    def test_endogtest(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = st.endogtest(result, eps="number", X=["lag_number"])
+        assert result["value"] == [
+            pytest.approx(110.77204182524278),
+            pytest.approx(6.638132056570419e-26),
+            pytest.approx(204.73673827671277),
+            pytest.approx(6.836198697261425e-34),
+        ]
+
+    def test_het_arch(self, amazon_vd):
+        result = st.het_arch(amazon_vd, eps="number", ts="date", by=["state"], p=2)
+        assert result["value"] == [
+            pytest.approx(883.1042774059952),
+            pytest.approx(1.7232277858576802e-192),
+            pytest.approx(511.3347213420665),
+            pytest.approx(7.463757606288815e-207),
+        ]
+
+    def test_het_breuschpagan(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = st.het_breuschpagan(result, eps="number", X=["lag_number"])
+        assert result["value"] == [
+            pytest.approx(68.30346484950417),
+            pytest.approx(1.4017446778018072e-16),
+            pytest.approx(94.83450355369129),
+            pytest.approx(4.572276908758215e-19),
+        ]
+
+    def test_het_goldfeldquandt(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = st.het_goldfeldquandt(result, y="number", X=["lag_number"])
+        assert result["value"] == [
+            pytest.approx(0.0331426182368922),
+            pytest.approx(0.9999999999999999),
+        ]
+
+    def test_het_white(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = st.het_white(result, eps="number", X=["lag_number"])
+        assert result["value"] == [
+            pytest.approx(72.93515335650999),
+            pytest.approx(1.3398039866815678e-17),
+            pytest.approx(104.08964747730063),
+            pytest.approx(1.7004013245871353e-20),
+        ]
+
+    def test_jarque_bera(self, amazon_vd):
+        result = st.jarque_bera(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(930829.520860999, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+        assert result["value"][-1] == False
+
+    def test_kurtosistest(self, amazon_vd):
+        result = st.kurtosistest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(47.31605467852915, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+
+    def test_normaltest(self, amazon_vd):
+        result = st.normaltest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(7645.980976250067, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+
+    def test_ljungbox(self, amazon_vd):
+        # testing Ljung–Box
+        result = st.ljungbox(
+            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=False
+        )
+        assert result["Serial Correlation"][-1] == True
+        assert result["p_value"][-1] == pytest.approx(0.0)
+        assert result["Ljung–Box Test Statistic"][-1] == pytest.approx(
+            40184.55076431489, 1e-2
+        )
+
+        # testing Box-Pierce
+        result = st.ljungbox(
+            amazon_vd, column="number", ts="date", by=["state"], p=40, box_pierce=True
+        )
+        assert result["Serial Correlation"][-1] == True
+        assert result["p_value"][-1] == pytest.approx(0.0)
+        assert result["Box-Pierce Test Statistic"][-1] == pytest.approx(
+            40053.87251600001, 1e-2
+        )
+
+    def test_mkt(self, amazon_vd):
+        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        result = st.mkt(result, column="number", ts="date")
+        assert result["value"][0] == pytest.approx(2.579654773618437, 1e-2)
+        assert result["value"][1] == pytest.approx(3188.0, 1e-2)
+        assert result["value"][2] == pytest.approx(1235.43662996799, 1e-2)
+        assert result["value"][3] == pytest.approx(0.009889912917327177, 1e-2)
+        assert result["value"][4] == True
+        assert result["value"][5] == "increasing"
+
+    def test_skewtest(self, amazon_vd):
+        result = st.skewtest(amazon_vd, column="number")
+        assert result["value"][0] == pytest.approx(73.53347500226347, 1e-2)
+        assert result["value"][1] == pytest.approx(0.0, 1e-2)
+
+    def test_variance_inflation_factor(self, titanic_vd):
+        result = st.variance_inflation_factor(
+            titanic_vd, ["pclass", "survived", "age", "fare"]
+        )
+        assert result["VIF"][0] == pytest.approx(1.8761429731878563, 1e-2)
+        assert result["VIF"][1] == pytest.approx(1.1859478232661875, 1e-2)
+        assert result["VIF"][2] == pytest.approx(1.250542149908016, 1e-2)
+        assert result["VIF"][3] == pytest.approx(1.4940557668701793, 1e-2)
+
+    def test_edit_distance(self, titanic_vd):
+        assert (
+            str(st.edit_distance(titanic_vd["name"], "Laurent"))
+            == "EDIT_DISTANCE(\"name\", 'Laurent')"
+        )
+
+    def test_soundex(self, titanic_vd):
+        assert str(st.soundex(titanic_vd["name"])) == 'SOUNDEX("name")'
+
+    def test_soundex_matches(self, titanic_vd):
+        assert (
+            str(st.soundex_matches(titanic_vd["name"], "Laurent"))
+            == "SOUNDEX_MATCHES(\"name\", 'Laurent')"
+        )
+
+    def test_regexp_count(self, titanic_vd):
+        assert (
+            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
+        )
+
+    def test_regexp_count(self, titanic_vd):
+        assert (
+            str(st.regexp_count(titanic_vd["name"], "([A-Za-z])+\\. "))
+            == "REGEXP_COUNT(\"name\", '([A-Za-z])+\\. ', 1)"
+        )
+
     def test_regexp_instr(self, titanic_vd):
         assert (
             str(st.regexp_instr(titanic_vd["name"], "([A-Za-z])+\\. "))

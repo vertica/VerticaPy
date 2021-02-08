@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, datetime, warnings
-from verticapy import vDataFrame, drop_table, create_verticapy_schema
+from verticapy import vDataFrame, drop, create_verticapy_schema
 import matplotlib.pyplot as plt
 
 from verticapy import set_option
@@ -22,46 +22,46 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
-    drop_table(
+    drop(
         name="public.amazon", cursor=base.cursor,
     )
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
-    drop_table(
+    drop(
         name="public.iris", cursor=base.cursor,
     )
 
 
 @pytest.fixture(scope="module")
 def world_vd(base):
-    from verticapy.learn.datasets import load_world
+    from verticapy.datasets import load_world
 
     cities = load_world(cursor=base.cursor)
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.world", cursor=base.cursor,
         )
 
@@ -76,7 +76,7 @@ class TestvDFPlot:
             )
             == 12
         )
-        plt.close()
+        plt.close('all')
         assert (
             len(
                 amazon_vd.pivot("date", "state", "number")
@@ -85,7 +85,7 @@ class TestvDFPlot:
             )
             == 12
         )
-        plt.close()
+        plt.close('all')
 
     def test_vDF_bar(self, titanic_vd):
         # testing vDataFrame[].bar
@@ -98,7 +98,7 @@ class TestvDFPlot:
             0.12236628849270664
         )
         assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
-        plt.close()
+        plt.close('all')
 
         # method=sum of=survived and bins=5
         result2 = titanic_vd["fare"].bar(method="sum", of="survived", bins=5)
@@ -109,7 +109,7 @@ class TestvDFPlot:
             34
         )
         assert result2.get_yticks()[1] == pytest.approx(102.46583999999999)
-        plt.close()
+        plt.close('all')
 
         # testing vDataFrame.bar
         # auto & stacked
@@ -126,7 +126,7 @@ class TestvDFPlot:
             assert result3.get_default_bbox_extra_artists()[
                 3
             ].get_width() == pytest.approx(77.9583)
-            plt.close()
+            plt.close('all')
         # fully_stacked
         result4 = titanic_vd.bar(
             columns=["pclass", "survived"], hist_type="fully_stacked"
@@ -137,7 +137,7 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[3].get_width() == pytest.approx(
             0.6121794871794872
         )
-        plt.close()
+        plt.close('all')
         # pyramid
         result5 = titanic_vd.bar(columns=["pclass", "survived"], hist_type="pyramid")
         assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
@@ -156,7 +156,7 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[1].get_data()[0][
             0
         ] == pytest.approx(36.25)
-        plt.close()
+        plt.close('all')
 
         # testing vDataFrame.boxplot
         result = titanic_vd.boxplot(columns=["age", "fare"])
@@ -166,7 +166,7 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[6].get_data()[1][
             1
         ] == pytest.approx(512.3292)
-        plt.close()
+        plt.close('all')
 
     def test_vDF_bubble(self, iris_vd):
         # testing vDataFrame.bubble
@@ -176,7 +176,7 @@ class TestvDFPlot:
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
-        plt.close()
+        plt.close('all')
         # testing vDataFrame.scatter using parameter catcol
         result2 = iris_vd.bubble(
             columns=["PetalLengthCm", "SepalLengthCm"],
@@ -186,7 +186,7 @@ class TestvDFPlot:
         result2 = result2.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result2.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
-        plt.close()
+        plt.close('all')
 
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
@@ -197,12 +197,12 @@ class TestvDFPlot:
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
-            plt.close()
+            plt.close('all')
         # testing vDataFrame.density
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd.density(kernel=kernel, nbins=20)
             assert max(result.get_default_bbox_extra_artists()[5].get_data()[1]) < 0.37
-            plt.close()
+            plt.close('all')
 
     def test_vDF_geo_plot(self, world_vd):
         assert (
@@ -213,7 +213,7 @@ class TestvDFPlot:
             )
             == 8
         )
-        plt.close()
+        plt.close('all')
 
     @pytest.mark.skip(reason="test not implemented")
     def test_vDF_hchart(self):
@@ -227,7 +227,7 @@ class TestvDFPlot:
             h=(1, 1),
         )
         assert result.get_default_bbox_extra_artists()[-2].get_size() == (5, 4)
-        plt.close()
+        plt.close('all')
 
     def test_vDF_hexbin(self, titanic_vd):
         result = titanic_vd.hexbin(columns=["age", "fare"], method="avg", of="survived")
@@ -238,7 +238,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result.get_offsets()]) == pytest.approx(
             512.3292, 1e-2
         )
-        plt.close()
+        plt.close('all')
 
     def test_vDF_hist(self, titanic_vd):
         # testing vDataFrame[].hist
@@ -251,7 +251,7 @@ class TestvDFPlot:
             0.029983792544570502
         )
         assert result.get_xticks()[1] == pytest.approx(7.24272727)
-        plt.close()
+        plt.close('all')
 
         # method=avg of=survived and h=15
         result2 = titanic_vd["age"].hist(method="avg", of="survived", h=15)
@@ -262,7 +262,7 @@ class TestvDFPlot:
             1
         ].get_height() == pytest.approx(0.354838709677419)
         assert result2.get_xticks()[1] == pytest.approx(15)
-        plt.close()
+        plt.close('all')
 
         # testing vDataFrame.hist
         # auto & stacked
@@ -279,7 +279,7 @@ class TestvDFPlot:
             assert result3.get_default_bbox_extra_artists()[
                 3
             ].get_height() == pytest.approx(0.325581395348837)
-            plt.close()
+            plt.close('all')
         # multi
         result4 = titanic_vd.hist(columns=["fare", "age"], hist_type="multi")
         assert result4.get_default_bbox_extra_artists()[
@@ -288,7 +288,7 @@ class TestvDFPlot:
         assert result4.get_default_bbox_extra_artists()[
             1
         ].get_height() == pytest.approx(0.4327390599675851)
-        plt.close()
+        plt.close('all')
 
     def test_vDF_pie(self, titanic_vd):
         # testing vDataFrame[].pie
@@ -297,22 +297,22 @@ class TestvDFPlot:
         assert float(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(0.227753)
-        plt.close()
+        plt.close('all')
         # testing vDataFrame.pie
         result = titanic_vd.pie(["sex", "pclass"])
         assert result.get_default_bbox_extra_artists()[9].get_text() == "11.3%"
-        plt.close()
+        plt.close('all')
         # testing vDataFrame[].pie - donut
         result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="donut")
         assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
         assert int(
             result.get_default_bbox_extra_artists()[7].get_text()
         ) == pytest.approx(302)
-        plt.close()
+        plt.close('all')
         # testing vDataFrame[].pie - rose
         result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="rose")
         assert len(result.get_default_bbox_extra_artists()) == 8
-        plt.close()
+        plt.close('all')
 
     def test_vDF_pivot_table(self, titanic_vd):
         result = titanic_vd.pivot_table(
@@ -325,14 +325,14 @@ class TestvDFPlot:
         assert result[2][1] == pytest.approx(0.875)
         assert result[2][2] == pytest.approx(0.375)
         assert len(result[1]) == 12
-        plt.close()
+        plt.close('all')
 
     def test_vDF_outliers_plot(self, titanic_vd):
         assert (
             len(titanic_vd.outliers_plot(["fare"]).get_default_bbox_extra_artists())
             == 24
         )
-        plt.close()
+        plt.close('all')
         assert (
             len(
                 titanic_vd.outliers_plot(
@@ -341,14 +341,14 @@ class TestvDFPlot:
             )
             == 25
         )
-        plt.close()
+        plt.close('all')
 
     def test_vDF_plot(self, amazon_vd):
         # testing vDataFrame[].plot
         result = amazon_vd["number"].plot(ts="date", by="state")
         result = result.get_default_bbox_extra_artists()[0].get_data()
         assert len(result[0]) == len(result[1]) == pytest.approx(239, 1e-2)
-        plt.close()
+        plt.close('all')
 
         # testing vDataFrame.plot
         result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
@@ -358,7 +358,7 @@ class TestvDFPlot:
         assert result[0][-1] == datetime.date(2017, 11, 1)
         assert result[1][0] == pytest.approx(0.0)
         assert result[1][-1] == pytest.approx(651.2962963)
-        plt.close()
+        plt.close('all')
 
     def test_vDF_range_plot(self, amazon_vd):
         assert (
@@ -369,7 +369,7 @@ class TestvDFPlot:
             )
             == 10
         )
-        plt.close()
+        plt.close('all')
         assert (
             len(
                 amazon_vd["number"]
@@ -378,7 +378,7 @@ class TestvDFPlot:
             )
             == 10
         )
-        plt.close()
+        plt.close('all')
 
     def test_vDF_scatter(self, iris_vd):
         # testing vDataFrame.scatter
@@ -386,14 +386,14 @@ class TestvDFPlot:
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result.get_offsets().data]) == 7.9
-        plt.close()
+        plt.close('all')
         result2 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"]
         )
         result2 = result2.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result2.get_offsets().data]) == 6.9
         assert max([elem[1] for elem in result2.get_offsets().data]) == 7.9
-        plt.close()
+        plt.close('all')
 
         # testing vDataFrame.scatter using parameter catcol
         result3 = iris_vd.scatter(
@@ -402,19 +402,19 @@ class TestvDFPlot:
         result3 = result3.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
-        plt.close()
+        plt.close('all')
         result4 = iris_vd.scatter(
             columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species"
         )
         result4 = result4.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
-        plt.close()
+        plt.close('all')
 
     def test_vDF_scatter_matrix(self, iris_vd):
         result = iris_vd.scatter_matrix()
         assert len(result) == 4
-        plt.close()
+        plt.close('all')
 
     def test_vDF_spider(self, titanic_vd):
         result = titanic_vd["pclass"].spider("survived")

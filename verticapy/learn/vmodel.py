@@ -60,6 +60,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.learn.metrics import *
+from verticapy.learn.tools import *
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -218,8 +219,8 @@ Main Class for Vertica Model
 	Drops the model from the Vertica DB.
 		"""
         with warnings.catch_warnings(record=True) as w:
-            drop_model(
-                self.name, self.cursor,
+            drop(
+                self.name, self.cursor, method="model",
             )
 
     # ---#
@@ -423,6 +424,10 @@ Main Class for Vertica Model
             return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
         elif self.type == "RandomForestClassifier":
             return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
+        elif self.type in ("XGBoostRegressor",):
+            return ("XGB_REGRESSOR", "PREDICT_XGB_REGRESSOR", "")
+        elif self.type == "XGBoostClassifier":
+            return ("XGB_CLASSIFIER", "PREDICT_XGB_CLASSIFIER", "")
         elif self.type == "NaiveBayes":
             return ("NAIVE_BAYES", "PREDICT_NAIVE_BAYES", "")
         elif self.type == "KMeans":
@@ -1018,6 +1023,125 @@ Main Class for Vertica Model
                 model_parameters["min_info_gain"] = default_parameters["min_info_gain"]
             else:
                 model_parameters["min_info_gain"] = self.parameters["min_info_gain"]
+            if "nbins" in parameters:
+                check_types([("nbins", parameters["nbins"], [int, float],)])
+                assert 2 <= parameters["nbins"] <= 1000, ParameterError(
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
+                )
+                model_parameters["nbins"] = parameters["nbins"]
+            elif "nbins" not in self.parameters:
+                model_parameters["nbins"] = default_parameters["nbins"]
+            else:
+                model_parameters["nbins"] = self.parameters["nbins"]
+        elif self.type in ("XGBoostClassifier", "XGBoostRegressor"):
+            if "max_ntree" in parameters:
+                check_types([("max_ntree", parameters["max_ntree"], [int],)])
+                assert 0 <= parameters["max_ntree"] <= 1000, ParameterError(
+                    "Incorrect parameter 'max_ntree'.\nThe maximum number of trees must be lesser than 1000."
+                )
+                model_parameters["max_ntree"] = parameters["max_ntree"]
+            elif "max_ntree" not in self.parameters:
+                model_parameters["max_ntree"] = default_parameters["max_ntree"]
+            else:
+                model_parameters["max_ntree"] = self.parameters["max_ntree"]
+            if "objective" in parameters:
+                assert str(parameters["objective"]).lower() in [
+                    "squarederror",
+                ], ParameterError(
+                    "Incorrect parameter 'objective'.\nThe objective function must be in (squarederror,), found '{}'.".format(
+                        parameters["objective"]
+                    )
+                )
+                model_parameters["objective"] = parameters["objective"]
+            elif "objective" not in self.parameters:
+                model_parameters["objective"] = default_parameters["objective"]
+            else:
+                model_parameters["objective"] = self.parameters["objective"]
+            if "split_proposal_method" in parameters:
+                assert str(parameters["split_proposal_method"]).lower() in [
+                    "global",
+                ], ParameterError(
+                    "Incorrect parameter 'split_proposal_method'.\nThe Split Proposal Method must be in (global,), found '{}'.".format(
+                        parameters["split_proposal_method"]
+                    )
+                )
+                model_parameters["split_proposal_method"] = parameters[
+                    "split_proposal_method"
+                ]
+            elif "split_proposal_method" not in self.parameters:
+                model_parameters["split_proposal_method"] = default_parameters[
+                    "split_proposal_method"
+                ]
+            else:
+                model_parameters["split_proposal_method"] = self.parameters[
+                    "split_proposal_method"
+                ]
+            if "tol" in parameters:
+                check_types([("tol", parameters["tol"], [int, float],)])
+                assert 0 < parameters["tol"] <= 1, ParameterError(
+                    "Incorrect parameter 'tol'.\nThe tolerance must be between 0 and 1."
+                )
+                model_parameters["tol"] = parameters["tol"]
+            elif "tol" not in self.parameters:
+                model_parameters["tol"] = default_parameters["tol"]
+            else:
+                model_parameters["tol"] = self.parameters["tol"]
+            if "learning_rate" in parameters:
+                check_types(
+                    [("learning_rate", parameters["learning_rate"], [int, float],)]
+                )
+                assert 0 < parameters["learning_rate"] <= 1, ParameterError(
+                    "Incorrect parameter 'learning_rate'.\nThe Learning Rate must be between 0 and 1."
+                )
+                model_parameters["learning_rate"] = parameters["learning_rate"]
+            elif "learning_rate" not in self.parameters:
+                model_parameters["learning_rate"] = default_parameters["learning_rate"]
+            else:
+                model_parameters["learning_rate"] = self.parameters["learning_rate"]
+            if "min_split_loss" in parameters:
+                check_types(
+                    [("min_split_loss", parameters["min_split_loss"], [int, float],)]
+                )
+                assert 0 <= parameters["min_split_loss"] <= 1000, ParameterError(
+                    "Incorrect parameter 'min_split_loss'.\nThe Minimum Split Loss must be must be lesser than 1000."
+                )
+                model_parameters["min_split_loss"] = parameters["min_split_loss"]
+            elif "min_split_loss" not in self.parameters:
+                model_parameters["min_split_loss"] = default_parameters[
+                    "min_split_loss"
+                ]
+            else:
+                model_parameters["min_split_loss"] = self.parameters["min_split_loss"]
+            if "weight_reg" in parameters:
+                check_types([("weight_reg", parameters["weight_reg"], [int, float],)])
+                assert 0 <= parameters["weight_reg"] <= 1000, ParameterError(
+                    "Incorrect parameter 'weight_reg'.\nThe Weight must be lesser than 1000."
+                )
+                model_parameters["weight_reg"] = parameters["weight_reg"]
+            elif "weight_reg" not in self.parameters:
+                model_parameters["weight_reg"] = default_parameters["weight_reg"]
+            else:
+                model_parameters["weight_reg"] = self.parameters["weight_reg"]
+            if "sample" in parameters:
+                check_types([("sample", parameters["sample"], [int, float],)])
+                assert 0 <= parameters["sample"] <= 1, ParameterError(
+                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0, inclusive."
+                )
+                model_parameters["sample"] = parameters["sample"]
+            elif "sample" not in self.parameters:
+                model_parameters["sample"] = default_parameters["sample"]
+            else:
+                model_parameters["sample"] = self.parameters["sample"]
+            if "max_depth" in parameters:
+                check_types([("max_depth", parameters["max_depth"], [int],)])
+                assert 1 <= parameters["max_depth"] <= 20, ParameterError(
+                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 20, inclusive."
+                )
+                model_parameters["max_depth"] = parameters["max_depth"]
+            elif "max_depth" not in self.parameters:
+                model_parameters["max_depth"] = default_parameters["max_depth"]
+            else:
+                model_parameters["max_depth"] = self.parameters["max_depth"]
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float],)])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
@@ -2265,6 +2389,15 @@ class Supervised(vModel):
         )
         if alpha != None:
             query += ", alpha = {}".format(alpha)
+        if self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "XGBoostRegressor",
+            "XGBoostRegressor",
+        ) and isinstance(verticapy.options["random_state"], int):
+            query += ", seed={}, id_column='{}'".format(
+                verticapy.options["random_state"], X[0],
+            )
         query += ")"
         try:
             executeSQL(self.cursor, query, "Fitting the model.")
@@ -2282,7 +2415,7 @@ class Supervised(vModel):
             "SARIMAX",
         ):
             self.coef_ = self.get_attr("details")
-        elif self.type in ("RandomForestClassifier", "NaiveBayes"):
+        elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
             if not (isinstance(input_relation, vDataFrame)):
                 self.cursor.execute(
                     "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
@@ -2366,8 +2499,14 @@ class Tree:
         check_types(
             [("tree_id", tree_id, [int, float],), ("pic_path", pic_path, [str],),]
         )
-        plot_tree(
-            self.get_tree(tree_id=tree_id).values, metric="variance", pic_path=pic_path
+        if self.type == "RandomForestClassifier":
+            metric = "probability"
+        elif self.type == "XGBoostClassifier":
+            metric = "log_odds"
+        else:
+            metric = "variance"
+        return plot_tree(
+            self.get_tree(tree_id=tree_id).values, metric=metric, pic_path=pic_path
         )
 
 
@@ -3441,6 +3580,8 @@ class Regressor(Supervised):
                     "root_mean_squared_error",
                     "r2",
                     "r2_adj",
+                    "aic",
+                    "bic",
                 ]
             }
             result = tablesample(values)
@@ -3524,6 +3665,8 @@ class Regressor(Supervised):
 	----------
 	method: str, optional
 		The method to use to compute the score.
+            aic    : Akaike’s Information Criterion
+            bic    : Bayesian Information Criterion
 			max	   : Max Error
 			mae	   : Mean Absolute Error
 			median : Median Absolute Error
@@ -3584,7 +3727,35 @@ class Regressor(Supervised):
         else:
             test_relation = self.test_relation
             prediction = self.deploySQL()
-        if method in ("r2", "rsquared"):
+        if method in ("aic",):
+            if self.type == "VAR":
+                for idx, y in enumerate(self.X):
+                    result.values[y] = [
+                        aic_bic(
+                            y,
+                            self.deploySQL()[idx],
+                            relation,
+                            self.cursor,
+                            len(self.X),
+                        )[0]
+                    ]
+            else:
+                return aic_bic(
+                    self.y, prediction, test_relation, self.cursor, len(self.X),
+                )[0]
+        elif method in ("bic",):
+            if self.type == "VAR":
+                for idx, y in enumerate(self.X):
+                    result.values[y] = [
+                        aic_bic(
+                            y, self.deploySQL()[idx], relation, self.cursor, len(self.X)
+                        )[1]
+                    ]
+            else:
+                return aic_bic(
+                    self.y, prediction, test_relation, self.cursor, len(self.X)
+                )[1]
+        elif method in ("r2", "rsquared"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [

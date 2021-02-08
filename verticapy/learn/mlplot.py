@@ -514,6 +514,7 @@ def plot_BKtree(tree, pic_path: str = ""):
             from IPython.core.display import HTML, display
 
             display(HTML("<img src='{}'>".format(pic_path)))
+    return RenderTree(tree_nodes[0])
 
 
 # ---#
@@ -546,6 +547,10 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
     print("Tree Breadth: {}".format(tree_breadth))
     print("-" * int(screen_columns))
     tree_nodes = {}
+    if "probability/variance" in tree:
+        metric_tree = "probability/variance"
+    else:
+        metric_tree = "log_odds"
     for idx in range(nb_nodes):
         op = "<" if not (tree["is_categorical_split"][idx]) else "="
         if tree["is_leaf"][idx]:
@@ -554,7 +559,7 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
                     tree["node_id"][idx],
                     tree["prediction"][idx],
                     metric,
-                    tree["probability/variance"][idx],
+                    tree[metric_tree][idx],
                 )
             )
         else:
@@ -582,6 +587,7 @@ def plot_tree(tree, metric: str = "probability", pic_path: str = ""):
             from IPython.core.display import HTML, display
 
             display(HTML("<img src='{}'>".format(pic_path)))
+    return RenderTree(tree_nodes[1])
 
 
 # ---#
