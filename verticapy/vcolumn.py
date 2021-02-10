@@ -49,7 +49,8 @@
 # Modules
 #
 # Standard Python Modules
-import math, re, decimal, warnings
+import math, re, decimal, warnings, datetime
+from collections.abc import Iterable
 
 # VerticaPy Modules
 import verticapy
@@ -717,6 +718,8 @@ Attributes
  	--------
  	vDataFrame.boxplot : Draws the Box Plot of the input vcolumns. 
 		"""
+        if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
+            cat_priority = [cat_priority]
         check_types(
             [
                 ("by", by, [str],),
@@ -1592,7 +1595,7 @@ Attributes
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             self.parent.filter(
-                expr="ABS({} - {}) / {} < {}".format(
+                "ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
                 ),
             )
@@ -1603,7 +1606,7 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
             )
         return self.parent
 
@@ -1780,6 +1783,10 @@ Attributes
 	--------
 	vDataFrame[].dropna : Drops the vcolumn missing values.
 		"""
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         check_types(
             [
                 (
@@ -2283,7 +2290,9 @@ Attributes
         return self.category() == "date"
 
     # ---#
-    def isin(self, val: list):
+    def isin(
+        self, val: list, *args,
+    ):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vcolumn and it returns the new 
@@ -2304,6 +2313,9 @@ Attributes
  	--------
  	vDataFrame.isin : Looks if some specific records are in the vDataFrame.
 		"""
+        if isinstance(val, str) or not (isinstance(val, Iterable)):
+            val = [val]
+        val += list(args)
         check_types([("val", val, [list],)])
         val = {self.alias: val}
         return self.parent.isin(val)
@@ -2744,6 +2756,8 @@ Attributes
 	--------
 	vDataFrame.outliers : Computes the vDataFrame Global Outliers.
 		"""
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("method", method, ["zscore", "robust_zscore", "minmax"],),
@@ -3246,8 +3260,8 @@ Attributes
         self,
         ts: str,
         by: str = "",
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         area: bool = False,
         step: bool = False,
         ax=None,
@@ -3264,10 +3278,10 @@ Attributes
  		date like (date, datetime, timestamp...) or numerical.
  	by: str, optional
  		vcolumn to use to partition the TS.
- 	start_date: str, optional
+ 	start_date: str / date, optional
  		Input Start Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is lesser than November 1993 the 3rd.
- 	end_date: str, optional
+ 	end_date: str / date, optional
  		Input End Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is greater than November 1993 the 3rd.
  	area: bool, optional
@@ -3292,8 +3306,8 @@ Attributes
             [
                 ("ts", ts, [str],),
                 ("by", by, [str],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                ("start_date", start_date, [str, datetime.datetime, datetime.date,],),
+                ("end_date", end_date, [str, datetime.datetime, datetime.date,],),
                 ("area", area, [bool],),
                 ("step", step, [bool],),
             ]
@@ -3357,8 +3371,8 @@ Attributes
         self,
         ts: str,
         q: tuple = (0.25, 0.75),
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         plot_median: bool = False,
         ax=None,
         **style_kwds,
@@ -3375,10 +3389,10 @@ Attributes
         date like (date, datetime, timestamp...) or numerical.
     q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
-    start_date: str, optional
+    start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str, optional
+    end_date: str / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
@@ -3401,8 +3415,16 @@ Attributes
             [
                 ("ts", ts, [str],),
                 ("q", q, [tuple],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                (
+                    "start_date",
+                    start_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
+                (
+                    "end_date",
+                    end_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
                 ("plot_median", plot_median, [bool],),
             ]
         )

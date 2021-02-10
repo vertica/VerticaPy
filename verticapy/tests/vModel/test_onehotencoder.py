@@ -128,8 +128,10 @@ class TestOneHotEncoder:
         pass
 
     def test_set_cursor(self, model):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")
         result = model.cursor.fetchone()

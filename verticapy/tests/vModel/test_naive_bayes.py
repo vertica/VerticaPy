@@ -23,16 +23,21 @@ set_option("print_info", False)
 def iris_vd(base):
     from verticapy.datasets import load_iris
 
-    iris = load_iris(cursor = base.cursor)
+    iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
         drop_table(name="public.iris", cursor=base.cursor)
+
 
 @pytest.fixture(scope="module")
 def model(base, iris_vd):
     base.cursor.execute("DROP MODEL IF EXISTS nb_model_test")
     model_class = NaiveBayes("nb_model_test", cursor=base.cursor)
-    model_class.fit("public.iris", ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], "Species")
+    model_class.fit(
+        "public.iris",
+        ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+        "Species",
+    )
     yield model_class
     model_class.drop()
 
@@ -120,17 +125,53 @@ class TestNB:
 
     def test_get_attr(self, model):
         attr = model.get_attr()
-        assert attr["attr_name"] == ['details', 'alpha', 'prior', 'accepted_row_count', 'rejected_row_count', 'call_string', 'gaussian.Iris-setosa', 'gaussian.Iris-versicolor', 'gaussian.Iris-virginica']
-        assert attr["attr_fields"] == ['index, predictor, type', 'alpha', 'class, probability', 'accepted_row_count', 'rejected_row_count', 'call_string', 'index, mu, sigma_sq', 'index, mu, sigma_sq', 'index, mu, sigma_sq']
+        assert attr["attr_name"] == [
+            "details",
+            "alpha",
+            "prior",
+            "accepted_row_count",
+            "rejected_row_count",
+            "call_string",
+            "gaussian.Iris-setosa",
+            "gaussian.Iris-versicolor",
+            "gaussian.Iris-virginica",
+        ]
+        assert attr["attr_fields"] == [
+            "index, predictor, type",
+            "alpha",
+            "class, probability",
+            "accepted_row_count",
+            "rejected_row_count",
+            "call_string",
+            "index, mu, sigma_sq",
+            "index, mu, sigma_sq",
+            "index, mu, sigma_sq",
+        ]
         assert attr["#_of_rows"] == [5, 1, 3, 1, 1, 1, 4, 4, 4]
 
         details = model.get_attr("details")
-        assert details["predictor"] == ['Species', 'SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']
-        assert details["type"] == ['ResponseC', 'Gaussian', 'Gaussian', 'Gaussian', 'Gaussian']
+        assert details["predictor"] == [
+            "Species",
+            "SepalLengthCm",
+            "SepalWidthCm",
+            "PetalLengthCm",
+            "PetalWidthCm",
+        ]
+        assert details["type"] == [
+            "ResponseC",
+            "Gaussian",
+            "Gaussian",
+            "Gaussian",
+            "Gaussian",
+        ]
 
         assert model.get_attr("alpha")["alpha"][0] == 1.0
 
-        assert model.get_attr("prior")["class"] == ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+        assert model.get_attr("prior")["class"] == [
+            "Iris-setosa",
+            "Iris-versicolor",
+            "Iris-virginica",
+        ]
         assert model.get_attr("prior")["probability"] == [
             pytest.approx(0.333333333333333),
             pytest.approx(0.333333333333333),
@@ -155,13 +196,13 @@ class TestNB:
 
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == 'naive_bayes(\'public.nb_model_test\', \'public.iris\', \'"species"\', \'"SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"\' USING PARAMETERS exclude_columns=\'\', alpha=1)'
+            == "naive_bayes('public.nb_model_test', 'public.iris', '\"species\"', '\"SepalLengthCm\", \"SepalWidthCm\", \"PetalLengthCm\", \"PetalWidthCm\"' USING PARAMETERS exclude_columns='', alpha=1)"
         )
 
     def test_get_params(self, model):
         params = model.get_params()
 
-        assert params == {'alpha': 1.0, 'nbtype': 'auto'}
+        assert params == {"alpha": 1.0, "nbtype": "auto"}
 
     def test_prc_curve(self, model):
         prc = model.prc_curve(pos_label="Iris-virginica", nbins=1000)
@@ -221,24 +262,24 @@ class TestNB:
         assert model.score(
             cutoff=0.9, method="best_cutoff", pos_label="Iris-virginica"
         ) == pytest.approx(0.509)
-        assert model.score(cutoff=0.9, method="bm", pos_label="Iris-virginica") == pytest.approx(
-            0.0
-        )
+        assert model.score(
+            cutoff=0.9, method="bm", pos_label="Iris-virginica"
+        ) == pytest.approx(0.0)
         assert model.score(
             cutoff=0.9, method="csi", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="f1", pos_label="Iris-virginica") == pytest.approx(
-            0.0
-        )
+        assert model.score(
+            cutoff=0.9, method="f1", pos_label="Iris-virginica"
+        ) == pytest.approx(0.0)
         assert model.score(
             cutoff=0.9, method="logloss", pos_label="Iris-virginica"
         ) == pytest.approx(0.0479202007517544)
         assert model.score(
             cutoff=0.9, method="mcc", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)
-        assert model.score(cutoff=0.9, method="mk", pos_label="Iris-virginica") == pytest.approx(
-            0.0
-        )
+        assert model.score(
+            cutoff=0.9, method="mk", pos_label="Iris-virginica"
+        ) == pytest.approx(0.0)
         assert model.score(
             cutoff=0.9, method="npv", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)
@@ -253,8 +294,10 @@ class TestNB:
         ) == pytest.approx(1.0)
 
     def test_set_cursor(self, model):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")
         result = model.cursor.fetchone()
@@ -269,7 +312,9 @@ class TestNB:
         base.cursor.execute("DROP MODEL IF EXISTS nb_from_vDF")
         model_test = NaiveBayes("nb_from_vDF", cursor=base.cursor)
         model_test.fit(
-            iris_vd, ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"], "Species"
+            iris_vd,
+            ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
+            "Species",
         )
 
         base.cursor.execute(

@@ -69,7 +69,7 @@ class TestLinearSVR:
         assert fim["index"] == ["alcohol", "residual_sugar", "citric_acid"]
         assert fim["importance"] == [52.68, 33.27, 14.05]
         assert fim["sign"] == [1, 1, 1]
-        plt.close('all')
+        plt.close("all")
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -136,7 +136,7 @@ class TestLinearSVR:
         model_test.fit("public.winequality", ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
-        plt.close('all')
+        plt.close("all")
         model_test.drop()
 
     def test_to_sklearn(self, model):
@@ -151,9 +151,11 @@ class TestLinearSVR:
 
     try:
         import shap
+
         def test_shapExplainer(self, model):
             explainer = model.shapExplainer()
             assert explainer.expected_value[0] == pytest.approx(5.819113657580594)
+
     except:
         pass
 
@@ -246,8 +248,10 @@ class TestLinearSVR:
         assert model.score(method="bic") == pytest.approx(-3338.189123593071, abs=1e-6)
 
     def test_set_cursor(self, model):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")
         result = model.cursor.fetchone()

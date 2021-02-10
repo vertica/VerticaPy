@@ -898,7 +898,6 @@ def cmatrix(
     m: int,
     vmax: float,
     vmin: float,
-    cmap: str = "PRGn",
     title: str = "",
     colorbar: str = "",
     x_label: str = "",
@@ -906,11 +905,11 @@ def cmatrix(
     with_numbers: bool = True,
     mround: int = 3,
     is_vector: bool = False,
-    interpolation: str = "nearest",
     inverse: bool = False,
     extent: list = [],
     is_pivot: bool = False,
     ax=None,
+    **style_kwds,
 ):
     if is_vector:
         is_vector = True
@@ -943,17 +942,18 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
+    param = {"cmap": gen_cmap()[0], "interpolation": "nearest"}
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
-            matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
+            matrix_array, vmax=vmax, vmin=vmin, **updated_dict(param, style_kwds),
         )
     else:
         try:
             im = ax.imshow(
-                matrix_array, cmap=cmap, interpolation=interpolation, extent=extent
+                matrix_array, extent=extent, **updated_dict(param, style_kwds),
             )
         except:
-            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation,)
+            im = ax.imshow(matrix_array, **updated_dict(param, style_kwds),)
     fig.colorbar(im, ax=ax).set_label(colorbar)
     if not (extent):
         ax.set_yticks([i for i in range(0, n)])
@@ -1207,7 +1207,6 @@ def hexbin(
     columns: list,
     method: str = "count",
     of: str = "",
-    cmap: str = "Reds",
     bbox: list = [],
     img: str = "",
     ax=None,
@@ -1286,7 +1285,7 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
-    param = {"cmap": cmap, "gridsize": 10, "mincnt": 1, "edgecolors": None}
+    param = {"cmap": gen_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
@@ -2169,12 +2168,11 @@ def pivot_table(
     h: tuple = (None, None),
     max_cardinality: tuple = (20, 20),
     show: bool = True,
-    cmap: str = "Reds",
     with_numbers: bool = True,
     ax=None,
-    interpolation: str = "nearest",
     return_ax: bool = False,
     extent: list = [],
+    **style_kwds,
 ):
     other_columns = ""
     if method.lower() == "median":
@@ -2431,17 +2429,16 @@ def pivot_table(
             len(all_column1_categories),
             vmax=max(all_count),
             vmin=min(all_count),
-            cmap=cmap,
             title="",
             colorbar=aggregate,
             x_label=columns[1],
             y_label=columns[0],
             with_numbers=with_numbers,
-            interpolation=interpolation,
             inverse=True,
             extent=extent,
             ax=ax,
             is_pivot=True,
+            **style_kwds,
         )
         if return_ax:
             return ax

@@ -329,7 +329,7 @@ def readSQL(
         cursor = conn.cursor()
     elif not (cursor):
         cursor = vertica_conn(dsn).cursor()
-    while len(query) > 0 and query[-1] in (";", ' '):
+    while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     cursor.execute("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query))
     count = cursor.fetchone()[0]
@@ -1152,8 +1152,10 @@ def set_option(option: str, value: (bool, int, str) = None):
         check_types([("value", value, [int])])
         if value < 0:
             raise ParameterError("Random State Value must be positive.")
-        if isinstance(value, int) or value == None:
-            verticapy.options["random_state"] = value
+        if isinstance(value, int):
+            verticapy.options["random_state"] = int(value)
+        elif value == None:
+            verticapy.options["random_state"] = None
     elif option == "sql_on":
         check_types([("value", value, [bool])])
         if isinstance(value, bool):

@@ -48,7 +48,9 @@ class TestvDFCreate:
         assert tvdf["survived"].count() == 1234
 
     def test_creating_vDF_using_input_relation_dsn(self):
-        os.environ["ODBCINI"] = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+        os.environ["ODBCINI"] = (
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+        )
         tvdf = vDataFrame(
             input_relation="public.titanic",
             usecols=["age", "survived"],
@@ -56,4 +58,3 @@ class TestvDFCreate:
         )
 
         assert tvdf["survived"].count() == 1234
-

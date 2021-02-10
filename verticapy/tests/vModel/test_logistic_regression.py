@@ -28,6 +28,7 @@ def titanic_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.titanic", cursor=base.cursor)
 
+
 @pytest.fixture(scope="module")
 def winequality_vd(base):
     from verticapy.datasets import load_winequality
@@ -36,6 +37,7 @@ def winequality_vd(base):
     yield winequality
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.winequality", cursor=base.cursor)
+
 
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
@@ -110,7 +112,7 @@ class TestLogisticRegression:
         assert f_imp["index"] == ["fare", "age"]
         assert f_imp["importance"] == [85.51, 14.49]
         assert f_imp["sign"] == [1, -1]
-        plt.close('all')
+        plt.close("all")
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(nbins=1000)
@@ -123,7 +125,7 @@ class TestLogisticRegression:
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
         assert lift_ch["lift"][900] == pytest.approx(1.0)
-        plt.close('all')
+        plt.close("all")
 
     def test_get_plot(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
@@ -131,7 +133,7 @@ class TestLogisticRegression:
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 11
-        plt.close('all')
+        plt.close("all")
         model_test.drop()
 
     def test_to_sklearn(self, model):
@@ -153,9 +155,11 @@ class TestLogisticRegression:
 
     try:
         import shap
+
         def test_shapExplainer(self, model):
             explainer = model.shapExplainer()
             assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
+
     except:
         pass
 
@@ -227,7 +231,7 @@ class TestLogisticRegression:
         assert prc["threshold"][900] == pytest.approx(0.899)
         assert prc["recall"][900] == pytest.approx(0.0460358056265985)
         assert prc["precision"][900] == pytest.approx(0.818181818181818)
-        plt.close('all')
+        plt.close("all")
 
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
@@ -252,7 +256,7 @@ class TestLogisticRegression:
         assert roc["threshold"][900] == pytest.approx(0.9)
         assert roc["false_positive"][900] == pytest.approx(0.00661157024793388)
         assert roc["true_positive"][900] == pytest.approx(0.0434782608695652)
-        plt.close('all')
+        plt.close("all")
 
     def test_cutoff_curve(self, model):
         cutoff_curve = model.cutoff_curve(nbins=1000)
@@ -263,7 +267,7 @@ class TestLogisticRegression:
         assert cutoff_curve["threshold"][900] == pytest.approx(0.9)
         assert cutoff_curve["false_positive"][900] == pytest.approx(0.00661157024793388)
         assert cutoff_curve["true_positive"][900] == pytest.approx(0.0434782608695652)
-        plt.close('all')
+        plt.close("all")
 
     def test_score(self, model):
         assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
@@ -336,8 +340,10 @@ class TestLogisticRegression:
         )
 
     def test_set_cursor(self, model):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")
         result = model.cursor.fetchone()

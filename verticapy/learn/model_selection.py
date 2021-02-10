@@ -111,6 +111,8 @@ Returns
 int
 	the KMeans K
 	"""
+    if isinstance(X, str):
+        X = [X]
     check_types(
         [
             ("X", X, [list],),
@@ -239,6 +241,8 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    if isinstance(X, str):
+        X = [X]
     check_types(
         [
             ("X", X, [list],),
@@ -530,6 +534,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    if isinstance(X, str):
+        X = [X]
     check_types(
         [
             ("X", X, [list],),
@@ -671,6 +677,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    if isinstance(X, str):
+        X = [X]
     check_types(
         [
             ("metric", metric, [str]),
@@ -937,6 +945,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    if isinstance(by, str):
+        by = [by]
     check_types(
         [
             ("column", column, [str],),
@@ -1386,6 +1396,8 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
+        param_range = [param_range]
     from verticapy.plot import range_curve
 
     gs_result = grid_search_cv(

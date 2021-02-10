@@ -243,6 +243,10 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame],),

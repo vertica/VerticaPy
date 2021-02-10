@@ -15,13 +15,16 @@ import pytest
 from ..base import VerticaPyTestBase
 from verticapy.connect import *
 
+
 class TestConnect(VerticaPyTestBase):
     def test_auto_connection(self):
-        # test for read_dsn / new_auto_connection / available_auto_connection / 
+        # test for read_dsn / new_auto_connection / available_auto_connection /
         #          read_auto_connect / change_auto_connection.
         # read_dsn
-        d = read_dsn("vp_test_config",
-                     os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")
+        d = read_dsn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        )
         assert int(d["port"]) == 5433
         # new_auto_connection
         new_auto_connection(d, "VerticaDSN_test")
@@ -37,8 +40,10 @@ class TestConnect(VerticaPyTestBase):
         assert result2 == [1]
 
     def test_vertica_conn(self):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         cur.execute("SELECT 1;")
         result = cur.fetchone()
         assert result == [1]

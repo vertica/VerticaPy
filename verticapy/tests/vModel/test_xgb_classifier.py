@@ -18,11 +18,13 @@ import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
-cur = vertica_conn("vp_test_config",
-                   os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+cur = vertica_conn(
+    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+).cursor()
 version = version(cur)
 
 if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
+
     @pytest.fixture(scope="module")
     def xgbc_data_vd(base):
         base.cursor.execute("DROP TABLE IF EXISTS public.xgbc_data")
@@ -66,7 +68,6 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
         with warnings.catch_warnings(record=True) as w:
             drop(name="public.xgbc_data", cursor=base.cursor)
 
-
     @pytest.fixture(scope="module")
     def model(base, xgbc_data_vd):
         base.cursor.execute("DROP MODEL IF EXISTS xgbc_model_test")
@@ -100,7 +101,6 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
 
         yield model_class
         model_class.drop()
-
 
     class TestXGBC:
         def test_classification_report(self, model):
@@ -169,7 +169,7 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
             assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
             assert f_imp["sign"] == [1, 1, 1, 0]
-            plt.close('all')
+            plt.close("all")
 
         def test_lift_chart(self, model):
             lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
@@ -177,11 +177,9 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
             assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(0.0)
             assert lift_ch["lift"][300] == pytest.approx(2.5)
-            plt.close('all')
+            plt.close("all")
 
-        @pytest.mark.skip(
-            reason="not yet available."
-        )
+        @pytest.mark.skip(reason="not yet available.")
         def test_to_sklearn(self, model):
             md = model.to_sklearn()
             model.cursor.execute(
@@ -196,10 +194,14 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
 
         try:
             import shap
+
             @pytest.mark.skip(reason="not yet available.")
             def test_shapExplainer(self, model):
                 explainer = model.shapExplainer()
-                assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
+                assert explainer.expected_value[0] == pytest.approx(
+                    -0.22667938806360247
+                )
+
         except:
             pass
 
@@ -258,7 +260,7 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert prc["threshold"][300] == pytest.approx(0.299)
             assert prc["recall"][300] == pytest.approx(1.0)
             assert prc["precision"][300] == pytest.approx(1.0)
-            plt.close('all')
+            plt.close("all")
 
         def test_predict(self, xgbc_data_vd, model):
             xgbc_data_copy = xgbc_data_vd.copy()
@@ -281,7 +283,7 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert roc["threshold"][700] == pytest.approx(0.7)
             assert roc["false_positive"][700] == pytest.approx(0.0)
             assert roc["true_positive"][700] == pytest.approx(0.0)
-            plt.close('all')
+            plt.close("all")
 
         def test_cutoff_curve(self, model):
             cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
@@ -292,7 +294,7 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
             assert cutoff_curve["false_positive"][700] == pytest.approx(0.0)
             assert cutoff_curve["true_positive"][700] == pytest.approx(0.0)
-            plt.close('all')
+            plt.close("all")
 
         def test_score(self, model):
             assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
@@ -312,21 +314,21 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert model.score(
                 cutoff=0.633, method="bm", pos_label="Train"
             ) == pytest.approx(0.0)
-            assert model.score(cutoff=0.1, method="bm", pos_label="Train") == pytest.approx(
-                0.0
-            )
+            assert model.score(
+                cutoff=0.1, method="bm", pos_label="Train"
+            ) == pytest.approx(0.0)
             assert model.score(
                 cutoff=0.9, method="csi", pos_label="Train"
             ) == pytest.approx(0.0)
             assert model.score(
                 cutoff=0.1, method="csi", pos_label="Train"
             ) == pytest.approx(0.0)
-            assert model.score(cutoff=0.9, method="f1", pos_label="Train") == pytest.approx(
-                0.0
-            )
-            assert model.score(cutoff=0.1, method="f1", pos_label="Train") == pytest.approx(
-                0.0
-            )
+            assert model.score(
+                cutoff=0.9, method="f1", pos_label="Train"
+            ) == pytest.approx(0.0)
+            assert model.score(
+                cutoff=0.1, method="f1", pos_label="Train"
+            ) == pytest.approx(0.0)
             assert model.score(
                 cutoff=0.9, method="logloss", pos_label="Train"
             ) == pytest.approx(0.111961142833969)
@@ -339,12 +341,12 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert model.score(
                 cutoff=0.1, method="mcc", pos_label="Train"
             ) == pytest.approx(0.0)
-            assert model.score(cutoff=0.9, method="mk", pos_label="Train") == pytest.approx(
-                0.0
-            )
-            assert model.score(cutoff=0.1, method="mk", pos_label="Train") == pytest.approx(
-                0.0
-            )
+            assert model.score(
+                cutoff=0.9, method="mk", pos_label="Train"
+            ) == pytest.approx(0.0)
+            assert model.score(
+                cutoff=0.1, method="mk", pos_label="Train"
+            ) == pytest.approx(0.0)
             assert model.score(
                 cutoff=0.9, method="npv", pos_label="Train"
             ) == pytest.approx(0.0)
@@ -371,8 +373,10 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             ) == pytest.approx(1.0)
 
         def test_set_cursor(self, model):
-            cur = vertica_conn("vp_test_config",
-                               os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+            cur = vertica_conn(
+                "vp_test_config",
+                os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            ).cursor()
             model.set_cursor(cur)
             model.cursor.execute("SELECT 1;")
             result = model.cursor.fetchone()
@@ -387,7 +391,9 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             base.cursor.execute("DROP MODEL IF EXISTS xgbc_from_vDF")
             model_test = XGBoostClassifier("xgbc_from_vDF", cursor=base.cursor)
             model_test.fit(
-                xgbc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
+                xgbc_data_vd,
+                ["Gender", '"owned cars"', "cost", "income"],
+                "TransPortation",
             )
 
             base.cursor.execute(

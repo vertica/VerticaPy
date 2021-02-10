@@ -28,6 +28,7 @@ def iris_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.iris", cursor=base.cursor)
 
+
 @pytest.fixture(scope="module")
 def winequality_vd(base):
     from verticapy.datasets import load_winequality
@@ -131,8 +132,10 @@ class TestKMeans:
         assert iris_copy["pred"].distinct() == [0, 1, 2]
 
     def test_set_cursor(self, model):
-        cur = vertica_conn("vp_test_config",
-                           os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+        ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")
         result = model.cursor.fetchone()
@@ -181,5 +184,5 @@ class TestKMeans:
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 16
-        plt.close('all')
+        plt.close("all")
         model_test.drop()

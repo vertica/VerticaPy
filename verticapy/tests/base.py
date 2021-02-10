@@ -36,6 +36,7 @@ default_configs = {
     "password": "",
 }
 
+
 class VerticaPyTestBase(unittest.TestCase):
     """
     Base class for all tests
@@ -209,10 +210,13 @@ class VerticaPyTestBase(unittest.TestCase):
 
     # Common assertions
 
+
 base_test = VerticaPyTestBase()
 base_test.setUp()
 
-if not(os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")):
+if not (
+    os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")
+):
     path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
     confparser = ConfigParser()
     confparser.optionxform = str

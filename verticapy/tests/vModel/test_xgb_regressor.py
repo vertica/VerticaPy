@@ -19,11 +19,13 @@ import numpy as np
 
 set_option("print_info", False)
 
-cur = vertica_conn("vp_test_config",
-                   os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+cur = vertica_conn(
+    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+).cursor()
 version = version(cur)
 
 if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
+
     @pytest.fixture(scope="module")
     def xgbr_data_vd(base):
         base.cursor.execute("DROP TABLE IF EXISTS public.xgbr_data")
@@ -67,7 +69,6 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
         with warnings.catch_warnings(record=True) as w:
             drop(name="public.xgbr_data", cursor=base.cursor)
 
-
     @pytest.fixture(scope="module")
     def model(base, xgbr_data_vd):
         base.cursor.execute("DROP MODEL IF EXISTS xgbr_model_test")
@@ -94,7 +95,6 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
 
         yield model_class
         model_class.drop()
-
 
     class TestXGBR:
         def test_deploySQL(self, model):
@@ -130,7 +130,7 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
             assert fim["index"] == ["cost", "owned cars", "gender", "income"]
             assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
             assert fim["sign"] == [1, 1, 1, 0]
-            plt.close('all')
+            plt.close("all")
 
         def test_get_attr(self, model):
             m_att = model.get_attr()
@@ -153,7 +153,12 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
 
             m_att_details = model.get_attr(attr_name="details")
 
-            assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income"]
+            assert m_att_details["predictor"] == [
+                "gender",
+                "owned cars",
+                "cost",
+                "income",
+            ]
             assert m_att_details["type"] == [
                 "char or varchar",
                 "int",
@@ -192,14 +197,18 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
                 )
             )
             prediction = model.cursor.fetchone()[0]
-            assert prediction == pytest.approx(md.predict([["Male", 0, "Cheap", "Low"]])[0])
+            assert prediction == pytest.approx(
+                md.predict([["Male", 0, "Cheap", "Low"]])[0]
+            )
 
         try:
             import shap
+
             @pytest.mark.skip(reason="not yet available.")
             def test_shapExplainer(self, model):
                 explainer = model.shapExplainer()
                 assert explainer.expected_value[0] == pytest.approx(5.81837771)
+
         except:
             pass
 
@@ -279,21 +288,31 @@ if version[0] > 10 or (version[0] == 10 and version[1] >= 1):
                 0.42529914178140543, abs=1e-6
             )
             # method = "msl"
-            assert model.score(method="msle") == pytest.approx(0.0133204031846029, abs=1e-6)
+            assert model.score(method="msle") == pytest.approx(
+                0.0133204031846029, abs=1e-6
+            )
             # method = "r2"
             assert model.score() == pytest.approx(0.737856, abs=1e-6)
             # method = "r2a"
-            assert model.score(method="r2a") == pytest.approx(0.5281407999999999, abs=1e-6)
+            assert model.score(method="r2a") == pytest.approx(
+                0.5281407999999999, abs=1e-6
+            )
             # method = "var"
             assert model.score(method="var") == pytest.approx(0.737856, abs=1e-6)
             # method = "aic"
-            assert model.score(method="aic") == pytest.approx(-7.099249892760906, abs=1e-6)
+            assert model.score(method="aic") == pytest.approx(
+                -7.099249892760906, abs=1e-6
+            )
             # method = "bic"
-            assert model.score(method="bic") == pytest.approx(-5.586324427790675, abs=1e-6)
+            assert model.score(method="bic") == pytest.approx(
+                -5.586324427790675, abs=1e-6
+            )
 
         def test_set_cursor(self, model):
-            cur = vertica_conn("vp_test_config",
-                               os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf").cursor()
+            cur = vertica_conn(
+                "vp_test_config",
+                os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            ).cursor()
             model.set_cursor(cur)
             model.cursor.execute("SELECT 1;")
             result = model.cursor.fetchone()

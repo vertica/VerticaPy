@@ -90,6 +90,8 @@ class NeighborsClassifier(vModel):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
+        if not (isinstance(labels, Iterable)) or isinstance(labels, str):
+            labels = [labels]
         check_types(
             [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
         )
@@ -257,6 +259,8 @@ class NeighborsClassifier(vModel):
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("cutoff", cutoff, [int, float],),
@@ -522,6 +526,10 @@ p: int, optional
 	str/list
  		the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -604,6 +612,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -720,6 +730,10 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -809,6 +823,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -955,6 +971,8 @@ xlim: list, optional
     object
         self
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
@@ -1274,6 +1292,10 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -1348,6 +1370,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -1410,6 +1434,8 @@ p: int, optional
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -1502,6 +1528,10 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),

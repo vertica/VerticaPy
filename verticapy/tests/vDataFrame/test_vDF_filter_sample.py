@@ -103,10 +103,9 @@ class TestvDFFilterSample:
 
     def test_vDF_filter(self, titanic_vd):
         result = titanic_vd.copy().filter(
-            expr="pclass = 1 OR age > 50",
-            conditions=["embarked = 'S'", "boat IS NOT NULL"],
+            ["pclass = 1 OR age > 50", "embarked = 'S'", "boat IS NOT NULL"],
         )
-        assert result.shape() == (343, 14)
+        assert result.shape() == (99, 14)
 
     def test_vDF_first(self, smart_meters_vd):
         result = smart_meters_vd.copy().first(ts="time", offset="6 months",)

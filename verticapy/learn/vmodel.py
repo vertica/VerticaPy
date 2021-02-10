@@ -200,6 +200,8 @@ Main Class for Vertica Model
 	str
 		the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             check_types([("X", X, [list],)])
@@ -2317,6 +2319,8 @@ class Supervised(vModel):
 	object
 		model
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame],),
@@ -2396,6 +2400,12 @@ class Supervised(vModel):
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
+                verticapy.options["random_state"], X[0],
+            )
+        if self.type in ("BisectingKMeans",) and isinstance(
+            verticapy.options["random_state"], int
+        ):
+            query += ", kmeans_seed={}, id_column='{}'".format(
                 verticapy.options["random_state"], X[0],
             )
         query += ")"
@@ -2591,6 +2601,8 @@ class BinaryClassifier(Classifier):
 	str
 		the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types([("cutoff", cutoff, [int, float],), ("X", X, [list],)])
         X = [str_column(elem) for elem in X]
         fun = self.get_model_fun()[1]
@@ -2699,6 +2711,8 @@ class BinaryClassifier(Classifier):
 	vDataFrame
 		the input object.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -2909,6 +2923,8 @@ class MulticlassClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
+        if isinstance(labels, str):
+            labels = [labels]
         check_types(
             [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
         )
@@ -3041,6 +3057,8 @@ class MulticlassClassifier(Classifier):
 	str / list
 		the SQL code needed to deploy the self.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("cutoff", cutoff, [int, float],),
@@ -3227,6 +3245,8 @@ class MulticlassClassifier(Classifier):
 	vDataFrame
 		the input object.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -3493,6 +3513,8 @@ class Regressor(Supervised):
 	vDataFrame
 		the input object.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -3868,6 +3890,8 @@ class Unsupervised(vModel):
 	object
 		model
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
@@ -4054,6 +4078,12 @@ class Preprocessing(Unsupervised):
     str
         the SQL code needed to deploy the model.
         """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("key_columns", key_columns, [list],),
@@ -4118,6 +4148,12 @@ class Preprocessing(Unsupervised):
     str
         the SQL code needed to deploy the inverse model.
         """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if isinstance(X, str):
+            X = [X]
         if self.type == "OneHotEncoder":
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
@@ -4156,6 +4192,8 @@ class Preprocessing(Unsupervised):
     list
         Python list.
         """
+        if isinstance(X, str):
+            X = [X]
         X = [str_column(elem) for elem in X]
         if not (X):
             X = self.X
@@ -4225,6 +4263,8 @@ class Preprocessing(Unsupervised):
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         if self.type == "OneHotEncoder":
             raise ModelError(
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
@@ -4270,6 +4310,8 @@ class Preprocessing(Unsupervised):
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("X", X, [list],),]
         )
@@ -4329,6 +4371,12 @@ class Decomposition(Preprocessing):
     str
         the SQL code needed to deploy the model.
         """
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(exclude_columns, str):
+            exclude_columns = [exclude_columns]
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("n_components", n_components, [int, float],),
@@ -4386,6 +4434,8 @@ class Decomposition(Preprocessing):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("X", X, [list],),
@@ -4482,6 +4532,8 @@ class Decomposition(Preprocessing):
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("n_components", n_components, [int, float],),
@@ -4540,6 +4592,8 @@ class Clustering(Unsupervised):
 	vDataFrame
 		the input object.
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
