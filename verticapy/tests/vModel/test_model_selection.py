@@ -242,3 +242,21 @@ class TestModelSelection:
         assert len(result["tol"]) == 3
         assert len(result["test_score"]) == 3
         assert len(result.values) == 7
+
+    def test_validation_curve(self, winequality_vd):
+        for elem in ["efficiency", "performance", "scalability"]:
+            result = learning_curve(
+                LogisticRegression(
+                    "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
+                ),
+                winequality_vd,
+                ["residual_sugar", "alcohol"],
+                "good",
+                [0.1, 0.33, 0.55,],
+                elem,
+                "auc",
+                cv=3,
+                ax=None,
+            )
+            plt.close("all")
+            assert len(result["n"]) == 3

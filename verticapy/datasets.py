@@ -101,6 +101,57 @@ def load_dataset(
 #
 #
 # ---#
+def load_airline_passengers(
+    cursor=None, schema: str = "public", name: str = "airline_passengers"
+):
+    """
+---------------------------------------------------------------------------
+Ingests the airline passengers dataset in the Vertica DB (Dataset ideal for 
+TS and Regression). If a table with the same name and schema already exists, 
+this function will create a vDataFrame from the input relation.
+
+Parameters
+----------
+cursor: DBcursor, optional
+    Vertica DB cursor. 
+schema: str, optional
+    Schema of the new relation. The default schema is public.
+name: str, optional
+    Name of the new relation.
+
+Returns
+-------
+vDataFrame
+    the airline passengers vDataFrame.
+
+See Also
+--------
+load_amazon       : Ingests the amazon dataset in the Vertica DB.
+    (Time Series / Regression).
+load_commodities  : Ingests the commodities dataset in the Vertica DB.
+    (Time Series / Regression).
+load_iris         : Ingests the iris dataset in the Vertica DB.
+    (Clustering / Classification).
+load_market       : Ingests the market dataset in the Vertica DB.
+    (Basic Data Exploration).
+load_smart_meters : Ingests the smart meters dataset in the Vertica DB.
+    (Time Series / Regression).
+load_titanic      : Ingests the titanic dataset in the Vertica DB.
+    (Classification).
+load_winequality  : Ingests the winequality dataset in the Vertica DB.
+    (Regression / Classification).
+    """
+    return load_dataset(
+        cursor,
+        schema,
+        name,
+        '"date" Date, "passengers" Integer',
+        '"date", "passengers"',
+        "airline_passengers",
+    )
+
+
+# ---#
 def load_amazon(cursor=None, schema: str = "public", name: str = "amazon"):
     """
 ---------------------------------------------------------------------------

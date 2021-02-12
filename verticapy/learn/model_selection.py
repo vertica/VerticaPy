@@ -795,6 +795,223 @@ tablesample
 
 
 # ---#
+def learning_curve(
+    estimator,
+    input_relation: (str, vDataFrame),
+    X: list,
+    y: str,
+    sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
+    method="efficiency",
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: (int, float, str) = None,
+    cutoff: float = -1,
+    std_coeff: float = 1,
+    ax=None,
+    **style_kwds,
+):
+    """
+---------------------------------------------------------------------------
+Draws the Learning curve.
+
+Parameters
+----------
+estimator: object
+    Vertica estimator having a fit method and a DB cursor.
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list
+    List of the predictor columns.
+y: str
+    Response Column.
+sizes: list, optional
+    Different sizes of the dataset used to train the model. Multiple models
+    will be trained using the different sizes.
+method: str, optional
+    Method used to plot the curve.
+        efficiency  : draws train/test score vs sample size.
+        performance : draws score vs time.
+        scalability : draws time vs sample size.
+metric: str, optional
+    Metric used to do the model evaluation.
+        auto: logloss for classification & rmse for regression.
+    For Classification:
+        accuracy    : Accuracy
+        auc         : Area Under the Curve (ROC)
+        bm          : Informedness = tpr + tnr - 1
+        csi         : Critical Success Index = tp / (tp + fn + fp)
+        f1          : F1 Score 
+        logloss     : Log Loss
+        mcc         : Matthews Correlation Coefficient 
+        mk          : Markedness = ppv + npv - 1
+        npv         : Negative Predictive Value = tn / (tn + fn)
+        prc_auc     : Area Under the Curve (PRC)
+        precision   : Precision = tp / (tp + fp)
+        recall      : Recall = tp / (tp + fn)
+        specificity : Specificity = tn / (tn + fp)
+    For Regression:
+        max    : Max Error
+        mae    : Mean Absolute Error
+        median : Median Absolute Error
+        mse    : Mean Squared Error
+        msle   : Mean Squared Log Error
+        r2     : R squared coefficient
+        r2a    : R2 adjusted
+        rmse   : Root Mean Squared Error
+        var    : Explained Variance 
+cv: int, optional
+    Number of folds.
+pos_label: int/float/str, optional
+    The main class to be considered as positive (classification only).
+cutoff: float, optional
+    The model cutoff (classification only).
+std_coeff: float, optional
+    Value of the standard deviation coefficient used to compute the area plot 
+    around each score.
+ax: Matplotlib axes object, optional
+    The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [("method", method, ["efficiency", "performance", "scalability"],),]
+    )
+    from verticapy.plot import range_curve
+
+    for s in sizes:
+        assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
+    if (
+        estimator.type
+        in (
+            "RandomForestRegressor",
+            "LinearSVR",
+            "LinearRegression",
+            "KNeighborsRegressor",
+            "XGBoostRegressor",
+        )
+        and metric == "auto"
+    ):
+        metric = "rmse"
+    elif metric == "auto":
+        metric = "logloss"
+    if isinstance(input_relation, str):
+        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
+    lc_result_final = []
+    sizes = sorted(set(sizes))
+    for s in sizes:
+        relation = input_relation.sample(x=s)
+        lc_result = cross_validate(
+            estimator, relation, X, y, metric, cv, pos_label, cutoff, True, True,
+        )
+        lc_result_final += [
+            (
+                relation.shape()[0],
+                lc_result[0][metric][cv],
+                lc_result[0][metric][cv + 1],
+                lc_result[1][metric][cv],
+                lc_result[1][metric][cv + 1],
+                lc_result[0]["time"][cv],
+                lc_result[0]["time"][cv + 1],
+            )
+        ]
+    if method in ("efficiency", "scalability"):
+        lc_result_final.sort(key=lambda tup: tup[0])
+    else:
+        lc_result_final.sort(key=lambda tup: tup[5])
+    result = tablesample(
+        {
+            "n": [elem[0] for elem in lc_result_final],
+            metric: [elem[1] for elem in lc_result_final],
+            metric + "_std": [elem[2] for elem in lc_result_final],
+            metric + "_train": [elem[3] for elem in lc_result_final],
+            metric + "_train_std": [elem[4] for elem in lc_result_final],
+            "time": [elem[5] for elem in lc_result_final],
+            "time_std": [elem[6] for elem in lc_result_final],
+        }
+    )
+    if method == "efficiency":
+        X = result["n"]
+        Y = [
+            [
+                [
+                    result[metric][i] - std_coeff * result[metric + "_std"][i]
+                    for i in range(len(sizes))
+                ],
+                result[metric],
+                [
+                    result[metric][i] + std_coeff * result[metric + "_std"][i]
+                    for i in range(len(sizes))
+                ],
+            ],
+            [
+                [
+                    result[metric + "_train"][i]
+                    - std_coeff * result[metric + "_train_std"][i]
+                    for i in range(len(sizes))
+                ],
+                result[metric + "_train"],
+                [
+                    result[metric + "_train"][i]
+                    + std_coeff * result[metric + "_train_std"][i]
+                    for i in range(len(sizes))
+                ],
+            ],
+        ]
+        x_label = "n"
+        y_label = metric
+        labels = [
+            "test",
+            "train",
+        ]
+    elif method == "performance":
+        X = result["time"]
+        Y = [
+            [
+                [
+                    result[metric][i] - std_coeff * result[metric + "_std"][i]
+                    for i in range(len(sizes))
+                ],
+                result[metric],
+                [
+                    result[metric][i] + std_coeff * result[metric + "_std"][i]
+                    for i in range(len(sizes))
+                ],
+            ],
+        ]
+        x_label = "time"
+        y_label = metric
+        labels = []
+    else:
+        X = result["n"]
+        Y = [
+            [
+                [
+                    result["time"][i] - std_coeff * result["time_std"][i]
+                    for i in range(len(sizes))
+                ],
+                result["time"],
+                [
+                    result["time"][i] + std_coeff * result["time_std"][i]
+                    for i in range(len(sizes))
+                ],
+            ],
+        ]
+        x_label = "n"
+        y_label = "time"
+        labels = []
+    range_curve(
+        X, Y, x_label, y_label, ax, labels, **style_kwds,
+    )
+    return result
+
+
+# ---#
 def lift_chart(
     y_true: str,
     y_score: str,

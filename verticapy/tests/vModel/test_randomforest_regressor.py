@@ -20,6 +20,16 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.winequality", cursor=base.cursor)
+
+
+@pytest.fixture(scope="module")
 def rfr_data_vd(base):
     base.cursor.execute("DROP TABLE IF EXISTS public.rfr_data")
     base.cursor.execute(
@@ -170,6 +180,15 @@ class TestRFR:
             "min_info_gain": 0,
             "nbins": 40,
         }
+
+    def test_get_plot(self, base, winequality_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = RandomForestRegressor("model_test_plot", cursor=base.cursor)
+        model_test.fit(winequality_vd, ["alcohol"], "quality")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 9
+        plt.close("all")
+        model_test.drop()
 
     @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
     def test_to_sklearn(self, model):

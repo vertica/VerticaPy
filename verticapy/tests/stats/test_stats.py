@@ -31,6 +31,18 @@ def titanic_vd(base):
 
 
 @pytest.fixture(scope="module")
+def airline_vd(base):
+    from verticapy.datasets import load_airline_passengers
+
+    airline = load_airline_passengers(cursor=base.cursor)
+    yield airline
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.airline_passengers", cursor=base.cursor,
+        )
+
+
+@pytest.fixture(scope="module")
 def amazon_vd(base):
     from verticapy.datasets import load_amazon
 
@@ -161,6 +173,20 @@ class TestStats:
         assert result["value"][3] == pytest.approx(0.009889912917327177, 1e-2)
         assert result["value"][4] == True
         assert result["value"][5] == "increasing"
+
+    def test_seasonal_decompose(self, airline_vd):
+        result = st.seasonal_decompose(airline_vd, "Passengers", "date", 12, mult=True)
+        assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
+        assert result["passengers_seasonal"].avg() == pytest.approx(1.0)
+        assert result["passengers_epsilon"].avg() == pytest.approx(1.05394291051617)
+        result2 = st.seasonal_decompose(
+            airline_vd, "Passengers", "date", 12, mult=False
+        )
+        assert result2["passengers_trend"].avg() == pytest.approx(266.398518668831)
+        assert result2["passengers_seasonal"].avg() == pytest.approx(
+            1.1842378929335e-15
+        )
+        assert result2["passengers_epsilon"].avg() == pytest.approx(13.9000924422799)
 
     def test_skewtest(self, amazon_vd):
         result = st.skewtest(amazon_vd, column="number")

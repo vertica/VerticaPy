@@ -2710,7 +2710,9 @@ vcolumns : vcolumn
         return self.apply(function)
 
     # ---#
-    def asfreq(self, ts: str, rule: str, method: dict, by: list = []):
+    def asfreq(
+        self, ts: str, rule: (str, datetime.timedelta), method: dict, by: list = []
+    ):
         """
     ---------------------------------------------------------------------------
     Computes a regular time interval vDataFrame by interpolating the missing 
@@ -2721,7 +2723,7 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    rule: str
+    rule: str / time
         Interval to use to slice the time. For example, '5 minutes' will create records
         separated by '5 minutes' time interval.
     method: dict
@@ -2750,7 +2752,7 @@ vcolumns : vcolumn
         check_types(
             [
                 ("ts", ts, [str],),
-                ("rule", rule, [str],),
+                ("rule", rule, [str, datetime.timedelta],),
                 ("method", method, [dict],),
                 ("by", by, [list],),
             ]
@@ -2819,7 +2821,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: str):
+    def at_time(self, ts: str, time: (str, datetime.timedelta)):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -2829,7 +2831,7 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    time: str
+    time: str / time
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
 
@@ -2846,7 +2848,7 @@ vcolumns : vcolumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         check_types(
-            [("ts", ts, [str],), ("time", time, [str],),]
+            [("ts", ts, [str],), ("time", time, [str, datetime.timedelta,],),]
         )
         columns_check([ts], self)
         self.filter("{}::time = '{}'".format(str_column(ts), time),)
@@ -3001,7 +3003,10 @@ vcolumns : vcolumn
 
     # ---#
     def between_time(
-        self, ts: str, start_time: str, end_time: str,
+        self,
+        ts: str,
+        start_time: (str, datetime.timedelta),
+        end_time: (str, datetime.timedelta),
     ):
         """
     ---------------------------------------------------------------------------
@@ -3012,10 +3017,10 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    start_time: str
+    start_time: str / time
         Input Start Time. For example, time = '12:00' will filter the data when 
         time('ts') is lesser than 12:00.
-    end_time: str
+    end_time: str / time
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
 
@@ -3034,8 +3039,8 @@ vcolumns : vcolumn
         check_types(
             [
                 ("ts", ts, [str],),
-                ("start_time", start_time, [str],),
-                ("end_time", end_time, [str],),
+                ("start_time", start_time, [str, datetime.timedelta,],),
+                ("end_time", end_time, [str, datetime.timedelta,],),
             ]
         )
         columns_check([ts], self)
@@ -7913,6 +7918,8 @@ vcolumns : vcolumn
     vDataFrame
         sample vDataFrame
         """
+        if x == 1:
+            return self.copy()
         assert n != None or x != None, ParameterError(
             "One of the parameter 'n' or 'x' must not be empty."
         )

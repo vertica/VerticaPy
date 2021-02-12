@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import math, decimal
+import math, decimal, datetime
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
@@ -1082,6 +1082,149 @@ tablesample
 
 
 # ---#
+def seasonal_decompose(
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    period: int,
+    by: list = [],
+    rule: (str, datetime.timedelta) = None,
+    mult: bool = False,
+    two_sided: bool = False,
+):
+    """
+---------------------------------------------------------------------------
+Time Series Seasonal decomposition.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+column: str
+    Input vcolumn to decompose.
+ts: str
+    TS (Time Series) vcolumn to use to order the data. It can be of type date
+    or a numerical vcolumn.
+period: int
+	Time Series period. It is used to retrieve the seasonality component.
+by: list, optional
+    vcolumns used in the partition.
+rule: str / time, optional
+    Interval to use to slice the time. For example, '5 minutes' will create records
+    separated by '5 minutes' time interval.
+mult: bool, optional
+	If set to True, the decomposition type will be 'multiplicative'. Otherwise,
+	it is 'additive'.
+two_sided: bool, optional
+    If set to True, a centered moving average is used for the trend isolation.
+    Otherwise only past values are used.
+
+Returns
+-------
+vDataFrame
+    object containing (ts, column, TS seasonal part, TS trend, TS noise).
+    """
+    if isinstance(by, str):
+        by = [by]
+    check_types(
+        [
+            ("ts", ts, [str],),
+            ("column", column, [str],),
+            ("by", by, [list],),
+            ("rule", rule, [str, datetime.timedelta,],),
+            ("vdf", vdf, [vDataFrame,],),
+            ("mult", mult, [bool,],),
+            ("two_sided", two_sided, [bool,],),
+        ],
+    )
+    columns_check([column, ts] + by, vdf)
+    ts, column, by = (
+        vdf_columns_names([ts], vdf)[0],
+        vdf_columns_names([column], vdf)[0],
+        vdf_columns_names(by, vdf),
+    )
+    if rule:
+        vdf_tmp = vdf.asfreq(ts=ts, rule=period, method={column: "linear"}, by=by)
+    else:
+        vdf_tmp = vdf[[ts, column]]
+    if two_sided:
+        if period % 2 == 0:
+            window = (-period / 2 + 1, period / 2)
+        else:
+            window = (int(-period / 2), int(period / 2))
+    else:
+        window = (-period + 1, 0)
+    trend_name, seasonal_name, epsilon_name = (
+        "{}_trend".format(column[1:-1]),
+        "{}_seasonal".format(column[1:-1]),
+        "{}_epsilon".format(column[1:-1]),
+    )
+    vdf_tmp.rolling("avg", window, column, by, ts, trend_name)
+    if mult:
+        vdf_tmp[seasonal_name] = f'{column} / NULLIFZERO("{trend_name}")'
+    else:
+        vdf_tmp[seasonal_name] = vdf_tmp[column] - vdf_tmp[trend_name]
+    by = "" if not (by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self))
+    vdf_tmp["row_number_id"] = "MOD(ROW_NUMBER() OVER ({} ORDER BY {}), {})".format(
+        by, ts, period
+    )
+    if mult:
+        vdf_tmp[
+            seasonal_name
+        ] = f"AVG({seasonal_name}) OVER (PARTITION BY row_number_id) / NULLIFZERO(AVG({seasonal_name}) OVER ())"
+        vdf_tmp[
+            epsilon_name
+        ] = f'{column} / NULLIFZERO("{trend_name}") / NULLIFZERO("{seasonal_name}")'
+    else:
+        vdf_tmp[
+            seasonal_name
+        ] = f"AVG({seasonal_name}) OVER (PARTITION BY row_number_id) - AVG({seasonal_name}) OVER ()"
+        vdf_tmp[epsilon_name] = (
+            vdf_tmp[column] - vdf_tmp[trend_name] - vdf_tmp[seasonal_name]
+        )
+    vdf_tmp["row_number_id"].drop()
+    return vdf_tmp
+
+
+# ---#
+def skewtest(vdf: vDataFrame, column: str):
+    """
+---------------------------------------------------------------------------
+Test whether the skewness is different from the normal distribution.
+
+Parameters
+----------
+vdf: vDataFrame
+    input vDataFrame.
+column: str
+    Input vcolumn to test.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
+    columns_check([column], vdf)
+    column = vdf_columns_names([column], vdf)[0]
+    g1, n = vdf[column].agg(["skewness", "count"]).values[column]
+    mu1 = 0
+    mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
+    gamma1 = 0
+    gamma2 = (
+        36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
+    )
+    W2 = math.sqrt(2 * gamma2 + 4) - 1
+    delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
+    alpha2 = 2 / (W2 - 1)
+    Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
+    pvalue = 2 * norm.sf(abs(Z1))
+    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z1, pvalue],})
+    return result
+
+
+# ---#
 def variance_inflation_factor(
     vdf: vDataFrame, X: list, X_idx: int = None,
 ):
@@ -1163,41 +1306,3 @@ float
         raise ParameterError(
             f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
         )
-
-
-# ---#
-def skewtest(vdf: vDataFrame, column: str):
-    """
----------------------------------------------------------------------------
-Test whether the skewness is different from the normal distribution.
-
-Parameters
-----------
-vdf: vDataFrame
-    input vDataFrame.
-column: str
-    Input vcolumn to test.
-
-Returns
--------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
-    """
-    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
-    columns_check([column], vdf)
-    column = vdf_columns_names([column], vdf)[0]
-    g1, n = vdf[column].agg(["skewness", "count"]).values[column]
-    mu1 = 0
-    mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
-    gamma1 = 0
-    gamma2 = (
-        36 * (n - 7) * (n ** 2 + 2 * n - 5) / ((n - 2) * (n + 5) * (n + 7) * (n + 9))
-    )
-    W2 = math.sqrt(2 * gamma2 + 4) - 1
-    delta = 1 / math.sqrt(math.log(math.sqrt(W2)))
-    alpha2 = 2 / (W2 - 1)
-    Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
-    pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z1, pvalue],})
-    return result

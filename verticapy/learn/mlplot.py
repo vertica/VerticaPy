@@ -55,7 +55,7 @@ import math, collections
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
-import numpy
+import numpy as np
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -185,10 +185,10 @@ def logit_plot(
             if (step_y > 0)
             else [max_logit_y]
         )
-        X_logit, Y_logit = numpy.meshgrid(X_logit, Y_logit)
+        X_logit, Y_logit = np.meshgrid(X_logit, Y_logit)
         Z_logit = 1 / (
             1
-            + numpy.exp(
+            + np.exp(
                 -(
                     coefficients[0]
                     + coefficients[1] * X_logit
@@ -667,7 +667,7 @@ def regression_plot(
             if (step_y > 0)
             else [max_reg_y]
         )
-        X_reg, Y_reg = numpy.meshgrid(X_reg, Y_reg)
+        X_reg, Y_reg = np.meshgrid(X_reg, Y_reg)
         Z_reg = coefficients[0] + coefficients[1] * X_reg + coefficients[2] * Y_reg
         if not (ax):
             if isnotebook():
@@ -684,6 +684,66 @@ def regression_plot(
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
     else:
         raise ParameterError("The number of predictors is too big.")
+    if conn:
+        conn.close()
+    return ax
+
+
+# ---#
+def regression_tree_plot(
+    X: list,
+    y: str,
+    input_relation: str,
+    cursor=None,
+    max_nb_points: int = 10000,
+    ax=None,
+    **style_kwds,
+):
+    check_types(
+        [
+            ("X", X, [list],),
+            ("y", y, [str],),
+            ("input_relation", input_relation, [str],),
+            ("max_nb_points", max_nb_points, [int, float],),
+        ]
+    )
+    cursor, conn = check_cursor(cursor)[0:2]
+
+    query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
+        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points),
+    )
+    cursor.execute(query)
+    all_points = cursor.fetchall()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.set_axisbelow(True)
+        ax.grid()
+    x0, x1, y0, y1 = (
+        [float(item[0]) for item in all_points],
+        [float(item[0]) for item in all_points],
+        [float(item[2]) for item in all_points],
+        [float(item[1]) for item in all_points],
+    )
+    x0, y0 = zip(*sorted(zip(x0, y0)))
+    x1, y1 = zip(*sorted(zip(x1, y1)))
+    color = "black"
+    if "color" in style_kwds:
+        if not (isinstance(style_kwds["color"], str)) and len(style_kwds["color"]) > 1:
+            color = style_kwds["color"][1]
+    ax.step(x1, y1, color=color)
+    param = {
+        "marker": "o",
+        "color": gen_colors()[0],
+        "s": 50,
+        "edgecolors": "black",
+    }
+    ax.scatter(
+        x0, y0, **updated_dict(param, style_kwds,),
+    )
+    ax.set_xlabel(X[0])
+    ax.set_ylabel(y)
     if conn:
         conn.close()
     return ax
@@ -856,7 +916,7 @@ def svm_classifier_plot(
             if (step_y > 0)
             else [max_svm_y]
         )
-        X_svm, Y_svm = numpy.meshgrid(X_svm, Y_svm)
+        X_svm, Y_svm = np.meshgrid(X_svm, Y_svm)
         Z_svm = coefficients[0] + coefficients[1] * X_svm + coefficients[2] * Y_svm
         if not (ax):
             if isnotebook():
@@ -890,18 +950,90 @@ def svm_classifier_plot(
 
 # ---#
 def voronoi_plot(
-    clusters: list, columns: list, ax=None, **style_kwds,
+    clusters: list,
+    columns: list,
+    input_relation: str,
+    max_nb_points: int = 1000,
+    cursor=None,
+    ax=None,
+    **style_kwds,
 ):
-    check_types([("clusters", clusters, [list],), ("columns", columns, [list],)])
+    check_types(
+        [
+            ("clusters", clusters, [list],),
+            ("columns", columns, [list],),
+            ("input_relation", input_relation, [str],),
+            ("max_nb_points", max_nb_points, [int],),
+        ]
+    )
+    cursor, conn = check_cursor(cursor)[0:2]
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
-    v = Voronoi(clusters)
-    param = {"show_vertices": 0}
+    min_x, max_x, min_y, max_y = (
+        min([elem[0] for elem in clusters]),
+        max([elem[0] for elem in clusters]),
+        min([elem[1] for elem in clusters]),
+        max([elem[1] for elem in clusters]),
+    )
+    dummies_point = [
+        [min_x - 999, min_y - 999],
+        [min_x - 999, max_y + 999],
+        [max_x + 999, min_y - 999],
+        [max_x + 999, max_y + 999],
+    ]
+    v = Voronoi(clusters + dummies_point)
+    param = {"show_vertices": False}
     voronoi_plot_2d(
-        v, ax=ax, **updated_dict(param, style_kwds),
+        v, ax=ax, **updated_dict(param, style_kwds,),
     )
     if not (ax):
         ax = plt
-    ax.set_xlabel(columns[0])
-    ax.set_ylabel(columns[1])
+        ax.xlabel(columns[0])
+        ax.ylabel(columns[1])
+    colors = gen_colors()
+    for idx, region in enumerate(v.regions):
+        if not -1 in region:
+            polygon = [v.vertices[i] for i in region]
+            if "color" in style_kwds:
+                if isinstance(style_kwds["color"], str):
+                    color = style_kwds["color"]
+                else:
+                    color = style_kwds["color"][idx % len(style_kwds["color"])]
+            else:
+                color = colors[idx % len(colors)]
+            ax.fill(*zip(*polygon), alpha=0.4, color=color)
+    ax.plot([elem[0] for elem in clusters], [elem[1] for elem in clusters], "ko")
+    ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
+    ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
+    if max_nb_points > 0:
+        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
+            columns[0],
+            columns[1],
+            input_relation,
+            columns[0],
+            columns[1],
+            int(max_nb_points),
+        )
+        cursor.execute(query)
+        all_points = cursor.fetchall()
+        x, y = (
+            [float(item[0]) for item in all_points],
+            [float(item[1]) for item in all_points],
+        )
+        ax.scatter(
+            x, y, color="black", s=10, alpha=1, zorder=3,
+        )
+        ax.scatter(
+            [elem[0] for elem in clusters],
+            [elem[1] for elem in clusters],
+            color="white",
+            s=200,
+            linewidths=5,
+            alpha=1,
+            zorder=4,
+            marker="x",
+            edgecolors="black",
+        )
+    if conn:
+        conn.close()
     return ax

@@ -476,15 +476,21 @@ tol: float, optional
         version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
-    def plot_voronoi(self, ax=None):
+    def plot_voronoi(
+        self, max_nb_points: int = 50, ax=None, **style_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
     ----------
+    max_nb_points: int, optional
+        Maximum number of points to display.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -499,6 +505,14 @@ tol: float, optional
             )
             self.cursor.execute(query)
             clusters = self.cursor.fetchall()
-            return voronoi_plot(clusters=clusters, columns=self.X, ax=ax)
+            return voronoi_plot(
+                clusters=clusters,
+                columns=self.X,
+                input_relation=self.input_relation,
+                cursor=self.cursor,
+                ax=ax,
+                max_nb_points=max_nb_points,
+                **style_kwds,
+            )
         else:
             raise Exception("Voronoi Plots are only available in 2D")

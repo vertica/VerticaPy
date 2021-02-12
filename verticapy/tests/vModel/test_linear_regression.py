@@ -129,10 +129,10 @@ class TestLinearRegression:
             "tol": 1e-06,
         }
 
-    def test_get_plot(self, base):
+    def test_get_plot(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LinearRegression("model_test_plot", cursor=base.cursor)
-        model_test.fit("public.winequality", ["alcohol"], "quality")
+        model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
         plt.close("all")

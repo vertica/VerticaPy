@@ -186,3 +186,12 @@ class TestKMeans:
         assert len(result.get_default_bbox_extra_artists()) == 16
         plt.close("all")
         model_test.drop()
+
+    def test_get_voronoi_plot(self, base, iris_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = KMeans("model_test_plot", cursor=base.cursor)
+        model_test.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm",])
+        result = model_test.plot_voronoi()
+        assert len(result.gca().get_default_bbox_extra_artists()) == 21
+        plt.close("all")
+        model_test.drop()

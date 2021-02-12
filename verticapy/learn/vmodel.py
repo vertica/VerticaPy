@@ -563,6 +563,16 @@ Main Class for Vertica Model
             return lof_plot(
                 self.name, self.X, "lof_score", self.cursor, 100, ax=ax, **style_kwds,
             )
+        elif self.type in ("RandomForestRegressor", "XGBoostRegressor",):
+            return regression_tree_plot(
+                self.X + [self.deploySQL()],
+                self.y,
+                self.input_relation,
+                self.cursor,
+                max_nb_points,
+                ax=ax,
+                **style_kwds,
+            )
         else:
             raise FunctionError(
                 "Method 'plot' for '{}' doesn't exist.".format(self.type)
