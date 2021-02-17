@@ -14,14 +14,10 @@
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostClassifier
 from verticapy import vDataFrame, drop, version, set_option, vertica_conn
+from verticapy.tests.conftest import get_version
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
-
-cur = vertica_conn(
-    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
-).cursor()
-version = version(cur)
 
 @pytest.fixture(scope="module")
 def xgbc_data_vd(base):
@@ -100,7 +96,7 @@ def model(base, xgbc_data_vd):
     yield model_class
     model_class.drop()
 
-@pytest.mark.skipif(version[0] < 10 or (version[0] == 10 and version[1] == 0), reason="requires vertica 10.1 or higher")
+@pytest.mark.skipif(get_version()[0] < 10 or (get_version()[0] == 10 and get_version()[1] == 0), reason="requires vertica 10.1 or higher")
 class TestXGBC:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()

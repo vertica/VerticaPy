@@ -39,6 +39,13 @@ def create_conn_file():
 def delete_conn_file():
 	os.remove(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
 
+def get_version():
+    base_class = VerticaPyTestBase()
+    base_class.setUp()
+    result = verticapy.version(base_class.cursor)
+    base_class.tearDown()
+    return result
+
 @pytest.fixture(scope="session")
 def base():
     base_class = VerticaPyTestBase()

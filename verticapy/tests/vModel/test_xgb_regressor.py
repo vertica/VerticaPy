@@ -13,16 +13,12 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostRegressor
+from verticapy.tests.conftest import get_version
 from verticapy import vDataFrame, drop, version, set_option, vertica_conn
 import matplotlib.pyplot as plt
 import numpy as np
 
 set_option("print_info", False)
-
-cur = vertica_conn(
-    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
-).cursor()
-version = version(cur)
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
@@ -103,7 +99,7 @@ def model(base, xgbr_data_vd):
     yield model_class
     model_class.drop()
 
-@pytest.mark.skipif(version[0] < 10 or (version[0] == 10 and version[1] == 0), reason="requires vertica 10.1 or higher")
+@pytest.mark.skipif(get_version()[0] < 10 or (get_version()[0] == 10 and get_version()[1] == 0), reason="requires vertica 10.1 or higher")
 class TestXGBR:
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_XGB_REGRESSOR(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'xgbr_model_test', match_by_pos = 'true')"
