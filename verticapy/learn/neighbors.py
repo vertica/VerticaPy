@@ -58,6 +58,7 @@ from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # Standard Python Modules
 import warnings
@@ -89,6 +90,8 @@ class NeighborsClassifier(vModel):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
+        if not (isinstance(labels, Iterable)) or isinstance(labels, str):
+            labels = [labels]
         check_types(
             [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
         )
@@ -256,6 +259,8 @@ class NeighborsClassifier(vModel):
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("cutoff", cutoff, [int, float],),
@@ -521,6 +526,10 @@ p: int, optional
 	str/list
  		the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -603,6 +612,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -612,7 +623,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -719,6 +730,10 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -808,6 +823,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -817,7 +834,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -954,11 +971,13 @@ xlim: list, optional
     object
         self
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1273,6 +1292,10 @@ p: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -1347,6 +1370,8 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -1356,7 +1381,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1409,6 +1434,8 @@ p: int, optional
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -1501,6 +1528,10 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -1510,7 +1541,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.key_columns = [str_column(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()

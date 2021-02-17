@@ -44,3 +44,9 @@
 #
 # VerticaPy aims to solve all of these problems. The idea is simple: instead
 # of moving data around for processing, VerticaPy brings the logic to the data.
+#
+#
+# Modules
+#
+# Standard Python Modules
+from verticapy.connections.connect import *

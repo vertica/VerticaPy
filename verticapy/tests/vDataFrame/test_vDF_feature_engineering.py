@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, datetime, warnings
-from verticapy import vDataFrame, drop_table, errors
+from verticapy import vDataFrame, drop, errors
 
 from verticapy import set_option
 
@@ -21,44 +21,44 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def smart_meters_vd(base):
-    from verticapy.learn.datasets import load_smart_meters
+    from verticapy.datasets import load_smart_meters
 
     smart_meters = load_smart_meters(cursor=base.cursor)
     yield smart_meters
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.smart_meters", cursor=base.cursor)
+        drop(name="public.smart_meters", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFFeatureEngineering:
@@ -102,13 +102,10 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="aad",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, -1),
+            columns="age",
             by=["pclass"],
             order_by={"name": "asc", "ticket": "desc"},
-            method="rows",
-            rule="past",
             name="aad",
         )
         assert titanic_copy["aad"].max() == pytest.approx(38.0)
@@ -117,10 +114,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="beta",
-            column="age",
-            column2="fare",
-            preceding=100,
-            following=100,
+            window=(100, 100),
+            columns=["age", "fare"],
             by=["pclass"],
             order_by={"name": "asc", "ticket": "desc"},
             name="beta",
@@ -131,9 +126,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="count",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             by=["pclass"],
             order_by={"name": "asc", "ticket": "desc"},
             name="count",
@@ -144,10 +138,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="corr",
-            column="age",
-            column2="fare",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns=["age", "fare"],
             name="corr",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -157,10 +149,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="cov",
-            column="age",
-            column2="fare",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns=["age", "fare"],
             name="cov",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -170,9 +160,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="kurtosis",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="kurtosis",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -182,9 +171,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="jb",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="jb",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -194,9 +182,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="max",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="max",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -206,9 +193,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="mean",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="mean",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -218,9 +204,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="min",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="min",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -230,9 +215,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="prod",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="prod",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -242,9 +226,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="range",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="range",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -254,9 +237,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="sem",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="sem",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -266,9 +248,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="skewness",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="skewness",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -278,9 +259,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="sum",
-            column="age",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="age",
             name="sum",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -290,9 +270,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="std",
-            column="pclass",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="pclass",
             name="std",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -302,9 +281,8 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.rolling(
             func="var",
-            column="pclass",
-            preceding=10,
-            following=1,
+            window=(-10, 1),
+            columns="pclass",
             name="var",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -313,38 +291,38 @@ class TestvDFFeatureEngineering:
     def test_vDF_analytic(self, titanic_vd):
         # func = "aad"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="aad", column="age", by=["pclass"], name="aad")
+        titanic_copy.analytic(func="aad", columns="age", by=["pclass"], name="aad")
         assert titanic_copy["aad"].max() == pytest.approx(12.1652677287016)
 
         # func = "beta"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
-            func="beta", column="age", column2="fare", by=["pclass"], name="beta"
+            func="beta", columns=["age", "fare"], by=["pclass"], name="beta"
         )
         assert titanic_copy["beta"].min() == pytest.approx(-0.293055805788566)
 
         # func = "count"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
-            func="count", column="age", by=["pclass"], name="age_count"
+            func="count", columns="age", by=["pclass"], name="age_count"
         )
         assert titanic_copy["age_count"].max() == 477
 
         # func = "corr"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="corr", column="age", column2="fare", name="corr")
+        titanic_copy.analytic(func="corr", columns=["age", "fare"], name="corr")
         assert titanic_copy["corr"].median() == pytest.approx(0.316603147524037)
 
         # func = "cov"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="cov", column="age", column2="fare", name="cov")
+        titanic_copy.analytic(func="cov", columns=["age", "fare"], name="cov")
         assert titanic_copy["cov"].median() == pytest.approx(240.60639320099)
 
         # func = "ema"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="ema",
-            column="age",
+            columns="age",
             by=["survived"],
             name="ema",
             order_by={"name": "asc", "ticket": "desc"},
@@ -355,7 +333,7 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="first_value",
-            column="age",
+            columns="age",
             name="first_value",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -363,7 +341,7 @@ class TestvDFFeatureEngineering:
 
         # func = "iqr"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="iqr", column="age", name="iqr")
+        titanic_copy.analytic(func="iqr", columns="age", name="iqr")
         assert titanic_copy["iqr"].min() == pytest.approx(18)
 
         # func = "dense_rank"
@@ -377,19 +355,19 @@ class TestvDFFeatureEngineering:
 
         # func = "kurtosis"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="kurtosis", column="age", name="kurtosis")
+        titanic_copy.analytic(func="kurtosis", columns="age", name="kurtosis")
         assert titanic_copy["kurtosis"].min() == pytest.approx(0.1568969133)
 
         # func = "jb"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="jb", column="age", name="jb")
+        titanic_copy.analytic(func="jb", columns="age", name="jb")
         assert titanic_copy["jb"].min() == pytest.approx(28.802353)
 
         # func = "lead"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="lead",
-            column="age",
+            columns="age",
             name="lead",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -399,7 +377,7 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="lag",
-            column="age",
+            columns="age",
             name="lag",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -409,7 +387,7 @@ class TestvDFFeatureEngineering:
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="last_value",
-            column="age",
+            columns="age",
             name="last_value",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -417,45 +395,45 @@ class TestvDFFeatureEngineering:
 
         # func = "mad"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="mad", column="age", name="mad")
+        titanic_copy.analytic(func="mad", columns="age", name="mad")
         assert titanic_copy["mad"].min() == pytest.approx(11.14643931)
 
         # func = "max"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="max", column="age", name="max")
+        titanic_copy.analytic(func="max", columns="age", name="max")
         assert titanic_copy["max"].min() == pytest.approx(80)
 
         # func = "mean"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="mean", column="age", name="mean")
+        titanic_copy.analytic(func="mean", columns="age", name="mean")
         assert titanic_copy["mean"].min() == pytest.approx(30.15245737)
 
         # func = "median"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="median", column="age", name="median")
+        titanic_copy.analytic(func="median", columns="age", name="median")
         assert titanic_copy["median"].min() == pytest.approx(28)
 
         # func = "min"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="min", column="age", name="min")
+        titanic_copy.analytic(func="min", columns="age", name="min")
         assert titanic_copy["min"].max() == pytest.approx(0.33)
 
         # func = "mode"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="mode", column="embarked", name="mode")
+        titanic_copy.analytic(func="mode", columns="embarked", name="mode")
         assert titanic_copy["mode"].distinct() == ["S"]
         assert titanic_copy["mode_count"].distinct() == [873]
 
         # func = "q%"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="20%", column="age", name="q20%")
+        titanic_copy.analytic(func="20%", columns="age", name="q20%")
         assert titanic_copy["q20%"].max() == pytest.approx(19)
 
         # func = "pct_change"
         titanic_copy = titanic_vd.copy()
         titanic_copy.analytic(
             func="pct_change",
-            column="age",
+            columns="age",
             name="pct_change",
             order_by={"name": "asc", "ticket": "desc"},
         )
@@ -472,12 +450,12 @@ class TestvDFFeatureEngineering:
 
         # func = "prod"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="prod", column="fare", by=["pclass"], name="prod")
+        titanic_copy.analytic(func="prod", columns="fare", by=["pclass"], name="prod")
         assert titanic_copy["prod"].min() == 0
 
         # func = "range"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="range", column="age", name="range")
+        titanic_copy.analytic(func="range", columns="age", name="range")
         assert titanic_copy["range"].max() == pytest.approx(79.67)
 
         # func = "rank"
@@ -498,32 +476,32 @@ class TestvDFFeatureEngineering:
 
         # func = "sem"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="sem", column="age", name="sem")
+        titanic_copy.analytic(func="sem", columns="age", name="sem")
         assert titanic_copy["sem"].median() == pytest.approx(0.457170684605937)
 
         # func = "skewness"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="skewness", column="age", name="skewness")
+        titanic_copy.analytic(func="skewness", columns="age", name="skewness")
         assert titanic_copy["skewness"].max() == pytest.approx(0.4088764607)
 
         # func = "sum"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="sum", column="age", name="sum")
+        titanic_copy.analytic(func="sum", columns="age", name="sum")
         assert titanic_copy["sum"].max() == pytest.approx(30062)
 
         # func = "std"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="std", column="age", name="std")
+        titanic_copy.analytic(func="std", columns="age", name="std")
         assert titanic_copy["std"].median() == pytest.approx(14.4353046299159)
 
         # func = "unique"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="unique", column="pclass", name="unique")
+        titanic_copy.analytic(func="unique", columns="pclass", name="unique")
         assert titanic_copy["unique"].max() == pytest.approx(3)
 
         # func = "var"
         titanic_copy = titanic_vd.copy()
-        titanic_copy.analytic(func="var", column="age", name="var")
+        titanic_copy.analytic(func="var", columns="age", name="var")
         assert titanic_copy["var"].median() == pytest.approx(208.378019758472)
 
     def test_vDF_asfreq(self, smart_meters_vd):

@@ -48,11 +48,6 @@
 #
 # Modules
 #
-# Standard Python Modules
-import warnings
-
-warnings.warn(
-    "verticapy.connections.connect has been deprecated. It will be removed in v0.5.1. Use verticapy.connect instead",
-    Warning,
-)
-from verticapy.connect import *
+# VerticaPy Modules
+from verticapy.stats.tools import *
+from verticapy.stats.math import *

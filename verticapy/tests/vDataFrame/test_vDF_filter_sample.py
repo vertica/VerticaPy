@@ -13,7 +13,7 @@
 
 import pytest, warnings
 from verticapy import vDataFrame
-from verticapy import drop_table
+from verticapy import drop
 
 from verticapy import set_option
 
@@ -23,36 +23,36 @@ set_option("random_state", 0)
 
 @pytest.fixture(scope="module")
 def smart_meters_vd(base):
-    from verticapy.learn.datasets import load_smart_meters
+    from verticapy.datasets import load_smart_meters
 
     smart_meters = load_smart_meters(cursor=base.cursor)
     yield smart_meters
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.smart_meters", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
@@ -103,10 +103,9 @@ class TestvDFFilterSample:
 
     def test_vDF_filter(self, titanic_vd):
         result = titanic_vd.copy().filter(
-            expr="pclass = 1 OR age > 50",
-            conditions=["embarked = 'S'", "boat IS NOT NULL"],
+            ["pclass = 1 OR age > 50", "embarked = 'S'", "boat IS NOT NULL"],
         )
-        assert result.shape() == (343, 14)
+        assert result.shape() == (99, 14)
 
     def test_vDF_first(self, smart_meters_vd):
         result = smart_meters_vd.copy().first(ts="time", offset="6 months",)

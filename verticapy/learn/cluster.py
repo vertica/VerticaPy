@@ -58,6 +58,7 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # ---#
 class BisectingKMeans(Clustering):
@@ -164,7 +165,7 @@ tol: float, optional
         check_types(
             [("pic_path", pic_path, [str],),]
         )
-        plot_BKtree(self.cluster_centers_.values, pic_path=pic_path)
+        return plot_BKtree(self.cluster_centers_.values, pic_path=pic_path)
 
 
 # ---#
@@ -242,6 +243,10 @@ p: int, optional
 	object
  		self
 		"""
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame],),
@@ -251,7 +256,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -471,15 +476,21 @@ tol: float, optional
         version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
-    def plot_voronoi(self, ax=None):
+    def plot_voronoi(
+        self, max_nb_points: int = 50, ax=None, **style_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
     ----------
+    max_nb_points: int, optional
+        Maximum number of points to display.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -494,6 +505,14 @@ tol: float, optional
             )
             self.cursor.execute(query)
             clusters = self.cursor.fetchall()
-            return voronoi_plot(clusters=clusters, columns=self.X, ax=ax)
+            return voronoi_plot(
+                clusters=clusters,
+                columns=self.X,
+                input_relation=self.input_relation,
+                cursor=self.cursor,
+                ax=ax,
+                max_nb_points=max_nb_points,
+                **style_kwds,
+            )
         else:
             raise Exception("Voronoi Plots are only available in 2D")

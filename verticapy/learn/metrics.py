@@ -52,6 +52,9 @@
 import math
 from collections.abc import Iterable
 
+# Other Modules
+import numpy as np
+
 # VerticaPy Modules
 from verticapy import *
 from verticapy import vDataFrame
@@ -62,6 +65,66 @@ from verticapy.toolbox import *
 #
 # Regression
 #
+# ---#
+def aic_bic(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    k: int = 1,
+):
+    """
+---------------------------------------------------------------------------
+Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
+Criterion).
+
+Parameters
+----------
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str/vDataFrame
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+cursor: DBcursor, optional
+    Vertica DB cursor.
+k: int, optional
+    Number of predictors.
+
+Returns
+-------
+tuple of floats
+    (AIC, BIC)
+    """
+    check_types(
+        [
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
+            ("k", k, [int],),
+        ]
+    )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
+    query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {}".format(
+        y_true, y_score, input_relation
+    )
+    executeSQL(cursor, query, "Computing the RSS Score.")
+    rss, n = cursor.fetchone()
+    if rss > 0:
+        result = (
+            n * math.log(rss / n) + 2 * (k + 1),
+            n * math.log(rss / n) + (k + 1) * math.log(n),
+        )
+    else:
+        result = -float("inf"), -float("inf")
+    if conn:
+        conn.close()
+    return result
+
+
 # ---#
 def anova_table(
     y_true: str,
@@ -585,11 +648,20 @@ tablesample
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
     }
     executeSQL(cursor, query, "Computing the Regression Report.")
     result = cursor.fetchone()
     n = result[5]
+    if result[4] > 0:
+        aic, bic = (
+            n * math.log(result[4]) + 2 * (k + 1),
+            n * math.log(result[4]) + (k + 1) * math.log(n),
+        )
+    else:
+        aic, bic = -np.inf, -np.inf
     values["value"] = [
         result[0],
         result[1],
@@ -599,6 +671,8 @@ tablesample
         math.sqrt(result[4]),
         r2,
         1 - ((1 - r2) * (n - 1) / (n - k - 1)),
+        aic,
+        bic,
     ]
     if conn:
         conn.close()

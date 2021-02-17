@@ -11,14 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import RandomForestRegressor
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
 
-from verticapy import set_option
-
 set_option("print_info", False)
+
+
+@pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +64,7 @@ def rfr_data_vd(base):
     rfr_data = vDataFrame(input_relation="public.rfr_data", cursor=base.cursor)
     yield rfr_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.rfr_data", cursor=base.cursor)
+        drop(name="public.rfr_data", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +130,7 @@ class TestRFR:
         assert fim["index"] == ["cost", "owned cars", "gender", "income"]
         assert fim["importance"] == [88.41, 7.25, 4.35, 0.0]
         assert fim["sign"] == [1, 1, 1, 0]
-        plt.close()
+        plt.close("all")
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -173,9 +181,14 @@ class TestRFR:
             "nbins": 40,
         }
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_get_plot(self):
-        pass
+    def test_get_plot(self, base, winequality_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = RandomForestRegressor("model_test_plot", cursor=base.cursor)
+        model_test.fit(winequality_vd, ["alcohol"], "quality")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 9
+        plt.close("all")
+        model_test.drop()
 
     @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
     def test_to_sklearn(self, model):
@@ -215,6 +228,8 @@ class TestRFR:
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
         assert reg_rep["value"][0] == pytest.approx(1.0, abs=1e-6)
         assert reg_rep["value"][1] == pytest.approx(0.0, abs=1e-6)
@@ -224,6 +239,8 @@ class TestRFR:
         assert reg_rep["value"][5] == pytest.approx(0.0, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(1.0, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(1.0, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-float("inf"), abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(-float("inf"), abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -265,20 +282,20 @@ class TestRFR:
         assert model.score(method="r2a") == pytest.approx(1.0, abs=1e-6)
         # method = "var"
         assert model.score(method="var") == pytest.approx(1.0, abs=1e-6)
+        # method = "aic"
+        assert model.score(method="aic") == pytest.approx(-float("inf"), abs=1e-6)
+        # method = "bic"
+        assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
-    def test_set_cursor(self, base):
-        model_test = RandomForestRegressor("rfr_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.rfr_data", ["gender"], "transportation")
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'rfr_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "rfr_cursor_test"
-
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_features": 1000})
@@ -318,6 +335,6 @@ class TestRFR:
             "1.000000",
         ]
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_plot_tree(self, model):
-        pass
+        result = model.plot_tree()
+        assert result.by_attr()[0:3] == "[1]"

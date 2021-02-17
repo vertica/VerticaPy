@@ -671,12 +671,16 @@ def bubble(
     vdf,
     columns: list,
     catcol: str = "",
+    cmap_col: str = "",
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
     ax=None,
     **style_kwds,
 ):
+    assert not(catcol) or not(cmap_col), ParameterError("Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both.")
+    if len(columns) == 2:
+        columns += [1]
     if "color" in style_kwds:
         colors = style_kwds["color"]
     elif "colors" in style_kwds:
@@ -685,7 +689,7 @@ def bubble(
         colors = gen_colors()
     if isinstance(colors, str):
         colors = [colors]
-    if not (catcol):
+    if not(catcol) and not(cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
         query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             columns[0],
@@ -701,16 +705,12 @@ def bubble(
         query_result = vdf.__executeSQL__(
             query=query, title="Select random points to draw the scatter plot"
         ).fetchall()
-        max_size = max([float(item[2]) for item in query_result])
-        min_size = min([float(item[2]) for item in query_result])
-        column1, column2, size = (
-            [float(item[0]) for item in query_result],
-            [float(item[1]) for item in query_result],
-            [
-                1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50)
-                for item in query_result
-            ],
-        )
+        size = 50
+        if columns[2] != 1:
+            max_size = max([float(item[2]) for item in query_result])
+            min_size = min([float(item[2]) for item in query_result])
+            size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+        column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -731,51 +731,53 @@ def bubble(
         ax.set_xlabel(columns[0])
         param = {
             "color": colors[0],
-            "alpha": 0.5,
+            "alpha": 0.8,
             "edgecolors": "black",
         }
         scatter = ax.scatter(
             column1, column2, s=size, **updated_dict(param, style_kwds),
         )
-        leg1 = ax.legend(
-            [
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor=colors[0],
-                    label="Scatter",
-                    markersize=min(size) / 100 + 15,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor=colors[0],
-                    label="Scatter",
-                    markersize=max(size) / 100 + 15,
-                ),
-            ],
-            [
-                min([item[2] for item in query_result]),
-                max([item[2] for item in query_result]),
-            ],
-            bbox_to_anchor=[1, 0.5],
-            loc="center left",
-            title=columns[2],
-            labelspacing=1,
-        )
+        if columns[2] != 1:
+            leg1 = ax.legend(
+                [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor=colors[0],
+                        label="Scatter",
+                        markersize=min(size) / 100 + 15,
+                    ),
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor=colors[0],
+                        label="Scatter",
+                        markersize=max(size) / 100 + 15,
+                    ),
+                ],
+                [
+                    min([item[2] for item in query_result]),
+                    max([item[2] for item in query_result]),
+                ],
+                bbox_to_anchor=[1, 0.5],
+                loc="center left",
+                title=columns[2],
+                labelspacing=1,
+            )
     else:
         count = vdf.shape()[0]
-        all_categories = vdf[catcol].distinct()
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(12, 7)
             ax.grid()
             ax.set_axisbelow(True)
+        else:
+            fig = plt
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
@@ -793,99 +795,131 @@ def bubble(
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(im, extent=bbox)
         others = []
-        groupby_cardinality = vdf[catcol].nunique(True)
         count = vdf.shape()[0]
         tablesample = 0.1 if (count > 10000) else 0.9
-        all_columns, all_scatter = [], []
-        max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+        if columns[2] != 1:
+            max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
         custom_lines = []
-        for idx, category in enumerate(all_categories):
-            query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+        if catcol:
+            all_categories = vdf[catcol].distinct()
+            groupby_cardinality = vdf[catcol].nunique(True)
+            for idx, category in enumerate(all_categories):
+                query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+                query = query.format(
+                    columns[0],
+                    columns[1],
+                    columns[2],
+                    vdf.__genSQL__(True),
+                    tablesample,
+                    catcol,
+                    str(category).replace("'", "''"),
+                    columns[0],
+                    columns[1],
+                    columns[2],
+                    int(max_nb_points / len(all_categories)),
+                )
+                vdf.__executeSQL__(
+                    query=query,
+                    title="Select random points to draw the bubble plot (category = '{}')".format(
+                        str(category)
+                    ),
+                )
+                query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                size = 50
+                if columns[2] != 1:
+                    size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+                column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
+                param = {
+                    "alpha": 0.8,
+                    "color": colors[idx % len(colors)],
+                    "edgecolors": "black",
+                }
+                ax.scatter(column1, column2, s=size, **updated_dict(param, style_kwds, idx),)
+                custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
+            for idx, item in enumerate(all_categories):
+                if len(str(item)) > 20:
+                    all_categories[idx] = str(item)[0:20] + "..."
+        else:
+            query = "SELECT {}, {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
             query = query.format(
                 columns[0],
                 columns[1],
                 columns[2],
+                cmap_col,
                 vdf.__genSQL__(True),
                 tablesample,
-                catcol,
-                str(category).replace("'", "''"),
                 columns[0],
                 columns[1],
                 columns[2],
-                int(max_nb_points / len(all_categories)),
+                cmap_col,
+                max_nb_points,
             )
             vdf.__executeSQL__(
                 query=query,
-                title="Select random points to draw the bubble plot (category = '{}')".format(
-                    str(category)
-                ),
+                title="Select random points to draw the bubble plot with cmap expr."
             )
             query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            column1, column2, size = (
-                [float(item[0]) for item in query_result],
-                [float(item[1]) for item in query_result],
-                [
-                    1000
-                    * (float(item[2]) - min_size)
-                    / max((max_size - min_size), 1e-50)
-                    for item in query_result
-                ],
-            )
-            all_columns += [[column1, column2, size]]
+            size = 50
+            if columns[2] != 1:
+                size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+            column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[3]) for item in query_result]
             param = {
                 "alpha": 0.8,
-                "color": colors[idx % len(colors)],
+                "cmap": gen_cmap()[0],
                 "edgecolors": "black",
             }
-            all_scatter += [
-                ax.scatter(
-                    column1, column2, s=size, **updated_dict(param, style_kwds, idx),
-                )
-            ]
-            custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
-        for idx, item in enumerate(all_categories):
-            if len(str(item)) > 20:
-                all_categories[idx] = str(item)[0:20] + "..."
-        leg1 = ax.legend(
-            [
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="black",
-                    label="Scatter",
-                    markersize=min(size) / 100 + 15,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="black",
-                    label="Scatter",
-                    markersize=max(size) / 100 + 15,
-                ),
-            ],
-            [
-                min([item[2] for item in query_result]),
-                max([item[2] for item in query_result]),
-            ],
-            bbox_to_anchor=[1, 0.5],
-            loc="center left",
-            title=columns[2],
-            labelspacing=1,
-        )
+            im = ax.scatter(column1, column2, c=column3, s=size, **updated_dict(param, style_kwds),)
+        if columns[2] != 1:
+            if catcol:
+                bbox_to_anchor = [1, 0.5]
+                loc = "center left"
+            else:
+                bbox_to_anchor = [-0.1, 0.5]
+                loc = "center right"
+            leg1 = ax.legend(
+                [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor="black",
+                        label="Scatter",
+                        markersize=min(size) / 100 + 15,
+                    ),
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor="black",
+                        label="Scatter",
+                        markersize=max(size) / 100 + 15,
+                    ),
+                ],
+                [
+                    min([item[2] for item in query_result]),
+                    max([item[2] for item in query_result]),
+                ],
+                bbox_to_anchor=bbox_to_anchor,
+                loc=loc,
+                title=columns[2],
+                labelspacing=1,
+            )
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
-        leg2 = ax.legend(
-            custom_lines,
-            all_categories,
-            title=catcol,
-            loc="center right",
-            bbox_to_anchor=[-0.06, 0.5],
-        )
-        ax.add_artist(leg1)
+        if catcol:
+            leg2 = ax.legend(
+                custom_lines,
+                all_categories,
+                title=catcol,
+                loc="center right",
+                bbox_to_anchor=[-0.06, 0.5],
+            )
+        else:
+            fig.colorbar(im, ax=ax).set_label(cmap_col)
+        if columns[2] != 1 and catcol:
+            ax.add_artist(leg1)
     return ax
 
 
@@ -898,7 +932,6 @@ def cmatrix(
     m: int,
     vmax: float,
     vmin: float,
-    cmap: str = "PRGn",
     title: str = "",
     colorbar: str = "",
     x_label: str = "",
@@ -906,11 +939,11 @@ def cmatrix(
     with_numbers: bool = True,
     mround: int = 3,
     is_vector: bool = False,
-    interpolation: str = "nearest",
     inverse: bool = False,
     extent: list = [],
     is_pivot: bool = False,
     ax=None,
+    **style_kwds,
 ):
     if is_vector:
         is_vector = True
@@ -943,17 +976,18 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
+    param = {"cmap": gen_cmap()[0], "interpolation": "nearest"}
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
-            matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
+            matrix_array, vmax=vmax, vmin=vmin, **updated_dict(param, style_kwds),
         )
     else:
         try:
             im = ax.imshow(
-                matrix_array, cmap=cmap, interpolation=interpolation, extent=extent
+                matrix_array, extent=extent, **updated_dict(param, style_kwds),
             )
         except:
-            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation,)
+            im = ax.imshow(matrix_array, **updated_dict(param, style_kwds),)
     fig.colorbar(im, ax=ax).set_label(colorbar)
     if not (extent):
         ax.set_yticks([i for i in range(0, n)])
@@ -1207,7 +1241,6 @@ def hexbin(
     columns: list,
     method: str = "count",
     of: str = "",
-    cmap: str = "Reds",
     bbox: list = [],
     img: str = "",
     ax=None,
@@ -1286,7 +1319,7 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
-    param = {"cmap": cmap, "gridsize": 10, "mincnt": 1, "edgecolors": None}
+    param = {"cmap": gen_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
@@ -2169,12 +2202,11 @@ def pivot_table(
     h: tuple = (None, None),
     max_cardinality: tuple = (20, 20),
     show: bool = True,
-    cmap: str = "Reds",
     with_numbers: bool = True,
     ax=None,
-    interpolation: str = "nearest",
     return_ax: bool = False,
     extent: list = [],
+    **style_kwds,
 ):
     other_columns = ""
     if method.lower() == "median":
@@ -2431,17 +2463,16 @@ def pivot_table(
             len(all_column1_categories),
             vmax=max(all_count),
             vmin=min(all_count),
-            cmap=cmap,
             title="",
             colorbar=aggregate,
             x_label=columns[1],
             y_label=columns[0],
             with_numbers=with_numbers,
-            interpolation=interpolation,
             inverse=True,
             extent=extent,
             ax=ax,
             is_pivot=True,
+            **style_kwds,
         )
         if return_ax:
             return ax

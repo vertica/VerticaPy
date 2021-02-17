@@ -11,24 +11,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, math, sys
+import pytest, warnings, math, sys, os, verticapy
 from verticapy.learn.svm import LinearSVC
-from verticapy import drop_table
+from verticapy import drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
+
+
+@pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -104,7 +112,7 @@ class TestLinearSVC:
         assert f_imp["index"] == ["fare", "age"]
         assert f_imp["importance"] == [85.09, 14.91]
         assert f_imp["sign"] == [1, -1]
-        plt.close()
+        plt.close("all")
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(nbins=1000)
@@ -114,11 +122,16 @@ class TestLinearSVC:
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
         assert lift_ch["lift"][900] == pytest.approx(1.0)
-        plt.close()
+        plt.close("all")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_plot(self):
-        pass
+    def test_get_plot(self, base, winequality_vd):
+        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = LinearSVC("model_test_plot", cursor=base.cursor)
+        model_test.fit(winequality_vd, ["alcohol"], "good")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 11
+        plt.close("all")
+        model_test.drop()
 
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
@@ -129,10 +142,8 @@ class TestLinearSVC:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
-
-        # 'LinearSVC' object (md) has no attribute 'predict_proba'
-
-    @pytest.mark.skip(reason="shap doesn't want to work on python3.6")
+    
+    @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
         assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
@@ -166,7 +177,7 @@ class TestLinearSVC:
         assert model.get_attr("iteration_count")["iteration_count"][0] == 6
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT svm_classifier('public.lsvc_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS class_weights='none', C=1, max_iterations=100, intercept_mode='regularized', intercept_scaling=1, epsilon=0.0001);"
+            == "SELECT svm_classifier('public.lsvc_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS class_weights='1,1', C=1, max_iterations=100, intercept_mode='regularized', intercept_scaling=1, epsilon=0.0001);"
         )
 
     def test_get_params(self, model):
@@ -192,7 +203,7 @@ class TestLinearSVC:
         assert prc["threshold"][900] == pytest.approx(0.899)
         assert prc["recall"][900] == pytest.approx(0.010230179028133)
         assert prc["precision"][900] == pytest.approx(1.0)
-        plt.close()
+        plt.close("all")
 
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
@@ -215,7 +226,7 @@ class TestLinearSVC:
         assert roc["threshold"][700] == pytest.approx(0.7)
         assert roc["false_positive"][700] == pytest.approx(0.00661157024793388)
         assert roc["true_positive"][700] == pytest.approx(0.0485933503836317)
-        plt.close()
+        plt.close("all")
 
     def test_cutoff_curve(self, model):
         cutoff_curve = model.cutoff_curve(nbins=1000)
@@ -226,7 +237,7 @@ class TestLinearSVC:
         assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
         assert cutoff_curve["false_positive"][700] == pytest.approx(0.00661157024793388)
         assert cutoff_curve["true_positive"][700] == pytest.approx(0.0485933503836317)
-        plt.close()
+        plt.close("all")
 
     def test_score(self, model):
         assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
@@ -296,9 +307,15 @@ class TestLinearSVC:
             0.22831632653061223
         )
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_set_cursor(self):
-        pass
+    def test_set_cursor(self, model):
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})

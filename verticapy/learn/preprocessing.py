@@ -206,6 +206,8 @@ max_text_size: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )

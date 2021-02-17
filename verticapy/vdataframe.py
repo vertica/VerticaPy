@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings, pickle
+import random, time, shutil, re, decimal, warnings, pickle, datetime
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
 
@@ -58,10 +58,9 @@ pickle.DEFAULT_PROTOCOL = 4
 import verticapy
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
-from verticapy.connections.connect import read_auto_connect
+from verticapy.connect import read_auto_connect
 from verticapy.toolbox import *
 from verticapy.errors import *
-import verticapy.stats as st
 
 ##
 #                                           _____
@@ -155,6 +154,8 @@ vcolumns : vcolumn
         schema: str = "",
         empty: bool = False,
     ):
+        if isinstance(usecols, str):
+            usecols = [usecols]
         check_types(
             [
                 ("input_relation", input_relation, [str],),
@@ -403,10 +404,10 @@ vcolumns : vcolumn
         self,
         method: str = "pearson",
         columns: list = [],
-        cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -853,11 +854,12 @@ vcolumns : vcolumn
                     )
                     else None
                 )
-                if not (cmap):
+                if "cmap" not in style_kwds:
                     from verticapy.plot import gen_cmap
 
                     cm1, cm2 = gen_cmap()
                     cmap = cm1 if (method == "cramer") else cm2
+                    style_kwds["cmap"] = cmap
                 cmatrix(
                     matrix,
                     columns,
@@ -866,10 +868,10 @@ vcolumns : vcolumn
                     n,
                     vmax=vmax,
                     vmin=vmin,
-                    cmap=cmap,
                     title=title,
                     mround=round_nb,
                     ax=ax,
+                    **style_kwds,
                 )
             values = {"index": matrix[0][1 : len(matrix[0])]}
             del matrix[0]
@@ -899,7 +901,7 @@ vcolumns : vcolumn
                 if len(cols) == 0:
                     raise EmptyParameter("No numerical column found in the vDataFrame.")
             return self.__aggregate_matrix__(
-                method=method, columns=cols, cmap=cmap, round_nb=round_nb, show=show
+                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
             )
 
     # ---#
@@ -908,10 +910,10 @@ vcolumns : vcolumn
         focus: str,
         method: str = "pearson",
         columns: list = [],
-        cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1091,11 +1093,12 @@ vcolumns : vcolumn
                 if (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))
                 else None
             )
-            if not (cmap):
+            if "cmap" not in style_kwds:
                 from verticapy.plot import gen_cmap
 
                 cm1, cm2 = gen_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
+                style_kwds["cmap"] = cmap
             title = "Correlation Vector of {} ({})".format(focus, method)
             cmatrix(
                 [cols, [focus] + vector],
@@ -1105,11 +1108,11 @@ vcolumns : vcolumn
                 1,
                 vmax=vmax,
                 vmin=vmin,
-                cmap=cmap,
                 title=title,
                 mround=round_nb,
                 is_vector=True,
                 ax=ax,
+                **style_kwds,
             )
         for idx, column in enumerate(cols):
             self.__update_catalog__(
@@ -1473,6 +1476,8 @@ vcolumns : vcolumn
     vDataFrame.apply    : Applies functions to the input vcolumns.
     vDataFrame.applymap : Applies a function to all the vcolumns.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = self.numcol() if not (columns) else vdf_columns_names(columns, self)
@@ -1494,7 +1499,6 @@ vcolumns : vcolumn
         acf_type: str = "bar",
         confidence: bool = True,
         alpha: float = 0.95,
-        cmap: str = "",
         round_nb: int = 3,
         show: bool = True,
         ax=None,
@@ -1544,8 +1548,6 @@ vcolumns : vcolumn
     alpha: float, optional
         Significance Level. Probability to accept H0. Only used to compute the confidence
         band width.
-    cmap: str, optional
-        Color Map. It is used only if parameter 'acr_type' is set to 'heatmap'.
     round_nb: int, optional
         Round the coefficient using the input number of digits. It is used only if 
         acf_type is 'heatmap'.
@@ -1571,6 +1573,8 @@ vcolumns : vcolumn
         """
         if isinstance(method, str):
             method = method.lower()
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("by", by, [list],),
@@ -1584,7 +1588,6 @@ vcolumns : vcolumn
                     method,
                     ["pearson", "kendall", "spearman", "biserial", "cramer"],
                 ),
-                ("cmap", cmap, [str],),
                 ("round_nb", round_nb, [int, float],),
                 ("confidence", confidence, [bool],),
                 ("alpha", alpha, [int, float],),
@@ -1619,7 +1622,12 @@ vcolumns : vcolumn
             )
         elif acf_type == "heatmap":
             return self.__vdf_from_relation__(relation, "acf", "").corr(
-                [], method=method, cmap=cmap, round_nb=round_nb, focus=column, show=show
+                [],
+                method=method,
+                round_nb=round_nb,
+                focus=column,
+                show=show,
+                **style_kwds,
             )
         else:
             result = self.__vdf_from_relation__(relation, "acf", "").corr(
@@ -1726,6 +1734,10 @@ vcolumns : vcolumn
             else:
                 return str(item)
 
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(func, str):
+            func = [func]
         check_types([("func", func, [list],), ("columns", columns, [list],)])
         columns_check(columns, self)
         if not (columns):
@@ -2091,10 +2103,9 @@ vcolumns : vcolumn
     def analytic(
         self,
         func: str,
-        column: str = "",
+        columns: (str, list) = [],
         by: list = [],
         order_by: (dict, list) = [],
-        column2: str = "",
         name: str = "",
         offset: int = 1,
         x_smoothing: float = 0.5,
@@ -2150,16 +2161,14 @@ vcolumns : vcolumn
             var          : variance
                 Other analytical functions could work if it is part of 
                 the DB version you are using.
-    column: str, optional
-        Input vcolumn.
+    columns: str, optional
+        Input vcolumns. It can be a list of one or two elements.
     by: list, optional
         vcolumns used in the partition.
     order_by: dict / list, optional
         List of the vcolumns to use to sort the data using asc order or
         dictionary of all the sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    column2: str, optional
-        Second input vcolumn in case of functions using 2 parameters.
     name: str, optional
         Name of the new vcolumn. If empty a default name based on the other
         parameters will be generated.
@@ -2181,29 +2190,34 @@ vcolumns : vcolumn
     vDataFrame.eval    : Evaluates a customized expression.
     vDataFrame.rolling : Computes a customized moving window.
         """
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         check_types(
             [
                 ("func", func, [str],),
                 ("by", by, [list],),
                 ("name", name, [str],),
                 ("order_by", order_by, [list, dict],),
-                ("column", column, [str],),
+                ("columns", columns, [str, list],),
                 ("add_count", add_count, [bool],),
                 ("offset", offset, [int, float],),
                 ("x_smoothing", x_smoothing, [int, float],),
             ]
         )
         columns_check([elem for elem in order_by] + by, self)
-        if column:
-            columns_check([column], self)
-            column = vdf_columns_names([column], self)[0]
-        if column2:
-            columns_check([column2], self)
-            column2 = vdf_columns_names([column2], self)[0]
+        if isinstance(columns, str):
+            if columns:
+                columns = [columns]
+            else:
+                columns = []
+        columns_check(columns, self)
+        columns = vdf_columns_names(columns, self)
         by_name = ["by"] + by if (by) else []
         by_order = ["order_by"] + [elem for elem in order_by] if (order_by) else []
         if not (name):
-            name = gen_name([func, column, column2] + by_name + by_order)
+            name = gen_name([func] + columns + by_name + by_order)
         by = vdf_columns_names(by, self)
         func = func.lower()
         by = ", ".join(by)
@@ -2237,7 +2251,7 @@ vcolumns : vcolumn
                         func
                     )
                 )
-            elif not (column):
+            elif not (columns):
                 raise MissingColumn(
                     "The parameter 'column' must be a vDataFrame Column when using analytic method '{}'".format(
                         func
@@ -2245,30 +2259,32 @@ vcolumns : vcolumn
                 )
             if func in ("skewness", "kurtosis", "aad", "mad", "jb"):
                 mean_name = "{}_mean_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 )
                 median_name = "{}_median_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 )
                 std_name = "{}_std_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 )
                 count_name = "{}_count_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 )
                 all_cols = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
                 if func == "mad":
-                    self.eval(median_name, "MEDIAN({}) OVER ({})".format(column, by))
+                    self.eval(
+                        median_name, "MEDIAN({}) OVER ({})".format(columns[0], by)
+                    )
                 else:
-                    self.eval(mean_name, "AVG({}) OVER ({})".format(column, by))
+                    self.eval(mean_name, "AVG({}) OVER ({})".format(columns[0], by))
                 if func not in ("aad", "mad"):
-                    self.eval(std_name, "STDDEV({}) OVER ({})".format(column, by))
-                    self.eval(count_name, "COUNT({}) OVER ({})".format(column, by))
+                    self.eval(std_name, "STDDEV({}) OVER ({})".format(columns[0], by))
+                    self.eval(count_name, "COUNT({}) OVER ({})".format(columns[0], by))
                 if func == "kurtosis":
                     self.eval(
                         name,
                         "AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
-                            column,
+                            columns[0],
                             mean_name,
                             std_name,
                             by,
@@ -2286,7 +2302,7 @@ vcolumns : vcolumn
                     self.eval(
                         name,
                         "AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
-                            column,
+                            columns[0],
                             mean_name,
                             std_name,
                             by,
@@ -2300,14 +2316,14 @@ vcolumns : vcolumn
                         name,
                         "{} / 6 * (POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 3)) OVER ({}) * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2)), 2) + POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 4)) OVER ({}) * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3)), 2) / 4)".format(
                             count_name,
-                            column,
+                            columns[0],
                             mean_name,
                             std_name,
                             by,
                             count_name,
                             count_name,
                             count_name,
-                            column,
+                            columns[0],
                             mean_name,
                             std_name,
                             by,
@@ -2324,20 +2340,22 @@ vcolumns : vcolumn
                 elif func == "aad":
                     self.eval(
                         name,
-                        "AVG(ABS({} - {})) OVER ({})".format(column, mean_name, by),
+                        "AVG(ABS({} - {})) OVER ({})".format(columns[0], mean_name, by),
                     )
                 elif func == "mad":
                     self.eval(
                         name,
-                        "AVG(ABS({} - {})) OVER ({})".format(column, median_name, by),
+                        "AVG(ABS({} - {})) OVER ({})".format(
+                            columns[0], median_name, by
+                        ),
                     )
             elif func == "top":
                 self.eval(
                     name,
                     "ROW_NUMBER() OVER ({})".format(
-                        "PARTITION BY {}".format(column)
+                        "PARTITION BY {}".format(columns[0])
                         if not (by)
-                        else "{}, {}".format(by, column)
+                        else "{}, {}".format(by, columns[0])
                     ),
                 )
                 if add_count:
@@ -2349,14 +2367,14 @@ vcolumns : vcolumn
                     )
                 self[name].apply(
                     "NTH_VALUE({}, 1) OVER ({} ORDER BY {} DESC)".format(
-                        column, by, "{}"
+                        columns[0], by, "{}"
                     )
                 )
             elif func == "unique":
                 self.eval(
                     name,
                     "DENSE_RANK() OVER ({} ORDER BY {} ASC) + DENSE_RANK() OVER ({} ORDER BY {} DESC) - 1".format(
-                        by, column, by, column
+                        by, columns[0], by, columns[0]
                     ),
                 )
             elif "%" == func[-1]:
@@ -2371,39 +2389,39 @@ vcolumns : vcolumn
                 self.eval(
                     name,
                     "PERCENTILE_CONT({}) WITHIN GROUP(ORDER BY {}) OVER ({})".format(
-                        x, column, by
+                        x, columns[0], by
                     ),
                 )
             elif func == "range":
                 self.eval(
                     name,
                     "MAX({}) OVER ({}) - MIN({}) OVER ({})".format(
-                        column, by, column, by
+                        columns[0], by, columns[0], by
                     ),
                 )
             elif func == "iqr":
                 self.eval(
                     name,
                     "PERCENTILE_CONT(0.75) WITHIN GROUP(ORDER BY {}) OVER ({}) - PERCENTILE_CONT(0.25) WITHIN GROUP(ORDER BY {}) OVER ({})".format(
-                        column, by, column, by
+                        columns[0], by, columns[0], by
                     ),
                 )
             elif func == "sem":
                 self.eval(
                     name,
                     "STDDEV({}) OVER ({}) / SQRT(COUNT({}) OVER ({}))".format(
-                        column, by, column, by
+                        columns[0], by, columns[0], by
                     ),
                 )
             elif func == "prod":
                 self.eval(
                     name,
                     "DECODE(ABS(MOD(SUM(CASE WHEN {} < 0 THEN 1 ELSE 0 END) OVER ({}), 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({}))) OVER ({}))".format(
-                        column, by, column, by
+                        columns[0], by, columns[0], by
                     ),
                 )
             else:
-                self.eval(name, "{}({}) OVER ({})".format(func.upper(), column, by))
+                self.eval(name, "{}({}) OVER ({})".format(func.upper(), columns[0], by))
         elif func in (
             "lead",
             "lag",
@@ -2416,7 +2434,7 @@ vcolumns : vcolumn
             "exponential_moving_average",
             "pct_change",
         ):
-            if not (column) and func in (
+            if not (columns) and func in (
                 "lead",
                 "lag",
                 "first_value",
@@ -2424,11 +2442,11 @@ vcolumns : vcolumn
                 "pct_change",
             ):
                 raise ParameterError(
-                    "The parameter 'column' must be a vDataFrame Column when using analytic method '{}'".format(
+                    "The parameter 'columns' must be a vDataFrame column when using analytic method '{}'".format(
                         func
                     )
                 )
-            elif (column) and func not in (
+            elif (columns) and func not in (
                 "lead",
                 "lag",
                 "first_value",
@@ -2437,7 +2455,7 @@ vcolumns : vcolumn
                 "exponential_moving_average",
             ):
                 raise ParameterError(
-                    "The parameter 'column' must be empty when using analytic method '{}'".format(
+                    "The parameter 'columns' must be empty when using analytic method '{}'".format(
                         func
                     )
                 )
@@ -2454,13 +2472,19 @@ vcolumns : vcolumn
             if func == "pct_change":
                 self.eval(
                     name,
-                    "{} / (LAG({}) OVER ({}{}))".format(column, column, by, order_by),
+                    "{} / (LAG({}) OVER ({}{}))".format(
+                        columns[0], columns[0], by, order_by
+                    ),
                 )
             else:
                 self.eval(
                     name,
                     "{}({}{}) OVER ({}{})".format(
-                        func.upper(), column, info_param, by, order_by
+                        func.upper(),
+                        columns[0] if (columns) else "",
+                        info_param,
+                        by,
+                        order_by,
                     ),
                 )
         elif func in ("corr", "cov", "beta"):
@@ -2470,34 +2494,28 @@ vcolumns : vcolumn
                         func
                     )
                 )
-            if not (column):
+            if len(columns) != 2:
                 raise MissingColumn(
-                    "The parameter 'column' must be a vcolumn when using analytic method '{}'".format(
+                    "The parameter 'columns' includes 2 vcolumns when using analytic method '{}'".format(
                         func
                     )
                 )
-            elif not (column2):
-                raise MissingColumn(
-                    "The parameter 'column2' must be a vcolumn when using analytic method '{}'".format(
-                        func
-                    )
-                )
-            if column == column2:
+            if columns[0] == columns[1]:
                 if func == "cov":
-                    expr = "VARIANCE({}) OVER ({})".format(column, by)
+                    expr = "VARIANCE({}) OVER ({})".format(columns[0], by)
                 else:
                     expr = 1
             else:
                 if func == "corr":
                     den = " / (STDDEV({}) OVER ({}) * STDDEV({}) OVER ({}))".format(
-                        column, by, column2, by
+                        columns[0], by, columns[1], by
                     )
                 elif func == "beta":
-                    den = " / (VARIANCE({}) OVER ({}))".format(column2, by)
+                    den = " / (VARIANCE({}) OVER ({}))".format(columns[1], by)
                 else:
                     den = ""
                 expr = "(AVG({} * {}) OVER ({}) - AVG({}) OVER ({}) * AVG({}) OVER ({})){}".format(
-                    column, column2, by, column, by, column2, by, den
+                    columns[0], columns[1], by, columns[0], by, columns[1], by, den
                 )
             self.eval(
                 name, expr,
@@ -2507,7 +2525,7 @@ vcolumns : vcolumn
                 self.eval(
                     name,
                     "{}({}) OVER ({}{})".format(
-                        func.upper(), column, info_param, by, order_by
+                        func.upper(), columns[0], info_param, by, order_by
                     ),
                 )
             except:
@@ -2589,6 +2607,10 @@ vcolumns : vcolumn
     vDataFrame.join    : Joins the vDataFrame with another relation.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
+        if isinstance(expr1, str):
+            expr1 = [expr1]
+        if isinstance(expr2, str):
+            expr2 = [expr2]
         check_types(
             [
                 ("expr1", expr1, [list],),
@@ -2688,7 +2710,9 @@ vcolumns : vcolumn
         return self.apply(function)
 
     # ---#
-    def asfreq(self, ts: str, rule: str, method: dict, by: list = []):
+    def asfreq(
+        self, ts: str, rule: (str, datetime.timedelta), method: dict, by: list = []
+    ):
         """
     ---------------------------------------------------------------------------
     Computes a regular time interval vDataFrame by interpolating the missing 
@@ -2699,7 +2723,7 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    rule: str
+    rule: str / time
         Interval to use to slice the time. For example, '5 minutes' will create records
         separated by '5 minutes' time interval.
     method: dict
@@ -2723,10 +2747,12 @@ vcolumns : vcolumn
     vDataFrame[].fillna  : Fills the vcolumn missing values.
     vDataFrame[].slice   : Slices the vcolumn.
         """
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("ts", ts, [str],),
-                ("rule", rule, [str],),
+                ("rule", rule, [str, datetime.timedelta],),
                 ("method", method, [dict],),
                 ("by", by, [list],),
             ]
@@ -2795,7 +2821,7 @@ vcolumns : vcolumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: str):
+    def at_time(self, ts: str, time: (str, datetime.timedelta)):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -2805,7 +2831,7 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    time: str
+    time: str / time
         Input Time. For example, time = '12:00' will filter the data when time('ts') 
         is equal to 12:00.
 
@@ -2822,7 +2848,7 @@ vcolumns : vcolumn
     vDataFrame.last         : Filters the data by only keeping the last records.
         """
         check_types(
-            [("ts", ts, [str],), ("time", time, [str],),]
+            [("ts", ts, [str],), ("time", time, [str, datetime.timedelta,],),]
         )
         columns_check([ts], self)
         self.filter("{}::time = '{}'".format(str_column(ts), time),)
@@ -2920,6 +2946,8 @@ vcolumns : vcolumn
             method = method.lower()
         if isinstance(hist_type, str):
             hist_type = hist_type.lower()
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -2975,7 +3003,10 @@ vcolumns : vcolumn
 
     # ---#
     def between_time(
-        self, ts: str, start_time: str, end_time: str,
+        self,
+        ts: str,
+        start_time: (str, datetime.timedelta),
+        end_time: (str, datetime.timedelta),
     ):
         """
     ---------------------------------------------------------------------------
@@ -2986,10 +3017,10 @@ vcolumns : vcolumn
     ts: str
         TS (Time Series) vcolumn to use to filter the data. The vcolumn type must be
         date like (date, datetime, timestamp...)
-    start_time: str
+    start_time: str / time
         Input Start Time. For example, time = '12:00' will filter the data when 
         time('ts') is lesser than 12:00.
-    end_time: str
+    end_time: str / time
         Input End Time. For example, time = '14:00' will filter the data when 
         time('ts') is greater than 14:00.
 
@@ -3008,8 +3039,8 @@ vcolumns : vcolumn
         check_types(
             [
                 ("ts", ts, [str],),
-                ("start_time", start_time, [str],),
-                ("end_time", end_time, [str],),
+                ("start_time", start_time, [str, datetime.timedelta,],),
+                ("end_time", end_time, [str, datetime.timedelta,],),
             ]
         )
         columns_check([ts], self)
@@ -3071,6 +3102,8 @@ vcolumns : vcolumn
     vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self) if (columns) else self.numcol()
@@ -3082,8 +3115,9 @@ vcolumns : vcolumn
     def bubble(
         self,
         columns: list,
-        size_bubble_col: str,
+        size_bubble_col: str = "",
         catcol: str = "",
+        cmap_col: str = "",
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
@@ -3102,6 +3136,8 @@ vcolumns : vcolumn
         Numerical vcolumn to use to represent the Bubble size.
     catcol: str, optional
         Categorical column used as color.
+    cmap_col: str, optional
+        Numerical column used with a color map as color.
     max_nb_points: int, optional
         Maximum number of points to display.
     bbox: list, optional
@@ -3123,10 +3159,13 @@ vcolumns : vcolumn
     --------
     vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
                 ("size_bubble_col", size_bubble_col, [str],),
+                ("cmap_col", cmap_col, [str],),
                 ("max_nb_points", max_nb_points, [int, float],),
                 ("bbox", bbox, [list],),
                 ("img", img, [str],),
@@ -3137,14 +3176,19 @@ vcolumns : vcolumn
         if catcol:
             columns_check([catcol], self)
             catcol = vdf_columns_names([catcol], self)[0]
-        columns_check([size_bubble_col], self)
-        size_bubble_col = vdf_columns_names([size_bubble_col], self)[0]
+        if size_bubble_col:
+            columns_check([size_bubble_col], self)
+            size_bubble_col = vdf_columns_names([size_bubble_col], self)[0]
+        if cmap_col:
+            columns_check([cmap_col], self)
+            cmap_col = vdf_columns_names([cmap_col], self)[0]
         from verticapy.plot import bubble
 
         return bubble(
             self,
-            columns + [size_bubble_col],
+            columns + [size_bubble_col] if size_bubble_col else columns,
             catcol,
+            cmap_col,
             max_nb_points,
             bbox,
             img,
@@ -3280,6 +3324,8 @@ vcolumns : vcolumn
         """
 
         check_types([("name", name, [str],)])
+        import verticapy.stats as st
+
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
@@ -3287,11 +3333,11 @@ vcolumns : vcolumn
         self,
         columns: list = [],
         method: str = "pearson",
-        cmap: str = "",
         round_nb: int = 3,
         focus: str = "",
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3314,8 +3360,6 @@ vcolumns : vcolumn
                                          count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
-    cmap: str, optional
-        Color Map.
     round_nb: int, optional
         Rounds the coefficient using the input number of digits.
     focus: str, optional
@@ -3324,6 +3368,8 @@ vcolumns : vcolumn
         If set to True, the Correlation Matrix will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3340,6 +3386,8 @@ vcolumns : vcolumn
         """
         if isinstance(method, str):
             method = method.lower()
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3348,7 +3396,6 @@ vcolumns : vcolumn
                     method,
                     ["pearson", "kendall", "spearman", "biserial", "cramer"],
                 ),
-                ("cmap", cmap, [str],),
                 ("round_nb", round_nb, [int, float],),
                 ("focus", focus, [str],),
                 ("show", show, [bool],),
@@ -3360,10 +3407,10 @@ vcolumns : vcolumn
             return self.__aggregate_matrix__(
                 method=method,
                 columns=columns,
-                cmap=cmap,
                 round_nb=round_nb,
                 show=show,
                 ax=ax,
+                **style_kwds,
             )
         else:
             columns_check([focus], self)
@@ -3372,10 +3419,10 @@ vcolumns : vcolumn
                 focus,
                 method=method,
                 columns=columns,
-                cmap=cmap,
                 round_nb=round_nb,
                 show=show,
                 ax=ax,
+                **style_kwds,
             )
 
     # ---#
@@ -3589,6 +3636,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3627,10 +3676,10 @@ vcolumns : vcolumn
     def cov(
         self,
         columns: list = [],
-        cmap: str = "",
         focus: str = "",
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -3641,14 +3690,14 @@ vcolumns : vcolumn
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
-    cmap: str, optional
-        Color Map.
     focus: str, optional
         Focus the computation on only one vcolumn.
     show: bool, optional
         If set to True, the Covariance Matrix will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -3663,10 +3712,11 @@ vcolumns : vcolumn
     vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
     vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
-                ("cmap", cmap, [str],),
                 ("focus", focus, [str],),
                 ("show", show, [bool],),
             ]
@@ -3675,13 +3725,13 @@ vcolumns : vcolumn
         columns = vdf_columns_names(columns, self)
         if focus == "":
             return self.__aggregate_matrix__(
-                method="cov", columns=columns, cmap=cmap, show=show, ax=ax
+                method="cov", columns=columns, show=show, ax=ax, **style_kwds,
             )
         else:
             columns_check([focus], self)
             focus = vdf_columns_names([focus], self)[0]
             return self.__aggregate_vector__(
-                focus, method="cov", columns=columns, cmap=cmap, show=show, ax=ax
+                focus, method="cov", columns=columns, show=show, ax=ax, **style_kwds,
             )
 
     # ---#
@@ -3717,9 +3767,8 @@ vcolumns : vcolumn
         """
         return self.rolling(
             func="max",
-            column=column,
-            preceding="UNBOUNDED",
-            following=0,
+            columns=column,
+            window=("UNBOUNDED", 0),
             by=by,
             order_by=order_by,
             name=name,
@@ -3758,9 +3807,8 @@ vcolumns : vcolumn
         """
         return self.rolling(
             func="min",
-            column=column,
-            preceding="UNBOUNDED",
-            following=0,
+            columns=column,
+            window=("UNBOUNDED", 0),
             by=by,
             order_by=order_by,
             name=name,
@@ -3799,9 +3847,8 @@ vcolumns : vcolumn
         """
         return self.rolling(
             func="prod",
-            column=column,
-            preceding="UNBOUNDED",
-            following=0,
+            columns=column,
+            window=("UNBOUNDED", 0),
             by=by,
             order_by=order_by,
             name=name,
@@ -3840,9 +3887,8 @@ vcolumns : vcolumn
         """
         return self.rolling(
             func="sum",
-            column=column,
-            preceding="UNBOUNDED",
-            following=0,
+            columns=column,
+            window=("UNBOUNDED", 0),
             by=by,
             order_by=order_by,
             name=name,
@@ -3896,7 +3942,7 @@ vcolumns : vcolumn
     def del_catalog(self):
         """
     ---------------------------------------------------------------------------
-    Delete the current vDataFrame catalog.
+    Deletes the current vDataFrame catalog.
 
     Returns
     -------
@@ -3954,6 +4000,8 @@ vcolumns : vcolumn
     --------
     vDataFrame[].hist : Draws the Histogram of the vcolumn based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -3998,7 +4046,6 @@ vcolumns : vcolumn
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
             ]
-        ax.set_title("KernelDensity")
         ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
         ax.set_ylim(bottom=0)
         return ax
@@ -4046,6 +4093,8 @@ vcolumns : vcolumn
         """
         if isinstance(method, str):
             method = method.lower()
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 (
@@ -4348,6 +4397,8 @@ vcolumns : vcolumn
     vDataFrame
         self
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
@@ -4379,6 +4430,8 @@ vcolumns : vcolumn
     vDataFrame
         self
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [("columns", columns, [list],),]
         )
@@ -4399,7 +4452,7 @@ vcolumns : vcolumn
                 name=name,
                 expr="ROW_NUMBER() OVER (PARTITION BY {})".format(", ".join(columns)),
             )
-            self.filter(expr='"{}" = 1'.format(name),)
+            self.filter('"{}" = 1'.format(name),)
             self._VERTICAPY_VARIABLES_["exclude_columns"] += ['"{}"'.format(name)]
         elif verticapy.options["print_info"]:
             print("No duplicates detected.")
@@ -4427,6 +4480,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.filter: Filters the data using the input expression.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [("columns", columns, [list],),]
         )
@@ -4492,6 +4547,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.drop_duplicates : Filters the duplicated values.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -4847,20 +4904,15 @@ vcolumns : vcolumn
 
     # ---#
     def filter(
-        self, expr: str = "", conditions: list = [],
+        self, conditions: (list, str) = [], *args, **kwds,
     ):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame using the input expressions.
 
     Parameters
-    ----------
-    expr: str, optional
-        Customized SQL expression to use to filter the data. For example to keep
-        only the records where the vcolumn 'column' is greater than 5 you can
-        write 'column > 5' or '"column" > 5'. Try to always keep the double 
-        quotes if possible, it will make the parsing easier. 
-    conditions: list, optional
+    ---------- 
+    conditions: list / str, optional
         List of expressions. For example to keep only the records where the 
         vcolumn 'column' is greater than 5 and lesser than 10 you can write 
         ['"column" > 5', '"column" < 10'].
@@ -4880,16 +4932,19 @@ vcolumns : vcolumn
         conditions.
         """
         check_types(
-            [("expr", expr, [str],), ("conditions", conditions, [list],),]
+            [("conditions", conditions, [list, str,],),]
         )
         count = self.shape()[0]
-        if not (expr):
+        conj = "s were " if count > 1 else " was "
+        if not (isinstance(conditions, str)) or (args):
+            if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
+                conditions = [conditions]
+            conditions += list(args)
             for condition in conditions:
-                self.filter(expr=condition,)
+                self.filter(condition, print_info=False)
             count -= self.shape()[0]
             if count > 0:
                 if verticapy.options["print_info"]:
-                    conj = "s were " if count > 1 else " was "
                     print("{} element{}filtered".format(count, conj))
                 self.__add_to_history__(
                     "[Filter]: {} element{}filtered using the filter '{}'".format(
@@ -4904,7 +4959,7 @@ vcolumns : vcolumn
             for column in columns_tmp:
                 max_pos = max(max_pos, len(self[column].transformations) - 1)
             new_count = self.shape()[0]
-            self._VERTICAPY_VARIABLES_["where"] += [(expr, max_pos)]
+            self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
             try:
                 self._VERTICAPY_VARIABLES_["cursor"].execute(
                     "SELECT COUNT(*) FROM {}".format(self.__genSQL__())
@@ -4915,7 +4970,7 @@ vcolumns : vcolumn
                 del self._VERTICAPY_VARIABLES_["where"][-1]
                 if verticapy.options["print_info"]:
                     warning_message = "The expression '{}' is incorrect.\nNothing was filtered.".format(
-                        expr
+                        conditions
                     )
                     warnings.warn(warning_message, Warning)
                 return self
@@ -4923,16 +4978,16 @@ vcolumns : vcolumn
                 self.__update_catalog__(erase=True)
                 self._VERTICAPY_VARIABLES_["count"] = new_count
                 conj = "s were " if count > 1 else " was "
-                if verticapy.options["print_info"]:
+                if verticapy.options["print_info"] and "print_info" not in kwds:
                     print("{} element{}filtered.".format(count, conj))
                 self.__add_to_history__(
                     "[Filter]: {} element{}filtered using the filter '{}'".format(
-                        count, conj, expr
+                        count, conj, conditions
                     )
                 )
             else:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
-                if verticapy.options["print_info"]:
+                if verticapy.options["print_info"] and "print_info" not in kwds:
                     print("Nothing was filtered.")
         return self
 
@@ -4999,6 +5054,8 @@ vcolumns : vcolumn
     vDataFrame.datecol : Returns all the vDataFrame vcolumns of type date.
     vDataFrame.numcol  : Returns all the numerical vDataFrame vcolumns.
         """
+        if isinstance(exclude_columns, str):
+            exclude_columns = [columns]
         check_types([("exclude_columns", exclude_columns, [list],)])
         columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         result = []
@@ -5055,6 +5112,8 @@ vcolumns : vcolumn
     vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
     vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5115,6 +5174,10 @@ vcolumns : vcolumn
     vDataFrame.join     : Joins the vDataFrame with another relation.
     vDataFrame.sort     : Sorts the vDataFrame.
         """
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(expr, str):
+            expr = [expr]
         check_types([("columns", columns, [list],), ("expr", expr, [list],)])
         for i in range(len(columns)):
             column = vdf_columns_names([columns[i]], self)
@@ -5398,8 +5461,8 @@ vcolumns : vcolumn
         method: str = "count",
         of: str = "",
         h: tuple = (None, None),
-        cmap: str = "",
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5424,10 +5487,10 @@ vcolumns : vcolumn
     h: tuple, optional
         Interval width of the vcolumns 1 and 2 bars. Optimized h will be computed 
         if the parameter is empty or invalid.
-    cmap: str, optional
-        Color Map.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -5438,13 +5501,14 @@ vcolumns : vcolumn
     --------
     vDataFrame.pivot_table  : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
                 ("method", method, [str],),
                 ("of", of, [str],),
                 ("h", h, [list],),
-                ("cmap", cmap, [str],),
             ]
         )
         columns_check(columns, self, [2])
@@ -5452,11 +5516,6 @@ vcolumns : vcolumn
         if of:
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
-        if not (cmap):
-            from verticapy.plot import gen_cmap
-
-            cmap = gen_cmap()[0]
-
         for column in columns:
             if not (self[column].isnum()):
                 raise TypeError(
@@ -5474,14 +5533,12 @@ vcolumns : vcolumn
             h,
             (0, 0),
             True,
-            cmap,
             False,
             ax,
-            "bilinear",
             True,
             min_max[columns[0]] + min_max[columns[1]],
+            **style_kwds,
         )
-        ax.set_title("Heatmap of " + columns[0] + " vs " + columns[1])
         return ax
 
     # ---#
@@ -5490,7 +5547,6 @@ vcolumns : vcolumn
         columns: list,
         method: str = "count",
         of: str = "",
-        cmap: str = "",
         bbox: list = [],
         img: str = "",
         ax=None,
@@ -5514,8 +5570,6 @@ vcolumns : vcolumn
             sum     : Sum of the vcolumn 'of'.
     of: str, optional
         The vcolumn to use to compute the aggregation.
-    cmap: str, optional
-        Color Map.
     bbox: list, optional
         List of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
@@ -5537,12 +5591,13 @@ vcolumns : vcolumn
         """
         if isinstance(method, str):
             method = method.lower()
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
                 ("method", method, ["density", "count", "avg", "min", "max", "sum"],),
                 ("of", of, [str],),
-                ("cmap", cmap, [str],),
                 ("bbox", bbox, [list],),
                 ("img", img, [str],),
             ]
@@ -5552,13 +5607,9 @@ vcolumns : vcolumn
         if of:
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
-        if not (cmap):
-            from verticapy.plot import gen_cmap
-
-            cmap = gen_cmap()[0]
         from verticapy.plot import hexbin
 
-        return hexbin(self, columns, method, of, cmap, bbox, img, ax=ax, **style_kwds,)
+        return hexbin(self, columns, method, of, bbox, img, ax=ax, **style_kwds,)
 
     # ---#
     def hist(
@@ -5620,6 +5671,8 @@ vcolumns : vcolumn
     vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -5693,6 +5746,8 @@ vcolumns : vcolumn
     vDataFrame.head : Returns the vDataFrame head.
     vDataFrame.tail : Returns the vDataFrame tail.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -5875,6 +5930,10 @@ vcolumns : vcolumn
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.sort    : Sorts the vDataFrame.
         """
+        if isinstance(expr1, str):
+            expr1 = [expr1]
+        if isinstance(expr2, str):
+            expr2 = [expr2]
         check_types(
             [
                 ("on", on, [dict],),
@@ -6218,6 +6277,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.pivot : Returns the Pivot Table of the vDataFrame.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [("index", index, [str, list],), ("columns", columns, [list],),]
         )
@@ -6294,6 +6355,8 @@ vcolumns : vcolumn
         """
         if isinstance(method, str):
             method = method.lower()
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6400,6 +6463,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.normalize : Normalizes the input vcolumns.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6441,7 +6506,6 @@ vcolumns : vcolumn
         outliers_color: str = "black",
         inliers_color: str = "white",
         inliers_border_color: str = "red",
-        cmap: str = None,
         max_nb_points: int = 500,
         ax=None,
         **style_kwds,
@@ -6464,8 +6528,6 @@ vcolumns : vcolumn
         Inliers color.
     inliers_border_color: str, optional
         Inliers border color.
-    cmap: str, optional
-        Color Map.
     max_nb_points: int, optional
         Maximum number of points to display.
     ax: Matplotlib axes object, optional
@@ -6478,6 +6540,8 @@ vcolumns : vcolumn
     ax: Matplotlib axes object, optional
         The axes to plot on.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6485,7 +6549,6 @@ vcolumns : vcolumn
                 ("outliers_color", outliers_color, [str],),
                 ("inliers_color", inliers_color, [str],),
                 ("inliers_border_color", inliers_border_color, [str],),
-                ("cmap", cmap, [str],),
                 ("max_nb_points", max_nb_points, [int],),
             ]
         )
@@ -6500,7 +6563,6 @@ vcolumns : vcolumn
             outliers_color=outliers_color,
             inliers_color=inliers_color,
             inliers_border_color=inliers_border_color,
-            cmap=cmap,
             max_nb_points=max_nb_points,
             ax=ax,
             **style_kwds,
@@ -6567,6 +6629,8 @@ vcolumns : vcolumn
     vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
     vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
         """
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("by", by, [list],),
@@ -6612,26 +6676,29 @@ vcolumns : vcolumn
             def drop_temp_elem(self, schema):
                 try:
                     with warnings.catch_warnings(record=True) as w:
-                        drop_model(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
-                        drop_model(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
-                        drop_view(
+                        drop(
                             "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
                                 schema,
                                 get_session(self._VERTICAPY_VARIABLES_["cursor"]),
                             ),
                             cursor=self._VERTICAPY_VARIABLES_["cursor"],
+                            method="view",
                         )
                 except:
                     pass
@@ -6765,6 +6832,8 @@ vcolumns : vcolumn
     --------
     vDataFrame[].pie : Draws the Pie Chart of the vcolumn based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("max_cardinality", max_cardinality, [int, tuple, list],),
@@ -6875,9 +6944,9 @@ vcolumns : vcolumn
         max_cardinality: tuple = (20, 20),
         h: tuple = (None, None),
         show: bool = True,
-        cmap: str = "",
         with_numbers: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -6908,12 +6977,12 @@ vcolumns : vcolumn
         is empty or invalid.
     show: bool, optional
         If set to True, the result will be drawn using Matplotlib.
-    cmap: str, optional
-        Color Map.
     with_numbers: bool, optional
         If set to True, no number will be displayed in the final drawing.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -6926,6 +6995,8 @@ vcolumns : vcolumn
     vDataFrame.hexbin : Draws the Hexbin Plot of 2 vcolumns based on an aggregation.
     vDataFrame.pivot  : Returns the Pivot of the vDataFrame using the input aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -6933,7 +7004,6 @@ vcolumns : vcolumn
                 ("of", of, [str],),
                 ("max_cardinality", max_cardinality, [list],),
                 ("h", h, [list],),
-                ("cmap", cmap, [str],),
                 ("show", show, [bool],),
                 ("with_numbers", with_numbers, [bool],),
             ]
@@ -6943,10 +7013,6 @@ vcolumns : vcolumn
         if of:
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
-        if not (cmap):
-            from verticapy.plot import gen_cmap
-
-            cmap = gen_cmap()[0]
         from verticapy.plot import pivot_table
 
         return pivot_table(
@@ -6957,9 +7023,9 @@ vcolumns : vcolumn
             h,
             max_cardinality,
             show,
-            cmap,
             with_numbers,
             ax=ax,
+            **style_kwds,
         )
 
     # ---#
@@ -6967,8 +7033,8 @@ vcolumns : vcolumn
         self,
         ts: str,
         columns: list = [],
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         step: bool = False,
         ax=None,
         **style_kwds,
@@ -6985,10 +7051,10 @@ vcolumns : vcolumn
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
-    start_date: str, optional
+    start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str, optional
+    end_date: str / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     step: bool, optional
@@ -7007,12 +7073,22 @@ vcolumns : vcolumn
     --------
     vDataFrame[].plot : Draws the Time Series of one vcolumn.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
                 ("ts", ts, [str],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                (
+                    "start_date",
+                    start_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
+                (
+                    "end_date",
+                    end_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
             ]
         )
         columns_check(columns + [ts], self)
@@ -7047,6 +7123,8 @@ vcolumns : vcolumn
     vDataFrame
         the Polynomial object.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [("columns", columns, [list],), ("r", r, [int],),]
         )
@@ -7113,6 +7191,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
+        if isinstance(q, str):
+            q = [q]
         return self.aggregate(
             func=["{}%".format(float(item) * 100) for item in q], columns=columns
         )
@@ -7125,8 +7205,8 @@ vcolumns : vcolumn
         method: str = "count",
         rating: (str, tuple) = "",
         ts: str = "",
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -7149,7 +7229,7 @@ vcolumns : vcolumn
                      of the different items pair second element.
             median : Each item will be recommended based on the median rating
                      of the different items pair second element.
-    rating: str/tuple, optional
+    rating: str / tuple, optional
         Input vcolumn including the items rating.
         If the 'rating' type is 'tuple', it must composed of 3 elements: 
         (r_vdf, r_item_id, r_name) where:
@@ -7159,10 +7239,10 @@ vcolumns : vcolumn
     ts: str, optional
         TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
         date like (date, datetime, timestamp...) or numerical.
-    start_date: str, optional
+    start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str, optional
+    end_date: str / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
 
@@ -7180,8 +7260,16 @@ vcolumns : vcolumn
                 ("method", method, ["count", "avg", "median",],),
                 ("rating", rating, [str, list, tuple],),
                 ("ts", ts, [str],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                (
+                    "start_date",
+                    start_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
+                (
+                    "end_date",
+                    end_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
             ]
         )
         columns_check([unique_id, item_id], self)
@@ -7355,9 +7443,9 @@ vcolumns : vcolumn
         self,
         columns: list = [],
         method: str = "r2",
-        cmap: str = "",
         show: bool = True,
         ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -7385,12 +7473,12 @@ vcolumns : vcolumn
                 dependent expression in an expression pair.
             syy   : Returns the sum of squares of the dependent expression in an 
                 expression pair.
-    cmap: str, optional
-        Color Map.
     show: bool, optional
         If set to True, the Regression Matrix will be drawn using Matplotlib.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -7405,6 +7493,8 @@ vcolumns : vcolumn
     vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
     vDataFrame.pacf  : Computes the Partial Autocorrelations of the input vcolumn.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -7425,7 +7515,6 @@ vcolumns : vcolumn
                         "alpha",
                     ],
                 ),
-                ("cmap", cmap, [str],),
                 ("show", show, [bool],),
             ]
         )
@@ -7517,10 +7606,6 @@ vcolumns : vcolumn
         if show:
             from verticapy.plot import cmatrix
 
-            if not (cmap):
-                from verticapy.plot import gen_cmap
-
-                cmap = gen_cmap()[0]
             if method == "slope":
                 method_title = "Beta"
             elif method == "intercept":
@@ -7535,9 +7620,9 @@ vcolumns : vcolumn
                 n,
                 vmax=None,
                 vmin=None,
-                cmap=cmap,
                 title="{} Matrix".format(method_title),
                 ax=ax,
+                **style_kwds,
             )
         values = {"index": matrix[0][1 : len(matrix[0])]}
         del matrix[0]
@@ -7560,15 +7645,11 @@ vcolumns : vcolumn
     def rolling(
         self,
         func: str,
-        column: str,
-        preceding: (int, str),
-        following: (int, str),
-        column2: str = "",
-        name: str = "",
+        window: (list, tuple),
+        columns: (str, list),
         by: list = [],
         order_by: (dict, list) = [],
-        method: str = "rows",
-        rule: str = "auto",
+        name: str = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -7604,37 +7685,22 @@ vcolumns : vcolumn
             var         : variance
                 Other window functions could work if it is part of 
                 the DB version you are using.
-    column: str
-        Input vcolumn.
-    preceding: int/str
-        First part of the moving window. With which lag/lead the window 
-        should begin. It can be an integer or an interval.
-    following: int/str
-        Second part of the moving window. With which lag/lead the window 
-        should end. It can be an integer or an interval.
-    column2: str, optional
-        Second input vcolumn in case of functions using 2 parameters.
-    name: str, optional
-        Name of the new vcolumn. If empty a default name based on the other
-        parameters will be generated.
+    window: list / tuple
+        Window Frame Range.
+        If two integers, it will compute a Row Window, otherwise it will compute
+        a Time Window. For example, if set to (-5, 1), the moving windows will
+        take 5 rows preceding and one following. If set to ('- 5 minutes', '0 minutes'),
+        the moving window will take all the elements of the last 5 minutes.
+    columns: list
+        Input vcolumns. It can be a list of one or two elements.
     by: list, optional
         vcolumns used in the partition.
     order_by: dict / list, optional
         List of the vcolumns to use to sort the data using asc order or
         dictionary of all the sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    method: str, optional
-        Method to use to compute the window.
-            rows : Uses number of leads/lags instead of time intervals
-            range: Uses time intervals instead of number of leads/lags
-    rule: str, optional
-        Rule to use to compute the window.
-            auto   : The 'preceding' parameter will correspond to a past event and 
-                the parameter 'following' to a future event.
-            past   : Both parameters 'preceding' and following will consider
-                past events.
-            future : Both parameters 'preceding' and following will consider
-                future events.
+    name: str, optional
+        Name of the new vcolumn. If empty, a default name will be generated.
 
     Returns
     -------
@@ -7647,72 +7713,77 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
-        if isinstance(method, str):
-            method = method.lower()
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         check_types(
             [
-                ("name", name, [str],),
                 ("func", func, [str],),
-                ("column", column, [str],),
-                ("column2", column2, [str],),
-                ("preceding", preceding, [str, int, float],),
-                ("following", following, [str, int, float],),
+                ("columns", columns, [list, str],),
+                ("window", window, [list, tuple],),
                 ("by", by, [list],),
                 ("order_by", order_by, [list, dict],),
-                ("method", method, ["rows", "range"],),
-                ("rule", rule.lower(), ["auto", "past", "future"],),
+                ("name", name, [str],),
             ]
         )
-        columns_check([column] + by + [elem for elem in order_by], self)
-        rule = rule.lower()
+        assert len(window) == 2, ParameterError(
+            "The window must be composed of exactly 2 elements."
+        )
+        window = list(window)
+        rule = [0, 0]
+        unbounded, method = False, "rows"
+        for idx, w in enumerate(window):
+            if isinstance(w, (int, float)) and abs(w) == float("inf"):
+                w = "unbounded"
+            if isinstance(w, (str)):
+                if w.lower() == "unbounded":
+                    rule[idx] = "PRECEDING" if idx == 0 else "FOLLOWING"
+                    window[idx] = "UNBOUNDED"
+                else:
+                    nb_min = 0
+                    for i, char in enumerate(window[idx]):
+                        if char == "-":
+                            nb_min += 1
+                        elif char != " ":
+                            break
+                    rule[idx] = "PRECEDING" if nb_min % 2 == 1 else "FOLLOWING"
+                    window[idx] = "'" + window[idx][i:] + "'"
+                    method = "range"
+            elif isinstance(w, (datetime.timedelta)):
+                rule[idx] = (
+                    "PRECEDING" if window[idx] < datetime.timedelta(0) else "FOLLOWING"
+                )
+                window[idx] = "'" + str(abs(window[idx])) + "'"
+                method = "range"
+            else:
+                rule[idx] = "PRECEDING" if int(window[idx]) < 0 else "FOLLOWING"
+                window[idx] = abs(int(window[idx]))
+        if isinstance(columns, str):
+            columns = [columns]
+        columns_check(columns + by + [elem for elem in order_by], self)
         if not (name):
-            name = "moving_{}_{}".format(
-                gen_name([func, column, column2, preceding, following]), rule
+            name = "moving_{}".format(
+                gen_name([func] + columns + [window[0], rule[0], window[1], rule[1],]),
             )
-        if rule == "past":
-            rule_p, rule_f = "PRECEDING", "PRECEDING"
-        elif rule == "future":
-            rule_p, rule_f = "FOLLOWING", "FOLLOWING"
-        else:
-            rule_p, rule_f = "PRECEDING", "FOLLOWING"
-        column = vdf_columns_names([column], self)[0]
+        columns = vdf_columns_names(columns, self)
         by = (
             "" if not (by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self))
         )
         order_by = (
-            " ORDER BY {}".format(column)
+            " ORDER BY {}".format(columns[0])
             if not (order_by)
             else sort_str(order_by, self)
         )
         func = str_function(func.lower(), method="vertica")
-        if method == "rows":
-            preceding = (
-                "{}".format(preceding)
-                if (str(preceding).upper() != "UNBOUNDED")
-                else "UNBOUNDED"
-            )
-            following = (
-                "{}".format(following)
-                if (str(following).upper() != "UNBOUNDED")
-                else "UNBOUNDED"
-            )
-        else:
-            preceding = (
-                "'{}'".format(preceding)
-                if (str(preceding).upper() != "UNBOUNDED")
-                else "UNBOUNDED"
-            )
-            following = (
-                "'{}'".format(following)
-                if (str(following).upper() != "UNBOUNDED")
-                else "UNBOUNDED"
-            )
-        preceding, following = (
-            "{} {}".format(preceding, rule_p),
-            "{} {}".format(following, rule_f),
-        )
         windows_frame = " OVER ({}{} {} BETWEEN {} AND {})".format(
-            by, order_by, method.upper(), preceding, following
+            by,
+            order_by,
+            method.upper(),
+            "{} {}".format(window[0], rule[0]),
+            "{} {}".format(window[1], rule[1]),
         )
         all_cols = [
             elem.replace('"', "").lower()
@@ -7721,21 +7792,25 @@ vcolumns : vcolumn
         if func in ("kurtosis", "skewness", "aad", "prod", "jb"):
             if func in ("skewness", "kurtosis", "aad", "jb"):
                 mean_name = "{}_mean_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 ).lower()
                 std_name = "{}_std_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 ).lower()
                 count_name = "{}_count_{}".format(
-                    column.replace('"', ""), random.randint(0, 10000000)
+                    columns[0].replace('"', ""), random.randint(0, 10000000)
                 ).lower()
-                self.eval(mean_name, "AVG({}){}".format(column, windows_frame))
+                self.eval(mean_name, "AVG({}){}".format(columns[0], windows_frame))
                 if func != "aad":
-                    self.eval(std_name, "STDDEV({}){}".format(column, windows_frame))
-                    self.eval(count_name, "COUNT({}){}".format(column, windows_frame))
+                    self.eval(
+                        std_name, "STDDEV({}){}".format(columns[0], windows_frame)
+                    )
+                    self.eval(
+                        count_name, "COUNT({}){}".format(columns[0], windows_frame)
+                    )
                 if func == "kurtosis":
                     expr = "AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3))".format(
-                        column,
+                        columns[0],
                         mean_name,
                         std_name,
                         count_name,
@@ -7749,18 +7824,23 @@ vcolumns : vcolumn
                     )
                 elif func == "skewness":
                     expr = "AVG(POWER(({} - {}) / NULLIFZERO({}), 3))# * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2))".format(
-                        column, mean_name, std_name, count_name, count_name, count_name
-                    )
-                elif func == "jb":
-                    expr = "{} / 6 * (POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 3))# * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2)), 2) + POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3)), 2) / 4)".format(
-                        count_name,
-                        column,
+                        columns[0],
                         mean_name,
                         std_name,
                         count_name,
                         count_name,
                         count_name,
-                        column,
+                    )
+                elif func == "jb":
+                    expr = "{} / 6 * (POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 3))# * POWER({}, 2) / NULLIFZERO(({} - 1) * ({} - 2)), 2) + POWER(AVG(POWER(({} - {}) / NULLIFZERO({}), 4))# * POWER({}, 2) * ({} + 1) / NULLIFZERO(({} - 1) * ({} - 2) * ({} - 3)) - 3 * POWER({} - 1, 2) / NULLIFZERO(({} - 2) * ({} - 3)), 2) / 4)".format(
+                        count_name,
+                        columns[0],
+                        mean_name,
+                        std_name,
+                        count_name,
+                        count_name,
+                        count_name,
+                        columns[0],
                         mean_name,
                         std_name,
                         count_name,
@@ -7773,35 +7853,35 @@ vcolumns : vcolumn
                         count_name,
                     )
                 elif func == "aad":
-                    expr = "AVG(ABS({} - {}))#".format(column, mean_name)
+                    expr = "AVG(ABS({} - {}))#".format(columns[0], mean_name)
             else:
                 expr = "DECODE(ABS(MOD(SUM(CASE WHEN {} < 0 THEN 1 ELSE 0 END)#, 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({})))#)".format(
-                    column, column
+                    columns[0], columns[0]
                 )
         elif func in ("corr", "cov", "beta"):
-            columns_check([column2], self)
-            column2 = vdf_columns_names([column2], self)[0]
-            if column2 == column:
+            if columns[1] == columns[0]:
                 if func == "cov":
-                    expr = "VARIANCE({})#".format(column)
+                    expr = "VARIANCE({})#".format(columns[0])
                 else:
                     expr = "1"
             else:
                 if func == "corr":
-                    den = " / (STDDEV({})# * STDDEV({})#)".format(column, column2)
+                    den = " / (STDDEV({})# * STDDEV({})#)".format(
+                        columns[0], columns[1]
+                    )
                 elif func == "beta":
-                    den = " / (VARIANCE({})#)".format(column2)
+                    den = " / (VARIANCE({})#)".format(columns[1])
                 else:
                     den = ""
                 expr = "(AVG({} * {})# - AVG({})# * AVG({})#) {}".format(
-                    column, column2, column, column2, den
+                    columns[0], columns[1], columns[0], columns[1], den
                 )
         elif func == "range":
-            expr = "MAX({})# - MIN({})#".format(column, column)
+            expr = "MAX({})# - MIN({})#".format(columns[0], columns[0])
         elif func == "sem":
-            expr = "STDDEV({})# / SQRT(COUNT({})#)".format(column, column)
+            expr = "STDDEV({})# / SQRT(COUNT({})#)".format(columns[0], columns[0])
         else:
-            expr = "{}({})#".format(func.upper(), column)
+            expr = "{}({})#".format(func.upper(), columns[0])
         expr = expr.replace("#", windows_frame)
         self.eval(name=name, expr=expr)
         if func in ("kurtosis", "skewness", "jb"):
@@ -7845,6 +7925,8 @@ vcolumns : vcolumn
     vDataFrame
         sample vDataFrame
         """
+        if x == 1:
+            return self.copy()
         assert n != None or x != None, ParameterError(
             "One of the parameter 'n' or 'x' must not be empty."
         )
@@ -7872,6 +7954,8 @@ vcolumns : vcolumn
                 ("x", x, [int, float],),
             ]
         )
+        if isinstance(by, str):
+            by = [by]
         columns_check(by, self)
         by = vdf_columns_names(by, self)
         name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
@@ -7987,6 +8071,8 @@ vcolumns : vcolumn
     vDataFrame.bubble      : Draws the Bubble Plot of the input vcolumns.
     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
@@ -8066,6 +8152,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [list],)])
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
@@ -8110,6 +8198,12 @@ vcolumns : vcolumn
     vDataFrame.filter : Filters the vDataFrame using the input expressions.
     vDataFrame.select : Returns a copy of the vDataFrame with only the selected vcolumns.
         """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(usecols, str):
+            usecols = [usecols]
+        if isinstance(expr, str):
+            expr = [expr]
         check_types(
             [
                 ("conditions", conditions, [str, list],),
@@ -8152,6 +8246,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.search : Searches the elements which matches with the input conditions.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [list],)])
         for i in range(len(columns)):
             column = vdf_columns_names([columns[i]], self)
@@ -8228,6 +8324,8 @@ vcolumns : vcolumn
     vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
         analytical function on a specific vcolumn.
         """
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("ts", ts, [str],),
@@ -8616,6 +8714,8 @@ vcolumns : vcolumn
     vDataFrame.groupby : Aggregates the vDataFrame.
     vDataFrame.join    : Joins the vDataFrame with another relation.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types([("columns", columns, [dict, list],)])
         columns_check([elem for elem in columns], self)
         max_pos = 0
@@ -8630,8 +8730,8 @@ vcolumns : vcolumn
         self,
         ts: str,
         columns: list = [],
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         fully: bool = False,
         ax=None,
         **style_kwds,
@@ -8648,10 +8748,10 @@ vcolumns : vcolumn
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used. They must all include only positive values.
-    start_date: str, optional
+    start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str, optional
+    end_date: str / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     fully: bool, optional
@@ -8666,12 +8766,22 @@ vcolumns : vcolumn
     ax
         Matplotlib axes object
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("columns", columns, [list],),
                 ("ts", ts, [str],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                (
+                    "start_date",
+                    start_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
+                (
+                    "end_date",
+                    end_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
             ]
         )
         if fully:
@@ -8870,6 +8980,10 @@ vcolumns : vcolumn
     vDataFrame.to_db   : Saves the vDataFrame current relation to the Vertica Database.
     vDataFrame.to_json : Creates a JSON file of the current vDataFrame relation.
         """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(usecols, str):
+            usecols = [usecols]
         check_types(
             [
                 ("name", name, [str],),
@@ -8978,6 +9092,8 @@ vcolumns : vcolumn
     --------
     vDataFrame.to_csv : Creates a csv file of the current vDataFrame relation.
         """
+        if isinstance(usecols, str):
+            usecols = [usecols]
         check_types(
             [
                 ("name", name, [str],),
@@ -9144,6 +9260,10 @@ vcolumns : vcolumn
     vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
     vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica Database.
         """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(usecols, str):
+            usecols = [usecols]
         check_types(
             [
                 ("name", name, [str],),
@@ -9320,6 +9440,8 @@ vcolumns : vcolumn
     vDataFrame
         self
         """
+        if isinstance(usecols, str):
+            usecols = [usecols]
         check_types(
             [
                 ("name", name, [str],),
@@ -9386,6 +9508,8 @@ vcolumns : vcolumn
     tuple
         (train vDataFrame, test vDataFrame)
         """
+        if isinstance(order_by, str):
+            order_by = [order_by]
         check_types(
             [
                 ("test_size", test_size, [float],),
@@ -9491,6 +9615,8 @@ vcolumns : vcolumn
     vDataFrame[].iv_woe : Computes the Information Value (IV) / 
         Weight Of Evidence (WOE) Table.
         """
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
                 ("y", y, [str],),

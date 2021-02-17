@@ -151,6 +151,8 @@ steps: list
     object
         model
         """
+        if isinstance(X, str):
+            X = [X]
         if isinstance(input_relation, str):
             vdf = vdf_from_relation(
                 relation=input_relation, cursor=self.steps[0][1].cursor
@@ -215,6 +217,8 @@ steps: list
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             self.steps[-1][1].predict
         except:
@@ -303,6 +307,8 @@ steps: list
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             self.steps[-1][1].transform
         except:
@@ -341,6 +347,8 @@ steps: list
     vDataFrame
         object result of the model inverse transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             for idx in range(len(self.steps)):
                 self.steps[idx][1].inverse_transform
