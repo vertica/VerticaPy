@@ -49,7 +49,7 @@ class TestvDFCreate:
 
     def test_creating_vDF_using_input_relation_dsn(self):
         os.environ["ODBCINI"] = (
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
         )
         tvdf = vDataFrame(
             input_relation="public.titanic",
