@@ -153,15 +153,9 @@ class TestLogisticRegression:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict_proba([[11.0, 1993.0]])[0][1])
 
-    try:
-        import shap
-
-        def test_shapExplainer(self, model):
-            explainer = model.shapExplainer()
-            assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
-
-    except:
-        pass
+    def test_shapExplainer(self, model):
+        explainer = model.shapExplainer()
+        assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -342,7 +336,7 @@ class TestLogisticRegression:
     def test_set_cursor(self, model):
         cur = vertica_conn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")

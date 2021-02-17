@@ -175,18 +175,27 @@ class TestStats:
         assert result["value"][5] == "increasing"
 
     def test_seasonal_decompose(self, airline_vd):
-        result = st.seasonal_decompose(airline_vd, "Passengers", "date", 12, mult=True)
+        result = st.seasonal_decompose(airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1,)
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)
-        assert result["passengers_epsilon"].avg() == pytest.approx(1.05394291051617)
+        assert result["passengers_epsilon"].avg() == pytest.approx(1.05417531440333)
         result2 = st.seasonal_decompose(
-            airline_vd, "Passengers", "date", 12, mult=False
+            airline_vd, "Passengers", "date", period=12, mult=False, polynomial_order=-1,
         )
         assert result2["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result2["passengers_seasonal"].avg() == pytest.approx(
             1.1842378929335e-15
         )
         assert result2["passengers_epsilon"].avg() == pytest.approx(13.9000924422799)
+
+        result2 = st.seasonal_decompose(
+            airline_vd, "Passengers", "date", mult=True, polynomial_order=2, estimate_seasonality=True,
+        )
+        assert result2["passengers_trend"].avg() == pytest.approx(280.298611111111)
+        assert result2["passengers_seasonal"].avg() == pytest.approx(
+            1.0
+        )
+        assert result2["passengers_epsilon"].avg() == pytest.approx(1.00044316689124)
 
     def test_skewtest(self, amazon_vd):
         result = st.skewtest(amazon_vd, column="number")

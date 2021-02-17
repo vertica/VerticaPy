@@ -55,6 +55,7 @@ import math, collections
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.lines import Line2D
 import numpy as np
 
 # VerticaPy Modules
@@ -461,6 +462,113 @@ def plot_importance(
     ax.set_xlabel("Importance")
     ax.set_yticks(range(0, len(importances)))
     ax.set_yticklabels(coefficients)
+    return ax
+
+# ---#
+def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: bool = True, ax=None, **style_kwds):
+    if s:
+        s = [min(250 + 5000 * elem, 1200) if elem != 0 else 1000 for elem in s]
+    if z and s:
+        data = [(x[i], y[i], s[i], z[i]) for i in range(len(x))]
+        data.sort(key=lambda tup: str(tup[3]),)
+        x = [elem[0] for elem in data]
+        y = [elem[1] for elem in data]
+        s = [elem[2] for elem in data]
+        z = [elem[3] for elem in data]
+    elif z:
+        data = [(x[i], y[i], z[i]) for i in range(len(x))]
+        data.sort(key=lambda tup: str(tup[2]),)
+        x = [elem[0] for elem in data]
+        y = [elem[1] for elem in data]
+        z = [elem[2] for elem in data]
+    colors = gen_colors()
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.grid(axis = "y")
+        ax.set_axisbelow(True)
+    if z:
+        current_cat = z[0]
+        idx = 0
+        i = 0
+        j = 1
+        all_scatter = []
+        all_categories = [current_cat]
+        tmp_colors = []
+        while j != len(z):
+            while j < len(z) and z[j] == current_cat:
+                j += 1
+            param = {"alpha": 0.8,
+                     "marker": "o",
+                     "color": colors[idx],
+                     "edgecolors": "black",}
+            if s:
+                size = s[i:j]
+            else:
+                size = 50
+            all_scatter += [ax.scatter(x[i:j], y[i:j], s=size, **updated_dict(param, style_kwds, idx))]
+            tmp_colors += [updated_dict(param, style_kwds, idx)["color"]]
+            if j < len(z):
+                all_categories += [z[j]]
+                current_cat = z[j]
+                i = j
+                idx += 1
+        ax.legend(
+            [Line2D([0], [0], marker="o", color="black", markerfacecolor=color, markersize=8,) for color in tmp_colors],
+            all_categories,
+            bbox_to_anchor=[1, 0.5],
+            loc="center left",
+            title=title,
+            labelspacing=1,
+        )
+    else:
+        param = {"alpha": 0.8,
+                 "marker": "o",
+                 "color": colors[0],
+                 "edgecolors": "black",}
+        if s:
+            size = s
+        else:
+            size = 50
+        ax.scatter(x, y, s=size **updated_dict(param, style_kwds, 0))
+    ax.set_xlabel(x_label, loc="right")
+    ax.set_ylabel(y_label, loc="top")
+    if not(reverse):
+        ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
+    ax.set_ylim(max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)))
+    ax.spines['left'].set_position('center')
+    ax.spines['bottom'].set_position('center')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    plt.text(max(x) + 0.1, max(y) + 0.1, 
+             "Modest", size=15, rotation=130.,
+             ha="center", va="center",
+             bbox=dict(boxstyle="round",
+                       ec=gen_colors()[0],
+                       fc=gen_colors()[0],
+                       alpha=0.3),)
+    plt.text(max(x) + 0.1, min(y) - 0.1, 
+             "Efficient", size=15, rotation=30.,
+             ha="center", va="center",
+             bbox=dict(boxstyle="round",
+                       ec=gen_colors()[1],
+                       fc=gen_colors()[1],
+                       alpha=0.3),)
+    plt.text(min(x) - 0.1, max(y) + 0.1, 
+             "Performant", size=15, rotation=-130.,
+             ha="center", va="center",
+             bbox=dict(boxstyle="round",
+                       ec=gen_colors()[2],
+                       fc=gen_colors()[2],
+                       alpha=0.3),)
+    plt.text(min(x) - 0.1, min(y) - 0.1, 
+             "Performant & Efficient", size=15, rotation=-30.,
+             ha="center", va="center",
+             bbox=dict(boxstyle="round",
+                       ec=gen_colors()[3],
+                       fc=gen_colors()[3],
+                       alpha=0.3),)
     return ax
 
 

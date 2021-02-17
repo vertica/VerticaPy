@@ -12,18 +12,17 @@
 # limitations under the License.
 
 import pytest
-from ..base import VerticaPyTestBase
 from verticapy.connect import *
 
 
-class TestConnect(VerticaPyTestBase):
-    def test_auto_connection(self):
+class TestConnect:
+    def test_auto_connection(self, base):
         # test for read_dsn / new_auto_connection / available_auto_connection /
         #          read_auto_connect / change_auto_connection.
         # read_dsn
         d = read_dsn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         )
         assert int(d["port"]) == 5433
         # new_auto_connection
@@ -39,10 +38,10 @@ class TestConnect(VerticaPyTestBase):
         result2 = cur.fetchone()
         assert result2 == [1]
 
-    def test_vertica_conn(self):
+    def test_vertica_conn(self, base):
         cur = vertica_conn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()
         cur.execute("SELECT 1;")
         result = cur.fetchone()

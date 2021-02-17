@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
+import pytest, vertica_python
 from verticapy import drop, set_option, vDataFrame
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
@@ -126,12 +126,8 @@ class TestUtilities:
             "CREATE TEXT INDEX drop_index ON drop_data (id, transportation);"
         )
         drop("drop_index", base.cursor)
-        try:
+        with pytest.raises(vertica_python.errors.MissingRelation):
             base.cursor.execute("SELECT * FROM drop_index;")
-            fail = False
-        except:
-            fail = True
-        assert fail
         # model
         base.cursor.execute("DROP MODEL IF EXISTS public.verticapy_model_test")
         base.cursor.execute(
@@ -163,14 +159,8 @@ class TestUtilities:
         drop(
             "world_polygons", base.cursor,
         )
-        try:
-            describe_index(
-                "world_polygons", base.cursor, True,
-            )
-            fail = False
-        except:
-            fail = True
-        assert fail
+        with pytest.raises(vertica_python.errors.QueryError):
+            describe_index("world_polygons", base.cursor, True,)
         drop(cursor=base.cursor,)
 
     def test_readSQL(self, base):

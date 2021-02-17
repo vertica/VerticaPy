@@ -11,14 +11,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import vertica_python
-import pytest
+import vertica_python, pytest, os, verticapy
 from .base import VerticaPyTestBase
+from configparser import ConfigParser
 
+def create_conn_file():
+	base_test = VerticaPyTestBase()
+	base_test.setUp()
+
+	if not (
+	    os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
+	):
+		path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
+		confparser = ConfigParser()
+		confparser.optionxform = str
+		confparser.read(path)
+		if confparser.has_section("vp_test_config"):
+		    confparser.remove_section("vp_test_config")
+		confparser.add_section("vp_test_config")
+		for elem in base_test.test_config:
+		    if elem != "log_level":
+		        confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
+		f = open(path, "w+")
+		confparser.write(f)
+		f.close()
+
+def delete_conn_file():
+	os.remove(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
 
 @pytest.fixture(scope="session")
 def base():
     base_class = VerticaPyTestBase()
     base_class.setUp()
+    create_conn_file()
     yield base_class
     base_class.tearDown()
+    delete_conn_file()

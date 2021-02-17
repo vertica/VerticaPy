@@ -623,7 +623,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -834,7 +834,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -977,7 +977,7 @@ xlim: list, optional
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1381,7 +1381,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1541,7 +1541,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.key_columns = [str_column(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()

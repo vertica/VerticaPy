@@ -188,6 +188,16 @@ class TestvDFPlot:
         assert max([elem[0] for elem in result2.get_offsets().data]) <= 6.9
         assert max([elem[1] for elem in result2.get_offsets().data]) <= 7.9
         plt.close("all")
+        # testing vDataFrame.scatter using parameter cmap_col
+        result3 = iris_vd.bubble(
+            columns=["PetalLengthCm", "SepalLengthCm"],
+            size_bubble_col="PetalWidthCm",
+            cmap_col="SepalWidthCm",
+        )
+        result3 = result3.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9
+        assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
+        plt.close("all")
 
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density

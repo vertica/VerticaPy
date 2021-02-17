@@ -3115,8 +3115,9 @@ vcolumns : vcolumn
     def bubble(
         self,
         columns: list,
-        size_bubble_col: str,
+        size_bubble_col: str = "",
         catcol: str = "",
+        cmap_col: str = "",
         max_nb_points: int = 20000,
         bbox: list = [],
         img: str = "",
@@ -3135,6 +3136,8 @@ vcolumns : vcolumn
         Numerical vcolumn to use to represent the Bubble size.
     catcol: str, optional
         Categorical column used as color.
+    cmap_col: str, optional
+        Numerical column used with a color map as color.
     max_nb_points: int, optional
         Maximum number of points to display.
     bbox: list, optional
@@ -3162,6 +3165,7 @@ vcolumns : vcolumn
             [
                 ("columns", columns, [list],),
                 ("size_bubble_col", size_bubble_col, [str],),
+                ("cmap_col", cmap_col, [str],),
                 ("max_nb_points", max_nb_points, [int, float],),
                 ("bbox", bbox, [list],),
                 ("img", img, [str],),
@@ -3172,14 +3176,19 @@ vcolumns : vcolumn
         if catcol:
             columns_check([catcol], self)
             catcol = vdf_columns_names([catcol], self)[0]
-        columns_check([size_bubble_col], self)
-        size_bubble_col = vdf_columns_names([size_bubble_col], self)[0]
+        if size_bubble_col:
+            columns_check([size_bubble_col], self)
+            size_bubble_col = vdf_columns_names([size_bubble_col], self)[0]
+        if cmap_col:
+            columns_check([cmap_col], self)
+            cmap_col = vdf_columns_names([cmap_col], self)[0]
         from verticapy.plot import bubble
 
         return bubble(
             self,
-            columns + [size_bubble_col],
+            columns + [size_bubble_col] if size_bubble_col else columns,
             catcol,
+            cmap_col,
             max_nb_points,
             bbox,
             img,
@@ -4037,7 +4046,6 @@ vcolumns : vcolumn
             custom_lines += [
                 Line2D([0], [0], color=colors[idx % len(colors)], lw=4),
             ]
-        ax.set_title("KernelDensity")
         ax.legend(custom_lines, columns, loc="center left", bbox_to_anchor=[1, 0.5])
         ax.set_ylim(bottom=0)
         return ax
@@ -5531,7 +5539,6 @@ vcolumns : vcolumn
             min_max[columns[0]] + min_max[columns[1]],
             **style_kwds,
         )
-        ax.set_title("Heatmap of " + columns[0] + " vs " + columns[1])
         return ax
 
     # ---#

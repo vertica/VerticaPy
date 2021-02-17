@@ -209,27 +209,3 @@ class VerticaPyTestBase(unittest.TestCase):
         pass
 
     # Common assertions
-
-
-base_test = VerticaPyTestBase()
-base_test.setUp()
-
-if not (
-    os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf")
-):
-    path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
-    confparser = ConfigParser()
-    confparser.optionxform = str
-    try:
-        confparser.read(path)
-    except:
-        pass
-    if confparser.has_section("vp_test_config"):
-        confparser.remove_section("vp_test_config")
-    confparser.add_section("vp_test_config")
-    for elem in base_test.test_config:
-        if elem != "log_level":
-            confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
-    f = open(path, "w+")
-    confparser.write(f)
-    f.close()

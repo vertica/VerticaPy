@@ -256,7 +256,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()

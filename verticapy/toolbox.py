@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, sys, warnings
+import os, math, shutil, re, sys, warnings, random
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -89,6 +89,7 @@ def category_from_model_type(model_type: str):
         "RandomForestClassifier",
         "KNeighborsClassifier",
         "NearestCentroid",
+        "XGBoostClassifier",
     ]:
         return ("classifier", "multiclass")
     elif model_type in [
@@ -96,6 +97,7 @@ def category_from_model_type(model_type: str):
         "LinearSVR",
         "RandomForestRegressor",
         "KNeighborsRegressor",
+        "XGBoostRegressor",
     ]:
         return ("regressor", "")
     elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
@@ -106,6 +108,8 @@ def category_from_model_type(model_type: str):
         return ("unsupervised", "preprocessing")
     elif model_type in ["LocalOutlierFactor"]:
         return ("unsupervised", "anomaly_detection")
+    else:
+        return ("", "")
 
 
 # ---#
@@ -467,7 +471,6 @@ def gen_name(L: list):
             for elem in L
         ]
     )
-
 
 # ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
@@ -1161,7 +1164,9 @@ def vdf_columns_names(columns: list, vdf):
 
 # ---#
 def vertica_param_name(param: str):
-    if param.lower() == "solver":
+    if param.lower() == "class_weights":
+        return "class_weight"
+    elif param.lower() == "solver":
         return "optimizer"
     elif param.lower() == "tol":
         return "epsilon"
@@ -1213,9 +1218,14 @@ def vertica_param_dict(model):
         elif param == "max_leaf_nodes":
             parameters[vertica_param_name(param)] = int(model.parameters[param])
         elif param == "class_weight":
-            parameters[param] = "'{}'".format(
-                ", ".join([str(item) for item in model.parameters[param]])
-            )
+            if isinstance(model.parameters[param], Iterable):
+                parameters["class_weights"] = "'{}'".format(
+                    ", ".join([str(item) for item in model.parameters[param]])
+                )
+            else:
+                parameters["class_weights"] = "'{}'".format(
+                    model.parameters[param]
+                )
         elif isinstance(model.parameters[param], (str, dict)):
             parameters[vertica_param_name(param)] = "'{}'".format(
                 model.parameters[param]

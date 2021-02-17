@@ -148,16 +148,10 @@ class TestLinearSVR:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
-
-    try:
-        import shap
-
-        def test_shapExplainer(self, model):
-            explainer = model.shapExplainer()
-            assert explainer.expected_value[0] == pytest.approx(5.819113657580594)
-
-    except:
-        pass
+        
+    def test_shapExplainer(self, model):
+        explainer = model.shapExplainer()
+        assert explainer.expected_value[0] == pytest.approx(5.819113657580594)
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
@@ -250,7 +244,7 @@ class TestLinearSVR:
     def test_set_cursor(self, model):
         cur = vertica_conn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")

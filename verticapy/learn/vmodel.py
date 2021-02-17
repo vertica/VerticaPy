@@ -1694,7 +1694,7 @@ Main Class for Vertica Model
                 model_parameters["max_features"] = default_parameters["max_features"]
             else:
                 model_parameters["max_features"] = self.parameters["max_features"]
-        from verticapy.learn.linear_model import Lasso, Ridge, LinearRegression
+        from verticapy.learn.linear_model import Lasso, Ridge, LinearRegression, LogisticRegression
         from verticapy.learn.tree import (
             DecisionTreeClassifier,
             DecisionTreeRegressor,
@@ -1702,7 +1702,14 @@ Main Class for Vertica Model
             DummyTreeRegressor,
         )
 
-        if isinstance(self, Lasso):
+        if isinstance(self, LogisticRegression):
+            if model_parameters["penalty"] in ("none", "l1", "l2"):
+                if "l1_ratio" in model_parameters:
+                    del model_parameters["l1_ratio"]
+            if model_parameters["penalty"] in ("none",):
+                if "C" in model_parameters:
+                    del model_parameters["C"]
+        elif isinstance(self, Lasso):
             model_parameters["penalty"] = "l1"
             if "l1_ratio" in model_parameters:
                 del model_parameters["l1_ratio"]
@@ -2357,7 +2364,7 @@ class Supervised(vModel):
                 input_relation = vdf_from_relation(input_relation, cursor=self.cursor)
             input_relation.astype(new_types)
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
             schema, relation = schema_relation(self.name)
@@ -3906,7 +3913,7 @@ class Unsupervised(vModel):
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
             schema, relation = schema_relation(self.name)

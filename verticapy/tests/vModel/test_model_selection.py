@@ -15,7 +15,13 @@ import pytest, warnings, os, verticapy
 from verticapy import vDataFrame, set_option, vertica_conn
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
-from verticapy.learn.naive_bayes import NaiveBayes
+from verticapy.learn.naive_bayes import *
+from verticapy.learn.ensemble import *
+from verticapy.learn.tree import *
+from verticapy.learn.svm import *
+from verticapy.learn.cluster import *
+from verticapy.learn.neighbors import *
+
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -33,6 +39,17 @@ def amazon_vd(base):
             name="public.amazon", cursor=base.cursor,
         )
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.titanic", cursor=base.cursor,
+        )
+
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
@@ -47,6 +64,19 @@ def winequality_vd(base):
 
 
 class TestModelSelection:
+    def test_autoML(self, titanic_vd):
+        titanic_vd["family_size"] = titanic_vd["parch"] + titanic_vd["sibsp"] + 1
+        titanic_vd["sex"].label_encode()
+
+        result = autoML(titanic_vd,
+                        ["age", "fare", "sex", "family_size",],
+                        "survived",
+                        lmax = 1,
+                        show = False,)
+        assert len(result.values) == 7
+        assert len(result["model_type"]) == 5
+
+
     def test_best_k(self, winequality_vd):
         result = best_k(
             "public.winequality",
@@ -130,6 +160,31 @@ class TestModelSelection:
         assert len(result2["Within-Cluster SS"]) == 4
         plt.close("all")
 
+    def test_gen_params_grid(self,):
+        assert len(gen_params_grid(LogisticRegression("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(LinearSVC("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(LinearSVR("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(ElasticNet("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(Lasso("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(Ridge("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(LinearRegression("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(NaiveBayes("model_test",), lmax=3)) == 3
+        assert len(gen_params_grid(RandomForestClassifier("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(RandomForestRegressor("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(XGBoostClassifier("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(XGBoostRegressor("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(DecisionTreeRegressor("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(DecisionTreeClassifier("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(DummyTreeClassifier("model_test",), lmax=3)) == 0
+        assert len(gen_params_grid(DummyTreeRegressor("model_test",), lmax=3)) == 0
+        assert len(gen_params_grid(KNeighborsClassifier("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(KNeighborsRegressor("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(NearestCentroid("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(KMeans("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(BisectingKMeans("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(DBSCAN("model_test",), lmax=3, nbins=3)) == 3
+        assert len(gen_params_grid(LocalOutlierFactor("model_test",), lmax=3, nbins=3)) == 3
+
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
             LogisticRegression(
@@ -165,6 +220,17 @@ class TestModelSelection:
         assert len(result["lift"]) == 31
         model.drop()
         plt.close("all")
+
+    def test_parameter_grid(self,):
+        assert parameter_grid({"param1": [1, 2, 3], "param2": ["a", "b", "c"]}) == [{'param1': 1, 'param2': 'a'},
+                                                                                    {'param1': 1, 'param2': 'b'},
+                                                                                    {'param1': 1, 'param2': 'c'},
+                                                                                    {'param1': 2, 'param2': 'a'},
+                                                                                    {'param1': 2, 'param2': 'b'},
+                                                                                    {'param1': 2, 'param2': 'c'},
+                                                                                    {'param1': 3, 'param2': 'a'},
+                                                                                    {'param1': 3, 'param2': 'b'},
+                                                                                    {'param1': 3, 'param2': 'c'}]
 
     def test_plot_acf_pacf(self, amazon_vd):
         result = plot_acf_pacf(amazon_vd, ts="date", by=["state"], column="number", p=3)
@@ -202,6 +268,22 @@ class TestModelSelection:
         assert len(result["precision"]) == 30
         model.drop()
         plt.close("all")
+
+    def test_randomized_search_cv(self, winequality_vd):
+        result = randomized_search_cv(
+            LogisticRegression(
+                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
+            ),
+            winequality_vd,
+            ["residual_sugar", "alcohol"],
+            "good",
+            "auc",
+            cv=3,
+            lmax=4,
+            print_info=False,
+        )
+        assert len(result.values) == 6
+        assert len(result["parameters"]) == 4
 
     def test_roc_curve(self, winequality_vd):
         model = LogisticRegression(

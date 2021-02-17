@@ -142,16 +142,10 @@ class TestLinearSVC:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
-
-    try:
-        import shap
-
-        def test_shapExplainer(self, model):
-            explainer = model.shapExplainer()
-            assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
-
-    except:
-        pass
+    
+    def test_shapExplainer(self, model):
+        explainer = model.shapExplainer()
+        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -182,7 +176,7 @@ class TestLinearSVC:
         assert model.get_attr("iteration_count")["iteration_count"][0] == 6
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT svm_classifier('public.lsvc_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS class_weights='none', C=1, max_iterations=100, intercept_mode='regularized', intercept_scaling=1, epsilon=0.0001);"
+            == "SELECT svm_classifier('public.lsvc_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS class_weights='1,1', C=1, max_iterations=100, intercept_mode='regularized', intercept_scaling=1, epsilon=0.0001);"
         )
 
     def test_get_params(self, model):
@@ -315,7 +309,7 @@ class TestLinearSVC:
     def test_set_cursor(self, model):
         cur = vertica_conn(
             "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()
         model.set_cursor(cur)
         model.cursor.execute("SELECT 1;")

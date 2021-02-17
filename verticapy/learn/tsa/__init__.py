@@ -351,7 +351,7 @@ papprox_ma: int, optional
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -1319,7 +1319,7 @@ solver: str, optional
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
