@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 set_option("print_info", False)
 
 cur = vertica_conn(
-    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test.conf"
+    "vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
 ).cursor()
 version = version(cur)
 
