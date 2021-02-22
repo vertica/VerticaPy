@@ -40,11 +40,11 @@ def model(base, winequality_vd):
 class TestNormalizer:
     def test_Normalizer_subclasses(self):
         result = StandardScaler("model_test")
-        result.parameters["method"] == "zscore"
+        assert result.parameters["method"] == "zscore"
         result = RobustScaler("model_test")
-        result.parameters["method"] == "robust_zscore"
+        assert result.parameters["method"] == "robust_zscore"
         result = MinMaxScaler("model_test")
-        result.parameters["method"] == "minmax"
+        assert result.parameters["method"] == "minmax"
 
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_NORMALIZE("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'norm_model_test\', match_by_pos = \'true\')'

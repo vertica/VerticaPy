@@ -45,13 +45,13 @@ def model(base, iris_vd):
 class TestNB:
     def test_NB_subclasses(self):
         result = BernoulliNB("model_test")
-        result.parameters["nbtype"] == "bernoulli"
+        assert result.parameters["nbtype"] == "bernoulli"
         result = CategoricalNB("model_test")
-        result.parameters["nbtype"] == "categorical"
+        assert result.parameters["nbtype"] == "categorical"
         result = GaussianNB("model_test")
-        result.parameters["nbtype"] == "gaussian"
+        assert result.parameters["nbtype"] == "gaussian"
         result = MultinomialNB("model_test")
-        result.parameters["nbtype"] == "multinomial"
+        assert result.parameters["nbtype"] == "multinomial"
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()

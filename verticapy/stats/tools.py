@@ -1204,7 +1204,7 @@ vDataFrame
         model.drop()
         model.fit(vdf_poly, X, column)
         coefficients = model.coef_["coefficient"]
-        coefficients = [str(coefficients[0])] + [f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})" if i != 1 else f"{coefficients[1]} * ROW_NUMBER() OVER(ORDER BY {ts})" for i in range(1, polynomial_order + 1)]
+        coefficients = [str(coefficients[0])] + [f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})" if i != 1 else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})" for i in range(1, polynomial_order + 1)]
         vdf_tmp[trend_name] = " + ".join(coefficients)
         model.drop()
     if mult:
