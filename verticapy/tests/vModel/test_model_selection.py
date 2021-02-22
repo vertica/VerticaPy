@@ -325,7 +325,7 @@ class TestModelSelection:
         assert len(result["test_score"]) == 3
         assert len(result.values) == 7
 
-    def test_validation_curve(self, winequality_vd):
+    def test_learning_curve(self, winequality_vd):
         for elem in ["efficiency", "performance", "scalability"]:
             result = learning_curve(
                 LogisticRegression(

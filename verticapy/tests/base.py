@@ -20,6 +20,7 @@ import unittest
 import inspect
 import getpass
 import vertica_python
+import verticapy
 
 from configparser import ConfigParser
 
