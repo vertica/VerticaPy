@@ -116,7 +116,7 @@ class TestvDFPreprocessing:
         titanic_copy["name"].str_extract(" ([A-Za-z])+\\.")
 
         # expected exception
-        with pytest.raises(errors.ParameterError) as exception_info:
+        with pytest.raises(AssertionError) as exception_info:
             titanic_copy["name"].discretize(method="topk", k=0, new_category="rare")
         # checking the error message
         assert exception_info.match(
