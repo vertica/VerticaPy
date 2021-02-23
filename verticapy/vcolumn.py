@@ -133,36 +133,32 @@ Attributes
     # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
-            if index.step not in (1, None):
-                raise ValueError(
-                    "vColumn doesn't allow slicing having steps different than 1."
-                )
+            assert index.step in (1, None), ValueError("vColumn doesn't allow slicing having steps different than 1.")
+            index_stop = index.stop
+            index_start = index.start
+            if not (isinstance(index_start, int)):
+                index_start = 0
+            if index_start < 0:
+                index_start += self.parent.shape()[0]
+            if isinstance(index_stop, int):
+                if index_stop < 0:
+                    index_stop += self.parent.shape()[0]
+                limit = index_stop - index_start
+                if limit <= 0:
+                    limit = 0
+                limit = " LIMIT {}".format(limit)
             else:
-                index_stop = index.stop
-                index_start = index.start
-                if not (isinstance(index_start, int)):
-                    index_start = 0
-                if index_start < 0:
-                    index_start += self.parent.shape()[0]
-                if isinstance(index_stop, int):
-                    if index_stop < 0:
-                        index_stop += self.parent.shape()[0]
-                    limit = index_stop - index_start
-                    if limit <= 0:
-                        limit = 0
-                    limit = " LIMIT {}".format(limit)
-                else:
-                    limit = ""
-                query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias,
-                    self.parent.__genSQL__(),
-                    last_order_by(self.parent),
-                    index_start,
-                    limit,
-                )
-                return vdf_from_relation(
-                    query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
-                )
+                limit = ""
+            query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
+                self.alias,
+                self.parent.__genSQL__(),
+                last_order_by(self.parent),
+                index_start,
+                limit,
+            )
+            return vdf_from_relation(
+                query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
+            )
         elif isinstance(index, int):
             cast = "::float" if self.category() == "float" else ""
             if index < 0:
@@ -293,14 +289,8 @@ Attributes
 		"""
         check_types([("name", name, [str],)])
         name = str_column(name.replace('"', "_"))
-        if not (name.replace('"', "")):
-            raise EmptyParameter("The parameter 'name' must not be empty")
-        elif column_check_ambiguous(name, self.parent.get_columns()):
-            raise NameError(
-                "A vcolumn has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(
-                    name
-                )
-            )
+        assert name.replace('"', ""), EmptyParameter("The parameter 'name' must not be empty")
+        assert not(column_check_ambiguous(name, self.parent.get_columns())), NameError(f"A vcolumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue.")
         new_vColumn = vColumn(
             name,
             parent=self.parent,
@@ -780,10 +770,7 @@ Attributes
         check_types(
             [("lower", lower, [float, int,],), ("upper", upper, [float, int,],),]
         )
-        if (lower == None) and (upper == None):
-            raise ParameterError(
-                "At least 'lower' or 'upper' must have a numerical value"
-            )
+        assert (lower != None) or (upper != None), ParameterError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             "WHEN {} < {} THEN {} ".format("{}", lower, lower)
             if (isinstance(lower, (float, int)))
@@ -1056,14 +1043,7 @@ Attributes
             ]
         )
         method = method.lower()
-        if method not in ["auto", "numerical", "categorical", "cat_stats"]:
-            raise ParameterError(
-                "The parameter 'method' must be in auto|categorical|numerical|cat_stats"
-            )
-        elif (method == "cat_stats") and not (numcol):
-            raise ParameterError(
-                "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
-            )
+        assert (method != "cat_stats") or (numcol), ParameterError("The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'")
         distinct_count, is_numeric, is_date = (
             self.nunique(),
             self.isnum(),
@@ -1075,8 +1055,7 @@ Attributes
             result = result.values[self.alias]
         elif (method == "cat_stats") and (numcol != ""):
             numcol = vdf_columns_names([numcol], self.parent)[0]
-            if self.parent[numcol].category() not in ("float", "int"):
-                raise TypeError("The column 'numcol' must be numerical")
+            assert self.parent[numcol].category() in ("float", "int"), TypeError("The column 'numcol' must be numerical")
             cast = "::int" if (self.parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
@@ -1343,10 +1322,7 @@ Attributes
             drop_temp_elem(self, temp_information)
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            if k < 2:
-                raise ParameterError(
-                    "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
-                )
+            assert k >= 2, ParameterError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
             distinct = self.topk(k).values["index"]
             trans = (
                 "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
@@ -1364,16 +1340,10 @@ Attributes
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            if bins < 2:
-                raise ParameterError(
-                    "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
-                )
+            assert bins >= 2, ParameterError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
             count = self.count()
             nb = int(float(count / int(bins - 1)))
-            if nb == 0:
-                raise Exception(
-                    "Not enough values to compute the Equal Frequency discretization"
-                )
+            assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
             total, query, nth_elems = nb, [], []
             while total < count - 1:
                 nth_elems += [str(total)]
@@ -1504,10 +1474,8 @@ Attributes
 	vDataFrame[].apply : Applies a function to the input vcolumn.
 		"""
         check_types([("x", x, [int, float],)])
-        if x != 0:
-            return self.apply(func="{} / ({})".format("{}", x))
-        else:
-            raise ValueError("Division by 0 is forbidden !")
+        assert x != 0, ValueError("Division by 0 is forbidden !")
+        return self.apply(func="{} / ({})".format("{}", x))
 
     # ---#
     def drop(self, add_history: bool = True):
@@ -1671,6 +1639,8 @@ Attributes
 	vDataFrame.outliers      : Adds a new vcolumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("method", method, ["winsorize", "null", "mean"],),
@@ -1679,66 +1649,60 @@ Attributes
                 ("threshold", threshold, [int, float],),
             ]
         )
-        method = method.lower()
-        if method not in ("winsorize", "null", "mean"):
-            raise ParameterError(
-                "The parameter 'method' must be in winsorize|null|mean"
+        if use_threshold:
+            result = self.aggregate(func=["std", "avg"]).transpose().values
+            p_alpha, p_1_alpha = (
+                -threshold * result["std"][0] + result["avg"][0],
+                threshold * result["std"][0] + result["avg"][0],
             )
         else:
-            if use_threshold:
-                result = self.aggregate(func=["std", "avg"]).transpose().values
-                p_alpha, p_1_alpha = (
-                    -threshold * result["std"][0] + result["avg"][0],
-                    threshold * result["std"][0] + result["avg"][0],
+            query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
+                alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            )
+            self.parent.__executeSQL__(
+                query=query,
+                title="Computes the quantiles of {}.".format(self.alias),
+            )
+            p_alpha, p_1_alpha = self.parent._VERTICAPY_VARIABLES_[
+                "cursor"
+            ].fetchone()
+        if method == "winsorize":
+            self.clip(lower=p_alpha, upper=p_1_alpha)
+        elif method == "null":
+            self.apply(
+                func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
+                    "{}", p_alpha, p_1_alpha, "{}"
                 )
-            else:
-                query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
-                    alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            )
+        elif method == "mean":
+            query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
+                self.parent.__genSQL__(),
+                self.alias,
+                self.alias,
+                p_alpha,
+                self.alias,
+                self.alias,
+                p_1_alpha,
+            )
+            self.parent.__executeSQL__(
+                query=query,
+                title="Computes the average of the {}'s lower and upper outliers.".format(
+                    self.alias
+                ),
+            )
+            mean_alpha, mean_1_alpha = [
+                item[0]
+                for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+            ]
+            if mean_alpha == None:
+                mean_alpha = "NULL"
+            if mean_1_alpha == None:
+                mean_alpha = "NULL"
+            self.apply(
+                func="(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format(
+                    "{}", p_alpha, mean_alpha, "{}", p_1_alpha, mean_1_alpha, "{}"
                 )
-                self.parent.__executeSQL__(
-                    query=query,
-                    title="Computes the quantiles of {}.".format(self.alias),
-                )
-                p_alpha, p_1_alpha = self.parent._VERTICAPY_VARIABLES_[
-                    "cursor"
-                ].fetchone()
-            if method == "winsorize":
-                self.clip(lower=p_alpha, upper=p_1_alpha)
-            elif method == "null":
-                self.apply(
-                    func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
-                        "{}", p_alpha, p_1_alpha, "{}"
-                    )
-                )
-            elif method == "mean":
-                query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
-                    self.parent.__genSQL__(),
-                    self.alias,
-                    self.alias,
-                    p_alpha,
-                    self.alias,
-                    self.alias,
-                    p_1_alpha,
-                )
-                self.parent.__executeSQL__(
-                    query=query,
-                    title="Computes the average of the {}'s lower and upper outliers.".format(
-                        self.alias
-                    ),
-                )
-                mean_alpha, mean_1_alpha = [
-                    item[0]
-                    for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
-                ]
-                if mean_alpha == None:
-                    mean_alpha = "NULL"
-                if mean_1_alpha == None:
-                    mean_alpha = "NULL"
-                self.apply(
-                    func="(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format(
-                        "{}", p_alpha, mean_alpha, "{}", p_1_alpha, mean_1_alpha, "{}"
-                    )
-                )
+            )
         return self.parent
 
     # ---#
@@ -1879,10 +1843,7 @@ Attributes
                     "{}", fun, "{}", ", ".join(by)
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
-            if not (order_by):
-                raise ParameterError(
-                    "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
-                )
+            assert order_by, ParameterError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data")
             desc = " DESC" if (method in ("ffill", "pad")) else ""
             partition_by = (
                 "PARTITION BY {}".format(
@@ -1894,12 +1855,6 @@ Attributes
             order_by_ts = ", ".join([str_column(column) + desc for column in order_by])
             new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}))".format(
                 "{}", "{}", partition_by, order_by_ts
-            )
-        else:
-            raise ParameterError(
-                "The method '{}' does not exist or is not available\nPlease use a method in auto|mean|median|mode|ffill|bfill|0ifnull".format(
-                    method
-                )
             )
         if method in ("mean", "median") or isinstance(val, float):
             category, ctype = "float", "float"
@@ -2065,12 +2020,7 @@ Attributes
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
-                if column_check_ambiguous(name, columns):
-                    raise NameError(
-                        "A vcolumn has already the alias of one of the dummies ({}).\nIt can be the result of using previously the method on the vcolumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.".format(
-                            name
-                        )
-                    )
+                assert not(column_check_ambiguous(name, columns)), NameError(f"A vcolumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vcolumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.")
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2533,29 +2483,26 @@ Attributes
         check_types([("response_column", response_column, [str],)])
         columns_check([response_column], self.parent)
         response_column = vdf_columns_names([response_column], self.parent)[0]
-        if not (self.parent[response_column].isnum()):
-            raise TypeError(
-                "The response column must be numerical to use a mean encoding"
+        assert self.parent[response_column].isnum(), TypeError("The response column must be numerical to use a mean encoding")
+        max_floor = len(self.parent[response_column].transformations) - len(
+            self.transformations
+        )
+        for k in range(max_floor):
+            self.transformations += [("{}", self.ctype(), self.category())]
+        self.transformations += [
+            (
+                "AVG({}) OVER (PARTITION BY {})".format(response_column, "{}"),
+                "int",
+                "float",
             )
-        else:
-            max_floor = len(self.parent[response_column].transformations) - len(
-                self.transformations
+        ]
+        self.parent.__update_catalog__(erase=True, columns=[self.alias])
+        self.parent.__add_to_history__(
+            "[Mean Encode]: The vcolumn {} was transformed using a mean encoding with {} as Response Column.".format(
+                self.alias, response_column
             )
-            for k in range(max_floor):
-                self.transformations += [("{}", self.ctype(), self.category())]
-            self.transformations += [
-                (
-                    "AVG({}) OVER (PARTITION BY {})".format(response_column, "{}"),
-                    "int",
-                    "float",
-                )
-            ]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
-            self.parent.__add_to_history__(
-                "[Mean Encode]: The vcolumn {} was transformed using a mean encoding with {} as Response Column.".format(
-                    self.alias, response_column
-                )
-            )
+        )
+        if verticapy.options["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 
@@ -2649,8 +2596,7 @@ Attributes
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
-        if n < 1:
-            raise ParameterError("Parameter 'n' must be greater or equal to 1")
+        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         self.parent.__executeSQL__(
             "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
@@ -3106,6 +3052,7 @@ Attributes
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
+        assert self.isnum() or self.isdate(), ParameterError("numh is only available on type numeric|date")
         if self.isnum():
             result = (
                 self.parent.describe(
@@ -3134,8 +3081,6 @@ Attributes
             )
             result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
-        else:
-            raise ParameterError("numh is only available on type numeric|date")
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
             1e-99,
@@ -3464,12 +3409,7 @@ Attributes
         check_types([("new_name", new_name, [str],)])
         old_name = str_column(self.alias)
         new_name = new_name.replace('"', "")
-        if column_check_ambiguous(new_name, self.parent.get_columns()):
-            raise NameError(
-                "A vcolumn has already the alias {}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.".format(
-                    new_name
-                )
-            )
+        assert not(column_check_ambiguous(new_name, self.parent.get_columns())), NameError(f"A vcolumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.")
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(

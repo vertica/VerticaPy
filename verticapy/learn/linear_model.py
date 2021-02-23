@@ -288,8 +288,8 @@ l1_ratio: float, optional
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
         elif penalty.lower() in ("l1", "l2"):
             for elem in ["l1_ratio",]:
-                if elem in self.parameters:
-                    del self.parameters[elem]
+            	if elem in self.parameters:
+                	del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor

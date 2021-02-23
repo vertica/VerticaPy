@@ -215,14 +215,8 @@ vcolumns : vcolumn
             ]
             if not (usecols):
                 self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
-            if columns != []:
-                self._VERTICAPY_VARIABLES_["columns"] = [elem for elem in columns]
-            else:
-                raise MissingRelation(
-                    "No table or views '{}' found.".format(
-                        self._VERTICAPY_VARIABLES_["input_relation"]
-                    )
-                )
+            assert columns != [], MissingRelation("No table or views '{}' found.".format(self._VERTICAPY_VARIABLES_["input_relation"]))
+            self._VERTICAPY_VARIABLES_["columns"] = [elem for elem in columns]
             for col_dtype in columns_dtype:
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
@@ -279,32 +273,28 @@ vcolumns : vcolumn
     # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
-            if index.step not in (1, None):
-                raise ValueError(
-                    "vDataFrame doesn't allow slicing having steps different than 1."
-                )
+            assert index.step in (1, None), ValueError("vDataFrame doesn't allow slicing having steps different than 1.")
+            index_stop = index.stop
+            index_start = index.start
+            if not (isinstance(index_start, int)):
+                index_start = 0
+            if index_start < 0:
+                index_start += self.shape()[0]
+            if isinstance(index_stop, int):
+                if index_stop < 0:
+                    index_stop += self.shape()[0]
+                limit = index_stop - index_start
+                if limit <= 0:
+                    limit = 0
+                limit = " LIMIT {}".format(limit)
             else:
-                index_stop = index.stop
-                index_start = index.start
-                if not (isinstance(index_start, int)):
-                    index_start = 0
-                if index_start < 0:
-                    index_start += self.shape()[0]
-                if isinstance(index_stop, int):
-                    if index_stop < 0:
-                        index_stop += self.shape()[0]
-                    limit = index_stop - index_start
-                    if limit <= 0:
-                        limit = 0
-                    limit = " LIMIT {}".format(limit)
-                else:
-                    limit = ""
-                query = "(SELECT * FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.__genSQL__(), last_order_by(self), index_start, limit
-                )
-                return vdf_from_relation(
-                    query, cursor=self._VERTICAPY_VARIABLES_["cursor"]
-                )
+                limit = ""
+            query = "(SELECT * FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
+                self.__genSQL__(), last_order_by(self), index_start, limit
+            )
+            return vdf_from_relation(
+                query, cursor=self._VERTICAPY_VARIABLES_["cursor"]
+            )
         elif isinstance(index, int):
             columns = self.get_columns()
             for idx, elem in enumerate(columns):
@@ -419,20 +409,15 @@ vcolumns : vcolumn
     vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
     vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
         """
+        method_name = "Correlation"
+        method_type = " using the method = '{}'".format(method)
+        if method == "cov":
+            method_name = "Covariance"
+            method_type = ""
         columns = vdf_columns_names(columns, self)
         if method != "cramer":
             for column in columns:
-                if not (self[column].isnum()):
-                    method_name = "Correlation"
-                    method_type = " using the method = '{}'".format(method)
-                    if method == "cov":
-                        method_name = "Covariance"
-                        method_type = ""
-                    raise TypeError(
-                        "vcolumn {} must be numerical to compute the {} Matrix{}.".format(
-                            column, method_name, method_type
-                        )
-                    )
+                assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to compute the {method_name} Matrix{method_type}.")
         if len(columns) == 1:
             if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
                 return 1.0
@@ -553,12 +538,12 @@ vcolumns : vcolumn
                     ),
                 )
                 result = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-                try:
-                    result = float(math.sqrt(result / n / min(k, r)))
-                except:
+                if min(k - 1, r - 1) == 0:
                     result = float("nan")
-                if result > 1 or result < 0:
-                    result = float("nan")
+                else:
+                    result = float(math.sqrt(result / n / min(k - 1, r - 1)))
+                    if result > 1 or result < 0:
+                        result = float("nan")
                 return result
             elif method == "kendall":
                 if columns[1] == columns[0]:
@@ -652,51 +637,47 @@ vcolumns : vcolumn
                         )
                         if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                             nb_precomputed += 1
-                if (nb_precomputed > n * n / 3) or (
-                    method not in ("pearson", "spearman")
-                ):
-                    raise
-                else:
-                    table = (
-                        self.__genSQL__()
-                        if (method == "pearson")
-                        else "(SELECT {} FROM {}) spearman_table".format(
-                            ", ".join(
-                                [
-                                    "RANK() OVER (ORDER BY {}) AS {}".format(
-                                        column, column
-                                    )
-                                    for column in columns
-                                ]
-                            ),
-                            self.__genSQL__(),
-                        )
-                    )
-                    version(
-                        cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 2, 1]
-                    )
-                    self.__executeSQL__(
-                        query="SELECT CORR_MATRIX({}) OVER () FROM {}".format(
-                            ", ".join(columns), table
+                assert (nb_precomputed <= n * n / 3) and (method in ("pearson", "spearman"))
+                table = (
+                    self.__genSQL__()
+                    if (method == "pearson")
+                    else "(SELECT {} FROM {}) spearman_table".format(
+                        ", ".join(
+                            [
+                                "RANK() OVER (ORDER BY {}) AS {}".format(
+                                    column, column
+                                )
+                                for column in columns
+                            ]
                         ),
-                        title="Computes the {} Corr Matrix.".format(method),
+                        self.__genSQL__(),
                     )
-                    result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
-                    corr_dict = {}
-                    for idx, column in enumerate(columns):
-                        corr_dict[column] = idx
-                    n = len(columns)
-                    matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
-                    for elem in result:
-                        i, j = (
-                            corr_dict[str_column(elem[0])],
-                            corr_dict[str_column(elem[1])],
-                        )
-                        matrix[i + 1][j + 1] = elem[2]
-                    matrix[0] = [""] + columns
-                    for idx, column in enumerate(columns):
-                        matrix[idx + 1][0] = column
-                    title = "Correlation Matrix ({})".format(method)
+                )
+                version(
+                    cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 2, 1]
+                )
+                self.__executeSQL__(
+                    query="SELECT CORR_MATRIX({}) OVER () FROM {}".format(
+                        ", ".join(columns), table
+                    ),
+                    title="Computes the {} Corr Matrix.".format(method),
+                )
+                result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                corr_dict = {}
+                for idx, column in enumerate(columns):
+                    corr_dict[column] = idx
+                n = len(columns)
+                matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
+                for elem in result:
+                    i, j = (
+                        corr_dict[str_column(elem[0])],
+                        corr_dict[str_column(elem[1])],
+                    )
+                    matrix[i + 1][j + 1] = elem[2]
+                matrix[0] = [""] + columns
+                for idx, column in enumerate(columns):
+                    matrix[idx + 1][0] = column
+                title = "Correlation Matrix ({})".format(method)
             except:
                 if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
                     title_query = "Compute all the Correlations in a single query"
@@ -892,14 +873,10 @@ vcolumns : vcolumn
         else:
             if method == "cramer":
                 cols = self.catcol()
-                if len(cols) == 0:
-                    raise EmptyParameter(
-                        "No categorical column found in the vDataFrame."
-                    )
+                assert len(cols) != 0, EmptyParameter("No categorical column found in the vDataFrame.")
             else:
                 cols = self.numcol()
-                if len(cols) == 0:
-                    raise EmptyParameter("No numerical column found in the vDataFrame.")
+                assert len(cols) != 0, EmptyParameter("No numerical column found in the vDataFrame.")
             return self.__aggregate_matrix__(
                 method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
             )
@@ -928,29 +905,20 @@ vcolumns : vcolumn
         if not (columns):
             if method == "cramer":
                 cols = self.catcol()
-                if not (cols):
-                    raise EmptyParameter(
-                        "No categorical column found in the vDataFrame."
-                    )
+                assert cols, EmptyParameter("No categorical column found in the vDataFrame.")
             else:
                 cols = self.numcol()
-                if not (cols):
-                    raise EmptyParameter("No numerical column found in the vDataFrame.")
+                assert cols, EmptyParameter("No numerical column found in the vDataFrame.")
         else:
             cols = vdf_columns_names(columns, self)
         if method != "cramer":
+            method_name = "Correlation"
+            method_type = " using the method = '{}'".format(method)
+            if method == "cov":
+                method_name = "Covariance"
+                method_type = ""
             for column in cols:
-                if not (self[column].isnum()):
-                    method_name = "Correlation"
-                    method_type = " using the method = '{}'".format(method)
-                    if method == "cov":
-                        method_name = "Covariance"
-                        method_type = ""
-                    raise TypeError(
-                        "vcolumn {} must be numerical to compute the {} Vector{}.".format(
-                            column, method_name, method_type
-                        )
-                    )
+                assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to compute the {method_name} Vector{method_type}.")
         if method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
                 fail = 0
@@ -1776,8 +1744,7 @@ vcolumns : vcolumn
                         n = 1
                     try:
                         n = int(n)
-                        if n < 1:
-                            raise
+                        assert n >= 1
                     except:
                         raise FunctionError(
                             "The aggregation '{}' doesn't exist. If you want to compute the frequence of the nth most occurent element please write 'topn_percent' with n > 0. Example: top2_percent for the frequency of the second most occurent element.".format(
@@ -1796,8 +1763,7 @@ vcolumns : vcolumn
                     n = fun.lower()[3:] if (len(fun.lower()) > 3) else 1
                     try:
                         n = int(n)
-                        if n < 1:
-                            raise
+                        assert n >= 1
                     except:
                         raise FunctionError(
                             "The aggregation '{}' doesn't exist. If you want to compute the nth most occurent element please write 'topn' with n > 0. Example: top2 for the second most occurent element.".format(
@@ -2245,7 +2211,7 @@ vcolumns : vcolumn
             "iqr",
             "sem",
         ) or ("%" in func):
-            if order_by:
+            if order_by and not(verticapy.options["print_info"]):
                 print(
                     "\u26A0 '{}' analytic method doesn't need an order by clause, it was ignored".format(
                         func
@@ -2494,12 +2460,7 @@ vcolumns : vcolumn
                         func
                     )
                 )
-            if len(columns) != 2:
-                raise MissingColumn(
-                    "The parameter 'columns' includes 2 vcolumns when using analytic method '{}'".format(
-                        func
-                    )
-                )
+            assert len(columns) == 2, MissingColumn(f"The parameter 'columns' includes 2 vcolumns when using analytic method '{func}'")
             if columns[0] == columns[1]:
                 if func == "cov":
                     expr = "VARIANCE({}) OVER ({})".format(columns[0], by)
@@ -2616,6 +2577,7 @@ vcolumns : vcolumn
                 ("expr1", expr1, [list],),
                 ("expr2", expr2, [list],),
                 ("union_all", union_all, [bool],),
+                ("input_relation", input_relation, [vDataFrame, str,])
             ]
         )
         first_relation = self.__genSQL__()
@@ -2623,12 +2585,6 @@ vcolumns : vcolumn
             second_relation = input_relation
         elif isinstance(input_relation, vDataFrame):
             second_relation = input_relation.__genSQL__()
-        else:
-            raise TypeError(
-                "Parameter 'input_relation' type must be one of the following [{}, {}], found {}".format(
-                    str, type(self), type(input_relation)
-                )
-            )
         columns = ", ".join(self.get_columns()) if not (expr1) else ", ".join(expr1)
         columns2 = columns if not (expr2) else ", ".join(expr2)
         union = "UNION" if not (union_all) else "UNION ALL"
@@ -2761,10 +2717,7 @@ vcolumns : vcolumn
         ts, by = vdf_columns_names([ts], self)[0], vdf_columns_names(by, self)
         all_elements = []
         for column in method:
-            if method[column] not in ("bfill", "backfill", "pad", "ffill", "linear"):
-                raise ParameterError(
-                    "Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear"
-                )
+            assert method[column] in ("bfill", "backfill", "pad", "ffill", "linear"), ParameterError("Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear")
             if method[column] in ("bfill", "backfill"):
                 func, interp = "TS_FIRST_VALUE", "const"
             elif method[column] in ("pad", "ffill"):
@@ -4016,12 +3969,8 @@ vcolumns : vcolumn
             columns = self.numcol()
         else:
             for column in columns:
-                if not (self[column].isnum()):
-                    raise TypeError(
-                        "vcolumn {} is not numerical to draw KDE".format(column)
-                    )
-        if not (columns):
-            raise EmptyParameter("No Numerical Columns found to draw KDE.")
+                assert self[column].isnum(), TypeError(f"vcolumn {column} is not numerical to draw KDE")
+        assert columns, EmptyParameter("No Numerical Columns found to draw KDE.")
         from verticapy.plot import gen_colors
         from matplotlib.lines import Line2D
 
@@ -4125,16 +4074,8 @@ vcolumns : vcolumn
                 columns = self.numcol()
             else:
                 for column in columns:
-                    if not (self[column].isnum()):
-                        raise TypeError(
-                            "vcolumn {} must be numerical to run describe using parameter method = 'numerical'".format(
-                                column
-                            )
-                        )
-            if not (columns):
-                raise EmptyParameter(
-                    "No Numerical Columns found to run describe using parameter method = 'numerical'."
-                )
+                    assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to run describe using parameter method = 'numerical'")
+            assert columns, EmptyParameter("No Numerical Columns found to run describe using parameter method = 'numerical'.")
             try:
                 version(
                     cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 0, 0]
@@ -4366,10 +4307,6 @@ vcolumns : vcolumn
                 del values["dtype"]
                 del values["percent"]
             return tablesample(values, percent=percent, dtype=dtype).transpose()
-        else:
-            raise ParameterError(
-                "The parameter 'method' must be in all|numerical|categorical|statistics|length|range"
-            )
         self.__update_catalog__(tablesample(values).transpose().values)
         values["index"] = [str_column(elem) for elem in values["index"]]
         for elem in values:
@@ -4627,12 +4564,7 @@ vcolumns : vcolumn
             expr = str(expr)
         check_types([("name", name, [str],), ("expr", expr, [str],)])
         name = str_column(name.replace('"', "_"))
-        if column_check_ambiguous(name, self.get_columns()):
-            raise NameError(
-                "A vcolumn has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(
-                    name
-                )
-            )
+        assert not(column_check_ambiguous(name, self.get_columns())), f"A vcolumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
         try:
             ctype = get_data_types(
                 "SELECT {} AS {} FROM {} LIMIT 0".format(expr, name, self.__genSQL__()),
@@ -4650,11 +4582,7 @@ vcolumns : vcolumn
                     self._VERTICAPY_VARIABLES_["schema_writing"],
                 )
             except:
-                raise QueryError(
-                    "The expression '{}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work.".format(
-                        expr
-                    )
-                )
+                raise QueryError(f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work.")
         ctype = ctype if (ctype) else "undefined"
         category = category_from_type(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
@@ -5249,9 +5177,8 @@ vcolumns : vcolumn
                 x: vcolumn used to compute the categories.
                 y: [OPTIONAL] numerical expression representing the categories values. 
                     If empty, COUNT(*) is used as the default aggregation.
-            bar (double / drilldown) / donut (drilldown) / donut3d (drilldown)
-            hist (double / drilldown) / pie (drilldown) / pie_half (drilldown)
-            pie3d (drilldown) / stacked_bar / stacked_hist
+            bar (double / drilldown) / hist (double / drilldown) / pie (drilldown) 
+            / stacked_bar / stacked_hist
                 x: vcolumn used to compute the first category.
                 y: vcolumn used to compute the second category.
                 z: [OPTIONAL] numerical expression representing the different categories values. 
@@ -5517,10 +5444,7 @@ vcolumns : vcolumn
             columns_check([of], self)
             of = vdf_columns_names([of], self)[0]
         for column in columns:
-            if not (self[column].isnum()):
-                raise TypeError(
-                    "vcolumn {} must be numerical to draw the Heatmap.".format(column)
-                )
+            assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to draw the Heatmap.")
         from verticapy.plot import pivot_table
 
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
@@ -5944,6 +5868,7 @@ vcolumns : vcolumn
                 ),
                 ("expr1", expr1, [list],),
                 ("expr2", expr2, [list],),
+                ("input_relation", input_relation, [vDataFrame, str],),
             ]
         )
         how = how.lower()
@@ -5974,12 +5899,6 @@ vcolumns : vcolumn
                 second_relation = "(SELECT * FROM {}) AS y".format(input_relation)
             else:
                 second_relation = "{} AS y".format(input_relation)
-        else:
-            raise TypeError(
-                "Parameter 'input_relation' type must be one of the following [{}, {}], found {}".format(
-                    str, type(self), type(input_relation)
-                )
-            )
         on_join = " AND ".join(
             [
                 'x."'
@@ -7275,22 +7194,12 @@ vcolumns : vcolumn
         columns_check([unique_id, item_id], self)
         unique_id, item_id = vdf_columns_names([unique_id, item_id], self)
         vdf = self.copy()
-        if method != "count" and not (rating):
-            raise ParameterError(
-                f"Method '{method}' can not be used if parameter 'rating' is empty."
-            )
+        assert method == "count" or rating, f"Method '{method}' can not be used if parameter 'rating' is empty."
         if rating:
-            if isinstance(rating, str) or len(rating) == 3:
-                if method == "count":
-                    raise ParameterError(
-                        "Method 'count' can not be used if parameter 'rating' is defined."
-                    )
-                columns_check([rating], self)
-                rating = vdf_columns_names([rating], self)[0]
-            else:
-                raise ParameterError(
-                    f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name)."
-                )
+            assert isinstance(rating, str) or len(rating) == 3, ParameterError(f"Parameter 'rating' must be of type str or composed of exactly 3 elements: (r_vdf, r_item_id, r_name).")
+            assert method != "count", "Method 'count' can not be used if parameter 'rating' is defined."
+            columns_check([rating], self)
+            rating = vdf_columns_names([rating], self)[0]
         if ts:
             columns_check([ts], self)
             ts = vdf_columns_names([ts], self)[0]
@@ -7525,18 +7434,12 @@ vcolumns : vcolumn
         method = "regr_{}".format(method)
         if not (columns):
             columns = self.numcol()
-            if not (columns):
-                raise EmptyParameter("No numerical column found in the vDataFrame.")
+            assert columns, EmptyParameter("No numerical column found in the vDataFrame.")
         columns_check(columns, self)
         columns = vdf_columns_names(columns, self)
         columns = vdf_columns_names(columns, self)
         for column in columns:
-            if not (self[column].isnum()):
-                raise TypeError(
-                    "vcolumn {} must be numerical to compute the Regression Matrix.".format(
-                        column
-                    )
-                )
+            assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to compute the Regression Matrix.")
         n = len(columns)
         all_list, nb_precomputed = [], 0
         for i in range(0, n):
@@ -7942,12 +7845,7 @@ vcolumns : vcolumn
             method = method.lower()
         if method in ("systematic", "random"):
             order_by = ""
-            if by:
-                raise ParameterError(
-                    "Parameter 'by' must be empty when using '{}' sampling.".format(
-                        method
-                    )
-                )
+            assert not(by), ParameterError(f"Parameter 'by' must be empty when using '{method}' sampling.")
         check_types(
             [
                 ("method", method, ["random", "systematic", "stratified",],),
@@ -7960,8 +7858,7 @@ vcolumns : vcolumn
         by = vdf_columns_names(by, self)
         name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
         vdf = self.copy()
-        if (x <= 0) or (x >= 1):
-            raise ParameterError("Parameter 'x' must be between 0 and 1")
+        assert (0 < x < 1), ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
             random_state = verticapy.options["random_state"]
             random_seed = (
@@ -7977,11 +7874,8 @@ vcolumns : vcolumn
             verticapy.options["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
-            if method == "stratified" and not (by):
-                raise ParameterError(
-                    "Parameter 'by' must include at least one column when using 'stratified' sampling."
-                )
-            elif method == "stratified":
+            assert method != "stratified" or (by), ParameterError("Parameter 'by' must include at least one column when using 'stratified' sampling.")
+            if method == "stratified":
                 order_by = "ORDER BY " + ", ".join(by)
             vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
             print_info_init = verticapy.options["print_info"]
@@ -7989,8 +7883,6 @@ vcolumns : vcolumn
             vdf.filter("MOD({}, {}) = 0".format(name, int(1 / x)))
             verticapy.options["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
-        else:
-            raise ParameterError("Sampling method '{}' doesn't exist.".format(method))
         return vdf
 
     # ---#
@@ -8119,12 +8011,6 @@ vcolumns : vcolumn
                 max_nb_points,
                 ax=ax,
                 **style_kwds,
-            )
-        else:
-            raise ParameterError(
-                "Only 2D/3D Scatter Plots are available. Found {} columns.".format(
-                    len(columns)
-                )
             )
 
     # ---#
@@ -8397,17 +8283,8 @@ vcolumns : vcolumn
                 schema_writing.replace("'", "''")
             )
         )
-        if (self._VERTICAPY_VARIABLES_["cursor"].fetchone()) or (
-            schema_writing.lower()
-            not in ['"v_temp_schema"', "v_temp_schema", '"public"', "public"]
-        ):
-            self._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
-        else:
-            raise MissingSchema(
-                "The schema '{}' doesn't exist or is not accessible.\nThe attribute of the vDataFrame 'schema_writing' did not change.".format(
-                    schema_writing
-                )
-            )
+        assert (self._VERTICAPY_VARIABLES_["cursor"].fetchone()) or (schema_writing.lower() not in ['"v_temp_schema"', "v_temp_schema", '"public"', "public"]), MissingSchema(f"The schema '{schema_writing}' doesn't exist or is not accessible.\nThe attribute of the vDataFrame 'schema_writing' did not change.")
+        self._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
         return self
 
     # ---#
@@ -8788,10 +8665,7 @@ vcolumns : vcolumn
             kind = "area_percent"
         else:
             kind = "area_stacked"
-        if min(self.min(columns)["min"]) < 0:
-            raise ValueError(
-                "Columns having negative values can not be processed by the 'stacked_area' method."
-            )
+        assert min(self.min(columns)["min"]) >= 0, ValueError("Columns having negative values can not be processed by the 'stacked_area' method.")
         columns_check(columns + [ts], self)
         columns = vdf_columns_names(columns, self)
         ts = vdf_columns_names([ts], self)[0]
@@ -8872,20 +8746,10 @@ vcolumns : vcolumn
             [("column1", column1, [str, int],), ("column2", column2, [str, int],),]
         )
         if isinstance(column1, int):
-            if column1 >= self.shape()[1]:
-                raise ParameterError(
-                    "The parameter 'column1' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
-                        column1, self.shape()[1]
-                    )
-                )
+            assert column1 < self.shape()[1], ParameterError("The parameter 'column1' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(column1, self.shape()[1]))
             column1 = self.get_columns()[column1]
         if isinstance(column2, int):
-            if column2 >= self.shape()[1]:
-                raise ParameterError(
-                    "The parameter 'column2' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(
-                        column2, self.shape()[1]
-                    )
-                )
+            assert column2 < self.shape()[1], ParameterError("The parameter 'column2' is incorrect, it is greater or equal to the vDataFrame number of columns: {}>={}\nWhen this parameter type is 'integer', it must represent the index of the column to swap.".format(column2, self.shape()[1]))
             column2 = self.get_columns()[column2]
         columns_check([column1, column2], self)
         column1 = vdf_columns_names([column1], self)[0]
@@ -9004,9 +8868,8 @@ vcolumns : vcolumn
             if not (usecols)
             else [str_column(column) for column in usecols]
         )
-        if (new_header) and (len(new_header) != len(columns)):
-            raise ParsingError("The header has an incorrect number of columns")
-        elif new_header:
+        assert not(new_header) or len(new_header) == len(columns), ParsingError("The header has an incorrect number of columns")
+        if new_header:
             file.write(sep.join(new_header))
         elif header:
             file.write(sep.join([column.replace('"', "") for column in columns]))
@@ -9638,9 +9501,13 @@ vcolumns : vcolumn
 
             ax = plot_importance(coeff_importances, print_legend=False, ax=ax,)
             ax.set_xlabel("IV")
+        index = [elem for elem in coeff_importances]
+        iv = [coeff_importances[elem] for elem in coeff_importances]
+        data = [(index[i], iv[i]) for i in range(len(iv))]
+        data = sorted(data, key=lambda tup: tup[1], reverse=True)
         return tablesample(
             {
-                "index": [elem for elem in coeff_importances],
-                "iv": [coeff_importances[elem] for elem in coeff_importances],
+                "index": [elem[0] for elem in data],
+                "iv": [elem[1] for elem in data],
             }
         )

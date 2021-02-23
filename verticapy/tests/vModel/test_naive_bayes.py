@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, sys, os, verticapy
-from verticapy.learn.naive_bayes import NaiveBayes
+from verticapy.learn.naive_bayes import NaiveBayes, BernoulliNB, CategoricalNB, GaussianNB, MultinomialNB
 from verticapy import drop_table, set_option, vertica_conn
 import matplotlib.pyplot as plt
 
@@ -43,6 +43,16 @@ def model(base, iris_vd):
 
 
 class TestNB:
+    def test_NB_subclasses(self):
+        result = BernoulliNB("model_test")
+        assert result.parameters["nbtype"] == "bernoulli"
+        result = CategoricalNB("model_test")
+        assert result.parameters["nbtype"] == "categorical"
+        result = GaussianNB("model_test")
+        assert result.parameters["nbtype"] == "gaussian"
+        result = MultinomialNB("model_test")
+        assert result.parameters["nbtype"] == "multinomial"
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 

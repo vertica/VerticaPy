@@ -48,6 +48,9 @@
 #
 # Modules
 #
+# Standard Python Modules
+import random
+
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -223,8 +226,8 @@ max_text_size: int, optional
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(self.name)
         schema = str_column(schema)
-        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}".format(
-            schema, get_session(self.cursor)
+        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}_{}".format(
+            schema, get_session(self.cursor), random.randint(0, 10000000),
         )
         try:
             self.drop()

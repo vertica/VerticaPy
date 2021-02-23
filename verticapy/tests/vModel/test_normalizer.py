@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, sys, os, verticapy
-from verticapy.learn.preprocessing import Normalizer
+from verticapy.learn.preprocessing import Normalizer, StandardScaler, RobustScaler, MinMaxScaler
 from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
@@ -38,6 +38,14 @@ def model(base, winequality_vd):
 
 
 class TestNormalizer:
+    def test_Normalizer_subclasses(self):
+        result = StandardScaler("model_test")
+        assert result.parameters["method"] == "zscore"
+        result = RobustScaler("model_test")
+        assert result.parameters["method"] == "robust_zscore"
+        result = MinMaxScaler("model_test")
+        assert result.parameters["method"] == "minmax"
+
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_NORMALIZE("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'norm_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()

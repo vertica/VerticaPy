@@ -251,6 +251,110 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    def test_vDF_hchart(self, titanic_vd, amazon_vd):
+        from highcharts.highcharts.highcharts import Highchart
+        from highcharts.highstock.highstock import Highstock
+
+        # boxplot
+        result = titanic_vd.hchart(kind = "boxplot")
+        assert isinstance(result, Highchart)
+        # kendall
+        result = titanic_vd.hchart(kind = "kendall")
+        assert isinstance(result, Highchart)
+        # cramer
+        result = titanic_vd.hchart(kind = "cramer")
+        assert isinstance(result, Highchart)
+        # pearson
+        result = titanic_vd.hchart(kind = "pearson")
+        assert isinstance(result, Highchart)
+        # spearman
+        result = titanic_vd.hchart(kind = "spearman")
+        assert isinstance(result, Highchart)
+        # biserial
+        result = titanic_vd.hchart(kind = "biserial")
+        assert isinstance(result, Highchart)
+        # area
+        result = amazon_vd.hchart(x="date", y="number", kind = "area")
+        assert isinstance(result, Highchart)
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "area")
+        assert isinstance(result, Highchart)
+        # line
+        result = amazon_vd.hchart(x="date", y="number", kind = "line")
+        assert isinstance(result, Highchart)
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "line")
+        assert isinstance(result, Highchart)
+        # spline
+        result = amazon_vd.hchart(x="date", y="number", kind = "spline")
+        assert isinstance(result, Highchart)
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "spline")
+        assert isinstance(result, Highchart)
+        # area_range
+        result = amazon_vd.hchart(x="date", 
+                                  y=["MIN(number)", "AVG(number)", "MAX(number)"], 
+                                  kind = "area_range")
+        assert isinstance(result, Highchart)
+        # area_ts
+        result = amazon_vd.hchart(x="date", y="number", kind = "area_ts")
+        assert isinstance(result, Highchart)
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "area_ts")
+        assert isinstance(result, Highchart)
+        # bar1D
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "bar")
+        assert isinstance(result, Highchart)
+        # hist1D
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "hist")
+        assert isinstance(result, Highchart)
+        # donut
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "donut")
+        assert isinstance(result, Highchart)
+        # donut3d
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "donut3d")
+        assert isinstance(result, Highchart)
+        # pie
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie")
+        assert isinstance(result, Highchart)
+        # pie_half
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie_half")
+        assert isinstance(result, Highchart)
+        # pie3d
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie3d")
+        assert isinstance(result, Highchart)
+        # bar2D / hist2D or drilldown
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "bar")
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "hist")
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "stacked_hist")
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "stacked_bar")
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "bar", drilldown=True)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "hist", drilldown=True)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "pie", drilldown=True)
+        assert isinstance(result, Highchart)
+        # bubble or scatter
+        result = titanic_vd.hchart(x="age", y="fare", kind = "scatter",)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind = "scatter",)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="age", y="fare", z="parch", c="survived", kind = "scatter",)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind = "bubble",)
+        assert isinstance(result, Highchart)
+        result = titanic_vd.hchart(x="age", y="fare", z="parch", c="survived", kind = "bubble",)
+        assert isinstance(result, Highchart)
+        # negative_bar
+        result = titanic_vd.hchart(x="survived", y="age", z="COUNT(*) AS cnt", kind = "donut3d",)
+        assert isinstance(result, Highchart)
+        # spider
+        result = titanic_vd.hchart(x="pclass",  kind = "spider",)
+        assert isinstance(result, Highchart)
+        # candlestick
+        result = amazon_vd.hchart(x="date", y="number", kind = "candlestick")
+        assert isinstance(result, Highstock)
+
     def test_vDF_hist(self, titanic_vd):
         # testing vDataFrame[].hist
         # auto
