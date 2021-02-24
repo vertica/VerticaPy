@@ -86,6 +86,12 @@ def model(base, tr_data_vd):
 
 
 class TestDecisionTreeRegressor:
+    def test_repr(self, model):
+        assert "SELECT rf_regressor('public.tr_model_test'," in model.__repr__()
+        model_repr = DecisionTreeRegressor("RF_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<RandomForestRegressor>"
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_RF_REGRESSOR(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'tr_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()

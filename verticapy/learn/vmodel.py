@@ -331,7 +331,7 @@ Main Class for Vertica Model
 	tablesample
 		model attribute
 		"""
-        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX"):
+        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor"):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
@@ -353,7 +353,6 @@ Main Class for Vertica Model
                         "attr_name": ["n_cluster", "n_noise"],
                         "value": [self.n_cluster_, self.n_noise_],
                     },
-                    name="Attributes",
                 )
                 return result
             else:

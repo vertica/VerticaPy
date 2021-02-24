@@ -56,6 +56,11 @@ def world_vd(base):
 
 
 class TestUtilities:
+    def test_print_display(self, titanic_vd):
+        print(titanic_vd)
+        display(titanic_vd)
+        assert titanic_vd.shape() == (1234, 14)
+
     def test_create_verticapy_schema(self, base):
         with warnings.catch_warnings(record=True) as w:
             drop("verticapy", base.cursor, method="schema")

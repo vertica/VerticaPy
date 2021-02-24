@@ -49,6 +49,12 @@ def model(base, titanic_vd):
 
 
 class TestLinearSVC:
+    def test_repr(self, model):
+        assert "predictor|coefficient" in model.__repr__()
+        model_repr = LinearSVC("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<LinearSVC>"
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
@@ -130,6 +136,16 @@ class TestLinearSVC:
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 11
+        plt.close("all")
+        model_test.drop()
+        model_test.fit(winequality_vd, ["alcohol", "residual_sugar"], "good")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 11
+        plt.close("all")
+        model_test.drop()
+        model_test.fit(winequality_vd, ["alcohol", "residual_sugar", "fixed_acidity"], "good")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 5
         plt.close("all")
         model_test.drop()
 

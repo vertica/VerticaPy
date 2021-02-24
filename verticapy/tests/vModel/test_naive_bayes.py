@@ -43,6 +43,12 @@ def model(base, iris_vd):
 
 
 class TestNB:
+    def test_repr(self, model):
+        assert "predictor  |  type" in model.__repr__()
+        model_repr = NaiveBayes("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<NaiveBayes>"
+
     def test_NB_subclasses(self):
         result = BernoulliNB("model_test")
         assert result.parameters["nbtype"] == "bernoulli"

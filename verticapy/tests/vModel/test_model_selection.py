@@ -71,8 +71,8 @@ class TestModelSelection:
         result = autoML(titanic_vd,
                         ["age", "fare", "sex", "family_size",],
                         "survived",
-                        lmax = 1,
-                        show = False,)
+                        lmax = 1,)
+        plt.close("all")
         assert len(result.values) == 7
         assert len(result["model_type"]) == 5
 

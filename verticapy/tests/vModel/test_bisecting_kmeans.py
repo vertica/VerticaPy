@@ -72,6 +72,12 @@ def model(base, bsk_data_vd):
 
 
 class TestBisectingKMeans:
+    def test_repr(self, model):
+        assert "bisecting_kmeans('bsk_model_test'" in model.__repr__()
+        model_repr = BisectingKMeans("BisectingKMeans_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<BisectingKMeans>"
+
     def test_deploySQL(self, model):
         expected_sql = "APPLY_BISECTING_KMEANS(col1, col2, col3, col4 USING PARAMETERS model_name = 'bsk_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()

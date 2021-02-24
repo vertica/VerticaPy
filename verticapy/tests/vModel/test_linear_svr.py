@@ -41,6 +41,12 @@ def model(base, winequality_vd):
 
 
 class TestLinearSVR:
+    def test_repr(self, model):
+        assert "predictor   |coefficient" in model.__repr__()
+        model_repr = LinearSVR("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<LinearSVR>"
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_SVM_REGRESSOR("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'lsvr_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()

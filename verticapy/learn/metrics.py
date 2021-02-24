@@ -904,7 +904,7 @@ tablesample
         elif 0 in matrix.values and 1 in matrix.values:
             non_pos_label_, pos_label_ = 0, 1
         else:
-            non_pos_label_, pos_label_ = "0", "1"
+            non_pos_label_, pos_label_ = matrix.values["index"]
         tn, fn, fp, tp = (
             matrix.values[non_pos_label_][0],
             matrix.values[non_pos_label_][1],
