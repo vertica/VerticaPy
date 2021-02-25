@@ -42,6 +42,12 @@ def model(base, titanic_vd):
 
 
 class TestCountVectorizer:
+    def test_repr(self, model):
+        assert "Vocabulary" in model.__repr__()
+        model_repr = CountVectorizer("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<CountVectorizer>"
+
     def test_deploySQL(self, model):
         expected_sql = 'SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)'
         result_sql = model.deploySQL()

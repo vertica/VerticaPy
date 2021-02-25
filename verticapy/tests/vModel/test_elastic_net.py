@@ -42,6 +42,12 @@ def model(base, winequality_vd):
 
 
 class TestElasticNet:
+    def test_repr(self, model):
+        assert "|coefficient|std_err |t_value |p_value" in model.__repr__()
+        model_repr = ElasticNet("lin_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<LinearRegression>"
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("total_sulfur_dioxide", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'elasticnet_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()

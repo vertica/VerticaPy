@@ -317,6 +317,7 @@ class TestUtilities:
         )
         result7 = result.to_vdf(base.cursor)["price"].mean()
         assert result7 == 2.0
+        
 
     def test_to_tablesample(self, base):
         result = to_tablesample('SELECT 1 AS "verticapy test *+""";', base.cursor,)

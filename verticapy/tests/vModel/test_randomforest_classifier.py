@@ -101,6 +101,12 @@ def model(base, rfc_data_vd):
 
 
 class TestRFC:
+    def test_repr(self, model):
+        assert "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);" in model.__repr__()
+        model_repr = RandomForestClassifier("RF_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<RandomForestClassifier>"
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 

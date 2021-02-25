@@ -41,6 +41,12 @@ def model(base, winequality_vd):
 
 
 class TestLinearRegression:
+    def test_repr(self, model):
+        assert "|coefficient|std_err |t_value |p_value" in model.__repr__()
+        model_repr = LinearRegression("lin_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<LinearRegression>"
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'linreg_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
@@ -135,6 +141,11 @@ class TestLinearRegression:
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
+        plt.close("all")
+        model_test.drop()
+        model_test.fit(winequality_vd, ["alcohol", "residual_sugar"], "quality")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 3
         plt.close("all")
         model_test.drop()
 

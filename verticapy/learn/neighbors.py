@@ -100,6 +100,44 @@ class NeighborsClassifier(vModel):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
+    def cutoff_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model ROC curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str
+        To draw the ROC curve, one of the response column class has to be the 
+        positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+            pos_label
+        )
+        return roc_curve(
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, cutoff_curve=True, **style_kwds,
+        )
+
+    # ---#
     def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
         """
     ---------------------------------------------------------------------------
@@ -152,7 +190,7 @@ class NeighborsClassifier(vModel):
             )
 
     # ---#
-    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -164,6 +202,8 @@ class NeighborsClassifier(vModel):
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -184,11 +224,11 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return lift_chart(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
-    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -200,6 +240,8 @@ class NeighborsClassifier(vModel):
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -220,7 +262,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return prc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -336,7 +378,7 @@ class NeighborsClassifier(vModel):
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
     # ---#
-    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -348,6 +390,8 @@ class NeighborsClassifier(vModel):
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -368,7 +412,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#

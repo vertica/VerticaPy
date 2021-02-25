@@ -98,6 +98,12 @@ def model(base, rfr_data_vd):
 
 
 class TestRFR:
+    def test_repr(self, model):
+        assert "rf_regressor" in model.__repr__()
+        model_repr = RandomForestRegressor("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<RandomForestRegressor>"
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_RF_REGRESSOR(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'rfr_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()

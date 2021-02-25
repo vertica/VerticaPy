@@ -49,6 +49,12 @@ def model(base, titanic_vd):
 
 
 class TestLogisticRegression:
+    def test_repr(self, model):
+        assert "predictor|coefficient|std_err" in model.__repr__()
+        model_repr = LogisticRegression("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<LogisticRegression>"
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
@@ -128,11 +134,18 @@ class TestLogisticRegression:
         plt.close("all")
 
     def test_get_plot(self, base, winequality_vd):
+        # 1D
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LogisticRegression("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 11
+        plt.close("all")
+        model_test.drop()
+        # 2D
+        model_test.fit(winequality_vd, ["alcohol", "residual_sugar"], "good")
+        result = model_test.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 5
         plt.close("all")
         model_test.drop()
 

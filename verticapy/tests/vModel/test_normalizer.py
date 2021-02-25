@@ -38,6 +38,12 @@ def model(base, winequality_vd):
 
 
 class TestNormalizer:
+    def test_repr(self, model):
+        assert "column_name  |  avg   |std_dev" in model.__repr__()
+        model_repr = Normalizer("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<Normalizer>"
+
     def test_Normalizer_subclasses(self):
         result = StandardScaler("model_test")
         assert result.parameters["method"] == "zscore"
