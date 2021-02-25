@@ -56,11 +56,6 @@ def world_vd(base):
 
 
 class TestUtilities:
-    def test_print_display(self, titanic_vd):
-        print(titanic_vd)
-        display(titanic_vd)
-        assert titanic_vd.shape() == (1234, 14)
-
     def test_create_verticapy_schema(self, base):
         with warnings.catch_warnings(record=True) as w:
             drop("verticapy", base.cursor, method="schema")
@@ -322,6 +317,7 @@ class TestUtilities:
         )
         result7 = result.to_vdf(base.cursor)["price"].mean()
         assert result7 == 2.0
+        
 
     def test_to_tablesample(self, base):
         result = to_tablesample('SELECT 1 AS "verticapy test *+""";', base.cursor,)

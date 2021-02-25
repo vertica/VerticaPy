@@ -69,6 +69,26 @@ def world_vd(base):
 
 
 class TestvDFUtilities:
+    def test_vDF_repr(self, titanic_vd):
+        # vdf
+        repr_vdf = titanic_vd.__repr__()
+        assert "pclass" in repr_vdf
+        assert "survived" in repr_vdf
+        assert 10000 < len(repr_vdf) < 1000000
+        repr_html_vdf = titanic_vd._repr_html_()
+        assert 10000 < len(repr_html_vdf) < 10000000
+        assert "<table>" in repr_html_vdf
+        assert "data:image/png;base64," in repr_html_vdf
+        # vdc
+        repr_vdc = titanic_vd["age"].__repr__()
+        assert "age" in repr_vdc
+        assert "60" in repr_vdc
+        assert 500 < len(repr_vdc) < 5000
+        repr_html_vdc = titanic_vd["age"]._repr_html_()
+        assert 10000 < len(repr_html_vdc) < 10000000
+        assert "<table>" in repr_html_vdc
+        assert "data:image/png;base64," in repr_html_vdc
+
     def test_vDF_magic(self, titanic_vd):
         assert (
             str(titanic_vd["name"]._in(["Madison", "Ashley", None]))

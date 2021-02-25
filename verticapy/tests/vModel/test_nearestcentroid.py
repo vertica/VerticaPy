@@ -169,5 +169,5 @@ class TestNearestCentroid:
     def test_model_from_vDF(self, base, titanic_vd):
         model_test = NearestCentroid("nc_from_vDF", cursor=base.cursor)
         model_test.fit(titanic_vd, ["age"], "survived")
-        model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.4312938816449348)
+        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.4312938816449348)
         model_test.drop()

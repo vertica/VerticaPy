@@ -168,6 +168,7 @@ class TestKNeighborsClassifier:
 
     def test_model_from_vDF(self, base, titanic_vd):
         model_test = KNeighborsClassifier("knn_from_vDF", cursor=base.cursor)
+        model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.5691554467564259)
+        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.5890710382513661)
         model_test.drop()

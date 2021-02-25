@@ -180,5 +180,5 @@ class TestKNeighborsRegressor:
         model_test = KNeighborsRegressor("knn_from_vDF", cursor=base.cursor)
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        model_test.score() == pytest.approx(0.5691554467564259)
+        assert model_test.score() == pytest.approx(-0.122616967579114)
         model_test.drop()

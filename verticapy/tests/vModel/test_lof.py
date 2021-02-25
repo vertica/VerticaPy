@@ -101,7 +101,7 @@ class TestLocalOutlierFactor:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, base, titanic_vd):
-        model_test = LocalOutlierFactor("lof_from_vDF", cursor=base.cursor)
+        model_test = LocalOutlierFactor("lof_from_vDF_tmp", cursor=base.cursor)
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare",], "survived")
         assert model_test.predict()["lof_score"].mean() == pytest.approx(
