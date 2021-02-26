@@ -151,6 +151,12 @@ class TestSVD:
         result = model.cursor.fetchone()
         assert result[0] == 1
 
+    def test_svd_score(self, model):
+        result = model.score()
+        assert result["Score"][0] == pytest.approx(1.13336203734709e-08)
+        assert result["Score"][1] == pytest.approx(2.23293936486962e-07)
+        assert result["Score"][2] == pytest.approx(2.94883192255901e-07)
+
     def test_set_params(self, model):
         model.set_params({"n_components": 3})
         assert model.get_params()["n_components"] == 3

@@ -73,6 +73,17 @@ class TestKNeighborsClassifier:
         assert roc_curve["true_positive"][700] == pytest.approx(0.353846153846154)
         plt.close("all")
 
+    def test_prc_curve(self, model):
+        prc_curve = model.prc_curve(nbins=1000)
+
+        assert prc_curve["threshold"][100] == pytest.approx(0.099)
+        assert prc_curve["recall"][100] == pytest.approx(1.0)
+        assert prc_curve["precision"][100] == pytest.approx(0.477356181150551)
+        assert prc_curve["threshold"][700] == pytest.approx(0.699)
+        assert prc_curve["recall"][700] == pytest.approx(0.353846153846154)
+        assert prc_curve["precision"][700] == pytest.approx(0.867924528301887)
+        plt.close("all")
+
     def test_cutoff_curve(self, model):
         cutoff_curve = model.cutoff_curve(nbins=1000)
 

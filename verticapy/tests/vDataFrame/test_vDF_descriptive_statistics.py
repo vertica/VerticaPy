@@ -695,12 +695,18 @@ class TestvDFDescriptiveStat:
         assert result["unique"][2] == 2.0
         assert result["unique"][3] == 182.0
 
-    def test_vDF_numh(self, market_vd):
+    def test_vDF_numh(self, market_vd, amazon_vd):
         assert market_vd["Price"].numh(method="auto") == pytest.approx(0.984707376)
         assert market_vd["Price"].numh(method="freedman_diaconis") == pytest.approx(
             0.450501738
         )
         assert market_vd["Price"].numh(method="sturges") == pytest.approx(0.984707376)
+        assert amazon_vd["date"].numh(method="auto") == pytest.approx(44705828.571428575)
+        assert amazon_vd["date"].numh(method="freedman_diaconis") == pytest.approx(
+            33903959.714834176
+        )
+        assert amazon_vd["date"].numh(method="sturges") == pytest.approx(44705828.571428575)
+
 
     def test_vDF_prod(self, market_vd):
         # testing vDataFrame.prod
