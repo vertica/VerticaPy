@@ -146,6 +146,12 @@ class TestPCA:
             winequality_vd["alcohol"].mean(), abs=1e-6
         )
 
+    def test_pca_score(self, model):
+        result = model.score()
+        assert result["Score"][0] == pytest.approx(0.0, abs=1e-6)
+        assert result["Score"][1] == pytest.approx(0.0, abs=1e-6)
+        assert result["Score"][2] == pytest.approx(0.0, abs=1e-6)
+
     def test_set_cursor(self, model):
         cur = vertica_conn(
             "vp_test_config",

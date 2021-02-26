@@ -138,13 +138,13 @@ class TestLogisticRegression:
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LogisticRegression("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "good")
-        result = model_test.plot()
+        result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 11
         plt.close("all")
         model_test.drop()
         # 2D
         model_test.fit(winequality_vd, ["alcohol", "residual_sugar"], "good")
-        result = model_test.plot()
+        result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 5
         plt.close("all")
         model_test.drop()

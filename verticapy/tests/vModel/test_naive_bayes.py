@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.naive_bayes import NaiveBayes, BernoulliNB, CategoricalNB, GaussianNB, MultinomialNB
-from verticapy import drop_table, set_option, vertica_conn
+from verticapy import drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,7 +26,16 @@ def iris_vd(base):
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
+
+@pytest.fixture(scope="module")
+def winequality_vd(base):
+    from verticapy.datasets import load_winequality
+
+    winequality = load_winequality(cursor=base.cursor)
+    yield winequality
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -49,15 +58,59 @@ class TestNB:
         model_repr.drop()
         assert model_repr.__repr__() == "<NaiveBayes>"
 
-    def test_NB_subclasses(self):
-        result = BernoulliNB("model_test")
-        assert result.parameters["nbtype"] == "bernoulli"
-        result = CategoricalNB("model_test")
-        assert result.parameters["nbtype"] == "categorical"
-        result = GaussianNB("model_test")
-        assert result.parameters["nbtype"] == "gaussian"
-        result = MultinomialNB("model_test")
-        assert result.parameters["nbtype"] == "multinomial"
+    def test_NB_subclasses(self, winequality_vd):
+        model_test = BernoulliNB("model_test")
+        assert model_test.parameters["nbtype"] == "bernoulli"
+        model_test.drop()
+        model_test.fit(winequality_vd, ["good"], "quality")
+        md = model_test.to_sklearn()
+        model_test.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(True USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model_test.name
+            )
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[True]])[0][0])
+        model_test.drop()
+        model_test = CategoricalNB("model_test")
+        assert model_test.parameters["nbtype"] == "categorical"
+        model_test.drop()
+        model_test.fit(winequality_vd, ["color"], "quality")
+        md = model_test.to_sklearn()
+        model_test.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES('red' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model_test.name
+            )
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[0]])[0][0])
+        model_test.drop()
+        model_test = GaussianNB("model_test")
+        assert model_test.parameters["nbtype"] == "gaussian"
+        model_test.drop()
+        model_test.fit(winequality_vd, ["residual_sugar", "alcohol",], "quality")
+        md = model_test.to_sklearn()
+        model_test.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(0.0, 14.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model_test.name
+            )
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[0.0, 14.0]])[0][0])
+        model_test.drop()
+        model_test = MultinomialNB("model_test")
+        assert model_test.parameters["nbtype"] == "multinomial"
+        model_test.drop()
+        model_test.fit(winequality_vd, ["good"], "quality")
+        md = model_test.to_sklearn()
+        model_test.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model_test.name
+            )
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == pytest.approx(md.predict([[0]])[0][0])
+        model_test.drop()
 
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()

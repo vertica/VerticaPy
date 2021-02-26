@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, sys, os, verticapy
-from verticapy.learn.neighbors import LocalOutlierFactor
+from verticapy.learn.neighbors import KernelDensity
 from verticapy import drop, set_option, vertica_conn, create_verticapy_schema
 import matplotlib.pyplot as plt
 
@@ -35,7 +35,7 @@ def model(base, titanic_vd):
         create_verticapy_schema(base.cursor)
     except:
         pass
-    model_class = LocalOutlierFactor("lof_model_test", cursor=base.cursor)
+    model_class = KernelDensity("KernelDensity_model_test", cursor=base.cursor)
     model_class.drop()
     model_class.fit(
         "public.titanic", ["age", "fare",],
@@ -44,15 +44,15 @@ def model(base, titanic_vd):
     model_class.drop()
 
 
-class TestLocalOutlierFactor:
+class TestKernelDensity:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = LocalOutlierFactor("model_repr", model.cursor)
+        model_repr = KernelDensity("model_repr", model.cursor)
         model_repr.drop()
-        assert model_repr.__repr__() == "<LocalOutlierFactor>"
+        assert model_repr.__repr__() == "<KernelDensity>"
 
     def test_drop(self, base):
-        model_test = LocalOutlierFactor("model_test_drop", cursor=base.cursor)
+        model_test = KernelDensity("model_test_drop", cursor=base.cursor)
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare",],)
         base.cursor.execute(
@@ -67,34 +67,35 @@ class TestLocalOutlierFactor:
         assert base.cursor.fetchone() is None
 
     def test_get_params(self, model):
-        assert model.get_params() == {'n_neighbors': 20, 'p': 2}
+        assert model.get_params() == {'bandwidth': 1,
+                                      'kernel': 'gaussian',
+                                      'max_depth': 5,
+                                      'max_leaf_nodes': 1000000000,
+                                      'min_samples_leaf': 1,
+                                      'nbins': 5,
+                                      'p': 2,
+                                      'xlim': []}
 
     def test_get_predict(self, titanic_vd, model):
-        titanic_copy = model.predict()
+        titanic_copy = model.predict(titanic_vd.copy(), name = "kde")
 
-        assert titanic_copy["lof_score"].mean() == pytest.approx(
-            1.17226637499694, abs=1e-6
+        assert titanic_copy["kde"].mean() == pytest.approx(
+            6.52177350119195e-07, abs=1e-6
         )
 
     def test_get_attr(self, model):
         result = model.get_attr()
-        assert result["value"] == [0]
+        assert result["attr_name"][0] == "tree_count"
 
     def test_get_plot(self, model):
-        result = model.plot(color = ["r", "b",])
-        assert len(result.get_default_bbox_extra_artists()) == 9
+        result = model.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
-        model_test = LocalOutlierFactor("model_test_plot", cursor=model.cursor)
+        model_test = KernelDensity("model_test_plot_kde", cursor=model.cursor)
         model_test.drop()
         model_test.fit("public.titanic", ["age",],)
-        result = model_test.plot(color = ["r", "b",])
+        result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
-        model_test.drop()
-        model_test.fit("public.titanic", ["age", "fare", "pclass",],)
-        result = model_test.plot(color = ["r", "b",])
-        assert len(result.get_default_bbox_extra_artists()) == 3
-        model_test.drop()
-
 
     def test_set_cursor(self, model):
         cur = vertica_conn(
@@ -112,10 +113,12 @@ class TestLocalOutlierFactor:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, base, titanic_vd):
-        model_test = LocalOutlierFactor("lof_from_vDF_tmp", cursor=base.cursor)
+        model_test = KernelDensity("KernelDensity_from_vDF_tmp", cursor=base.cursor)
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare",],)
-        assert model_test.predict()["lof_score"].mean() == pytest.approx(
-            1.17226637499694, abs=1e-6
+        titanic_copy = model_test.predict(titanic_vd.copy(), name = "kde")
+
+        assert titanic_copy["kde"].mean() == pytest.approx(
+            6.52177350119195e-07, abs=1e-6
         )
         model_test.drop()

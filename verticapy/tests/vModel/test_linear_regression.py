@@ -139,12 +139,12 @@ class TestLinearRegression:
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = LinearRegression("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
-        result = model_test.plot()
+        result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 9
         plt.close("all")
         model_test.drop()
         model_test.fit(winequality_vd, ["alcohol", "residual_sugar"], "quality")
-        result = model_test.plot()
+        result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 3
         plt.close("all")
         model_test.drop()
