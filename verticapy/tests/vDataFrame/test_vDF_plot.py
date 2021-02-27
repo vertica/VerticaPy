@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, datetime, warnings
+import pytest, datetime, warnings, os, verticapy
 from verticapy import vDataFrame, drop, create_verticapy_schema
 import matplotlib.pyplot as plt
 
@@ -87,7 +87,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    def test_vDF_bar(self, titanic_vd):
+    def test_vDF_bar(self, titanic_vd, amazon_vd):
         # testing vDataFrame[].bar
         # auto
         result = titanic_vd["fare"].bar(color="b",)
@@ -98,6 +98,17 @@ class TestvDFPlot:
             0.12236628849270664
         )
         assert result.get_yticks()[1] == pytest.approx(42.694100000000006)
+        plt.close("all")
+
+        # auto + date
+        result = amazon_vd["date"].bar(color="b",)
+        assert result.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
+            0.07530213820886272
+        )
+        assert result.get_default_bbox_extra_artists()[1].get_width() == pytest.approx(
+            0.06693523396343352
+        )
+        assert result.get_yticks()[1] == pytest.approx(44705828.571428575)
         plt.close("all")
 
         # method=sum of=survived and bins=5
@@ -178,7 +189,12 @@ class TestvDFPlot:
         ] == pytest.approx(512.3292)
         plt.close("all")
 
-    def test_vDF_bubble(self, iris_vd):
+    def test_vDF_bubble(self, iris_vd, titanic_vd,):
+        # testing vDataFrame.bubble - img
+        result = titanic_vd.bubble(columns=["fare", "age"], size_bubble_col="pclass", color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
+        plt.close("all")
         # testing vDataFrame.bubble
         result = iris_vd.bubble(
             columns=["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", color="b",
@@ -255,6 +271,10 @@ class TestvDFPlot:
         plt.close("all")
 
     def test_vDF_hexbin(self, titanic_vd):
+        result = titanic_vd.hexbin(columns=["fare", "age"], img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(512.3292)
+        plt.close("all")
         result = titanic_vd.hexbin(columns=["age", "fare"], method="avg", of="survived")
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(
@@ -510,8 +530,12 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    def test_vDF_scatter(self, iris_vd):
+    def test_vDF_scatter(self, iris_vd, titanic_vd,):
         # testing vDataFrame.scatter
+        result = titanic_vd.scatter(columns=["fare", "age"], color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
+        result = result.get_default_bbox_extra_artists()[0]
+        assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
+        plt.close("all")
         result = iris_vd.scatter(columns=["PetalLengthCm", "SepalLengthCm"], color="b",)
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9

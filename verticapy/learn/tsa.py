@@ -574,6 +574,7 @@ papprox_ma: int, optional
                 ),
                 self.parameters["Q"] * self.parameters["s"] + 1,
             )
+            n = int(n)
             columns = [
                 "LAG([VerticaPy_y], {}) OVER (ORDER BY [VerticaPy_ts]) AS ARq{}".format(
                     i, i
