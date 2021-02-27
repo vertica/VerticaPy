@@ -268,19 +268,8 @@ Main Class for Vertica Model
             "LogisticRegression",
             "LinearSVC",
             "LinearSVR",
-            "SARIMAX",
         ):
-            if self.type == "SARIMAX":
-                relation = (
-                    self.transform_relation.replace("[VerticaPy_y]", self.y)
-                    .replace("[VerticaPy_ts]", self.ts)
-                    .replace(
-                        "[VerticaPy_key_columns]", ", ".join(self.exogenous + [self.ts])
-                    )
-                    .format(self.input_relation)
-                )
-            else:
-                relation = self.input_relation
+            relation = self.input_relation
             version(cursor=self.cursor, condition=[8, 1, 1])
             query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
             query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
@@ -3755,7 +3744,13 @@ class Regressor(Supervised):
             ).format(self.test_relation)
             for idx, elem in enumerate(self.X):
                 relation = relation.replace("[X{}]".format(idx), elem)
-            result = tablesample({"index": [method]})
+            if method == "mse" and root:
+                index = "rmse"
+            elif method == "r2" and adj:
+                index = "r2a"
+            else:
+                index = method
+            result = tablesample({"index": [index]})
         elif self.type == "KNeighborsRegressor":
             test_relation = self.deploySQL()
             prediction = "predict_neighbors"
