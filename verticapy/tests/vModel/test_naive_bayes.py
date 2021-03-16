@@ -37,6 +37,15 @@ def winequality_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.winequality", cursor=base.cursor)
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
+
 
 @pytest.fixture(scope="module")
 def model(base, iris_vd):
@@ -191,6 +200,19 @@ class TestNB:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == md.predict([[1.1, 2.2, 3.3, 4.4]])[0]
+
+    def test_to_sql(self, model, titanic_vd):
+        model_test = NaiveBayes("rfc_sql_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex", "pclass"], "survived")
+        model.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex, 1 AS pclass) x".format(
+                model_test.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1], 1e-3)
+        model_test.drop()
 
     def test_get_attr(self, model):
         attr = model.get_attr()

@@ -155,6 +155,8 @@ def logit_plot(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -247,6 +249,8 @@ def logit_plot(
             ncol=2,
             fontsize=8,
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         raise ParameterError("The number of predictors is too big.")
     if conn:
@@ -458,6 +462,8 @@ def plot_importance(
         orange = mpatches.Patch(color=color_dict(style_kwds, 1), label="sign -")
         blue = mpatches.Patch(color=color_dict(style_kwds, 0), label="sign +")
         ax.legend(handles=[orange, blue], loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.set_ylabel("Features")
     ax.set_xlabel("Importance")
     ax.set_yticks(range(0, len(importances)))
@@ -465,7 +471,66 @@ def plot_importance(
     return ax
 
 # ---#
-def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: bool = True, ax=None, **style_kwds):
+def plot_stepwise_ml(x: list, y: list, z: list = [], w: list = [], var: list = [], x_label: str = "n_features", y_label: str = "score", direction = "forward", ax=None, **style_kwds):
+    colors = gen_colors()
+    if not(ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.grid(axis = "y")
+        ax.set_axisbelow(True)
+    sign = "+" if direction == "forward" else "-"
+    x_new, y_new, z_new = [], [], []
+    for idx in range(len(x)):
+        if idx == 0 or w[idx][0] == sign:
+            x_new += [x[idx]]
+            y_new += [y[idx]]
+            z_new += [z[idx]]
+    if len(var[0]) > 3:
+        var0 = var[0][0:2] + ["..."] + var[0][-1:]
+    else:
+        var0 = var[0]
+    if len(var[1]) > 3:
+        var1 = var[1][0:2] + ["..."] + var[1][-1:]
+    else:
+        var1 = var[1]
+    if "color" in style_kwds:
+        if isinstance(style_kwds["color"], str):
+            c0, c1 = style_kwds["color"], colors[1]
+        else:
+            c0, c1 = style_kwds["color"][0], style_kwds["color"][1]
+    else:
+        c0, c1 = colors[0], colors[1]
+    if "color" in style_kwds:
+        del style_kwds["color"]
+    if direction == "forward":
+        delta_ini, delta_final = 0.1, -0.15
+        rot_ini, rot_final = -90, 90
+        verticalalignment_init, verticalalignment_final = "top", "bottom"
+        horizontalalignment = "center"
+    else:
+        delta_ini, delta_final = 0.35, -0.3
+        rot_ini, rot_final = 90, -90
+        verticalalignment_init, verticalalignment_final = "top", "bottom"
+        horizontalalignment = "left"
+    param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
+    ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds,),)
+    ax.scatter([x_new[0], x_new[-1]], [y_new[0], y_new[-1]], c=c1, **updated_dict(param, style_kwds,),)
+    ax.text(x_new[0] + delta_ini, y_new[0], "Initial Variables: {}".format("["+", ".join(var0)+"]"), rotation = rot_ini, verticalalignment=verticalalignment_init,)
+    for idx in range(1, len(x_new)):
+        dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
+        ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc='k', ec='k', alpha=0.2)
+        ax.text((x_new[idx] + x_new[idx - 1]) / 2, (y_new[idx] + y_new[idx - 1]) / 2, sign + " " + z_new[idx], rotation = rot_ini)
+    if direction == "backward":
+        ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
+    ax.text(x_new[-1] + delta_final, y_new[-1], "Final Variables: {}".format("["+", ".join(var1)+"]"), rotation = rot_final, verticalalignment=verticalalignment_final, horizontalalignment=horizontalalignment,)
+    ax.set_xticks(x_new)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    return ax
+
+# ---#
+def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: tuple = (True, True,), plt_text=True, ax=None, **style_kwds):
     if s:
         s = [min(250 + 5000 * elem, 1200) if elem != 0 else 1000 for elem in s]
     if z and s:
@@ -522,6 +587,8 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
             title=title,
             labelspacing=1,
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         param = {"alpha": 0.8,
                  "marker": "o",
@@ -530,45 +597,50 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         if s:
             size = s
         else:
-            size = 50
-        ax.scatter(x, y, s=size **updated_dict(param, style_kwds, 0))
-    ax.set_xlabel(x_label, loc="right")
-    ax.set_ylabel(y_label, loc="top")
-    if not(reverse):
+            size = 300
+        ax.scatter(x, y, s=size, **updated_dict(param, style_kwds, 0),)
+    if reverse[0]:
         ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
-    ax.set_ylim(max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)))
-    ax.spines['left'].set_position('center')
-    ax.spines['bottom'].set_position('center')
-    ax.spines['right'].set_color('none')
-    ax.spines['top'].set_color('none')
-    plt.text(max(x) + 0.1, max(y) + 0.1, 
-             "Modest", size=15, rotation=130.,
-             ha="center", va="center",
-             bbox=dict(boxstyle="round",
-                       ec=gen_colors()[0],
-                       fc=gen_colors()[0],
-                       alpha=0.3),)
-    plt.text(max(x) + 0.1, min(y) - 0.1, 
-             "Efficient", size=15, rotation=30.,
-             ha="center", va="center",
-             bbox=dict(boxstyle="round",
-                       ec=gen_colors()[1],
-                       fc=gen_colors()[1],
-                       alpha=0.3),)
-    plt.text(min(x) - 0.1, max(y) + 0.1, 
-             "Performant", size=15, rotation=-130.,
-             ha="center", va="center",
-             bbox=dict(boxstyle="round",
-                       ec=gen_colors()[2],
-                       fc=gen_colors()[2],
-                       alpha=0.3),)
-    plt.text(min(x) - 0.1, min(y) - 0.1, 
-             "Performant & Efficient", size=15, rotation=-30.,
-             ha="center", va="center",
-             bbox=dict(boxstyle="round",
-                       ec=gen_colors()[3],
-                       fc=gen_colors()[3],
-                       alpha=0.3),)
+    if reverse[1]:
+        ax.set_ylim(max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)))
+    if plt_text:
+        ax.set_xlabel(x_label, loc="right")
+        ax.set_ylabel(y_label, loc="top")
+        ax.spines['left'].set_position('center')
+        ax.spines['bottom'].set_position('center')
+        ax.spines['right'].set_color('none')
+        ax.spines['top'].set_color('none')
+        plt.text(max(x) + 0.1, max(y) + 0.1, 
+                 "Modest", size=15, rotation=130.,
+                 ha="center", va="center",
+                 bbox=dict(boxstyle="round",
+                           ec=gen_colors()[0],
+                           fc=gen_colors()[0],
+                           alpha=0.3),)
+        plt.text(max(x) + 0.1, min(y) - 0.1, 
+                 "Efficient", size=15, rotation=30.,
+                 ha="center", va="center",
+                 bbox=dict(boxstyle="round",
+                           ec=gen_colors()[1],
+                           fc=gen_colors()[1],
+                           alpha=0.3),)
+        plt.text(min(x) - 0.1, max(y) + 0.1, 
+                 "Performant", size=15, rotation=-130.,
+                 ha="center", va="center",
+                 bbox=dict(boxstyle="round",
+                           ec=gen_colors()[2],
+                           fc=gen_colors()[2],
+                           alpha=0.3),)
+        plt.text(min(x) - 0.1, min(y) - 0.1, 
+                 "Performant & Efficient", size=15, rotation=-30.,
+                 ha="center", va="center",
+                 bbox=dict(boxstyle="round",
+                           ec=gen_colors()[3],
+                           fc=gen_colors()[3],
+                           alpha=0.3),)
+    else:
+        ax.set_xlabel(x_label,)
+        ax.set_ylabel(y_label,)
     return ax
 
 
@@ -930,6 +1002,8 @@ def svm_classifier_plot(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
@@ -973,6 +1047,8 @@ def svm_classifier_plot(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 3:
         query = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0],
@@ -1049,6 +1125,8 @@ def svm_classifier_plot(
             ncol=1,
             fontsize=8,
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         raise ParameterError("The number of predictors is too big.")
     if conn:

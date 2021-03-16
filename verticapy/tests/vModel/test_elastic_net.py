@@ -157,6 +157,24 @@ class TestElasticNet:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+        
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
+                model.name, model.to_sql([3.0, 11.0, 93.])
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
@@ -197,7 +215,7 @@ class TestElasticNet:
         assert reg_rep["value"][5] == pytest.approx(0.872484, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.001610, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.001148, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-1764.511218544133, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-1764.5050571146871, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1737.394835300611, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
@@ -246,7 +264,7 @@ class TestElasticNet:
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.001610, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-1764.511218544133, abs=1e-6)
+        assert model.score(method="aic") == pytest.approx(-1764.5050571146871, abs=1e-6)
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-1737.394835300611, abs=1e-6)
 

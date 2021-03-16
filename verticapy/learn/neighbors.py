@@ -582,9 +582,9 @@ p: int, optional
                 ("key_columns", key_columns, [list], False),
             ],
         )
-        X = [str_column(elem) for elem in X] if (X) else self.X
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
+        X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         sql = [
@@ -789,7 +789,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -1350,7 +1350,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -1487,6 +1487,8 @@ p: int, optional
                 ("vdf", vdf, [str, vDataFrame]),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         name = (

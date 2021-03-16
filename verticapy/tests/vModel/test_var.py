@@ -45,7 +45,7 @@ def model(base, commodities_vd):
 class TestVAR:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = VAR("var_repr")
+        model_repr = VAR("var_repr", cursor=model.cursor)
         model_repr.drop()
         assert model_repr.__repr__() == "<VAR>"
 
@@ -89,24 +89,31 @@ class TestVAR:
         assert m_att_details["coefficient"][1] == pytest.approx(1.01107552114177, abs=1e-6)
         assert m_att_details["coefficient"][2] == pytest.approx(-0.116704690001029, abs=1e-6)
 
+    def test_features_importance(self, model):
+        importance = model.features_importance()
+        plt.close("all")
+        assert importance["importance"][0] == pytest.approx(99.18203872798854, abs=1e-6)
+        assert importance["importance"][1] == pytest.approx(0.8179612720114593, abs=1e-6)
+        assert importance["sign"][0] == 1
+        assert importance["sign"][1] == -1
+
     def test_get_params(self, model):
         assert model.get_params() == {'max_iter': 1000, 'p': 1, 'solver': 'Newton', 'tol': 0.0001}
 
     def test_get_plot(self, model,):
-        result = model.plot(color="r")
-        assert len(result.get_default_bbox_extra_artists()) == 13
+        result = model.plot(color="r", nlead=10, dynamic=True, nlast=20, X_idx="gold",)
+        assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
     def test_get_predicts(self, commodities_vd, model):
         result = model.predict(
             commodities_vd,
-            ts="date",
-            X=["gold", "oil"], 
             name=["predict1", "predict2"],
+            nlead=2,
         )
 
         assert result["predict1"].avg() == pytest.approx(
-            721.473444563737, abs=1e-6
+            727.596870938679, abs=1e-6
         )
 
     def test_regression_report(self, model):
@@ -132,7 +139,7 @@ class TestVAR:
         assert reg_rep["gold"][5] == pytest.approx(1719.8848555010334, abs=1e-6)
         assert reg_rep["gold"][6] == pytest.approx(0.995527309986537, abs=1e-6)
         assert reg_rep["gold"][7] == pytest.approx(0.9955056504707334, abs=1e-6)
-        assert reg_rep["gold"][8] == pytest.approx(6204.410502411274, abs=1e-6)
+        assert reg_rep["gold"][8] == pytest.approx(6204.468754838458, abs=1e-6)
         assert reg_rep["gold"][9] == pytest.approx(6216.502558192058, abs=1e-6)
 
     def test_score(self, model):
@@ -153,7 +160,7 @@ class TestVAR:
         # method = "var"
         assert model.score(method="var")["var"][0] == pytest.approx(0.995523377125575, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic")["aic"][0] == pytest.approx(6203.4092985585585, abs=1e-6)
+        assert model.score(method="aic")["aic"][0] == pytest.approx(6203.4675509857425, abs=1e-6)
         # method = "bic"
         assert model.score(method="bic")["bic"][0] == pytest.approx(6215.5013543393425, abs=1e-6)
 

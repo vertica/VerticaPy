@@ -110,6 +110,30 @@ class TestSVD:
         prediction = model.cursor.fetchone()
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0])
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.to_sql()
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+
     def test_get_transform(self, winequality_vd, model):
         winequality_trans = model.transform(
             winequality_vd, X=["citric_acid", "residual_sugar", "alcohol"]

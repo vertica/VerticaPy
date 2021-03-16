@@ -91,11 +91,12 @@ class TestKernelDensity:
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
-        model_test = KernelDensity("model_test_plot_kde", cursor=model.cursor)
+        model_test = KernelDensity("model_test_plot_kde_plot", cursor=model.cursor)
         model_test.drop()
         model_test.fit("public.titanic", ["age",],)
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
+        model_test.drop()
 
     def test_set_cursor(self, model):
         cur = vertica_conn(

@@ -62,6 +62,14 @@ def dtc_data_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.dtc_data", cursor=base.cursor)
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
 def model(base, dtc_data_vd):
@@ -75,7 +83,7 @@ def model(base, dtc_data_vd):
     model_class = DummyTreeClassifier("decision_tc_model_test", cursor=base.cursor)
     model_class.input_relation = "public.dtc_data"
     model_class.test_relation = model_class.input_relation
-    model_class.X = ["Gender", '"owned cars"', "cost", "income"]
+    model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = "TransPortation"
     base.cursor.execute(
         "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
@@ -130,7 +138,7 @@ class TestDummyTreeClassifier:
         assert conf_mat2["Train"] == [0, 0, 3]
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_CLASSIFIER(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
+        expected_sql = "PREDICT_RF_CLASSIFIER(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -192,6 +200,19 @@ class TestDummyTreeClassifier:
         )
 
         # 'predict_proba'
+
+    def test_to_sql(self, model, titanic_vd):
+        model_test = DummyTreeClassifier("rfc_sql_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
+        model.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
+                model_test.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+        model_test.drop()
 
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):

@@ -42,6 +42,16 @@ def amazon_vd(base):
         name="public.amazon", cursor=base.cursor,
     )
 
+@pytest.fixture(scope="module")
+def commodities_vd(base):
+    from verticapy.datasets import load_commodities
+
+    commodities = load_commodities(cursor=base.cursor)
+    yield commodities
+    drop(
+        name="public.commodities", cursor=base.cursor,
+    )
+
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
@@ -65,8 +75,66 @@ def world_vd(base):
             name="public.world", cursor=base.cursor,
         )
 
+@pytest.fixture(scope="module")
+def pop_growth_vd(base):
+    from verticapy.datasets import load_pop_growth
+
+    pop_growth = load_pop_growth(cursor=base.cursor)
+    yield pop_growth
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.pop_growth", cursor=base.cursor,
+        )
+
+@pytest.fixture(scope="module")
+def gapminder_vd(base):
+    from verticapy.datasets import load_gapminder
+
+    gapminder = load_gapminder(cursor=base.cursor)
+    yield gapminder
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.gapminder", cursor=base.cursor,
+        )
+
 
 class TestvDFPlot:
+
+    def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
+        import matplotlib.animation as animation
+
+        result = pop_growth_vd.animated("year", ["city", "population"], "continent", 1970, 1980, "bar", return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = pop_growth_vd.animated("year", ["city", "population"], "continent", 1970, 1980, "pie", return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = pop_growth_vd.animated("year", ["city", "population"], "", 1970, 1980, "bar", return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = pop_growth_vd.animated("year", ["city", "population"], "", 1970, 1980, "pie", return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = amazon_vd.animated("date", "number", kind="ts", by="state", return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = commodities_vd.animated("date", kind="ts", color = ["r", "g", "b"])
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "country", "pop",], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "country",], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "pop",], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap",], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        assert isinstance(result, animation.FuncAnimation)
+        plt.close("all")
+
+
     def test_vDF_stacked_area(self, amazon_vd):
         assert (
             len(
@@ -244,6 +312,16 @@ class TestvDFPlot:
             result = iris_vd.density(kernel=kernel, nbins=20, color="b",)
             assert max(result.get_default_bbox_extra_artists()[5].get_data()[1]) < 0.37
             plt.close("all")
+
+    def test_vDF_contour(self, titanic_vd):
+        def func(a, b):
+            return a + b + 1
+        result = titanic_vd.contour(["parch", "sibsp"], func,)
+        assert len(result.get_default_bbox_extra_artists()) == 32
+        plt.close("all")
+        result = titanic_vd.contour(["parch", "sibsp"], "parch + sibsp + 1",)
+        assert len(result.get_default_bbox_extra_artists()) == 32
+        plt.close("all")
 
     def test_vDF_geo_plot(self, world_vd):
         assert (

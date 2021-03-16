@@ -103,6 +103,40 @@ class TestvDFDescriptiveStat:
         assert result1["max"][2] == 3
         assert result1["max"][3] == 1
 
+        result1_1 = titanic_vd.agg(
+            func=["unique", "top", "min", "10%", "50%", "90%", "max"],
+            columns=["age", "fare", "pclass", "survived"],
+            ncols_block=2,
+        )
+        assert result1_1["unique"][0] == 96
+        assert result1_1["unique"][1] == 277
+        assert result1_1["unique"][2] == 3
+        assert result1_1["unique"][3] == 2
+        assert result1_1["top"][0] is None
+        assert result1_1["top"][1] == pytest.approx(8.05)
+        assert result1_1["top"][2] == 3
+        assert result1_1["top"][3] == 0
+        assert result1_1["min"][0] == pytest.approx(0.330)
+        assert result1_1["min"][1] == 0
+        assert result1_1["min"][2] == 1
+        assert result1_1["min"][3] == 0
+        assert result1_1["10%"][0] == pytest.approx(14.5)
+        assert result1_1["10%"][1] == pytest.approx(7.5892)
+        assert result1_1["10%"][2] == 1
+        assert result1_1["10%"][3] == 0
+        assert result1_1["50%"][0] == 28
+        assert result1_1["50%"][1] == pytest.approx(14.4542)
+        assert result1_1["50%"][2] == 3
+        assert result1_1["50%"][3] == 0
+        assert result1_1["90%"][0] == 50
+        assert result1_1["90%"][1] == pytest.approx(79.13)
+        assert result1_1["90%"][2] == 3
+        assert result1_1["90%"][3] == 1
+        assert result1_1["max"][0] == 80
+        assert result1_1["max"][1] == pytest.approx(512.3292)
+        assert result1_1["max"][2] == 3
+        assert result1_1["max"][3] == 1
+
         result2 = titanic_vd.agg(
             func=[
                 "aad",
@@ -474,6 +508,18 @@ class TestvDFDescriptiveStat:
         assert result4["75%"][1] == 1
         assert result4["max"][1] == 1
         assert result4["unique"][1] == 2.0
+
+        result4_1 = titanic_vd.describe(method="numerical", ncols_block=2)
+
+        assert result4_1["count"][1] == 1234
+        assert result4_1["mean"][1] == pytest.approx(0.36466774)
+        assert result4_1["std"][1] == pytest.approx(0.48153201)
+        assert result4_1["min"][1] == 0
+        assert result4_1["25%"][1] == 0
+        assert result4_1["50%"][1] == 0
+        assert result4_1["75%"][1] == 1
+        assert result4_1["max"][1] == 1
+        assert result4_1["unique"][1] == 2.0
 
         result5 = titanic_vd.describe(method="range")
 

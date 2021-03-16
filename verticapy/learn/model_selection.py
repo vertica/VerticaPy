@@ -60,46 +60,49 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
+from verticapy.learn.tools import does_model_exist
+from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
 # Other Python Modules
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 # ---#
-def autoML(
+def bayesian_search_cv(
+    estimator,
     input_relation: (str, vDataFrame),
     X: list,
     y: str,
-    estimator: (list, str) = "native",
     metric: str = "auto",
     cv: int = 3,
     pos_label: (int, float, str) = None,
     cutoff: float = -1,
-    nbins: int = 1000,
-    lmax: int = 10,
-    optimized_grid: int = 2,
-    cursor=None,
+    param_grid: (dict, list) = {},
+    random_nbins: int = 16,
+    bayesian_nbins: int = None,
+    random_grid: bool = False,
+    lmax: int = 15,
+    nrows: int = 100000,
+    k_tops: int = 10,
+    RFmodel_params: dict = {},
     print_info: bool = True,
-    show: bool = True,
-    ax=None,
-    **style_kwds,
+    **kwargs,
 ):
     """
 ---------------------------------------------------------------------------
-Tests multiple models to find the ones which maximize the input score.
+Computes the K-Fold bayesian search of an estimator. It will use a Random
+Forest model to estimate a probable optimal set of parameters.
 
 Parameters
 ----------
+estimator: object
+    Vertica estimator having a fit method and a DB cursor.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
     List of the predictor columns.
 y: str
     Response Column.
-estimator: list / 'native' / 'all' / object
-    List of Vertica estimators having a fit method and a DB cursor.
-    It is also possible to set the value to 'native' (for all Vertica native
-    models) or 'all' (for all VerticaPy models)
 metric: str, optional
     Metric used to do the model evaluation.
         auto: logloss for classification & rmse for regression.
@@ -133,25 +136,34 @@ pos_label: int/float/str, optional
     The main class to be considered as positive (classification only).
 cutoff: float, optional
     The model cutoff (classification only).
-nbins: int, optional
-    Number of bins used to compute the different parameters categories.
+param_grid: dict/list, optional
+    Dictionary of the parameters to test. It can also be a list of the
+    different combinations. If empty, a parameter grid will be generated.
+random_nbins: int, optional
+    Number of bins used to compute the different parameters categories
+    in the random parameters generation.
+bayesian_nbins: int, optional
+    Number of bins used to compute the different parameters categories
+    in the bayesian table generation.
+random_grid: bool, optional
+    If set to True, the rows used to find the function optimal will be
+    used randomnly. Otherwise, they will be regularly spaced. 
 lmax: int, optional
     Maximum length of each parameter list.
-optimized_grid: int, optional
-    If set to 0, the randomness is based on the input parameters.
-    If set to 1, the randomness is limited to some parameters, the other
-    ones are picked based on a default grid.
-    If set to 2, there is no randomness and a default grid is returned.
-cursor: DBcursor, optional
-    Vertica DB cursor.
-print_info: bool
+nrows: int, optional
+    Number of rows to use when doing the bayesian search.
+k_tops: int, optional
+    When doing the bayesian search, the final stage will be to retrain the top
+    possible combinations. 'k_tops' represents the number of model to train at
+    this stage to find the most efficient one.
+RFmodel_params: dict, optional
+    Dictionary of the Random Forest model parameters used to compute the best splits 
+    when 'method' is set to 'smart'. A RF Regressor will be trained if the response
+    is numerical (except ints and bools), a RF Classifier otherwise.
+    Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+    20 trees and a maximum depth of 10.
+print_info: bool, optional
     If set to True, prints the model information at each step.
-show: bool, optional
-    If set to True, the ML Bubble Plot will be drawn using Matplotlib.
-ax: Matplotlib axes object, optional
-    The axes to plot on.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
 
 Returns
 -------
@@ -159,123 +171,124 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    from verticapy.learn.ensemble import RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier
-    from verticapy.learn.naive_bayes import NaiveBayes
-    from verticapy.learn.linear_model import LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression
-    from verticapy.learn.neighbors import KNeighborsRegressor, KNeighborsClassifier, NearestCentroid
-    from verticapy.learn.svm import LinearSVC, LinearSVR
-
-    name = "verticapy_autoML_temp_name"
-    conn = False
-    if isinstance(estimator, str):
-        estimator = estimator.lower()
-        check_types([("estimator", estimator, ["native", "all"],),])
-        modeltype = None
-        if not(isinstance(input_relation, vDataFrame)):
-            cursor, conn = check_cursor(cursor, input_relation)[0:2]
-            vdf = vdf_from_relation(input_relation, cursor=cursor)
-        else:
-            cursor, conn = input_relation._VERTICAPY_VARIABLES_["cursor"], False
-            vdf = input_relation
-        if sorted(vdf[y].distinct()) == [0, 1]:
-            if estimator == "native":
-                estimator = [LinearSVC(name, cursor=cursor), LogisticRegression(name, cursor=cursor), RandomForestClassifier(name, cursor=cursor), XGBoostClassifier(name, cursor=cursor), NaiveBayes(name, cursor=cursor)]
-            else:
-                estimator = [LinearSVC(name, cursor=cursor), LogisticRegression(name, cursor=cursor), RandomForestClassifier(name, cursor=cursor), XGBoostClassifier(name, cursor=cursor), NaiveBayes(name, cursor=cursor), KNeighborsClassifier(name, cursor=cursor), NearestCentroid(name, cursor=cursor)]
-        elif vdf[y].isnum():
-            if estimator == "native":
-                estimator = [LinearSVR(name, cursor=cursor), ElasticNet(name, cursor=cursor), LinearRegression(name, cursor=cursor), Lasso(name, cursor=cursor), Ridge(name, cursor=cursor), RandomForestRegressor(name, cursor=cursor), XGBoostRegressor(name, cursor=cursor),]
-            else:
-                estimator = [LinearSVR(name, cursor=cursor), ElasticNet(name, cursor=cursor), LinearRegression(name, cursor=cursor), Lasso(name, cursor=cursor), Ridge(name, cursor=cursor), RandomForestRegressor(name, cursor=cursor), XGBoostRegressor(name, cursor=cursor), KNeighborsRegressor(name, cursor=cursor),]
-        else:
-            if estimator == "native":
-                estimator = [RandomForestClassifier(name, cursor=cursor), XGBoostClassifier(name, cursor=cursor), NaiveBayes(name, cursor=cursor)]
-            else:
-                estimator = [RandomForestClassifier(name, cursor=cursor), XGBoostClassifier(name, cursor=cursor), NaiveBayes(name, cursor=cursor), KNeighborsClassifier(name, cursor=cursor), NearestCentroid(name, cursor=cursor)]
-    elif isinstance(estimator, (RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier, NaiveBayes, LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression, KNeighborsRegressor, KNeighborsClassifier, NearestCentroid, LinearSVC, LinearSVR)):
-        estimator = [estimator]
-    else:
-        for elem in estimator:
-            assert isinstance(elem, (RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier, NaiveBayes, LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression, KNeighborsRegressor, KNeighborsClassifier, NearestCentroid, LinearSVC, LinearSVR)), ParameterError("estimator must be a list of VerticaPy estimators. Found {}.".format(type(elem)))
-    result = tablesample(
-                {
-                    "model_type": [],
-                    "parameters": [],
-                    "avg_score": [],
-                    "avg_train_score": [],
-                    "avg_time": [],
-                    "score_std": [],
-                    "score_train_std": [],
-                }
-            )
-    for elem in estimator:
-        if print_info:
-            print(f"\033[1m\033[4mTesting Model - {str(elem.__class__).split('.')[-1][:-2]}\033[0m\033[0m\n")
-        if category_from_model_type(elem.type)[0] == "regressor" and metric == "auto":
-            metric = "rmse"
-        elif metric == "auto":
-            metric = "logloss"
-        param_grid = gen_params_grid(elem, nbins, len(X), lmax, optimized_grid)
-        gs = grid_search_cv(
-            elem,
-            param_grid,
-            input_relation,
-            X,
-            y,
-            metric,
-            cv,
-            pos_label,
-            cutoff,
-            True,
-            "no_print",
-            print_info,
-        )
-        if gs["parameters"] != [] and gs["avg_score"] != [] and gs["avg_train_score"] != [] and gs["avg_time"] != [] and gs["score_std"] != [] and gs["score_train_std"] != []:
-            result.values["model_type"] += [str(elem.__class__).split('.')[-1][:-2]] * len(gs["parameters"])
-            result.values["parameters"] += gs["parameters"]
-            result.values["avg_score"] += gs["avg_score"]
-            result.values["avg_train_score"] += gs["avg_train_score"]
-            result.values["avg_time"] += gs["avg_time"]
-            result.values["score_std"] += gs["score_std"]
-            result.values["score_train_std"] += gs["score_train_std"]
-
-    data = [(result["model_type"][i], result["parameters"][i], result["avg_score"][i], result["avg_train_score"][i], result["avg_time"][i], result["score_std"][i], result["score_train_std"][i]) for i in range(len(result["score_train_std"]))]
-    reverse = True
-
-    if metric in [
-        "logloss",
-        "max",
-        "mae",
-        "median",
-        "mse",
-        "msle",
-        "rmse",
-        "aic",
-        "bic",
-    ]:
-        reverse = False
-    data.sort(key=lambda tup: tup[2], reverse=reverse)
-    result = tablesample(
-        {
-            "model_type": [elem[0] for elem in data],
-            "parameters": [elem[1] for elem in data],
-            "avg_score": [elem[2] for elem in data],
-            "avg_train_score": [elem[3] for elem in data],
-            "avg_time": [elem[4] for elem in data],
-            "score_std": [elem[5] for elem in data],
-            "score_train_std": [elem[6] for elem in data],
-        }
-    )
     if print_info:
-        print(f"\n\n\033[1mBest_Model: {result['model_type'][0]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;\033[0m\n\n")
-    if conn:
-        conn.close()
-    if show:
-        from verticapy.learn.mlplot import plot_bubble_ml
+        print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
+        print(f"\033[1m\033[4mStep 1 - Computing Random Models using Grid Search\033[0m\033[0m\n")
+    if not(param_grid):
+        param_grid = gen_params_grid(estimator, random_nbins, len(X), lmax, 0)
+    param_gs = grid_search_cv(
+        estimator,
+        param_grid,
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        pos_label,
+        cutoff,
+        True,
+        "no_print",
+        print_info,
+        final_print="no_print",
+    )
+    if "enet" not in kwargs:
+        params = []
+        for param_grid in param_gs["parameters"]:
+            params += [elem for elem in param_grid]
+        all_params = list(dict.fromkeys(params))
+    else:
+        all_params = ["C", "l1_ratio",]
+    if not(bayesian_nbins):
+        bayesian_nbins = max(int(np.exp(np.log(nrows) / len(all_params))), 1)
+    result = {}
+    for elem in all_params:
+        result[elem] = []
+    for param_grid in param_gs["parameters"]:
+        for item in all_params:
+            if item in param_grid:
+                result[item] += [param_grid[item]]
+            else:
+                result[item] += [None]
+    result["score"] = param_gs["avg_score"]
+    result = tablesample(result).to_sql()
+    if isinstance(input_relation, str):
+        schema, relation = schema_relation(input_relation)
+    else:
+        if input_relation._VERTICAPY_VARIABLES_["schema_writing"]:
+            schema = input_relation._VERTICAPY_VARIABLES_["schema_writing"]
+        else:
+            schema, relation = schema_relation(input_relation.__genSQL__())
+    relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session(estimator.cursor))
+    model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session(estimator.cursor))
+    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
+    estimator.cursor.execute("CREATE TABLE {} AS {}".format(relation, result))
+    if print_info:
+        print(f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n")
+    if verticapy.options["tqdm"] and print_info:
+        from tqdm.auto import tqdm
+        loop = tqdm(range(1))
+    else:
+        loop = range(1)
+    for j in loop:
+        if "enet" not in kwargs:
+            model_grid = gen_params_grid(estimator, nbins=bayesian_nbins, max_nfeatures=len(all_params), optimized_grid=-666)
+        else:
+            model_grid = {"C": {"type": float, "range": [0.0, 10], "nbins": bayesian_nbins}, "l1_ratio": {"type": float, "range": [0.0, 1.0], "nbins": bayesian_nbins},}
+        all_params = list(dict.fromkeys(model_grid))
+        from verticapy.learn.ensemble import RandomForestRegressor
+        hyper_param_estimator = RandomForestRegressor(name=estimator.name, cursor=estimator.cursor, **RFmodel_params,)
+        hyper_param_estimator.fit(relation, all_params, "score")
+        from verticapy.datasets import gen_dataset_regular, gen_dataset
+        if random_grid:
+            vdf = gen_dataset(model_grid, estimator.cursor, nrows=nrows,)
+        else:
+            vdf = gen_dataset_regular(model_grid, estimator.cursor,)
+        estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
+        vdf.to_db(relation, relation_type="table", inplace=True)
+        vdf = hyper_param_estimator.predict(vdf, name="score")
+        reverse = reverse_score(metric)
+        vdf.sort({"score": "desc" if reverse else "asc"})
+        result = vdf.head(limit = k_tops)
+        new_param_grid = []
+        for i in range(k_tops):
+            param_tmp_grid = {}
+            for elem in result.values:
+                if elem != "score":
+                    param_tmp_grid[elem] = result[elem][i]
+            new_param_grid += [param_tmp_grid]
+    if print_info:
+        print(f"\033[1m\033[4mStep 3 - Computing Most Probable Good Models using Grid Search\033[0m\033[0m\n")
+    result = grid_search_cv(
+        estimator,
+        new_param_grid,
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        pos_label,
+        cutoff,
+        True,
+        "no_print",
+        print_info,
+        final_print="no_print",
+    )
+    for elem in result.values:
+        result.values[elem] += param_gs[elem]
+    data = []
+    keys = [elem for elem in result.values]
+    for i in range(len(result[keys[0]])):
+        data += [tuple([result[elem][i] for elem in result.values])]
+    data.sort(key=lambda tup: tup[1], reverse=reverse)
+    for idx, elem in enumerate(result.values):
+        result.values[elem] = [item[idx] for item in data]
+    hyper_param_estimator.drop()
+    if print_info:
+        print("\033[1mBayesian Search Selected Model\033[0m")
+        print(f"Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
 
-        plot_bubble_ml(result["avg_time"], result["avg_score"], result["score_std"], result["model_type"], x_label="time", y_label="score", title= "Model Type", ax=ax, reverse=reverse, **style_kwds)
     return result
-
 
 # ---#
 def best_k(
@@ -287,6 +300,7 @@ def best_k(
     max_iter: int = 50,
     tol: float = 1e-4,
     elbow_score_stop: float = 0.8,
+    **kwargs,
 ):
     """
 ---------------------------------------------------------------------------
@@ -350,7 +364,13 @@ int
         if not (schema):
             schema = "public"
     schema = str_column(schema)
-    for i in L:
+    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
+        from tqdm.auto import tqdm
+
+        loop = tqdm(L)
+    else:
+        loop = L
+    for i in loop:
         cursor.execute(
             "DROP MODEL IF EXISTS {}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(
                 schema, get_session(cursor)
@@ -391,6 +411,7 @@ def cross_validate(
     cutoff: float = -1,
     show_time: bool = True,
     training_score: bool = False,
+    **kwargs,
 ):
     """
 ---------------------------------------------------------------------------
@@ -518,7 +539,13 @@ tablesample
     except:
         pass
     total_time = []
-    for i in range(cv):
+    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
+        from tqdm.auto import tqdm
+
+        loop = tqdm(range(cv))
+    else:
+        loop = range(cv)
+    for i in loop:
         try:
             estimator.drop()
         except:
@@ -752,7 +779,13 @@ tablesample
     else:
         L = n_cluster
         L.sort()
-    for i in L:
+    if verticapy.options["tqdm"]:
+        from tqdm.auto import tqdm
+
+        loop = tqdm(L)
+    else:
+        loop = L
+    for i in loop:
         cursor.execute(
             "DROP MODEL IF EXISTS {}.VERTICAPY_KMEANS_TMP_{}".format(
                 schema, get_session(cursor)
@@ -793,6 +826,120 @@ tablesample
     ax.set_ylabel("Between-Cluster SS / Total SS")
     values = {"index": L, "Within-Cluster SS": all_within_cluster_SS}
     return tablesample(values=values)
+
+
+# ---#
+def enet_search_cv(
+    input_relation: (str, vDataFrame),
+    X: list,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    estimator_type: str = "auto",
+    cutoff: float = -1,
+    cursor=None,
+    print_info: bool = True,
+    **kwargs,
+):
+    """
+---------------------------------------------------------------------------
+Computes the K-Fold grid search of the input enet model.
+
+Parameters
+----------
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list
+    List of the predictor columns.
+y: str
+    Response Column.
+metric: str, optional
+    Metric used to do the model evaluation.
+        auto: logloss for classification & rmse for regression.
+    For Classification:
+        accuracy    : Accuracy
+        auc         : Area Under the Curve (ROC)
+        bm          : Informedness = tpr + tnr - 1
+        csi         : Critical Success Index = tp / (tp + fn + fp)
+        f1          : F1 Score 
+        logloss     : Log Loss
+        mcc         : Matthews Correlation Coefficient 
+        mk          : Markedness = ppv + npv - 1
+        npv         : Negative Predictive Value = tn / (tn + fn)
+        prc_auc     : Area Under the Curve (PRC)
+        precision   : Precision = tp / (tp + fp)
+        recall      : Recall = tp / (tp + fn)
+        specificity : Specificity = tn / (tn + fp)
+    For Regression:
+        max    : Max Error
+        mae    : Mean Absolute Error
+        median : Median Absolute Error
+        mse    : Mean Squared Error
+        msle   : Mean Squared Log Error
+        r2     : R squared coefficient
+        r2a    : R2 adjusted
+        rmse   : Root Mean Squared Error
+        var    : Explained Variance 
+cv: int, optional
+    Number of folds.
+estimator_type: str, optional
+    Estimator Type.
+        auto : detects if it is a Logit Model or ENet.
+        logit: Logistic Regression
+        enet : ElasticNet
+cutoff: float, optional
+    The model cutoff (logit only).
+cursor: DBcursor, optional
+    Vertica DB cursor.
+print_info: bool, optional
+    If set to True, prints the model information at each step.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types([("estimator_type", estimator_type, ["logit", "enet", "auto",]),])
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
+    param_grid = parameter_grid({"solver": ["cgd",], 
+                                 "penalty": ["enet",],
+                                 "C": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 5.0, 10.0, 50.0, 100.0] if "small" not in kwargs else [1e-1, 1.0, 10.0,],
+                                 "l1_ratio": [0.1 * i for i in range(0, 10)] if "small" not in kwargs else [0.1, 0.5, 0.9,]})
+
+    from verticapy.learn.linear_model import LogisticRegression, ElasticNet
+
+    if estimator_type == "auto":
+        if not(isinstance(input_relation, vDataFrame)):
+            vdf = vdf_from_relation(input_relation, cursor=cursor)
+        else:
+            vdf = input_relation
+        if sorted(vdf[y].distinct()) == [0, 1]:
+            estimator_type = "logit"
+        else:
+            estimator_type = "enet"
+    if estimator_type == "logit":
+        estimator = LogisticRegression("verticapy_enet_search_{}".format(get_session(cursor)), cursor=cursor)
+    else:
+        estimator = ElasticNet("verticapy_enet_search_{}".format(get_session(cursor)), cursor=cursor)
+    result = bayesian_search_cv(
+        estimator,
+        input_relation,
+        X,
+        y,
+        metric,
+        cv,
+        None,
+        cutoff,
+        param_grid,
+        random_grid=False,
+        bayesian_nbins=1000,
+        print_info=print_info,
+        enet=True,
+    )
+    if conn:
+        conn.close()
+    return result
 
 
 # ---#
@@ -861,16 +1008,27 @@ tablesample
             if isinstance(RandomForestRegressor, RandomForestClassifier,):
                 params_grid["sample"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                 params_grid["n_estimators"] = [1, 5, 10, 15, 20, 30, 40, 50, 100]
-        else:
+        elif optimized_grid == 2:
             params_grid = {"max_features": ["auto", "max"],
                            "max_leaf_nodes": [32, 64, 128, 1000,],
-                           "max_depth": [3, 4, 5, 6,],
-                           "min_samples_leaf": [1, 2, 3,],
-                           "min_info_gain": [0.0, 0.1,],
-                           "nbins": [30, 40, 50,],}
+                           "max_depth": [4, 5, 6,],
+                           "min_samples_leaf": [1, 2,],
+                           "min_info_gain": [0.0,],
+                           "nbins": [32,],}
             if isinstance(RandomForestRegressor, RandomForestClassifier,):
-                params_grid["sample"] = [0.5, 0.6, 0.7,]
-                params_grid["n_estimators"] = [5, 10, 20, 30,]
+                params_grid["sample"] = [0.7,]
+                params_grid["n_estimators"] = [20,]
+        elif optimized_grid == -666:
+            result = {"max_features": {"type": int, "range": [1, len(all_params),], "nbins": nbins,},
+                      "max_leaf_nodes": {"type": int, "range": [32, 1e9,], "nbins": nbins,},
+                      "max_depth": {"type": int, "range": [2, 30,], "nbins": nbins,},
+                      "min_samples_leaf": {"type": int, "range": [1, 15,], "nbins": nbins,},
+                      "min_samples_leaf": {"type": float, "range": [0.0, 0.1,], "nbins": nbins,},
+                      "nbins": {"type": int, "range": [10, 1000,], "nbins": nbins,},}
+            if isinstance(RandomForestRegressor, RandomForestClassifier,):
+                result["sample"] = {"type": float, "range": [0.1, 1.0,], "nbins": nbins,}
+                result["n_estimators"] = {"type": int, "range": [1, 100,], "nbins": nbins,}
+            return result
     elif isinstance(estimator, (LinearSVC, LinearSVR,)):
         if optimized_grid == 0:
             params_grid = {"tol": [1e-4, 1e-6, 1e-8],
@@ -879,17 +1037,23 @@ tablesample
                            "intercept_mode": ["regularized", "unregularized"],
                            "max_iter": [100, 500, 1000],}
         elif optimized_grid == 1:
-            params_grid = {"tol": [1e-8],
-                           "C": [1, 2, 3, 4, 5],
+            params_grid = {"tol": [1e-6],
+                           "C": [1e-1, 0.0, 1.0, 10.0,],
                            "fit_intercept": [True],
                            "intercept_mode": ["regularized", "unregularized"],
-                           "max_iter": [1000],}
-        else:
-            params_grid = {"tol": [1e-8],
-                           "C": [0.5, 1, 2,],
+                           "max_iter": [100],}
+        elif optimized_grid == 2:
+            params_grid = {"tol": [1e-6],
+                           "C": [0.0, 1.0,],
                            "fit_intercept": [True],
                            "intercept_mode": ["regularized", "unregularized"],
-                           "max_iter": [1000],}
+                           "max_iter": [100],}
+        elif optimized_grid == -666:
+            return {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
+                    "C": {"type": float, "range": [0.0, 1000.0,], "nbins": nbins,},
+                    "fit_intercept": {"type": bool,},
+                    "intercept_mode": {"type": str, "values": ["regularized", "unregularized"]},
+                    "max_iter": {"type": int, "range": [10, 1000,], "nbins": nbins,},}
     elif isinstance(estimator, (XGBoostClassifier, XGBoostRegressor,)):
         if optimized_grid == 0:
             params_grid = {"nbins": list(range(2, 100, math.ceil(100 / nbins))),
@@ -909,29 +1073,44 @@ tablesample
                            #"sample": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
                            "tol": [1e-8],
                            "max_ntree": [1, 10, 20, 30, 40, 50, 100]}
-        else:
-            params_grid = {"nbins": [30, 40, 50,],
-                           "max_depth": [3, 4, 5, 6,],
+        elif optimized_grid == 2:
+            params_grid = {"nbins": [32,],
+                           "max_depth": [3, 4, 5,],
                            "weight_reg": [0.0, 0.25,],
-                           "min_split_loss": [0.0, 0.1, 0.25,],
-                           "learning_rate": [0.01, 0.05, 0.1, 1.0,],
+                           "min_split_loss": [0.0,],
+                           "learning_rate": [0.05, 0.1, 1.0,],
                            #"sample": [0.5, 0.6, 0.7,],
                            "tol": [1e-8],
-                           "max_ntree": [5, 10, 20,]}
+                           "max_ntree": [20,]}
+        elif optimized_grid == -666:
+            return {"nbins": {"type": int, "range": [2, 100,], "nbins": nbins,},
+                    "max_depth": {"type": int, "range": [1, 20,], "nbins": nbins,},
+                    "weight_reg": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
+                    "min_split_loss": {"type": float, "values": [0.0, 0.25,], "nbins": nbins,},
+                    "learning_rate": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
+                    "sample": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
+                    "tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
+                    "max_ntree": {"type": int, "range": [1, 20,], "nbins": nbins,},}
     elif isinstance(estimator, NaiveBayes):
         if optimized_grid == 0:
             params_grid = {"alpha": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))]}
         elif optimized_grid == 1:
-            params_grid = {"alpha": [0.5, 1.0,  1.5, 2.0, 5.0]}
-        else:
-            params_grid = {"alpha": [0.5, 1.0, 1.5,]}
+            params_grid = {"alpha": [0.01, 0.1, 1.0,  5.0, 10.0,]}
+        elif optimized_grid == 2:
+            params_grid = {"alpha": [0.01, 1.0,  10.0,]}
+        elif optimized_grid == -666:
+            return {"alpha": {"type": float, "range": [0.00001, 1000.0,], "nbins": nbins,},}
     elif isinstance(estimator, (PCA, SVD)):
         if optimized_grid == 0:
             params_grid = {"max_features": list(range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))),}
         if isinstance(estimator, (PCA,)):
             params_grid["scale"] = [False, True]
+        if optimized_grid == -666:
+            return {"scale": {"type": bool,}, "max_features": {"type": int, "range": [1, max_nfeatures,], "nbins": nbins,},}
     elif isinstance(estimator, (Normalizer,)):
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
+        if optimized_grid == -666:
+            return {"method": {"type": str, "values": ["minmax", "robust_zscore", "zscore"]},}
     elif isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor, NearestCentroid,)):
         if optimized_grid == 0:
             params_grid = {"p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),}
@@ -941,10 +1120,13 @@ tablesample
             params_grid = {"p": [1, 2, 3, 4],}
             if isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor,)):
                 params_grid["n_neighbors"] =  [1, 2, 3, 4, 5, 10, 20, 100]
-        else:
-            params_grid = {"p": [1, 2, 3,],}
+        elif optimized_grid == 2:
+            params_grid = {"p": [1, 2,],}
             if isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor,)):
-                params_grid["n_neighbors"] =  [1, 2, 3, 4, 5, 10,]
+                params_grid["n_neighbors"] =  [5, 10,]
+        elif optimized_grid == -666:
+            return {"p": {"type": int, "range": [1, 10,], "nbins": nbins,},
+                    "n_neighbors": {"type": int, "range": [1, 100,], "nbins": nbins,},}
     elif isinstance(estimator, (DBSCAN,)):
         if optimized_grid == 0:
             params_grid = {"p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),
@@ -953,9 +1135,12 @@ tablesample
         elif optimized_grid == 1:
             params_grid = {"p": [1, 2, 3, 4],
                            "min_samples": [1, 2, 3, 4, 5, 10, 100],}
-        else:
-            params_grid = {"p": [1, 2, 3,],
-                           "min_samples": [3, 4, 5, 10,],}
+        elif optimized_grid == 2:
+            params_grid = {"p": [1, 2,],
+                           "min_samples": [5, 10,],}
+        elif optimized_grid == -666:
+            return {"p": {"type": int, "range": [1, 10,], "nbins": nbins,},
+                    "min_samples": {"type": int, "range": [1, 100,], "nbins": nbins,},}
     elif isinstance(estimator, (LogisticRegression, LinearRegression, ElasticNet, Lasso, Ridge,)):
         if optimized_grid == 0:
             params_grid = {"tol": [1e-4, 1e-6, 1e-8],
@@ -971,8 +1156,8 @@ tablesample
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
                 params_grid["l1_ratio"] = [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))]
         elif optimized_grid == 1:
-            params_grid = {"tol": [1e-8],
-                           "max_iter": [1000],}
+            params_grid = {"tol": [1e-6],
+                           "max_iter": [100],}
             if isinstance(estimator, LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet",]
             if isinstance(estimator, LinearRegression):
@@ -980,26 +1165,42 @@ tablesample
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
                 params_grid["solver"] = ["newton", "bfgs", "cgd",]
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                params_grid["C"] = [0.5, 1, 2, 3, 4, 5]
+                params_grid["C"] = [1e-1, 0.0, 1.0, 10.0,]
             if isinstance(estimator, (LogisticRegression,)):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
                 params_grid["l1_ratio"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        else:
-            params_grid = {"tol": [1e-8],
-                           "max_iter": [1000],}
+        elif optimized_grid == 2:
+            params_grid = {"tol": [1e-6],
+                           "max_iter": [100],}
             if isinstance(estimator, LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet",]
             if isinstance(estimator, LinearRegression):
                 params_grid["solver"] = ["newton", "bfgs",]
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
-                params_grid["solver"] = ["newton", "bfgs", "cgd",]
+                params_grid["solver"] = ["bfgs", "cgd",]
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                params_grid["C"] = [0.5, 1, 2,]
+                params_grid["C"] = [1.0,]
             if isinstance(estimator, (LogisticRegression,)):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
-                params_grid["l1_ratio"] = [0.2, 0.5, 0.8,]
+                params_grid["l1_ratio"] = [0.5,]
+        elif optimized_grid == -666:
+            result = {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
+                      "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},}
+            if isinstance(estimator, LogisticRegression):
+                result["penalty"] = {"type": str, "values": ["none", "l1", "l2", "enet",]}
+            if isinstance(estimator, LinearRegression):
+                result["solver"] = {"type": str, "values": ["newton", "bfgs",]}
+            elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
+                result["solver"] = {"type": str, "values": ["bfgs", "cgd",]}
+            if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
+                result["C"] = {"type": float, "range": [0.0, 1000.0,], "nbins": nbins,}
+            if isinstance(estimator, (LogisticRegression,)):
+                result["penalty"] = {"type": str, "values": ["none", "l1", "l2", "enet",]}
+            if isinstance(estimator, (LogisticRegression, ElasticNet)):
+                result["l1_ratio"] = {"type": float, "range": [0.0, 1.0,], "nbins": nbins,}
+            return result
     elif isinstance(estimator, KMeans):
         if optimized_grid == 0:
             params_grid = {"n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
@@ -1011,11 +1212,16 @@ tablesample
                            "init": ["kmeanspp", "random"],
                            "max_iter": [1000],
                            "tol": [1e-8],}
-        else:
+        elif optimized_grid == 2:
             params_grid = {"n_cluster": [2, 3, 4, 5, 10, 20, 100,],
                            "init": ["kmeanspp",],
                            "max_iter": [1000],
                            "tol": [1e-8],}
+        elif optimized_grid == -666:
+            return {"tol": {"type": float, "range": [1e-2, 1e-8,], "nbins": nbins,},
+                    "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},
+                    "n_cluster": {"type": int, "range": [1, 10000,], "nbins": nbins,},
+                    "init": {"type": str, "values": ["kmeanspp", "random"],},}
     elif isinstance(estimator, BisectingKMeans):
         if optimized_grid == 0:
             params_grid = {"n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
@@ -1033,7 +1239,7 @@ tablesample
                            "init": ["kmeanspp", "pseudo"],
                            "max_iter": [1000],
                            "tol": [1e-8],}
-        else:
+        elif optimized_grid == 2:
             params_grid = {"n_cluster": [2, 3, 4, 5, 10, 20, 100,],
                            "bisection_iterations": [1, 2, 3,],
                            "split_method": ["sum_squares",],
@@ -1041,9 +1247,22 @@ tablesample
                            "init": ["kmeanspp",],
                            "max_iter": [1000],
                            "tol": [1e-8],}
+        elif optimized_grid == -666:
+            return {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
+                    "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},
+                    "bisection_iterations": {"type": int, "range": [1, 1000,], "nbins": nbins,},
+                    "split_method": {"type": str, "values": ["sum_squares",],},
+                    "n_cluster": {"type": int, "range": [1, 10000,], "nbins": nbins,},
+                    "init": {"type": str, "values": ["kmeanspp", "pseudo"],},}
     params_grid = parameter_grid(params_grid)
     final_param_grid = []
     for param in params_grid:
+        if "C" in param and param["C"] == 0:
+            del param["C"]
+            if "l1_ratio" in param:
+                del param["l1_ratio"]
+            if "penalty" in param:
+                param["penalty"] = "none"
         if "penalty" in param:
             if param["penalty"] in ("none", "l2") and "solver" in param and param["solver"] == "cgd":
                 param["solver"] = "bfgs"
@@ -1072,8 +1291,9 @@ def grid_search_cv(
     pos_label: (int, float, str) = None,
     cutoff: float = -1,
     training_score: bool = True,
-    skip_error: bool = False,
-    print_info: bool = False,
+    skip_error: bool = True,
+    print_info: bool = True,
+    **kwargs,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1129,7 +1349,7 @@ training_score: bool, optional
     If set to True, the training score will be computed with the validation score.
 skip_error: bool, optional
     If set to True and an error occurs, it will be displayed and not raised.
-print_info: bool
+print_info: bool, optional
     If set to True, prints the model information at each step.
 
 Returns
@@ -1174,7 +1394,13 @@ tablesample
     data = []
     if all_configuration == []:
         all_configuration = [{}]
-    for config in all_configuration:
+    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])) and print_info:
+        from tqdm.auto import tqdm
+
+        loop = tqdm(all_configuration)
+    else:
+        loop = all_configuration
+    for config in loop:
         try:
             estimator.set_params(config)
             current_cv = cross_validate(
@@ -1188,6 +1414,7 @@ tablesample
                 cutoff,
                 True,
                 training_score,
+                tqdm=False,
             )
             if training_score:
                 keys = [elem for elem in current_cv[0].values]
@@ -1241,19 +1468,7 @@ tablesample
                     "score_std": [],
                 }
             )
-    reverse = True
-    if metric in [
-        "logloss",
-        "max",
-        "mae",
-        "median",
-        "mse",
-        "msle",
-        "rmse",
-        "aic",
-        "bic",
-    ]:
-        reverse = False
+    reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
     if training_score:
         result = tablesample(
@@ -1266,8 +1481,9 @@ tablesample
                 "score_train_std": [elem[5] for elem in data],
             }
         )
-        if print_info:
-            print(f"\n\033[1mModel: {str(estimator.__class__).split('.')[-1][:-2]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;\033[0m\n\n")
+        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+            print("\033[1mGrid Search Selected Model\033[0m")
+            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
     else:
         result = tablesample(
             {
@@ -1277,8 +1493,9 @@ tablesample
                 "score_std": [elem[3] for elem in data],
             }
         )
-        if print_info:
-            print(f"\n\033[1mModel: {str(estimator.__class__).split('.')[-1][:-2]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m\033[0m;\n")
+        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+            print("\033[1mGrid Search Selected Model\033[0m")
+            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
     return result
 
 
@@ -1382,10 +1599,16 @@ tablesample
         input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
     lc_result_final = []
     sizes = sorted(set(sizes))
-    for s in sizes:
+    if verticapy.options["tqdm"]:
+        from tqdm.auto import tqdm
+
+        loop = tqdm(sizes)
+    else:
+        loop = sizes
+    for s in loop:
         relation = input_relation.sample(x=s)
         lc_result = cross_validate(
-            estimator, relation, X, y, metric, cv, pos_label, cutoff, True, True,
+            estimator, relation, X, y, metric, cv, pos_label, cutoff, True, True, tqdm=False,
         )
         lc_result_final += [
             (
@@ -1859,6 +2082,218 @@ tablesample
 
 
 # ---#
+def randomized_features_search_cv(
+    estimator,
+    input_relation: (str, vDataFrame),
+    X: list,
+    y: str,
+    metric: str = "auto",
+    cv: int = 3,
+    pos_label: (int, float, str) = None,
+    cutoff: float = -1,
+    training_score: bool = True,
+    comb_limit: int = 100,
+    skip_error: bool = True,
+    print_info: bool = True,
+    **kwargs,
+):
+    """
+---------------------------------------------------------------------------
+Computes the K-Fold grid search of an estimator using different features
+combinations. It can be used to find the parameters which will optimize
+the model.
+
+Parameters
+----------
+estimator: object
+    Vertica estimator having a fit method and a DB cursor.
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list
+    List of the predictor columns.
+y: str
+    Response Column.
+metric: str, optional
+    Metric used to do the model evaluation.
+        auto: logloss for classification & rmse for regression.
+    For Classification:
+        accuracy    : Accuracy
+        auc         : Area Under the Curve (ROC)
+        bm          : Informedness = tpr + tnr - 1
+        csi         : Critical Success Index = tp / (tp + fn + fp)
+        f1          : F1 Score 
+        logloss     : Log Loss
+        mcc         : Matthews Correlation Coefficient 
+        mk          : Markedness = ppv + npv - 1
+        npv         : Negative Predictive Value = tn / (tn + fn)
+        prc_auc     : Area Under the Curve (PRC)
+        precision   : Precision = tp / (tp + fp)
+        recall      : Recall = tp / (tp + fn)
+        specificity : Specificity = tn / (tn + fp)
+    For Regression:
+        max    : Max Error
+        mae    : Mean Absolute Error
+        median : Median Absolute Error
+        mse    : Mean Squared Error
+        msle   : Mean Squared Log Error
+        r2     : R squared coefficient
+        r2a    : R2 adjusted
+        rmse   : Root Mean Squared Error
+        var    : Explained Variance 
+cv: int, optional
+    Number of folds.
+pos_label: int/float/str, optional
+    The main class to be considered as positive (classification only).
+cutoff: float, optional
+    The model cutoff (classification only).
+training_score: bool, optional
+    If set to True, the training score will be computed with the validation score.
+comb_limit: int, optional
+    Maximum number of features combinations used to train the model.
+skip_error: bool, optional
+    If set to True and an error occurs, it will be displayed and not raised.
+print_info: bool, optional
+    If set to True, prints the model information at each step.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    if isinstance(X, str):
+        X = [X]
+    check_types(
+        [
+            ("metric", metric, [str]),
+            ("training_score", training_score, [bool]),
+            ("skip_error", skip_error, [bool, str,]),
+            ("print_info", print_info, [bool,]),
+            ("comb_limit", comb_limit, [int,]),
+        ]
+    )
+    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+        metric = "rmse"
+    elif metric == "auto":
+        metric = "logloss"
+    if len(X) < 20:
+        all_configuration = all_comb(X)
+        if len(all_configuration) > comb_limit and comb_limit > 0:
+            all_configuration = random.sample(all_configuration, comb_limit)
+    else:
+        all_configuration = []
+        for k in range(max(comb_limit, 1)):
+            config = sorted(random.sample(X, random.randint(1, len(X))))
+            if config not in all_configuration:
+                all_configuration += [config]
+    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])) and print_info:
+        from tqdm.auto import tqdm
+
+        loop = tqdm(all_configuration)
+    else:
+        loop = all_configuration
+    data = []
+    for config in loop:
+        if config:
+            config = list(config)
+            try:
+                current_cv = cross_validate(
+                    estimator,
+                    input_relation,
+                    config,
+                    y,
+                    metric,
+                    cv,
+                    pos_label,
+                    cutoff,
+                    True,
+                    training_score,
+                    tqdm=False,
+                )
+                if training_score:
+                    keys = [elem for elem in current_cv[0].values]
+                    data += [
+                        (
+                            config,
+                            current_cv[0][keys[1]][cv],
+                            current_cv[1][keys[1]][cv],
+                            current_cv[0][keys[2]][cv],
+                            current_cv[0][keys[1]][cv + 1],
+                            current_cv[1][keys[1]][cv + 1],
+                        )
+                    ]
+                    if print_info:
+                        print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;")
+                else:
+                    keys = [elem for elem in current_cv.values]
+                    data += [
+                        (
+                            config,
+                            current_cv[keys[1]][cv],
+                            current_cv[keys[2]][cv],
+                            current_cv[keys[1]][cv + 1],
+                        )
+                    ]
+                    if print_info:
+                        print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;")
+            except Exception as e:
+                if skip_error and skip_error != "no_print":
+                    print(e)
+                elif not(skip_error):
+                    raise (e)
+    if not(data):
+        if training_score:
+            return tablesample(
+                {
+                    "parameters": [],
+                    "avg_score": [],
+                    "avg_train_score": [],
+                    "avg_time": [],
+                    "score_std": [],
+                    "score_train_std": [],
+                }
+            )
+        else:
+            return tablesample(
+                {
+                    "parameters": [],
+                    "avg_score": [],
+                    "avg_time": [],
+                    "score_std": [],
+                }
+            )
+    reverse = reverse_score(metric)
+    data.sort(key=lambda tup: tup[1], reverse=reverse)
+    if training_score:
+        result = tablesample(
+            {
+                "features": [elem[0] for elem in data],
+                "avg_score": [elem[1] for elem in data],
+                "avg_train_score": [elem[2] for elem in data],
+                "avg_time": [elem[3] for elem in data],
+                "score_std": [elem[4] for elem in data],
+                "score_train_std": [elem[5] for elem in data],
+            }
+        )
+        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+            print("\033[1mRandomized Features Search Selected Model\033[0m")
+            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+    else:
+        result = tablesample(
+            {
+                "features": [elem[0] for elem in data],
+                "avg_score": [elem[1] for elem in data],
+                "avg_time": [elem[2] for elem in data],
+                "score_std": [elem[3] for elem in data],
+            }
+        )
+        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+            print("\033[1mRandomized Features Search Selected Model\033[0m")
+            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+    return result
+
+
+# ---#
 def randomized_search_cv(
     estimator,
     input_relation: (str, vDataFrame),
@@ -1929,7 +2364,7 @@ optimized_grid: int, optional
     If set to 1, the randomness is limited to some parameters, the other
     ones are picked based on a default grid.
     If set to 2, there is no randomness and a default grid is returned.
-print_info: bool
+print_info: bool, optional
     If set to True, prints the model information at each step.
 
 Returns
@@ -2125,6 +2560,196 @@ tablesample
             "true_positive": true_positive,
         },
     )
+
+
+# ---#
+def stepwise(
+    estimator,
+    input_relation: (str, vDataFrame),
+    X: list,
+    y: str,
+    criterion: str = "bic",
+    direction: str = "backward",
+    max_steps: int = 100,
+    criterion_threshold: int = 3,
+    drop_final_estimator: bool = True,
+    x_order: str = "pearson",
+    print_info: bool = True,
+    show: bool = True,
+    ax=None,
+    **style_kwds,
+):
+    """
+---------------------------------------------------------------------------
+Uses the Stepwise algorithm to find the most suitable number of features
+when fitting the estimator.
+
+Parameters
+----------
+estimator: object
+    Vertica estimator having a fit method and a DB cursor.
+param_grid: dict/list
+    Dictionary of the parameters to test. It can also be a list of the
+    different combinations.
+input_relation: str/vDataFrame
+    Relation to use to train the model.
+X: list
+    List of the predictor columns.
+y: str
+    Response Column.
+criterion: str, optional
+    Criterion used to evaluate the model.
+        aic : Akaike’s Information Criterion
+        bic : Bayesian Information Criterion
+direction: str, optional
+    How to start the stepwise search. Can be done 'backward' or 'forward'.
+max_steps: int, optional
+    The maximum number of steps to be considered.
+criterion_threshold: int, optional
+    Threshold used when comparing the models criterions. If the difference
+    is lesser than the threshold then the current 'best' model is changed.
+drop_final_estimator: bool, optional
+    If set to True, the final estimator will be dropped.
+x_order: str, optional
+    How to preprocess X before using the stepwise algorithm.
+        pearson  : X is ordered based on the pearson correlation coefficient.
+        spearman : X is ordered based on the spearman correlation coefficient.
+        random   : Shuffles the vector X before applying the stepwise algorithm.
+        none     : Does not change X order.
+print_info: bool, optional
+    If set to True, prints the model information at each step.
+show: bool, optional
+    If set to True, a Bubble plot representing the Stepwise graphic will
+    be drawn.
+ax: Matplotlib axes object, optional
+    The axes to plot on.
+**style_kwds
+    Any optional parameter to pass to the Matplotlib functions.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    from verticapy.learn.metrics import aic_bic
+
+    if isinstance(X, str):
+        X = [X]
+    if isinstance(x_order, str):
+        x_order = x_order.lower()
+    assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
+    check_types(
+        [
+            ("criterion", criterion, ["aic", "bic",]),
+            ("direction", direction, ["forward", "backward",]),
+            ("max_steps", max_steps, [int, float,]),
+            ("print_info", print_info, [bool,]),
+            ("x_order", x_order, ["pearson", "spearman", "random", "none",]),
+        ]
+    )
+    does_model_exist(name=estimator.name, cursor=estimator.cursor, raise_error=True)
+    result, current_step = [], 0
+    table = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    estimator.cursor.execute(f"SELECT AVG({y}) FROM {table}")
+    avg = estimator.cursor.fetchone()[0]
+    k = 0 if criterion == "aic" else 1
+    if x_order == "random":
+        random.shuffle(X)
+    elif x_order in ("spearman", "pearson"):
+        if isinstance(input_relation, str):
+            vdf = vdf_from_relation(input_relation, cursor=estimator.cursor)
+        else:
+            vdf = input_relation
+        X = [elem for elem in vdf.corr(method=x_order, focus=y, columns=X, show=False,)["index"]]
+        if direction == "backward":
+            X.reverse()
+    if print_info:
+        print("\033[1m\033[4mStarting Stepwise\033[0m\033[0m")
+    if verticapy.options["tqdm"] and print_info:
+        from tqdm.auto import tqdm
+
+        loop = tqdm(range(len(X)))
+    else:
+        loop = range(len(X))
+    model_id = 0
+    if direction == "backward":
+        X_current = [elem for elem in X]
+        estimator.drop()
+        estimator.fit(input_relation, X, y)
+        current_score = estimator.score(criterion)
+        result += [(X_current, current_score, None, None, 0, None)]
+        for idx in loop:
+            if print_info and idx == 0:
+                print(f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+            if current_step >= max_steps:
+                break
+            X_test = [elem for elem in X_current]
+            X_test.remove(X[idx])
+            if len(X_test) != 0:
+                estimator.drop()
+                estimator.fit(input_relation, X_test, y)
+                test_score = estimator.score(criterion,)
+            else:
+                test_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+            score_diff = test_score - current_score
+            if test_score - current_score < criterion_threshold:
+                sign = "-"
+                model_id += 1
+                current_score = test_score
+                X_current = [elem for elem in X_test]
+                if print_info:
+                    print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(-) Variable: {X[idx]}\033[0m")
+            else:
+                sign = "+"
+            result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
+            current_step += 1
+    else:
+        X_current = []
+        current_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+        result += [(X_current, current_score, None, None, 0, None)]
+        for idx in loop:
+            if print_info and idx == 0:
+                print(f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+            if current_step >= max_steps:
+                break
+            X_test = [elem for elem in X_current] + [X[idx]]
+            estimator.drop()
+            estimator.fit(input_relation, X_test, y)
+            test_score = estimator.score(criterion,)
+            score_diff = current_score - test_score
+            if current_score - test_score > criterion_threshold:
+                sign = "+"
+                model_id += 1
+                current_score = test_score
+                X_current = [elem for elem in X_test]
+                if print_info:
+                    print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(+) Variable: {X[idx]}\033[0m")
+            else:
+                sign = "-"
+            result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
+            current_step += 1
+    if print_info:
+        print(f"\033[1m\033[4mSelected Model\033[0m\033[0m\n")
+        print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+    features = [elem[0] for elem in result]
+    for idx, elem in enumerate(features):
+        features[idx] = [item.replace('"', '') for item in elem]
+    importance = [elem[5] if (elem[5]) and elem[5] > 0 else 0 for elem in result]
+    importance = [100 * elem / sum(importance) for elem in importance]
+    result = tablesample({"index": [elem[4] for elem in result], "features": features, criterion: [elem[1] for elem in result], "change": [elem[2] for elem in result], "variable": [elem[3] for elem in result], "importance": importance})
+    estimator.drop()
+    if not(drop_final_estimator):
+        estimator.fit(input_relation, X_current, y)
+    result.best_list_ = X_current
+    if show:
+        plot_stepwise_ml([len(elem) for elem in result["features"]], result[criterion], result["variable"], result["change"], [result["features"][0], X_current], x_label="n_features", y_label=criterion, direction=direction, ax=ax, **style_kwds,)
+        coeff_importances = {}
+        for idx in range(len(importance)):
+            if result["variable"][idx] != None:
+                coeff_importances[result["variable"][idx]] = importance[idx]
+        plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds,)
+    return result
 
 
 # ---#

@@ -398,18 +398,6 @@ column_naming: str, optional
 null_column_name: str, optional
     The string used in naming the indicator column for null values, used only if 
     ignore_null is set to false and column_naming is set to values or values_relaxed.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-param_: tablesample
-	The One Hot Encoder parameters.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
 	"""
 
     def __init__(
