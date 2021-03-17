@@ -90,13 +90,13 @@ def bayesian_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold bayesian search of an estimator. It will use a Random
-Forest model to estimate a probable optimal set of parameters.
+Computes the K-Fold bayesian search of an estimator using a random
+forest model to estimate a probable optimal set of parameters.
 
 Parameters
 ----------
 estimator: object
-    Vertica estimator having a fit method and a DB cursor.
+    Vertica estimator with a fit method and a DB cursor.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -121,15 +121,15 @@ metric: str, optional
         recall      : Recall = tp / (tp + fn)
         specificity : Specificity = tn / (tn + fp)
     For Regression:
-        max    : Max Error
-        mae    : Mean Absolute Error
-        median : Median Absolute Error
-        mse    : Mean Squared Error
-        msle   : Mean Squared Log Error
-        r2     : R squared coefficient
+        max    : Max error
+        mae    : Mean absolute error
+        median : Median absolute error
+        mse    : Mean squared error
+        msle   : Mean squared log error
+        r2     : R-squared coefficient
         r2a    : R2 adjusted
-        rmse   : Root Mean Squared Error
-        var    : Explained Variance 
+        rmse   : Root-mean-squared error
+        var    : Explained variance 
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -146,24 +146,24 @@ bayesian_nbins: int, optional
     Number of bins used to compute the different parameters categories
     in the bayesian table generation.
 random_grid: bool, optional
-    If set to True, the rows used to find the function optimal will be
+    If True, the rows used to find the optimal function will be
     used randomnly. Otherwise, they will be regularly spaced. 
 lmax: int, optional
     Maximum length of each parameter list.
 nrows: int, optional
-    Number of rows to use when doing the bayesian search.
+    Number of rows to use when performing the bayesian search.
 k_tops: int, optional
-    When doing the bayesian search, the final stage will be to retrain the top
-    possible combinations. 'k_tops' represents the number of model to train at
-    this stage to find the most efficient one.
+    When performing the bayesian search, the final stage will be to retrain the top
+    possible combinations. 'k_tops' represents the number of models to train at
+    this stage to find the most efficient model.
 RFmodel_params: dict, optional
-    Dictionary of the Random Forest model parameters used to compute the best splits 
-    when 'method' is set to 'smart'. A RF Regressor will be trained if the response
-    is numerical (except ints and bools), a RF Classifier otherwise.
-    Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+    Dictionary of the random forest model parameters used to compute the best splits 
+    when 'method' is set to 'smart'. If the response is numerical (except ints and bools), an
+    RF Regressor will be trained. Otherwise, an RF Classifier will be trained.
+    Example: {"n_estimators": 20, "max_depth": 10} will train a random forest model with
     20 trees and a maximum depth of 10.
 print_info: bool, optional
-    If set to True, prints the model information at each step.
+    If True, prints the model information at each step.
 
 Returns
 -------
@@ -304,33 +304,33 @@ def best_k(
 ):
     """
 ---------------------------------------------------------------------------
-Finds the KMeans K based on a score.
+Finds the k-means k based on a score.
 
 Parameters
 ----------
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list, optional
-	List of the predictor columns. If empty, all the numerical columns will
+	List of the predictor columns. If empty, all numerical columns will
     be used.
 cursor: DBcursor, optional
 	Vertica DB cursor.
 n_cluster: tuple/list, optional
-	Tuple representing the number of cluster to start with and to end with.
-	It can also be customized list with the different K to test.
+	Tuple representing the number of clusters to start and end with.
+	This can also be customized list with various k values to test.
 init: str/list, optional
 	The method to use to find the initial cluster centers.
-		kmeanspp : Use the KMeans++ method to initialize the centers.
-		random   : The initial centers
+		kmeanspp : Use the k-means++ method to initialize the centers.
+		random   : Randomly subsamples the data to find initial centers.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
-	The maximum number of iterations the algorithm performs.
+	The maximum number of iterations for the algorithm.
 tol: float, optional
 	Determines whether the algorithm has converged. The algorithm is considered 
 	converged after no center has moved more than a distance of 'tol' from the 
 	previous iteration.
 elbow_score_stop: float, optional
-	Stops the Parameters Search when this Elbow score is reached.
+	Stops searching for parameters when the specified elbow score is reached.
 
 Returns
 -------
@@ -446,17 +446,17 @@ metric: str/list, optional
         recall      : Recall = tp / (tp + fn)
         specificity : Specificity = tn / (tn + fp)
     For Regression:
-        aic    : Akaike’s Information Criterion
-        bic    : Bayesian Information Criterion
-        max    : Max Error
-        mae    : Mean Absolute Error
-        median : Median Absolute Error
-        mse    : Mean Squared Error
-        msle   : Mean Squared Log Error
-        r2     : R squared coefficient
+        aic    : Akaike’s information criterion
+        bic    : Bayesian information criterion
+        max    : Max error
+        mae    : Mean absolute error
+        median : Median absolute error
+        mse    : Mean squared error
+        msle   : Mean squared log error
+        r2     : R-squared coefficient
         r2a    : R2 adjusted
-        rmse   : Root Mean Squared Error
-        var    : Explained Variance 
+        rmse   : Root-mean-squared error
+        var    : Explained variance 
 cv: int, optional
 	Number of folds.
 pos_label: int/float/str, optional
@@ -717,7 +717,7 @@ def elbow(
 ):
     """
 ---------------------------------------------------------------------------
-Draws an Elbow Curve.
+Draws an elbow curve.
 
 Parameters
 ----------
@@ -734,10 +734,10 @@ n_cluster: tuple/list, optional
 init: str/list, optional
     The method to use to find the initial cluster centers.
         kmeanspp : Use the KMeans++ method to initialize the centers.
-        random   : The initial centers
-    It can be also a list with the initial cluster centers to use.
+        random   : Randomly subsamples the data to find initial centers.
+    Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
-    The maximum number of iterations the algorithm performs.
+    The maximum number of iterations for the algorithm.
 tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
     converged after no center has moved more than a distance of 'tol' from the 

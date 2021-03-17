@@ -368,7 +368,7 @@ n_cluster: int, optional
 init: str/list, optional
     The method for finding the initial cluster centers.
         kmeanspp : Uses the k-means++ method to initialize the centers.
-        random   : Randomizes the initial centers.
+		random   : Randomly subsamples the data to find initial centers.
     Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
     The maximum number of iterations for the algorithm.
