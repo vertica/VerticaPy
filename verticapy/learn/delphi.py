@@ -95,58 +95,58 @@ the data according to each column type.
 Parameters
 ----------
 name: str, optional
-    Name of the model. It will be used to store the output relation to the
-    Vertica DB.
+    Name of the model in which to store the output relation in the
+    Vertica database.
 cursor: DBcursor, optional
     Vertica DB cursor.
 cat_method: str, optional
-    Method used to encode categorical features: Can be set to 'label' for
-    label encoding or 'ooe' for One Hot Encoding.
+    Method for encoding categorical features. This can be set to 'label' for
+    label encoding and 'ooe' for One-Hot Encoding.
 num_method: str, optional
-    [Only Used when not dealing with TS datasets]
-    Method used to encode numerical features: Can be set to 'same_freq' to
-    encode using frequencies, 'same_width' to encode using regular bins or
-    to 'none' to not encode numerical features.
+    [Only used for non-time series datasets]
+    Method for encoding numerical features. This can be set to 'same_freq' to
+    encode using frequencies, 'same_width' to encode using regular bins, or
+    'none' to not encode numerical features.
 nbins: int, optional
-    [Only Used when not dealing with TS datasets]
+    [Only used for non-time series datasets]
     Number of bins used to discretize numerical features.
 outliers_threshold: float, optional
-    [Only Used when not dealing with TS datasets]
-    How to deal with outliers. If a number is used, all elements having an absolute 
-    ZSCORE greater than the threshold will be converted to NULL values. Otherwise
-    outliers are considered as regular values.
+    [Only used for non-time series datasets]
+    How to deal with outliers. If a number is used, all elements with an absolute 
+    z-score greater than the threshold will be converted to NULL values. Otherwise,
+    outliers are treated as regular values.
 na_method: str, optional
-    Method used to deal with missing values.
+    Method for handling missing values.
         auto: Mean for the numerical features and creates a new category for the 
-              categorical vcolumns. If dealing with TS dataset, 'constant' 
+              categorical vcolumns. For time series datasets, 'constant' 
               interpolation is used for categorical features and 'linear' for the 
               others.
         drop: Drops the missing values.
 cat_topk: int, optional
-    If it is a number, keeps the topk most frequent categories and merge the other 
-    into one unique category. Otherwise, all the categories are keeped.
+    Keeps the top-k most frequent categories and merges the others 
+    into one unique category. If unspecified, all categories are kept.
 normalize: bool, optional
-    If set to True, the data will be normalized using ZSCORE. Parameter 'num_method'
+    If True, the data will be normalized using the z-score. The 'num_method' parameter
     must be set to 'none'.
 normalize_min_cat: int, optional
     Minimum feature cardinality before using normalization.
 id_method: str, optional
-    Method used to deal with ID features.
-        drop: Drops any feature which is detected as ID.
+    Method for handling ID features.
+        drop: Drops any feature detected as ID.
         none: Does not change ID features.
 apply_pca: bool, optional
-    [Only Used when not dealing with TS datasets]
-    If set to True, a PCA is applied at the end of the preprocessing.
+    [Only used for non-time series datasets]
+    If True, a PCA is applied at the end of the preprocessing.
 rule: str / time, optional
-    [Only Used when dealing with TS datasets]
+    [Only used for non-time series datasets]
     Interval to use to slice the time. For example, '5 minutes' will create records
     separated by '5 minutes' time interval.
     If set to auto, the rule will be detected using aggregations.
 identify_ts: bool, optional
-    If set to True and parameter 'ts' is undefined when fitting the model. It will
-    try to detect the parameter 'ts'.
+    If True and parameter 'ts' is undefined when fitting the model, the function will
+    try to automatically detect the parameter 'ts'.
 save: bool, optional
-    If set to True, saves the final relation inside the DB.
+    If True, saves the final relation inside the DB.
 
 Attributes
 ----------
@@ -230,12 +230,12 @@ model_grid_ : tablesample
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list, optional
         List of the features to preprocess.
     ts: str, optional
-        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
-        date like (date, datetime, timestamp...)
+        Time series vcolumn to use to order the data. The vcolumn type must be
+        date-like (date, datetime, timestamp...)
     by: list, optional
         vcolumns used in the partition.
 
@@ -354,7 +354,7 @@ model_grid_ : tablesample
 class AutoClustering(vAuto):
     """
 ---------------------------------------------------------------------------
-Creates automatically K different groups which generalize the data.
+Automatically creates k different groups with which to generalize the data.
 
 Parameters
 ----------
@@ -364,32 +364,32 @@ cursor: DBcursor, optional
     Vertica DB cursor.
 n_cluster: int, optional
     Number of clusters. If empty, an optimal number of clusters will be
-    determined using multiple KMeans models.
+    determined using multiple k-means models.
 init: str/list, optional
-    The method to use to find the initial cluster centers.
-        kmeanspp : Uses the KMeans++ method to initialize the centers.
-        random   : The initial centers.
-    It can be also a list with the initial cluster centers to use.
+    The method for finding the initial cluster centers.
+        kmeanspp : Uses the k-means++ method to initialize the centers.
+        random   : Randomizes the initial centers.
+    Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
-    The maximum number of iterations the algorithm performs.
+    The maximum number of iterations for the algorithm.
 tol: float, optional
     Determines whether the algorithm has converged. The algorithm is considered 
     converged after no center has moved more than a distance of 'tol' from the 
     previous iteration.
 preprocess_data: bool, optional
-    If set to True, the data will be preprocessed.
+    If True, the data will be preprocessed.
 preprocess_dict: dict, optional
     Dictionary to pass to the AutoDataPrep class in order to 
     preprocess the data before the clustering.
 print_info: bool
-    If set to True, prints the model information at each step.
+    If True, prints the model information at each step.
 
 Attributes
 ----------
 preprocess_: object
     Model used to preprocess the data.
 model_: object
-    Final Model used for the clustering.
+    Final model used for the clustering.
     """
     # ---#
     def __init__(self,
@@ -434,7 +434,7 @@ model_: object
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list, optional
         List of the predictors.
 
@@ -480,7 +480,7 @@ model_: object
 class AutoML(vAuto):
     """
 ---------------------------------------------------------------------------
-Tests multiple models to find the ones which maximize the input score.
+Tests multiple models to find those that maximize the input score.
 
 Parameters
 ----------
@@ -489,15 +489,15 @@ name: str
 cursor: DBcursor, optional
     Vertica DB cursor.
 estimator: list / 'native' / 'all' / 'fast' / object
-    List of Vertica estimators having a fit method and a DB cursor.
-    It is also possible to set the value to 'native' (for all Vertica native
-    models), 'all' (for all VerticaPy models) and 'fast' (quick modeling).
+    List of Vertica estimators with a fit method and a DB cursor.
+    Alternatively, you can specify 'native' for all native Vertica models,
+    'all' for all VerticaPy models and 'fast' for quick modeling.
 estimator_type: str, optional
     Estimator Type
-        auto      : Detects automatically the estimator type.
-        regressor : The estimator will be used to do a Regression.
-        binary    : The estimator will be used to do a Binary Classification.
-        multi     : The estimator will be used to do a Multiclass Classification.
+        auto      : Automatically detects the estimator type.
+        regressor : The estimator will be used to perform a regression.
+        binary    : The estimator will be used to perform a binary classification.
+        multi     : The estimator will be used to perform a multiclass classification.
 metric: str, optional
     Metric used to do the model evaluation.
         auto: logloss for classification & rmse for regression.
@@ -516,15 +516,15 @@ metric: str, optional
         recall      : Recall = tp / (tp + fn)
         specificity : Specificity = tn / (tn + fp)
     For Regression:
-        max    : Max Error
-        mae    : Mean Absolute Error
-        median : Median Absolute Error
-        mse    : Mean Squared Error
-        msle   : Mean Squared Log Error
-        r2     : R squared coefficient
+        max    : Max error
+        mae    : Mean absolute error
+        median : Median absolute error
+        mse    : Mean squared error
+        msle   : Mean squared log error
+        r2     : R-squared coefficient
         r2a    : R2 adjusted
-        rmse   : Root Mean Squared Error
-        var    : Explained Variance 
+        rmse   : Root-mean-squared error
+        var    : Explained variance 
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -532,39 +532,39 @@ pos_label: int/float/str, optional
 cutoff: float, optional
     The model cutoff (classification only).
 nbins: int, optional
-    Number of bins used to compute the different parameters categories.
+    Number of bins used to compute the different parameter categories.
 lmax: int, optional
     Maximum length of each parameter list.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
     If set to 1, the randomness is limited to some parameters, the other
     ones are picked based on a default grid.
-    If set to 2, there is no randomness and a default grid is returned.
+    If set to 2, no randomness is used and a default grid is returned.
 stepwise: bool, optional
-    If set to True, the stepwise algorithm will be used to determine the
+    If True, the stepwise algorithm will be used to determine the
     final model list of parameters.
 stepwise_criterion: str, optional
     Criterion used when doing the final estimator stepwise.
-        aic : Akaike’s Information Criterion
-        bic : Bayesian Information Criterion
+        aic : Akaike’s information criterion
+        bic : Bayesian information criterion
 stepwise_direction: str, optional
-    How to start the stepwise search. Can be done 'backward' or 'forward'.
+    Which direction to start the stepwise search. Can be done 'backward' or 'forward'.
 stepwise_max_steps: int, optional
     The maximum number of steps to be considered when doing the final estimator 
     stepwise.
 x_order: str, optional
     How to preprocess X before using the stepwise algorithm.
-        pearson  : X is ordered based on the pearson correlation coefficient.
-        spearman : X is ordered based on the spearman correlation coefficient.
+        pearson  : X is ordered based on the Pearson correlation coefficient.
+        spearman : X is ordered based on Spearman's rank correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.
-        none     : Does not change X order.
+        none     : Does not change the order of X.
 preprocess_data: bool, optional
-    If set to True, the data will be preprocessed.
+    If True, the data will be preprocessed.
 preprocess_dict: dict, optional
     Dictionary to pass to the AutoDataPrep class in order to 
     preprocess the data before the clustering.
 print_info: bool
-    If set to True, prints the model information at each step.
+    If True, prints the model information at each step.
 
 Attributes
 ----------
@@ -648,7 +648,7 @@ model_grid_ : tablesample
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list, optional
         List of the predictors.
     y: str, optional
