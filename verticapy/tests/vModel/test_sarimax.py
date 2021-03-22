@@ -45,7 +45,7 @@ def model(base, amazon_vd):
 class TestSARIMAX:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = SARIMAX("sarimax_repr")
+        model_repr = SARIMAX("sarimax_repr", cursor=model.cursor)
         model_repr.drop()
         assert model_repr.__repr__() == "<SARIMAX>"
 
@@ -110,20 +110,19 @@ class TestSARIMAX:
                                       'tol': 0.0001}
 
     def test_get_plot(self, model,):
-        result = model.plot(color="r")
-        assert len(result.get_default_bbox_extra_artists()) == 13
+        result = model.plot(color="r", nlead=10, nlast=10, dynamic=True,)
+        assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
     def test_get_predicts(self, amazon_vd, model):
         result = model.predict(
             amazon_vd,
-            ts="date",
-            y="number", 
             name="predict",
+            nlead=10,
         )
 
         assert result["predict"].avg() == pytest.approx(
-            140.104702149028, abs=1e-6
+            140.036629403195, abs=1e-6
         )
 
     def test_regression_report(self, model):
@@ -149,7 +148,7 @@ class TestSARIMAX:
         assert reg_rep["value"][5] == pytest.approx(2234.403922136074, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(-0.823855565723365, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(-0.8249868143297991, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(99553.00787079064, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(99553.01717600155, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(99586.8701476537, abs=1e-6)
 
     def test_score(self, model):
@@ -170,7 +169,7 @@ class TestSARIMAX:
         # method = "var"
         assert model.score(method="var") == pytest.approx(-0.772114907643978, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(99484.64710706848, abs=1e-6)
+        assert model.score(method="aic") == pytest.approx(99484.6564122794, abs=1e-6)
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(99518.50938393154, abs=1e-6)
 

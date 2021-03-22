@@ -1257,7 +1257,6 @@ solver: str, optional
             vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
-            .values
         )
         coefficient = self.coef_[X_idx].values
         coeff_importances = {}

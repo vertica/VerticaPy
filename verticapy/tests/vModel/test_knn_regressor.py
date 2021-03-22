@@ -110,7 +110,7 @@ class TestKNeighborsRegressor:
         assert reg_rep["value"][5] == pytest.approx(0.40235251981415876, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.321109086681745, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.3197417333820103, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-1807.569906058292, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(-1807.5457125099035, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-1792.8586642855382, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
@@ -157,7 +157,7 @@ class TestKNeighborsRegressor:
         # method = "var"
         assert model.score(method="var") == pytest.approx(0.32196148887151, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(-1807.5699060582906, abs=1e-6)
+        assert model.score(method="aic") == pytest.approx(-1807.5457125099035, abs=1e-6)
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-1792.8586642855369, abs=1e-6)
 

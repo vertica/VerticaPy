@@ -193,6 +193,29 @@ class TestKMeans:
         plt.close("all")
         model_test.drop()
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])[0]
+        )
+        assert 0.0 == pytest.approx(
+            model.to_python(return_str=False, return_distance_clusters=True)([[5.006, 3.418, 1.464, 0.244]])[0][0]
+        )
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
+                model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+
     def test_get_voronoi_plot(self, base, iris_vd):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = KMeans("model_test_plot", cursor=base.cursor)

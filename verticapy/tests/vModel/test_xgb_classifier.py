@@ -63,6 +63,15 @@ def xgbc_data_vd(base):
         drop(name="public.xgbc_data", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
+
+@pytest.fixture(scope="module")
 def model(base, xgbc_data_vd):
     base.cursor.execute("DROP MODEL IF EXISTS xgbc_model_test")
 
@@ -186,6 +195,19 @@ class TestXGBC:
         assert prediction == pytest.approx(
             md.predict([["Bus", "Male", 0, "Cheap", "Low"]])[0]
         )
+
+    def test_to_sql(self, model, titanic_vd):
+        model_test = XGBoostClassifier("rfc_sql_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
+        model.cursor.execute(
+            "SELECT PREDICT_XGB_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
+                model_test.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+        model_test.drop()
 
     @pytest.mark.skip(reason="not yet available.")
     def test_shapExplainer(self, model):

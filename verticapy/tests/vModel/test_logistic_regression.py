@@ -166,6 +166,31 @@ class TestLogisticRegression:
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict_proba([[11.0, 1993.0]])[0][1])
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0,]])[0])
+        model.cursor.execute(
+            "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0,]])[0][1])
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True, class=1, type='probability')::float, {}::float".format(
+                model.name, model.to_sql([3.0, 11.0])
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
@@ -285,10 +310,10 @@ class TestLogisticRegression:
             0.5429497568881686
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
-            0.6941239880788826
+            0.687522986197713
         )
         assert model.score(cutoff=0.3, method="auc") == pytest.approx(
-            0.6941239880788826
+            0.687522986197713
         )
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.36)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.36)

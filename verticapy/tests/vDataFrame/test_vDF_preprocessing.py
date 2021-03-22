@@ -57,6 +57,15 @@ class TestvDFPreprocessing:
         assert train.shape() == (pytest.approx(809), 14)
         assert test.shape() == (pytest.approx(425), 14)
 
+    def test_vDF_cut(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].cut([0, 15, 80])
+        assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
+        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False,)
+        assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
+        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"],)
+        assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
+
     def test_vDF_decode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["sex"].decode("female", 1, "male", 0, 2)

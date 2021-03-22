@@ -115,7 +115,7 @@ tuple of floats
     rss, n = cursor.fetchone()
     if rss > 0:
         result = (
-            n * math.log(rss / n) + 2 * (k + 1),
+            n * math.log(rss / n) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
             n * math.log(rss / n) + (k + 1) * math.log(n),
         )
     else:
@@ -657,7 +657,7 @@ tablesample
     n = result[5]
     if result[4] > 0:
         aic, bic = (
-            n * math.log(result[4]) + 2 * (k + 1),
+            n * math.log(result[4]) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
             n * math.log(result[4]) + (k + 1) * math.log(n),
         )
     else:

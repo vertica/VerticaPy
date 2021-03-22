@@ -1112,6 +1112,7 @@ def set_option(option: str, value: (bool, int, str) = None):
                 [
                     "cache",
                     "colors",
+                    "color_style",
                     "max_rows",
                     "max_columns",
                     "percent_bar",
@@ -1128,6 +1129,10 @@ def set_option(option: str, value: (bool, int, str) = None):
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
             verticapy.options["cache"] = value
+    elif option == "color_style":
+        check_types([("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])])
+        if isinstance(value, str):
+            verticapy.options["color_style"] = value
     elif option == "colors":
         check_types([("value", value, [list])])
         if isinstance(value, list):
@@ -1169,7 +1174,7 @@ def set_option(option: str, value: (bool, int, str) = None):
         if value.lower() in ["light", "full", None]:
             verticapy.options["mode"] = value.lower()
     else:
-        raise ParameterError("")
+        raise ParameterError("Option '{}' does not exist.".format(option))
 
 
 # ---#

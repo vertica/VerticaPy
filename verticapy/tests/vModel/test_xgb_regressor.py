@@ -93,8 +93,8 @@ def model(base, xgbr_data_vd):
     )
     model_class.input_relation = "public.xgbr_data"
     model_class.test_relation = model_class.input_relation
-    model_class.X = ["Gender", '"owned cars"', "cost", "income"]
-    model_class.y = "TransPortation"
+    model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
+    model_class.y = '"TransPortation"'
 
     yield model_class
     model_class.drop()
@@ -102,7 +102,7 @@ def model(base, xgbr_data_vd):
 @pytest.mark.skipif(get_version()[0] < 10 or (get_version()[0] == 10 and get_version()[1] == 0), reason="requires vertica 10.1 or higher")
 class TestXGBR:
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_XGB_REGRESSOR(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'xgbr_model_test', match_by_pos = 'true')"
+        expected_sql = "PREDICT_XGB_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'xgbr_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -112,7 +112,7 @@ class TestXGBR:
         model_test = XGBoostRegressor("xgbr_model_test_drop", cursor=base.cursor)
         model_test.fit(
             "public.xgbr_data",
-            ["Gender", '"owned cars"', "cost", "income"],
+            ['"Gender"', '"owned cars"', '"cost"', '"income"'],
             "TransPortation",
         )
 
@@ -126,6 +126,15 @@ class TestXGBR:
             "SELECT model_name FROM models WHERE model_name = 'xgbr_model_test_drop'"
         )
         assert base.cursor.fetchone() is None
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_XGB_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
+                model.name, model.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
 
     @pytest.mark.skip(reason="not yet available")
     def test_features_importance(self, model):
@@ -245,7 +254,7 @@ class TestXGBR:
         assert reg_rep["value"][5] == pytest.approx(0.42529914178140543, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(0.737856, abs=1e-6)
         assert reg_rep["value"][7] == pytest.approx(0.5281407999999999, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(-7.099249892760906, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(7.900750107239094, abs=1e-6)
         assert reg_rep["value"][9] == pytest.approx(-5.586324427790675, abs=1e-6)
 
         reg_rep_details = model.regression_report("details")
@@ -299,7 +308,7 @@ class TestXGBR:
         assert model.score(method="var") == pytest.approx(0.737856, abs=1e-6)
         # method = "aic"
         assert model.score(method="aic") == pytest.approx(
-            -7.099249892760906, abs=1e-6
+            7.900750107239094, abs=1e-6
         )
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(

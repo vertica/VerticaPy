@@ -78,8 +78,8 @@ def model(base, tr_data_vd):
     )
     model_class.input_relation = "public.tr_data"
     model_class.test_relation = model_class.input_relation
-    model_class.X = ["Gender", '"owned cars"', "cost", "income"]
-    model_class.y = "TransPortation"
+    model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
+    model_class.y = '"TransPortation"'
 
     yield model_class
     model_class.drop()
@@ -93,7 +93,7 @@ class TestDecisionTreeRegressor:
         assert model_repr.__repr__() == "<RandomForestRegressor>"
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_REGRESSOR(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'tr_model_test', match_by_pos = 'true')"
+        expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'tr_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -209,6 +209,15 @@ class TestDecisionTreeRegressor:
         assert prediction == pytest.approx(md.predict([1])[0])
 
         model_sk.drop()
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
+                model.name, model.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
 
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):

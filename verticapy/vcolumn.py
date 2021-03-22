@@ -416,12 +416,15 @@ Attributes
             category = category_from_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
-                if (str_column(column) in func) or (
-                    re.search(
-                        re.compile("\\b{}\\b".format(column.replace('"', ""))), func
-                    )
-                ):
-                    max_floor = max(len(self.parent[column].transformations), max_floor)
+                try:
+                    if (str_column(column) in func) or (
+                        re.search(
+                            re.compile("\\b{}\\b".format(column.replace('"', ""))), func
+                        )
+                    ):
+                        max_floor = max(len(self.parent[column].transformations), max_floor)
+                except:
+                    pass
             max_floor -= len(self.transformations)
             if copy_name:
                 self.add_copy(name=copy_name)
@@ -803,6 +806,63 @@ Attributes
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
+    def cut(self, 
+            breaks: list, 
+            labels: list = [], 
+            include_lowest: bool = True,
+            right: bool = True):
+        """
+    ---------------------------------------------------------------------------
+    Discretizes the vcolumn using the input list. 
+
+    Parameters
+    ----------
+    breaks: list
+        List of values used to cut the vcolumn.
+    labels: list, optional
+        Labels used to name the new categories. If empty, names will be generated.
+    include_lowest: bool, optional
+        If set to True, the lowest element of the list will be included.
+    right: bool, optional
+        How the intervals should be closed. If set to True, the intervals will be
+        closed on the right.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vcolumn.
+        """
+        check_types([("breaks", breaks, [list],),
+                     ("labels", labels, [list],),
+                     ("include_lowest", include_lowest, [bool],),
+                     ("right", right, [bool],),])
+        assert self.isnum() or self.isdate(), TypeError("cut only works on numerical / date-like vcolumns.")
+        assert len(breaks) >= 2, ParameterError("Length of parameter 'breaks' must be greater or equal to 2.")
+        assert len(breaks) == len(labels) + 1 or not(labels), ParameterError("Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty.")
+        conditions, column = [], self.alias
+        for idx in range(len(breaks) - 1):
+            first_elem, second_elem = breaks[idx], breaks[idx + 1]
+            if right:
+                op1, op2, close_l, close_r = "<", "<=", "]", "]"
+            else:
+                op1, op2, close_l, close_r = "<=", "<", "[", "["
+            if idx == 0 and include_lowest:
+                op1, close_l = "<=", "["
+            elif idx == 0:
+                op1, close_l = "<", "]"
+            if labels:
+                label = labels[idx]
+            else:
+                label = f"{close_l}{first_elem};{second_elem}{close_r}"
+            conditions += [f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"]
+        expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
+        self.apply(func=expr)
+
+    # ---#
     def ctype(self):
         """
 	---------------------------------------------------------------------------
@@ -1002,7 +1062,7 @@ Attributes
 
     # ---#
     def describe(
-        self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
+        self, method: str = "auto", max_cardinality: int = 6, numcol: str = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -1042,6 +1102,7 @@ Attributes
                 ("numcol", numcol, [str],),
             ]
         )
+
         method = method.lower()
         assert (method != "cat_stats") or (numcol), ParameterError("The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'")
         distinct_count, is_numeric, is_date = (
@@ -1424,7 +1485,7 @@ Attributes
         return self.parent
 
     # ---#
-    def distinct(self):
+    def distinct(self, **kwargs):
         """
 	---------------------------------------------------------------------------
 	Returns the vcolumn distinct categories.
@@ -1438,14 +1499,24 @@ Attributes
 	--------
 	vDataFrame.topk : Returns the vcolumn most occurent elements.
 		"""
-        query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
-            convert_special_type(self.category(), True, self.alias),
-            self.alias,
-            self.parent.__genSQL__(),
-            self.alias,
-            self.alias,
-            self.alias,
-        )
+        if "agg" not in kwargs:
+            query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
+                convert_special_type(self.category(), True, self.alias),
+                self.alias,
+                self.parent.__genSQL__(),
+                self.alias,
+                self.alias,
+                self.alias,
+            )
+        else:
+            query = "SELECT {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
+                self.alias,
+                convert_special_type(self.category(), True, self.alias),
+                self.alias,
+                kwargs["agg"],
+                self.parent.__genSQL__(),
+                self.alias,
+            )
         self.parent.__executeSQL__(
             query=query,
             title="Computes the distinct categories of {}.".format(self.alias),

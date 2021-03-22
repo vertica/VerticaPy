@@ -64,19 +64,6 @@ def winequality_vd(base):
 
 
 class TestModelSelection:
-    def test_autoML(self, titanic_vd):
-        titanic_vd["family_size"] = titanic_vd["parch"] + titanic_vd["sibsp"] + 1
-        titanic_vd["sex"].label_encode()
-
-        result = autoML(titanic_vd,
-                        ["age", "fare", "sex", "family_size",],
-                        "survived",
-                        lmax = 1,)
-        plt.close("all")
-        assert len(result.values) == 7
-        assert len(result["model_type"]) == 5
-
-
     def test_best_k(self, winequality_vd):
         result = best_k(
             "public.winequality",
@@ -137,6 +124,26 @@ class TestModelSelection:
         )
         assert result3[0]["auc"][3] == pytest.approx(0.7405650946597986, 5e-1)
         assert result3[1]["auc"][3] == pytest.approx(0.7386519406866139, 5e-1)
+
+    def test_enet_search_cv(self, titanic_vd):
+        result = enet_search_cv(titanic_vd, ["age", "fare"], "survived", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"], small=True,)
+        assert len(result["parameters"]) == 19
+
+    def test_bayesian_search_cv(self, titanic_vd):
+        model = LinearRegression("LR_bs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model.drop()
+        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "survived", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        assert len(result["parameters"]) == 25
+        model = NaiveBayes("NB_bs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model.drop()
+        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"], lmax=4)
+        assert len(result["parameters"]) == 14
+
+    def test_randomized_features_search_cv(self, titanic_vd):
+        model = LogisticRegression("Logit_fs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model.drop()
+        result = randomized_features_search_cv(model, titanic_vd, ["age", "fare", "pclass",], "survived",)
+        assert len(result["features"]) == 7
 
     def test_elbow(self, winequality_vd):
         result = elbow(
@@ -342,3 +349,22 @@ class TestModelSelection:
             )
             plt.close("all")
             assert len(result["n"]) == 3
+
+    def test_stepwise(self, titanic_vd):
+        titanic = titanic_vd.copy()
+        titanic["boat"].fillna(method="0ifnull")
+        model = LogisticRegression("Logit_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model.drop()
+        result = stepwise(model, titanic, ["age", "fare", "boat", "pclass",], "survived", "bic", "backward", 100, 3, True, "pearson", True, True,)
+        assert result["importance"][-1] == pytest.approx(91.17990063924101, 1e-2)
+        assert result["importance"][-4] == pytest.approx(8.820099360758984, 1e-2)
+        plt.close("all")
+        result = stepwise(model, titanic, ["age", "fare", "boat", "pclass",], "survived", "aic", "forward", 100, 3, True, "spearman", True, True,)
+        assert result["importance"][-1] == pytest.approx(9.058315001826145, 1e-2)
+        assert result["importance"][-4] == pytest.approx(90.94168499817386, 1e-2)
+        plt.close("all")
+        model = LinearRegression("LR_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model.drop()
+        assert result["importance"][-1] == pytest.approx(9.058315001826145, 1e-2)
+        assert result["importance"][-4] == pytest.approx(90.94168499817386, 1e-2)
+        plt.close("all")

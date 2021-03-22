@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'verticapy',  
-    version = '0.5.1',
+    version = '0.6.0',
     author = "Badr Ouali",
     author_email = "badr.ouali@vertica.com",
     url = "https://github.com/vertica/VerticaPy",
@@ -36,7 +36,8 @@ setuptools.setup(
         'numpy>=1.11.0'
     ],
     extras_require = {
-        'all': ['anytree>=2.5.0', 
+        'all': ['tqdm>=4.0.0',
+                'anytree>=2.5.0', 
                 'python-highcharts>=0.4.1',
                 'geopandas>=0.8.0',
                 'descartes>=1.0.0',
@@ -49,7 +50,8 @@ setuptools.setup(
         'geo': ['geopandas>=0.8.0',
                 'descartes>=1.0.0',
                 'shapely>=1.6.0'],
-        'ml': ['scikit-learn>=0.23.0',
+        'ml': ['tqdm>=4.0.0',
+               'scikit-learn>=0.23.0',
                'shap>=0.36.0',
                'pandas>=0.23.0',]
     },

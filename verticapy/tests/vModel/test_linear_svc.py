@@ -58,22 +58,22 @@ class TestLinearSVC:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788)
-        assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491)
-        assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258)
-        assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667)
-        assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.30906081919735207)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453)
-        assert cls_rep1["csi"][0] == pytest.approx(0.1704312114989733)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
+        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788, 1e-2)
+        assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453, 1e-2)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491, 1e-2)
+        assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
+        assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
+        assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444, 1e-2)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.30906081919735207, 1e-2)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555, 1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408, 1e-2)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453, 1e-2)
+        assert cls_rep1["csi"][0] == pytest.approx(0.1704312114989733, 1e-2)
+        assert cls_rep1["cutoff"][0] == pytest.approx(0.5, 1e-2)
 
         cls_rep2 = model.classification_report(cutoff=0.2).transpose()
 
-        assert cls_rep2["cutoff"][0] == pytest.approx(0.2)
+        assert cls_rep2["cutoff"][0] == pytest.approx(0.2, 1e-2)
 
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
@@ -158,6 +158,31 @@ class TestLinearSVC:
         )
         prediction = model.cursor.fetchone()[0]
         assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
+
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0,]])[0])
+        model.cursor.execute(
+            "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0,]])[0][1])
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True, class=1, type='probability')::float, {}::float".format(
+                model.name, model.to_sql([3.0, 11.0])
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
     
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):
@@ -263,10 +288,10 @@ class TestLinearSVC:
             0.4619124797406807
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
-            0.6933968844454788
+            0.687468030690537
         )
         assert model.score(cutoff=0.3, method="auc") == pytest.approx(
-            0.6933968844454788
+            0.687468030690537
         )
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.431)

@@ -51,6 +51,7 @@
 # Standard Python Modules
 import os, warnings
 import numpy as np
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -96,6 +97,7 @@ Main Class for Vertica Model
                 "KNeighborsRegressor",
                 "KNeighborsClassifier",
                 "CountVectorizer",
+                "AutoML",
             ):
                 name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
@@ -114,6 +116,10 @@ Main Class for Vertica Model
                         "Summarizing the model.",
                     )
                 return self.cursor.fetchone()[0]
+            elif self.type == "AutoML":
+                rep = self.best_model_.__repr__()
+            elif self.type == "AutoDataPrep":
+                rep = self.final_relation_.__repr__()
             elif self.type == "DBSCAN":
                 rep = "=======\ndetails\n=======\nNumber of Clusters: {}\nNumber of Outliers: {}".format(
                     self.n_cluster_, self.n_noise_
@@ -184,6 +190,46 @@ Main Class for Vertica Model
             return "<{}>".format(self.type)
 
     # ---#
+    def contour(
+        self, nbins: int = 100, pos_label: (int, float, str) = None, ax=None, **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Model Contour Plot. Only available for Regressors and Binary
+    Classifiers
+
+    Parameters
+    ----------
+    nbins: int, optional
+        Number of bins used to discretize the two input numerical vcolumns.
+    pos_label: int/float/str, optional
+        Label to consider as positive. All the other classes will be merged and
+        considered as negative in case of multi classification.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier",):
+            if not(pos_label):
+                pos_label = sorted(self.classes_)[-1]
+            if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes",):
+                return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self.deploySQL(X = self.X, pos_label=pos_label), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+            else:
+                return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, pos_label=pos_label, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+        elif self.type in ("KNeighborsRegressor",):
+            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+        elif self.type in ("KMeans", "BisectingKMeans",):
+            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds,)
+        else:
+            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self.deploySQL(X = self.X), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+
+    # ---#
     def deploySQL(self, X: list = []):
         """
 	---------------------------------------------------------------------------
@@ -200,6 +246,8 @@ Main Class for Vertica Model
 	str
 		the SQL code needed to deploy the model.
 		"""
+        if self.type == "AutoML":
+            return self.best_model_.deploySQL(X)
         if isinstance(X, str):
             X = [X]
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
@@ -220,10 +268,16 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica DB.
 		"""
-        with warnings.catch_warnings(record=True) as w:
-            drop(
-                self.name, self.cursor, method="model",
-            )
+        if self.type == "AutoDataPrep":
+            with warnings.catch_warnings(record=True) as w:
+                drop(
+                    self.name, self.cursor, method="table",
+                )
+        else:
+            with warnings.catch_warnings(record=True) as w:
+                drop(
+                    self.name, self.cursor, method="model",
+                )
 
     # ---#
     def features_importance(
@@ -250,6 +304,14 @@ Main Class for Vertica Model
 			An object containing the result. For more information, see
 			utilities.tablesample.
 		"""
+        if self.type == "AutoML":
+            if self.stepwise_:
+                coeff_importances = {}
+                for idx in range(len(self.stepwise_["importance"])):
+                    if self.stepwise_["variable"][idx] != None:
+                        coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_["importance"][idx]
+                return plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds,)
+            return self.best_model_.features_importance(ax, tree_id, show, **style_kwds,)
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
@@ -320,6 +382,8 @@ Main Class for Vertica Model
 	tablesample
 		model attribute
 		"""
+        if self.type == "AutoML":
+            return self.best_model_.get_attr(attr_name)
         if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor"):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[8, 1, 1])
@@ -402,6 +466,8 @@ Main Class for Vertica Model
 	tuple
 		(FIT, PREDICT, INVERSE)
 		"""
+        if self.type == "AutoML":
+            return self.best_model_.get_model_fun()
         if self.type in ("LinearRegression", "SARIMAX"):
             return ("LINEAR_REG", "PREDICT_LINEAR_REG", "")
         elif self.type == "LogisticRegression":
@@ -1741,6 +1807,8 @@ Main Class for Vertica Model
     shap.Explainer
         the shap Explainer.
         """
+        if self.type == "AutoML":
+            return self.best_model_.shapExplainer()
         try:
             import shap
         except:
@@ -1785,6 +1853,9 @@ Main Class for Vertica Model
     object
         sklearn model.
         """
+        if self.type == "AutoML":
+            return self.best_model_.to_sklearn()
+
         import verticapy.learn.linear_model as lm
         import verticapy.learn.svm as svm
         import verticapy.learn.naive_bayes as vnb
@@ -2291,6 +2362,527 @@ Main Class for Vertica Model
                 )
             )
         return model
+
+    # ---#
+    def to_python(self, name: str = "predict", return_proba: bool = False, return_distance_clusters: bool = False, return_str: bool = False,):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Python code needed to deploy the model without using Vertica
+    built-in functions.
+
+    Parameters
+    ----------
+    name: str, optional
+        Function Name.
+    return_proba: bool, optional
+        If set to True and the model is a classifier, the function will return 
+        the model probabilities.
+    return_distance_clusters: bool, optional
+        If set to True and the model type is KMeans or NearestCentroids, the function 
+        will return the model clusters distances.
+    return_str: bool, optional
+        If set to True, the function str will be returned.
+
+
+    Returns
+    -------
+    str / func
+        Python function
+        """
+        if not(return_str):
+            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
+            _locals = locals()
+            exec(func, globals(), _locals)
+            return _locals[name]
+        func = "def {}(X):\n\timport numpy as np\n\t".format(name)
+        if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
+            result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(self.coef_["coefficient"][0], self.coef_["coefficient"][1:])
+            if self.type in ("LogisticRegression",):
+                func += f"result = 1 / (1 + np.exp(- ({result})))"
+            elif self.type in ("LinearSVC",):
+                func += f"result =  1 - 1 / (1 + np.exp({result}))"
+            else:
+                func += "result =  " + result
+            if return_proba and self.type in ("LogisticRegression", "LinearSVC",):
+                func += "\n\treturn np.column_stack((1 - result, result))"
+            elif not(return_proba) and self.type in ("LogisticRegression", "LinearSVC",):
+                func += "\n\treturn np.where(result > 0.5, 1, 0)"
+            else:
+                func += "\n\treturn result"
+            return func
+        elif self.type in ("NearestCentroid", "KMeans",):
+            centroids = self.centroids_.to_list() if self.type == "NearestCentroid" else self.cluster_centers_.to_list()
+            if self.type == "NearestCentroid":
+                for center in centroids:
+                    del center[-1]
+            func += "centroids = np.array({})\n".format(centroids)
+            if self.type == "NearestCentroid":
+                func += "\tclasses = np.array({})\n".format(self.classes_)
+            func += "\tresult = []\n"
+            func += "\tfor centroid in centroids:\n"
+            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(self.parameters["p"] if self.type == "NearestCentroid" else 2, self.parameters["p"] if self.type == "NearestCentroid" else 2)
+            func += "\tresult = np.column_stack(result)\n"
+            if self.type == "NearestCentroid" and return_proba and not(return_distance_clusters):
+                func += "\tresult = result / np.sum(result, axis=1)[:,None]\n"
+            elif not(return_distance_clusters):
+                func += "\tresult = np.argmin(result, axis=1)\n"
+                if self.type == "NearestCentroid" and self.classes_ != [i for i in range(len(self.classes_))]:
+                    func += "\tclass_is_str = isinstance(classes[0], str)\n"
+                    func += "\tfor idx, c in enumerate(classes):\n"
+                    func += "\t\ttmp_idx = str(idx) if class_is_str and idx > 0 else idx\n"
+                    func += "\t\tresult = np.where(result == tmp_idx, c, result)\n"
+            func += "\treturn result\n"
+            return func
+        elif self.type in ("PCA",):
+            avg = self.get_attr("columns")["mean"]
+            pca = []
+            attr = self.get_attr("principal_components")
+            n = len(attr["PC1"])
+            for i in range(1, n + 1):
+                pca += [attr["PC{}".format(i)]]
+            func += "avg_values = np.array({})\n".format(avg)
+            func += "\tpca_values = np.array({})\n".format(pca)
+            func += "\tresult = (X - avg_values)\n"
+            func += "\tL = []\n"
+            func += "\tfor i in range({}):\n".format(n)
+            func += "\t\tL += [np.sum(result * pca_values[i], axis=1)]\n"
+            func += "\tresult = np.column_stack(L)\n"
+            func += "\treturn result\n"
+            return func
+        elif self.type in ("Normalizer",):
+            details = self.get_attr("details")
+            sql = []
+            if "min" in details.values:
+                func += "min_values = np.array({})\n".format(details["min"])
+                func += "\tmax_values = np.array({})\n".format(details["max"])
+                func += "\treturn (X - min_values) / (max_values - min_values)\n"
+            elif "median" in details.values:
+                func += "median_values = np.array({})\n".format(details["median"])
+                func += "\tmad_values = np.array({})\n".format(details["mad"])
+                func += "\treturn (X - median_values) / mad_values\n"
+            else:
+                func += "avg_values = np.array({})\n".format(details["avg"])
+                func += "\tstd_values = np.array({})\n".format(details["std_dev"])
+                func += "\treturn (X - avg_values) / std_values\n"
+            return func
+        elif self.type in ("SVD",):
+            sv = []
+            attr = self.get_attr("right_singular_vectors")
+            n = len(attr["vector1"])
+            for i in range(1, n + 1):
+                sv += [attr["vector{}".format(i)]]
+            value = self.get_attr("singular_values")["value"]
+            func += "singular_values = np.array({})\n".format(value)
+            func += "\tright_singular_vectors = np.array({})\n".format(sv)
+            func += "\tL = []\n"
+            n = len(sv[0])
+            func += "\tfor i in range({}):\n".format(n)
+            func += "\t\tL += [np.sum(X * right_singular_vectors[i] / singular_values[i], axis=1)]\n"
+            func += "\tresult = np.column_stack(L)\n"
+            func += "\treturn result\n"
+            return func
+            """
+        elif self.type in ("NaiveBayes",):
+            vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+            var_info = {}
+            gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
+            for idx, elem in enumerate(self.X):
+                var_info[elem] = {"rank": idx}
+                if vdf[elem].isbool():
+                    var_info[elem]["type"] = "bernoulli"
+                    for c in self.classes_:
+                        var_info[elem][c] = self.get_attr("bernoulli.{}".format(c))["probability"][bernoulli_incr]
+                    bernoulli_incr += 1
+                elif vdf[elem].category() in ("int",):
+                    var_info[elem]["type"] = "multinomial"
+                    for c in self.classes_:
+                        multinomial = self.get_attr("multinomial.{}".format(c))
+                        var_info[elem][c] = multinomial["probability"][multinomial_incr]
+                        multinomial_incr += 1
+                elif vdf[elem].isnum():
+                    var_info[elem]["type"] = "gaussian"
+                    for c in self.classes_:
+                        gaussian = self.get_attr("gaussian.{}".format(c))
+                        var_info[elem][c] = {"mu": gaussian["mu"][gaussian_incr], "sigma_sq": gaussian["sigma_sq"][gaussian_incr]}
+                    gaussian_incr += 1
+                else:
+                    var_info[elem]["type"] = "categorical"
+                    my_cat = "categorical." + str_column(elem)[1:-1]
+                    attr = self.get_attr()["attr_name"]
+                    for item in attr:
+                        if item.lower() == my_cat.lower():
+                            my_cat = item
+                            break
+                    var_info[elem]["proba"] = self.get_attr(my_cat).values
+            proba = {}
+            prior = self.get_attr("prior")
+            for idx, elem in enumerate(prior["class"]):
+                proba[elem] = prior["probability"][idx]
+            L = []
+            X = 40.0
+            for c in self.classes_:
+                result = proba[c]
+                for elem in var_info:
+                    if var_info[elem]["type"] == "gaussian":
+                        all_proba = {}
+                        for k in self.classes_:
+                            all_proba[k] = 1 / np.sqrt(var_info[elem][k]["sigma_sq"]) * np.exp(- (X - var_info[elem][k]["mu"]) ** 2 / (2 * var_info[elem][k]["sigma_sq"]))
+                        result *= all_proba[c] / np.sum(np.array([all_proba[k] for k in self.classes_]) * np.array([proba[k] for k in self.classes_]))
+                    elif var_info[elem]["type"] == "bernoulli":
+                        sql += " * ({} - {}::int) / ({} - {}::int)".format(1 - var_info[elem][0], X[var_info[elem]["rank"]], 1 - var_info[elem][1], X[var_info[elem]["rank"]],)
+                    elif var_info[elem]["type"] == "multinomial":
+                        sql += " * POWER({}, {}) / POWER({}, {})".format(var_info[elem][0], X[var_info[elem]["rank"]], var_info[elem][1], X[var_info[elem]["rank"]],)
+                    elif var_info[elem]["type"] == "categorical":
+                        proba = var_info[elem]["proba"]
+                        list_tmp = []
+                        for idx, cat in enumerate(proba["category"]):
+                            list_tmp += ["{} = '{}' THEN {}".format(X[var_info[elem]["rank"]], cat, proba["0"][idx] / proba["1"][idx])]
+                        sql += " * (CASE WHEN " + " WHEN ".join(list_tmp) + " END)"
+                L += [result]
+            return L
+        elif self.type in ("OneHotEncoder",):
+            details = self.param_.values
+            n = len(details["category_name"])
+            sql = []
+            cat_idx, current_cat = 0, details["category_name"][0]
+            for i in range(n):
+                if cat_idx != 0 or not(self.parameters["drop_first"]):
+                    end_name = details["category_level_index"][i] if self.parameters["column_naming"] != 'values' else details["category_level"][i]
+                    sql += ["(CASE WHEN \"{}\" = '{}' THEN 1 ELSE 0 END) AS \"{}_{}\"".format(details["category_name"][i], details["category_level"][i], details["category_name"][i], end_name)]
+                if current_cat != details["category_name"][i]:
+                    cat_idx = 0
+                    current_cat = details["category_name"][i]
+                else:
+                    cat_idx += 1
+            sql = ", ".join(sql)
+            for idx, elem in enumerate(X):
+                sql = sql.replace(self.X[idx], str_column(X[idx]))
+            return sql
+        elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
+            def predict_rf():
+                def predict_tree(tree_dict, node_id, features, is_regressor: bool = True,):
+                    if tree_dict[node_id]["is_leaf"]:
+                        if is_regressor:
+                            return str(float(tree_dict[node_id]["prediction"]))
+                        else:
+                            if "log_odds" in tree_dict[node_id]:
+                                val = tree_dict[node_id]["log_odds"]
+                                val = val.split(",")
+                                for idx, elem in enumerate(val):
+                                    val[idx] = elem.split(":")
+                                return str(val[-1][1])
+                            elif tree_dict[node_id]["prediction"] == '1':
+                                return str(float(tree_dict[node_id]["probability/variance"]))
+                            elif tree_dict[node_id]["prediction"] == '0':
+                                return str(1 - float(tree_dict[node_id]["probability/variance"]))
+                            else:
+                                return str(float(tree_dict[node_id]["prediction"]))
+                    else:
+                        idx = tree_dict[node_id]["split_predictor"]
+                        right_node = tree_dict[node_id]["right_child_id"]
+                        left_node = tree_dict[node_id]["left_child_id"]
+                        if tree_dict[node_id]["is_categorical_split"]:
+                            return "(CASE WHEN \"{}\" = '{}' THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"], tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                        else:
+                            return "(CASE WHEN \"{}\" < {} THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"], tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                result = []
+                features = self.X
+                is_regressor = (self.type in ("RandomForestRegressor", "XGBoostRegressor",))
+                if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+                    n = self.parameters["n_estimators"]
+                else:
+                    n = self.get_attr("tree_count")["tree_count"][0]
+                for i in range(n):
+                    tree = self.get_tree(i)
+                    tree_dict = {}
+
+                    for idx in range(len(tree["tree_id"])):
+                        tree_dict[tree["node_id"][idx]] = {
+                                  "is_leaf": tree["is_leaf"][idx],
+                                  "is_categorical_split": tree["is_categorical_split"][idx],
+                                  "split_predictor": tree["split_predictor"][idx],
+                                  "split_value": tree["split_value"][idx],
+                                  "left_child_id": tree["left_child_id"][idx],
+                                  "right_child_id": tree["right_child_id"][idx],
+                                  "prediction": tree["prediction"][idx],}
+                        if self.type in ("RandomForestClassifier", "RandomForestRegressor",):
+                            tree_dict[tree["node_id"][idx]]["probability/variance"] = tree["probability/variance"][idx]
+                        else:
+                            tree_dict[tree["node_id"][idx]]["log_odds"] = tree["log_odds"][idx]
+                    result += [predict_tree(tree_dict, 1, features, is_regressor,)]
+                if self.type in ("XGBoostRegressor",) or self.type in ("XGBoostClassifier",) and sorted(self.classes_) == [0, 1]:
+                    condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
+                    self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
+                    avg = self.cursor.fetchone()[0]
+                    logodds = np.log(avg / (1 - avg))
+                    if self.type in ("XGBoostRegressor",):
+                        sql_final = "{} + ({}) * {}".format(avg, " + ".join(result), self.parameters["learning_rate"])
+                    else:
+                        sql_final = "1 - 1 / (1 + EXP({} + {} * ({})))".format(logodds, self.parameters["learning_rate"], " + ".join(result),)
+                if self.type in ("RandomForestRegressor",) or sorted(self.classes_) == [0, 1]:
+                    sql_final = "({}) / {}".format(" + ".join(result), n)
+                else:
+                    raise "MulticlassClassifier are not yet supported for method 'deployStandardSQL'."
+                sql_final = "CASE WHEN {} THEN NULL ELSE {} END".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]), sql_final)
+                return sql_final
+            result = predict_rf()
+            for idx, elem in enumerate(X):
+                result = result.replace(self.X[idx], str_column(X[idx]))
+            return result
+            """
+        else:
+            raise ModelError("Function to_python not yet available for model type '{}'.".format(self.type))
+
+    # ---#
+    def to_sql(self, X: list = []):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model without using Vertica
+    built-in functions. This function only works for Regression, Binary
+    Classification and Preprocessing. In case of Binary classification,
+    the probability of class 1 is returned.
+
+    Parameters
+    ----------
+    X: list, optional
+        input predictors name.
+
+    Returns
+    -------
+    str
+        SQL code
+        """
+        if not(X):
+            X = [elem for elem in self.X]
+        assert len(X) == len(self.X), ParameterError("The length of parameter 'X' must be the same as the number of predictors.")
+        if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
+            coefs = self.coef_["coefficient"]
+            sql = []
+            for idx, coef in enumerate(coefs):
+                if idx == 0:
+                    sql += [str(coef)]
+                else:
+                    sql += [f"{coef} * {X[idx - 1]}"]
+            sql = " + ".join(sql)
+            if self.type in ("LogisticRegression",):
+                return f"1 / (1 + EXP(- ({sql})))"
+            elif self.type in ("LinearSVC",):
+                return f"1 - 1 / (1 + EXP({sql}))"
+            return sql
+        elif self.type in ("NaiveBayes",):
+            if sorted(self.classes_) == [0, 1]:
+                vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+                var_info = {}
+                gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
+                for idx, elem in enumerate(self.X):
+                    var_info[elem] = {"rank": idx}
+                    if vdf[elem].isbool():
+                        var_info[elem]["type"] = "bernoulli"
+                        var_info[elem][0] = self.get_attr("bernoulli.0")["probability"][bernoulli_incr]
+                        var_info[elem][1] = self.get_attr("bernoulli.1")["probability"][bernoulli_incr]
+                        bernoulli_incr += 1
+                    elif vdf[elem].category() in ("int",):
+                        var_info[elem]["type"] = "multinomial"
+                        multinomial0 = self.get_attr("multinomial.0")
+                        var_info[elem][0] = multinomial0["probability"][multinomial_incr]
+                        multinomial1 = self.get_attr("multinomial.1")
+                        var_info[elem][1] = multinomial1["probability"][multinomial_incr]
+                        multinomial_incr += 1
+                    elif vdf[elem].isnum():
+                        var_info[elem]["type"] = "gaussian"
+                        gaussian0 = self.get_attr("gaussian.0")
+                        var_info[elem][0] = {"mu": gaussian0["mu"][gaussian_incr], "sigma_sq": gaussian0["sigma_sq"][gaussian_incr]}
+                        gaussian1 = self.get_attr("gaussian.1")
+                        var_info[elem][1] = {"mu": gaussian1["mu"][gaussian_incr], "sigma_sq": gaussian1["sigma_sq"][gaussian_incr]}
+                        gaussian_incr += 1
+                    else:
+                        var_info[elem]["type"] = "categorical"
+                        my_cat = "categorical." + str_column(elem)[1:-1]
+                        attr = self.get_attr()["attr_name"]
+                        for item in attr:
+                            if item.lower() == my_cat.lower():
+                                my_cat = item
+                                break
+                        var_info[elem]["proba"] = self.get_attr(my_cat).values
+                proba = self.get_attr("prior")["probability"]
+                sql = "{}".format(proba[0] / proba[1])
+                for elem in var_info:
+                    if var_info[elem]["type"] == "gaussian":
+                        num = (var_info[elem][1]["sigma_sq"] / var_info[elem][0]["sigma_sq"]) ** 0.5
+                        sql += " * {} * EXP(POWER({} - {}, 2) / {}) * EXP(- POWER({} - {}, 2) / {})".format(num, X[var_info[elem]["rank"]], var_info[elem][1]["mu"], 2 * var_info[elem][1]["sigma_sq"], X[var_info[elem]["rank"]], var_info[elem][0]["mu"], 2 * var_info[elem][0]["sigma_sq"])
+                    elif var_info[elem]["type"] == "bernoulli":
+                        sql += " * ({} - {}::int) / ({} - {}::int)".format(1 - var_info[elem][0], X[var_info[elem]["rank"]], 1 - var_info[elem][1], X[var_info[elem]["rank"]],)
+                    elif var_info[elem]["type"] == "multinomial":
+                        sql += " * POWER({}, {}) / POWER({}, {})".format(var_info[elem][0], X[var_info[elem]["rank"]], var_info[elem][1], X[var_info[elem]["rank"]],)
+                    elif var_info[elem]["type"] == "categorical":
+                        proba = var_info[elem]["proba"]
+                        list_tmp = []
+                        for idx, cat in enumerate(proba["category"]):
+                            list_tmp += ["{} = '{}' THEN {}".format(X[var_info[elem]["rank"]], cat, proba["0"][idx] / proba["1"][idx])]
+                        sql += " * (CASE WHEN " + " WHEN ".join(list_tmp) + " END)"
+                return "1 / (1 + {})".format(sql)
+            else:
+                raise "MulticlassClassifier are not yet supported for method 'to_sql'."
+        elif self.type in ("NearestCentroid",):
+            if sorted(self.classes_) == [0, 1]:
+                centroids = self.centroids_
+                clusters_distance = []
+                for i in range(2):
+                    list_tmp = []
+                    for idx, col in enumerate(self.X):
+                        list_tmp += ["POWER({} - {}, 2)".format(X[idx], centroids[col][i])]
+                    clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
+                sql = "1 / (1 + {} / {})".format(clusters_distance[1], clusters_distance[0])
+                return sql
+            else:
+                raise "MulticlassClassifier are not yet supported for method 'to_sql'."
+        elif self.type in ("KMeans",):
+            cluster = self.get_attr("centers").to_list()
+            clusters_distance = []
+            for elem in cluster:
+                list_tmp = []
+                for idx, col in enumerate(X):
+                    list_tmp += ["POWER({} - {}, 2)".format(X[idx], elem[idx])]
+                clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
+            sql = []
+            k = len(clusters_distance)
+            for i in range(k):
+                list_tmp = []
+                for j in range(i):
+                    list_tmp += ["{} <= {}".format(clusters_distance[i], clusters_distance[j])]
+                sql += [" AND ".join(list_tmp)]
+            sql = sql[1:]
+            sql.reverse()
+            sql_final = "CASE WHEN {} THEN NULL".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]))
+            for i in range(k - 1):
+                sql_final += " WHEN {} THEN {}".format(sql[i], k - i - 1)
+            sql_final += " ELSE 0 END"
+            return sql_final
+        elif self.type in ("PCA",):
+            avg = self.get_attr("columns")["mean"]
+            pca = self.get_attr("principal_components")
+            sql = []
+            for i in range(len(X)):
+                sql_tmp = []
+                for j in range(len(X)):
+                    sql_tmp += ["({} - {}) * {}".format(X[j], avg[j], pca["PC{}".format(i + 1)][j])]
+                sql += [" + ".join(sql_tmp) + " AS pca{}".format(i + 1)]
+            return ", ".join(sql)
+        elif self.type in ("Normalizer",):
+            details = self.get_attr("details")
+            sql = []
+            if "min" in details.values:
+                for i in range(len(X)):
+                    sql += ["({} - {}) / {} AS {}".format(X[i], details["min"][i], details["max"][i] - details["min"][i], X[i])]
+            elif "median" in details.values:
+                for i in range(len(X)):
+                    sql += ["({} - {}) / {} AS {}".format(X[i], details["median"][i], details["mad"][i], X[i])]
+            else:
+                for i in range(len(X)):
+                    sql += ["({} - {}) / {} AS {}".format(X[i], details["avg"][i], details["std_dev"][i], X[i])]
+            return ", ".join(sql)
+        elif self.type in ("OneHotEncoder",):
+            details = self.param_.values
+            n = len(details["category_name"])
+            sql = []
+            cat_idx, current_cat = 0, details["category_name"][0]
+            for i in range(n):
+                if cat_idx != 0 or not(self.parameters["drop_first"]):
+                    end_name = details["category_level_index"][i] if self.parameters["column_naming"] != 'values' else details["category_level"][i]
+                    end_name = 'NULL' if end_name == None else end_name
+                    sql += ["(CASE WHEN \"{}\" = {} THEN 1 ELSE 0 END) AS \"{}_{}\"".format(details["category_name"][i], "'" + str(details["category_level"][i]) + "'" if details["category_level"][i] != None else 'NULL', details["category_name"][i], end_name)]
+                if current_cat != details["category_name"][i]:
+                    cat_idx = 0
+                    current_cat = details["category_name"][i]
+                else:
+                    cat_idx += 1
+            sql = ", ".join(sql)
+            for idx, elem in enumerate(X):
+                sql = sql.replace(self.X[idx], str_column(X[idx]))
+            return sql
+        elif self.type in ("SVD",):
+            value = self.get_attr("singular_values")["value"]
+            sv = self.get_attr("right_singular_vectors")
+            sql = []
+            for i in range(len(X)):
+                sql_tmp = []
+                for j in range(len(X)):
+                    sql_tmp += ["{} * {} / {}".format(X[j], sv["vector{}".format(i + 1)][j], value[i])]
+                sql += [" + ".join(sql_tmp) + " AS svd{}".format(i + 1)]
+            return ", ".join(sql)
+        elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
+            def predict_rf():
+                def predict_tree(tree_dict, node_id, features, is_regressor: bool = True,):
+                    if tree_dict[node_id]["is_leaf"]:
+                        if is_regressor:
+                            return str(float(tree_dict[node_id]["prediction"]))
+                        else:
+                            if "log_odds" in tree_dict[node_id]:
+                                val = tree_dict[node_id]["log_odds"]
+                                val = val.split(",")
+                                for idx, elem in enumerate(val):
+                                    val[idx] = elem.split(":")
+                                return str(val[-1][1])
+                            elif tree_dict[node_id]["prediction"] == '1':
+                                return str(float(tree_dict[node_id]["probability/variance"]))
+                            elif tree_dict[node_id]["prediction"] == '0':
+                                return str(1 - float(tree_dict[node_id]["probability/variance"]))
+                            else:
+                                return str(float(tree_dict[node_id]["prediction"]))
+                    else:
+                        idx = tree_dict[node_id]["split_predictor"]
+                        right_node = tree_dict[node_id]["right_child_id"]
+                        left_node = tree_dict[node_id]["left_child_id"]
+                        if tree_dict[node_id]["is_categorical_split"]:
+                            return "(CASE WHEN \"{}\" = '{}' THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                        else:
+                            return "(CASE WHEN \"{}\" < {} THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                result = []
+                features = self.X
+                is_regressor = (self.type in ("RandomForestRegressor", "XGBoostRegressor",))
+                if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+                    n = self.parameters["n_estimators"]
+                else:
+                    n = self.get_attr("tree_count")["tree_count"][0]
+                for i in range(n):
+                    tree = self.get_tree(i)
+                    tree_dict = {}
+
+                    for idx in range(len(tree["tree_id"])):
+                        tree_dict[tree["node_id"][idx]] = {
+                                  "is_leaf": tree["is_leaf"][idx],
+                                  "is_categorical_split": tree["is_categorical_split"][idx],
+                                  "split_predictor": tree["split_predictor"][idx],
+                                  "split_value": tree["split_value"][idx],
+                                  "left_child_id": tree["left_child_id"][idx],
+                                  "right_child_id": tree["right_child_id"][idx],
+                                  "prediction": tree["prediction"][idx],}
+                        if self.type in ("RandomForestClassifier", "RandomForestRegressor",):
+                            tree_dict[tree["node_id"][idx]]["probability/variance"] = tree["probability/variance"][idx]
+                        else:
+                            tree_dict[tree["node_id"][idx]]["log_odds"] = tree["log_odds"][idx]
+                    result += [predict_tree(tree_dict, 1, features, is_regressor,)]
+                if self.type in ("XGBoostRegressor",) or self.type in ("XGBoostClassifier",) and sorted(self.classes_) == [0, 1]:
+                    condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
+                    self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
+                    avg = self.cursor.fetchone()[0]
+                    logodds = np.log(avg / (1 - avg))
+                    if self.type in ("XGBoostRegressor",):
+                        sql_final = "{} + ({}) * {}".format(avg, " + ".join(result), self.parameters["learning_rate"])
+                    else:
+                        sql_final = "1 - 1 / (1 + EXP({} + {} * ({})))".format(logodds, self.parameters["learning_rate"], " + ".join(result),)
+                elif self.type in ("RandomForestRegressor",) or self.type in ("RandomForestClassifier",) and sorted(self.classes_) == [0, 1]:
+                    sql_final = "({}) / {}".format(" + ".join(result), n)
+                else:
+                    raise "MulticlassClassifier are not yet supported for method 'to_sql'."
+                sql_final = "CASE WHEN {} THEN NULL ELSE {} END".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]), sql_final)
+                return sql_final
+            result = predict_rf()
+            for idx, elem in enumerate(X):
+                result = result.replace(self.X[idx], str_column(X[idx]))
+            return result
+        else:
+            raise ModelError("Function to_sql not yet available for model type '{}'.".format(self.type))
 
 
 # ---#
@@ -2817,8 +3409,10 @@ class BinaryClassifier(Classifier):
 	method: str, optional
 		The method to use to compute the score.
 			accuracy	: Accuracy
+            aic         : Akaike’s Information Criterion
 			auc		    : Area Under the Curve (ROC)
 			best_cutoff : Cutoff which optimised the ROC Curve prediction.
+            bic         : Bayesian Information Criterion
 			bm		    : Informedness = tpr + tnr - 1
 			csi		    : Critical Success Index = tp / (tp + fn + fp)
 			f1		    : F1 Score 
@@ -2844,10 +3438,14 @@ class BinaryClassifier(Classifier):
             return accuracy_score(
                 self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
             )
-        elif method == "auc":
-            return auc(self.y, self.deploySQL(), self.test_relation, self.cursor)
+        elif method == "aic":
+            return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[0]
+        elif method == "bic":
+            return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[1]
         elif method == "prc_auc":
             return prc_auc(self.y, self.deploySQL(), self.test_relation, self.cursor)
+        elif method == "auc":
+            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True,)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 self.y,
@@ -2897,7 +3495,7 @@ class BinaryClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
             )
 
 
@@ -3218,7 +3816,7 @@ class MulticlassClassifier(Classifier):
         X: list = [],
         name: str = "",
         cutoff: float = -1,
-        pos_label=None,
+        pos_label: (int, str, float) = None,
         inplace: bool = True,
     ):
         """
@@ -3396,6 +3994,22 @@ class MulticlassClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
             )
+        elif method == "aic":
+            return aic_bic(
+                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                self.deploySQL(allSQL=True)[0].format(pos_label),
+                self.test_relation,
+                self.cursor,
+                len(self.X),
+            )[0]
+        elif method == "bic":
+            return aic_bic(
+                "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
+                self.deploySQL(allSQL=True)[0].format(pos_label),
+                self.test_relation,
+                self.cursor,
+                len(self.X),
+            )[1]
         elif method == "prc_auc":
             return prc_auc(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
@@ -3484,7 +4098,7 @@ class MulticlassClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
             )
 
 

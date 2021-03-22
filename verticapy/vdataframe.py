@@ -690,12 +690,18 @@ vcolumns : vcolumn
                     title_query = "Compute all the covariances in a single query"
                     title = "Covariance Matrix"
                     i0, step = 0, 1
+                n = len(columns)
+                if verticapy.options["tqdm"]:
+                    from tqdm.auto import tqdm
+
+                    loop = tqdm(range(i0, n))
+                else:
+                    loop = range(i0, n)
                 try:
                     all_list = []
-                    n = len(columns)
                     nb_precomputed = 0
                     nb_loop = 0
-                    for i in range(i0, n):
+                    for i in loop:
                         for j in range(0, i + step):
                             nb_loop += 1
                             cast_i = "::int" if (self[columns[i]].isbool()) else ""
@@ -801,7 +807,7 @@ vcolumns : vcolumn
                 except:
                     n = len(columns)
                     result = []
-                    for i in range(i0, n):
+                    for i in loop:
                         for j in range(0, i + step):
                             result += [
                                 self.__aggregate_matrix__(
@@ -1640,7 +1646,7 @@ vcolumns : vcolumn
             return result
 
     # ---#
-    def aggregate(self, func: list, columns: list = []):
+    def aggregate(self, func: list, columns: list = [], ncols_block: int = 20,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using the input functions.
@@ -1681,6 +1687,11 @@ vcolumns : vcolumn
         List of the vcolumns names. If empty, all the vcolumns 
         or only numerical vcolumns will be used depending on the
         aggregations.
+    ncols_block: int, optional
+        Number of columns used per query. For query performance, it is better to
+        pick up a balanced number. A small number will lead to the generation of
+        multiple queries. A higher number will lead to the generation of one big
+        SQL query.
 
     Returns
     -------
@@ -1706,7 +1717,7 @@ vcolumns : vcolumn
             columns = [columns]
         if isinstance(func, str):
             func = [func]
-        check_types([("func", func, [list],), ("columns", columns, [list],)])
+        check_types([("func", func, [list],), ("columns", columns, [list],), ("ncols_block", ncols_block, [int],),])
         columns_check(columns, self)
         if not (columns):
             columns = self.get_columns()
@@ -1724,6 +1735,23 @@ vcolumns : vcolumn
                     break
         else:
             columns = vdf_columns_names(columns, self)
+        if ncols_block < len(columns):
+            i = ncols_block
+            result = self.aggregate(func=func, columns=columns[0:ncols_block], ncols_block=ncols_block).transpose()
+            if verticapy.options["tqdm"]:
+                from tqdm.auto import tqdm
+
+                loop = tqdm(range(ncols_block, len(columns), ncols_block))
+            else:
+                loop = range(ncols_block, len(columns), ncols_block)
+            for i in loop:
+                columns_tmp = columns[i:i+ncols_block]
+                if columns_tmp:
+                    result_tmp = self.aggregate(func=func, columns=columns_tmp, ncols_block=ncols_block).transpose()
+                    for elem in result_tmp.values:
+                        if elem != "index":
+                            result.values[elem] = result_tmp[elem]
+            return result.transpose()
         agg = [[] for i in range(len(columns))]
         nb_precomputed = 0
         for idx, column in enumerate(columns):
@@ -2508,6 +2536,214 @@ vcolumns : vcolumn
         return self
 
     # ---#
+    def animated(
+        self,
+        ts: str,
+        columns: list = [],
+        by: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
+        kind: str = "auto",
+        limit_over: int = 6,
+        limit: int = 1000000,
+        limit_labels: int = 6,
+        ts_steps: dict = {"window": 100, "step": 5},
+        fixed_xy_lim: bool = False,
+        date_in_title: bool = False,
+        date_f = None,
+        date_style_dict: dict = {},
+        interval: int = 300,
+        repeat: bool = True,
+        return_html: bool = True,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Bubble Plot using animations.
+    In case of using a Notebook, you must run %matplotlib notebook in the cell.
+
+    Parameters
+    ----------
+    ts: str
+        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        date like (date, datetime, timestamp...) or numerical.
+    columns: list, optional
+        List of the vcolumns names.
+    by: str, optional
+        Categorical vcolumn used in the partition.
+    start_date: str / date, optional
+        Input Start Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is lesser than November 1993 the 3rd.
+    end_date: str / date, optional
+        Input End Date. For example, time = '03-11-1993' will filter the data when 
+        'ts' is greater than November 1993 the 3rd.
+    kind: str, optional
+        Animation Type.
+            auto   : Pick up automatically the type.
+            bar    : Animated Bar Race.
+            bubble : Animated Bubble Plot.
+            pie    : Animated Pie Chart.
+            ts     : Animated Time Series.
+    limit_over: int, optional
+        Limited number of elements to consider for each category.
+    limit: int, optional
+        Maximum number of data points to use.
+    limit_labels: int, optional
+        [Only used when kind = 'bubble']
+        Maximum number of text labels to draw.
+    ts_steps: dict, optional
+        [Only used when kind = 'ts']
+        dictionary including 2 keys.
+            step   : number of elements used to update the time series.
+            window : size of the window used to draw the time series.
+    fixed_xy_lim: bool, optional
+        If set to True, the xlim and ylim will be fixed.
+    date_in_title: bool, optional
+        If set to True, the ts vcolumn will be displayed in the title section.
+    date_f: function, optional
+        Function used to display the ts vcolumn.
+    date_style_dict: dict, optional
+        Style Dictionary used to display the ts vcolumn when date_in_title = False.
+    interval: int, optional
+        Number of ms between each update.
+    repeat: bool, optional
+        If set to True, the animation will be repeated.
+    return_html: bool, optional
+        If set to True and if using a Jupyter notebook, the HTML of the animation will be 
+        generated.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    animation
+        Matplotlib animation object
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        if isinstance(kind, str):
+            kind = kind.lower()
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("ts", ts, [str],),
+                ("by", by, [str],),
+                ("kind", kind, ["auto", "bar", "bubble", "ts", "pie",],),
+                ("start_date", start_date, [str, datetime.datetime, datetime.date, int, float,],),
+                ("end_date", end_date, [str, datetime.datetime, datetime.date, int, float,],),
+                ("limit_over", limit_over, [int,],),
+                ("limit_labels", limit_labels, [int,],),
+                ("limit", limit, [int,],),
+                ("fixed_xy_lim", fixed_xy_lim, [bool,],),
+                ("date_in_title", date_in_title, [bool,],),
+                ("date_style_dict", date_style_dict, [dict,],),
+                ("interval", interval, [int,],),
+                ("repeat", repeat, [bool,],),
+                ("return_html", return_html, [bool,],),
+                ("ts_steps", ts_steps, [dict,],),
+            ]
+        )
+        if kind == "auto":
+            if len(columns) > 3 or len(columns) <= 1:
+                kind = "ts"
+            elif len(columns) == 2:
+                kind = "bar"
+            else:
+                kind = "bubble"
+        assert kind == "ts" or columns, ParameterError("Parameter 'columns' can not be empty when using kind = '{}'.".format(kind))
+        assert (2 <= len(columns) <= 4 and self[columns[0]].isnum() and self[columns[1]].isnum()) or kind != "bubble", ParameterError("Parameter 'columns' must include at least 2 numerical vcolumns and maximum 4 vcolumns when using kind = '{}'.".format(kind))
+        columns_check(columns + [ts], self)
+        columns = vdf_columns_names(columns, self)
+        ts = vdf_columns_names([ts], self)[0]
+        if by:
+            columns_check([by], self)
+            by = vdf_columns_names([by], self)[0]
+        if kind == "bubble":
+            from verticapy.plot import animated_bubble_plot
+            if len(columns) == 3 and not(self[columns[2]].isnum()):
+                label_name = columns[2]
+                columns = columns[0:2]
+            elif len(columns) >= 4:
+                if not(self[columns[3]].isnum()):
+                    label_name = columns[3]
+                    columns = columns[0:3]
+                else:
+                    label_name = columns[2]
+                    columns = columns[0:2] + [columns[3]]
+            else:
+                label_name = ""
+            return animated_bubble_plot(self,
+                                        order_by=ts,
+                                        columns=columns,
+                                        label_name=label_name,
+                                        by=by,
+                                        order_by_start=start_date,
+                                        order_by_end=end_date,
+                                        limit_over=limit_over,
+                                        limit=limit,
+                                        lim_labels=limit_labels,
+                                        fixed_xy_lim=fixed_xy_lim,
+                                        date_in_title=date_in_title,
+                                        date_f=date_f,
+                                        date_style_dict=date_style_dict,
+                                        interval=interval,
+                                        repeat=repeat,
+                                        return_html=return_html,
+                                        ax=ax,
+                                        **style_kwds,)
+        elif kind in ("bar", "pie",):
+            from verticapy.plot import animated_bar
+            return animated_bar(self,
+                                order_by=ts,
+                                columns=columns,
+                                by=by,
+                                order_by_start=start_date,
+                                order_by_end=end_date,
+                                limit_over=limit_over,
+                                limit=limit,
+                                fixed_xy_lim=fixed_xy_lim,
+                                date_in_title=date_in_title,
+                                date_f=date_f,
+                                date_style_dict=date_style_dict,
+                                interval=interval,
+                                repeat=repeat,
+                                return_html=return_html,
+                                pie=(kind == "pie"),
+                                ax=ax,
+                                **style_kwds,)
+        else:
+            from verticapy.plot import animated_ts_plot
+            if (by):
+                assert len(columns) == 1, ParameterError("Parameter 'columns' can not be empty when using kind = 'ts' and when parameter 'by' is not empty.")
+                vdf = self.pivot(index=ts,
+                                 columns=by,
+                                 values=columns[0],)
+            else:
+                vdf = self
+            columns = vdf.numcol()[0:limit_over]
+            if "step" not in ts_steps:
+                ts_steps["step"] = 5
+            if "window" not in ts_steps:
+                ts_steps["window"] = 100
+            return animated_ts_plot(vdf,
+                                    order_by=ts,
+                                    columns=columns,
+                                    order_by_start=start_date,
+                                    order_by_end=end_date,
+                                    limit=limit,
+                                    fixed_xy_lim=fixed_xy_lim,
+                                    window_size=ts_steps["window"],
+                                    step=ts_steps["step"],
+                                    interval=interval,
+                                    repeat=repeat,
+                                    return_html=return_html,
+                                    ax=ax,
+                                    **style_kwds,)
+
+    # ---#
     def any(self, columns: list):
         """
     ---------------------------------------------------------------------------
@@ -3282,6 +3518,63 @@ vcolumns : vcolumn
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
+    def contour(
+        self,
+        columns: list,
+        func,
+        nbins: int = 100,
+        ax=None,
+        **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Bar Chart of the input vcolumns based on an aggregation.
+
+    Parameters
+    ----------
+    columns: list
+        List of the vcolumns names. The list must have one or two elements.
+    func: function, optional
+        Function used to compute the contour score. It can also be a SQL
+        expression.
+    nbins: int, optional
+        Number of bins used to discretize the two input numerical vcolumns.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+
+     See Also
+     --------
+     vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
+     vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
+     vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+        """
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("nbins", nbins, [int],),
+            ]
+        )
+        columns_check(columns, self, [2])
+        columns = vdf_columns_names(columns, self)
+        from verticapy.plot import contour_plot
+
+        return contour_plot(
+            self,
+            columns,
+            func,
+            nbins,
+            ax=ax,
+            **style_kwds,
+        )
+
+    # ---#
     def corr(
         self,
         columns: list = [],
@@ -4000,7 +4293,7 @@ vcolumns : vcolumn
         return ax
 
     # ---#
-    def describe(self, method: str = "auto", columns: list = [], unique: bool = True):
+    def describe(self, method: str = "auto", columns: list = [], unique: bool = True, ncols_block: int = 20,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using multiple statistical aggregations: 
@@ -4029,6 +4322,11 @@ vcolumns : vcolumn
         depending on the parameter 'method'.
     unique: bool, optional
         If set to True, the cardinality of each element will be computed.
+    ncols_block: int, optional
+        Number of columns used per query. For query performance, it is better to
+        pick up a balanced number. A small number will lead to the generation of
+        multiple queries. A higher number will lead to the generation of one big
+        SQL query.
 
     Returns
     -------
@@ -4061,6 +4359,7 @@ vcolumns : vcolumn
                 ),
                 ("columns", columns, [list],),
                 ("unique", unique, [bool],),
+                ("ncols_block", ncols_block, [int],),
             ]
         )
         if method == "auto":
@@ -4076,6 +4375,18 @@ vcolumns : vcolumn
                 for column in columns:
                     assert self[column].isnum(), TypeError(f"vcolumn {column} must be numerical to run describe using parameter method = 'numerical'")
             assert columns, EmptyParameter("No Numerical Columns found to run describe using parameter method = 'numerical'.")
+            if ncols_block < len(columns):
+                i = ncols_block
+                result = self.describe(method=method, columns=columns[0:ncols_block], unique=unique, ncols_block=ncols_block,).transpose()
+                while i < len(columns):
+                    columns_tmp = columns[i:i+ncols_block]
+                    if columns_tmp:
+                        result_tmp = self.describe(method=method, columns=columns_tmp, unique=unique, ncols_block=ncols_block,).transpose()
+                        for elem in result_tmp.values:
+                            if elem != "index":
+                                result.values[elem] = result_tmp[elem]
+                    i += ncols_block
+                return result.transpose()
             try:
                 version(
                     cursor=self._VERTICAPY_VARIABLES_["cursor"], condition=[9, 0, 0]
@@ -4136,16 +4447,17 @@ vcolumns : vcolumn
                 values = self.aggregate(
                     ["count", "mean", "std", "min", "25%", "50%", "75%", "max"],
                     columns=columns,
+                    ncols_block=ncols_block,
                 ).values
             if unique:
-                values["unique"] = self.aggregate(["unique"], columns=columns).values[
+                values["unique"] = self.aggregate(["unique"], columns=columns, ncols_block=ncols_block,).values[
                     "unique"
                 ]
         elif method == "categorical":
             func = ["dtype", "unique", "count", "top", "top_percent"]
             if not (unique):
                 del func[1]
-            values = self.aggregate(func, columns=columns).values
+            values = self.aggregate(func, columns=columns, ncols_block=ncols_block,).values
         elif method == "statistics":
             func = [
                 "dtype",
@@ -4168,7 +4480,7 @@ vcolumns : vcolumn
             ]
             if not (unique):
                 del func[3]
-            values = self.aggregate(func=func, columns=columns).values
+            values = self.aggregate(func=func, columns=columns, ncols_block=ncols_block,).values
         elif method == "length":
             if not (columns):
                 columns = self.get_columns()
@@ -4188,21 +4500,23 @@ vcolumns : vcolumn
             ]
             if not (unique):
                 del func[3]
-            values = self.aggregate(func=func, columns=columns).values
+            values = self.aggregate(func=func, columns=columns, ncols_block=ncols_block,).values
         elif method == "range":
-            columns = []
-            all_cols = self.get_columns()
-            for idx, column in enumerate(all_cols):
-                if self[column].isnum() or self[column].isdate():
-                    columns += [column]
+            if not (columns):
+                columns = []
+                all_cols = self.get_columns()
+                for idx, column in enumerate(all_cols):
+                    if self[column].isnum() or self[column].isdate():
+                        columns += [column]
             func = ["dtype", "percent", "count", "unique", "min", "max", "range"]
             if not (unique):
                 del func[3]
-            values = self.aggregate(func=func, columns=columns).values
+            values = self.aggregate(func=func, columns=columns, ncols_block=ncols_block,).values
         elif method == "all":
             datecols, numcol, catcol = [], [], []
-            all_cols = self.get_columns()
-            for elem in all_cols:
+            if not(columns):
+                columns = self.get_columns()
+            for elem in columns:
                 if self[elem].isnum():
                     numcol += [elem]
                 elif self[elem].isdate():
@@ -4227,6 +4541,7 @@ vcolumns : vcolumn
                     "range",
                 ],
                 columns=numcol,
+                ncols_block=ncols_block,
             ).values
             values["empty"] = [None] * len(numcol)
             if datecols:
@@ -4279,6 +4594,7 @@ vcolumns : vcolumn
                         "SUM(CASE WHEN LENGTH({}::varchar) = 0 THEN 1 ELSE 0 END) AS empty",
                     ],
                     columns=catcol,
+                    ncols_block=ncols_block,
                 ).values
                 for elem in [
                     "index",
@@ -6683,7 +6999,15 @@ vcolumns : vcolumn
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            pacf = [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit) for i in p]
+            if verticapy.options["tqdm"]:
+                from tqdm.auto import tqdm
+
+                loop = tqdm(p)
+            else:
+                loop = p
+            pacf = []
+            for i in loop:
+                pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
             columns = [elem for elem in p]
             pacf_band = []
             if confidence:

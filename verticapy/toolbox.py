@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, sys, warnings, random
+import os, math, shutil, re, sys, warnings, random, itertools
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -61,6 +61,16 @@ from verticapy.errors import *
 #
 # Functions to use to simplify the coding.
 #
+# ---#
+def all_comb(X: list):
+    all_configuration = []
+    for r in range(len(X) + 1):
+        combinations_object = itertools.combinations(X, r)
+        combinations_list = list(combinations_object)
+        if combinations_list[0]:
+            all_configuration += combinations_list
+    return all_configuration
+
 # ---#
 def arange(start: float, stop: float, step: float):
     check_types(
@@ -609,6 +619,23 @@ def insert_verticapy_schema(
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
             raise
+
+# ---#
+def reverse_score(metric: str):
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        return False
+    return True
 
 
 # ---#

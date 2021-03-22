@@ -166,6 +166,27 @@ class TestNearestCentroid:
 
         assert model.get_params()["p"] == 1
 
+    def test_to_sklearn(self, model):
+        md = model.to_sklearn()
+        assert 0 == pytest.approx(
+            md.predict([[5.006, 3.418,]])[0]
+        )
+
+    def test_to_python(self, model):
+        assert 0 == pytest.approx(
+            model.to_python(return_str=False,)([[5.006, 3.418,]])[0]
+        )
+        assert model.to_python(return_str=False, return_distance_clusters=True,)([[5.006, 3.418,]])[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT {}::float".format(
+                model.to_sql([3.0, 11.0])
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(0.38207751614202)
+
     def test_model_from_vDF(self, base, titanic_vd):
         model_test = NearestCentroid("nc_from_vDF", cursor=base.cursor)
         model_test.fit(titanic_vd, ["age"], "survived")
