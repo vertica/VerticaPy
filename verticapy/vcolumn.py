@@ -71,19 +71,19 @@ from verticapy.errors import *
 class vColumn(str_sql):
     """
 ---------------------------------------------------------------------------
-Python object which will store all the user transformations. The vDataFrame
-can be seen as the relation and the vColumn as one column of the relation.
-vcolumns simplify the process with many abstractions.
+Python object which that stores all user transformations. If the vDataFrame
+represents the entire relation, a vColumn can be seen as one column of that
+relation. vColumns simplify several processes with its abstractions.
 
 Parameters
 ----------
 alias: str
-	vcolumn alias.
+	vColumn alias.
 transformations: list, optional
 	List of the different transformations. Each transformation must be similar
 	to the following: (function, type, category)  
 parent: vDataFrame, optional
-	Parent of the vcolumn. One vDataFrame can have multiple children vcolumns 
+	Parent of the vColumn. One vDataFrame can have multiple children vcolumns 
 	whereas one vcolumn can only have one parent.
 catalog: dict, optional
 	Catalog where each key corresponds to an aggregation. vcolumns will memorize
@@ -92,9 +92,9 @@ catalog: dict, optional
 
 Attributes
 ----------
-	alias, str           : vcolumn alias.
+	alias, str           : vColumn alias.
 	catalog, dict        : Catalog of pre-computed aggregations.
-	parent, vDataFrame   : Parent of the vcolumn.
+	parent, vDataFrame   : Parent of the vColumn.
 	transformations, str : List of the different transformations.
 	"""
 
@@ -369,7 +369,7 @@ Attributes
 	Parameters
  	----------
  	func: str,
- 		Function to use to transform the vcolumn. It must be pure SQL.
+ 		Function in pure SQL used to transform the vcolumn.
  		The function variable must be composed of two flower brackets {}. For 
  		example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
  	copy_name: str, optional

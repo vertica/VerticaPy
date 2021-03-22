@@ -195,8 +195,8 @@ Main Class for Vertica Model
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Model Contour Plot. Only available for Regressors and Binary
-    Classifiers
+    Draws the model's contour plot. Only available for regressors and binary
+    classifiers.
 
     Parameters
     ----------
@@ -204,7 +204,7 @@ Main Class for Vertica Model
         Number of bins used to discretize the two input numerical vcolumns.
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative in case of multi classification.
+        considered as negative for multiclass classification.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -266,7 +266,7 @@ Main Class for Vertica Model
     def drop(self):
         """
 	---------------------------------------------------------------------------
-	Drops the model from the Vertica DB.
+	Drops the model from the Vertica database.
 		"""
         if self.type == "AutoDataPrep":
             with warnings.catch_warnings(record=True) as w:
@@ -285,7 +285,7 @@ Main Class for Vertica Model
     ):
         """
 		---------------------------------------------------------------------------
-		Computes the model features importance.
+		Computes the model's features importance.
 
         Parameters
         ----------
@@ -459,7 +459,7 @@ Main Class for Vertica Model
     def get_model_fun(self):
         """
 	---------------------------------------------------------------------------
-	Returns the Vertica associated functions.
+	Returns the Vertica functions associated with the model.
 
 	Returns
 	-------
@@ -505,7 +505,7 @@ Main Class for Vertica Model
     def get_params(self):
         """
 	---------------------------------------------------------------------------
-	Returns the model Parameters.
+	Returns the parameters of the model.
 
 	Returns
 	-------
@@ -520,7 +520,7 @@ Main Class for Vertica Model
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the Model.
+	Draws the model.
 
 	Parameters
 	----------
@@ -636,8 +636,7 @@ Main Class for Vertica Model
     def set_cursor(self, cursor):
         """
 	---------------------------------------------------------------------------
-	Sets a new DB cursor. It can be very usefull if the connection to the DB is 
-	lost.
+	Sets a new database cursor.
 
 	Parameters
 	----------
@@ -1846,7 +1845,7 @@ Main Class for Vertica Model
     def to_sklearn(self):
         """
     ---------------------------------------------------------------------------
-    Converts the Vertica Model to sklearn model.
+    Converts the Vertica model to an sklearn model.
 
     Returns
     -------
@@ -2367,8 +2366,8 @@ Main Class for Vertica Model
     def to_python(self, name: str = "predict", return_proba: bool = False, return_distance_clusters: bool = False, return_str: bool = False,):
         """
     ---------------------------------------------------------------------------
-    Returns the Python code needed to deploy the model without using Vertica
-    built-in functions.
+    Returns the Python code needed to deploy the model without using built-in
+    Vertica functions.
 
     Parameters
     ----------
@@ -2903,13 +2902,13 @@ class Supervised(vModel):
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
@@ -3094,7 +3093,7 @@ class Tree:
     def plot_tree(self, tree_id: int = 0, pic_path: str = ""):
         """
 	---------------------------------------------------------------------------
-	Draws the input tree. The module anytree must be installed in the machine.
+	Draws the input tree. Requires the anytree module.
 
 	Parameters
 	----------
@@ -3221,7 +3220,7 @@ class BinaryClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3254,7 +3253,7 @@ class BinaryClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3290,9 +3289,9 @@ class BinaryClassifier(Classifier):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -3344,7 +3343,7 @@ class BinaryClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3378,7 +3377,7 @@ class BinaryClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3426,7 +3425,7 @@ class BinaryClassifier(Classifier):
 			specificity : Specificity = tn / (tn + fp)
 
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as prediction. 
+		Cutoff for which the tested category will be accepted as a prediction. 
 
 	Returns
 	-------
@@ -3507,14 +3506,14 @@ class MulticlassClassifier(Classifier):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
-	(AUC, accuracy, PRC AUC, F1...). In case of multiclass classification, it will 
+	(AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will 
 	consider each category as positive and switch to the next one during the computation.
 
 	Parameters
 	----------
 	cutoff: float/list, optional
-		Cutoff for which the tested category will be accepted as prediction. 
-		In case of multiclass classification, each tested category becomes 
+		Cutoff for which the tested category will be accepted as a prediction. 
+		For multiclass classification, each tested category becomes 
 		the positives and the others are merged into the negatives. The list will 
 		represent the classes threshold. If it is empty, the best cutoff will be used.
 	labels: list, optional
@@ -3547,9 +3546,9 @@ class MulticlassClassifier(Classifier):
 	----------
 	pos_label: int/float/str, optional
 		Label to consider as positive. All the other classes will be merged and
-		considered as negative in case of multi classification.
+		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as prediction. If the 
+		Cutoff for which the tested category will be accepted as a prediction. If the 
 		cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
 	Returns
@@ -3592,12 +3591,12 @@ class MulticlassClassifier(Classifier):
     Parameters
     ----------
     pos_label: int/float/str, optional
-        To draw the ROC curve, one of the response column class has to be the 
+        To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3644,9 +3643,9 @@ class MulticlassClassifier(Classifier):
 	----------
 	pos_label: int/float/str, optional
 		Label to consider as positive. All the other classes will be merged and
-		considered as negative in case of multi classification.
+		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as prediction. If 
+		Cutoff for which the tested category will be accepted as a prediction. If 
 		the cutoff is not between 0 and 1, a probability will be returned.
 	allSQL: bool, optional
 		If set to True, the output will be a list of the different SQL codes 
@@ -3724,12 +3723,12 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	pos_label: int/float/str, optional
-		To draw a lift chart, one of the response column class has to be the 
+		To draw a lift chart, one of the response column classes must be the 
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3774,12 +3773,12 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	pos_label: int/float/str, optional
-		To draw the PRC curve, one of the response column class has to be the 
+		To draw the PRC curve, one of the response column classes must be the 
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        Curve number of bins.
+        The number of bins.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3826,16 +3825,16 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
 		Name of the added vcolumn. If empty, a name will be generated.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as prediction. 
+		Cutoff for which the tested category will be accepted as a prediction. 
 		If the parameter is not between 0 and 1, the class probability will
 		be returned.
 	pos_label: int/float/str, optional
@@ -3892,7 +3891,7 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	pos_label: int/float/str, optional
-		To draw the ROC curve, one of the response column class has to be the 
+		To draw the ROC curve, one of the response column classes must be the 
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3940,9 +3939,9 @@ class MulticlassClassifier(Classifier):
 	----------
 	pos_label: int/float/str, optional
 		Label to consider as positive. All the other classes will be merged and
-		considered as negative in case of multi classification.
+		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as prediction. 
+		Cutoff for which the tested category will be accepted as a prediction. 
 		If the parameter is not between 0 and 1, an automatic cutoff is 
 		computed.
 	method: str, optional
@@ -4116,9 +4115,9 @@ class Regressor(Supervised):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -4506,7 +4505,7 @@ class Unsupervised(vModel):
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list, optional
 		List of the predictors. If empty, all the numerical columns will be used.
 
@@ -4877,9 +4876,9 @@ class Preprocessing(Unsupervised):
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -4924,9 +4923,9 @@ class Preprocessing(Unsupervised):
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -5035,7 +5034,7 @@ class Decomposition(Preprocessing):
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the decomposition Score on a dataset for each trasformed column. It 
+    Returns the decomposition score on a dataset for each transformed column. It 
     is the average / median of the p-distance between the real column and its 
     result after applying the decomposition model and its inverse.  
 
@@ -5049,7 +5048,7 @@ class Decomposition(Preprocessing):
     method: str, optional
         Distance Method used to do the scoring.
             avg : The average is used as aggregation.
-            median : The mdeian is used as aggregation.
+            median : The median is used as aggregation.
     p: int, optional
         The p of the p-distance.
 
@@ -5140,9 +5139,9 @@ class Decomposition(Preprocessing):
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
     n_components: int, optional
@@ -5201,9 +5200,9 @@ class Clustering(Unsupervised):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.

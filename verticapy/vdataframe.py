@@ -97,16 +97,16 @@ input_relation: str
     In this case input_relation must only be the relation name (it must 
     not include a schema).
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
     For a cursor designed by Vertica, search for vertica_python
     For ODBC, search for pyodbc.
     For JDBC, search for jaydebeapi.
-    Check out utilities.vHelp function, it may help you.
+    For help, see utilities.vHelp.
 dsn: str, optional
-    Data Base DSN. OS File including the DB credentials.
+    Database DSN. OS File including the DB credentials.
     VERTICAPY will try to create a vertica_python cursor first.
     If it didn't find the library, it will try to create a pyodbc cursor.
-    Check out utilities.vHelp function, it may help you.
+    For help, see utilities.vHelp.
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar DB
     including less columns makes the process faster. Do not hesitate to not include 
@@ -1117,7 +1117,7 @@ vcolumns : vcolumn
     Returns
     -------
     DBcursor
-        The DB cursor.
+        The database cursor.
         """
         return executeSQL(self._VERTICAPY_VARIABLES_["cursor"], query, title,)
 
@@ -1502,14 +1502,13 @@ vcolumns : vcolumn
                 lags or 'day' to compute the days lags.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
-                       \u26A0 Warning : This method is computationally expensive. 
-                                        It is using a CROSS JOIN during the computation.
-                                        The complexity is O(n * n), n being the total
-                                        count of the vDataFrame.
+                       \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                        is therefore computationally expensive at O(n * n), where
+                                        n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
     acf_type: str, optional
@@ -2123,7 +2122,7 @@ vcolumns : vcolumn
             aad          : average absolute deviation
             beta         : Beta Coefficient between 2 vcolumns
             count        : number of non-missing elements
-            corr         : Pearson correlation between 2 vcolumns
+            corr         : Pearson's correlation between 2 vcolumns
             cov          : covariance between 2 vcolumns
             dense_rank   : dense rank
             ema          : exponential moving average
@@ -2780,15 +2779,15 @@ vcolumns : vcolumn
     input_relation: str / vDataFrame
         Relation to use to do the merging.
     expr1: list, optional
-        List of expressions from the current vDataFrame to use during the merging.
-        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-        and 'POWER("column", 2)' will work. If empty all the vDataFrame vcolumns will
-        be used. It is highly recommended to write aliases to avoid auto-naming.
+        List of pure-SQL expressions from the current vDataFrame to use during merging.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty, all the vDataFrame vcolumns will
+        be used. Aliases are recommended to avoid auto-naming.
     expr2: list, optional
-        List of expressions from the input relation to use during the merging.
-        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-        and 'POWER("column", 2)' will work. If empty all the input relation columns will
-        be used. It is highly recommended to write aliases to avoid auto-naming.
+        List of pure-SQL expressions from the input relation to use during the merging.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty, all the input relation columns will
+        be used. Aliases are recommended to avoid auto-naming.
     union_all: bool, optional
         If set to True, the vDataFrame will be merged with the input relation using an
         'UNION ALL' instead of an 'UNION'.
@@ -3596,14 +3595,13 @@ vcolumns : vcolumn
         used.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
-                        \u26A0 Warning : This method is computationally expensive. 
-                                         It is using a CROSS JOIN during the computation.
-                                         The complexity is O(n * n), n being the total
-                                         count of the vDataFrame.
+                        \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                         is therefore computationally expensive at O(n * n), where
+                                         n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
     round_nb: int, optional
@@ -3687,15 +3685,14 @@ vcolumns : vcolumn
         Input vcolumn.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). 
                         Use kendallA to compute Tau-A, kendallB or kendall to compute 
                         Tau-B and kendallC to compute Tau-C.
-                        \u26A0 Warning : This method is computationally expensive. 
-                                         It is using a CROSS JOIN during the computation.
-                                         The complexity is O(n * n), n being the total
-                                         count of the vDataFrame.
+                        \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                         is therefore computationally expensive at O(n * n), where
+                                         n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
 
@@ -4862,7 +4859,7 @@ vcolumns : vcolumn
     name: str
         Name of the new vcolumn.
     expr: str
-        Expression to use to compute the new feature. It must be pure SQL. 
+        Expression in pure SQL to use to compute the new feature. 
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
         'POWER("column", 2)' will work.
 
@@ -5398,7 +5395,7 @@ vcolumns : vcolumn
         List of the vcolumns used for the grouping. It can also be customized 
         expressions.
     expr: list, optional
-        List of the different aggregations. Pure SQL must be written. Aliases can
+        List of the different aggregations in pure SQL. Aliases can
         also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
         whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
         the different features and not have ambiguous names. The function MODE does
@@ -5540,13 +5537,12 @@ vcolumns : vcolumn
             hist         : Histogram
             kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
                            coefficients.
-                           \u26A0 Warning : This method is computationally expensive. 
-                                            It is using a CROSS JOIN during the computation.
-                                            The complexity is O(n * n), n being the total
-                                            count of the vDataFrame.
+                           \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                            is therefore computationally expensive at O(n * n), where
+                                            n is the total count of the vDataFrame.
             line         : Line Plot
             negative_bar : Multi Bar Chart for binary classes
-            pearson      : Pearson Correlation Matrix
+            pearson      : Pearson's correlation matrix
             pie          : Pie Chart
             pie_half     : Half Pie Chart
             pie3d        : 3D Pie Chart
@@ -5555,7 +5551,7 @@ vcolumns : vcolumn
             spline       : Spline Plot
             stacked_bar  : Stacked Bar Chart
             stacked_hist : Stacked Histogram
-            spearman     : Spearman Correlation Matrix
+            spearman     : Spearman's correlation matrix
     width: int, optional
         Chart Width.
     height: int, optional
@@ -6149,15 +6145,13 @@ vcolumns : vcolumn
             natural : Natural Join.
             inner   : Inner Join.
     expr1: list, optional
-        List of the different columns to select from the current vDataFrame. 
-        Pure SQL must be written. Aliases can also be given. 'column' or 
-        'column AS my_new_alias' are correct. Aliases are recommended to keep 
-        the track of the different features and not have ambiguous names. 
+        List of the different columns in pure SQL to select from the current vDataFrame,
+        optionally as aliases. Aliases are recommended to avoid ambiguous names.
+        For example: 'column' or 'column AS my_new_alias'
     expr2: list, optional
-        List of the different columns to select from the input relation. 
-        Pure SQL must be written. Aliases can also be given. 'column' or 
-        'column AS my_new_alias' are correct. Aliases are recommended to keep 
-        the track of the different features and not have ambiguous names. 
+        List of the different columns in pure SQL to select from the input relation
+        optionally as aliases. Aliases are recommended to avoid ambiguous names.
+        For example: 'column' or 'column AS my_new_alias'
 
     Returns
     -------
@@ -7896,7 +7890,7 @@ vcolumns : vcolumn
             aad         : average absolute deviation
             beta        : Beta Coefficient between 2 vcolumns
             count       : number of non-missing elements
-            corr        : Pearson correlation between 2 vcolumns
+            corr        : Pearson's correlation between 2 vcolumns
             cov         : covariance between 2 vcolumns
             kurtosis    : kurtosis
             jb          : Jarque Bera index
@@ -8391,8 +8385,8 @@ vcolumns : vcolumn
         vcolumns to select from the final vDataFrame relation. If empty, all the
         vcolumns will be selected.
     expr: list, optional
-        List of customized expressions. It must be pure SQL. For example, it is
-        possible to write 'column1 * column2 AS my_name'.
+        List of customized expressions in pure SQL.
+        For example: 'column1 * column2 AS my_name'
     order_by: dict / list, optional
         List of the vcolumns to use to sort the data using asc order or
         dictionary of all the sorting methods. For example, to sort by "column1"
@@ -8557,7 +8551,7 @@ vcolumns : vcolumn
     def set_cursor(self, cursor):
         """
     ---------------------------------------------------------------------------
-    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
+    Sets a new database cursor. It can be very usefull if the connection to the DB is 
     lost.
 
     Parameters
@@ -8598,7 +8592,7 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.set_cursor : Sets a new DB cursor.
+    vDataFrame.set_cursor : Sets a new database cursor.
     vDataFrame.set_dsn    : Sets a new DB DSN.
         """
         check_types([("schema_writing", schema_writing, [str],)])

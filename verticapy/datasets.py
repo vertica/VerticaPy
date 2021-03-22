@@ -84,7 +84,7 @@ features_ranges: dict,
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -158,7 +158,7 @@ features_ranges: dict,
         named 'step' corresponding to the step used to compute the different 
         categories.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -268,7 +268,7 @@ and schema already exists, this function will create a vDataFrame from the input
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -300,7 +300,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -332,7 +332,7 @@ this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -364,7 +364,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -398,7 +398,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -430,7 +430,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -462,7 +462,7 @@ this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -496,7 +496,7 @@ and schema already exists, this function will create a vDataFrame from the input
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -528,7 +528,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -560,7 +560,7 @@ this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -592,7 +592,7 @@ already exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -624,7 +624,7 @@ exists, this function will create a vDataFrame from the input relation.
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional

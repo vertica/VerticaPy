@@ -64,7 +64,7 @@ Parameters
 name: str
     Model name.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 raise_error: bool, optional
     If set to True and an error occurs, it raises the error.
 return_model_type: bool, optional
@@ -122,7 +122,7 @@ Parameters
 name: str
     Model Name.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 test_relation: str, optional
     Relation to use to do the testing. All the methods will use this relation 
     for the scoring. If empty, the training relation will be used as testing.

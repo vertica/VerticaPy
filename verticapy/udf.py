@@ -85,7 +85,7 @@ include_dependencies: list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 	"""
     cursor, conn = check_cursor(cursor)[0:2]
     directory = os.path.dirname(verticapy.__file__)

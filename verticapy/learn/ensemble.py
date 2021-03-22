@@ -61,9 +61,9 @@ from verticapy.learn.vmodel import *
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a RandomForestClassifier object by using the Vertica Highly Distributed 
-and Scalable Random Forest on the data. It is one of the ensemble learning 
-method for classification that operate by constructing a multitude of decision 
+Creates a RandomForestClassifier object using the Vertica Random Forest
+algorithm on the data. It is one of the ensemble learning methods for 
+classification that operate by constructing a multitude of decision 
 trees at training time and outputting the class that is the mode of the classes.
 
 Parameters
@@ -71,7 +71,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
@@ -136,9 +136,9 @@ nbins: int, optional
 class RandomForestRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a RandomForestRegressor object by using the Vertica Highly Distributed 
-and Scalable Random Forest on the data. It is one of the ensemble learning 
-method for regression that operate by constructing a multitude of decision 
+Creates a RandomForestRegressor object using the Vertica Random Forest 
+algorithm on the data. It is one of the ensemble learning methods for 
+regression that operate by constructing a multitude of decision 
 trees at training time and outputting the mean prediction.
 
 Parameters
@@ -146,7 +146,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_estimators: int, optional
 	The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
@@ -211,8 +211,8 @@ nbins: int, optional
 class XGBoostClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a XGBoostClassifier object by using the Vertica Highly Distributed 
-and Scalable XGBoost on the data.
+Creates a XGBoostClassifier object using the Vertica XGBoost
+algorithm on the data.
 ...
 
 Parameters
@@ -220,7 +220,7 @@ Parameters
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
@@ -295,8 +295,8 @@ sample: float, optional
 class XGBoostRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a XGBoostRegressor object by using the Vertica Highly Distributed 
-and Scalable XGBoost on the data.
+Creates a XGBoostRegressor object using the Vertica XGBoost
+algorithm on the data.
 ...
 
 Parameters
@@ -304,7 +304,7 @@ Parameters
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional

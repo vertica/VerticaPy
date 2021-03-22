@@ -98,7 +98,7 @@ name: str, optional
     Name of the model in which to store the output relation in the
     Vertica database.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 cat_method: str, optional
     Method for encoding categorical features. This can be set to 'label' for
     label encoding and 'ooe' for One-Hot Encoding.
@@ -361,7 +361,7 @@ Parameters
 name: str
     Name of the model.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 n_cluster: int, optional
     Number of clusters. If empty, an optimal number of clusters will be
     determined using multiple k-means models.
@@ -487,9 +487,9 @@ Parameters
 name: str
     Name of the model.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 estimator: list / 'native' / 'all' / 'fast' / object
-    List of Vertica estimators with a fit method and a DB cursor.
+    List of Vertica estimators with a fit method and a database cursor.
     Alternatively, you can specify 'native' for all native Vertica models,
     'all' for all VerticaPy models and 'fast' for quick modeling.
 estimator_type: str, optional
@@ -537,8 +537,8 @@ lmax: int, optional
     Maximum length of each parameter list.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-    If set to 1, the randomness is limited to some parameters, the other
-    ones are picked based on a default grid.
+If set to 1, the randomness is limited to some parameters while others
+    are picked based on a default grid.
     If set to 2, no randomness is used and a default grid is returned.
 stepwise: bool, optional
     If True, the stepwise algorithm will be used to determine the
@@ -554,7 +554,7 @@ stepwise_max_steps: int, optional
     stepwise.
 x_order: str, optional
     How to preprocess X before using the stepwise algorithm.
-        pearson  : X is ordered based on the Pearson correlation coefficient.
+        pearson  : X is ordered based on the Pearson's correlation coefficient.
         spearman : X is ordered based on Spearman's rank correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.
         none     : Does not change the order of X.
