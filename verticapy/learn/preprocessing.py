@@ -80,7 +80,7 @@ input_relation: str
 y: str
 	Response column.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to do the balancing.
 		hybrid : Performs over-sampling and under-sampling on different 
@@ -129,7 +129,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 lowercase: bool, optional
 	Converts all the elements to lowercase before processing.
 max_df: float, optional
@@ -200,7 +200,7 @@ max_text_size: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors. If empty, all the columns will be used.
 
@@ -313,7 +313,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to normalize.
 		zscore        : Normalization using the Z-Score (avg and std).
@@ -374,7 +374,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
 drop_first: bool, optional
@@ -383,7 +383,7 @@ drop_first: bool, optional
     has a corresponding column in the output view.
 ignore_null: bool, optional
     If set to True, Null values set all corresponding one-hot binary columns to null. 
-    Otherwise, Null values in the input columns are treated as a categorical level.
+    Otherwise, null values in the input columns are treated as a categorical level.
 separator: str, optional
     The character that separates the input variable name and the indicator variable 
     level in the output table.To avoid using any separator, set this parameter to 

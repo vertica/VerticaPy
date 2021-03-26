@@ -71,14 +71,14 @@ class NeighborsClassifier(vModel):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
-    (AUC, accuracy, PRC AUC, F1...). In case of multiclass classification, it will 
+    (AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will 
     consider each category as positive and switch to the next one during the computation.
 
     Parameters
     ----------
     cutoff: float/list, optional
-        Cutoff for which the tested category will be accepted as prediction. 
-        In case of multiclass classification, each tested category becomes 
+        Cutoff for which the tested category will be accepted as a prediction. 
+        For multiclass classification, each tested category becomes 
         the positives and the others are merged into the negatives. The list will 
         represent the classes threshold. If it is empty, the best cutoff will be used.
     labels: list, optional
@@ -108,7 +108,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column class has to be the 
+        To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -147,9 +147,9 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative in case of multi classification.
+        considered as negative for multiclass classification.
     cutoff: float, optional
-        Cutoff for which the tested category will be accepted as prediction. If the 
+        Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
     Returns
@@ -198,7 +198,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw a lift chart, one of the response column class has to be the 
+        To draw a lift chart, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -236,7 +236,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the PRC curve, one of the response column class has to be the 
+        To draw the PRC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -281,20 +281,20 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
     cutoff: float, optional
-        Cutoff used in case of binary classification. It is the probability to
-        accept the category 1.
+        The cutoff used for binary classification and represents the probability to
+        accept category 1.
     all_classes: bool, optional
-        If set to True, all the classes probabilities will be generated (one 
-        column per category).
+        If True, the probabilities of all classes will be generated 
+        (one column per category).
 
     Returns
     -------
@@ -386,7 +386,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column class has to be the 
+        To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -430,9 +430,9 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative in case of multi classification.
+        considered as negative for multiclass classification.
     cutoff: float, optional
-        Cutoff for which the tested category will be accepted as prediction. 
+        Cutoff for which the tested category will be accepted as a prediction. 
     method: str, optional
         The method to use to compute the score.
             accuracy    : Accuracy
@@ -520,18 +520,18 @@ class NearestCentroid(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a NearestCentroid object by using the K Nearest Centroid Algorithm. 
-This object is using pure SQL to compute all the distances and final score. 
+Creates a NearestCentroid object using the k-Nearest Centroid algorithm. 
+This object uses pure SQL to compute the distances and final score. 
 
 \u26A0 Warning : As NearestCentroid is using the p-distance, it is highly 
-                 sensible to un-normalized data.  
+                 sensitive to unnormalized data.  
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used 
+	The p corresponding to the one of the p-distances (distance metric used 
 	during the model computation).
 	"""
 
@@ -563,7 +563,7 @@ p: int, optional
 	predict: bool, optional
 		If set to True, returns the prediction instead of the probability.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
 	Returns
 	-------
@@ -643,13 +643,13 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
@@ -719,19 +719,19 @@ class KNeighborsClassifier(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a KNeighborsClassifier object by using the K Nearest Neighbors Algorithm. 
-This object is using pure SQL to compute all the distances and final score.
+Creates a KNeighborsClassifier object by using the k-Nearest Neighbors Algorithm. 
+This object uses pure SQL to compute the distances and final score.
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As KNeighborsClassifier 
-                 is using the p-distance, it is highly sensible to un-normalized 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements. Since KNeighborsClassifier 
+                 is uses the p-distance, it is highly sensitive to unnormalized 
                  data. 
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
@@ -767,7 +767,7 @@ p: int, optional
     predict: bool, optional
         If set to True, returns the prediction instead of the probability.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
     Returns
     -------
@@ -854,13 +854,13 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
@@ -923,12 +923,12 @@ class KernelDensity(Regressor, Tree):
 ---------------------------------------------------------------------------
 [Beta Version]
 Creates a KernelDensity object. 
-This object is using pure SQL to compute the final score.
+This object uses pure SQL to compute the final score.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 bandwidth: float, optional
     The bandwidth of the kernel.
 kernel: str, optional
@@ -1006,7 +1006,7 @@ xlim: list, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list, optional
         List of the predictors.
 
@@ -1292,16 +1292,16 @@ class KNeighborsRegressor(Regressor):
 Creates a KNeighborsRegressor object by using the K Nearest Neighbors Algorithm. 
 This object is using pure SQL to compute all the distances and final score. 
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As KNeighborsRegressor 
-                 is using the p-distance, it is highly sensible to un-normalized 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements. Since KNeighborsRegressor 
+                 uses the p-distance, it is highly sensitive to unnormalized 
                  data.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
@@ -1329,7 +1329,7 @@ p: int, optional
     test_relation: str, optional
         Relation to use to do the predictions.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
     Returns
     -------
@@ -1401,13 +1401,13 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
@@ -1464,9 +1464,9 @@ p: int, optional
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -1518,19 +1518,19 @@ as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg
 Sander. This object is using pure SQL to compute all the distances and final 
 score.
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As LocalOutlierFactor 
-                 is using the p-distance, it is highly sensible to un-normalized 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elementss. Since LocalOutlierFactor 
+                 is uses the p-distance, it is highly sensitive to unnormalized 
                  data. A table will be created at the end of the learning phase.
 
 Parameters
 ----------
 name: str
-	Name of the the model. As it is not a built in model, this name will be used
+	Name of the the model. This is not a built-in model, so this name will be used
 	to build the final table.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
@@ -1559,15 +1559,15 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list, optional
 		List of the predictors.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
-		Index to use to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creation of temporary tables.
+		Index used to identify each row separately. It is highly recommanded to
+		have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------

@@ -64,20 +64,20 @@ from verticapy.learn.tools import *
 class BisectingKMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a Bisecting KMeans object by using the Vertica Highly Distributed and 
-Scalable Bisecting KMeans on the data. KMeans clustering is a method of vector 
-quantization, originally from signal processing, that aims to partition n 
-observations into k clusters in which each observation belongs to the cluster 
-with the nearest mean (cluster centers or cluster centroid), serving as a 
-prototype of the cluster. This results in a partitioning of the data space into 
-Voronoi cells. Bisecting KMeans combines KMeans and Hierarchical clustering.
+Creates a Bisecting KMeans object using the Vertica Bisecting KMeans 
+algorithm on the data. KMeans clustering is a method of vector quantization, 
+originally from signal processing, that aims to partition n observations into 
+k clusters in which each observation belongs to the cluster with the nearest 
+mean (cluster centers or cluster centroid), serving as a prototype of the 
+cluster. This results in a partitioning of the data space into Voronoi cells. 
+Bisecting KMeans combines KMeans and Hierarchical clustering.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 n_cluster: int, optional
     Number of clusters
 bisection_iterations: int, optional
@@ -174,17 +174,17 @@ class DBSCAN(vModel):
 ---------------------------------------------------------------------------
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
-Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu. This object is using 
-pure SQL to compute all the distances and neighbors. It is also using Python 
-to compute the cluster propagation (non scalable phase).
+Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
+pure SQL to compute the distances and neighbors and uses Python 
+to compute the cluster propagation (non-scalable phase).
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements.
-                 It will index all the elements of the table in order to be optimal 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements.
+                 This algorithm indexes elements of the table in order to be optimal 
                  (the CROSS JOIN will happen only with IDs which are integers). 
-                 As DBSCAN is using the p-distance, it is highly sensible to 
-                 un-normalized data. However, DBSCAN is really robust to outliers 
+                 Since DBSCAN is uses the p-distance, it is highly sensitive to 
+                 unnormalized data. However, DBSCAN is robust to outliers 
                  and can find non-linear clusters. It is a very powerful algorithm 
                  for outliers detection and clustering. A table will be created 
                  at the end of the learning phase.
@@ -192,10 +192,10 @@ to compute the cluster propagation (non scalable phase).
 Parameters
 ----------
 name: str
-	Name of the the model. As it is not a built in model, this name will be used
+	Name of the the model. This is not a built-in model, so this name will be used
 	to build the final table.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 eps: float, optional
 	The radius of a neighborhood with respect to some point.
 min_samples: int, optional
@@ -228,15 +228,15 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list, optional
 		List of the predictors. If empty, all the numerical vcolumns will be used.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
-		Index to use to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creation of temporary tables.
+		Index used to identify each row separately. It is highly recommanded to
+		have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------
@@ -424,19 +424,19 @@ p: int, optional
 class KMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a KMeans object by using the Vertica Highly Distributed and Scalable 
-KMeans on the data. K-means clustering is a method of vector quantization, 
-originally from signal processing, that aims to partition n observations into 
-k clusters in which each observation belongs to the cluster with the nearest 
-mean (cluster centers or cluster centroid), serving as a prototype of the 
-cluster. This results in a partitioning of the data space into Voronoi cells. 
+Creates a KMeans object using the Vertica KMeans algorithm on the data. 
+K-means clustering is a method of vector quantization, originally from signal 
+processing, that aims to partition n observations into k clusters in which 
+each observation belongs to the cluster with the nearest mean (cluster centers 
+or cluster centroid), serving as a prototype of the cluster. This results in 
+a partitioning of the data space into Voronoi cells. 
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_cluster: int, optional
 	Number of clusters
 init: str/list, optional

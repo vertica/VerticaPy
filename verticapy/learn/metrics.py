@@ -90,7 +90,7 @@ input_relation: str/vDataFrame
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 k: int, optional
     Number of predictors.
 
@@ -151,7 +151,7 @@ input_relation: str/vDataFrame
 k: int, optional
     Number of predictors.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -219,7 +219,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -264,7 +264,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -311,7 +311,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -358,7 +358,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 root: bool, optional
     If set to True, returns the RMSE (Root Mean Squared Error)
 
@@ -406,7 +406,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -451,7 +451,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -498,7 +498,7 @@ input_relation: str/vDataFrame
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -549,7 +549,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 k: int, optional
     Number of predictors. Only used to compute the R2 adjusted.
 adj: bool, optional
@@ -609,7 +609,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 k: int, optional
     Number of predictors. Used to compute the adjusted R2.
 
@@ -706,7 +706,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
@@ -773,9 +773,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the ROC AUC, one of the response column class has to be the 
+	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -824,12 +824,12 @@ input_relation: str/vDataFrame, optional
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
-	Cutoff for which the tested category will be accepted as prediction. 
-	In case of multiclass classification, the list will represent the 
+	Cutoff for which the tested category will be accepted as a prediction. 
+	For multiclass classification, the list will represent the 
 	the classes threshold. If it is empty, the best cutoff will be used.
 estimator: object, optional
 	Estimator to use to compute the classification report.
@@ -993,10 +993,10 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
-	class has to be the positive one. The parameter 'pos_label' represents 
+	classes must be the positive one. The parameter 'pos_label' represents 
 	this class.
 
 Returns
@@ -1063,9 +1063,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the CSI, one of the response column class has to be the 
+	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1119,9 +1119,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the F1 Score, one of the response column class has to be the 
+	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1181,9 +1181,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the informedness, one of the response column class has to be the 
+	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1238,9 +1238,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the log loss, one of the response column class has to be the 
+	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1289,9 +1289,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the markedness, one of the response column class has to be the 
+	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1346,10 +1346,10 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
-	class has to be the positive one. The parameter 'pos_label' represents this 
+	classes must be the positive one. The parameter 'pos_label' represents this 
 	class.
 
 Returns
@@ -1409,7 +1409,7 @@ input_relation: str/vDataFrame
 labels: list
 	List of the response column categories.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -1476,7 +1476,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Negative Predictive Score, one of the response column class 
 	has to be the positive one. The parameter 'pos_label' represents this class.
@@ -1532,9 +1532,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the PRC AUC, one of the response column class has to be the 
+	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1579,9 +1579,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Precision Score, one of the response column class has to be 
+	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1635,9 +1635,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Recall Score, one of the response column class has to be 
+	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1691,7 +1691,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Specificity Score, one of the response column class has to 
 	be the positive one. The parameter 'pos_label' represents this class.

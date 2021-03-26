@@ -73,10 +73,10 @@ features_ranges: dict,
                        categories.
         For int      : The subdictionary must include two keys. 'type' must
                        be set to 'int' and 'range' must include two integers
-                       which are representing the lower and the upper bound
+                       that represent the lower and the upper bound
         For float    : The subdictionary must include two keys. 'type' must
                        be set to 'float' and 'range' must include two floats
-                       which are representing the lower and the upper bound
+                       that represent the lower and the upper bound
         For date     : The subdictionary must include two keys. 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
@@ -84,7 +84,7 @@ features_ranges: dict,
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -144,10 +144,10 @@ features_ranges: dict,
                        categories.
         For int      : The subdictionary must include two keys. 'type' must
                        be set to 'int' and 'range' must include two integers
-                       which are representing the lower and the upper bound
+                       that represent the lower and the upper bound
         For float    : The subdictionary must include two keys. 'type' must
                        be set to 'float' and 'range' must include two floats
-                       which are representing the lower and the upper bound
+                       that represent the lower and the upper bound
         For date     : The subdictionary must include two keys. 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
@@ -158,7 +158,7 @@ features_ranges: dict,
         named 'step' corresponding to the step used to compute the different 
         categories.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -261,14 +261,14 @@ def load_airline_passengers(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests the airline passengers dataset in the Vertica DB (Dataset ideal for 
-TS and Regression). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the airline passengers dataset into the Vertica database. This dataset
+is ideal for time series and regression models. If a table with the same name
+and schema already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -293,14 +293,14 @@ vDataFrame
 def load_amazon(cursor=None, schema: str = "public", name: str = "amazon"):
     """
 ---------------------------------------------------------------------------
-Ingests the amazon dataset in the Vertica DB (Dataset ideal for TS and
-Regression). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the amazon dataset into the Vertica database. This dataset is ideal
+for time series and regression models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -325,14 +325,14 @@ vDataFrame
 def load_cities(cursor=None, schema: str = "public", name: str = "cities"):
     """
 ---------------------------------------------------------------------------
-Ingests the Cities dataset in the Vertica DB (Dataset ideal for Geospatial). 
-If a table with the same name and schema already exists, this function will 
-create a vDataFrame from the input relation.
+Ingests the Cities dataset into the Vertica database. This dataset is ideal
+for geospatial models. If a table with the same name and schema already exists,
+this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -357,14 +357,14 @@ vDataFrame
 def load_commodities(cursor=None, schema: str = "public", name: str = "commodities"):
     """
 ---------------------------------------------------------------------------
-Ingests the commodities dataset in the Vertica DB (Dataset ideal for TS and
-Regression). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the commodities dataset into the Vertica database. This dataset is
+ideal for time series and regression models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -391,14 +391,14 @@ def load_gapminder(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests the gapminder dataset in the Vertica DB (Dataset ideal for 
-TS and Regression). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the gapminder dataset into the Vertica database. This dataset is ideal
+for time series and regression models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -423,14 +423,14 @@ vDataFrame
 def load_iris(cursor=None, schema: str = "public", name: str = "iris"):
     """
 ---------------------------------------------------------------------------
-Ingests the iris dataset in the Vertica DB (Dataset ideal for Classification
-and Clustering). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the iris dataset into the Vertica database. This dataset is ideal for
+classification and clustering models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -455,14 +455,14 @@ vDataFrame
 def load_market(cursor=None, schema: str = "public", name: str = "market"):
     """
 ---------------------------------------------------------------------------
-Ingests the market dataset in the Vertica DB (Dataset ideal for easy 
-exploration). If a table with the same name and schema already exists, 
+Ingests the market dataset into the Vertica database. This dataset is ideal
+for data exploration. If a table with the same name and schema already exists, 
 this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -489,14 +489,14 @@ def load_pop_growth(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests the population growth dataset in the Vertica DB (Dataset ideal for 
-TS and Geospatial). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the population growth dataset into the Vertica database. This dataset
+is ideal for time series and geospatial models. If a table with the same name
+and schema already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional
@@ -521,14 +521,14 @@ vDataFrame
 def load_smart_meters(cursor=None, schema: str = "public", name: str = "smart_meters"):
     """
 ---------------------------------------------------------------------------
-Ingests the smart meters dataset in the Vertica DB (Dataset ideal for TS
-and Regression). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the smart meters dataset into the Vertica database. This dataset is ideal
+for time series and regression models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -553,14 +553,14 @@ vDataFrame
 def load_titanic(cursor=None, schema: str = "public", name: str = "titanic"):
     """
 ---------------------------------------------------------------------------
-Ingests the titanic dataset in the Vertica DB (Dataset ideal for 
-Classification). If a table with the same name and schema already exists, 
+Ingests the titanic dataset into the Vertica database. This dataset is ideal for
+classification models. If a table with the same name and schema already exists, 
 this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -585,14 +585,14 @@ vDataFrame
 def load_winequality(cursor=None, schema: str = "public", name: str = "winequality"):
     """
 ---------------------------------------------------------------------------
-Ingests the winequality dataset in the Vertica DB (Dataset ideal for Regression
-and Classification). If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the winequality dataset into the Vertica database. This dataset is ideal
+for regression and classification models. If a table with the same name and schema
+already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 name: str, optional
@@ -617,14 +617,14 @@ vDataFrame
 def load_world(cursor=None, schema: str = "public", name: str = "world"):
     """
 ---------------------------------------------------------------------------
-Ingests the World dataset in the Vertica DB (Dataset ideal for Geospatial). 
-If a table with the same name and schema already exists, this function will 
-create a vDataFrame from the input relation.
+Ingests the World dataset into the Vertica database. This dataset is ideal for
+ideal for geospatial models. If a table with the same name and schema already
+exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. The default schema is public.
 name: str, optional

@@ -67,15 +67,15 @@ class SARIMAX(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an SARIMAX object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data.
+Creates an SARIMAX object using the Vertica Linear Regression
+algorithm on the data.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 d: int, optional
@@ -205,9 +205,9 @@ papprox_ma: int, optional
     Parameters
     ----------
     L: list
-        List containing the data. It must be a 2D list containing multiple rows.
-        Each row must include as first element the ordered predictor and as 
-        nth elements the nth - 1 exogenous variable (nth > 2). 
+        List containing the data. It must be a two-dimensional list containing 
+        multiple rows. Each row must include as first element the ordered predictor
+        and as nth elements the nth - 1 exogenous variable (nth > 2). 
 
     Returns
     -------
@@ -326,7 +326,7 @@ papprox_ma: int, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     y: str
         Response column.
     ts: str
@@ -334,7 +334,7 @@ papprox_ma: int, optional
     X: list, optional
         exogenous columns used to fit the model.
     test_relation: str/vDataFrame, optional
-        Relation to use to test the model.
+        Relation used to test the model.
 
     Returns
     -------
@@ -1139,15 +1139,14 @@ class VAR(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an VAR object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data.
+Creates an VAR object using the Vertica Linear Regression algorithm on the data.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 tol: float, optional
@@ -1215,7 +1214,7 @@ solver: str, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Computes the model features importance.
+    Computes the model's features importance.
 
     Parameters
     ----------
@@ -1296,13 +1295,13 @@ solver: str, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list
         List of the response columns.
     ts: str
         vcolumn used to order the data.
     test_relation: str/vDataFrame, optional
-        Relation to use to test the model.
+        Relation used to test the model.
 
     Returns
     -------
@@ -1425,9 +1424,9 @@ solver: str, optional
     Parameters
     ----------
     L: list
-        List containing the data. It must be a 2D list containing multiple rows.
-        Each row must include as first element the ordered predictor and as 
-        nth elements the nth - 1 exogenous variable (nth > 2). 
+        List containing the data. It must be a two-dimensional list containing 
+        multiple rows. Each row must include as first element the ordered predictor 
+        and as nth elements the nth - 1 exogenous variable (nth > 2). 
 
     Returns
     -------
