@@ -1140,6 +1140,7 @@ def voronoi_plot(
     columns: list,
     input_relation: str,
     max_nb_points: int = 1000,
+    plot_crosses: bool = True,
     cursor=None,
     ax=None,
     **style_kwds,
@@ -1209,17 +1210,18 @@ def voronoi_plot(
         ax.scatter(
             x, y, color="black", s=10, alpha=1, zorder=3,
         )
-        ax.scatter(
-            [elem[0] for elem in clusters],
-            [elem[1] for elem in clusters],
-            color="white",
-            s=200,
-            linewidths=5,
-            alpha=1,
-            zorder=4,
-            marker="x",
-            edgecolors="black",
-        )
+        if plot_crosses:
+            ax.scatter(
+                [elem[0] for elem in clusters],
+                [elem[1] for elem in clusters],
+                color="white",
+                s=200,
+                linewidths=5,
+                alpha=1,
+                zorder=4,
+                marker="x",
+                edgecolors="black",
+            )
     if conn:
         conn.close()
     return ax

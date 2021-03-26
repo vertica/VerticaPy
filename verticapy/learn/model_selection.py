@@ -129,7 +129,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -158,8 +158,8 @@ k_tops: int, optional
     this stage to find the most efficient model.
 RFmodel_params: dict, optional
     Dictionary of the random forest model parameters used to compute the best splits 
-    when 'method' is set to 'smart'. If the response is numerical (except ints and bools), an
-    RF Regressor will be trained. Otherwise, an RF Classifier will be trained.
+    when 'method' is set to 'smart'. If the response is numerical (except ints and bools), 
+    an RF Regressor will be trained. Otherwise, an RF Classifier will be trained.
     Example: {"n_estimators": 20, "max_depth": 10} will train a random forest model with
     20 trees and a maximum depth of 10.
 print_info: bool, optional
@@ -317,11 +317,11 @@ cursor: DBcursor, optional
 	Vertica database cursor.
 n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
-	This can also be customized list with various k values to test.
+    This can also be customized list with various k values to test.
 init: str/list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Use the k-means++ method to initialize the centers.
-		random   : Randomly subsamples the data to find initial centers.
+        random   : Randomly subsamples the data to find initial centers.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
 	The maximum number of iterations for the algorithm.
@@ -456,7 +456,7 @@ metric: str/list, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
 	Number of folds.
 pos_label: int/float/str, optional
@@ -879,7 +879,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 estimator_type: str, optional
@@ -964,7 +964,7 @@ lmax: int, optional
     Maximum length of the parameter grid.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-If set to 1, the randomness is limited to some parameters while others
+    If set to 1, the randomness is limited to some parameters while others
     are picked based on a default grid.
     If set to 2, there is no randomness and a default grid is returned.
     
@@ -1338,7 +1338,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -1563,7 +1563,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -1995,7 +1995,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 pos_label: int/float/str, optional
-    To compute the PRC Curve, one of the response column classes must be the 
+    To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     The number of bins.
@@ -2139,7 +2139,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2348,7 +2348,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2361,7 +2361,7 @@ lmax: int, optional
     Maximum length of each parameter list.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-If set to 1, the randomness is limited to some parameters while others
+    If set to 1, the randomness is limited to some parameters while others
     are picked based on a default grid.
     If set to 2, there is no randomness and a default grid is returned.
 print_info: bool, optional
@@ -2422,7 +2422,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 pos_label: int/float/str, optional
-    To compute the PRC Curve, one of the response column classes must be the 
+    To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     The number of bins.
@@ -2812,7 +2812,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2836,7 +2836,7 @@ tablesample
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     from verticapy.plot import range_curve
-
+    
     gs_result = grid_search_cv(
         estimator,
         {param_name: param_range},
@@ -2848,6 +2848,7 @@ tablesample
         pos_label,
         cutoff,
         True,
+        False,
         False,
     )
     gs_result_final = [

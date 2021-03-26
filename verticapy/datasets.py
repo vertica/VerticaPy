@@ -73,10 +73,10 @@ features_ranges: dict,
                        categories.
         For int      : The subdictionary must include two keys. 'type' must
                        be set to 'int' and 'range' must include two integers
-                       that represent the lower and the upper bound
+                       that represent the lower and the upper bound.
         For float    : The subdictionary must include two keys. 'type' must
                        be set to 'float' and 'range' must include two floats
-                       that represent the lower and the upper bound
+                       that represent the lower and the upper bound.
         For date     : The subdictionary must include two keys. 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
@@ -85,6 +85,8 @@ features_ranges: dict,
                        date and the number of days after.
 cursor: DBcursor, optional
     Vertica database cursor.
+nrows: int, optional
+    Dataset maximum number of rows.
 
 Returns
 -------
@@ -144,10 +146,10 @@ features_ranges: dict,
                        categories.
         For int      : The subdictionary must include two keys. 'type' must
                        be set to 'int' and 'range' must include two integers
-                       that represent the lower and the upper bound
+                       that represent the lower and the upper bound.
         For float    : The subdictionary must include two keys. 'type' must
                        be set to 'float' and 'range' must include two floats
-                       that represent the lower and the upper bound
+                       that represent the lower and the upper bound.
         For date     : The subdictionary must include two keys. 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
@@ -155,8 +157,8 @@ features_ranges: dict,
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
         Numerical and date-like features must have an extra key in the dictionary 
-        named 'step' corresponding to the step used to compute the different 
-        categories.
+        named 'nbins' corresponding to the number of bins used to compute the 
+        different categories.
 cursor: DBcursor, optional
     Vertica database cursor.
 
@@ -263,7 +265,8 @@ def load_airline_passengers(
 ---------------------------------------------------------------------------
 Ingests the airline passengers dataset into the Vertica database. This dataset
 is ideal for time series and regression models. If a table with the same name
-and schema already exists, this function will create a vDataFrame from the input relation.
+and schema already exists, this function will create a vDataFrame from the 
+input relation.
 
 Parameters
 ----------
@@ -358,8 +361,9 @@ def load_commodities(cursor=None, schema: str = "public", name: str = "commoditi
     """
 ---------------------------------------------------------------------------
 Ingests the commodities dataset into the Vertica database. This dataset is
-ideal for time series and regression models. If a table with the same name and schema
-already exists, this function will create a vDataFrame from the input relation.
+ideal for time series and regression models. If a table with the same name 
+and schema already exists, this function will create a vDataFrame from the 
+input relation.
 
 Parameters
 ----------
@@ -456,7 +460,7 @@ def load_market(cursor=None, schema: str = "public", name: str = "market"):
     """
 ---------------------------------------------------------------------------
 Ingests the market dataset into the Vertica database. This dataset is ideal
-for data exploration. If a table with the same name and schema already exists, 
+for data exploration. If a table with the same name and schema already exists,
 this function will create a vDataFrame from the input relation.
 
 Parameters
@@ -491,7 +495,8 @@ def load_pop_growth(
 ---------------------------------------------------------------------------
 Ingests the population growth dataset into the Vertica database. This dataset
 is ideal for time series and geospatial models. If a table with the same name
-and schema already exists, this function will create a vDataFrame from the input relation.
+and schema already exists, this function will create a vDataFrame from the 
+input relation.
 
 Parameters
 ----------
@@ -553,9 +558,9 @@ vDataFrame
 def load_titanic(cursor=None, schema: str = "public", name: str = "titanic"):
     """
 ---------------------------------------------------------------------------
-Ingests the titanic dataset into the Vertica database. This dataset is ideal for
-classification models. If a table with the same name and schema already exists, 
-this function will create a vDataFrame from the input relation.
+Ingests the titanic dataset into the Vertica database. This dataset is ideal 
+for classification models. If a table with the same name and schema already 
+exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------

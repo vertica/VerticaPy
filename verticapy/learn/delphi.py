@@ -118,13 +118,12 @@ outliers_threshold: float, optional
 na_method: str, optional
     Method for handling missing values.
         auto: Mean for the numerical features and creates a new category for the 
-              categorical vcolumns. For time series datasets, 'constant' 
-              interpolation is used for categorical features and 'linear' for the 
-              others.
+              categorical vcolumns. For time series datasets, 'constant' interpolation 
+              is used for categorical features and 'linear' for the others.
         drop: Drops the missing values.
 cat_topk: int, optional
-    Keeps the top-k most frequent categories and merges the others 
-    into one unique category. If unspecified, all categories are kept.
+    Keeps the top-k most frequent categories and merges the others into one unique 
+    category. If unspecified, all categories are kept.
 normalize: bool, optional
     If True, the data will be normalized using the z-score. The 'num_method' parameter
     must be set to 'none'.
@@ -138,7 +137,7 @@ apply_pca: bool, optional
     [Only used for non-time series datasets]
     If True, a PCA is applied at the end of the preprocessing.
 rule: str / time, optional
-    [Only used for non-time series datasets]
+    [Only Used when dealing with TS datasets]
     Interval to use to slice the time. For example, '5 minutes' will create records
     separated by '5 minutes' time interval.
     If set to auto, the rule will be detected using aggregations.
@@ -146,7 +145,7 @@ identify_ts: bool, optional
     If True and parameter 'ts' is undefined when fitting the model, the function will
     try to automatically detect the parameter 'ts'.
 save: bool, optional
-    If True, saves the final relation inside the DB.
+    If True, saves the final relation inside the database.
 
 Attributes
 ----------
@@ -230,7 +229,7 @@ model_grid_ : tablesample
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Training relation.
+        Training Relation.
     X: list, optional
         List of the features to preprocess.
     ts: str, optional
@@ -368,7 +367,7 @@ n_cluster: int, optional
 init: str/list, optional
     The method for finding the initial cluster centers.
         kmeanspp : Uses the k-means++ method to initialize the centers.
-		random   : Randomly subsamples the data to find initial centers.
+        random   : Randomly subsamples the data to find initial centers.
     Alternatively, you can specify a list with the initial custer centers.
 max_iter: int, optional
     The maximum number of iterations for the algorithm.
@@ -434,7 +433,7 @@ model_: object
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Training relation.
+        Training Relation.
     X: list, optional
         List of the predictors.
 
@@ -524,7 +523,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -537,7 +536,7 @@ lmax: int, optional
     Maximum length of each parameter list.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-If set to 1, the randomness is limited to some parameters while others
+    If set to 1, the randomness is limited to some parameters while others
     are picked based on a default grid.
     If set to 2, no randomness is used and a default grid is returned.
 stepwise: bool, optional
@@ -585,7 +584,7 @@ model_grid_ : tablesample
                  cv: int = 3,
                  pos_label: (int, float, str) = None,
                  cutoff: float = -1,
-                 nbins: int = 1000,
+                 nbins: int = 100,
                  lmax: int = 5,
                  optimized_grid: int = 2,
                  stepwise: bool = True,
@@ -648,7 +647,7 @@ model_grid_ : tablesample
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Training relation.
+        Training Relation.
     X: list, optional
         List of the predictors.
     y: str, optional
@@ -692,7 +691,7 @@ model_grid_ : tablesample
                 else:
                     self.parameters["estimator"] = [LinearSVR(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), LinearRegression(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor), XGBoostRegressor(self.name, cursor=self.cursor), KNeighborsRegressor(self.name, cursor=self.cursor),]
             elif self.parameters["estimator_type"].lower() in ("multi", "auto",):
-                self.parameters["estimator_type"] = "binary"
+                self.parameters["estimator_type"] = "multi"
                 if self.parameters["estimator"] == "native":
                     self.parameters["estimator"] = [RandomForestClassifier(self.name, cursor=self.cursor), XGBoostClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
                 elif self.parameters["estimator"] == "fast":

@@ -67,8 +67,8 @@ class SARIMAX(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an SARIMAX object using the Vertica Linear Regression
-algorithm on the data.
+Creates an SARIMAX object using the Vertica Linear Regression algorithm on 
+the data.
 
 Parameters
 ----------
@@ -1139,7 +1139,8 @@ class VAR(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an VAR object using the Vertica Linear Regression algorithm on the data.
+Creates an VAR object using the Vertica Linear Regression algorithm on the 
+data.
 
 Parameters
 ----------
@@ -1426,7 +1427,7 @@ solver: str, optional
     L: list
         List containing the data. It must be a two-dimensional list containing 
         multiple rows. Each row must include as first element the ordered predictor 
-        and as nth elements the nth - 1 exogenous variable (nth > 2). 
+        and as nth elements the nth - 1 exogenous variable (nth > 2).
 
     Returns
     -------

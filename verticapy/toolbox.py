@@ -149,9 +149,9 @@ def category_from_type(ctype: str = ""):
             or (ctype[0:4] == "real")
         ):
             return "float"
-        elif ("binary" in ctype) or ("byte" in ctype) or (ctype == "raw"):
+        elif ("byte" in ctype) or (ctype == "raw"):
             return "binary"
-        elif ctype[0:3] == "geo":
+        elif ("binary" in ctype) or ctype[0:3] == "geo":
             return "spatial"
         elif "uuid" in ctype:
             return "uuid"

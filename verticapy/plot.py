@@ -163,7 +163,7 @@ def animated_bar(
         columns += [by]
     if date_f == None:
         def date_f(x):
-            return x
+            return str(x)
     if "color" in style_kwds:
         colors = style_kwds["color"]
         del style_kwds["color"]
@@ -215,7 +215,7 @@ def animated_bar(
         fig, ax = plt.subplots()
         if isnotebook():
             if pie:
-                fig.set_size_inches(11, 7)
+                fig.set_size_inches(11, min(limit_over, 600))
             else:
                 fig.set_size_inches(9, 6)
         ax.xaxis.grid()
@@ -247,9 +247,9 @@ def animated_bar(
                     tmp_txt += [ax.text(bar_values[i]["width"][k], k - 0.3, bar_values[i]["x"][k], ha="right", size=10, color="#333333",)]
                 all_text += [tmp_txt]
             if date_in_title:
-                ax.set_title(date_f(str(bar_values[i]["date"])))
+                ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(max_x + 0.27 * delta_x, int(limit_over / 2), date_f(str(bar_values[i]["date"])), **date_style_dict,)
+                my_text = ax.text(max_x + 0.27 * delta_x, int(limit_over / 2), date_f(bar_values[i]["date"]), **date_style_dict,)
             ax.xaxis.tick_top()
             ax.xaxis.set_label_position('top')
             ax.set_xlabel(columns[1])
@@ -263,9 +263,9 @@ def animated_bar(
             for elem in pie_chart[2]:
                 elem.set_fontweight('normal')
             if date_in_title:
-                ax.set_title(date_f(str(bar_values[i]["date"])))
+                ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(1.8, 1, date_f(str(bar_values[i]["date"])), **date_style_dict,)
+                my_text = ax.text(1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict,)
             all_categories = []
             custom_lines = []
             if len(columns) >= 3:
@@ -304,6 +304,8 @@ def animated_bubble_plot(
     limit: int = 1000000,
     lim_labels: int = 6,
     fixed_xy_lim: bool = False,
+    bbox: list = [],
+    img: str = "",
     date_in_title: bool = False,
     date_f = None,
     date_style_dict: dict = {},
@@ -317,7 +319,7 @@ def animated_bubble_plot(
         date_style_dict = {"fontsize": 100, "alpha": 0.6, "color": "gray", "ha": 'center', "va": 'center',}
     if date_f == None:
         def date_f(x):
-            return x
+            return str(x)
     if len(columns) == 2:
         columns += [1]
     if "color" in style_kwds:
@@ -356,7 +358,7 @@ def animated_bubble_plot(
         ax.grid()
         ax.set_axisbelow(True)
     else:
-        fig = plt
+        fig = ax.get_figure()
     count = vdf.shape()[0]
     if columns[2] != 1:
         max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
@@ -426,19 +428,31 @@ def animated_bubble_plot(
             text_plots += [ax.text(scatter_values[0]["x"][idx], scatter_values[0]["y"][idx], scatter_values[0]["label"][idx], ha="right", va="bottom")]
     ax.set_xlabel(columns[0])
     ax.set_ylabel(columns[1])
-    if (fixed_xy_lim):
+    if bbox:
+        ax.set_xlim(bbox[0], bbox[1])
+        ax.set_ylim(bbox[2], bbox[3])
+        if not(date_in_title):
+            my_text = ax.text((bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    elif (fixed_xy_lim):
         min_x, max_x = min(column1), max(column1)
         min_y, max_y = min(column2), max(column2)
         delta_x, delta_y = max_x - min_x, max_y - min_y
         ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
         ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
         if not(date_in_title):
-            my_text = ax.text((max_x + min_x) / 2, (max_y + min_y) / 2, date_f(str(scatter_values[0]["date"])), **date_style_dict,)
+            my_text = ax.text((max_x + min_x) / 2, (max_y + min_y) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    if img:
+        bim = plt.imread(img)
+        if not (bbox):
+            bbox = (min(column1), max(column1), min(column2), max(column2))
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
+        ax.imshow(bim, extent=bbox)
     elif not(date_in_title):
-        my_text = ax.text((max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2, (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2, date_f(str(scatter_values[0]["date"])), **date_style_dict,)
+        my_text = ax.text((max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2, (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
     if "cmap" in param:
         fig.colorbar(im, ax=ax).set_label(by)
-    else:
+    elif label_name:
         leg = ax.legend(
             custom_lines,
             all_categories,
@@ -454,7 +468,7 @@ def animated_bubble_plot(
             im.set_sizes(np.array(scatter_values[i]["s"]))
         if "cmap" in param:
             im.set_array(np.array(scatter_values[i]["c"]))
-        else:
+        elif label_name:
             im.set_color(np.array(scatter_values[i]["c"]))
         if "edgecolors" in updated_dict(param, style_kwds):
             im.set_edgecolor(updated_dict(param, style_kwds)["edgecolors"])
@@ -471,9 +485,9 @@ def animated_bubble_plot(
             if not(date_in_title):
                 my_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
         if not(date_in_title):
-            my_text.set_text(date_f(str(scatter_values[i]["date"])))
+            my_text.set_text(date_f(scatter_values[i]["date"]))
         else:
-            ax.set_title(date_f(str(scatter_values[i]["date"])))
+            ax.set_title(date_f(scatter_values[i]["date"]))
         return ax,
 
     import matplotlib.animation as animation
@@ -2597,7 +2611,7 @@ def outliers_contour_plot(
             all_agg["std"][1],
             threshold,
         )
-        bbox_to_anchor = [1.3, 0.5]
+        bbox_to_anchor = [1, 0.5]
         scatter2D(
             vdf.search(search1),
             columns,

@@ -184,16 +184,16 @@ to compute the cluster propagation (non-scalable phase).
                  This algorithm indexes elements of the table in order to be optimal 
                  (the CROSS JOIN will happen only with IDs which are integers). 
                  Since DBSCAN is uses the p-distance, it is highly sensitive to 
-                 unnormalized data. However, DBSCAN is robust to outliers 
-                 and can find non-linear clusters. It is a very powerful algorithm 
-                 for outliers detection and clustering. A table will be created 
+                 unnormalized data. However, DBSCAN is robust to outliers and can 
+                 find non-linear clusters. It is a very powerful algorithm for 
+                 outliers detection and clustering. A table will be created 
                  at the end of the learning phase.
 
 Parameters
 ----------
 name: str
 	Name of the the model. This is not a built-in model, so this name will be used
-	to build the final table.
+    to build the final table.
 cursor: DBcursor, optional
 	Vertica database cursor.
 eps: float, optional
@@ -236,7 +236,7 @@ p: int, optional
 		to create the final relation.
 	index: str, optional
 		Index used to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creating temporary tables.
+        have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------
@@ -429,7 +429,7 @@ K-means clustering is a method of vector quantization, originally from signal
 processing, that aims to partition n observations into k clusters in which 
 each observation belongs to the cluster with the nearest mean (cluster centers 
 or cluster centroid), serving as a prototype of the cluster. This results in 
-a partitioning of the data space into Voronoi cells. 
+a partitioning of the data space into Voronoi cells.
 
 Parameters
 ----------
@@ -477,7 +477,7 @@ tol: float, optional
 
     # ---#
     def plot_voronoi(
-        self, max_nb_points: int = 50, ax=None, **style_kwds,
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -487,6 +487,8 @@ tol: float, optional
     ----------
     max_nb_points: int, optional
         Maximum number of points to display.
+    plot_crosses: bool, optional
+        If set to True, the centers are represented by white crosses.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -510,6 +512,7 @@ tol: float, optional
                 columns=self.X,
                 input_relation=self.input_relation,
                 cursor=self.cursor,
+                plot_crosses=plot_crosses,
                 ax=ax,
                 max_nb_points=max_nb_points,
                 **style_kwds,

@@ -55,7 +55,8 @@ import warnings
 import verticapy, vertica_python
 from verticapy.toolbox import *
 from verticapy.utilities import *
-from verticapy.stats import *
+import verticapy.stats as st
+from verticapy.datasets import gen_dataset_regular
 from verticapy import vDataFrame
 
 # ---#
@@ -128,6 +129,59 @@ tablesample
         vdf.__genSQL__(),
     )
     return to_tablesample(query, vdf._VERTICAPY_VARIABLES_["cursor"])
+
+# ---#
+def coordinate_converter(vdf: vDataFrame,
+                         x: str, 
+                         y: str,
+                         x0: float = 0.0, 
+                         earth_radius: float = 6371,
+                         reverse: bool = False,):
+    """
+---------------------------------------------------------------------------
+Converts latitude and longitude to Euclidean coordinates x, y or the opposite.
+
+Parameters
+----------
+vdf: vDataFrame
+    input vDataFrame.
+x: str
+    vcolumn used as abscissa (longitude).
+y: str
+    vcolumn used as ordinate (latitude).
+x0: float, optional
+    Initial abscissa.
+earth_radius: float, optional
+    Earth radius.
+reverse: bool, optional
+    If set to True, the Euclidean coordinates are converted to latitude and 
+    longitude.
+
+
+Returns
+-------
+vDataFrame
+    result of the transformation.
+    """
+    check_types(
+        [
+            ("vdf", vdf, [vDataFrame],),
+            ("x", x, [str],),
+            ("y", y, [str],),
+            ("x0", x0, [int, float],),
+            ("earth_radius", earth_radius, [int, float],),
+            ("reverse", reverse, [bool],),
+        ]
+    )
+    columns_check([x, y], vdf)
+    result = vdf.copy()
+    if reverse:
+        result[x] = result[x] / earth_radius * 180 / st.pi + x0
+        result[y] = (st.atan(st.exp(result[y] / earth_radius)) - st.pi / 4) / st.pi * 360
+    else:
+        result[x] = earth_radius * ((result[x] - x0) * st.pi / 180)
+        result[y] = earth_radius * st.ln(st.tan(result[y] * st.pi / 360 + st.pi / 4))
+    return result
 
 
 # ---#
@@ -264,10 +318,52 @@ bool
     cursor, conn = check_cursor(cursor)[0:2]
     query = f"SELECT STV_Rename_Index (USING PARAMETERS source = '{source}', dest = '{dest}', overwrite = {overwrite}) OVER ();"
     try:
-        cursor.execute(query)
+        executeSQL(cursor, query, "Renaming Index.")
     except Exception as e:
         warnings.warn(str(e), Warning)
         return False
     if conn:
         conn.close()
     return True
+
+# ---#
+def split_polygon_n(p: str, cursor=None, nbins: int = 100):
+    """
+---------------------------------------------------------------------------
+Splits a Polygon into nbins ** 2 smaller ones having approximately the same
+area.
+
+Parameters
+----------
+p: str
+    String representation of the Polygon.
+cursor: DBcursor, optional
+    Vertica database cursor.
+nbins: int, optional
+    Number of bins used to cut the longitude and the latitude.
+
+Returns
+-------
+vDataFrame
+    output vDataFrame including the new polygons.
+    """
+    check_types(
+        [
+            ("p", p, [str],),
+            ("nbins", nbins, [int],),
+        ]
+    )
+    cursor, conn = check_cursor(cursor)[0:2]
+    sql = "SELECT MIN(ST_X(point)), MAX(ST_X(point)), MIN(ST_Y(point)), MAX(ST_Y(point)) FROM (SELECT STV_PolygonPoint(geom) OVER() FROM (SELECT ST_GeomFromText('{}') AS geom) x) y".format(p)
+    executeSQL(cursor, sql, "Computing min & max: x & y.")
+    min_x, max_x, min_y, max_y = cursor.fetchone()
+    delta_x, delta_y =  (max_x - min_x) / nbins, (max_y - min_y) / nbins
+    vdf = gen_dataset_regular({"x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
+                               "y": {"type": float, "range": [min_y, max_y], "nbins": nbins}},
+                               cursor = cursor)
+    vdf["gid"] = "ROW_NUMBER() OVER (ORDER BY x, y)"
+    vdf["geom"] = "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' || x + {} || ' ' || y || ', ' || x + {} || ' ' || y + {} || ', ' || x || ' ' || y + {} || ', ' || x || ' ' || y || '))')".format(delta_x, delta_x, delta_y, delta_y)
+    vdf["gid"].apply("ROW_NUMBER() OVER (ORDER BY {})")
+    vdf.filter("ST_Intersects(geom, ST_GeomFromText('{}'))".format(p), print_info=False,)
+    return vdf[["gid", "geom"]]
+

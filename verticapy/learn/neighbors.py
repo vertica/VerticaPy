@@ -108,7 +108,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column classes must be the 
+        To draw the ROC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -147,7 +147,7 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
+        considered as negative for multi classification.
     cutoff: float, optional
         Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
@@ -198,7 +198,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw a lift chart, one of the response column classes must be the 
+        To draw a lift chart, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -236,7 +236,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the PRC curve, one of the response column classes must be the 
+        To draw the PRC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -281,9 +281,9 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -293,8 +293,8 @@ class NeighborsClassifier(vModel):
         The cutoff used for binary classification and represents the probability to
         accept category 1.
     all_classes: bool, optional
-        If True, the probabilities of all classes will be generated 
-        (one column per category).
+        If True, the probabilities of all classes will be generated (one column per 
+        category).
 
     Returns
     -------
@@ -386,7 +386,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column classes must be the 
+        To draw the ROC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -430,7 +430,7 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
+        considered as negative for multi classification.
     cutoff: float, optional
         Cutoff for which the tested category will be accepted as a prediction. 
     method: str, optional
@@ -523,15 +523,15 @@ class NearestCentroid(NeighborsClassifier):
 Creates a NearestCentroid object using the k-Nearest Centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
 
-\u26A0 Warning : As NearestCentroid is using the p-distance, it is highly 
-                 sensitive to unnormalized data.  
+\u26A0 Warning : As NearestCentroid is using the p-distances, it is highly 
+                 sensitive to unnormalized data.
 
 Parameters
 ----------
 cursor: DBcursor, optional
 	Vertica database cursor. 
 p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used 
+	The p corresponding to the one of the p-distances (distance metric used
 	during the model computation).
 	"""
 
@@ -726,7 +726,7 @@ This object uses pure SQL to compute the distances and final score.
                  is therefore computationally expensive at O(n * n), where
                  n is the total number of elements. Since KNeighborsClassifier 
                  is uses the p-distance, it is highly sensitive to unnormalized 
-                 data. 
+                 data.
 
 Parameters
 ----------
@@ -735,7 +735,7 @@ cursor: DBcursor, optional
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used during 
+	The p corresponding to the one of the p-distances (distance metric used during 
 	the model computation).
 	"""
 
@@ -938,7 +938,7 @@ kernel: str, optional
         sigmoid   : Sigmoid Kernel.
         silverman : Silverman Kernel.
 p: int, optional
-    The p corresponding to the one of the p-distance (distance metric used during 
+    The p corresponding to the one of the p-distances (distance metric used during 
     the model computation).
 max_leaf_nodes: int, optional
     The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
@@ -966,6 +966,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
+        **kwargs,
     ):
         check_types(
             [
@@ -994,6 +995,10 @@ xlim: list, optional
         )
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
+        if "store" not in kwargs or kwargs["store"]:
+            self.verticapy_store = True
+        else:
+            self.verticapy_store = False
 
     # ---#
     def fit(
@@ -1144,60 +1149,65 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
-        query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
-            self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
-        )
-        self.cursor.execute(query)
-        r, idx = 0, 0
-        while r < len(y):
-            values = []
-            m = min(r + 100, len(y))
-            for i in range(r, m):
-                values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-            query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
-                self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+        if self.verticapy_store:
+            query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
+                self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
-            executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
-            self.cursor.execute("COMMIT;")
-            r += 100
-            idx += 1
-        self.X, self.input_relation = X, input_relation
-        self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
-        self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
-        self.y = "KDE"
+            self.cursor.execute(query)
+            r, idx = 0, 0
+            while r < len(y):
+                values = []
+                m = min(r + 100, len(y))
+                for i in range(r, m):
+                    values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
+                query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
+                    self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+                )
+                executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
+                self.cursor.execute("COMMIT;")
+                r += 100
+                idx += 1
+            self.X, self.input_relation = X, input_relation
+            self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
+            self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.y = "KDE"
 
-        from verticapy.learn.tree import DecisionTreeRegressor
+            from verticapy.learn.tree import DecisionTreeRegressor
 
-        model = DecisionTreeRegressor(
-            name=self.tree_name,
-            cursor=self.cursor,
-            max_leaf_nodes=self.parameters["max_leaf_nodes"],
-            max_depth=self.parameters["max_depth"],
-            min_samples_leaf=self.parameters["min_samples_leaf"],
-            nbins=1000,
-        )
-        model.fit(self.map, self.X, "KDE")
-        model_save = {
-            "type": "KernelDensity",
-            "input_relation": self.input_relation,
-            "X": self.X,
-            "map": self.map,
-            "tree_name": self.tree_name,
-            "bandwidth": self.parameters["bandwidth"],
-            "kernel": self.parameters["kernel"],
-            "p": self.parameters["p"],
-            "max_leaf_nodes": self.parameters["max_leaf_nodes"],
-            "max_depth": self.parameters["max_depth"],
-            "min_samples_leaf": self.parameters["min_samples_leaf"],
-            "nbins": self.parameters["nbins"],
-            "xlim": self.parameters["xlim"],
-        }
-        insert_verticapy_schema(
-            model_name=self.name,
-            model_type="KernelDensity",
-            model_save=model_save,
-            cursor=self.cursor,
-        )
+            model = DecisionTreeRegressor(
+                name=self.tree_name,
+                cursor=self.cursor,
+                max_leaf_nodes=self.parameters["max_leaf_nodes"],
+                max_depth=self.parameters["max_depth"],
+                min_samples_leaf=self.parameters["min_samples_leaf"],
+                nbins=1000,
+            )
+            model.fit(self.map, self.X, "KDE")
+            model_save = {
+                "type": "KernelDensity",
+                "input_relation": self.input_relation,
+                "X": self.X,
+                "map": self.map,
+                "tree_name": self.tree_name,
+                "bandwidth": self.parameters["bandwidth"],
+                "kernel": self.parameters["kernel"],
+                "p": self.parameters["p"],
+                "max_leaf_nodes": self.parameters["max_leaf_nodes"],
+                "max_depth": self.parameters["max_depth"],
+                "min_samples_leaf": self.parameters["min_samples_leaf"],
+                "nbins": self.parameters["nbins"],
+                "xlim": self.parameters["xlim"],
+            }
+            insert_verticapy_schema(
+                model_name=self.name,
+                model_type="KernelDensity",
+                model_save=model_save,
+                cursor=self.cursor,
+            )
+        else:
+            self.X, self.input_relation = X, input_relation
+            self.verticapy_x = x
+            self.verticapy_y = y
         return self
 
     # ---#
@@ -1221,10 +1231,13 @@ xlim: list, optional
         Matplotlib axes object
         """
         if len(self.X) == 1:
-            query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
-            self.cursor.execute(query)
-            result = self.cursor.fetchall()
-            x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+            if self.verticapy_store:
+                query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
+                self.cursor.execute(query)
+                result = self.cursor.fetchall()
+                x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+            else:
+                x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
                 if isnotebook():
@@ -1247,17 +1260,20 @@ xlim: list, optional
             ax.set_ylabel("density")
             return ax
         elif len(self.X) == 2:
-            query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
-                self.X[0], self.X[1], self.map,
-            )
-            self.cursor.execute(query)
-            result = self.cursor.fetchall()
             n = self.parameters["nbins"]
-            x, y, z = (
-                [elem[0] for elem in result],
-                [elem[1] for elem in result],
-                [elem[2] for elem in result],
-            )
+            if self.verticapy_store:
+                query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
+                    self.X[0], self.X[1], self.map,
+                )
+                self.cursor.execute(query)
+                result = self.cursor.fetchall()
+                x, y, z = (
+                    [elem[0] for elem in result],
+                    [elem[1] for elem in result],
+                    [elem[2] for elem in result],
+                )
+            else:
+                x, y, z = [elem[0] for elem in self.verticapy_x], [elem[1] for elem in self.verticapy_x], self.verticapy_y
             result, idx = [], 0
             while idx < (n + 1) * (n + 1):
                 result += [[z[idx + i] for i in range(n + 1)]]
@@ -1305,7 +1321,7 @@ cursor: DBcursor, optional
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used during 
+	The p corresponding to the one of the p-distances (distance metric used during 
 	the model computation).
 	"""
 
@@ -1464,9 +1480,9 @@ p: int, optional
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -1534,7 +1550,7 @@ cursor: DBcursor, optional
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p of the p-distance (distance metric used during the model computation).
+	The p of the p-distances (distance metric used during the model computation).
 	"""
 
     def __init__(self, name: str, cursor=None, n_neighbors: int = 20, p: int = 2):
@@ -1567,7 +1583,7 @@ p: int, optional
 		to create the final relation.
 	index: str, optional
 		Index used to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creating temporary tables.
+        have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------

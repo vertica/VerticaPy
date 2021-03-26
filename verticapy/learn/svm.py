@@ -143,7 +143,7 @@ name: str
 cursor: DBcursor, optional
 	Vertica database cursor.
 tol: float, optional
-	to use to control accuracy.
+	To use to control accuracy.
 C: float, optional
 	The weight for misclassification cost. The algorithm minimizes the 
 	regularization cost and the misclassification cost.
@@ -180,7 +180,7 @@ y: str
 test_relation: str
 	Relation used to test the model. All the model methods are abstractions
 	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the training relation will be 
+	methods to evaluate the model. If empty, the training relation will be
 	used as test. You can change it anytime by changing the test_relation
 	attribute of the object.
 	"""
