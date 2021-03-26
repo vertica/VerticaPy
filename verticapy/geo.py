@@ -56,7 +56,7 @@ import verticapy, vertica_python
 from verticapy.toolbox import *
 from verticapy.utilities import *
 import verticapy.stats as st
-from verticapy.datasets import gen_dataset_regular
+from verticapy.datasets import gen_meshgrid
 from verticapy import vDataFrame
 
 # ---#
@@ -358,7 +358,7 @@ vDataFrame
     executeSQL(cursor, sql, "Computing min & max: x & y.")
     min_x, max_x, min_y, max_y = cursor.fetchone()
     delta_x, delta_y =  (max_x - min_x) / nbins, (max_y - min_y) / nbins
-    vdf = gen_dataset_regular({"x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
+    vdf = gen_meshgrid({"x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
                                "y": {"type": float, "range": [min_y, max_y], "nbins": nbins}},
                                cursor = cursor)
     vdf["gid"] = "ROW_NUMBER() OVER (ORDER BY x, y)"

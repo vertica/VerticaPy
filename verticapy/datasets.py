@@ -132,10 +132,10 @@ vDataFrame
 
 
 # ---#
-def gen_dataset_regular(features_ranges: dict, cursor=None,):
+def gen_meshgrid(features_ranges: dict, cursor=None,):
     """
 ---------------------------------------------------------------------------
-Generate a Dataset using the input parameters.
+Generates a Dataset using regular steps.
 
 Parameters
 ----------

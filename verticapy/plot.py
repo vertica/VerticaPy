@@ -1504,9 +1504,9 @@ def contour_plot(
         X, Y = np.meshgrid(xlist, ylist)
         Z = func(X, Y)
     else:
-        from verticapy.datasets import gen_dataset_regular
+        from verticapy.datasets import gen_meshgrid
 
-        vdf_tmp = gen_dataset_regular({str_column(columns[1])[1:-1]: {"type": float, "range": [min_y, max_y], "nbins": nbins},
+        vdf_tmp = gen_meshgrid({str_column(columns[1])[1:-1]: {"type": float, "range": [min_y, max_y], "nbins": nbins},
                                        str_column(columns[0])[1:-1]: {"type": float, "range": [min_x, max_x], "nbins": nbins},},
                                        cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
         y = "verticapy_predict"

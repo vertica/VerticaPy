@@ -238,11 +238,11 @@ tablesample
         from verticapy.learn.ensemble import RandomForestRegressor
         hyper_param_estimator = RandomForestRegressor(name=estimator.name, cursor=estimator.cursor, **RFmodel_params,)
         hyper_param_estimator.fit(relation, all_params, "score")
-        from verticapy.datasets import gen_dataset_regular, gen_dataset
+        from verticapy.datasets import gen_meshgrid, gen_dataset
         if random_grid:
             vdf = gen_dataset(model_grid, estimator.cursor, nrows=nrows,)
         else:
-            vdf = gen_dataset_regular(model_grid, estimator.cursor,)
+            vdf = gen_meshgrid(model_grid, estimator.cursor,)
         estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
