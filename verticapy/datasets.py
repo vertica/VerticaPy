@@ -62,36 +62,36 @@ from verticapy.errors import *
 def gen_dataset(features_ranges: dict, cursor=None, nrows: int = 1000,):
     """
 ---------------------------------------------------------------------------
-Generates a Dataset using the input parameters.
+Generates a dataset using the input parameters.
 
 Parameters
 ----------
 features_ranges: dict,
     Dictionary including the features types and ranges.
-        For str      : The subdictionary must include two keys. 'type' must
+        For str      : The subdictionary must include two keys: 'type' must
                        be set to 'str' and 'value' must include the feature
                        categories.
-        For int      : The subdictionary must include two keys. 'type' must
+        For int      : The subdictionary must include two keys: 'type' must
                        be set to 'int' and 'range' must include two integers
                        that represent the lower and the upper bound.
-        For float    : The subdictionary must include two keys. 'type' must
+        For float    : The subdictionary must include two keys: 'type' must
                        be set to 'float' and 'range' must include two floats
                        that represent the lower and the upper bound.
-        For date     : The subdictionary must include two keys. 'type' must
+        For date     : The subdictionary must include two keys: 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
-        For datetime : The subdictionary must include two keys. 'type' must
+        For datetime : The subdictionary must include two keys: 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
 cursor: DBcursor, optional
     Vertica database cursor.
 nrows: int, optional
-    Dataset maximum number of rows.
+    The maximum number of rows in the dataset.
 
 Returns
 -------
 vDataFrame
-    generated dataset.
+    Generated dataset.
     """    
     check_types([("features_ranges", features_ranges, [dict],), 
                  ("nrows", nrows, [int],),])
@@ -135,25 +135,25 @@ vDataFrame
 def gen_meshgrid(features_ranges: dict, cursor=None,):
     """
 ---------------------------------------------------------------------------
-Generates a Dataset using regular steps.
+Generates a dataset using regular steps.
 
 Parameters
 ----------
 features_ranges: dict,
     Dictionary including the features types and ranges.
-        For str      : The subdictionary must include two keys. 'type' must
+        For str      : The subdictionary must include two keys: 'type' must
                        be set to 'str' and 'value' must include the feature
                        categories.
-        For int      : The subdictionary must include two keys. 'type' must
+        For int      : The subdictionary must include two keys: 'type' must
                        be set to 'int' and 'range' must include two integers
                        that represent the lower and the upper bound.
-        For float    : The subdictionary must include two keys. 'type' must
+        For float    : The subdictionary must include two keys: 'type' must
                        be set to 'float' and 'range' must include two floats
                        that represent the lower and the upper bound.
-        For date     : The subdictionary must include two keys. 'type' must
+        For date     : The subdictionary must include two keys: 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
-        For datetime : The subdictionary must include two keys. 'type' must
+        For datetime : The subdictionary must include two keys: 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
         Numerical and date-like features must have an extra key in the dictionary 
