@@ -90,6 +90,18 @@ class TestLinearSVC:
         assert conf_mat2[1][0] == 605
         assert conf_mat2[1][1] == 391
 
+    def test_contour(self, base, titanic_vd):
+        model_test = LinearSVC("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_SVM_CLASSIFIER(\"age\", \"fare\" USING PARAMETERS model_name = 'lsvc_model_test', type = 'probability', match_by_pos = 'true')"
         result_sql = model.deploySQL()

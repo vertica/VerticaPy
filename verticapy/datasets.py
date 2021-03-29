@@ -62,7 +62,7 @@ from verticapy.errors import *
 def gen_dataset(features_ranges: dict, cursor=None, nrows: int = 1000,):
     """
 ---------------------------------------------------------------------------
-Generate a Dataset using the input parameters.
+Generates a Dataset using the input parameters.
 
 Parameters
 ----------

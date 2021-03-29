@@ -75,6 +75,15 @@ def model(base, tr_data_vd):
     yield model_class
     model_class.drop()
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
+
 
 class TestDummyTreeRegressor:
     def test_repr(self, model):
@@ -82,6 +91,18 @@ class TestDummyTreeRegressor:
         model_repr = DummyTreeRegressor("RF_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestRegressor>"
+
+    def test_contour(self, base, titanic_vd):
+        model_test = DummyTreeRegressor("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
 
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'tr_model_test', match_by_pos = 'true')"

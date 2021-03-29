@@ -273,6 +273,7 @@ class NeighborsClassifier(vModel):
         name: str = "",
         cutoff: float = -1,
         all_classes: bool = False,
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
@@ -317,6 +318,10 @@ class NeighborsClassifier(vModel):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -334,7 +339,7 @@ class NeighborsClassifier(vModel):
                 ", " + ", ".join(key_columns) if key_columns else "",
                 ", ".join(predict),
                 self.deploySQL(
-                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                 ),
                 ", ".join(X + key_columns),
             )
@@ -348,7 +353,7 @@ class NeighborsClassifier(vModel):
                     self.classes_[0],
                     name,
                     self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                     ),
                     self.classes_[1],
                 )
@@ -358,7 +363,7 @@ class NeighborsClassifier(vModel):
                     ", " + ", ".join(key_columns) if key_columns else "",
                     name,
                     self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                     ),
                     self.classes_[1],
                 )
@@ -370,7 +375,7 @@ class NeighborsClassifier(vModel):
                     self.deploySQL(
                         X=X,
                         test_relation=vdf.__genSQL__(),
-                        key_columns=key_columns,
+                        key_columns=key_columns_arg,
                         predict=True,
                     ),
                 )
@@ -1472,7 +1477,7 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = ""):
+    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = "", **kwargs):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1507,6 +1512,10 @@ p: int, optional
             vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1518,7 +1527,7 @@ p: int, optional
             "predict_neighbors",
             name,
             self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
             ),
         )
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)

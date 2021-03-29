@@ -2613,8 +2613,7 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Bubble Plot using animations.
-    In case of using a Notebook, you must run %matplotlib notebook in the cell.
+    Draws the animated chart.
 
     Parameters
     ----------
@@ -3596,13 +3595,13 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the bar chart of the input vColumns based on an aggregation.
+    Draws the contour plot of the input function using the 2 input vColumns.
 
     Parameters
     ----------
     columns: list
-        List of the vColumns names. The list must have one or two elements.
-    func: function, optional
+        List of the vColumns names. The list must have two elements.
+    func: function / str, optional
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional

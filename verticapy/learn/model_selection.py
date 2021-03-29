@@ -157,11 +157,8 @@ k_tops: int, optional
     possible combinations. 'k_tops' represents the number of models to train at
     this stage to find the most efficient model.
 RFmodel_params: dict, optional
-    Dictionary of the random forest model parameters used to compute the best splits 
-    when 'method' is set to 'smart'. If the response is numerical (except ints and bools), 
-    an RF Regressor will be trained. Otherwise, an RF Classifier will be trained.
-    Example: {"n_estimators": 20, "max_depth": 10} will train a random forest model with
-    20 trees and a maximum depth of 10.
+    Dictionary of the random forest model parameters used to estimate a probable 
+    optimal set of parameters.
 print_info: bool, optional
     If True, prints the model information at each step.
 
@@ -843,7 +840,7 @@ def enet_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of the input enet model.
+Computes the K-Fold grid search using multiple enet model.
 
 Parameters
 ----------
@@ -2588,9 +2585,6 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method and a database cursor.
-param_grid: dict/list
-    Dictionary of the parameters to test. It can also be a list of the
-    different combinations.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2599,8 +2593,8 @@ y: str
     Response Column.
 criterion: str, optional
     Criterion used to evaluate the model.
-        aic : Akaike’s Information Criterion
-        bic : Bayesian Information Criterion
+        aic : Akaike’s Information Criterion.
+        bic : Bayesian Information Criterion.
 direction: str, optional
     How to start the stepwise search. Can be done 'backward' or 'forward'.
 max_steps: int, optional
@@ -2619,8 +2613,7 @@ x_order: str, optional
 print_info: bool, optional
     If set to True, prints the model information at each step.
 show: bool, optional
-    If set to True, a Bubble plot representing the Stepwise graphic will
-    be drawn.
+    If set to True, the Stepwise graphic will be drawn.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds

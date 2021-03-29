@@ -51,6 +51,18 @@ class TestKNeighborsRegressor:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsRegressor>"
 
+    def test_contour(self, base, titanic_vd):
+        model_test = KNeighborsRegressor("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = '(SELECT "age", "fare", "survived", AVG(predict_neighbors) AS predict_neighbors FROM (SELECT x."age", x."fare", x."survived", ROW_NUMBER() OVER(PARTITION BY x."age", x."fare", row_id ORDER BY POWER(POWER(ABS(x."age" - y."age"), 2) + POWER(ABS(x."fare" - y."fare"), 2), 1 / 2)) AS ordered_distance, y."survived" AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM public.titanic WHERE "age" IS NOT NULL AND "fare" IS NOT NULL) x CROSS JOIN (SELECT * FROM public.titanic WHERE "age" IS NOT NULL AND "fare" IS NOT NULL) y) z WHERE ordered_distance <= 5 GROUP BY "age", "fare", "survived", row_id) knr_table'
         result_sql = model.deploySQL()

@@ -30,6 +30,15 @@ def winequality_vd(base):
         drop(name="public.winequality", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
+
+@pytest.fixture(scope="module")
 def xgbr_data_vd(base):
     base.cursor.execute("DROP TABLE IF EXISTS public.xgbr_data")
     base.cursor.execute(
@@ -101,6 +110,18 @@ def model(base, xgbr_data_vd):
 
 @pytest.mark.skipif(get_version()[0] < 10 or (get_version()[0] == 10 and get_version()[1] == 0), reason="requires vertica 10.1 or higher")
 class TestXGBR:
+    def test_contour(self, base, titanic_vd):
+        model_test = XGBoostRegressor("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_XGB_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'xgbr_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()

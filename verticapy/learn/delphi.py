@@ -457,7 +457,7 @@ model_: object
             self.parameters["n_cluster"] = best_k(input_relation=input_relation,
                                                   X=X,
                                                   cursor=self.cursor,
-                                                  n_cluster=(1, 300),
+                                                  n_cluster=(1, 100),
                                                   init=self.parameters["init"],
                                                   max_iter=self.parameters["max_iter"],
                                                   tol=self.parameters["tol"],
@@ -492,7 +492,7 @@ estimator: list / 'native' / 'all' / 'fast' / object
     Alternatively, you can specify 'native' for all native Vertica models,
     'all' for all VerticaPy models and 'fast' for quick modeling.
 estimator_type: str, optional
-    Estimator Type
+    Estimator Type.
         auto      : Automatically detects the estimator type.
         regressor : The estimator will be used to perform a regression.
         binary    : The estimator will be used to perform a binary classification.
@@ -552,7 +552,7 @@ stepwise_max_steps: int, optional
     The maximum number of steps to be considered when doing the final estimator 
     stepwise.
 x_order: str, optional
-    How to preprocess X before using the stepwise algorithm.
+    Method to preprocess X before using the stepwise algorithm.
         pearson  : X is ordered based on the Pearson's correlation coefficient.
         spearman : X is ordered based on Spearman's rank correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.
@@ -570,7 +570,7 @@ Attributes
 preprocess_: object
     Model used to preprocess the data.
 best_model_: object
-    Most relevant model found during the search.
+    Most efficient models found during the search.
 model_grid_ : tablesample
     Grid containing the different models information.
     """
@@ -663,7 +663,7 @@ model_grid_ : tablesample
             else:
                 exclude_columns = [y]
             if not(isinstance(input_relation, vDataFrame)):
-                X = vdf_from_relation(input_relation, cursor=cursor).get_columns(exclude_columns = exclude_columns)
+                X = vdf_from_relation(input_relation, cursor=self.cursor).get_columns(exclude_columns = exclude_columns)
             else:
                 X = input_relation.get_columns(exclude_columns = exclude_columns)
         if isinstance(self.parameters["estimator"], str):
@@ -671,7 +671,7 @@ model_grid_ : tablesample
             check_types([("estimator", self.parameters["estimator"], ["native", "all", "fast",],),])
             modeltype = None
             if not(isinstance(input_relation, vDataFrame)):
-                vdf = vdf_from_relation(input_relation, cursor=cursor)
+                vdf = vdf_from_relation(input_relation, cursor=self.cursor)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (self.parameters["estimator_type"].lower() == "auto" and sorted(vdf[y].distinct()) == [0, 1]):
@@ -816,8 +816,8 @@ model_grid_ : tablesample
     ----------
     mltype: str, optional
         The Plot Type.
-            champion: Champion Challenger Plot
-            step    : Stepwise Plot
+            champion: champion challenger plot.
+            step    : stepwise plot.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds

@@ -48,6 +48,18 @@ class TestLasso:
         model_repr.drop()
         assert model_repr.__repr__() == "<LinearRegression>"
 
+    def test_contour(self, base, winequality_vd):
+        model_test = Lasso("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            winequality_vd,
+            ["residual_sugar", "alcohol",],
+            "quality",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 10
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_LINEAR_REG("total_sulfur_dioxide", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'lasso_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
