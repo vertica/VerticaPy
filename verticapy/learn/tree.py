@@ -64,7 +64,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -130,7 +130,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -196,7 +196,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor. 
+	Vertica DB cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):
@@ -231,7 +231,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor. 
+	Vertica DB cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):

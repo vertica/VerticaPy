@@ -69,12 +69,13 @@ except:
 def create_verticapy_schema(cursor=None):
     """
 ---------------------------------------------------------------------------
-Creates a schema named 'verticapy' used to store VerticaPy extended models.
+Creates a schema named verticapy which will be used to store VerticaPy 
+extended models.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
     """
     cursor, conn = check_cursor(cursor)[0:2]
     sql = "CREATE SCHEMA verticapy;"
@@ -93,22 +94,22 @@ def drop(
 ):
     """
 ---------------------------------------------------------------------------
-Drops the input relation. This can be a model, view,table, text index,
-schema, or geo index.
+Drops the input relation (It can be a Model, a View, a Table, a Text Index, 
+a Schema or a Geo Index).
 
 Parameters
 ----------
 name: str, optional
     Relation name. If empty, it will drop all VerticaPy temporary elements.
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
 raise_error: bool, optional
     If the geo index couldn't be dropped, raises the entire error instead of
     displaying a warning.
 method: str, optional
     Method used to drop.
         auto   : identifies the table/view/index/model to drop. It will never
-                 drop an entire schema unless the method is set to 'schema'.
+                 drop an entire schema except if the method is set to 'schema'.
         model  : drops the input model.
         table  : drops the input table.
         view   : drops the input view.        
@@ -294,14 +295,14 @@ def readSQL(
 ):
     """
 	---------------------------------------------------------------------------
-	Returns the result of a SQL query as a tablesample object.
+	Returns the Result of a SQL query as a tablesample object.
 
 	Parameters
 	----------
 	query: str, optional
 		SQL Query. 
 	cursor: DBcursor, optional
-		Vertica database cursor.
+		Vertica DB cursor.
 	dsn: str, optional
 		Vertica DB DSN.
 	time_on: bool, optional
@@ -363,15 +364,15 @@ def get_data_types(
 ):
     """
 ---------------------------------------------------------------------------
-Returns customized relation columns and the respective data types.
-This process creates a temporary table. 
+Returns a customized relation columns and the respective data types. It will
+create a temporary table during the process. 
 
 Parameters
 ----------
 expr: str
-	An expression in pure SQL.
+	Expression. It must be pure SQL.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 column_name: str, optional
 	If not empty, it will return only the data type of the input column if it
 	is in the relation.
@@ -459,8 +460,8 @@ def pandas_to_vertica(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables.
+Ingests a pandas DataFrame to Vertica DB by creating a CSV file first and 
+then using flex tables.
 
 Parameters
 ----------
@@ -469,7 +470,7 @@ df: pandas.DataFrame
 name: str
 	Name of the new relation.
 cursor: DBcursor, optional
-	Vertica database cursor. 
+	Vertica DB cursor. 
 schema: str, optional
 	Schema of the new relation. The default schema is public.
 insert: bool, optional
@@ -485,8 +486,8 @@ vDataFrame
 
 See Also
 --------
-read_csv  : Ingests a CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+read_csv  : Ingests a CSV file in the Vertica DB.
+read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
@@ -530,7 +531,7 @@ Parameters
 path: str
 	Absolute path where the CSV file is located.
 cursor: DBcursor, optional
-	Vertica database cursor. 
+	Vertica DB cursor. 
 sep: str, optional
 	Column separator.
 header: bool, optional
@@ -552,8 +553,8 @@ dict
 
 See Also
 --------
-read_csv  : Ingests a CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+read_csv  : Ingests a CSV file in the Vertica DB.
+read_json : Ingests a JSON file in the Vertica DB.
 	"""
     cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
@@ -618,7 +619,7 @@ Parameters
 path: str
 	Absolute path where the JSON file is located.
 cursor: DBcursor, optional
-	Vertica database cursor. 
+	Vertica DB cursor. 
 
 Returns
 -------
@@ -627,8 +628,8 @@ dict
 
 See Also
 --------
-read_csv  : Ingests a CSV file into the Vertica database.
-read_json : Ingests a JSON file into the Vertica database.
+read_csv  : Ingests a CSV file in the Vertica DB.
+read_json : Ingests a JSON file in the Vertica DB.
 	"""
     cursor, conn = check_cursor(cursor)[0:2]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
@@ -685,7 +686,7 @@ Parameters
 path: str
 	Absolute path where the CSV file is located.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 schema: str, optional
 	Schema where the CSV file will be ingested.
 table_name: str, optional
@@ -725,7 +726,7 @@ vDataFrame
 
 See Also
 --------
-read_json : Ingests a JSON file into the Vertica database.
+read_json : Ingests a JSON file in the Vertica DB.
 	"""
     check_types(
         [
@@ -855,7 +856,7 @@ Parameters
 path: str
 	Absolute path where the JSON file is located.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 schema: str, optional
 	Schema where the JSON file will be ingested.
 table_name: str, optional
@@ -882,7 +883,7 @@ vDataFrame
 
 See Also
 --------
-read_csv : Ingests a CSV file into the Vertica database.
+read_csv : Ingests a CSV file in the Vertica DB.
 	"""
     check_types(
         [
@@ -1020,7 +1021,7 @@ Parameters
 path: str
     Absolute path where the SHP file is located.
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
 schema: str, optional
     Schema where the SHP file will be ingested.
 table_name: str, optional
@@ -1064,7 +1065,7 @@ vDataFrame
 def set_option(option: str, value: (bool, int, str) = None):
     """
     ---------------------------------------------------------------------------
-    Sets VerticaPy options.
+    Sets new VerticaPy options.
 
     Parameters
     ----------
@@ -1181,9 +1182,10 @@ class tablesample:
     """
 ---------------------------------------------------------------------------
 The tablesample is the transition from 'Big Data' to 'Small Data'. 
-This object allows you to conveniently display your results without any  
-dependencies on any other module. It stores the aggregated result in memory
-which can then be transformed into a pandas.DataFrame or vDataFrame.
+This object was created to have a nice way of displaying the results and to 
+not have any dependency to any other module. It stores the aggregated result 
+in memory and has some useful method to transform it to pandas.DataFrame or 
+vDataFrame.
 
 Parameters
 ----------
@@ -1197,7 +1199,7 @@ count: int, optional
 	Number of elements if we had to load the entire dataset. It is used 
 	only for rendering purposes.
 offset: int, optional
-	Number of elements that were skipped if we had to load the entire 
+	Number of elements which had been skipped if we had to load the entire 
 	dataset. It is used only for rendering purposes.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
@@ -1501,9 +1503,9 @@ The tablesample attributes are the same than the parameters.
 	Parameters
 	----------
 	cursor: DBcursor, optional
-		Vertica database cursor. 
+		Vertica DB cursor. 
 	dsn: str, optional
-		Database DSN.
+		Data Base DSN.
 
  	Returns
  	-------
@@ -1539,7 +1541,7 @@ def to_tablesample(
 	query: str, optional
 		SQL Query. 
 	cursor: DBcursor, optional
-		Vertica database cursor.
+		Vertica DB cursor.
 	title: str, optional
 		Query title when the query is displayed.
 
@@ -1604,22 +1606,22 @@ Creates a vDataFrame based on a customized relation.
 Parameters
 ----------
 relation: str
-	Relation. You can also specify a customized relation, 
-    but you must enclose it with an alias. For example "(SELECT 1) x" is 
-    correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+	Relation. It can be a customized relation but you need to englobe it using
+	an alias. For example "(SELECT 1) x" is correct whereas "(SELECT 1)" or
+	"SELECT 1" are incorrect.
 name: str, optional
 	Name of the vDataFrame. It is used only when displaying the vDataFrame.
 cursor: DBcursor, optional
-	Vertica database cursor. 
-	For a cursor designed by Vertica, see vertica_python
-	For ODBC, see pyodbc.
-	For JDBC, see jaydebeapi.
-	For help, see utilities.vHelp.
+	Vertica DB cursor. 
+	For a cursor designed by Vertica, look at vertica_python
+	For ODBC, look at pyodbc.
+	For JDBC, look at jaydebeapi.
+	Check out utilities.vHelp, it may help you.
 dsn: str, optional
-	Database DSN. OS File including the DB credentials.
-	VerticaPy will try to create a vertica_python cursor first.
+	Data Base DSN. OS File including the DB credentials.
+	VERTICAPY will try to create a vertica_python cursor first.
 	If it didn't find the library, it will try to create a pyodbc cursor.
-	For help, see utilities.vHelp.
+	Check out utilities.vHelp, it may help you.
 schema: str, optional
 	Relation schema. It can be to use to be less ambiguous and allow to create schema 
 	and relation name with dots '.' inside.
@@ -1720,7 +1722,7 @@ Returns the Vertica Version.
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
 condition: list, optional
     List of the minimal version information. If the current version is not
     greater or equal to this one, it will raise an error.

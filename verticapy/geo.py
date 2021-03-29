@@ -145,7 +145,7 @@ Parameters
 name: str, optional
     Index name.
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
 list_polygons: bool, optional
     Boolean that specifies whether to list the polygons in the index.
     If set to True, the function will return a vDataFrame instead of
@@ -244,7 +244,7 @@ source: str
 dest: str
     New name of the spatial index.
 cursor: DBcursor, optional
-    Vertica database cursor.
+    Vertica DB cursor.
 overwrite: bool, optional
     BOOLEAN value that specifies whether to overwrite the index, if an index 
     exists.

@@ -61,8 +61,8 @@ from verticapy.learn.vmodel import *
 class LinearSVC(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
-Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
-algorithm on the data. Given a set of training examples, each marked as 
+Creates a LinearSVC object by using the Vertica Highly Distributed and 
+Scalable SVM on the data. Given a set of training examples, each marked as 
 belonging to one or the other of two categories, an SVM training algorithm 
 builds a model that assigns new examples to one category or the other, making 
 it a non-probabilistic binary linear classifier.
@@ -72,7 +72,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 tol: float, optional
 	to use to control accuracy.
 C: float, optional
@@ -132,16 +132,16 @@ max_iter: int, optional
 class LinearSVR(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearSVR object using the Vertica Support Vector Machine (SVM) 
-algorithm on the data. This algorithm will find the hyperplan which will 
-approximate the data distribution.
+Creates a LinearSVR object by using the Vertica Highly Distributed and Scalable 
+SVM on the data. This algorithm will find the hyperplan which will approximate
+the data distribution.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 tol: float, optional
 	to use to control accuracy.
 C: float, optional
@@ -172,15 +172,15 @@ The model will also create extra attributes when fitting the model:
 coef: tablesample
 	Coefficients and their mathematical information (pvalue, std, value...)
 input_relation: str
-	Training relation.
+	Train relation.
 X: list
 	List of the predictors.
 y: str
 	Response column.
 test_relation: str
-	Relation used to test the model. All the model methods are abstractions
+	Relation to use to test the model. All the model methods are abstractions
 	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the training relation will be 
+	methods to evaluate the model. If empty, the train relation will be 
 	used as test. You can change it anytime by changing the test_relation
 	attribute of the object.
 	"""

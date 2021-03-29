@@ -57,15 +57,15 @@ from verticapy.learn.vmodel import *
 class PCA(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates a PCA (Principal Component Analysis) object using the Vertica PCA
-algorithm on the data.
+Creates a PCA (Principal Component Analysis) object by using the Vertica 
+Highly Distributed and Scalable PCA on the data.
  
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 
@@ -101,15 +101,15 @@ method: str, optional
 class SVD(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
-algorithm on the data.
+Creates a SVD (Singular Value Decomposition) object by using the Vertica 
+Highly Distributed and Scalable SVD on the data.
  
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+	Vertica DB cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 

@@ -74,7 +74,7 @@ list
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create database cursors.
+new_auto_connection : Saves a connection to automatically create DB cursors.
 	"""
     path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
@@ -101,7 +101,7 @@ name: str
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create database cursors.
+new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
@@ -128,7 +128,7 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
 def new_auto_connection(dsn: dict, name: str = "DSN"):
     """
 ---------------------------------------------------------------------------
-Saves a connection to automatically create database cursors. This will create a 
+Saves a connection to automatically create DB cursors. This will create a 
 used-as-needed file to automatically set up a connection, avoiding redundant 
 cursors.
 
@@ -183,7 +183,7 @@ conn
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create database cursors.
+new_auto_connection : Saves a connection to automatically create DB cursors.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
     path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
@@ -273,7 +273,7 @@ conn
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create database cursors.
+new_auto_connection : Saves a connection to automatically create DB cursors.
 read_auto_connect   : Automatically creates a connection.
 	"""
     check_types([("dsn", dsn, [str],)])

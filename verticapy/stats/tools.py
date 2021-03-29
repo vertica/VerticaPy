@@ -794,7 +794,7 @@ tablesample
 def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
-Jarque-Bera test (Distribution Normality).
+Jarque Bera test (Distribution Normality).
 
 Parameters
 ----------

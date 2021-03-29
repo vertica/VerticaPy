@@ -118,7 +118,7 @@ steps: list
     def drop(self):
         """
     ---------------------------------------------------------------------------
-    Drops the model from the Vertica database.
+    Drops the model from the Vertica DB.
         """
         for step in self.steps:
             step[1].drop()
@@ -138,13 +138,13 @@ steps: list
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Training relation.
+        Train relation.
     X: list
         List of the predictors.
     y: str, optional
         Response column.
     test_relation: str/vDataFrame, optional
-        Relation used to test the model.
+        Relation to use to test the model.
 
     Returns
     -------
@@ -204,9 +204,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
     name: str, optional
@@ -296,9 +296,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -336,9 +336,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        Input vDataFrame. It can also be a customized relation but you need to 
+        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
+        "(SELECT 1)" or "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -375,7 +375,7 @@ steps: list
     def set_cursor(self, cursor):
         """
     ---------------------------------------------------------------------------
-    Sets a new database cursor. It can be very usefull if the connection to the DB is 
+    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
     lost.
 
     Parameters
