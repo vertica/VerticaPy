@@ -681,7 +681,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the vColumn box plot.
+	Draws the box plot of the vColumn.
 
 	Parameters
  	----------
@@ -742,7 +742,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].ctype : Returns the vColumn DB type.
+	vDataFrame[].ctype : Returns the vColumn database type.
 		"""
         return self.transformations[-1][2]
 
@@ -927,7 +927,7 @@ Attributes
 	vDataFrame[].discretize   : Discretizes the vColumn.
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
-	vDataFrame[].mean_encode  : Encodes the vColumn with Mean Encoding of a response.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         import verticapy.stats as st
 
@@ -1287,7 +1287,7 @@ Attributes
 	vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
-	vDataFrame[].mean_encode  : Encodes the vColumn with Mean Encoding of a response.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         check_types(
             [
@@ -2067,7 +2067,7 @@ Attributes
 	vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
 	vDataFrame[].discretize   : Discretizes the vColumn.
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
-	vDataFrame[].mean_encode  : Encodes the vColumn with Mean Encoding of a response.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         check_types(
             [
@@ -2466,10 +2466,10 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].decode       : Encodes the vColumn using a user defined Encoding.
+	vDataFrame[].decode       : Encodes the vColumn with a user defined Encoding.
 	vDataFrame[].discretize   : Discretizes the vColumn.
-	vDataFrame[].get_dummies  : Encodes the vColumn using the One-Hot Encoding.
-	vDataFrame[].mean_encode  : Encodes the vColumn using the Mean Encoding of a response.
+	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         if self.category() in ["date", "float"]:
             warning_message = (

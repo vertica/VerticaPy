@@ -775,7 +775,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the ROC AUC, one of the response column class must be the 
+	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1065,7 +1065,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the CSI, one of the response column class must be the 
+	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1121,7 +1121,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the F1 Score, one of the response column class must be the 
+	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1183,7 +1183,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the informedness, one of the response column class must be the 
+	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1240,7 +1240,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the log loss, one of the response column class must be the 
+	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1291,7 +1291,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the markedness, one of the response column class must be the 
+	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1534,7 +1534,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the PRC AUC, one of the response column class must be the 
+	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1581,7 +1581,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Precision Score, one of the response column class must be 
+	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1637,7 +1637,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Recall Score, one of the response column class must be 
+	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1693,7 +1693,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Specificity Score, one of the response column class must 
+	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.
 
 Returns
