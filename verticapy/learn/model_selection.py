@@ -840,7 +840,7 @@ def enet_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search using multiple ENet models.
+Computes the K-Fold grid search using multiple enet model.
 
 Parameters
 ----------
@@ -2593,8 +2593,8 @@ y: str
     Response Column.
 criterion: str, optional
     Criterion used to evaluate the model.
-        aic : Akaike’s Information Criterion
-        bic : Bayesian Information Criterion
+        aic : Akaike’s Information Criterion.
+        bic : Bayesian Information Criterion.
 direction: str, optional
     How to start the stepwise search. Can be done 'backward' or 'forward'.
 max_steps: int, optional
@@ -2609,11 +2609,11 @@ x_order: str, optional
         pearson  : X is ordered based on the Pearson's correlation coefficient.
         spearman : X is ordered based on the Spearman's correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.
-        none     : Does not change the order of X.
+        none     : Does not change X order.
 print_info: bool, optional
     If set to True, prints the model information at each step.
 show: bool, optional
-    If set to True, the stepwise graphic will be drawn.
+    If set to True, the Stepwise graphic will be drawn.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds

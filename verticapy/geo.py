@@ -139,18 +139,18 @@ def coordinate_converter(vdf: vDataFrame,
                          reverse: bool = False,):
     """
 ---------------------------------------------------------------------------
-Converts between latitude and longitude to Euclidean coordinates x and y.
+Converts latitude and longitude to Euclidean coordinates x, y or the opposite.
 
 Parameters
 ----------
 vdf: vDataFrame
     input vDataFrame.
 x: str
-    vColumn used as the abscissa (longitude).
+    vcolumn used as abscissa (longitude).
 y: str
-    vColumn used as the ordinate (latitude).
+    vcolumn used as ordinate (latitude).
 x0: float, optional
-    The initial abscissa.
+    Initial abscissa.
 earth_radius: float, optional
     Earth radius.
 reverse: bool, optional
@@ -190,8 +190,9 @@ def describe_index(
 ):
     """
 ---------------------------------------------------------------------------
-Retrieves information about an index that contains a set of polygons. If 
-you do not pass any parameters, this function returns all defined indexes.
+Retrieves information about an index that contains a set of polygons. 
+If you do not pass any parameters, the function returns all of the 
+defined indexes.
 
 Parameters
 ----------
@@ -329,13 +330,13 @@ bool
 def split_polygon_n(p: str, cursor=None, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
-Splits a polygon into (nbins^2) smaller polygons with approximately
-the same area.
+Splits a Polygon into nbins ** 2 smaller ones having approximately the same
+area.
 
 Parameters
 ----------
 p: str
-    String representation of the polygon.
+    String representation of the Polygon.
 cursor: DBcursor, optional
     Vertica database cursor.
 nbins: int, optional
@@ -344,7 +345,7 @@ nbins: int, optional
 Returns
 -------
 vDataFrame
-    output vDataFrame that includes the new polygons.
+    output vDataFrame including the new polygons.
     """
     check_types(
         [

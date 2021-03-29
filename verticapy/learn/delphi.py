@@ -118,7 +118,7 @@ outliers_threshold: float, optional
 na_method: str, optional
     Method for handling missing values.
         auto: Mean for the numerical features and creates a new category for the 
-              categorical vColumns. For time series datasets, 'constant' interpolation 
+              categorical vcolumns. For time series datasets, 'constant' interpolation 
               is used for categorical features and 'linear' for the others.
         drop: Drops the missing values.
 cat_topk: int, optional
@@ -137,7 +137,7 @@ apply_pca: bool, optional
     [Only used for non-time series datasets]
     If True, a PCA is applied at the end of the preprocessing.
 rule: str / time, optional
-    [Only used when dealing with time series datasets]
+    [Only Used when dealing with TS datasets]
     Interval to use to slice the time. For example, '5 minutes' will create records
     separated by '5 minutes' time interval.
     If set to auto, the rule will be detected using aggregations.
@@ -552,7 +552,7 @@ stepwise_max_steps: int, optional
     The maximum number of steps to be considered when doing the final estimator 
     stepwise.
 x_order: str, optional
-    Method for preprocessing X before using the stepwise algorithm.
+    Method to preprocess X before using the stepwise algorithm.
         pearson  : X is ordered based on the Pearson's correlation coefficient.
         spearman : X is ordered based on Spearman's rank correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.

@@ -1474,8 +1474,8 @@ vColumns : vColumn
     weight: str / integer
         vColumn or integer representing the weight.
     use_gcd: bool
-        If set to True, uses the GCD (Greatest Common Divisor) to reduce all 
-        common weights to avoid unnecessary duplicates.
+        If set to True, uses GCD (Greatest Common Divisor) to reduce all 
+        common weights to avoid useless duplicates.
 
     Returns
     -------

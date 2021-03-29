@@ -699,9 +699,9 @@ header: bool, optional
 header_names: list, optional
 	List of the columns names.
 dtype: dict, optional
-    Dictionary of the user types. Providing a dictionary can increase 
-    ingestion speed and precision; instead of parsing the file to guess 
-    the different types, VerticaPy will use the input types.
+    Dictionary of the user types. It can be used to make the ingestion faster
+    and more precise. Instead of parsing the file to guess the different 
+    type, VerticaPy will use the input types.
 na_rep: str, optional
 	Missing values representation.
 quotechar: str, optional

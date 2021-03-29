@@ -108,7 +108,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column classes must be the 
+        To draw the ROC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -147,7 +147,7 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
+        considered as negative for multi classification.
     cutoff: float, optional
         Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
@@ -198,7 +198,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw a lift chart, one of the response column classes must be the 
+        To draw a lift chart, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -236,7 +236,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the PRC curve, one of the response column classes must be the 
+        To draw the PRC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -391,7 +391,7 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column classes must be the 
+        To draw the ROC curve, one of the response column class must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -435,7 +435,7 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative for multiclass classification.
+        considered as negative for multi classification.
     cutoff: float, optional
         Cutoff for which the tested category will be accepted as a prediction. 
     method: str, optional
@@ -528,7 +528,7 @@ class NearestCentroid(NeighborsClassifier):
 Creates a NearestCentroid object using the k-Nearest Centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
 
-\u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
+\u26A0 Warning : As NearestCentroid is using the p-distances, it is highly 
                  sensitive to unnormalized data.
 
 Parameters

@@ -64,13 +64,13 @@ from verticapy.learn.tools import *
 class BisectingKMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a BisectingKMeans object using the Vertica bisecting k-means 
-algorithm on the data. k-means clustering is a method of vector quantization, 
+Creates a Bisecting KMeans object using the Vertica Bisecting KMeans 
+algorithm on the data. KMeans clustering is a method of vector quantization, 
 originally from signal processing, that aims to partition n observations into 
-k clusters. Each observation belongs to the cluster with the nearest 
-mean (cluster centers or cluster centroid), which serves as a prototype of 
-the cluster. This results in a partitioning of the data space into Voronoi
-cells. Bisecting k-means combines k-means and hierarchical clustering.
+k clusters in which each observation belongs to the cluster with the nearest 
+mean (cluster centers or cluster centroid), serving as a prototype of the 
+cluster. This results in a partitioning of the data space into Voronoi cells. 
+Bisecting KMeans combines KMeans and Hierarchical clustering.
 
 Parameters
 ----------
@@ -147,7 +147,7 @@ tol: float, optional
     def get_tree(self):
         """
     ---------------------------------------------------------------------------
-    Returns a table containing information about the BK-tree.
+    Returns a table with all the BK tree information.
         """
         return self.cluster_centers_
 
@@ -155,7 +155,7 @@ tol: float, optional
     def plot_tree(self, pic_path: str = ""):
         """
     ---------------------------------------------------------------------------
-    Draws the input BKtree. The module anytree must be installed.
+    Draws the input BKtree. The module anytree must be installed in the machine.
 
     Parameters
     ----------
@@ -175,8 +175,8 @@ class DBSCAN(vModel):
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
 Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
-pure SQL to compute the distances and neighbors and uses Python to compute 
-the cluster propagation (non-scalable phase).
+pure SQL to compute the distances and neighbors and uses Python 
+to compute the cluster propagation (non-scalable phase).
 
 \u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
                  is therefore computationally expensive at O(n * n), where
@@ -424,8 +424,8 @@ p: int, optional
 class KMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a KMeans object using the Vertica k-means algorithm on the data. 
-k-means clustering is a method of vector quantization, originally from signal 
+Creates a KMeans object using the Vertica KMeans algorithm on the data. 
+K-means clustering is a method of vector quantization, originally from signal 
 processing, that aims to partition n observations into k clusters in which 
 each observation belongs to the cluster with the nearest mean (cluster centers 
 or cluster centroid), serving as a prototype of the cluster. This results in 
@@ -434,7 +434,7 @@ a partitioning of the data space into Voronoi cells.
 Parameters
 ----------
 name: str
-	Name of the the model. The model will be stored in the database.
+	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
 	Vertica database cursor.
 n_cluster: int, optional
