@@ -97,16 +97,16 @@ input_relation: str
     In this case input_relation must only be the relation name (it must 
     not include a schema).
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
     For a cursor designed by Vertica, search for vertica_python
     For ODBC, search for pyodbc.
     For JDBC, search for jaydebeapi.
-    Check out utilities.vHelp function, it may help you.
+    For help, see utilities.vHelp.
 dsn: str, optional
-    Data Base DSN. OS File including the DB credentials.
+    Database DSN. OS File including the DB credentials.
     VERTICAPY will try to create a vertica_python cursor first.
     If it didn't find the library, it will try to create a pyodbc cursor.
-    Check out utilities.vHelp function, it may help you.
+    For help, see utilities.vHelp.
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar DB
     including less columns makes the process faster. Do not hesitate to not include 
@@ -1117,7 +1117,7 @@ vcolumns : vcolumn
     Returns
     -------
     DBcursor
-        The DB cursor.
+        The database cursor.
         """
         return executeSQL(self._VERTICAPY_VARIABLES_["cursor"], query, title,)
 
@@ -1502,14 +1502,13 @@ vcolumns : vcolumn
                 lags or 'day' to compute the days lags.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
-                       \u26A0 Warning : This method is computationally expensive. 
-                                        It is using a CROSS JOIN during the computation.
-                                        The complexity is O(n * n), n being the total
-                                        count of the vDataFrame.
+                       \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                        is therefore computationally expensive at O(n * n), where
+                                        n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
     acf_type: str, optional
@@ -2123,14 +2122,14 @@ vcolumns : vcolumn
             aad          : average absolute deviation
             beta         : Beta Coefficient between 2 vcolumns
             count        : number of non-missing elements
-            corr         : Pearson correlation between 2 vcolumns
+            corr         : Pearson's correlation between 2 vcolumns
             cov          : covariance between 2 vcolumns
             dense_rank   : dense rank
             ema          : exponential moving average
             first_value  : first non null lead
             iqr          : interquartile range
             kurtosis     : kurtosis
-            jb           : Jarque Bera index 
+            jb           : Jarque-Bera index 
             lead         : next element
             lag          : previous element
             last_value   : first non null lag
@@ -2780,15 +2779,15 @@ vcolumns : vcolumn
     input_relation: str / vDataFrame
         Relation to use to do the merging.
     expr1: list, optional
-        List of expressions from the current vDataFrame to use during the merging.
-        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-        and 'POWER("column", 2)' will work. If empty all the vDataFrame vcolumns will
-        be used. It is highly recommended to write aliases to avoid auto-naming.
+        List of pure-SQL expressions from the current vDataFrame to use during merging.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty, all the vDataFrame vcolumns will
+        be used. Aliases are recommended to avoid auto-naming.
     expr2: list, optional
-        List of expressions from the input relation to use during the merging.
-        It must be pure SQL. For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
-        and 'POWER("column", 2)' will work. If empty all the input relation columns will
-        be used. It is highly recommended to write aliases to avoid auto-naming.
+        List of pure-SQL expressions from the input relation to use during the merging.
+        For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' 
+        and 'POWER("column", 2)' will work. If empty, all the input relation columns will
+        be used. Aliases are recommended to avoid auto-naming.
     union_all: bool, optional
         If set to True, the vDataFrame will be merged with the input relation using an
         'UNION ALL' instead of an 'UNION'.
@@ -3082,7 +3081,7 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Bar Chart of the input vcolumns based on an aggregation.
+    Draws the bar chart of the input vColumns based on an aggregation.
 
     Parameters
     ----------
@@ -3286,10 +3285,10 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
-    vDataFrame.boxplot     : Draws the vcolumn Box Plot.
-    vDataFrame.hist        : Draws the Histogram of the input vcolumns based on an aggregation.
-    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+    vDataFrame.bar         : Draws the bar chart of the input vColumns based on an aggregation.
+    vDataFrame.boxplot     : Draws the vColumn box plot.
+    vDataFrame.hist        : Draws the histogram of the input vColumns based on an aggregation.
+    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -3403,8 +3402,8 @@ vcolumns : vcolumn
     
     See Also
     --------
-    vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
-    vDataFrame.numcol      : Returns all the vDataFrame numerical vcolumns.
+    vDataFrame.get_columns : Returns a list of names of the vColumns in the vDataFrame.
+    vDataFrame.numcol      : Returns a list of names of the numerical vColumns in the vDataFrame.
         """
         check_types([("max_cardinality", max_cardinality, [int, float],)])
         columns = []
@@ -3596,14 +3595,13 @@ vcolumns : vcolumn
         used.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
-                        \u26A0 Warning : This method is computationally expensive. 
-                                         It is using a CROSS JOIN during the computation.
-                                         The complexity is O(n * n), n being the total
-                                         count of the vDataFrame.
+                        \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                         is therefore computationally expensive at O(n * n), where
+                                         n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
     round_nb: int, optional
@@ -3625,10 +3623,10 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
-    vDataFrame.cov  : Computes the Covariance Matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
-    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame. 
+    vDataFrame.acf  : Computes the correlations between a vColumn and its lags.
+    vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
+    vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.regr : Computes the regression matrix of the vDataFrame. 
         """
         if isinstance(method, str):
             method = method.lower()
@@ -3687,15 +3685,14 @@ vcolumns : vcolumn
         Input vcolumn.
     method: str, optional
         Method to use to compute the correlation.
-            pearson   : Pearson correlation coefficient (linear).
+            pearson   : Pearson's correlation coefficient (linear).
             spearmann : Spearmann correlation coefficient (monotonic - rank based).
             kendall   : Kendall correlation coefficient (similar trends). 
                         Use kendallA to compute Tau-A, kendallB or kendall to compute 
                         Tau-B and kendallC to compute Tau-C.
-                        \u26A0 Warning : This method is computationally expensive. 
-                                         It is using a CROSS JOIN during the computation.
-                                         The complexity is O(n * n), n being the total
-                                         count of the vDataFrame.
+                        \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                         is therefore computationally expensive at O(n * n), where
+                                         n is the total count of the vDataFrame.
             cramer    : Cramer's V (correlation between categories).
             biserial  : Biserial Point (correlation between binaries and a numericals).
 
@@ -3953,10 +3950,10 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.acf  : Computes the Correlations between a vcolumn and its lags.
-    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf : Computes the Partial Autocorrelations of the input vcolumn.
-    vDataFrame.regr : Computes the Regression Matrix of the vDataFrame.
+    vDataFrame.acf  : Computes the correlations between a vColumn and its lags.
+    vDataFrame.corr : Computes the correlation matrix of the vDataFrame.
+    vDataFrame.pacf : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.regr : Computes the regression matrix of the vDataFrame.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -4066,8 +4063,8 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Adds a new vcolumn to the vDataFrame by computing the cumulative product of 
-    the input vcolumn.
+    Adds a new vColumn to the vDataFrame by computing the cumulative product of 
+    the input vColumn.
 
     Parameters
     ----------
@@ -4106,8 +4103,8 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Adds a new vcolumn to the vDataFrame by computing the cumulative sum of the 
-    input vcolumn.
+    Adds a new vColumn to the vDataFrame by computing the cumulative sum of the 
+    input vColumn.
 
     Parameters
     ----------
@@ -4165,7 +4162,7 @@ vcolumns : vcolumn
     def datecol(self):
         """
     ---------------------------------------------------------------------------
-    Returns all the vDataFrame vcolumns of type date.
+    Returns a list of the vColumns of type date in the vDataFrame.
 
     Returns
     -------
@@ -4174,8 +4171,8 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.catcol : Returns all the vDataFrame categorical vcolumns.
-    vDataFrame.numcol : Returns all the vDataFrame numerical vcolumns.
+    vDataFrame.catcol : Returns a list of the categorical vColumns in the vDataFrame.
+    vDataFrame.numcol : Returns a list of the numerical vColumns in the vDataFrame.
         """
         columns = []
         cols = self.get_columns()
@@ -4211,12 +4208,12 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the vcolumns Density Plot.
+    Draws the vColumns Density Plot.
 
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will 
+        List of the vColumns names. If empty, all the numerical vColumns will 
         be selected.
     bandwidth: float, optional
         The bandwidth of the kernel.
@@ -4244,7 +4241,7 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame[].hist : Draws the Histogram of the vcolumn based on an aggregation.
+    vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -4297,20 +4294,20 @@ vcolumns : vcolumn
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using multiple statistical aggregations: 
-    min, max, median, unique... depending on the vcolumns types.
+    min, max, median, unique... depending on the types of the vColumns.
 
     Parameters
     ----------
     method: str, optional
         The describe method.
-            all         : Aggregates all the selected vDataFrame vcolumns different 
+            all         : Aggregates all the selected vDataFrame vColumns different 
                 methods depending on the vcolumn type (numerical dtype: numerical; 
                 timestamp dtype: range; categorical dtype: length)
             auto        : Sets the method to 'numerical' if at least one vcolumn 
                 of the vDataFrame is numerical, 'categorical' otherwise.
             categorical : Uses only categorical aggregations.
             length      : Aggregates the vDataFrame using numerical aggregation 
-                on the length of all the selected vcolumns.
+                on the length of all the selected vColumns.
              numerical   : Uses only numerical descriptive statistics which are 
                  computed in a faster way than the 'aggregate' method.
             range       : Aggregates the vDataFrame using multiple statistical
@@ -4318,7 +4315,7 @@ vcolumns : vcolumn
             statistics  : Aggregates the vDataFrame using multiple statistical 
                 aggregations - kurtosis, skewness, min, max...
     columns: list, optional
-        List of the vcolumns names. If empty, the vcolumns will be selected
+        List of the vColumns names. If empty, the vColumns will be selected
         depending on the parameter 'method'.
     unique: bool, optional
         If set to True, the cardinality of each element will be computed.
@@ -4862,7 +4859,7 @@ vcolumns : vcolumn
     name: str
         Name of the new vcolumn.
     expr: str
-        Expression to use to compute the new feature. It must be pure SQL. 
+        Expression in pure SQL to use to compute the new feature. 
         For example, 'CASE WHEN "column" > 3 THEN 2 ELSE NULL END' and
         'POWER("column", 2)' will work.
 
@@ -5294,9 +5291,9 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.catcol  : Returns all the categorical vDataFrame vcolumns.
-    vDataFrame.datecol : Returns all the vDataFrame vcolumns of type date.
-    vDataFrame.numcol  : Returns all the numerical vDataFrame vcolumns.
+    vDataFrame.catcol  : Returns the categorical vDataFrame vColumns.
+    vDataFrame.datecol : Returns the vDataFrame vColumns of type date.
+    vDataFrame.numcol  : Returns the numerical vDataFrame vColumns.
         """
         if isinstance(exclude_columns, str):
             exclude_columns = [columns]
@@ -5398,7 +5395,7 @@ vcolumns : vcolumn
         List of the vcolumns used for the grouping. It can also be customized 
         expressions.
     expr: list, optional
-        List of the different aggregations. Pure SQL must be written. Aliases can
+        List of the different aggregations in pure SQL. Aliases can
         also be given. 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct
         whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
         the different features and not have ambiguous names. The function MODE does
@@ -5540,13 +5537,12 @@ vcolumns : vcolumn
             hist         : Histogram
             kendall      : Kendall Correlation Matrix. The method will compute the Tau-B 
                            coefficients.
-                           \u26A0 Warning : This method is computationally expensive. 
-                                            It is using a CROSS JOIN during the computation.
-                                            The complexity is O(n * n), n being the total
-                                            count of the vDataFrame.
+                           \u26A0 Warning : This method uses a CROSS JOIN during computation and
+                                            is therefore computationally expensive at O(n * n), where
+                                            n is the total count of the vDataFrame.
             line         : Line Plot
             negative_bar : Multi Bar Chart for binary classes
-            pearson      : Pearson Correlation Matrix
+            pearson      : Pearson's correlation matrix
             pie          : Pie Chart
             pie_half     : Half Pie Chart
             pie3d        : 3D Pie Chart
@@ -5555,7 +5551,7 @@ vcolumns : vcolumn
             spline       : Spline Plot
             stacked_bar  : Stacked Bar Chart
             stacked_hist : Stacked Histogram
-            spearman     : Spearman Correlation Matrix
+            spearman     : Spearman's correlation matrix
     width: int, optional
         Chart Width.
     height: int, optional
@@ -5907,9 +5903,9 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.bar         : Draws the Bar Chart of the input vcolumns based on an aggregation.
-    vDataFrame.boxplot     : Draws the Box Plot of the input vcolumns.
-    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+    vDataFrame.bar         : Draws the bar chart of the input vColumns based on an aggregation.
+    vDataFrame.boxplot     : Draws the box plot of the input vColumns.
+    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -6149,15 +6145,13 @@ vcolumns : vcolumn
             natural : Natural Join.
             inner   : Inner Join.
     expr1: list, optional
-        List of the different columns to select from the current vDataFrame. 
-        Pure SQL must be written. Aliases can also be given. 'column' or 
-        'column AS my_new_alias' are correct. Aliases are recommended to keep 
-        the track of the different features and not have ambiguous names. 
+        List of the different columns in pure SQL to select from the current vDataFrame,
+        optionally as aliases. Aliases are recommended to avoid ambiguous names.
+        For example: 'column' or 'column AS my_new_alias'
     expr2: list, optional
-        List of the different columns to select from the input relation. 
-        Pure SQL must be written. Aliases can also be given. 'column' or 
-        'column AS my_new_alias' are correct. Aliases are recommended to keep 
-        the track of the different features and not have ambiguous names. 
+        List of the different columns in pure SQL to select from the input relation
+        optionally as aliases. Aliases are recommended to avoid ambiguous names.
+        For example: 'column' or 'column AS my_new_alias'
 
     Returns
     -------
@@ -6617,7 +6611,7 @@ vcolumns : vcolumn
     def numcol(self, exclude_columns: list = []):
         """
     ---------------------------------------------------------------------------
-    Returns the vDataFrame numerical vcolumns.
+    Returns a list of names of the numerical vColumns in the vDataFrame.
 
     Parameters
     ----------
@@ -6627,12 +6621,12 @@ vcolumns : vcolumn
     Returns
     -------
     List
-        List of the numerical vcolumns names. 
+        List of numerical vColumn names. 
     
     See Also
     --------
-    vDataFrame.catcol      : Returns all the vDataFrame categorical vcolumns.
-    vDataFrame.get_columns : Returns all the vDataFrame vcolumns.
+    vDataFrame.catcol      : Returns the categorical type vColumns in the vDataFrame.
+    vDataFrame.get_columns : Returns the vColumns of the vDataFrame.
         """
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
         for column in cols:
@@ -6649,7 +6643,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the vcolumns will be used.
+        List of the vcolumns names. If empty, all the vColumns will be used.
 
     Returns
     -------
@@ -6679,10 +6673,10 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all the numerical vColumns will be 
         used.
     name: str, optional
-        Name of the new vcolumn.
+        Name of the new vColumn.
     threshold: float, optional
         Threshold equals to the critical score.
     robust: bool
@@ -6696,7 +6690,7 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.normalize : Normalizes the input vcolumns.
+    vDataFrame.normalize : Normalizes the input vColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -6747,12 +6741,12 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Global Outliers Plot of one or two columns based on their ZSCORE.
+    Draws the global outliers plot of one or two columns based on their ZSCORE.
 
     Parameters
     ----------
     columns: list
-        List of the vcolumns names. The list must have one or two elements.
+        List of one or two vColumn names.
     threshold: float, optional
         ZSCORE threshold used to detect outliers.
     color: str, optional
@@ -6819,15 +6813,15 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Computes the Partial Autocorrelations of the input vcolumn.
+    Computes the partial autocorrelations of the input vColumn.
 
     Parameters
     ----------
     column: str
-        Input vcolumn to use to compute the Partial Auto Correlation Plot.
+        Input vcolumn to use to compute the partial autocorrelation plot.
     ts: str
-        TS (Time Series) vcolumn to use to order the data. It can be of type date
-        or a numerical vcolumn.
+        TS (Time Series) vColumn to use to order the data. It can be of type date
+        or a numerical vColumn.
     by: list, optional
         vcolumns used in the partition.
     p: int/list, optional
@@ -6859,10 +6853,10 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.acf    : Computes the Correlations between a vcolumn and its lags.
+    vDataFrame.acf    : Computes the correlations between a vColumn and its lags.
     vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
-    vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
-    vDataFrame.cov    : Computes the Covariance Matrix of the vDataFrame.
+    vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
+    vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
         if isinstance(by, str):
             by = [by]
@@ -7048,7 +7042,7 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the nested Density Pie Chart of the input vcolumns.
+    Draws the nested density pie chart of the input vcolumns.
 
     Parameters
     ----------
@@ -7284,12 +7278,12 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Time Series.
+    Draws the time series.
 
     Parameters
     ----------
     ts: str
-        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
@@ -7350,8 +7344,8 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Returns a vDataFrame containing different input columns product combination.
-    This function is ideal for Bivariate Analysis.
+    Returns a vDataFrame containing different product combination of the 
+    input columns. This function is ideal for bivariate analysis.
 
     Parameters
     ----------
@@ -7359,7 +7353,7 @@ vcolumns : vcolumn
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
         used.
     r: int, optional
-        Degree of the Polynomial.
+        Degree of the polynomial.
 
     Returns
     -------
@@ -7392,7 +7386,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumn names. If empty, all numerical vColumns will be 
         used.
 
     Returns
@@ -7454,33 +7448,33 @@ vcolumns : vcolumn
         """
     ---------------------------------------------------------------------------
     Recommend items based on the Collaborative Filtering (CF) technique.
-    The implementation is the same as APRIORI algorithm but it is limited to 
-    items pair.
+    The implementation is the same as APRIORI algorithm, but is limited to 
+    pairs of items.
 
     Parameters
     ----------
     unique_id: str
-        Input vcolumn corresponding to a unique ID. It is a primary key.
+        Input vColumn corresponding to a unique ID. It is a primary key.
     item_id: str
-        Input vcolumn corresponding to an item ID. It is a secondary key used to 
+        Input vColumn corresponding to an item ID. It is a secondary key used to 
         compute the different pairs.
     method: str, optional
         Method used to recommend.
             count  : Each item will be recommended based on frequencies of the
-                     different items pair.
+                     different pairs of items.
             avg    : Each item will be recommended based on the average rating
-                     of the different items pair second element.
+                     of the different item pairs with a differing second element.
             median : Each item will be recommended based on the median rating
-                     of the different items pair second element.
+                     of the different item pairs with a differing second element.
     rating: str / tuple, optional
-        Input vcolumn including the items rating.
+        Input vColumn including the items rating.
         If the 'rating' type is 'tuple', it must composed of 3 elements: 
         (r_vdf, r_item_id, r_name) where:
             r_vdf is an input vDataFrame.
-            r_item_id is an input vcolumn which must includes the same id as 'item_id'.
-            r_name is an input vcolumn including the items rating. 
+            r_item_id is an input vColumn which must includes the same id as 'item_id'.
+            r_name is an input vColumn including the items rating. 
     ts: str, optional
-        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
@@ -7583,32 +7577,32 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Computes a new vcolumn based on regular expressions. 
+    Computes a new vColumn based on regular expressions. 
 
     Parameters
     ----------
     column: str
-        Input vcolumn to use to compute the regular expression.
+        Input vColumn to use to compute the regular expression.
     pattern: str
         The regular expression.
     method: str, optional
         Method to use to compute the regular expressions.
             count     : Returns the number times a regular expression matches 
-                each element of the input vcolumn. 
-            ilike     : Returns True if the vcolumn element contains a match 
+                each element of the input vColumn. 
+            ilike     : Returns True if the vColumn element contains a match 
                 for the regular expression.
-            instr     : Returns the starting or ending position in a vcolumn 
+            instr     : Returns the starting or ending position in a vColumn 
                 element where a regular expression matches. 
-            like      : Returns True if the vcolumn element matches the regular 
+            like      : Returns True if the vColumn element matches the regular 
                 expression.
-            not_ilike : Returns True if the vcolumn element does not match the 
+            not_ilike : Returns True if the vColumn element does not match the 
                 case-insensitive regular expression.
-            not_like  : Returns True if the vcolumn element does not contain a 
+            not_like  : Returns True if the vColumn element does not contain a 
                 match for the regular expression.
             replace   : Replaces all occurrences of a substring that match a 
                 regular expression with another substring.
             substr    : Returns the substring that matches a regular expression 
-                within a vcolumn.
+                within a vColumn.
     position: int, optional
         The number of characters from the start of the string where the function 
         should start searching for matches.
@@ -7687,7 +7681,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all the numerical vColumns will be 
         used.
     method: str, optional
         Method to use to compute the regression matrix.
@@ -7721,10 +7715,10 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.acf   : Computes the Correlations between a vcolumn and its lags.
-    vDataFrame.cov   : Computes the Covariance Matrix of the vDataFrame.
-    vDataFrame.corr  : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.pacf  : Computes the Partial Autocorrelations of the input vcolumn.
+    vDataFrame.acf   : Computes the correlations between a vColumn and its lags.
+    vDataFrame.cov   : Computes the covariance matrix of the vDataFrame.
+    vDataFrame.corr  : Computes the correlation matrix of the vDataFrame.
+    vDataFrame.pacf  : Computes the partial autocorrelations of the input vColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -7896,10 +7890,10 @@ vcolumns : vcolumn
             aad         : average absolute deviation
             beta        : Beta Coefficient between 2 vcolumns
             count       : number of non-missing elements
-            corr        : Pearson correlation between 2 vcolumns
+            corr        : Pearson's correlation between 2 vcolumns
             cov         : covariance between 2 vcolumns
             kurtosis    : kurtosis
-            jb          : Jarque Bera index
+            jb          : Jarque-Bera index
             max         : maximum
             mean        : average
             min         : minimum
@@ -7937,8 +7931,8 @@ vcolumns : vcolumn
     See Also
     --------
     vDataFrame.eval     : Evaluates a customized expression.
-    vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
-        analytical function on a specific vcolumn.
+    vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
+        analytical function on a specific vColumn.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -8129,8 +8123,8 @@ vcolumns : vcolumn
     ---------------------------------------------------------------------------
     Downsamples the input vDataFrame.
 
-    \u26A0 Warning : The result might change for each SQL code generation if the
-                     data are not ordered.
+    \u26A0 Warning : The result may be inconsistent between attempts at SQL
+                     code generation if the data is not ordered.
 
     Parameters
      ----------
@@ -8214,7 +8208,7 @@ vcolumns : vcolumn
         """
     ---------------------------------------------------------------------------
     Saves the current structure of the vDataFrame. 
-    This function is useful to load a previous transformation.
+    This function is useful for loading previous transformations.
 
     Returns
     -------
@@ -8246,23 +8240,23 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Scatter Plot of the input vcolumns.
+    Draws the scatter plot of the input vColumns.
 
     Parameters
     ----------
     columns: list
-        List of the vcolumns names. The list must have two or three elements.
+        List of the vColumns names. The list must have two or three elements.
     catcol: str, optional
-        Categorical vcolumn to use to label the data.
+        Categorical vColumn to use to label the data.
     max_cardinality: int, optional
         Maximum number of distinct elements for 'catcol' to be used as 
         categorical. The less frequent elements will be gathered together to 
         create a new category: 'Others'.
     cat_priority: list, optional
         List of the different categories to consider when labeling the data using
-        the vcolumn 'catcol'. The other categories will be filtered.
+        the vColumn 'catcol'. The other categories will be filtered.
     with_others: bool, optional
-        If set to false and the cardinality of the vcolumn 'catcol' is too big then 
+        If set to false and the cardinality of the vColumn 'catcol' is too big then 
         the less frequent element will not be merged to another category and they 
         will not be drawn.
     max_nb_points: int, optional
@@ -8284,8 +8278,8 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.bubble      : Draws the Bubble Plot of the input vcolumns.
-    vDataFrame.pivot_table : Draws the Pivot Table of vcolumns based on an aggregation.
+    vDataFrame.bubble      : Draws the bubble plot of the input vColumns.
+    vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -8343,12 +8337,12 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Scatter Matrix of the vDataFrame.
+    Draws the scatter matrix of the vDataFrame.
 
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all the numerical vcolumns will be 
         used.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
@@ -8360,7 +8354,7 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.scatter : Draws the Scatter Plot of the input vcolumns.
+    vDataFrame.scatter : Draws the scatter plot of the input vColumns.
         """
         if isinstance(columns, str):
             columns = [columns]
@@ -8391,8 +8385,8 @@ vcolumns : vcolumn
         vcolumns to select from the final vDataFrame relation. If empty, all the
         vcolumns will be selected.
     expr: list, optional
-        List of customized expressions. It must be pure SQL. For example, it is
-        possible to write 'column1 * column2 AS my_name'.
+        List of customized expressions in pure SQL.
+        For example: 'column1 * column2 AS my_name'
     order_by: dict / list, optional
         List of the vcolumns to use to sort the data using asc order or
         dictionary of all the sorting methods. For example, to sort by "column1"
@@ -8506,15 +8500,15 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Adds a new vcolumn to the vDataFrame which will correspond to sessions 
+    Adds a new vColumn to the vDataFrame which will correspond to sessions 
     (user activity during a specific time). A session ends when ts - lag(ts) 
     is greater than a specific threshold.
 
     Parameters
     ----------
     ts: str
-        vcolumn used as timeline. It will be to use to order the data. It can be
-        a numerical or type date like (date, datetime, timestamp...) vcolumn.
+        vColumn used as timeline. It will be to use to order the data. It can be
+        a numerical or type date like (date, datetime, timestamp...) vColumn.
     by: list, optional
         vcolumns used in the partition.
     session_threshold: str, optional
@@ -8557,8 +8551,8 @@ vcolumns : vcolumn
     def set_cursor(self, cursor):
         """
     ---------------------------------------------------------------------------
-    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
-    lost.
+    Sets a new database cursor. This can be very useful if the connection to
+    the database is lost.
 
     Parameters
     ----------
@@ -8583,8 +8577,7 @@ vcolumns : vcolumn
     def set_schema_writing(self, schema_writing: str):
         """
     ---------------------------------------------------------------------------
-    Sets a new writing schema, this schema will be to use to create temporary table
-    if it is necessary.
+    Sets a new writing schema used to create temporary tables when necessary.
 
     Parameters
     ----------
@@ -8598,8 +8591,8 @@ vcolumns : vcolumn
 
     See Also
     --------
-    vDataFrame.set_cursor : Sets a new DB cursor.
-    vDataFrame.set_dsn    : Sets a new DB DSN.
+    vDataFrame.set_cursor : Sets a new database cursor.
+    vDataFrame.set_dsn    : Sets a new database DSN.
         """
         check_types([("schema_writing", schema_writing, [str],)])
         self._VERTICAPY_VARIABLES_["cursor"].execute(
@@ -8939,12 +8932,12 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Time Series Stacked Area Chart.
+    Draws the stacked area chart of the time series.
 
     Parameters
     ----------
     ts: str
-        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     columns: list, optional
         List of the vcolumns names. If empty, all the numerical vcolumns will be 
@@ -9008,7 +9001,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all the numerical vColumns will be 
         used.
 
     Returns
@@ -9033,7 +9026,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all numerical vColumns will be 
         used.
 
     Returns
@@ -9057,9 +9050,9 @@ vcolumns : vcolumn
     Parameters
     ----------
     column1: str/int
-        The first vcolumn to swap or index of the first vcolumn to swap.
+        The first vColumn or its index to swap.
     column2: str/int
-        The second vcolumn to swap or index of the second vcolumn to swap.
+        The second vColumn or its index to swap.
 
     Returns
     -------
@@ -9092,7 +9085,7 @@ vcolumns : vcolumn
     def tail(self, limit: int = 5):
         """
     ---------------------------------------------------------------------------
-    Returns the vDataFrame tail.
+    Returns the tail of the vDataFrame.
 
     Parameters
     ----------
@@ -9241,7 +9234,7 @@ vcolumns : vcolumn
     ):
         """
     ---------------------------------------------------------------------------
-    Saves the vDataFrame current relation to the Vertica Database.
+    Saves the vDataFrame current relation to the Vertica database.
 
     Parameters
     ----------
@@ -9426,10 +9419,10 @@ vcolumns : vcolumn
     path: str, optional
         Absolute path where the JSON file will be created.
     usecols: list, optional
-        vcolumns to select from the final vDataFrame relation. If empty, all the
-        vcolumns will be selected.
+        vColumns to select from the final vDataFrame relation. If empty, all the
+        vColumns will be selected.
     order_by: dict / list, optional
-        List of the vcolumns to use to sort the data using asc order or
+        List of the vColumns to use to sort the data using asc order or
         dictionary of all the sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     limit: int, optional
@@ -9445,7 +9438,7 @@ vcolumns : vcolumn
     See Also
     --------
     vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
-    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica Database.
+    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica database.
         """
         if isinstance(order_by, str):
             order_by = [order_by]
@@ -9613,8 +9606,8 @@ vcolumns : vcolumn
     path: str
         Absolute path where the SHP file will be created.
     usecols: list, optional
-        vcolumns to select from the final vDataFrame relation. If empty, all the
-        vcolumns will be selected.
+        vColumns to select from the final vDataFrame relation. If empty, all the
+        vColumns will be selected.
     overwrite: bool, optional
         If set to True, the function will overwrite the index if an index exists.
     shape: str, optional
@@ -9735,7 +9728,7 @@ vcolumns : vcolumn
     Parameters
     ----------
     columns: list, optional
-        List of the vcolumns names. If empty, all the numerical vcolumns will be 
+        List of the vColumns names. If empty, all the numerical vColumns will be 
         used.
 
     Returns
@@ -9755,7 +9748,7 @@ vcolumns : vcolumn
     def version(self):
         """
     ---------------------------------------------------------------------------
-    Returns the Vertica Version.
+    Returns the version of Vertica.
 
     Returns
     -------

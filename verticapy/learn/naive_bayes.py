@@ -61,17 +61,16 @@ from verticapy.learn.vmodel import *
 class NaiveBayes(MulticlassClassifier):
     """
 ---------------------------------------------------------------------------
-Creates a NaiveBayes object by using the Vertica Highly Distributed 
-and Scalable Naive Bayes on the data. It is a "probabilistic classifiers" 
-based on applying Bayes theorem with strong (naïve) independence assumptions 
-between the features. 
+Creates a NaiveBayes object using the Vertica Naive Bayes algorithm on 
+the data. It is a "probabilistic classifier" based on applying Bayes' theorem 
+with strong (naïve) independence assumptions between the features. 
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 alpha: float, optional
 	A float that specifies use of Laplace smoothing if the event model is 
 	categorical, multinomial, or Bernoulli.
