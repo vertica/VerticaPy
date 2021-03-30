@@ -152,7 +152,7 @@ y: str
 x0: float, optional
     The initial abscissa.
 earth_radius: float, optional
-    Earth radius.
+    Earth radius in km.
 reverse: bool, optional
     If set to True, the Euclidean coordinates are converted to latitude and 
     longitude.
