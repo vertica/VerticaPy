@@ -56,8 +56,7 @@ from verticapy.learn.vmodel import *
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Classifier.
- => RandomForestClassifier of one tree using all the data.
+A DecisionTreeClassifier made of a single tree.
 
 Parameters
 ----------
@@ -122,8 +121,7 @@ nbins: int, optional
 class DecisionTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Regressor.
- => RandomForestRegressor of one tree using all the data.
+A DecisionTreeRegressor made of a single tree.
 
 Parameters
 ----------
@@ -188,7 +186,8 @@ nbins: int, optional
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-A classifier used for testing that overfits to the training data.
+A classifier that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
@@ -222,7 +221,8 @@ cursor: DBcursor, optional
 class DummyTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-A regressor used for testing that overfits to the training data.
+A regressor that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
