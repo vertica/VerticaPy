@@ -137,7 +137,7 @@ apply_pca: bool, optional
     [Only used for non-time series datasets]
     If True, a PCA is applied at the end of the preprocessing.
 rule: str / time, optional
-    [Only used when dealing with time series datasets]
+    [Only used for time series datasets]
     Interval to use to slice the time. For example, '5 minutes' will create records
     separated by '5 minutes' time interval.
     If set to auto, the rule will be detected using aggregations.
@@ -810,12 +810,12 @@ model_grid_ : tablesample
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the AutoML Plot.
+    Draws the AutoML plot.
 
     Parameters
     ----------
     mltype: str, optional
-        The Plot Type.
+        The plot type.
             champion: champion challenger plot.
             step    : stepwise plot.
     ax: Matplotlib axes object, optional

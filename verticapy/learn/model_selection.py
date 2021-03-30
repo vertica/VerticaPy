@@ -90,7 +90,7 @@ def bayesian_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold bayesian search of an estimator using a random
+Computes the k-fold bayesian search of an estimator using a random
 forest model to estimate a probable optimal set of parameters.
 
 Parameters
@@ -840,7 +840,7 @@ def enet_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search using multiple ENet models.
+Computes the k-fold grid search using multiple ENet models.
 
 Parameters
 ----------
@@ -1294,7 +1294,7 @@ def grid_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of an estimator.
+Computes the k-fold grid search of an estimator.
 
 Parameters
 ----------
@@ -1514,7 +1514,7 @@ def learning_curve(
 ):
     """
 ---------------------------------------------------------------------------
-Draws the Learning curve.
+Draws the learning curve.
 
 Parameters
 ----------
@@ -1826,7 +1826,7 @@ tablesample
 def parameter_grid(param_grid: dict,):
     """
 ---------------------------------------------------------------------------
-Generates the list of the different input parameters grid combinations.
+Generates the list of the different combinations of input parameters.
 
 Parameters
 ----------
@@ -2096,7 +2096,7 @@ def randomized_features_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of an estimator using different features
+Computes the k-fold grid search of an estimator using different features
 combinations. It can be used to find the parameters which will optimize
 the model.
 
@@ -2763,7 +2763,7 @@ def validation_curve(
 ):
     """
 ---------------------------------------------------------------------------
-Draws the Validation curve.
+Draws the validation curve.
 
 Parameters
 ----------

@@ -132,9 +132,9 @@ max_iter: int, optional
 class LinearSVR(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearSVR object using the Vertica Support Vector Machine (SVM) 
-algorithm on the data. This algorithm will find the hyperplan which will 
-approximate the data distribution.
+Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
+algorithm. This algorithm finds the hyperplane used to approximate 
+distribution of the data..
 
 Parameters
 ----------

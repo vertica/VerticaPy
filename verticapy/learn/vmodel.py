@@ -195,8 +195,8 @@ Main Class for Vertica Model
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the model's contour plot. Only available for regressors and binary
-    classifiers and for models of exactly 2 predictors.
+    Draws the model's contour plot. Only available for regressors, binary 
+    classifiers, and for models of exactly two predictors.
 
     Parameters
     ----------
@@ -2676,10 +2676,10 @@ Main Class for Vertica Model
     def to_sql(self, X: list = []):
         """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy the model without using Vertica
-    built-in functions. This function only works for Regression, Binary
-    Classification and Preprocessing. In case of Binary classification,
-    the probability of class 1 is returned.
+    Returns the SQL code needed to deploy the model without using Vertica 
+    built-in functions. This function only works for regression, binary 
+    classification and preprocessing. For binary classification, this function 
+    returns the probability of class 1.
 
     Parameters
     ----------

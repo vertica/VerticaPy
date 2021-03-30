@@ -188,8 +188,7 @@ nbins: int, optional
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Classifier. This classifier learns by heart the training data. 
- => very depth RandomForestClassifier of one tree using all the data.
+A classifier used for testing that overfits to the training data.
 
 Parameters
 ----------
@@ -223,8 +222,7 @@ cursor: DBcursor, optional
 class DummyTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Regressor. This regressor learns by heart the training data. 
- => very depth RandomForestRegressor of one tree using all the data.
+A regressor used for testing that overfits to the training data.
 
 Parameters
 ----------

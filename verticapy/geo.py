@@ -139,7 +139,8 @@ def coordinate_converter(vdf: vDataFrame,
                          reverse: bool = False,):
     """
 ---------------------------------------------------------------------------
-Converts between latitude and longitude to Euclidean coordinates x and y.
+Converts between geographic coordinates (latitude and longitude) and 
+Euclidean coordinates (x,y).
 
 Parameters
 ----------
@@ -329,8 +330,8 @@ bool
 def split_polygon_n(p: str, cursor=None, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
-Splits a polygon into (nbins^2) smaller polygons with approximately
-the same area.
+Splits a polygon into (nbins ** 2) smaller polygons with approximately
+the same total area.
 
 Parameters
 ----------

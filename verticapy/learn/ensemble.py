@@ -61,11 +61,10 @@ from verticapy.learn.vmodel import *
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a RandomForestClassifier object using the Vertica Random Forest
-algorithm on the data. It is one of the ensemble learning methods for 
-classification that operate by constructing a multitude of decision 
-trees at training time and outputting the class that is the mode of the 
-classes.
+Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER 
+function. It is one of the ensemble learning methods for classification 
+that operates by constructing a multitude of decision trees at 
+training-time and outputting a class with the mode.
 
 Parameters
 ----------
@@ -137,10 +136,10 @@ nbins: int, optional
 class RandomForestRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a RandomForestRegressor object using the Vertica Random Forest 
-algorithm on the data. It is one of the ensemble learning methods for 
-regression that operate by constructing a multitude of decision trees 
-at training time and outputting the mean prediction.
+Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR 
+function. It is one of the ensemble learning methods for regression that 
+operates by constructing a multitude of decision trees at training-time 
+and outputting a class with the mode.
 
 Parameters
 ----------
@@ -212,8 +211,8 @@ nbins: int, optional
 class XGBoostClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a XGBoostClassifier object using the Vertica XGBoost algorithm on 
-the data.
+Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
+algorithm.
 
 Parameters
 ----------
@@ -295,8 +294,8 @@ sample: float, optional
 class XGBoostRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Creates a XGBoostRegressor object using the Vertica XGBoost algorithm on the 
-data.
+Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
+algorithm.
 
 Parameters
 ----------

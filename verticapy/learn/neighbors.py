@@ -525,7 +525,7 @@ class NearestCentroid(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a NearestCentroid object using the k-Nearest Centroid algorithm. 
+Creates a NearestCentroid object using the k-nearest centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
 
 \u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
@@ -724,7 +724,7 @@ class KNeighborsClassifier(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a KNeighborsClassifier object by using the k-Nearest Neighbors Algorithm. 
+Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
 This object uses pure SQL to compute the distances and final score.
 
 \u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
@@ -1310,8 +1310,9 @@ class KNeighborsRegressor(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a KNeighborsRegressor object by using the K Nearest Neighbors Algorithm. 
-This object is using pure SQL to compute all the distances and final score. 
+Creates a KNeighborsRegressor object using the k-nearest neighbors 
+algorithm. This object uses pure SQL to compute all the distances and 
+final score.
 
 \u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
                  is therefore computationally expensive at O(n * n), where

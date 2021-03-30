@@ -3595,7 +3595,7 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the contour plot of the input function using the 2 input vColumns.
+    Draws the contour plot of the input function two input vColumns.
 
     Parameters
     ----------
@@ -4364,8 +4364,8 @@ vColumns : vColumn
     def describe(self, method: str = "auto", columns: list = [], unique: bool = True, ncols_block: int = 20,):
         """
     ---------------------------------------------------------------------------
-    Aggregates the vDataFrame using multiple statistical aggregations: 
-    min, max, median, unique... depending on the vColumns types.
+    Aggregates the vDataFrame using multiple statistical aggregations: min, 
+    max, median, unique... depending on the types of the vColumns.
 
     Parameters
     ----------
