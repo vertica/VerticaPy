@@ -408,9 +408,9 @@ def lof_plot(
         ax.scatter(
             column1, column2, column3, s=radius, facecolors="none", color=colors[1],
         )
-        ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-        ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
-        ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+        ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
     else:
         raise Exception(
             "LocalOutlierFactor Plot is available for a maximum of 3 columns"
@@ -1220,7 +1220,6 @@ def voronoi_plot(
                 alpha=1,
                 zorder=4,
                 marker="x",
-                edgecolors="black",
             )
     if conn:
         conn.close()
