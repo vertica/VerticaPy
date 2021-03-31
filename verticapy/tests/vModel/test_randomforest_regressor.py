@@ -28,6 +28,14 @@ def winequality_vd(base):
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.winequality", cursor=base.cursor)
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
 def rfr_data_vd(base):
@@ -103,6 +111,18 @@ class TestRFR:
         model_repr = RandomForestRegressor("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestRegressor>"
+
+    def test_contour(self, base, titanic_vd):
+        model_test = RandomForestRegressor("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 38
+        model_test.drop()
 
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'rfr_model_test', match_by_pos = 'true')"

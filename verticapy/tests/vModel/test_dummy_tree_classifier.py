@@ -137,6 +137,18 @@ class TestDummyTreeClassifier:
         assert conf_mat2["Car"] == [0, 3, 0]
         assert conf_mat2["Train"] == [0, 0, 3]
 
+    def test_contour(self, base, titanic_vd):
+        model_test = DummyTreeClassifier("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_RF_CLASSIFIER(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()

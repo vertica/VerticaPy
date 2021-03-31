@@ -140,6 +140,18 @@ class TestXGBC:
         assert conf_mat2["Car"] == [0, 3, 0]
         assert conf_mat2["Train"] == [0, 0, 3]
 
+    def test_contour(self, base, titanic_vd):
+        model_test = XGBoostClassifier("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 38
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = "PREDICT_XGB_CLASSIFIER(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'xgbc_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
@@ -197,11 +209,11 @@ class TestXGBC:
         )
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = XGBoostClassifier("rfc_sql_test", cursor=model.cursor)
+        model_test = XGBoostClassifier("xgb_sql_test", cursor=model.cursor)
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         model.cursor.execute(
-            "SELECT PREDICT_XGB_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
+            "SELECT PREDICT_XGB_CLASSIFIER(* USING PARAMETERS model_name = 'xgb_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
                 model_test.to_sql()
             )
         )

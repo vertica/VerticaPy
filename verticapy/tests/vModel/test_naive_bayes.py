@@ -154,6 +154,18 @@ class TestNB:
         assert conf_mat2["Iris-versicolor"] == [0, 47, 3]
         assert conf_mat2["Iris-virginica"] == [0, 3, 47]
 
+    def test_contour(self, base, titanic_vd):
+        model_test = NaiveBayes("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 36
+        model_test.drop()
+
     def test_deploySQL(self, model):
         expected_sql = 'PREDICT_NAIVE_BAYES("SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm" USING PARAMETERS model_name = \'nb_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()

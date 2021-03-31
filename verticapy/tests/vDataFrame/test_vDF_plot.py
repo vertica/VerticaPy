@@ -334,10 +334,6 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_vDF_hchart(self):
-        pass
-
     def test_vDF_heatmap(self, iris_vd):
         result = iris_vd.heatmap(
             ["PetalLengthCm", "SepalLengthCm"],

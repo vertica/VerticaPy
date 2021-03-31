@@ -195,8 +195,8 @@ Main Class for Vertica Model
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the model's contour plot. Only available for regressors and binary
-    classifiers.
+    Draws the model's contour plot. Only available for regressors, binary 
+    classifiers, and for models of exactly two predictors.
 
     Parameters
     ----------
@@ -2409,6 +2409,26 @@ Main Class for Vertica Model
             else:
                 func += "\n\treturn result"
             return func
+        elif self.type in ("BisectingKMeans",):
+            bktree = self.get_attr("BKTree")
+            cluster = [elem[1:-7] for elem in bktree.to_list()]
+            func += "centroids = np.array({})\n".format(cluster)
+            func += "\tright_child = {}\n".format(bktree["right_child"])
+            func += "\tleft_child = {}\n".format(bktree["left_child"])
+            func += "\tdef predict_tree(right_child, left_child, row, node_id, centroids):\n"
+            func += "\t\tif left_child[node_id] == right_child[node_id] == None:\n"
+            func += "\t\t\treturn int(node_id)\n"
+            func += "\t\telse:\n"
+            func += "\t\t\tright_node = int(right_child[node_id])\n"
+            func += "\t\t\tleft_node = int(left_child[node_id])\n"
+            func += "\t\t\tif np.sum((row - centroids[left_node]) ** 2) < np.sum((row - centroids[right_node]) ** 2):\n"
+            func += "\t\t\t\treturn predict_tree(right_child, left_child, row, left_node, centroids)\n"
+            func += "\t\t\telse:\n"
+            func += "\t\t\t\treturn predict_tree(right_child, left_child, row, right_node, centroids)\n"
+            func += "\tdef predict_tree_final(row):\n"
+            func += "\t\treturn predict_tree(right_child, left_child, row, 0, centroids)\n"
+            func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
+            return func
         elif self.type in ("NearestCentroid", "KMeans",):
             centroids = self.centroids_.to_list() if self.type == "NearestCentroid" else self.cluster_centers_.to_list()
             if self.type == "NearestCentroid":
@@ -2557,78 +2577,98 @@ Main Class for Vertica Model
             for idx, elem in enumerate(X):
                 sql = sql.replace(self.X[idx], str_column(X[idx]))
             return sql
+            """
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
-            def predict_rf():
-                def predict_tree(tree_dict, node_id, features, is_regressor: bool = True,):
-                    if tree_dict[node_id]["is_leaf"]:
-                        if is_regressor:
-                            return str(float(tree_dict[node_id]["prediction"]))
-                        else:
-                            if "log_odds" in tree_dict[node_id]:
-                                val = tree_dict[node_id]["log_odds"]
-                                val = val.split(",")
-                                for idx, elem in enumerate(val):
-                                    val[idx] = elem.split(":")
-                                return str(val[-1][1])
-                            elif tree_dict[node_id]["prediction"] == '1':
-                                return str(float(tree_dict[node_id]["probability/variance"]))
-                            elif tree_dict[node_id]["prediction"] == '0':
-                                return str(1 - float(tree_dict[node_id]["probability/variance"]))
-                            else:
-                                return str(float(tree_dict[node_id]["prediction"]))
-                    else:
-                        idx = tree_dict[node_id]["split_predictor"]
-                        right_node = tree_dict[node_id]["right_child_id"]
-                        left_node = tree_dict[node_id]["left_child_id"]
-                        if tree_dict[node_id]["is_categorical_split"]:
-                            return "(CASE WHEN \"{}\" = '{}' THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"], tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
-                        else:
-                            return "(CASE WHEN \"{}\" < {} THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"], tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
-                result = []
-                features = self.X
-                is_regressor = (self.type in ("RandomForestRegressor", "XGBoostRegressor",))
-                if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
-                    n = self.parameters["n_estimators"]
-                else:
-                    n = self.get_attr("tree_count")["tree_count"][0]
-                for i in range(n):
-                    tree = self.get_tree(i)
-                    tree_dict = {}
-
-                    for idx in range(len(tree["tree_id"])):
-                        tree_dict[tree["node_id"][idx]] = {
-                                  "is_leaf": tree["is_leaf"][idx],
-                                  "is_categorical_split": tree["is_categorical_split"][idx],
-                                  "split_predictor": tree["split_predictor"][idx],
-                                  "split_value": tree["split_value"][idx],
-                                  "left_child_id": tree["left_child_id"][idx],
-                                  "right_child_id": tree["right_child_id"][idx],
-                                  "prediction": tree["prediction"][idx],}
-                        if self.type in ("RandomForestClassifier", "RandomForestRegressor",):
-                            tree_dict[tree["node_id"][idx]]["probability/variance"] = tree["probability/variance"][idx]
-                        else:
-                            tree_dict[tree["node_id"][idx]]["log_odds"] = tree["log_odds"][idx]
-                    result += [predict_tree(tree_dict, 1, features, is_regressor,)]
-                if self.type in ("XGBoostRegressor",) or self.type in ("XGBoostClassifier",) and sorted(self.classes_) == [0, 1]:
-                    condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
+            def map_idx(x):
+                for idx, elem in enumerate(self.X):
+                    if str_column(x).lower() == str_column(elem).lower():
+                        return idx
+            result = []
+            if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+                n = self.parameters["n_estimators"]
+            else:
+                n = self.get_attr("tree_count")["tree_count"][0]
+            func += "n = {}\n".format(n)
+            if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
+                func += "\tclasses = np.array({})\n".format([str(elem) for elem in self.classes_])
+            func += "\ttree_list = []\n"
+            for i in range(n):
+                tree = self.get_tree(i)
+                tree_list = []
+                for idx in range(len(tree["tree_id"])):
+                    tree.values["left_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["left_child_id"]]
+                    tree.values["right_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["right_child_id"]]
+                    tree.values["node_id"][idx] = idx
+                    tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
+                    if self.type in ("XGBoostClassifier",) and isinstance(tree["log_odds"][idx], str):
+                        val, all_val = tree["log_odds"][idx].split(","), {}
+                        for elem in val:
+                            all_val[elem.split(":")[0]] = float(elem.split(":")[1])
+                        tree.values["log_odds"][idx] = all_val
+                tree_list = [tree["left_child_id"], tree["right_child_id"], tree["split_predictor"], tree["split_value"], tree["prediction"], tree["is_categorical_split"]]
+                if self.type in ("XGBoostClassifier",):
+                    tree_list += [tree["log_odds"]]
+                func += "\ttree_list += [{}]\n".format(tree_list)
+            func += "\tdef predict_tree(tree, node_id, X,):\n"
+            func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
+            if self.type in ("RandomForestRegressor", "XGBoostRegressor",):
+                func += "\t\t\treturn float(tree[4][node_id])\n"
+            elif self.type in ("RandomForestClassifier",):
+                func += "\t\t\treturn tree[4][node_id]\n"
+            else:
+                func += "\t\t\treturn tree[6][node_id]\n"
+            func += "\t\telse:\n"
+            func += "\t\t\tidx, right_node, left_node = tree[2][node_id], tree[1][node_id], tree[0][node_id]\n"
+            func += "\t\t\tif (tree[5][node_id] and str(X[idx]) == tree[3][node_id]) or (not(tree[5][node_id]) and float(X[idx]) < float(tree[3][node_id])):\n"
+            func += "\t\t\t\treturn predict_tree(tree, left_node, X)\n"
+            func += "\t\t\telse:\n"
+            func += "\t\t\t\treturn predict_tree(tree, right_node, X)\n"
+            func += "\tdef predict_tree_final(X):\n".format(n)
+            func += "\t\tresult = [predict_tree(tree, 0, X,) for tree in tree_list]\n"
+            if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
+                func += "\t\tall_classes_score = {}\n"
+                func += "\t\tfor elem in classes:\n"
+                func += "\t\t\tall_classes_score[elem] = 0\n"
+            if self.type in ("XGBoostRegressor", "XGBoostClassifier",):
+                condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
+                if self.type in ("XGBoostRegressor",):
                     self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
                     avg = self.cursor.fetchone()[0]
-                    logodds = np.log(avg / (1 - avg))
-                    if self.type in ("XGBoostRegressor",):
-                        sql_final = "{} + ({}) * {}".format(avg, " + ".join(result), self.parameters["learning_rate"])
-                    else:
-                        sql_final = "1 - 1 / (1 + EXP({} + {} * ({})))".format(logodds, self.parameters["learning_rate"], " + ".join(result),)
-                if self.type in ("RandomForestRegressor",) or sorted(self.classes_) == [0, 1]:
-                    sql_final = "({}) / {}".format(" + ".join(result), n)
+                    func += "\t\treturn {} + {} * np.sum(result)\n".format(avg, self.parameters["learning_rate"])
                 else:
-                    raise "MulticlassClassifier are not yet supported for method 'deployStandardSQL'."
-                sql_final = "CASE WHEN {} THEN NULL ELSE {} END".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]), sql_final)
-                return sql_final
-            result = predict_rf()
-            for idx, elem in enumerate(X):
-                result = result.replace(self.X[idx], str_column(X[idx]))
-            return result
-            """
+                    func += "\t\tlogodds = np.array(["
+                    for elem in self.classes_:
+                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(self.input_relation, " AND ".join(condition), self.y, elem))
+                        avg = self.cursor.fetchone()[0]
+                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(self.input_relation, " AND ".join(condition),))
+                        avg /= self.cursor.fetchone()[0]
+                        logodds = np.log(avg / (1 - avg))
+                        func += "{}, ".format(logodds)
+                    func += "])\n"
+                    func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
+                    func += "\t\t\tfor val in result:\n"
+                    func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
+                    func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - (logodds[idx] + {} * all_classes_score[elem])))\n".format(self.parameters["learning_rate"])
+                    func += "\t\tresult = [all_classes_score[elem] for elem in all_classes_score]\n"
+            elif self.type in ("RandomForestRegressor",):
+                func += "\t\treturn np.mean(result)\n"
+            else:
+                func += "\t\tfor elem in result:\n"
+                func += "\t\t\tif elem in all_classes_score:\n"
+                func += "\t\t\t\tall_classes_score[elem] += 1\n"
+                func += "\t\tresult = []\n"
+                func += "\t\tfor elem in all_classes_score:\n"
+                func += "\t\t\tresult += [all_classes_score[elem]]\n"
+            if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
+                if return_proba:
+                    func += "\t\treturn np.array(result) / np.sum(result)\n"
+                else:
+                    if isinstance(self.classes_[0], int):
+                        func += "\t\treturn int(classes[np.argmax(np.array(result))])\n"
+                    else:
+                        func += "\t\treturn classes[np.argmax(np.array(result))]\n"
+            func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
+            return func
         else:
             raise ModelError("Function to_python not yet available for model type '{}'.".format(self.type))
 
@@ -2636,10 +2676,10 @@ Main Class for Vertica Model
     def to_sql(self, X: list = []):
         """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy the model without using Vertica
-    built-in functions. This function only works for Regression, Binary
-    Classification and Preprocessing. In case of Binary classification,
-    the probability of class 1 is returned.
+    Returns the SQL code needed to deploy the model without using Vertica 
+    built-in functions. This function only works for regression, binary 
+    classification and preprocessing. For binary classification, this function 
+    returns the probability of class 1.
 
     Parameters
     ----------
@@ -2735,6 +2775,24 @@ Main Class for Vertica Model
                 return sql
             else:
                 raise "MulticlassClassifier are not yet supported for method 'to_sql'."
+        elif self.type in ("BisectingKMeans",):
+            bktree = self.get_attr("BKTree")
+            cluster = [elem[1:-7] for elem in bktree.to_list()]
+            clusters_distance = []
+            for elem in cluster:
+                list_tmp = []
+                for idx, col in enumerate(X):
+                    list_tmp += ["POWER({} - {}, 2)".format(X[idx], elem[idx])]
+                clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
+            def predict_tree(tree_dict, node_id: int, clusters_distance: list):
+                if tree_dict["left_child"][node_id] == tree_dict["right_child"][node_id] == None:
+                    return int(node_id)
+                else:
+                    right_node = int(tree_dict["right_child"][node_id])
+                    left_node = int(tree_dict["left_child"][node_id])
+                    return "(CASE WHEN {} < {} THEN {} ELSE {} END)".format(clusters_distance[left_node], clusters_distance[right_node], predict_tree(tree_dict, left_node, clusters_distance), predict_tree(tree_dict, right_node, clusters_distance))
+            sql_final = "(CASE WHEN {} THEN NULL ELSE {} END)".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]), predict_tree(bktree, 0, clusters_distance))
+            return sql_final
         elif self.type in ("KMeans",):
             cluster = self.get_attr("centers").to_list()
             clusters_distance = []
@@ -2811,7 +2869,7 @@ Main Class for Vertica Model
             return ", ".join(sql)
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
             def predict_rf():
-                def predict_tree(tree_dict, node_id, features, is_regressor: bool = True,):
+                def predict_tree(tree_dict, node_id, is_regressor: bool = True,):
                     if tree_dict[node_id]["is_leaf"]:
                         if is_regressor:
                             return str(float(tree_dict[node_id]["prediction"]))
@@ -2833,11 +2891,10 @@ Main Class for Vertica Model
                         right_node = tree_dict[node_id]["right_child_id"]
                         left_node = tree_dict[node_id]["left_child_id"]
                         if tree_dict[node_id]["is_categorical_split"]:
-                            return "(CASE WHEN \"{}\" = '{}' THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                            return "(CASE WHEN \"{}\" = '{}' THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, is_regressor), predict_tree(tree_dict, right_node, is_regressor))
                         else:
-                            return "(CASE WHEN \"{}\" < {} THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, features, is_regressor), predict_tree(tree_dict, right_node, features, is_regressor))
+                            return "(CASE WHEN \"{}\" < {} THEN {} ELSE {} END)".format(tree_dict[node_id]["split_predictor"].replace('"', ''), tree_dict[node_id]["split_value"], predict_tree(tree_dict, left_node, is_regressor), predict_tree(tree_dict, right_node, is_regressor))
                 result = []
-                features = self.X
                 is_regressor = (self.type in ("RandomForestRegressor", "XGBoostRegressor",))
                 if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
                     n = self.parameters["n_estimators"]
@@ -2860,7 +2917,7 @@ Main Class for Vertica Model
                             tree_dict[tree["node_id"][idx]]["probability/variance"] = tree["probability/variance"][idx]
                         else:
                             tree_dict[tree["node_id"][idx]]["log_odds"] = tree["log_odds"][idx]
-                    result += [predict_tree(tree_dict, 1, features, is_regressor,)]
+                    result += [predict_tree(tree_dict, 1, is_regressor,)]
                 if self.type in ("XGBoostRegressor",) or self.type in ("XGBoostClassifier",) and sorted(self.classes_) == [0, 1]:
                     condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
                     self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
@@ -3289,9 +3346,9 @@ class BinaryClassifier(Classifier):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -3425,7 +3482,7 @@ class BinaryClassifier(Classifier):
 			specificity : Specificity = tn / (tn + fp)
 
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as a prediction. 
+		Cutoff for which the tested category will be accepted as a prediction.
 
 	Returns
 	-------
@@ -3506,13 +3563,13 @@ class MulticlassClassifier(Classifier):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
-	(AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will 
-	consider each category as positive and switch to the next one during the computation.
+	(AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will consider 
+    each category as positive and switch to the next one during the computation.
 
 	Parameters
 	----------
 	cutoff: float/list, optional
-		Cutoff for which the tested category will be accepted as a prediction. 
+		Cutoff for which the tested category will be accepted as a prediction.
 		For multiclass classification, each tested category becomes 
 		the positives and the others are merged into the negatives. The list will 
 		represent the classes threshold. If it is empty, the best cutoff will be used.
@@ -3548,7 +3605,7 @@ class MulticlassClassifier(Classifier):
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as a prediction. If the 
+		Cutoff for which the tested category will be accepted as a prediction.If the 
 		cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
 	Returns
@@ -3645,7 +3702,7 @@ class MulticlassClassifier(Classifier):
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as a prediction. If 
+		Cutoff for which the tested category will be accepted as a prediction.If 
 		the cutoff is not between 0 and 1, a probability will be returned.
 	allSQL: bool, optional
 		If set to True, the output will be a list of the different SQL codes 
@@ -3723,7 +3780,7 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	pos_label: int/float/str, optional
-		To draw a lift chart, one of the response column classes must be the 
+		To draw a lift chart, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3825,16 +3882,16 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
 	name: str, optional
 		Name of the added vcolumn. If empty, a name will be generated.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as a prediction. 
+		Cutoff for which the tested category will be accepted as a prediction.
 		If the parameter is not between 0 and 1, the class probability will
 		be returned.
 	pos_label: int/float/str, optional
@@ -3891,7 +3948,7 @@ class MulticlassClassifier(Classifier):
 	Parameters
 	----------
 	pos_label: int/float/str, optional
-		To draw the ROC curve, one of the response column classes must be the 
+		To draw the ROC curve, one of the response column classes must be the
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3941,7 +3998,7 @@ class MulticlassClassifier(Classifier):
 		Label to consider as positive. All the other classes will be merged and
 		considered as negative for multiclass classification.
 	cutoff: float, optional
-		Cutoff for which the tested category will be accepted as a prediction. 
+		Cutoff for which the tested category will be accepted as a prediction.
 		If the parameter is not between 0 and 1, an automatic cutoff is 
 		computed.
 	method: str, optional
@@ -4115,9 +4172,9 @@ class Regressor(Supervised):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -5034,7 +5091,7 @@ class Decomposition(Preprocessing):
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the decomposition score on a dataset for each transformed column. It 
+    Returns the decomposition score on a dataset for each transformed column. It
     is the average / median of the p-distance between the real column and its 
     result after applying the decomposition model and its inverse.  
 
@@ -5047,7 +5104,7 @@ class Decomposition(Preprocessing):
         Input Relation. If empty, the model input relation will be used.
     method: str, optional
         Distance Method used to do the scoring.
-            avg : The average is used as aggregation.
+            avg    : The average is used as aggregation.
             median : The median is used as aggregation.
     p: int, optional
         The p of the p-distance.
@@ -5200,9 +5257,9 @@ class Clustering(Unsupervised):
 	Parameters
 	----------
 	vdf: str/vDataFrame
-		Object to use to run the prediction. You can also specify a customized relation, 
-        but you must enclose it with an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+		Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.

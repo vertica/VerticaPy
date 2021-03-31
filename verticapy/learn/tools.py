@@ -112,7 +112,7 @@ int
 
 
 # ---#
-def load_model(name: str, cursor=None, test_relation: str = ""):
+def load_model(name: str, cursor=None, input_relation: str = "", test_relation: str = ""):
     """
 ---------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
@@ -123,6 +123,10 @@ name: str
     Model Name.
 cursor: DBcursor, optional
     Vertica database cursor.
+input_relation: str, optional
+    Some automated functions may depend on the input relation. If the 
+    load_model function cannot find the input relation from the call string, 
+    you should fill it manually.
 test_relation: str, optional
     Relation to use to do the testing. All the methods will use this relation 
     for the scoring. If empty, the training relation will be used as testing.
@@ -132,7 +136,9 @@ Returns
 model
     The model.
     """
-    check_types([("name", name, [str],), ("test_relation", test_relation, [str],)])
+    check_types([("name", name, [str],), 
+                 ("test_relation", test_relation, [str],),
+                 ("input_relation", input_relation, [str],),])
     cursor = check_cursor(cursor)[0]
     does_exist = does_model_exist(name=name, cursor=cursor, raise_error=False)
     schema, name = schema_relation(name)
@@ -282,7 +288,10 @@ model
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
-            model.input_relation = model_save["input_relation"]
+            if not(input_relation):
+                model.input_relation = model_save["input_relation"]
+            else:
+                model.input_relation = input_relation
             model.X = model_save["X"]
             if model_save["type"] in (
                 "KNeighborsRegressor",
@@ -589,7 +598,10 @@ model
                     model.param_ = model.get_attr("integer_categories")
                 except:
                     model.param_ = model.get_attr("varchar_categories")
-        model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
+        if not(input_relation):
+            model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
+        else:
+            model.input_relation = input_relation
         model.test_relation = test_relation if (test_relation) else model.input_relation
         if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
             model.X = info.split(",")[3 : len(info.split(","))]

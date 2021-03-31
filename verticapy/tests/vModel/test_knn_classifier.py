@@ -51,6 +51,18 @@ class TestKNeighborsClassifier:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsClassifier>"
 
+    def test_contour(self, base, titanic_vd):
+        model_test = KNeighborsClassifier("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(nbins=1000)
 

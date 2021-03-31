@@ -90,7 +90,7 @@ def bayesian_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold bayesian search of an estimator using a random
+Computes the k-fold bayesian search of an estimator using a random
 forest model to estimate a probable optimal set of parameters.
 
 Parameters
@@ -129,7 +129,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -157,11 +157,8 @@ k_tops: int, optional
     possible combinations. 'k_tops' represents the number of models to train at
     this stage to find the most efficient model.
 RFmodel_params: dict, optional
-    Dictionary of the random forest model parameters used to compute the best splits 
-    when 'method' is set to 'smart'. If the response is numerical (except ints and bools), an
-    RF Regressor will be trained. Otherwise, an RF Classifier will be trained.
-    Example: {"n_estimators": 20, "max_depth": 10} will train a random forest model with
-    20 trees and a maximum depth of 10.
+    Dictionary of the random forest model parameters used to estimate a probable 
+    optimal set of parameters.
 print_info: bool, optional
     If True, prints the model information at each step.
 
@@ -238,11 +235,11 @@ tablesample
         from verticapy.learn.ensemble import RandomForestRegressor
         hyper_param_estimator = RandomForestRegressor(name=estimator.name, cursor=estimator.cursor, **RFmodel_params,)
         hyper_param_estimator.fit(relation, all_params, "score")
-        from verticapy.datasets import gen_dataset_regular, gen_dataset
+        from verticapy.datasets import gen_meshgrid, gen_dataset
         if random_grid:
             vdf = gen_dataset(model_grid, estimator.cursor, nrows=nrows,)
         else:
-            vdf = gen_dataset_regular(model_grid, estimator.cursor,)
+            vdf = gen_meshgrid(model_grid, estimator.cursor,)
         estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
@@ -317,11 +314,11 @@ cursor: DBcursor, optional
 	Vertica database cursor.
 n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
-	This can also be customized list with various k values to test.
+    This can also be customized list with various k values to test.
 init: str/list, optional
 	The method to use to find the initial cluster centers.
 		kmeanspp : Use the k-means++ method to initialize the centers.
-		random   : Randomly subsamples the data to find initial centers.
+        random   : Randomly subsamples the data to find initial centers.
 	It can be also a list with the initial cluster centers to use.
 max_iter: int, optional
 	The maximum number of iterations for the algorithm.
@@ -456,7 +453,7 @@ metric: str/list, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
 	Number of folds.
 pos_label: int/float/str, optional
@@ -843,7 +840,7 @@ def enet_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of the input enet model.
+Computes the k-fold grid search using multiple ENet models.
 
 Parameters
 ----------
@@ -879,7 +876,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 estimator_type: str, optional
@@ -964,7 +961,7 @@ lmax: int, optional
     Maximum length of the parameter grid.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-If set to 1, the randomness is limited to some parameters while others
+    If set to 1, the randomness is limited to some parameters while others
     are picked based on a default grid.
     If set to 2, there is no randomness and a default grid is returned.
     
@@ -1297,7 +1294,7 @@ def grid_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of an estimator.
+Computes the k-fold grid search of an estimator.
 
 Parameters
 ----------
@@ -1338,7 +1335,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -1517,7 +1514,7 @@ def learning_curve(
 ):
     """
 ---------------------------------------------------------------------------
-Draws the Learning curve.
+Draws the learning curve.
 
 Parameters
 ----------
@@ -1563,7 +1560,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -1829,7 +1826,7 @@ tablesample
 def parameter_grid(param_grid: dict,):
     """
 ---------------------------------------------------------------------------
-Generates the list of the different input parameters grid combinations.
+Generates the list of the different combinations of input parameters.
 
 Parameters
 ----------
@@ -1995,7 +1992,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 pos_label: int/float/str, optional
-    To compute the PRC Curve, one of the response column classes must be the 
+    To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     The number of bins.
@@ -2099,7 +2096,7 @@ def randomized_features_search_cv(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the K-Fold grid search of an estimator using different features
+Computes the k-fold grid search of an estimator using different features
 combinations. It can be used to find the parameters which will optimize
 the model.
 
@@ -2139,7 +2136,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2348,7 +2345,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2361,7 +2358,7 @@ lmax: int, optional
     Maximum length of each parameter list.
 optimized_grid: int, optional
     If set to 0, the randomness is based on the input parameters.
-If set to 1, the randomness is limited to some parameters while others
+    If set to 1, the randomness is limited to some parameters while others
     are picked based on a default grid.
     If set to 2, there is no randomness and a default grid is returned.
 print_info: bool, optional
@@ -2422,7 +2419,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 pos_label: int/float/str, optional
-    To compute the PRC Curve, one of the response column classes must be the 
+    To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     The number of bins.
@@ -2588,9 +2585,6 @@ Parameters
 ----------
 estimator: object
     Vertica estimator with a fit method and a database cursor.
-param_grid: dict/list
-    Dictionary of the parameters to test. It can also be a list of the
-    different combinations.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2615,12 +2609,11 @@ x_order: str, optional
         pearson  : X is ordered based on the Pearson's correlation coefficient.
         spearman : X is ordered based on the Spearman's correlation coefficient.
         random   : Shuffles the vector X before applying the stepwise algorithm.
-        none     : Does not change X order.
+        none     : Does not change the order of X.
 print_info: bool, optional
     If set to True, prints the model information at each step.
 show: bool, optional
-    If set to True, a Bubble plot representing the Stepwise graphic will
-    be drawn.
+    If set to True, the stepwise graphic will be drawn.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds
@@ -2770,7 +2763,7 @@ def validation_curve(
 ):
     """
 ---------------------------------------------------------------------------
-Draws the Validation curve.
+Draws the validation curve.
 
 Parameters
 ----------
@@ -2812,7 +2805,7 @@ metric: str, optional
         r2     : R-squared coefficient
         r2a    : R2 adjusted
         rmse   : Root-mean-squared error
-        var    : Explained variance 
+        var    : Explained variance
 cv: int, optional
     Number of folds.
 pos_label: int/float/str, optional
@@ -2836,7 +2829,7 @@ tablesample
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     from verticapy.plot import range_curve
-
+    
     gs_result = grid_search_cv(
         estimator,
         {param_name: param_range},
@@ -2848,6 +2841,7 @@ tablesample
         pos_label,
         cutoff,
         True,
+        False,
         False,
     )
     gs_result_final = [

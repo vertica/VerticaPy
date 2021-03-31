@@ -61,7 +61,7 @@ class ElasticNet(Regressor):
 ---------------------------------------------------------------------------
 Creates a ElasticNet object using the Vertica Linear Regression algorithm 
 on the data. The Elastic Net is a regularized regression method that linearly 
-combines the L1 and L2 penalties of the Lasso and Ridge methods. 
+combines the L1 and L2 penalties of the Lasso and Ridge methods.
 
 Parameters
 ----------
@@ -118,7 +118,7 @@ class Lasso(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a Lasso object using the Vertica Linear Regression algorithm on the 
-data. The Lasso is a regularized regression method which uses an L1 penalty. 
+data. The Lasso is a regularized regression method which uses an L1 penalty.
 
 Parameters
 ----------
@@ -172,8 +172,8 @@ solver: str, optional
 class LinearRegression(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearRegression object using the Vertica Linear Regression
-algorithm on the data. 
+Creates a LinearRegression object using the Vertica Linear Regression algorithm 
+on the data.
 
 Parameters
 ----------

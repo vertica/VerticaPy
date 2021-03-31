@@ -1096,7 +1096,7 @@ def seasonal_decompose(
 ):
     """
 ---------------------------------------------------------------------------
-Time Series Seasonal decomposition.
+Performs a seasonal time series decomposition.
 
 Parameters
 ----------

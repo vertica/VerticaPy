@@ -364,7 +364,7 @@ def get_data_types(
     """
 ---------------------------------------------------------------------------
 Returns customized relation columns and the respective data types.
-This process creates a temporary table. 
+This process creates a temporary table.
 
 Parameters
 ----------
@@ -669,6 +669,7 @@ def read_csv(
     sep: str = ",",
     header: bool = True,
     header_names: list = [],
+    dtype: dict = {},
     na_rep: str = "",
     quotechar: str = '"',
     escape: str = "\\",
@@ -697,6 +698,10 @@ header: bool, optional
 	different columns.
 header_names: list, optional
 	List of the columns names.
+dtype: dict, optional
+    Dictionary of the user types. Providing a dictionary can increase 
+    ingestion speed and precision; instead of parsing the file to guess 
+    the different types, VerticaPy will use the input types.
 na_rep: str, optional
 	Missing values representation.
 quotechar: str, optional
@@ -736,6 +741,7 @@ read_json : Ingests a JSON file into the Vertica database.
             ("header", header, [bool],),
             ("header_names", header_names, [list],),
             ("na_rep", na_rep, [str],),
+            ("dtype", dtype, [dict],),
             ("quotechar", quotechar, [str],),
             ("escape", escape, [str],),
             ("genSQL", genSQL, [bool],),
@@ -743,6 +749,7 @@ read_json : Ingests a JSON file into the Vertica database.
             ("insert", insert, [bool],),
         ]
     )
+    assert dtype or not(header_names), ParameterError("dtype must be empty when using parameter 'header_names'.")
     cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
@@ -795,9 +802,10 @@ read_json : Ingests a JSON file into the Vertica database.
             path_test = path
         query1 = ""
         if not (insert):
-            dtype = pcsv(
-                path_test, cursor, sep, header, header_names, na_rep, quotechar, escape
-            )
+            if not(dtype):
+                dtype = pcsv(
+                    path_test, cursor, sep, header, header_names, na_rep, quotechar, escape
+                )
             if parse_n_lines > 0:
                 os.remove(path[0:-4] + "VERTICAPY_COPY.csv")
             query1 = "CREATE TABLE {}({});".format(
@@ -1197,7 +1205,7 @@ count: int, optional
 	Number of elements if we had to load the entire dataset. It is used 
 	only for rendering purposes.
 offset: int, optional
-	Number of elements that were skipped if we had to load the entire 
+	Number of elements that were skipped if we had to load the entire
 	dataset. It is used only for rendering purposes.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
@@ -1532,7 +1540,7 @@ def to_tablesample(
 ):
     """
 	---------------------------------------------------------------------------
-	Returns the Result of a SQL query as a tablesample object.
+	Returns the result of a SQL query as a tablesample object.
 
 	Parameters
 	----------
@@ -1611,13 +1619,13 @@ name: str, optional
 	Name of the vDataFrame. It is used only when displaying the vDataFrame.
 cursor: DBcursor, optional
 	Vertica database cursor. 
-	For a cursor designed by Vertica, see vertica_python
-	For ODBC, see pyodbc.
-	For JDBC, see jaydebeapi.
-	For help, see utilities.vHelp.
+    For a cursor designed by Vertica, see vertica_python
+    For ODBC, see pyodbc.
+    For JDBC, see jaydebeapi.
+    For help, see utilities.vHelp.
 dsn: str, optional
 	Database DSN. OS File including the DB credentials.
-	VerticaPy will try to create a vertica_python cursor first.
+    VerticaPy will try to create a vertica_python cursor first.
 	If it didn't find the library, it will try to create a pyodbc cursor.
 	For help, see utilities.vHelp.
 schema: str, optional

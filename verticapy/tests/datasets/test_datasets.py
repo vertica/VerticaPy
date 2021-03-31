@@ -32,12 +32,12 @@ class TestDatasets:
         assert result["distance"].max() < 4001
         assert result["age"].max() < 41
 
-    def test_gen_dataset_regular(self, base):
-        result = gen_dataset_regular(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
-                                                        "age": {"type": int, "range": [20, 40], "nbins": 10,},
-                                                        "distance": {"type": float, "range": [1000, 4000], "nbins": 10,},
-                                                        "date": {"type": datetime.date, "range": ["1993-11-03", 365], "nbins": 10,},
-                                                        "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365], "nbins": 10,},}, 
+    def test_gen_meshgrid(self, base):
+        result = gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas",]},
+                                                 "age": {"type": int, "range": [20, 40], "nbins": 10,},
+                                                 "distance": {"type": float, "range": [1000, 4000], "nbins": 10,},
+                                                 "date": {"type": datetime.date, "range": ["1993-11-03", 365], "nbins": 10,},
+                                                 "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365], "nbins": 10,},}, 
                                      cursor = base.cursor)
         assert result.shape() == (58564, 5)
         assert result["date"].max() == datetime.date(1994, 11, 3)

@@ -828,9 +828,9 @@ cursor: DBcursor, optional
 labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
-	Cutoff for which the tested category will be accepted as a prediction. 
-	For multiclass classification, the list will represent the 
-	the classes threshold. If it is empty, the best cutoff will be used.
+	Cutoff for which the tested category will be accepted as prediction. 
+	For multiclass classification, the list will represent the the classes threshold. 
+    If it is empty, the best cutoff will be used.
 estimator: object, optional
 	Estimator to use to compute the classification report.
 
@@ -996,7 +996,7 @@ cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
-	classes must be the positive one. The parameter 'pos_label' represents 
+	class must be the positive one. The parameter 'pos_label' represents 
 	this class.
 
 Returns
@@ -1349,7 +1349,7 @@ cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
-	classes must be the positive one. The parameter 'pos_label' represents this 
+	class must be the positive one. The parameter 'pos_label' represents this 
 	class.
 
 Returns
@@ -1479,7 +1479,7 @@ cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Negative Predictive Score, one of the response column class 
-	has to be the positive one. The parameter 'pos_label' represents this class.
+	must be the positive one. The parameter 'pos_label' represents this class.
 
 Returns
 -------
@@ -1693,7 +1693,7 @@ input_relation: str/vDataFrame
 cursor: DBcursor, optional
 	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Specificity Score, one of the response column class has to 
+	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.
 
 Returns
