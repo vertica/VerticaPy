@@ -167,6 +167,7 @@ vertica_conn           : Creates a Vertica Database connection.
     f = open(path, "w+")
     confparser.write(f)
     f.close()
+    change_auto_connection(name)
 
 
 # ---#

@@ -12,9 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings
-from verticapy import vDataFrame, drop, errors
-
-from verticapy import set_option
+from verticapy import vDataFrame, drop, errors, set_option, tablesample
 
 set_option("print_info", False)
 
@@ -56,6 +54,13 @@ class TestvDFPreprocessing:
         )
         assert train.shape() == (pytest.approx(839), 14)
         assert test.shape() == (pytest.approx(395), 14)
+
+    def test_vDF_add_duplicates(self, base):
+        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf(cursor=base.cursor)
+        result = names.add_duplicates("weight").groupby("name", "COUNT(*) AS cnt").sort("cnt")
+        assert result[0] == ['Badr', 1]
+        assert result[1] == ['Waqas', 2]
+        assert result[2] == ['Pratibha', 3]
 
     def test_vDF_cut(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
