@@ -6847,6 +6847,7 @@ vColumns : vColumn
             [
                 ("columns", columns, [list],),
                 ("color", color, [str],),
+                ("threshold", threshold, [int, float,],),
                 ("outliers_color", outliers_color, [str],),
                 ("inliers_color", inliers_color, [str],),
                 ("inliers_border_color", inliers_border_color, [str],),
@@ -6861,6 +6862,7 @@ vColumns : vColumn
             self,
             columns,
             color=color,
+            threshold=threshold,
             outliers_color=outliers_color,
             inliers_color=inliers_color,
             inliers_border_color=inliers_border_color,
@@ -8230,6 +8232,8 @@ vColumns : vColumn
                 [("n", n, [int, float,],),]
             )
             x = float(n / self.shape()[0])
+            if x >= 1:
+                return self.copy()
         if isinstance(method, str):
             method = method.lower()
         if method in ("systematic", "random"):

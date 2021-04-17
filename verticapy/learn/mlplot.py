@@ -461,7 +461,7 @@ def plot_importance(
     if print_legend:
         orange = mpatches.Patch(color=color_dict(style_kwds, 1), label="sign -")
         blue = mpatches.Patch(color=color_dict(style_kwds, 0), label="sign +")
-        ax.legend(handles=[orange, blue], loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.legend(handles=[blue, orange,], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.set_ylabel("Features")
@@ -610,28 +610,34 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         ax.spines['bottom'].set_position('center')
         ax.spines['right'].set_color('none')
         ax.spines['top'].set_color('none')
-        plt.text(max(x) + 0.1, max(y) + 0.1, 
+        delta_x = (max(x) - min(x)) * 0.1
+        delta_y = (max(y) - min(y)) * 0.1
+        plt.text(max(x) + delta_x if reverse[0] else min(x) - delta_x, 
+                 max(y) + delta_y if reverse[1] else min(y) - delta_y, 
                  "Modest", size=15, rotation=130.,
                  ha="center", va="center",
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[0],
                            fc=gen_colors()[0],
                            alpha=0.3),)
-        plt.text(max(x) + 0.1, min(y) - 0.1, 
+        plt.text(max(x) + delta_x if reverse[0] else min(x) - delta_x, 
+                 min(y) - delta_y if reverse[1] else max(y) + delta_y, 
                  "Efficient", size=15, rotation=30.,
                  ha="center", va="center",
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[1],
                            fc=gen_colors()[1],
                            alpha=0.3),)
-        plt.text(min(x) - 0.1, max(y) + 0.1, 
+        plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
+                 max(y) + delta_y if reverse[1] else min(y) - delta_y, 
                  "Performant", size=15, rotation=-130.,
                  ha="center", va="center",
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[2],
                            fc=gen_colors()[2],
                            alpha=0.3),)
-        plt.text(min(x) - 0.1, min(y) - 0.1, 
+        plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
+                 min(y) - delta_y if reverse[1] else max(y) + delta_y, 
                  "Performant & Efficient", size=15, rotation=-30.,
                  ha="center", va="center",
                  bbox=dict(boxstyle="round",

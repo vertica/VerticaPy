@@ -784,6 +784,16 @@ read_json : Ingests a JSON file into the Vertica database.
         f.close()
         if (header_names == []) and (header):
             header_names = file_header
+            for idx in range(len(header_names)):
+                h = header_names[idx]
+                n = len(h)
+                while n > 0 and h[0] == ' ':
+                    h = h[1:]
+                    n -= 1
+                while n > 0 and h[-1] == ' ':
+                    h = h[:-1]
+                    n -= 1
+                header_names[idx] = h
         elif len(file_header) > len(header_names):
             header_names += [
                 "ucol{}".format(i + len(header_names))
