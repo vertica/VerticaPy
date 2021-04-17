@@ -58,7 +58,7 @@ class TestLinearSVC:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788, 1e-2)
+        assert cls_rep1["auc"][0] == pytest.approx(0.687468030690537, 1e-2)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453, 1e-2)
         assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491, 1e-2)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)

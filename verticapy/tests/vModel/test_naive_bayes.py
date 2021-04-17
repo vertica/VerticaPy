@@ -213,6 +213,30 @@ class TestNB:
         prediction = model.cursor.fetchone()[0]
         assert prediction == md.predict([[1.1, 2.2, 3.3, 4.4]])[0]
 
+    def test_to_python(self, titanic_vd, base):
+        titanic = titanic_vd.copy()
+        titanic["has_children"] = "parch > 0"
+        model_class = NaiveBayes("nb_model_test_to_python", cursor=base.cursor)
+        model_class.drop()
+        model_class.fit(
+            titanic,
+            ["age", "fare", "survived", "pclass", "sex", "has_children"],
+            "embarked",
+        )
+        predict_function = model_class.to_python()
+        model_class.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(30.0, 200.0, 1, 2, 'female', True USING PARAMETERS model_name = 'nb_model_test_to_python', match_by_pos=True)"
+        )
+        prediction = model_class.cursor.fetchone()[0]
+        assert prediction == predict_function([[30, 200, 1, 2, 'female', True]])[0]
+        predict_function = model_class.to_python(return_proba=True)
+        model_class.cursor.execute(
+            "SELECT PREDICT_NAIVE_BAYES(30.0, 200.0, 1, 2, 'female', True USING PARAMETERS model_name = 'nb_model_test_to_python', match_by_pos=True, type='probability', class='{}')".format(model_class.classes_[0])
+        )
+        prediction = model_class.cursor.fetchone()[0]
+        assert float(prediction) == pytest.approx(float(predict_function([[30, 200, 1, 2, 'female', True]])[0][0]))
+        model_class.drop()
+
     def test_to_sql(self, model, titanic_vd):
         model_test = NaiveBayes("rfc_sql_test", cursor=model.cursor)
         model_test.drop()

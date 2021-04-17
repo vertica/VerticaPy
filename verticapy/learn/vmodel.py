@@ -2558,13 +2558,13 @@ Main Class for Vertica Model
             func += "\t\t\tfor idx, elem in enumerate(X):\n"
             func += "\t\t\t\tprob = var_info_simplified[idx]\n"
             func += "\t\t\t\tif prob['type'] == 'multinomial':\n"
-            func += "\t\t\t\t\tprob = prob[c] ** X[idx]\n"
+            func += "\t\t\t\t\tprob = prob[c] ** float(X[idx])\n"
             func += "\t\t\t\telif prob['type'] == 'bernoulli':\n"
             func += "\t\t\t\t\tprob = prob[c] if X[idx] else 1 - prob[c]\n"
             func += "\t\t\t\telif prob['type'] == 'categorical':\n"
-            func += "\t\t\t\t\tprob = prob[c][X[idx]]\n"
+            func += "\t\t\t\t\tprob = prob[str(c)][X[idx]]\n"
             func += "\t\t\t\telse:\n"
-            func += "\t\t\t\t\tprob = 1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq']) * np.exp(- (X[idx] - prob[c]['mu']) ** 2 / (2 * prob[c]['sigma_sq']))\n"
+            func += "\t\t\t\t\tprob = 1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq']) * np.exp(- (float(X[idx]) - prob[c]['mu']) ** 2 / (2 * prob[c]['sigma_sq']))\n"
             func += "\t\t\t\tsub_result += [prob]\n"
             func += "\t\t\tresult += [sub_result]\n"
             func += "\t\tresult = np.array(result).prod(axis=1) * prior\n"
@@ -2575,7 +2575,7 @@ Main Class for Vertica Model
             func += "\treturn np.apply_along_axis(naive_bayes_score_row, 1, X)\n"
             return func
         elif self.type in ("OneHotEncoder",):
-            predictors = ["pclass", "sex"]
+            predictors = self.X
             details = self.param_.values
             n, m = len(predictors), len(details["category_name"])
             positions = {}
@@ -2586,7 +2586,7 @@ Main Class for Vertica Model
                 else:
                     positions[val] += [i]
             category_level = []
-            for p in positions:
+            for p in predictors:
                 pos = positions[p]
                 category_level += [details["category_level"][pos[0]:pos[-1] + 1]]
             if self.parameters["drop_first"]:

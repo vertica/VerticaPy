@@ -231,6 +231,15 @@ class TestDecisionTreeRegressor:
 
         model_sk.drop()
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_str=False)([['Male', 0, 'Cheap', 'Low']])[0])
+
     def test_to_sql(self, model):
         model.cursor.execute(
             "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(

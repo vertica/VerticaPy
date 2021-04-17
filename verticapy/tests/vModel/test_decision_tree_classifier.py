@@ -223,6 +223,21 @@ class TestDecisionTreeClassifier:
 
         # 'predict_proba'
 
+    def test_to_python(self, model, titanic_vd):
+        model_test = DecisionTreeClassifier("rfc_python_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
+        model_test.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True) FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x"
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == model_test.to_python(return_str=False)([[30.0, 45.0, 'male']])[0]
+        model_test.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True) FROM (SELECT 30.0 AS age, 145.0 AS fare, 'female' AS sex) x"
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
+
     def test_to_sql(self, model, titanic_vd):
         model_test = DecisionTreeClassifier("rfc_sql_test", cursor=model.cursor)
         model_test.drop()
