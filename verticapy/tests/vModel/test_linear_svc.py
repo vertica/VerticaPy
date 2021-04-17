@@ -300,10 +300,10 @@ class TestLinearSVC:
             0.4619124797406807
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
-            0.687468030690537
+            0.6933968844454788
         )
         assert model.score(cutoff=0.3, method="auc") == pytest.approx(
-            0.687468030690537
+            0.6933968844454788
         )
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.431)

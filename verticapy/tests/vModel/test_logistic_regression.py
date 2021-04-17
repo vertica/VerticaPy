@@ -322,13 +322,13 @@ class TestLogisticRegression:
             0.5429497568881686
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
-            0.687522986197713
+            0.6941239880788826
         )
         assert model.score(cutoff=0.3, method="auc") == pytest.approx(
-            0.687522986197713
+            0.6941239880788826
         )
-        assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.36)
-        assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.36)
+        assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.3602)
+        assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.3602)
         assert model.score(cutoff=0.7, method="bm") == pytest.approx(
             0.06498299319727896
         )
