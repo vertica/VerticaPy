@@ -134,7 +134,7 @@ class TestOneHotEncoder:
 
     def test_to_python(self, model):
         model.cursor.execute(
-            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(1, 'female', 'S' USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False)".format(
                 model.name
             )
         )
