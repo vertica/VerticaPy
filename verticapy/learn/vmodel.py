@@ -3516,7 +3516,7 @@ class BinaryClassifier(Classifier):
         check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor, pos_label=1,
             )
         elif method == "aic":
             return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[0]
