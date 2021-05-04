@@ -207,6 +207,12 @@ tablesample
             else:
                 result[item] += [None]
     result["score"] = param_gs["avg_score"]
+    if 'max_features' in result:
+        for idx, elem in enumerate(result["max_features"]):
+            if elem == "auto":
+                result["max_features"][idx] = int(np.floor(np.sqrt(len(X))) + 1)
+            elif elem == "max":
+                result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
     if isinstance(input_relation, str):
         schema, relation = schema_relation(input_relation)
@@ -1016,11 +1022,11 @@ tablesample
                 params_grid["sample"] = [0.7,]
                 params_grid["n_estimators"] = [20,]
         elif optimized_grid == -666:
-            result = {"max_features": {"type": int, "range": [1, len(all_params),], "nbins": nbins,},
+            result = {"max_features": {"type": int, "range": [1, max_nfeatures,], "nbins": nbins,},
                       "max_leaf_nodes": {"type": int, "range": [32, 1e9,], "nbins": nbins,},
                       "max_depth": {"type": int, "range": [2, 30,], "nbins": nbins,},
                       "min_samples_leaf": {"type": int, "range": [1, 15,], "nbins": nbins,},
-                      "min_samples_leaf": {"type": float, "range": [0.0, 0.1,], "nbins": nbins,},
+                      "min_info_gain": {"type": float, "range": [0.0, 0.1,], "nbins": nbins,},
                       "nbins": {"type": int, "range": [10, 1000,], "nbins": nbins,},}
             if isinstance(RandomForestRegressor, RandomForestClassifier,):
                 result["sample"] = {"type": float, "range": [0.1, 1.0,], "nbins": nbins,}

@@ -148,6 +148,15 @@ class TestXGBR:
         )
         assert base.cursor.fetchone() is None
 
+    def test_to_python(self, model, titanic_vd):
+        model.cursor.execute(
+            "SELECT PREDICT_XGB_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()[0]
+        assert prediction == pytest.approx(float(model.to_python()([["Male", 0, "Cheap", "Low"]])[0]))
+
     def test_to_sql(self, model):
         model.cursor.execute(
             "SELECT PREDICT_XGB_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(

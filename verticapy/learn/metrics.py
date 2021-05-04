@@ -688,7 +688,7 @@ def accuracy_score(
     y_score: str,
     input_relation: (str, vDataFrame),
     cursor=None,
-    pos_label: (int, float, str) = 1,
+    pos_label: (int, float, str) = None,
 ):
     """
 ---------------------------------------------------------------------------

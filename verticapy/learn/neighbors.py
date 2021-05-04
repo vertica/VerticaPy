@@ -485,7 +485,7 @@ class NeighborsClassifier(vModel):
                     pos_label=None,
                 )
             else:
-                return accuracy_score(y_true, y_score, input_relation, self.cursor)
+                return accuracy_score(y_true, y_score, input_relation, self.cursor, pos_label=pos_label,)
         elif method == "auc":
             return auc(y_true, y_proba, input_relation, self.cursor)
         elif method == "prc_auc":

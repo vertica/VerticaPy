@@ -1836,7 +1836,7 @@ Main Class for Vertica Model
                 )
         else:
             raise FunctionError(
-                "The method 'to_shapExplainer' is not available for model type '{}'.".format(
+                "The method 'shapExplainer' is not available for model type '{}'.".format(
                     self.type
                 )
             )
@@ -2500,7 +2500,6 @@ Main Class for Vertica Model
             func += "\tresult = np.column_stack(L)\n"
             func += "\treturn result\n"
             return func
-            """
         elif self.type in ("NaiveBayes",):
             vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
             var_info = {}
@@ -2517,7 +2516,7 @@ Main Class for Vertica Model
                     for c in self.classes_:
                         multinomial = self.get_attr("multinomial.{}".format(c))
                         var_info[elem][c] = multinomial["probability"][multinomial_incr]
-                        multinomial_incr += 1
+                    multinomial_incr += 1
                 elif vdf[elem].isnum():
                     var_info[elem]["type"] = "gaussian"
                     for c in self.classes_:
@@ -2532,52 +2531,78 @@ Main Class for Vertica Model
                         if item.lower() == my_cat.lower():
                             my_cat = item
                             break
-                    var_info[elem]["proba"] = self.get_attr(my_cat).values
-            proba = {}
-            prior = self.get_attr("prior")
-            for idx, elem in enumerate(prior["class"]):
-                proba[elem] = prior["probability"][idx]
-            L = []
-            X = 40.0
-            for c in self.classes_:
-                result = proba[c]
+                    val = self.get_attr(my_cat).values
+                    for item in val:
+                        if item != "category":
+                            if item not in var_info[elem]:
+                                var_info[elem][item] = {}
+                            for i, p in enumerate(val[item]):
+                                var_info[elem][item][val["category"][i]] = p
+            var_info_simplified = []
+            for i in range(len(var_info)):
                 for elem in var_info:
-                    if var_info[elem]["type"] == "gaussian":
-                        all_proba = {}
-                        for k in self.classes_:
-                            all_proba[k] = 1 / np.sqrt(var_info[elem][k]["sigma_sq"]) * np.exp(- (X - var_info[elem][k]["mu"]) ** 2 / (2 * var_info[elem][k]["sigma_sq"]))
-                        result *= all_proba[c] / np.sum(np.array([all_proba[k] for k in self.classes_]) * np.array([proba[k] for k in self.classes_]))
-                    elif var_info[elem]["type"] == "bernoulli":
-                        sql += " * ({} - {}::int) / ({} - {}::int)".format(1 - var_info[elem][0], X[var_info[elem]["rank"]], 1 - var_info[elem][1], X[var_info[elem]["rank"]],)
-                    elif var_info[elem]["type"] == "multinomial":
-                        sql += " * POWER({}, {}) / POWER({}, {})".format(var_info[elem][0], X[var_info[elem]["rank"]], var_info[elem][1], X[var_info[elem]["rank"]],)
-                    elif var_info[elem]["type"] == "categorical":
-                        proba = var_info[elem]["proba"]
-                        list_tmp = []
-                        for idx, cat in enumerate(proba["category"]):
-                            list_tmp += ["{} = '{}' THEN {}".format(X[var_info[elem]["rank"]], cat, proba["0"][idx] / proba["1"][idx])]
-                        sql += " * (CASE WHEN " + " WHEN ".join(list_tmp) + " END)"
-                L += [result]
-            return L
+                    if var_info[elem]["rank"] == i:
+                        var_info_simplified += [var_info[elem]]
+                        break
+            for elem in var_info_simplified:
+                del elem["rank"]
+            prior = self.get_attr("prior").values["probability"]
+            func += "var_info_simplified = {}\n".format(var_info_simplified)
+            func += "\tprior = np.array({})\n".format(prior)
+            func += "\tclasses = {}\n".format(self.classes_)
+            func += "\tn, m = {}, {}\n".format(len(self.classes_), len(self.X))
+            func += "\tdef naive_bayes_score_row(X):\n"
+            func += "\t\tresult = []\n"
+            func += "\t\tfor c in classes:\n"
+            func += "\t\t\tsub_result = []\n"
+            func += "\t\t\tfor idx, elem in enumerate(X):\n"
+            func += "\t\t\t\tprob = var_info_simplified[idx]\n"
+            func += "\t\t\t\tif prob['type'] == 'multinomial':\n"
+            func += "\t\t\t\t\tprob = prob[c] ** float(X[idx])\n"
+            func += "\t\t\t\telif prob['type'] == 'bernoulli':\n"
+            func += "\t\t\t\t\tprob = prob[c] if X[idx] else 1 - prob[c]\n"
+            func += "\t\t\t\telif prob['type'] == 'categorical':\n"
+            func += "\t\t\t\t\tprob = prob[str(c)][X[idx]]\n"
+            func += "\t\t\t\telse:\n"
+            func += "\t\t\t\t\tprob = 1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq']) * np.exp(- (float(X[idx]) - prob[c]['mu']) ** 2 / (2 * prob[c]['sigma_sq']))\n"
+            func += "\t\t\t\tsub_result += [prob]\n"
+            func += "\t\t\tresult += [sub_result]\n"
+            func += "\t\tresult = np.array(result).prod(axis=1) * prior\n"
+            if return_proba:
+                func += "\t\treturn result / result.sum()\n"
+            else:
+                func += "\t\treturn classes[np.argmax(result)]\n"
+            func += "\treturn np.apply_along_axis(naive_bayes_score_row, 1, X)\n"
+            return func
         elif self.type in ("OneHotEncoder",):
+            predictors = self.X
             details = self.param_.values
-            n = len(details["category_name"])
-            sql = []
-            cat_idx, current_cat = 0, details["category_name"][0]
-            for i in range(n):
-                if cat_idx != 0 or not(self.parameters["drop_first"]):
-                    end_name = details["category_level_index"][i] if self.parameters["column_naming"] != 'values' else details["category_level"][i]
-                    sql += ["(CASE WHEN \"{}\" = '{}' THEN 1 ELSE 0 END) AS \"{}_{}\"".format(details["category_name"][i], details["category_level"][i], details["category_name"][i], end_name)]
-                if current_cat != details["category_name"][i]:
-                    cat_idx = 0
-                    current_cat = details["category_name"][i]
+            n, m = len(predictors), len(details["category_name"])
+            positions = {}
+            for i in range(m):
+                val = str_column(details["category_name"][i])
+                if val not in positions:
+                    positions[val] = [i]
                 else:
-                    cat_idx += 1
-            sql = ", ".join(sql)
-            for idx, elem in enumerate(X):
-                sql = sql.replace(self.X[idx], str_column(X[idx]))
-            return sql
-            """
+                    positions[val] += [i]
+            category_level = []
+            for p in predictors:
+                pos = positions[p]
+                category_level += [details["category_level"][pos[0]:pos[-1] + 1]]
+            if self.parameters["drop_first"]:
+                category_level = [elem[1:] for elem in category_level]
+            func += "category_level = {}\n\t".format(category_level)
+            func += "def ooe_row(X):\n\t"
+            func += "\tresult = []\n\t"
+            func += "\tfor idx, elem in enumerate(X):\n\t\t"
+            func += "\tfor item in category_level[idx]:\n\t\t\t"
+            func += "\tif str(elem) == str(item):\n\t\t\t\t"
+            func += "\tresult += [1]\n\t\t\t"
+            func += "\telse:\n\t\t\t\t"
+            func += "\tresult += [0]\n\t"
+            func += "\treturn result\n"
+            func += "\treturn np.apply_along_axis(ooe_row, 1, X)\n"
+            return func
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
             def map_idx(x):
                 for idx, elem in enumerate(self.X):
@@ -2844,15 +2869,14 @@ Main Class for Vertica Model
             sql = []
             cat_idx, current_cat = 0, details["category_name"][0]
             for i in range(n):
+                if current_cat != details["category_name"][i]:
+                    cat_idx = 0
+                    current_cat = details["category_name"][i]
                 if cat_idx != 0 or not(self.parameters["drop_first"]):
                     end_name = details["category_level_index"][i] if self.parameters["column_naming"] != 'values' else details["category_level"][i]
                     end_name = 'NULL' if end_name == None else end_name
                     sql += ["(CASE WHEN \"{}\" = {} THEN 1 ELSE 0 END) AS \"{}_{}\"".format(details["category_name"][i], "'" + str(details["category_level"][i]) + "'" if details["category_level"][i] != None else 'NULL', details["category_name"][i], end_name)]
-                if current_cat != details["category_name"][i]:
-                    cat_idx = 0
-                    current_cat = details["category_name"][i]
-                else:
-                    cat_idx += 1
+                cat_idx += 1
             sql = ", ".join(sql)
             for idx, elem in enumerate(X):
                 sql = sql.replace(self.X[idx], str_column(X[idx]))
@@ -3492,7 +3516,7 @@ class BinaryClassifier(Classifier):
         check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor, pos_label=1,
             )
         elif method == "aic":
             return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[0]
@@ -3501,7 +3525,7 @@ class BinaryClassifier(Classifier):
         elif method == "prc_auc":
             return prc_auc(self.y, self.deploySQL(), self.test_relation, self.cursor)
         elif method == "auc":
-            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True,)
+            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True, nbins=10000,)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 self.y,
@@ -3509,7 +3533,7 @@ class BinaryClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
-                nbins=1000,
+                nbins=10000,
             )
         elif method in ("recall", "tpr"):
             return recall_score(

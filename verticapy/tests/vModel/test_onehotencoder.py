@@ -132,6 +132,24 @@ class TestOneHotEncoder:
         prediction2 = [float(elem) for elem in model.cursor.fetchone()]
         assert prediction == pytest.approx(prediction2)
 
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                model.name
+            )
+        )
+        prediction = [int(elem) for elem in model.cursor.fetchone()]
+        prediction2 = model.to_python(return_str=False)([[1, 'female', 'S']])[0]
+        assert len(prediction) == len(prediction2)
+        assert prediction[0] == prediction2[0]
+        assert prediction[1] == prediction2[1]
+        assert prediction[2] == prediction2[2]
+        assert prediction[3] == prediction2[3]
+        assert prediction[4] == prediction2[4]
+        assert prediction[5] == prediction2[5]
+        assert prediction[6] == prediction2[6]
+        assert prediction[7] == prediction2[7]
+
     def test_get_transform(self, titanic_vd, model):
         titanic_trans = model.transform(titanic_vd, X=["pclass", "sex", "embarked"])
         assert titanic_trans["pclass_1"].mean() == pytest.approx(
