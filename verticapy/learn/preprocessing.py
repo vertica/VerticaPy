@@ -48,6 +48,9 @@
 #
 # Modules
 #
+# Standard Python Modules
+import random
+
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -77,7 +80,7 @@ input_relation: str
 y: str
 	Response column.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to do the balancing.
 		hybrid : Performs over-sampling and under-sampling on different 
@@ -126,7 +129,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 lowercase: bool, optional
 	Converts all the elements to lowercase before processing.
 max_df: float, optional
@@ -197,7 +200,7 @@ max_text_size: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors. If empty, all the columns will be used.
 
@@ -206,6 +209,8 @@ max_text_size: int, optional
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
@@ -221,8 +226,8 @@ max_text_size: int, optional
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(self.name)
         schema = str_column(schema)
-        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}".format(
-            schema, get_session(self.cursor)
+        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}_{}".format(
+            schema, get_session(self.cursor), random.randint(0, 10000000),
         )
         try:
             self.drop()
@@ -308,7 +313,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to normalize.
 		zscore        : Normalization using the Z-Score (avg and std).
@@ -369,7 +374,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
 drop_first: bool, optional
@@ -378,7 +383,7 @@ drop_first: bool, optional
     has a corresponding column in the output view.
 ignore_null: bool, optional
     If set to True, Null values set all corresponding one-hot binary columns to null. 
-    Otherwise, Null values in the input columns are treated as a categorical level.
+    Otherwise, null values in the input columns are treated as a categorical level.
 separator: str, optional
     The character that separates the input variable name and the indicator variable 
     level in the output table.To avoid using any separator, set this parameter to 
@@ -393,18 +398,6 @@ column_naming: str, optional
 null_column_name: str, optional
     The string used in naming the indicator column for null values, used only if 
     ignore_null is set to false and column_naming is set to values or values_relaxed.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-param_: tablesample
-	The One Hot Encoder parameters.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
 	"""
 
     def __init__(

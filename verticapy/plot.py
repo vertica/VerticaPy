@@ -136,6 +136,478 @@ def acf_plot(
     ax.set_xlabel("lag")
     return ax
 
+# ---#
+def animated_bar(
+    vdf,
+    columns: list,
+    order_by: str,
+    by: str = "",
+    order_by_start: str = "",
+    order_by_end: str = "",
+    limit_over: int = 6,
+    limit: int = 1000000,
+    fixed_xy_lim: bool = False,
+    date_in_title: bool = False,
+    date_f = None,
+    date_style_dict: dict = {},
+    interval: int = 10,
+    repeat: bool = True,
+    return_html: bool = True,
+    pie: bool = False,
+    ax=None,
+    **style_kwds,
+):
+    if not(date_style_dict):
+        date_style_dict = {"fontsize": 50, "alpha": 0.6, "color": "gray", "ha": 'right', "va": 'center',}
+    if by:
+        columns += [by]
+    if date_f == None:
+        def date_f(x):
+            return str(x)
+    if "color" in style_kwds:
+        colors = style_kwds["color"]
+        del style_kwds["color"]
+    elif "colors" in style_kwds:
+        colors = style_kwds["colors"]
+        del style_kwds["color"]
+    else:
+        colors = gen_colors()
+    if isinstance(colors, str):
+        colors = []
+    colors_map = {}
+    if len(columns) >= 3:
+        all_cats = vdf[columns[2]].distinct(agg="MAX({})".format(columns[1]))
+        for idx, elem in enumerate(all_cats):
+            colors_map[elem] = colors[idx % len(colors)]
+    else:
+        all_cats = vdf[columns[0]].distinct(agg="MAX({})".format(columns[1]))
+        for idx, elem in enumerate(all_cats):
+            colors_map[elem] = colors[idx % len(colors)]
+    where = " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
+    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+    query = "SELECT * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(order_by, ", ".join(columns), vdf.__genSQL__(), order_by, " AND ".join([f"{elem} IS NOT NULL" for elem in columns]) + where, limit_over, order_by, columns[1], order_by, columns[1], limit,)
+    vdf.__executeSQL__(
+        query=query,
+        title="Select points to draw the animated bar chart."
+    )
+    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    order_by_values = [item[0] for item in query_result]
+    column1 = [item[1] for item in query_result]
+    column2 = [float(item[2]) for item in query_result]
+    column3 = []
+    if len(columns) >= 3:
+        column3 = [item[3] for item in query_result]
+        color = [colors_map[item[3]] for item in query_result]
+    else:
+        color = [colors_map[item[1]] for item in query_result]
+    current_ts, ts_idx = order_by_values[0], 0
+    bar_values = []
+    n = len(order_by_values)
+    for idx, elem in enumerate(order_by_values):
+        if elem != current_ts or idx == n - 1:
+            bar_values += [{"y": column1[ts_idx:idx], 
+                            "width": column2[ts_idx:idx], 
+                            "c": color[ts_idx:idx], 
+                            "x": column3[ts_idx:idx], 
+                            "date": current_ts}]
+            current_ts, ts_idx = elem, idx
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            if pie:
+                fig.set_size_inches(11, min(limit_over, 600))
+            else:
+                fig.set_size_inches(9, 6)
+        ax.xaxis.grid()
+        ax.set_axisbelow(True)
+    def animate(i):
+        ax.clear()
+        if not(pie):
+            ax.xaxis.grid()
+            ax.set_axisbelow(True)
+            min_x, max_x = min(bar_values[i]["width"]), max(bar_values[i]["width"])
+            delta_x = max_x - min_x
+            ax.barh(y=bar_values[i]["y"], width=bar_values[i]["width"], color=bar_values[i]["c"], alpha=0.6, **style_kwds,)
+            if bar_values[i]["width"][0] > 0:
+                ax.barh(y=bar_values[i]["y"], width=[- 0.3 * delta_x for elem in bar_values[i]["y"]], color=bar_values[i]["c"], alpha=0.6, **style_kwds,)
+            if fixed_xy_lim:
+                ax.set_xlim(min(column2), max(column2))
+            else:
+                ax.set_xlim(min_x - 0.3 * delta_x, max_x + 0.3 * delta_x)
+            all_text = []
+            for k in range(len(bar_values[i]["y"])):
+                tmp_txt = []
+                tmp_txt += [ax.text(bar_values[i]["width"][k], k + 0.1, bar_values[i]["y"][k], ha="right", fontweight="bold", size=10,)]
+                width_format = bar_values[i]["width"][k]
+                if width_format - int(width_format) == 0:
+                    width_format = int(width_format)
+                width_format = f'{width_format:,}'
+                tmp_txt += [ax.text(bar_values[i]["width"][k] + 0.005 * delta_x, k - 0.15, width_format, ha="left", size=10,)]
+                if len(columns) >= 3:
+                    tmp_txt += [ax.text(bar_values[i]["width"][k], k - 0.3, bar_values[i]["x"][k], ha="right", size=10, color="#333333",)]
+                all_text += [tmp_txt]
+            if date_in_title:
+                ax.set_title(date_f(bar_values[i]["date"]))
+            else:
+                my_text = ax.text(max_x + 0.27 * delta_x, int(limit_over / 2), date_f(bar_values[i]["date"]), **date_style_dict,)
+            ax.xaxis.tick_top()
+            ax.xaxis.set_label_position('top')
+            ax.set_xlabel(columns[1])
+            ax.set_yticks([])
+        else:
+            param={"wedgeprops": {"edgecolor":"white", "alpha": 0.5,}, "textprops": {'fontsize': 10, 'fontweight': 'bold'}, "autopct": '%1.1f%%'}
+            def autopct(val):
+                a  = val / 100. * sum(bar_values[i]["width"])
+                return f'{a:,}'
+            pie_chart = ax.pie(x=bar_values[i]["width"], labels=bar_values[i]["y"], colors=bar_values[i]["c"], **updated_dict(param, style_kwds),)
+            for elem in pie_chart[2]:
+                elem.set_fontweight('normal')
+            if date_in_title:
+                ax.set_title(date_f(bar_values[i]["date"]))
+            else:
+                my_text = ax.text(1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict,)
+            all_categories = []
+            custom_lines = []
+            if len(columns) >= 3:
+                for idx, elem in enumerate(bar_values[i]["x"]):
+                    if elem not in all_categories:
+                        all_categories += [elem]
+                        custom_lines += [Line2D([0], [0], color=bar_values[i]["c"][idx], lw=6, alpha=updated_dict(param, style_kwds)["wedgeprops"]["alpha"],)]
+                leg = ax.legend(custom_lines,
+                                all_categories,
+                                title=by,
+                                loc="center left", 
+                                bbox_to_anchor=[1, 0.5],)
+        return ax,
+
+    import matplotlib.animation as animation
+
+    myAnimation = animation.FuncAnimation(fig, animate, frames=range(0, len(bar_values)), interval=interval, blit=False, repeat=repeat)
+    if isnotebook() and return_html:
+        from IPython.display import HTML
+        anim = myAnimation.to_jshtml()
+        plt.close("all")
+        return HTML(anim)
+    else:
+        return myAnimation
+
+# ---#
+def animated_bubble_plot(
+    vdf,
+    order_by: str,
+    columns: list,
+    by: str = "",
+    label_name: str = "",
+    order_by_start: str = "",
+    order_by_end: str = "",
+    limit_over: int = 10,
+    limit: int = 1000000,
+    lim_labels: int = 6,
+    fixed_xy_lim: bool = False,
+    bbox: list = [],
+    img: str = "",
+    date_in_title: bool = False,
+    date_f = None,
+    date_style_dict: dict = {},
+    interval: int = 10,
+    repeat: bool = True,
+    return_html: bool = True,
+    ax=None,
+    **style_kwds,
+):
+    if not(date_style_dict):
+        date_style_dict = {"fontsize": 100, "alpha": 0.6, "color": "gray", "ha": 'center', "va": 'center',}
+    if date_f == None:
+        def date_f(x):
+            return str(x)
+    if len(columns) == 2:
+        columns += [1]
+    if "color" in style_kwds:
+        colors = style_kwds["color"]
+    elif "colors" in style_kwds:
+        colors = style_kwds["colors"]
+    else:
+        colors = gen_colors()
+    if isinstance(colors, str):
+        colors = [colors]
+    param = {
+        "alpha": 0.8,
+        "edgecolors": "black",
+    }
+    if by:
+        if vdf[by].isnum():
+            param = {
+                "alpha": 0.8,
+                "cmap": gen_cmap()[0],
+                "edgecolors": "black",
+            }
+        else:
+            colors_map = {}
+            all_cats = vdf[by].distinct(agg="MAX({})".format(columns[2]))
+            for idx, elem in enumerate(all_cats):
+                colors_map[elem] = colors[idx % len(colors)]
+    else:
+        by = 1
+    if (label_name):
+        columns += [label_name]
+    count = vdf.shape()[0]
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(12, 8)
+        ax.grid()
+        ax.set_axisbelow(True)
+    else:
+        fig = ax.get_figure()
+    count = vdf.shape()[0]
+    if columns[2] != 1:
+        max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+    where = " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
+    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+    query = "SELECT * FROM (SELECT {}, {}, {} FROM {} WHERE  {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL{} LIMIT {} OVER (PARTITION BY {} ORDER BY {}, {} DESC)) x ORDER BY {}, 4 DESC, 3 DESC, 2 DESC LIMIT {}"
+    query = query.format(
+        order_by,
+        ", ".join([str(elem) for elem in columns]),
+        by,
+        vdf.__genSQL__(True),
+        columns[0],
+        columns[1],
+        columns[2],
+        order_by,
+        by,
+        where,
+        limit_over,
+        order_by,
+        order_by,
+        columns[2],
+        order_by,
+        limit,
+    )
+    vdf.__executeSQL__(
+        query=query,
+        title="Select points to draw the animated bubble plot."
+    )
+    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    size = 50
+    order_by_values = [item[0] for item in query_result]
+    if columns[2] != 1:
+        size = [1000 * (float(item[3]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+    column1, column2 = [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
+    if label_name:
+        label_columns = [item[-2] for item in query_result]
+    if "cmap" in param:
+        c = [float(item[4]) for item in query_result]
+    elif by == 1:
+        c = colors[0]
+    else:
+        custom_lines = []
+        all_categories = []
+        c = []
+        for item in query_result:
+            if item[-1] not in all_categories:
+                all_categories += [item[-1]]
+                custom_lines += [Line2D([0], [0], color=colors_map[item[-1]], lw=6)]
+            c += [colors_map[item[-1]]]
+    current_ts, ts_idx = order_by_values[0], 0
+    scatter_values = []
+    n = len(order_by_values)
+    for idx, elem in enumerate(order_by_values):
+        if elem != current_ts or idx == n - 1:
+            scatter_values += [{"x": column1[ts_idx:idx], 
+                                "y": column2[ts_idx:idx], 
+                                "c": c[ts_idx:idx] if isinstance(c, list) else c, 
+                                "s": size if isinstance(size, (float, int)) else size[ts_idx:idx],
+                                "date": current_ts,}]
+            if label_name:
+                scatter_values[-1]["label"] = label_columns[ts_idx:idx]
+            current_ts, ts_idx = elem, idx
+    im = ax.scatter(scatter_values[0]["x"], scatter_values[0]["y"], c=scatter_values[0]["c"], s=scatter_values[0]["s"], **updated_dict(param, style_kwds),)
+    if label_name:
+        text_plots = []
+        for idx in range(lim_labels):
+            text_plots += [ax.text(scatter_values[0]["x"][idx], scatter_values[0]["y"][idx], scatter_values[0]["label"][idx], ha="right", va="bottom")]
+    ax.set_xlabel(columns[0])
+    ax.set_ylabel(columns[1])
+    if bbox:
+        ax.set_xlim(bbox[0], bbox[1])
+        ax.set_ylim(bbox[2], bbox[3])
+        if not(date_in_title):
+            my_text = ax.text((bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    elif (fixed_xy_lim):
+        min_x, max_x = min(column1), max(column1)
+        min_y, max_y = min(column2), max(column2)
+        delta_x, delta_y = max_x - min_x, max_y - min_y
+        ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
+        ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
+        if not(date_in_title):
+            my_text = ax.text((max_x + min_x) / 2, (max_y + min_y) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    if img:
+        bim = plt.imread(img)
+        if not (bbox):
+            bbox = (min(column1), max(column1), min(column2), max(column2))
+            ax.set_xlim(bbox[0], bbox[1])
+            ax.set_ylim(bbox[2], bbox[3])
+        ax.imshow(bim, extent=bbox)
+    elif not(date_in_title):
+        my_text = ax.text((max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2, (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    if "cmap" in param:
+        fig.colorbar(im, ax=ax).set_label(by)
+    elif label_name:
+        leg = ax.legend(
+            custom_lines,
+            all_categories,
+            title=by,
+            loc="center left", 
+            bbox_to_anchor=[1, 0.5],)
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    def animate(i):
+        array = np.array([(scatter_values[i]["x"][j], scatter_values[i]["y"][j]) for j in range(len(scatter_values[i]["x"]))])
+        im.set_offsets(array)
+        if columns[2] != 1:
+            im.set_sizes(np.array(scatter_values[i]["s"]))
+        if "cmap" in param:
+            im.set_array(np.array(scatter_values[i]["c"]))
+        elif label_name:
+            im.set_color(np.array(scatter_values[i]["c"]))
+        if "edgecolors" in updated_dict(param, style_kwds):
+            im.set_edgecolor(updated_dict(param, style_kwds)["edgecolors"])
+        if label_name:
+            for k in range(lim_labels):
+                text_plots[k].set_position((scatter_values[i]["x"][k], scatter_values[i]["y"][k]))
+                text_plots[k].set_text(scatter_values[i]["label"][k])
+        min_x, max_x = min(scatter_values[i]["x"]), max(scatter_values[i]["x"])
+        min_y, max_y = min(scatter_values[i]["y"]), max(scatter_values[i]["y"])
+        delta_x, delta_y = max_x - min_x, max_y - min_y
+        if not(fixed_xy_lim):
+            ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
+            ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
+            if not(date_in_title):
+                my_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
+        if not(date_in_title):
+            my_text.set_text(date_f(scatter_values[i]["date"]))
+        else:
+            ax.set_title(date_f(scatter_values[i]["date"]))
+        return ax,
+
+    import matplotlib.animation as animation
+
+    myAnimation = animation.FuncAnimation(fig, animate, frames=range(1, len(scatter_values)), interval=interval, blit=False, repeat=repeat)
+    if isnotebook() and return_html:
+        from IPython.display import HTML
+        anim = myAnimation.to_jshtml()
+        plt.close("all")
+        return HTML(anim)
+    else:
+        return myAnimation
+
+# ---#
+def animated_ts_plot(
+    vdf,
+    order_by: str,
+    columns: list = [],
+    order_by_start: str = "",
+    order_by_end: str = "",
+    limit: int = 1000000,
+    fixed_xy_lim: bool = False,
+    window_size: int = 100,
+    step: int = 10,
+    interval: int = 5,
+    repeat: bool = True,
+    return_html: bool = True,
+    ax=None,
+    **style_kwds,
+):
+    if not (columns):
+        columns = vdf.numcol()
+    for column in columns:
+        if not (vdf[column].isnum()):
+            if vdf._VERTICAPY_VARIABLES_["display"]["print_info"]:
+                warning_message = "The Virtual Column {} is not numerical.\nIt will be ignored.".format(
+                    column
+                )
+                warnings.warn(warning_message, Warning)
+            columns.remove(column)
+    if not (columns):
+        raise EmptyParameter("No numerical columns found to draw the animated multi TS plot")
+    query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
+        order_by, ", ".join(columns), vdf.__genSQL__(), order_by,
+    )
+    query += (
+        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
+    )
+    query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+    query += " AND " + " AND ".join(
+        ["{} IS NOT NULL".format(column) for column in columns]
+    )
+    query += " ORDER BY {}".format(order_by)
+    if limit:
+        query += " LIMIT {}".format(limit)
+    vdf.__executeSQL__(query=query, title="Select the needed points to draw the curves")
+    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    order_by_values = [item[0] for item in query_result]
+    try:
+        if isinstance(order_by_values[0], str):
+            from dateutil.parser import parse
+
+            order_by_values = [parse(elem) for elem in order_by_values]
+    except:
+        pass
+    alpha = 0.3
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(8, 6)
+        ax.grid(axis="y")
+        ax.set_axisbelow(True)
+    else:
+        fig = plt
+    all_plots = []
+    colors = gen_colors()
+    for i in range(0, len(columns)):
+        param = {"linewidth": 1, "label": columns[i], "linewidth": 2, "color": colors[i % len(colors)]}
+        all_plots += [ax.plot([], [], **updated_dict(param, style_kwds, i),)[0]]
+    if len(columns) > 1:
+        ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.set_xlabel(order_by)
+    if (fixed_xy_lim):
+        ax.set_xlim(order_by_values[0], order_by_values[-1])
+        y_tmp = []
+        for m in range(0, len(columns)):
+            y_tmp += [item[m + 1] for item in query_result]
+        ax.set_ylim(min(y_tmp), max(y_tmp))
+    def animate(i):
+        k = max(i - window_size, 0)
+        x = [elem for elem in order_by_values]
+        all_y = []
+        for m in range(0, len(columns)):
+            y = [item[m + 1] for item in query_result]
+            all_plots[m].set_xdata(x[0:i],)
+            all_plots[m].set_ydata(y[0:i],)
+            all_y += y[0:i]
+        if not(fixed_xy_lim):
+            if i > 0:
+                ax.set_ylim(min(all_y), max(all_y))
+            if i > window_size:
+                ax.set_xlim(x[k], x[i])
+            else:
+                ax.set_xlim(x[0], x[window_size])
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(90)
+        return ax,
+
+    import matplotlib.animation as animation
+
+    myAnimation = animation.FuncAnimation(fig, animate, frames=range(0, len(order_by_values) - 1, step), interval=interval, blit=False, repeat=repeat)
+    if isnotebook() and return_html:
+        from IPython.display import HTML
+        anim = myAnimation.to_jshtml()
+        plt.close("all")
+        return HTML(anim)
+    else:
+        return myAnimation
 
 # ---#
 def bar(
@@ -358,6 +830,8 @@ def bar2D(
         ax.xaxis.set_major_locator(mticker.FixedLocator(vals))
         ax.set_xticklabels(["{:,.2%}".format(abs(x)) for x in vals])
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -671,12 +1145,16 @@ def bubble(
     vdf,
     columns: list,
     catcol: str = "",
+    cmap_col: str = "",
     max_nb_points: int = 1000,
     bbox: list = [],
     img: str = "",
     ax=None,
     **style_kwds,
 ):
+    assert not(catcol) or not(cmap_col), ParameterError("Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both.")
+    if len(columns) == 2:
+        columns += [1]
     if "color" in style_kwds:
         colors = style_kwds["color"]
     elif "colors" in style_kwds:
@@ -685,7 +1163,7 @@ def bubble(
         colors = gen_colors()
     if isinstance(colors, str):
         colors = [colors]
-    if not (catcol):
+    if not(catcol) and not(cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
         query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             columns[0],
@@ -701,16 +1179,12 @@ def bubble(
         query_result = vdf.__executeSQL__(
             query=query, title="Select random points to draw the scatter plot"
         ).fetchall()
-        max_size = max([float(item[2]) for item in query_result])
-        min_size = min([float(item[2]) for item in query_result])
-        column1, column2, size = (
-            [float(item[0]) for item in query_result],
-            [float(item[1]) for item in query_result],
-            [
-                1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50)
-                for item in query_result
-            ],
-        )
+        size = 50
+        if columns[2] != 1:
+            max_size = max([float(item[2]) for item in query_result])
+            min_size = min([float(item[2]) for item in query_result])
+            size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+        column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -731,51 +1205,55 @@ def bubble(
         ax.set_xlabel(columns[0])
         param = {
             "color": colors[0],
-            "alpha": 0.5,
+            "alpha": 0.8,
             "edgecolors": "black",
         }
         scatter = ax.scatter(
             column1, column2, s=size, **updated_dict(param, style_kwds),
         )
-        leg1 = ax.legend(
-            [
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor=colors[0],
-                    label="Scatter",
-                    markersize=min(size) / 100 + 15,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor=colors[0],
-                    label="Scatter",
-                    markersize=max(size) / 100 + 15,
-                ),
-            ],
-            [
-                min([item[2] for item in query_result]),
-                max([item[2] for item in query_result]),
-            ],
-            bbox_to_anchor=[1, 0.5],
-            loc="center left",
-            title=columns[2],
-            labelspacing=1,
-        )
+        if columns[2] != 1:
+            leg1 = ax.legend(
+                [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor=colors[0],
+                        label="Scatter",
+                        markersize=min(size) / 100 + 15,
+                    ),
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor=colors[0],
+                        label="Scatter",
+                        markersize=max(size) / 100 + 15,
+                    ),
+                ],
+                [
+                    min([item[2] for item in query_result]),
+                    max([item[2] for item in query_result]),
+                ],
+                bbox_to_anchor=[1, 0.5],
+                loc="center left",
+                title=columns[2],
+                labelspacing=1,
+            )
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         count = vdf.shape()[0]
-        all_categories = vdf[catcol].distinct()
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
                 fig.set_size_inches(12, 7)
             ax.grid()
             ax.set_axisbelow(True)
+        else:
+            fig = plt
         if bbox:
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
@@ -793,99 +1271,133 @@ def bubble(
                 ax.set_ylim(bbox[2], bbox[3])
             ax.imshow(im, extent=bbox)
         others = []
-        groupby_cardinality = vdf[catcol].nunique(True)
         count = vdf.shape()[0]
         tablesample = 0.1 if (count > 10000) else 0.9
-        all_columns, all_scatter = [], []
-        max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+        if columns[2] != 1:
+            max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
         custom_lines = []
-        for idx, category in enumerate(all_categories):
-            query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+        if catcol:
+            all_categories = vdf[catcol].distinct()
+            groupby_cardinality = vdf[catcol].nunique(True)
+            for idx, category in enumerate(all_categories):
+                query = "SELECT {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
+                query = query.format(
+                    columns[0],
+                    columns[1],
+                    columns[2],
+                    vdf.__genSQL__(True),
+                    tablesample,
+                    catcol,
+                    str(category).replace("'", "''"),
+                    columns[0],
+                    columns[1],
+                    columns[2],
+                    int(max_nb_points / len(all_categories)),
+                )
+                vdf.__executeSQL__(
+                    query=query,
+                    title="Select random points to draw the bubble plot (category = '{}')".format(
+                        str(category)
+                    ),
+                )
+                query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                size = 50
+                if columns[2] != 1:
+                    size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+                column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
+                param = {
+                    "alpha": 0.8,
+                    "color": colors[idx % len(colors)],
+                    "edgecolors": "black",
+                }
+                ax.scatter(column1, column2, s=size, **updated_dict(param, style_kwds, idx),)
+                custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
+            for idx, item in enumerate(all_categories):
+                if len(str(item)) > 20:
+                    all_categories[idx] = str(item)[0:20] + "..."
+        else:
+            query = "SELECT {}, {}, {}, {} FROM {} WHERE  __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}"
             query = query.format(
                 columns[0],
                 columns[1],
                 columns[2],
+                cmap_col,
                 vdf.__genSQL__(True),
                 tablesample,
-                catcol,
-                str(category).replace("'", "''"),
                 columns[0],
                 columns[1],
                 columns[2],
-                int(max_nb_points / len(all_categories)),
+                cmap_col,
+                max_nb_points,
             )
             vdf.__executeSQL__(
                 query=query,
-                title="Select random points to draw the bubble plot (category = '{}')".format(
-                    str(category)
-                ),
+                title="Select random points to draw the bubble plot with cmap expr."
             )
             query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            column1, column2, size = (
-                [float(item[0]) for item in query_result],
-                [float(item[1]) for item in query_result],
-                [
-                    1000
-                    * (float(item[2]) - min_size)
-                    / max((max_size - min_size), 1e-50)
-                    for item in query_result
-                ],
-            )
-            all_columns += [[column1, column2, size]]
+            size = 50
+            if columns[2] != 1:
+                size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
+            column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[3]) for item in query_result]
             param = {
                 "alpha": 0.8,
-                "color": colors[idx % len(colors)],
+                "cmap": gen_cmap()[0],
                 "edgecolors": "black",
             }
-            all_scatter += [
-                ax.scatter(
-                    column1, column2, s=size, **updated_dict(param, style_kwds, idx),
-                )
-            ]
-            custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
-        for idx, item in enumerate(all_categories):
-            if len(str(item)) > 20:
-                all_categories[idx] = str(item)[0:20] + "..."
-        leg1 = ax.legend(
-            [
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="black",
-                    label="Scatter",
-                    markersize=min(size) / 100 + 15,
-                ),
-                Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="black",
-                    label="Scatter",
-                    markersize=max(size) / 100 + 15,
-                ),
-            ],
-            [
-                min([item[2] for item in query_result]),
-                max([item[2] for item in query_result]),
-            ],
-            bbox_to_anchor=[1, 0.5],
-            loc="center left",
-            title=columns[2],
-            labelspacing=1,
-        )
+            im = ax.scatter(column1, column2, c=column3, s=size, **updated_dict(param, style_kwds),)
+        if columns[2] != 1:
+            if catcol:
+                bbox_to_anchor = [1, 0.5]
+                loc = "center left"
+            else:
+                bbox_to_anchor = [-0.1, 0.5]
+                loc = "center right"
+            leg1 = ax.legend(
+                [
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor="black",
+                        label="Scatter",
+                        markersize=min(size) / 100 + 15,
+                    ),
+                    Line2D(
+                        [0],
+                        [0],
+                        marker="o",
+                        color="w",
+                        markerfacecolor="black",
+                        label="Scatter",
+                        markersize=max(size) / 100 + 15,
+                    ),
+                ],
+                [
+                    min([item[2] for item in query_result]),
+                    max([item[2] for item in query_result]),
+                ],
+                bbox_to_anchor=bbox_to_anchor,
+                loc=loc,
+                title=columns[2],
+                labelspacing=1,
+            )
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         ax.set_xlabel(columns[0])
         ax.set_ylabel(columns[1])
-        leg2 = ax.legend(
-            custom_lines,
-            all_categories,
-            title=catcol,
-            loc="center right",
-            bbox_to_anchor=[-0.06, 0.5],
-        )
-        ax.add_artist(leg1)
+        if catcol:
+            leg2 = ax.legend(
+                custom_lines,
+                all_categories,
+                title=catcol,
+                loc="center right",
+                bbox_to_anchor=[-0.06, 0.5],
+            )
+        else:
+            fig.colorbar(im, ax=ax).set_label(cmap_col)
+        if columns[2] != 1 and catcol:
+            ax.add_artist(leg1)
     return ax
 
 
@@ -898,7 +1410,6 @@ def cmatrix(
     m: int,
     vmax: float,
     vmin: float,
-    cmap: str = "PRGn",
     title: str = "",
     colorbar: str = "",
     x_label: str = "",
@@ -906,11 +1417,11 @@ def cmatrix(
     with_numbers: bool = True,
     mround: int = 3,
     is_vector: bool = False,
-    interpolation: str = "nearest",
     inverse: bool = False,
     extent: list = [],
     is_pivot: bool = False,
     ax=None,
+    **style_kwds,
 ):
     if is_vector:
         is_vector = True
@@ -943,17 +1454,18 @@ def cmatrix(
             fig.set_size_inches(8, 6)
     else:
         fig = plt
+    param = {"cmap": gen_cmap()[0], "interpolation": "nearest"}
     if ((vmax == 1) and vmin in [0, -1]) and not (extent):
         im = ax.imshow(
-            matrix_array, cmap=cmap, interpolation=interpolation, vmax=vmax, vmin=vmin
+            matrix_array, vmax=vmax, vmin=vmin, **updated_dict(param, style_kwds),
         )
     else:
         try:
             im = ax.imshow(
-                matrix_array, cmap=cmap, interpolation=interpolation, extent=extent
+                matrix_array, extent=extent, **updated_dict(param, style_kwds),
             )
         except:
-            im = ax.imshow(matrix_array, cmap=cmap, interpolation=interpolation,)
+            im = ax.imshow(matrix_array, **updated_dict(param, style_kwds),)
     fig.colorbar(im, ax=ax).set_label(colorbar)
     if not (extent):
         ax.set_yticks([i for i in range(0, n)])
@@ -969,6 +1481,92 @@ def cmatrix(
                 )
     return ax
 
+
+# ---#
+def contour_plot(
+    vdf,
+    columns: list,
+    func,
+    nbins: int = 100,
+    cbar_title: str = "",
+    pos_label: (int, str, float) = None,
+    ax=None,
+    **style_kwds,
+):
+    if not(cbar_title) and str(type(func)) in ("<class 'function'>", "<class 'method'>",):
+        cbar_title = func.__name__
+    all_agg = vdf.agg(["min", "max"], columns)
+    min_x, min_y = all_agg["min"]
+    max_x, max_y = all_agg["max"]
+    if str(type(func)) in ("<class 'function'>", "<class 'method'>",):
+        xlist = np.linspace(min_x, max_x, nbins)
+        ylist = np.linspace(min_y, max_y, nbins)
+        X, Y = np.meshgrid(xlist, ylist)
+        Z = func(X, Y)
+    else:
+        from verticapy.datasets import gen_meshgrid
+
+        vdf_tmp = gen_meshgrid({str_column(columns[1])[1:-1]: {"type": float, "range": [min_y, max_y], "nbins": nbins},
+                                       str_column(columns[0])[1:-1]: {"type": float, "range": [min_x, max_x], "nbins": nbins},},
+                                       cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+        y = "verticapy_predict"
+        if isinstance(func, (str, str_sql,)):
+            vdf_tmp["verticapy_predict"] = func
+        else:
+            if func.type in ("RandomForestClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier",):
+                if func.type in ("NearestCentroid", "KNeighborsClassifier",):
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", all_classes=True, key_columns=None,)
+                    y = "verticapy_predict_{}".format(pos_label)
+                else:
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", pos_label=pos_label)
+            else:
+                if func.type in ("KNeighborsRegressor",):
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", key_columns=None,)
+                else:
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict",)
+        dataset = vdf_tmp[[columns[1], columns[0], y]].sort(columns).to_numpy()
+        i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
+        n = len(dataset)
+        X, Y, Z = [], [], []
+        while i < n:
+            x_tmp, y_tmp, z_tmp = [], [], []
+            j = 0
+            while y_start == y_new and i < n and j < nbins:
+                x_tmp += [float(dataset[i][0])]
+                y_tmp += [float(dataset[i][1])]
+                z_tmp += [float(dataset[i][2])]
+                y_new = dataset[i][1]
+                j += 1
+                i += 1
+                if j == nbins:
+                    while y_start == y_new and i < n:
+                        y_new = dataset[i][1]
+                        i += 1
+            y_start = y_new
+            X += [x_tmp]
+            Y += [y_tmp]
+            Z += [z_tmp]
+        X, Y, Z = np.array(Y), np.array(X), np.array(Z)
+    if not(ax):
+        fig, ax = plt.subplots()
+        fig.set_size_inches(8, 6)
+    else:
+        fig = plt
+    param = {"linewidths": 0.5, "levels": 14, "colors": 'k',}
+    param = updated_dict(param, style_kwds)
+    if "cmap" in param:
+        del param["cmap"]
+    ax.contour(X, Y, Z, **param,)
+    param = {"cmap": gen_cmap([gen_colors()[2], "#FFFFFF", gen_colors()[0],]), "levels": 14,}
+    param = updated_dict(param, style_kwds)
+    for elem in ["colors", "color", "linewidths", "linestyles",]:
+        if elem in param:
+            del param[elem]
+    cp = ax.contourf(X, Y, Z, **param,)
+    fig.colorbar(cp).set_label(cbar_title)
+    ax.set_xlabel(columns[0])
+    ax.set_ylabel(columns[1])
+    return ax
 
 # ---#
 def compute_plot_variables(
@@ -1167,7 +1765,9 @@ def gen_cmap(color: str = "", reverse: bool = False):
         )
         return (cm1, cm2)
     else:
-        if reverse:
+        if isinstance(color, list):
+            return LinearSegmentedColormap.from_list("vml", color, N=1000)
+        elif reverse:
             return LinearSegmentedColormap.from_list("vml", [color, "#FFFFFF"], N=1000)
         else:
             return LinearSegmentedColormap.from_list("vml", ["#FFFFFF", color], N=1000)
@@ -1178,19 +1778,40 @@ def gen_colors():
     if not (verticapy.options["colors"]) or not (
         isinstance(verticapy.options["colors"], list)
     ):
-        colors = [
-            "#FE5016",
-            "#263133",
-            "#0073E7",
-            "#19A26B",
-            "#FCDB1F",
-            "#2A6A74",
-            "#861889",
-            "#00B4E0",
-            "#90EE90",
-            "#FF7F50",
-            "#B03A89",
-        ]
+        if verticapy.options["color_style"] == "sunset":
+            colors = ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589",]
+        elif verticapy.options["color_style"] == "rgb":
+            colors = ["red", "green", "blue", "orange", "yellow", "gray",]
+        elif verticapy.options["color_style"] == "retro":
+            colors = ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838",]
+        elif verticapy.options["color_style"] == "shimbg":
+            colors = ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674",]
+        elif verticapy.options["color_style"] == "swamp":
+            colors = ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837",]
+        elif verticapy.options["color_style"] == "med":
+            colors = ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887",]
+        elif verticapy.options["color_style"] == "orchid":
+            colors = ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104",]
+        elif verticapy.options["color_style"] == "magenta":
+            colors = ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806",]
+        elif verticapy.options["color_style"] == "orange":
+            colors = ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E",]
+        elif verticapy.options["color_style"] == "vintage":
+            colors = ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A",]
+        elif verticapy.options["color_style"] == "vivid":
+            colors = ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B",]
+        elif verticapy.options["color_style"] == "berries":
+            colors = ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC",]
+        elif verticapy.options["color_style"] == "refreshing":
+            colors = ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640",]
+        elif verticapy.options["color_style"] == "summer":
+            colors = ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06",]
+        elif verticapy.options["color_style"] == "tropical":
+            colors = ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C",]
+        elif verticapy.options["color_style"] == "india":
+            colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625",]
+        else:
+            colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F",]
         all_colors = [item for item in plt_colors.cnames]
         shuffle(all_colors)
         for c in all_colors:
@@ -1207,7 +1828,6 @@ def hexbin(
     columns: list,
     method: str = "count",
     of: str = "",
-    cmap: str = "Reds",
     bbox: list = [],
     img: str = "",
     ax=None,
@@ -1286,7 +1906,7 @@ def hexbin(
         ax.imshow(im, extent=bbox)
     ax.set_ylabel(columns[1])
     ax.set_xlabel(columns[0])
-    param = {"cmap": cmap, "gridsize": 10, "mincnt": 1, "edgecolors": None}
+    param = {"cmap": gen_cmap()[0], "gridsize": 10, "mincnt": 1, "edgecolors": None}
     imh = ax.hexbin(
         column1,
         column2,
@@ -1440,6 +2060,8 @@ def hist2D(
     else:
         ax.set_ylabel(method)
     ax.legend(title=columns[1], loc="center left", bbox_to_anchor=[1, 0.5])
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -1534,6 +2156,8 @@ def nested_pie(
             labelspacing=1,
             ncol=len(all_categories[i]),
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         plt.gca().add_artist(legend)
     return ax
 
@@ -1601,6 +2225,8 @@ def multiple_hist(
         else:
             ax.set_ylabel(method)
         ax.legend(title="columns", loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
 
 
@@ -1750,6 +2376,8 @@ def multi_ts_plot(
     ax.set_xlim(min(order_by_values), max(order_by_values))
     ax.set_xlabel(order_by)
     ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -1800,6 +2428,8 @@ def range_curve(
     ax.set_ylabel(score_name)
     if labels:
         ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     for tick in ax.get_xticklabels():
         tick.set_rotation(90)
     ax.set_xlim(X[0], X[-1])
@@ -1984,7 +2614,7 @@ def outliers_contour_plot(
             all_agg["std"][1],
             threshold,
         )
-        bbox_to_anchor = [1.3, 0.5]
+        bbox_to_anchor = [1, 0.5]
         scatter2D(
             vdf.search(search1),
             columns,
@@ -2028,6 +2658,8 @@ def outliers_contour_plot(
         bbox_to_anchor=bbox_to_anchor,
         labelspacing=1,
     )
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -2106,6 +2738,8 @@ def pie(
         ax.legend(
             handles, labels, title=vdf.alias, loc="center left", bbox_to_anchor=[1, 0.5]
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         try:
             y, z = zip(*sorted(zip(y, z), key=lambda t: t[0]))
@@ -2157,6 +2791,8 @@ def pie(
             title=vdf.alias,
             labelspacing=1,
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -2169,12 +2805,11 @@ def pivot_table(
     h: tuple = (None, None),
     max_cardinality: tuple = (20, 20),
     show: bool = True,
-    cmap: str = "Reds",
     with_numbers: bool = True,
     ax=None,
-    interpolation: str = "nearest",
     return_ax: bool = False,
     extent: list = [],
+    **style_kwds,
 ):
     other_columns = ""
     if method.lower() == "median":
@@ -2431,17 +3066,16 @@ def pivot_table(
             len(all_column1_categories),
             vmax=max(all_count),
             vmin=min(all_count),
-            cmap=cmap,
             title="",
             colorbar=aggregate,
             x_label=columns[1],
             y_label=columns[0],
             with_numbers=with_numbers,
-            interpolation=interpolation,
             inverse=True,
             extent=extent,
             ax=ax,
             is_pivot=True,
+            **style_kwds,
         )
         if return_ax:
             return ax
@@ -2724,6 +3358,8 @@ def scatter2D(
             loc="center left",
             bbox_to_anchor=[1, 0.5],
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         return ax
 
 
@@ -2927,6 +3563,8 @@ def scatter3D(
                 loc="center left",
                 bbox_to_anchor=[1.1, 0.5],
             )
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
             return ax
 
 
@@ -3002,6 +3640,8 @@ def spider(
         ax.legend(
             title=columns[1], loc="center left", bbox_to_anchor=[1.1, 0.5],
         )
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     return ax
 
 
@@ -3153,6 +3793,8 @@ def ts_plot(
         ax.set_xlabel(order_by)
         ax.set_ylabel(vdf.alias)
         ax.legend(title=by, loc="center left", bbox_to_anchor=[1, 0.5])
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
         return ax

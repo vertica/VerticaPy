@@ -49,7 +49,8 @@
 # Modules
 #
 # Standard Python Modules
-import math, re, decimal, warnings
+import math, re, decimal, warnings, datetime
+from collections.abc import Iterable
 
 # VerticaPy Modules
 import verticapy
@@ -70,30 +71,30 @@ from verticapy.errors import *
 class vColumn(str_sql):
     """
 ---------------------------------------------------------------------------
-Python object which will store all the user transformations. The vDataFrame
-can be seen as the relation and the vColumn as one column of the relation.
-vcolumns simplify the process with many abstractions.
+Python object which that stores all user transformations. If the vDataFrame
+represents the entire relation, a vColumn can be seen as one column of that
+relation. vColumns simplify several processes with its abstractions.
 
 Parameters
 ----------
 alias: str
-	vcolumn alias.
+	vColumn alias.
 transformations: list, optional
 	List of the different transformations. Each transformation must be similar
 	to the following: (function, type, category)  
 parent: vDataFrame, optional
-	Parent of the vcolumn. One vDataFrame can have multiple children vcolumns 
-	whereas one vcolumn can only have one parent.
+	Parent of the vColumn. One vDataFrame can have multiple children vColumns 
+	whereas one vColumn can only have one parent.
 catalog: dict, optional
-	Catalog where each key corresponds to an aggregation. vcolumns will memorize
+	Catalog where each key corresponds to an aggregation. vColumns will memorize
 	the already computed aggregations to gain in performance. The catalog will
 	be updated when the parent vDataFrame is modified.
 
 Attributes
 ----------
-	alias, str           : vcolumn alias.
+	alias, str           : vColumn alias.
 	catalog, dict        : Catalog of pre-computed aggregations.
-	parent, vDataFrame   : Parent of the vcolumn.
+	parent, vDataFrame   : Parent of the vColumn.
 	transformations, str : List of the different transformations.
 	"""
 
@@ -132,36 +133,32 @@ Attributes
     # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
-            if index.step not in (1, None):
-                raise ValueError(
-                    "vColumn doesn't allow slicing having steps different than 1."
-                )
+            assert index.step in (1, None), ValueError("vColumn doesn't allow slicing having steps different than 1.")
+            index_stop = index.stop
+            index_start = index.start
+            if not (isinstance(index_start, int)):
+                index_start = 0
+            if index_start < 0:
+                index_start += self.parent.shape()[0]
+            if isinstance(index_stop, int):
+                if index_stop < 0:
+                    index_stop += self.parent.shape()[0]
+                limit = index_stop - index_start
+                if limit <= 0:
+                    limit = 0
+                limit = " LIMIT {}".format(limit)
             else:
-                index_stop = index.stop
-                index_start = index.start
-                if not (isinstance(index_start, int)):
-                    index_start = 0
-                if index_start < 0:
-                    index_start += self.parent.shape()[0]
-                if isinstance(index_stop, int):
-                    if index_stop < 0:
-                        index_stop += self.parent.shape()[0]
-                    limit = index_stop - index_start
-                    if limit <= 0:
-                        limit = 0
-                    limit = " LIMIT {}".format(limit)
-                else:
-                    limit = ""
-                query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
-                    self.alias,
-                    self.parent.__genSQL__(),
-                    last_order_by(self.parent),
-                    index_start,
-                    limit,
-                )
-                return vdf_from_relation(
-                    query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
-                )
+                limit = ""
+            query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
+                self.alias,
+                self.parent.__genSQL__(),
+                last_order_by(self.parent),
+                index_start,
+                limit,
+            )
+            return vdf_from_relation(
+                query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
+            )
         elif isinstance(index, int):
             cast = "::float" if self.category() == "float" else ""
             if index < 0:
@@ -173,7 +170,7 @@ Attributes
                 last_order_by(self.parent),
                 index,
             )
-            self.parent.__executeSQL__(query=query, title="Gets the vcolumn element.")
+            self.parent.__executeSQL__(query=query, title="Gets the vColumn element.")
             return self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         else:
             return getattr(self, index)
@@ -213,7 +210,7 @@ Attributes
     def aad(self):
         """
     ---------------------------------------------------------------------------
-    Aggregates the vcolumn using 'aad' (Average Absolute Deviation).
+    Aggregates the vColumn using 'aad' (Average Absolute Deviation).
 
     Returns
     -------
@@ -230,7 +227,7 @@ Attributes
     def abs(self):
         """
 	---------------------------------------------------------------------------
-	Applies the absolute value function to the input vcolumn. 
+	Applies the absolute value function to the input vColumn. 
 
  	Returns
  	-------
@@ -239,7 +236,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         return self.apply(func="ABS({})")
 
@@ -247,12 +244,12 @@ Attributes
     def add(self, x: float):
         """
 	---------------------------------------------------------------------------
-	Adds the input element to the vcolumn.
+	Adds the input element to the vColumn.
 
 	Parameters
  	----------
  	x: float
- 		If the vcolumn type is date like (date, datetime ...), the parameter 'x' 
+ 		If the vColumn type is date like (date, datetime ...), the parameter 'x' 
  		will represent the number of seconds, otherwise it will represent a number.
 
  	Returns
@@ -262,7 +259,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         check_types([("x", x, [int, float],)])
         if self.isdate():
@@ -274,7 +271,7 @@ Attributes
     def add_copy(self, name: str):
         """
 	---------------------------------------------------------------------------
-	Adds a copy vcolumn to the parent vDataFrame.
+	Adds a copy vColumn to the parent vDataFrame.
 
 	Parameters
  	----------
@@ -292,14 +289,8 @@ Attributes
 		"""
         check_types([("name", name, [str],)])
         name = str_column(name.replace('"', "_"))
-        if not (name.replace('"', "")):
-            raise EmptyParameter("The parameter 'name' must not be empty")
-        elif column_check_ambiguous(name, self.parent.get_columns()):
-            raise NameError(
-                "A vcolumn has already the alias {}.\nBy changing the parameter 'name', you'll be able to solve this issue.".format(
-                    name
-                )
-            )
+        assert name.replace('"', ""), EmptyParameter("The parameter 'name' must not be empty")
+        assert not(column_check_ambiguous(name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue.")
         new_vColumn = vColumn(
             name,
             parent=self.parent,
@@ -310,7 +301,7 @@ Attributes
         setattr(self.parent, name[1:-1], new_vColumn)
         self.parent._VERTICAPY_VARIABLES_["columns"] += [name]
         self.parent.__add_to_history__(
-            "[Add Copy]: A copy of the vcolumn {} named {} was added to the vDataFrame.".format(
+            "[Add Copy]: A copy of the vColumn {} named {} was added to the vDataFrame.".format(
                 self.alias, name
             )
         )
@@ -320,7 +311,7 @@ Attributes
     def aggregate(self, func: list):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using the input functions.
+	Aggregates the vColumn using the input functions.
 
 	Parameters
  	----------
@@ -330,10 +321,10 @@ Attributes
  			approx_unique  : approximative cardinality
  			count          : number of non-missing elements
 			cvar           : conditional value at risk
-			dtype          : vcolumn type
+			dtype          : vColumn type
 			iqr            : interquartile range
 			kurtosis       : kurtosis
-			jb             : Jarque Bera index 
+			jb             : Jarque-Bera index 
 			mad            : median absolute deviation
 			max            : maximum
 			mean           : average
@@ -363,8 +354,8 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame.analytic : Adds a new vcolumn to the vDataFrame by using an advanced 
- 		analytical function on a specific vcolumn.
+ 	vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
+ 		analytical function on a specific vColumn.
 		"""
         return self.parent.aggregate(func=func, columns=[self.alias]).transpose()
 
@@ -373,12 +364,12 @@ Attributes
     def apply(self, func: str, copy_name: str = ""):
         """
 	---------------------------------------------------------------------------
-	Applies a function to the vcolumn.
+	Applies a function to the vColumn.
 
 	Parameters
  	----------
  	func: str,
- 		Function to use to transform the vcolumn. It must be pure SQL.
+ 		Function in pure SQL used to transform the vColumn.
  		The function variable must be composed of two flower brackets {}. For 
  		example to apply the function: x -> x^2 + 2 use "POWER({}, 2) + 2".
  	copy_name: str, optional
@@ -391,8 +382,8 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.apply    : Applies functions to the input vcolumns.
-	vDataFrame.applymap : Applies a function to all the vcolumns.
+	vDataFrame.apply    : Applies functions to the input vColumns.
+	vDataFrame.applymap : Applies a function to all the vColumns.
 	vDataFrame.eval     : Evaluates a customized expression.
 		"""
         if isinstance(func, str_sql):
@@ -425,12 +416,15 @@ Attributes
             category = category_from_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
-                if (str_column(column) in func) or (
-                    re.search(
-                        re.compile("\\b{}\\b".format(column.replace('"', ""))), func
-                    )
-                ):
-                    max_floor = max(len(self.parent[column].transformations), max_floor)
+                try:
+                    if (str_column(column) in func) or (
+                        re.search(
+                            re.compile("\\b{}\\b".format(column.replace('"', ""))), func
+                        )
+                    ):
+                        max_floor = max(len(self.parent[column].transformations), max_floor)
+                except:
+                    pass
             max_floor -= len(self.transformations)
             if copy_name:
                 self.add_copy(name=copy_name)
@@ -441,7 +435,7 @@ Attributes
                 self.parent[copy_name].transformations += [(func, ctype, category)]
                 self.parent[copy_name].catalog = self.catalog
                 self.parent.__add_to_history__(
-                    "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
+                    "[Apply]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(
                         copy_name.replace('"', ""), func.replace("{}", "x"),
                     )
                 )
@@ -451,7 +445,7 @@ Attributes
                 self.transformations += [(func, ctype, category)]
                 self.parent.__update_catalog__(erase=True, columns=[self.alias])
                 self.parent.__add_to_history__(
-                    "[Apply]: The vcolumn '{}' was transformed with the func 'x -> {}'.".format(
+                    "[Apply]: The vColumn '{}' was transformed with the func 'x -> {}'.".format(
                         self.alias.replace('"', ""), func.replace("{}", "x"),
                     )
                 )
@@ -467,12 +461,12 @@ Attributes
     def apply_fun(self, func: str, x: float = 2):
         """
 	---------------------------------------------------------------------------
-	Applies a default function to the vcolumn.
+	Applies a default function to the vColumn.
 
 	Parameters
  	----------
  	func: str
- 		Function to use to transform the vcolumn.
+ 		Function to use to transform the vColumn.
 			abs     : absolute value
 			acos    : trigonometric inverse cosine
 			asin    : trigonometric inverse sine
@@ -507,7 +501,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the vcolumn.
+	vDataFrame[].apply : Applies a function to the vColumn.
 		"""
         check_types(
             [
@@ -553,7 +547,7 @@ Attributes
     def astype(self, dtype: str):
         """
 	---------------------------------------------------------------------------
-	Converts the vcolumn to the input type.
+	Converts the vColumn to the input type.
 
 	Parameters
  	----------
@@ -567,7 +561,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.astype : Converts the vcolumns to the input type.
+	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
         check_types([("dtype", dtype, [str],)])
         try:
@@ -579,14 +573,14 @@ Attributes
                 ("{}::{}".format("{}", dtype), dtype, category_from_type(ctype=dtype))
             ]
             self.parent.__add_to_history__(
-                "[AsType]: The vcolumn {} was converted to {}.".format(
+                "[AsType]: The vColumn {} was converted to {}.".format(
                     self.alias, dtype
                 )
             )
             return self.parent
         except Exception as e:
             raise ConversionError(
-                "{}\nThe vcolumn {} can not be converted to {}".format(
+                "{}\nThe vColumn {} can not be converted to {}".format(
                     e, self.alias, dtype
                 )
             )
@@ -595,7 +589,7 @@ Attributes
     def avg(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'avg' (Average).
+	Aggregates the vColumn using 'avg' (Average).
 
  	Returns
  	-------
@@ -622,7 +616,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the Bar Chart of the vcolumn based on an aggregation.
+	Draws the bar chart of the vColumn based on an aggregation.
 
 	Parameters
  	----------
@@ -630,16 +624,16 @@ Attributes
  		The method to use to aggregate the data.
  			count   : Number of elements.
  			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+ 			mean    : Average of the vColumn 'of'.
+ 			min     : Minimum of the vColumn 'of'.
+ 			max     : Maximum of the vColumn 'of'.
+ 			sum     : Sum of the vColumn 'of'.
+ 			q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
- 		The vcolumn to use to compute the aggregation.
+ 		The vColumn to use to compute the aggregation.
 	max_cardinality: int, optional
- 		Maximum number of the vcolumn distinct elements to be used as categorical 
+ 		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
  	bins: int, optional
  		Number of bins. If empty, an optimized number of bins will be computed.
@@ -657,7 +651,7 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame[].hist : Draws the Histogram of the vcolumn based on an aggregation.
+ 	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
         check_types(
             [
@@ -687,21 +681,21 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the vcolumn Box Plot.
+	Draws the box plot of the vColumn.
 
 	Parameters
  	----------
  	by: str, optional
- 		vcolumn to use to partition the data.
+ 		vColumn to use to partition the data.
  	h: float, optional
- 		Interval width if the vcolumn is numerical or of type date like. Optimized 
+ 		Interval width if the vColumn is numerical or of type date like. Optimized 
  		h will be computed if the parameter is empty or invalid.
  	max_cardinality: int, optional
- 		Maximum number of vcolumn distinct elements to be used as categorical. 
+ 		Maximum number of vColumn distinct elements to be used as categorical. 
  		The less frequent elements will be gathered together to create a new 
  		category : 'Others'.
  	cat_priority: list, optional
- 		List of the different categories to consider when drawing the Box Plot.
+ 		List of the different categories to consider when drawing the box plot.
  		The other categories will be filtered.
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -715,8 +709,10 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame.boxplot : Draws the Box Plot of the input vcolumns. 
+ 	vDataFrame.boxplot : Draws the Box Plot of the input vColumns. 
 		"""
+        if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
+            cat_priority = [cat_priority]
         check_types(
             [
                 ("by", by, [str],),
@@ -736,17 +732,17 @@ Attributes
     def category(self):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn category. The category will be one of the following:
+	Returns the category of the vColumn. The category will be one of the following:
 	date / int / float / text / binary / spatial / uuid / undefined
 
  	Returns
  	-------
  	str
- 		vcolumn category.
+ 		vColumn category.
 
 	See Also
 	--------
-	vDataFrame[].ctype : Returns the vcolumn DB type.
+	vDataFrame[].ctype : Returns the vColumn database type.
 		"""
         return self.transformations[-1][2]
 
@@ -754,7 +750,7 @@ Attributes
     def clip(self, lower=None, upper=None):
         """
 	---------------------------------------------------------------------------
-	Clips the vcolumn by transforming the values lesser than the lower bound to 
+	Clips the vColumn by transforming the values lesser than the lower bound to 
 	the lower bound itself and the values higher than the upper bound to the upper 
 	bound itself.
 
@@ -772,15 +768,12 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame[].fill_outliers : Fills the vcolumn outliers using the input method.
+ 	vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
 		"""
         check_types(
             [("lower", lower, [float, int,],), ("upper", upper, [float, int,],),]
         )
-        if (lower == None) and (upper == None):
-            raise ParameterError(
-                "At least 'lower' or 'upper' must have a numerical value"
-            )
+        assert (lower != None) or (upper != None), ParameterError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             "WHEN {} < {} THEN {} ".format("{}", lower, lower)
             if (isinstance(lower, (float, int)))
@@ -799,7 +792,7 @@ Attributes
     def count(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'count' (Number of non-Missing elements).
+	Aggregates the vColumn using 'count' (Number of non-Missing elements).
 
  	Returns
  	-------
@@ -813,15 +806,72 @@ Attributes
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
+    def cut(self, 
+            breaks: list, 
+            labels: list = [], 
+            include_lowest: bool = True,
+            right: bool = True):
+        """
+    ---------------------------------------------------------------------------
+    Discretizes the vColumn using the input list. 
+
+    Parameters
+    ----------
+    breaks: list
+        List of values used to cut the vColumn.
+    labels: list, optional
+        Labels used to name the new categories. If empty, names will be generated.
+    include_lowest: bool, optional
+        If set to True, the lowest element of the list will be included.
+    right: bool, optional
+        How the intervals should be closed. If set to True, the intervals will be
+        closed on the right.
+
+    Returns
+    -------
+    vDataFrame
+        self.parent
+
+    See Also
+    --------
+    vDataFrame[].apply : Applies a function to the input vColumn.
+        """
+        check_types([("breaks", breaks, [list],),
+                     ("labels", labels, [list],),
+                     ("include_lowest", include_lowest, [bool],),
+                     ("right", right, [bool],),])
+        assert self.isnum() or self.isdate(), TypeError("cut only works on numerical / date-like vColumns.")
+        assert len(breaks) >= 2, ParameterError("Length of parameter 'breaks' must be greater or equal to 2.")
+        assert len(breaks) == len(labels) + 1 or not(labels), ParameterError("Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty.")
+        conditions, column = [], self.alias
+        for idx in range(len(breaks) - 1):
+            first_elem, second_elem = breaks[idx], breaks[idx + 1]
+            if right:
+                op1, op2, close_l, close_r = "<", "<=", "]", "]"
+            else:
+                op1, op2, close_l, close_r = "<=", "<", "[", "["
+            if idx == 0 and include_lowest:
+                op1, close_l = "<=", "["
+            elif idx == 0:
+                op1, close_l = "<", "]"
+            if labels:
+                label = labels[idx]
+            else:
+                label = f"{close_l}{first_elem};{second_elem}{close_r}"
+            conditions += [f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"]
+        expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
+        self.apply(func=expr)
+
+    # ---#
     def ctype(self):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn DB type.
+	Returns the vColumn DB type.
 
  	Returns
  	-------
  	str
- 		vcolumn DB type.
+ 		vColumn DB type.
 		"""
         return self.transformations[-1][1].lower()
 
@@ -830,8 +880,8 @@ Attributes
     def date_part(self, field: str):
         """
 	---------------------------------------------------------------------------
-	Extracts a specific TS field from the vcolumn (only if the vcolumn type is 
-	date like). The vcolumn will be transformed.
+	Extracts a specific TS field from the vColumn (only if the vColumn type is 
+	date like). The vColumn will be transformed.
 
 	Parameters
  	----------
@@ -848,7 +898,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].slice : Slices the vcolumn using a TS rule.
+	vDataFrame[].slice : Slices the vColumn using a time series rule.
 		"""
         return self.apply(func="DATE_PART('{}', {})".format(field, "{}"))
 
@@ -856,15 +906,15 @@ Attributes
     def decode(self, *argv):
         """
 	---------------------------------------------------------------------------
-	Encodes the vcolumn using a User Defined Encoding.
+	Encodes the vColumn using a user-defined encoding.
 
 	Parameters
  	----------
  	argv: object
         Infinite Number of Expressions.
         The expression generated will look like:
-        even: CASE ... WHEN vcolumn = argv[2 * i] THEN argv[2 * i + 1] ... END
-        odd : CASE ... WHEN vcolumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
+        even: CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... END
+        odd : CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END
 
  	Returns
  	-------
@@ -874,10 +924,10 @@ Attributes
 	See Also
 	--------
 	vDataFrame.case_when      : Creates a new feature by evaluating some conditions.
-	vDataFrame[].discretize   : Discretizes the vcolumn.
-	vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
-	vDataFrame[].get_dummies  : Encodes the vcolumn using the One Hot Encoding.
-	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
+	vDataFrame[].discretize   : Discretizes the vColumn.
+	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         import verticapy.stats as st
 
@@ -896,20 +946,20 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the vcolumn Density Plot.
+	Draws the vColumn Density Plot.
 
 	Parameters
  	----------
     by: str, optional
-        vcolumn to use to partition the data.
+        vColumn to use to partition the data.
  	bandwidth: float, optional
  		The bandwidth of the kernel.
  	kernel: str, optional
  		The method used for the plot.
- 			gaussian  : Gaussian Kernel.
- 			logistic  : Logistic Kernel.
- 			sigmoid   : Sigmoid Kernel.
- 			silverman : Silverman Kernel.
+ 			gaussian  : Gaussian kernel.
+ 			logistic  : Logistic kernel.
+ 			sigmoid   : Sigmoid kernel.
+ 			silverman : Silverman kernel.
  	nbins: int, optional
         Maximum number of points to use to evaluate the approximate density function.
         Increasing this parameter will increase the precision but will also increase 
@@ -928,7 +978,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].hist : Draws the Histogram of the vcolumn based on an aggregation.
+	vDataFrame[].hist : Draws the histogram of the vColumn based on an aggregation.
 		"""
         check_types(
             [
@@ -984,9 +1034,11 @@ Attributes
             return ax
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
-
-        name = "VERTICAPY_TEMP_MODEL_KDE_{}".format(
-            get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
+        schema = self.parent._VERTICAPY_VARIABLES_["schema_writing"]
+        if not (schema):
+            schema = "public"
+        name = "{}.VERTICAPY_TEMP_MODEL_KDE_{}".format(
+            schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
         )
         if isinstance(xlim, (tuple, list)):
             xlim_tmp = [xlim]
@@ -999,6 +1051,7 @@ Attributes
             kernel=kernel,
             nbins=nbins,
             xlim=xlim_tmp,
+            store=False,
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
@@ -1012,28 +1065,28 @@ Attributes
 
     # ---#
     def describe(
-        self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
+        self, method: str = "auto", max_cardinality: int = 6, numcol: str = "",
     ):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using multiple statistical aggregations: 
+	Aggregates the vColumn using multiple statistical aggregations: 
 	min, max, median, unique... depending on the input method.
 
 	Parameters
  	----------
  	method: str, optional
  		The describe method.
- 			auto 	    : Sets the method to 'numerical' if the vcolumn is numerical
+ 			auto 	    : Sets the method to 'numerical' if the vColumn is numerical
  				, 'categorical' otherwise.
 			categorical : Uses only categorical aggregations during the computation.
-			cat_stats   : Computes statistics of a numerical column for each vcolumn
+			cat_stats   : Computes statistics of a numerical column for each vColumn
 				category. In this case, the parameter 'numcol' must be defined.
  			numerical   : Uses popular numerical aggregations during the computation.
  	max_cardinality: int, optional
- 		Cardinality threshold to use to determine if the vcolumn will be considered
+ 		Cardinality threshold to use to determine if the vColumn will be considered
  		as categorical.
  	numcol: str, optional
- 		Numerical vcolumn to use when the parameter method is set to 'cat_stats'.
+ 		Numerical vColumn to use when the parameter method is set to 'cat_stats'.
 
  	Returns
  	-------
@@ -1052,15 +1105,9 @@ Attributes
                 ("numcol", numcol, [str],),
             ]
         )
+
         method = method.lower()
-        if method not in ["auto", "numerical", "categorical", "cat_stats"]:
-            raise ParameterError(
-                "The parameter 'method' must be in auto|categorical|numerical|cat_stats"
-            )
-        elif (method == "cat_stats") and not (numcol):
-            raise ParameterError(
-                "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
-            )
+        assert (method != "cat_stats") or (numcol), ParameterError("The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'")
         distinct_count, is_numeric, is_date = (
             self.nunique(),
             self.isnum(),
@@ -1072,8 +1119,7 @@ Attributes
             result = result.values[self.alias]
         elif (method == "cat_stats") and (numcol != ""):
             numcol = vdf_columns_names([numcol], self.parent)[0]
-            if self.parent[numcol].category() not in ("float", "int"):
-                raise TypeError("The column 'numcol' must be numerical")
+            assert self.parent[numcol].category() in ("float", "int"), TypeError("The column 'numcol' must be numerical")
             cast = "::int" if (self.parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
@@ -1195,13 +1241,13 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Discretizes the vcolumn using the input method.
+	Discretizes the vColumn using the input method.
 
 	Parameters
  	----------
  	method: str, optional
- 		The method to use to discretize the vcolumn.
- 			auto 	   : Uses method 'same_width' for numerical vcolumns, cast 
+ 		The method to use to discretize the vColumn.
+ 			auto 	   : Uses method 'same_width' for numerical vColumns, cast 
  				the other types to varchar.
 			same_freq  : Computes bins with the same number of elements.
 			same_width : Computes regular width bins.
@@ -1210,7 +1256,7 @@ Attributes
  			topk       : Keeps the topk most frequent categories and merge the other 
  				into one unique category.
  	h: float, optional
- 		The interval size to convert to use to convert the vcolumn. If this parameter 
+ 		The interval size to convert to use to convert the vColumn. If this parameter 
  		is equal to 0, an optimised interval will be computed.
  	bins: int, optional
  		Number of bins used for the discretization (must be > 1)
@@ -1225,7 +1271,7 @@ Attributes
         Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
         20 trees and a maximum depth of 10.
     response: str, optional
-        Response vcolumn when method is set to 'smart'.
+        Response vColumn when method is set to 'smart'.
  	return_enum_trans: bool, optional
  		Returns the transformation instead of the vDataFrame parent and do not apply
  		it. This parameter is very useful for testing to be able to look at the final 
@@ -1238,10 +1284,10 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].decode       : Encodes the vcolumn using a user defined Encoding.
-	vDataFrame[].get_dummies  : Encodes the vcolumn using the One Hot Encoding.
-	vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
-	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
+	vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
+	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         check_types(
             [
@@ -1283,16 +1329,18 @@ Attributes
             def drop_temp_elem(self, temp_information):
                 with warnings.catch_warnings(record=True) as w:
                     try:
-                        drop_model(
+                        drop(
                             temp_information[1],
                             cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                            method="model",
                         )
                     except:
                         pass
                     try:
-                        drop_view(
+                        drop(
                             temp_information[0],
                             cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
+                            method="view",
                         )
                     except:
                         pass
@@ -1338,10 +1386,7 @@ Attributes
             drop_temp_elem(self, temp_information)
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            if k < 2:
-                raise ParameterError(
-                    "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
-                )
+            assert k >= 2, ParameterError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
             distinct = self.topk(k).values["index"]
             trans = (
                 "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
@@ -1359,16 +1404,10 @@ Attributes
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            if bins < 2:
-                raise ParameterError(
-                    "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
-                )
+            assert bins >= 2, ParameterError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
             count = self.count()
             nb = int(float(count / int(bins - 1)))
-            if nb == 0:
-                raise Exception(
-                    "Not enough values to compute the Equal Frequency discretization"
-                )
+            assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
             total, query, nth_elems = nb, [], []
             while total < count - 1:
                 nth_elems += [str(total)]
@@ -1444,33 +1483,43 @@ Attributes
             except:
                 pass
             self.parent.__add_to_history__(
-                "[Discretize]: The vcolumn {} was discretized.".format(self.alias)
+                "[Discretize]: The vColumn {} was discretized.".format(self.alias)
             )
         return self.parent
 
     # ---#
-    def distinct(self):
+    def distinct(self, **kwargs):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn distinct categories.
+	Returns the distinct categories of the vColumn.
 
  	Returns
  	-------
  	list
- 		vcolumn distinct categories.
+ 		Distinct caterogies of the vColumn.
 
 	See Also
 	--------
-	vDataFrame.topk : Returns the vcolumn most occurent elements.
+	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
-        query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
-            convert_special_type(self.category(), True, self.alias),
-            self.alias,
-            self.parent.__genSQL__(),
-            self.alias,
-            self.alias,
-            self.alias,
-        )
+        if "agg" not in kwargs:
+            query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
+                convert_special_type(self.category(), True, self.alias),
+                self.alias,
+                self.parent.__genSQL__(),
+                self.alias,
+                self.alias,
+                self.alias,
+            )
+        else:
+            query = "SELECT {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
+                self.alias,
+                convert_special_type(self.category(), True, self.alias),
+                self.alias,
+                kwargs["agg"],
+                self.parent.__genSQL__(),
+                self.alias,
+            )
         self.parent.__executeSQL__(
             query=query,
             title="Computes the distinct categories of {}.".format(self.alias),
@@ -1482,7 +1531,7 @@ Attributes
     def div(self, x: float):
         """
 	---------------------------------------------------------------------------
-	Divides the vcolumn by the input element.
+	Divides the vColumn by the input element.
 
 	Parameters
  	----------
@@ -1496,22 +1545,21 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         check_types([("x", x, [int, float],)])
-        if x != 0:
-            return self.apply(func="{} / ({})".format("{}", x))
-        else:
-            raise ValueError("Division by 0 is forbidden !")
+        assert x != 0, ValueError("Division by 0 is forbidden !")
+        return self.apply(func="{} / ({})".format("{}", x))
 
     # ---#
     def drop(self, add_history: bool = True):
         """
 	---------------------------------------------------------------------------
-	Drops the vcolumn from the vDataFrame. Dropping a vcolumn means not selecting 
-	it in the final SQL code generation.
-	Be Careful when using this method. It can make the vDataFrame structure 
-	heavier if some other vcolumns are computed using the dropped vcolumn.
+	Drops the vColumn from the vDataFrame. Dropping a vColumn means simply
+    not selecting it in the final generated SQL code.
+    
+    Note: Dropping a vColumn can make the vDataFrame "heavier" if it is used
+    to compute other vColumns.
 
 	Parameters
  	----------
@@ -1525,7 +1573,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.drop: Drops the input vcolumns from the vDataFrame.
+	vDataFrame.drop: Drops the input vColumns from the vDataFrame.
 		"""
         check_types([("add_history", add_history, [bool],)])
         try:
@@ -1545,7 +1593,7 @@ Attributes
             self.parent._VERTICAPY_VARIABLES_["exclude_columns"] += [self.alias]
         if add_history:
             self.parent.__add_to_history__(
-                "[Drop]: vcolumn {} was deleted from the vDataFrame.".format(self.alias)
+                "[Drop]: vColumn {} was deleted from the vDataFrame.".format(self.alias)
             )
         return parent
 
@@ -1555,14 +1603,14 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Drops the vcolumn outliers.
+	Drops outliers in the vColumn.
 
 	Parameters
  	----------
  	threshold: float, optional
- 		Uses the Gaussian distribution to define the outliers. After normalizing 
+ 		Uses the Gaussian distribution to identify outliers. After normalizing 
  		the data (Z-Score), if the absolute value of the record is greater than 
- 		the threshold it will be considered as an outlier.
+ 		the threshold, it will be considered as an outlier.
  	use_threshold: bool, optional
  		Uses the threshold instead of the 'alpha' parameter.
  	alpha: float, optional
@@ -1576,8 +1624,8 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.fill_outliers : Fills the vcolumns outliers.
-	vDataFrame.outliers      : Adds a new vcolumn labeled with 0 and 1 
+	vDataFrame.fill_outliers : Fills the outliers in the vColumn.
+	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
         check_types(
@@ -1590,7 +1638,7 @@ Attributes
         if use_threshold:
             result = self.aggregate(func=["std", "avg"]).transpose().values
             self.parent.filter(
-                expr="ABS({} - {}) / {} < {}".format(
+                "ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
                 ),
             )
@@ -1601,7 +1649,7 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                expr="({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
             )
         return self.parent
 
@@ -1609,7 +1657,7 @@ Attributes
     def dropna(self):
         """
 	---------------------------------------------------------------------------
-	Filters the vDataFrame where the vcolumn is missing.
+	Filters the vDataFrame where the vColumn is missing.
 
  	Returns
  	-------
@@ -1633,16 +1681,16 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Fills the vcolumns outliers using the input method.
+	Fills the vColumns outliers using the input method.
 
 	Parameters
 		----------
 		method: str, optional
-			Method to use to fill the vcolumn outliers.
+			Method to use to fill the vColumn outliers.
 				mean      : Replaces the upper and lower outliers by their respective 
 					average. 
 				null      : Replaces the outliers by the NULL value.
-				winsorize : Clips the vcolumn using as lower bound quantile(alpha) and as 
+				winsorize : Clips the vColumn using as lower bound quantile(alpha) and as 
 					upper bound quantile(1-alpha) if 'use_threshold' is set to False else 
 					the lower and upper ZScores.
 		threshold: float, optional
@@ -1662,10 +1710,12 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].drop_outliers : Drops the vcolumns outliers.
-	vDataFrame.outliers      : Adds a new vcolumn labeled with 0 and 1 
+	vDataFrame[].drop_outliers : Drops outliers in the vColumn.
+	vDataFrame.outliers      : Adds a new vColumn labeled with 0 and 1 
 		(1 meaning global outlier).
 		"""
+        if isinstance(method, str):
+            method = method.lower()
         check_types(
             [
                 ("method", method, ["winsorize", "null", "mean"],),
@@ -1674,66 +1724,60 @@ Attributes
                 ("threshold", threshold, [int, float],),
             ]
         )
-        method = method.lower()
-        if method not in ("winsorize", "null", "mean"):
-            raise ParameterError(
-                "The parameter 'method' must be in winsorize|null|mean"
+        if use_threshold:
+            result = self.aggregate(func=["std", "avg"]).transpose().values
+            p_alpha, p_1_alpha = (
+                -threshold * result["std"][0] + result["avg"][0],
+                threshold * result["std"][0] + result["avg"][0],
             )
         else:
-            if use_threshold:
-                result = self.aggregate(func=["std", "avg"]).transpose().values
-                p_alpha, p_1_alpha = (
-                    -threshold * result["std"][0] + result["avg"][0],
-                    threshold * result["std"][0] + result["avg"][0],
+            query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
+                alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            )
+            self.parent.__executeSQL__(
+                query=query,
+                title="Computes the quantiles of {}.".format(self.alias),
+            )
+            p_alpha, p_1_alpha = self.parent._VERTICAPY_VARIABLES_[
+                "cursor"
+            ].fetchone()
+        if method == "winsorize":
+            self.clip(lower=p_alpha, upper=p_1_alpha)
+        elif method == "null":
+            self.apply(
+                func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
+                    "{}", p_alpha, p_1_alpha, "{}"
                 )
-            else:
-                query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
-                    alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
+            )
+        elif method == "mean":
+            query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
+                self.parent.__genSQL__(),
+                self.alias,
+                self.alias,
+                p_alpha,
+                self.alias,
+                self.alias,
+                p_1_alpha,
+            )
+            self.parent.__executeSQL__(
+                query=query,
+                title="Computes the average of the {}'s lower and upper outliers.".format(
+                    self.alias
+                ),
+            )
+            mean_alpha, mean_1_alpha = [
+                item[0]
+                for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+            ]
+            if mean_alpha == None:
+                mean_alpha = "NULL"
+            if mean_1_alpha == None:
+                mean_alpha = "NULL"
+            self.apply(
+                func="(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format(
+                    "{}", p_alpha, mean_alpha, "{}", p_1_alpha, mean_1_alpha, "{}"
                 )
-                self.parent.__executeSQL__(
-                    query=query,
-                    title="Computes the quantiles of {}.".format(self.alias),
-                )
-                p_alpha, p_1_alpha = self.parent._VERTICAPY_VARIABLES_[
-                    "cursor"
-                ].fetchone()
-            if method == "winsorize":
-                self.clip(lower=p_alpha, upper=p_1_alpha)
-            elif method == "null":
-                self.apply(
-                    func="(CASE WHEN ({} BETWEEN {} AND {}) THEN {} ELSE NULL END)".format(
-                        "{}", p_alpha, p_1_alpha, "{}"
-                    )
-                )
-            elif method == "mean":
-                query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
-                    self.parent.__genSQL__(),
-                    self.alias,
-                    self.alias,
-                    p_alpha,
-                    self.alias,
-                    self.alias,
-                    p_1_alpha,
-                )
-                self.parent.__executeSQL__(
-                    query=query,
-                    title="Computes the average of the {}'s lower and upper outliers.".format(
-                        self.alias
-                    ),
-                )
-                mean_alpha, mean_1_alpha = [
-                    item[0]
-                    for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
-                ]
-                if mean_alpha == None:
-                    mean_alpha = "NULL"
-                if mean_1_alpha == None:
-                    mean_alpha = "NULL"
-                self.apply(
-                    func="(CASE WHEN {} < {} THEN {} WHEN {} > {} THEN {} ELSE {} END)".format(
-                        "{}", p_alpha, mean_alpha, "{}", p_1_alpha, mean_1_alpha, "{}"
-                    )
-                )
+            )
         return self.parent
 
     # ---#
@@ -1747,27 +1791,27 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Fills the vcolumn missing elements using specific rules.
+	Fills missing elements in the vColumn with a user-specified rule.
 
 	Parameters
  	----------
  	val: int/float/str, optional
- 		Value to use to impute the vcolumn.
+ 		Value to use to impute the vColumn.
  	method: dict, optional
  		Method to use to impute the missing values.
- 			auto    : Mean for the numerical and Mode for the categorical vcolumns.
+ 			auto    : Mean for the numerical and Mode for the categorical vColumns.
  			bfill   : Back Propagation of the next element (Constant Interpolation).
  			ffill   : Propagation of the first element (Constant Interpolation).
 			mean    : Average.
-			median  : Median.
-			mode    : Mode (most occurent element).
-			0ifnull : 0 when the vcolumn is null, 1 otherwise.
+			median  : median.
+			mode    : mode (most occurent element).
+			0ifnull : 0 when the vColumn is null, 1 otherwise.
     expr: str, optional
         SQL expression.
 	by: list, optional
- 		vcolumns used in the partition.
+ 		vColumns used in the partition.
  	order_by: list, optional
- 		List of the vcolumns to use to sort the data when using TS methods.
+ 		List of the vColumns to use to sort the data when using TS methods.
 
  	Returns
  	-------
@@ -1776,8 +1820,12 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].dropna : Drops the vcolumn missing values.
+	vDataFrame[].dropna : Drops the vColumn missing values.
 		"""
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         check_types(
             [
                 (
@@ -1810,7 +1858,7 @@ Attributes
         if (method == "mode") and (val == None):
             val = self.mode(dropna=True)
             if val == None:
-                warning_message = "The vcolumn {} has no mode (only missing values).\nNothing was filled.".format(
+                warning_message = "The vColumn {} has no mode (only missing values).\nNothing was filled.".format(
                     self.alias
                 )
                 warnings.warn(warning_message, Warning)
@@ -1870,10 +1918,7 @@ Attributes
                     "{}", fun, "{}", ", ".join(by)
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
-            if not (order_by):
-                raise ParameterError(
-                    "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
-                )
+            assert order_by, ParameterError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data")
             desc = " DESC" if (method in ("ffill", "pad")) else ""
             partition_by = (
                 "PARTITION BY {}".format(
@@ -1885,12 +1930,6 @@ Attributes
             order_by_ts = ", ".join([str_column(column) + desc for column in order_by])
             new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}))".format(
                 "{}", "{}", partition_by, order_by_ts
-            )
-        else:
-            raise ParameterError(
-                "The method '{}' does not exist or is not available\nPlease use a method in auto|mean|median|mode|ffill|bfill|0ifnull".format(
-                    method
-                )
             )
         if method in ("mean", "median") or isinstance(val, float):
             category, ctype = "float", "float"
@@ -1953,7 +1992,7 @@ Attributes
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Geospatial Object.
+    Draws the Geospatial object.
 
     Parameters
     ----------
@@ -2005,7 +2044,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Encodes the vcolumn using the One Hot Encoding algorithm.
+	Encodes the vColumn with the One-Hot Encoding algorithm.
 
 	Parameters
  	----------
@@ -2016,7 +2055,7 @@ Attributes
  	drop_first: bool, optional
  		Drops the first dummy to avoid the creation of correlated features.
  	use_numbers_as_suffix: bool, optional
- 		Uses numbers as suffix instead of the vcolumns categories.
+ 		Uses numbers as suffix instead of the vColumns categories.
 
  	Returns
  	-------
@@ -2025,10 +2064,10 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].decode       : Encodes the vcolumn using a user defined Encoding.
-	vDataFrame[].discretize   : Discretizes the vcolumn.
-	vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
-	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
+	vDataFrame[].decode       : Encodes the vColumn with user defined Encoding.
+	vDataFrame[].discretize   : Discretizes the vColumn.
+	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         check_types(
             [
@@ -2056,12 +2095,7 @@ Attributes
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
-                if column_check_ambiguous(name, columns):
-                    raise NameError(
-                        "A vcolumn has already the alias of one of the dummies ({}).\nIt can be the result of using previously the method on the vcolumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.".format(
-                            name
-                        )
-                    )
+                assert not(column_check_ambiguous(name, columns)), NameError(f"A vColumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vColumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.")
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2100,7 +2134,7 @@ Attributes
                 all_new_features += [name]
             conj = "s were " if len(all_new_features) > 1 else " was "
             self.parent.__add_to_history__(
-                "[Get Dummies]: One hot encoder was applied to the vcolumn {}\n{} feature{}created: {}".format(
+                "[Get Dummies]: One hot encoder was applied to the vColumn {}\n{} feature{}created: {}".format(
                     self.alias, len(all_new_features), conj, ", ".join(all_new_features)
                 )
                 + "."
@@ -2111,7 +2145,7 @@ Attributes
     def head(self, limit: int = 5):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn head.
+	Returns the head of the vColumn.
 
 	Parameters
  	----------
@@ -2126,7 +2160,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].tail : Returns the a part of the vcolumn.
+	vDataFrame[].tail : Returns the a part of the vColumn.
 		"""
         return self.iloc(limit=limit)
 
@@ -2143,7 +2177,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the Histogram of the vcolumn based on an aggregation.
+	Draws the histogram of the vColumn based on an aggregation.
 
 	Parameters
  	----------
@@ -2151,16 +2185,16 @@ Attributes
  		The method to use to aggregate the data.
  			count   : Number of elements.
  			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+ 			mean    : Average of the vColumn 'of'.
+ 			min     : Minimum of the vColumn 'of'.
+ 			max     : Maximum of the vColumn 'of'.
+ 			sum     : Sum of the vColumn 'of'.
+ 			q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
- 		The vcolumn to use to compute the aggregation.
+ 		The vColumn to use to compute the aggregation.
 	max_cardinality: int, optional
- 		Maximum number of the vcolumn distinct elements to be used as categorical 
+ 		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
  	bins: int, optional
  		Number of bins. If empty, an optimized number of bins will be computed.
@@ -2178,7 +2212,7 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame[].bar : Draws the Bar Chart of vcolumn based on an aggregation.
+ 	vDataFrame[].bar : Draws the Bar Chart of vColumn based on an aggregation.
 		"""
         check_types(
             [
@@ -2200,7 +2234,7 @@ Attributes
     def iloc(self, limit: int = 5, offset: int = 0):
         """
     ---------------------------------------------------------------------------
-    Returns a part of the vcolumn (delimited by an offset and a limit).
+    Returns a part of the vColumn (delimited by an offset and a limit).
 
     Parameters
     ----------
@@ -2217,8 +2251,8 @@ Attributes
 
     See Also
     --------
-    vDataFrame[].head : Returns the vcolumn head.
-    vDataFrame[].tail : Returns the vcolumn tail.
+    vDataFrame[].head : Returns the head of the vColumn.
+    vDataFrame[].tail : Returns the tail of the vColumn.
         """
         check_types(
             [("limit", limit, [int, float],), ("offset", offset, [int, float],),]
@@ -2248,17 +2282,17 @@ Attributes
     def isbool(self):
         """
     ---------------------------------------------------------------------------
-    Returns True if the vcolumn is boolean, False otherwise.
+    Returns True if the vColumn is boolean, False otherwise.
 
     Returns
     -------
     bool
-        True if the vcolumn is boolean.
+        True if the vColumn is boolean.
 
     See Also
     --------
-    vDataFrame[].isdate : Returns True if the vcolumn category is date.
-    vDataFrame[].isnum  : Returns True if the vcolumn is numerical.
+    vDataFrame[].isdate : Returns True if the vColumn category is date.
+    vDataFrame[].isnum  : Returns True if the vColumn is numerical.
         """
         return self.ctype().lower() in ("bool", "boolean")
 
@@ -2266,32 +2300,34 @@ Attributes
     def isdate(self):
         """
 	---------------------------------------------------------------------------
-	Returns True if the vcolumn category is date, False otherwise.
+	Returns True if the vColumn category is date, False otherwise.
 
  	Returns
  	-------
  	bool
- 		True if the vcolumn category is date.
+ 		True if the vColumn category is date.
 
 	See Also
 	--------
-    vDataFrame[].isbool : Returns True if the vcolumn is boolean.
-	vDataFrame[].isnum  : Returns True if the vcolumn is numerical.
+    vDataFrame[].isbool : Returns True if the vColumn is boolean.
+	vDataFrame[].isnum  : Returns True if the vColumn is numerical.
 		"""
         return self.category() == "date"
 
     # ---#
-    def isin(self, val: list):
+    def isin(
+        self, val: list, *args,
+    ):
         """
 	---------------------------------------------------------------------------
-	Looks if some specific records are in the vcolumn and it returns the new 
+	Looks if some specific records are in the vColumn and it returns the new 
     vDataFrame of the search.
 
 	Parameters
  	----------
  	val: list
  		List of the different records. For example, to check if Badr and Fouad  
- 		are in the vcolumn. You can write the following list: ["Fouad", "Badr"]
+ 		are in the vColumn. You can write the following list: ["Fouad", "Badr"]
 
  	Returns
  	-------
@@ -2302,6 +2338,9 @@ Attributes
  	--------
  	vDataFrame.isin : Looks if some specific records are in the vDataFrame.
 		"""
+        if isinstance(val, str) or not (isinstance(val, Iterable)):
+            val = [val]
+        val += list(args)
         check_types([("val", val, [list],)])
         val = {self.alias: val}
         return self.parent.isin(val)
@@ -2310,17 +2349,17 @@ Attributes
     def isnum(self):
         """
 	---------------------------------------------------------------------------
-	Returns True if the vcolumn is numerical, False otherwise.
+	Returns True if the vColumn is numerical, False otherwise.
 
  	Returns
  	-------
  	bool
- 		True if the vcolumn is numerical.
+ 		True if the vColumn is numerical.
 
 	See Also
 	--------
-    vDataFrame[].isbool : Returns True if the vcolumn is boolean.
-	vDataFrame[].isdate : Returns True if the vcolumn category is date.
+    vDataFrame[].isbool : Returns True if the vColumn is boolean.
+	vDataFrame[].isdate : Returns True if the vColumn category is date.
 		"""
         return self.category() in ("float", "int")
 
@@ -2337,7 +2376,7 @@ Attributes
     Parameters
     ----------
     y: str
-        Response vcolumn.
+        Response vColumn.
     bins: int, optional
         Maximum number of bins used for the discretization (must be > 1)
 
@@ -2355,12 +2394,12 @@ Attributes
         columns_check([y], self.parent)
         y = vdf_columns_names([y], self.parent)[0]
         assert self.parent[y].nunique() == 2, TypeError(
-            "vcolumn {} must be binary to use iv_woe.".format(y)
+            "vColumn {} must be binary to use iv_woe.".format(y)
         )
         response_cat = self.parent[y].distinct()
         response_cat.sort()
         assert response_cat == [0, 1], TypeError(
-            "vcolumn {} must be binary to use iv_woe.".format(y)
+            "vColumn {} must be binary to use iv_woe.".format(y)
         )
         self.parent[y].distinct()
         trans = self.discretize(
@@ -2399,7 +2438,7 @@ Attributes
     def kurtosis(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'kurtosis'.
+	Aggregates the vColumn using 'kurtosis'.
 
  	Returns
  	-------
@@ -2417,8 +2456,8 @@ Attributes
     def label_encode(self):
         """
 	---------------------------------------------------------------------------
-	Encodes the vcolumn using a bijection from the different categories to 
-	[0, n - 1] (n being the vcolumn cardinality).
+	Encodes the vColumn using a bijection from the different categories to
+	[0, n - 1] (n being the vColumn cardinality).
 
  	Returns
  	-------
@@ -2427,10 +2466,10 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].decode       : Encodes the vcolumn using a user defined Encoding.
-	vDataFrame[].discretize   : Discretizes the vcolumn.
-	vDataFrame[].get_dummies  : Encodes the vcolumn using the One Hot Encoding.
-	vDataFrame[].mean_encode  : Encodes the vcolumn using the Mean Encoding of a response.
+	vDataFrame[].decode       : Encodes the vColumn with a user defined Encoding.
+	vDataFrame[].discretize   : Discretizes the vColumn.
+	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
+	vDataFrame[].mean_encode  : Encodes the vColumn using the mean encoding of a response.
 		"""
         if self.category() in ["date", "float"]:
             warning_message = (
@@ -2452,7 +2491,7 @@ Attributes
             self.catalog["count"] = self.parent.shape()[0]
             self.catalog["percent"] = 100
             self.parent.__add_to_history__(
-                "[Label Encoding]: Label Encoding was applied to the vcolumn {} using the following mapping:{}".format(
+                "[Label Encoding]: Label Encoding was applied to the vColumn {} using the following mapping:{}".format(
                     self.alias, text_info
                 )
             )
@@ -2462,7 +2501,7 @@ Attributes
     def mad(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'mad' (Median Absolute Deviation).
+	Aggregates the vColumn using 'mad' (median absolute deviation).
 
  	Returns
  	-------
@@ -2479,7 +2518,7 @@ Attributes
     def max(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'max' (Maximum).
+	Aggregates the vColumn using 'max' (Maximum).
 
  	Returns
  	-------
@@ -2496,13 +2535,13 @@ Attributes
     def mean_encode(self, response_column: str):
         """
 	---------------------------------------------------------------------------
-	Encodes the vcolumn using the average of the response partitioned by the 
-	different vcolumn categories.
+	Encodes the vColumn using the average of the response partitioned by the 
+	different vColumn categories.
 
 	Parameters
  	----------
  	response_column: str
- 		Response vcolumn.
+ 		Response vColumn.
 
  	Returns
  	-------
@@ -2511,37 +2550,34 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].decode       : Encodes the vcolumn using a User Defined Encoding.
-	vDataFrame[].discretize   : Discretizes the vcolumn.
-	vDataFrame[].label_encode : Encodes the vcolumn using the Label Encoding.
-	vDataFrame[].get_dummies  : Encodes the vcolumn using the One Hot Encoding.
+	vDataFrame[].decode       : Encodes the vColumn using a user-defined encoding.
+	vDataFrame[].discretize   : Discretizes the vColumn.
+	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
+	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
         check_types([("response_column", response_column, [str],)])
         columns_check([response_column], self.parent)
         response_column = vdf_columns_names([response_column], self.parent)[0]
-        if not (self.parent[response_column].isnum()):
-            raise TypeError(
-                "The response column must be numerical to use a mean encoding"
+        assert self.parent[response_column].isnum(), TypeError("The response column must be numerical to use a mean encoding")
+        max_floor = len(self.parent[response_column].transformations) - len(
+            self.transformations
+        )
+        for k in range(max_floor):
+            self.transformations += [("{}", self.ctype(), self.category())]
+        self.transformations += [
+            (
+                "AVG({}) OVER (PARTITION BY {})".format(response_column, "{}"),
+                "int",
+                "float",
             )
-        else:
-            max_floor = len(self.parent[response_column].transformations) - len(
-                self.transformations
+        ]
+        self.parent.__update_catalog__(erase=True, columns=[self.alias])
+        self.parent.__add_to_history__(
+            "[Mean Encode]: The vColumn {} was transformed using a mean encoding with {} as Response Column.".format(
+                self.alias, response_column
             )
-            for k in range(max_floor):
-                self.transformations += [("{}", self.ctype(), self.category())]
-            self.transformations += [
-                (
-                    "AVG({}) OVER (PARTITION BY {})".format(response_column, "{}"),
-                    "int",
-                    "float",
-                )
-            ]
-            self.parent.__update_catalog__(erase=True, columns=[self.alias])
-            self.parent.__add_to_history__(
-                "[Mean Encode]: The vcolumn {} was transformed using a mean encoding with {} as Response Column.".format(
-                    self.alias, response_column
-                )
-            )
+        )
+        if verticapy.options["print_info"]:
             print("The mean encoding was successfully done.")
         return self.parent
 
@@ -2549,7 +2585,7 @@ Attributes
     def median(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'median'.
+	Aggregates the vColumn using 'median'.
 
  	Returns
  	-------
@@ -2566,12 +2602,12 @@ Attributes
     def memory_usage(self):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn memory usage. 
+	Returns the vColumn memory usage. 
 
  	Returns
  	-------
  	float
- 		vcolumn memory usage (byte)
+ 		vColumn memory usage (byte)
 
 	See Also
 	--------
@@ -2593,7 +2629,7 @@ Attributes
     def min(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'min' (Minimum).
+	Aggregates the vColumn using 'min' (Minimum).
 
  	Returns
  	-------
@@ -2618,12 +2654,12 @@ Attributes
  		If set to True, NULL values will not be considered during the computation.
  	n: int, optional
  		Integer corresponding to the offset. For example, if n = 1 then this
- 		method will return the mode of the vcolumn.
+ 		method will return the mode of the vColumn.
 
  	Returns
  	-------
  	str/float/int
- 		vcolumn nth most occurent element.
+ 		vColumn nth most occurent element.
 
 	See Also
 	--------
@@ -2635,8 +2671,7 @@ Attributes
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 if not (dropna) and (pre_comp != None):
                     return pre_comp
-        if n < 1:
-            raise ParameterError("Parameter 'n' must be greater or equal to 1")
+        assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         self.parent.__executeSQL__(
             "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
@@ -2660,7 +2695,7 @@ Attributes
     def mul(self, x: float):
         """
 	---------------------------------------------------------------------------
-	Multiplies the vcolumn by the input element.
+	Multiplies the vColumn by the input element.
 
 	Parameters
  	----------
@@ -2674,7 +2709,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         check_types([("x", x, [int, float],)])
         return self.apply(func="{} * ({})".format("{}", x))
@@ -2683,7 +2718,7 @@ Attributes
     def nlargest(self, n: int = 10):
         """
 	---------------------------------------------------------------------------
-	Returns the n largest vcolumn elements.
+	Returns the n largest vColumn elements.
 
 	Parameters
  	----------
@@ -2698,7 +2733,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].nsmallest : Returns the n nsmallest vcolumn elements.
+	vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
 		"""
         check_types([("n", n, [int, float],)])
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(
@@ -2715,7 +2750,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Normalizes the input vcolumns using the input method.
+	Normalizes the input vColumns using the input method.
 
 	Parameters
  	----------
@@ -2728,7 +2763,7 @@ Attributes
  			minmax        : Normalization using the MinMax (min and max).
 				(x - min) / (max - min)
 	by: list, optional
- 		vcolumns used in the partition.
+ 		vColumns used in the partition.
  	return_trans: bool, optimal
  		If set to True, the method will return the transformation used instead of
  		the parent vDataFrame. This parameter is used for testing purpose.
@@ -2742,6 +2777,8 @@ Attributes
 	--------
 	vDataFrame.outliers : Computes the vDataFrame Global Outliers.
 		"""
+        if isinstance(by, str):
+            by = [by]
         check_types(
             [
                 ("method", method, ["zscore", "robust_zscore", "minmax"],),
@@ -3025,19 +3062,19 @@ Attributes
                 self.catalog["min"] = 0
                 self.catalog["max"] = 1
             self.parent.__add_to_history__(
-                "[Normalize]: The vcolumn '{}' was normalized with the method '{}'.".format(
+                "[Normalize]: The vColumn '{}' was normalized with the method '{}'.".format(
                     self.alias, method
                 )
             )
         else:
-            raise TypeError("The vcolumn must be numerical for Normalization")
+            raise TypeError("The vColumn must be numerical for Normalization")
         return self.parent
 
     # ---#
     def nsmallest(self, n: int = 10):
         """
 	---------------------------------------------------------------------------
-	Returns the n smallest vcolumn elements.
+	Returns the n smallest elements in the vColumn.
 
 	Parameters
  	----------
@@ -3052,7 +3089,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].nlargest : Returns the n largest vcolumn elements.
+	vDataFrame[].nlargest : Returns the n largest vColumn elements.
 		"""
         check_types([("n", n, [int, float],)])
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(
@@ -3067,7 +3104,7 @@ Attributes
     def numh(self, method: str = "auto"):
         """
 	---------------------------------------------------------------------------
-	Computes the optimal vcolumn bar width.
+	Computes the optimal vColumn bar width.
 
 	Parameters
  	----------
@@ -3090,6 +3127,7 @@ Attributes
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
+        assert self.isnum() or self.isdate(), ParameterError("numh is only available on type numeric|date")
         if self.isnum():
             result = (
                 self.parent.describe(
@@ -3118,8 +3156,6 @@ Attributes
             )
             result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
-        else:
-            raise ParameterError("numh is only available on type numeric|date")
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
             1e-99,
@@ -3140,7 +3176,7 @@ Attributes
     def nunique(self, approx: bool = False):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'unique' (cardinality).
+	Aggregates the vColumn using 'unique' (cardinality).
 
 	Parameters
  	----------
@@ -3151,7 +3187,7 @@ Attributes
  	Returns
  	-------
  	int
- 		vcolumn cardinality (or approximate cardinality).
+ 		vColumn cardinality (or approximate cardinality).
 
 	See Also
 	--------
@@ -3176,7 +3212,7 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the Pie Chart of the vcolumn based on an aggregation.
+	Draws the pie chart of the vColumn based on an aggregation.
 
 	Parameters
  	----------
@@ -3184,24 +3220,24 @@ Attributes
  		The method to use to aggregate the data.
  			count   : Number of elements.
  			density : Percentage of the distribution.
- 			mean    : Average of the vcolumn 'of'.
- 			min     : Minimum of the vcolumn 'of'.
- 			max     : Maximum of the vcolumn 'of'.
- 			sum     : Sum of the vcolumn 'of'.
- 			q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+ 			mean    : Average of the vColumn 'of'.
+ 			min     : Minimum of the vColumn 'of'.
+ 			max     : Maximum of the vColumn 'of'.
+ 			sum     : Sum of the vColumn 'of'.
+ 			q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
  	of: str, optional
- 		The vcolumn to use to compute the aggregation.
+ 		The vColumn to use to compute the aggregation.
 	max_cardinality: int, optional
- 		Maximum number of the vcolumn distinct elements to be used as categorical 
+ 		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     pie_type: str, optional
-        The Pie Type.
-            auto   : Regular Pie Chart.
-            donut  : Donut Chart.
-            rose   : Rose Chart.
+        The type of pie chart.
+            auto   : Regular pie chart.
+            donut  : Donut chart.
+            rose   : Rose chart.
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3215,7 +3251,7 @@ Attributes
 
  	See Also
  	--------
- 	vDataFrame.donut : Draws the Donut Chart of the vcolumn based on an aggregation.
+ 	vDataFrame.donut : Draws the donut chart of the vColumn based on an aggregation.
 		"""
         if isinstance(pie_type, str):
             pie_type = pie_type.lower()
@@ -3244,8 +3280,8 @@ Attributes
         self,
         ts: str,
         by: str = "",
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         area: bool = False,
         step: bool = False,
         ax=None,
@@ -3253,19 +3289,19 @@ Attributes
     ):
         """
 	---------------------------------------------------------------------------
-	Draws the Time Series of the vcolumn.
+	Draws the Time Series of the vColumn.
 
 	Parameters
  	----------
  	ts: str
- 		TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+ 		TS (Time Series) vColumn to use to order the data. The vColumn type must be
  		date like (date, datetime, timestamp...) or numerical.
  	by: str, optional
- 		vcolumn to use to partition the TS.
- 	start_date: str, optional
+ 		vColumn to use to partition the TS.
+ 	start_date: str / date, optional
  		Input Start Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is lesser than November 1993 the 3rd.
- 	end_date: str, optional
+ 	end_date: str / date, optional
  		Input End Date. For example, time = '03-11-1993' will filter the data when 
  		'ts' is greater than November 1993 the 3rd.
  	area: bool, optional
@@ -3284,14 +3320,14 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.plot : Draws the Time Series.
+	vDataFrame.plot : Draws the time series.
 		"""
         check_types(
             [
                 ("ts", ts, [str],),
                 ("by", by, [str],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                ("start_date", start_date, [str, datetime.datetime, datetime.date,],),
+                ("end_date", end_date, [str, datetime.datetime, datetime.date,],),
                 ("area", area, [bool],),
                 ("step", step, [bool],),
             ]
@@ -3311,7 +3347,7 @@ Attributes
     def product(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'product'.
+	Aggregates the vColumn using 'product'.
 
  	Returns
  	-------
@@ -3330,13 +3366,13 @@ Attributes
     def quantile(self, x: float):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using an input 'quantile'.
+	Aggregates the vColumn using an input 'quantile'.
 
 	Parameters
  	----------
  	x: float
- 		Number representing the quantile. It must be a float between 0 and 1.
- 		For example 0.25 will return Q1.
+ 		A float between 0 and 1 that represents the quantile.
+        For example: 0.25 represents Q1.
 
  	Returns
  	-------
@@ -3355,28 +3391,28 @@ Attributes
         self,
         ts: str,
         q: tuple = (0.25, 0.75),
-        start_date: str = "",
-        end_date: str = "",
+        start_date: (str, datetime.datetime, datetime.date,) = "",
+        end_date: (str, datetime.datetime, datetime.date,) = "",
         plot_median: bool = False,
         ax=None,
         **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Range Plot of the vcolumn. The aggregations used is Median and 2
-    input quantiles.
+    Draws the range plot of the vColumn. The aggregations used are the median 
+    and two input quantiles.
 
     Parameters
     ----------
     ts: str
-        TS (Time Series) vcolumn to use to order the data. The vcolumn type must be
+        TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...) or numerical.
     q: tuple, optional
         Tuple including the 2 quantiles used to draw the Plot.
-    start_date: str, optional
+    start_date: str / date, optional
         Input Start Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is lesser than November 1993 the 3rd.
-    end_date: str, optional
+    end_date: str / date, optional
         Input End Date. For example, time = '03-11-1993' will filter the data when 
         'ts' is greater than November 1993 the 3rd.
     plot_median: bool, optional
@@ -3393,14 +3429,22 @@ Attributes
 
     See Also
     --------
-    vDataFrame.plot : Draws the Time Series.
+    vDataFrame.plot : Draws the time series.
         """
         check_types(
             [
                 ("ts", ts, [str],),
                 ("q", q, [tuple],),
-                ("start_date", start_date, [str],),
-                ("end_date", end_date, [str],),
+                (
+                    "start_date",
+                    start_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
+                (
+                    "end_date",
+                    end_date,
+                    [str, datetime.datetime, datetime.date, int, float,],
+                ),
                 ("plot_median", plot_median, [bool],),
             ]
         )
@@ -3416,7 +3460,7 @@ Attributes
     def rename(self, new_name: str):
         """
 	---------------------------------------------------------------------------
-	Renames the vcolumn by dropping the current vcolumn and creating a copy with 
+	Renames the vColumn by dropping the current vColumn and creating a copy with 
     the specified name.
 
     \u26A0 Warning : SQL code generation will be slower if the vDataFrame has been 
@@ -3426,7 +3470,7 @@ Attributes
 	Parameters
  	----------
  	new_name: str
- 		The new vcolumn alias.
+ 		The new vColumn alias.
 
  	Returns
  	-------
@@ -3435,21 +3479,16 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame.add_copy : Creates a copy of the vcolumn.
+	vDataFrame.add_copy : Creates a copy of the vColumn.
 		"""
         check_types([("new_name", new_name, [str],)])
         old_name = str_column(self.alias)
         new_name = new_name.replace('"', "")
-        if column_check_ambiguous(new_name, self.parent.get_columns()):
-            raise NameError(
-                "A vcolumn has already the alias {}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.".format(
-                    new_name
-                )
-            )
+        assert not(column_check_ambiguous(new_name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.")
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
-            "[Rename]: The vcolumn {} was renamed '{}'.".format(old_name, new_name)
+            "[Rename]: The vColumn {} was renamed '{}'.".format(old_name, new_name)
         )
         return parent
 
@@ -3457,12 +3496,12 @@ Attributes
     def round(self, n: int):
         """
 	---------------------------------------------------------------------------
-	Rounds the vcolumn by keeping only the input number of digits after comma.
+	Rounds the vColumn by keeping only the input number of digits after the comma.
 
 	Parameters
  	----------
  	n: int
- 		Number of digits to keep after comma.
+ 		Number of digits to keep after the comma.
 
  	Returns
  	-------
@@ -3471,7 +3510,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         check_types([("n", n, [int, float],)])
         return self.apply(func="ROUND({}, {})".format("{}", n))
@@ -3480,7 +3519,7 @@ Attributes
     def sem(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'sem' (Standard Error of the Mean).
+	Aggregates the vColumn using 'sem' (standard error of mean).
 
  	Returns
  	-------
@@ -3497,7 +3536,7 @@ Attributes
     def skewness(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'skewness'.
+	Aggregates the vColumn using 'skewness'.
 
  	Returns
  	-------
@@ -3515,7 +3554,7 @@ Attributes
     def slice(self, length: int, unit: str = "second", start: bool = True):
         """
 	---------------------------------------------------------------------------
-	Slices the vcolumn using a TS rule. The vcolumn will be transformed.
+	Slices and transforms the vColumn using a time series rule.
 
 	Parameters
  	----------
@@ -3534,7 +3573,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].date_part : Extracts a specific TS field from the vcolumn.
+	vDataFrame[].date_part : Extracts a specific TS field from the vColumn.
 		"""
         check_types(
             [
@@ -3563,30 +3602,30 @@ Attributes
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Spider Plot of the input vcolumn based on an aggregation.
+    Draws the spider plot of the input vColumn based on an aggregation.
 
     Parameters
     ----------
     by: str, optional
-        vcolumn to use to partition the data.
+        vColumn to use to partition the data.
     method: str, optional
         The method to use to aggregate the data.
             count   : Number of elements.
             density : Percentage of the distribution.
-            mean    : Average of the vcolumn 'of'.
-            min     : Minimum of the vcolumn 'of'.
-            max     : Maximum of the vcolumn 'of'.
-            sum     : Sum of the vcolumn 'of'.
-            q%      : q Quantile of the vcolumn 'of' (ex: 50% to get the median).
+            mean    : Average of the vColumn 'of'.
+            min     : Minimum of the vColumn 'of'.
+            max     : Maximum of the vColumn 'of'.
+            sum     : Sum of the vColumn 'of'.
+            q%      : q Quantile of the vColumn 'of' (ex: 50% to get the median).
         It can also be a cutomized aggregation (ex: AVG(column1) + 5).
     of: str, optional
-        The vcolumn to use to compute the aggregation.
+        The vColumn to use to compute the aggregation.
     h: int/float/tuple, optional
-        Interval width of the vcolumns 1 and 2 bars. It is only valid if the 
-        vcolumns are numerical. Optimized h will be computed if the parameter 
+        Interval width of the vColumns 1 and 2 bars. It is only valid if the 
+        vColumns are numerical. Optimized h will be computed if the parameter 
         is empty or invalid.
     max_cardinality: int/tuple, optional
-        Maximum number of distinct elements for vcolumns 1 and 2 to be used as 
+        Maximum number of distinct elements for vColumns 1 and 2 to be used as 
         categorical (No h will be picked or computed)
     ax: Matplotlib axes object, optional
         The axes to plot on.
@@ -3600,7 +3639,7 @@ Attributes
 
     See Also
     --------
-    vDataFrame.bar : Draws the Bar Chart of the input vcolumns based on an aggregation.
+    vDataFrame.bar : Draws the Bar Chart of the input vColumns based on an aggregation.
         """
         check_types(
             [
@@ -3630,7 +3669,7 @@ Attributes
     def std(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'std' (Standard Deviation).
+	Aggregates the vColumn using 'std' (Standard Deviation).
 
  	Returns
  	-------
@@ -3648,12 +3687,12 @@ Attributes
     def store_usage(self):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn expected store usage (unit: b).
+	Returns the vColumn expected store usage (unit: b).
 
  	Returns
  	-------
  	int
- 		vcolumn expected store usage.
+ 		vColumn expected store usage.
 
 	See Also
 	--------
@@ -3667,7 +3706,7 @@ Attributes
                 convert_special_type(self.category(), False, self.alias),
                 self.parent.__genSQL__(),
             ),
-            title="Computes the Store Usage of the vcolumn {}.".format(self.alias),
+            title="Computes the Store Usage of the vColumn {}.".format(self.alias),
         )
         store_usage = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         self.parent.__update_catalog__(
@@ -3679,13 +3718,13 @@ Attributes
     def str_contains(self, pat: str):
         """
 	---------------------------------------------------------------------------
-	Verifies if the regular expression is in each of the vcolumn records. 
-	The vcolumn will be transformed.
+	Verifies if the regular expression is in each of the vColumn records. 
+	The vColumn will be transformed.
 
 	Parameters
  	----------
  	pat: str
- 		regular expression.
+ 		Regular expression.
 
  	Returns
  	-------
@@ -3694,13 +3733,13 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].str_count   : Computes the regular expression count match in each 
-		record of the vcolumn.
+	vDataFrame[].str_count   : Computes the number of matches for the regular expression
+        in each record of the vColumn.
 	vDataFrame[].extract     : Extracts the regular expression in each record of the 
-		vcolumn.
+		vColumn.
 	vDataFrame[].str_replace : Replaces the regular expression matches in each of the 
-		vcolumn record by an input value.
-	vDataFrame[].str_slice   : Slices the vcolumn.
+		vColumn records by an input value.
+	vDataFrame[].str_slice   : Slices the vColumn.
 		"""
         check_types([("pat", pat, [str],)])
         return self.apply(
@@ -3711,8 +3750,8 @@ Attributes
     def str_count(self, pat: str):
         """
 	---------------------------------------------------------------------------
-	Computes the regular expression count match in each record of the vcolumn.
-	The vcolumn will be transformed.
+	Computes the number of matches for the regular expression in each record of 
+    the vColumn. The vColumn will be transformed.
 
 	Parameters
  	----------
@@ -3727,12 +3766,12 @@ Attributes
 	See Also
 	--------
 	vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
-		vcolumn records. 
+		vColumn records. 
 	vDataFrame[].extract      : Extracts the regular expression in each record of the 
-		vcolumn.
+		vColumn.
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
-		vcolumn record by an input value.
-	vDataFrame[].str_slice    : Slices the vcolumn.
+		vColumn records by an input value.
+	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
         check_types([("pat", pat, [str],)])
         return self.apply(
@@ -3743,8 +3782,8 @@ Attributes
     def str_extract(self, pat: str):
         """
 	---------------------------------------------------------------------------
-	Extracts the regular expression in each record of the vcolumn.
-	The vcolumn will be transformed.
+	Extracts the regular expression in each record of the vColumn.
+	The vColumn will be transformed.
 
 	Parameters
  	----------
@@ -3759,12 +3798,12 @@ Attributes
  	See Also
  	--------
 	vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
-		vcolumn records. 
-	vDataFrame[].str_count    : Computes the regular expression count match in each 
-		record of the vcolumn.
+		vColumn records. 
+	vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
-		vcolumn record by an input value.
-	vDataFrame[].str_slice    : Slices the vcolumn.
+		vColumn records by an input value.
+	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
         check_types([("pat", pat, [str],)])
         return self.apply(
@@ -3775,15 +3814,15 @@ Attributes
     def str_replace(self, to_replace: str, value: str = ""):
         """
 	---------------------------------------------------------------------------
-	Replaces the regular expression matches in each of the vcolumn record by an
-	input value. The vcolumn will be transformed.
+	Replaces the regular expression matches in each of the vColumn record by an
+	input value. The vColumn will be transformed.
 
 	Parameters
  	----------
  	to_replace: str
- 		regular expression to replace.
+ 		Regular expression to replace.
  	value: str, optional
- 		new value.
+ 		New value.
 
  	Returns
  	-------
@@ -3793,12 +3832,12 @@ Attributes
 	See Also
 	--------
 	vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
-		vcolumn records. 
-	vDataFrame[].str_count    : Computes the regular expression count match in each 
-		record of the vcolumn.
+		vColumn records. 
+	vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
 	vDataFrame[].extract      : Extracts the regular expression in each record of the 
-		vcolumn.
-	vDataFrame[].str_slice    : Slices the vcolumn.
+		vColumn.
+	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
         check_types([("to_replace", to_replace, [str],), ("value", value, [str],)])
         return self.apply(
@@ -3811,7 +3850,7 @@ Attributes
     def str_slice(self, start: int, step: int):
         """
 	---------------------------------------------------------------------------
-	Slices the vcolumn. The vcolumn will be transformed.
+	Slices the vColumn. The vColumn will be transformed.
 
 	Parameters
  	----------
@@ -3828,13 +3867,13 @@ Attributes
 	See Also
 	--------
 	vDataFrame[].str_contains : Verifies if the regular expression is in each of the 
-		vcolumn records. 
-	vDataFrame[].str_count    : Computes the regular expression count match in each 
-		record of the vcolumn.
+		vColumn records. 
+	vDataFrame[].str_count    : Computes the number of matches for the regular expression
+        in each record of the vColumn.
 	vDataFrame[].extract      : Extracts the regular expression in each record of the 
-		vcolumn.
+		vColumn.
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
-		vcolumn record by an input value.
+		vColumn records by an input value.
 		"""
         check_types([("start", start, [int, float],), ("step", step, [int, float],)])
         return self.apply(func="SUBSTR({}, {}, {})".format("{}", start, step))
@@ -3843,12 +3882,12 @@ Attributes
     def sub(self, x: float):
         """
 	---------------------------------------------------------------------------
-	Substracts the input element to the vcolumn.
+	Subtracts the input element from the vColumn.
 
 	Parameters
  	----------
  	x: float
- 		If the vcolumn type is date like (date, datetime ...), the parameter 'x' 
+ 		If the vColumn type is date like (date, datetime ...), the parameter 'x' 
  		will represent the number of seconds, otherwise it will represent a number.
 
  	Returns
@@ -3858,7 +3897,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].apply : Applies a function to the input vcolumn.
+	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
         check_types([("x", x, [int, float],)])
         if self.isdate():
@@ -3870,7 +3909,7 @@ Attributes
     def sum(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'sum'.
+	Aggregates the vColumn using 'sum'.
 
  	Returns
  	-------
@@ -3887,7 +3926,7 @@ Attributes
     def tail(self, limit: int = 5):
         """
 	---------------------------------------------------------------------------
-	Returns the vcolumn tail.
+	Returns the tail of the vColumn.
 
 	Parameters
  	----------
@@ -3902,7 +3941,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].head : Returns the vcolumn head.
+	vDataFrame[].head : Returns the head of the vColumn.
 		"""
         return self.iloc(limit=limit, offset=-1)
 
@@ -3910,13 +3949,12 @@ Attributes
     def topk(self, k: int = -1, dropna: bool = True):
         """
 	---------------------------------------------------------------------------
-	Returns the K most occurent elements and their respective percent of the 
-	distribution.
+	Returns the k most occurent elements and their distributions as percents.
 
 	Parameters
  	----------
  	k: int, optional
- 		Number of most occurent elements.
+ 		Number of most occurent elements to return.
  	dropna: bool, optional
  		If set to True, NULL values will not be considered during the computation.
 
@@ -3928,7 +3966,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].describe : Computes the vcolumn descriptive statistics.
+	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
         check_types([("k", k, [int, float],), ("dropna", dropna, [bool],)])
         try:
@@ -3975,13 +4013,13 @@ Attributes
     def value_counts(self, k: int = 30):
         """
 	---------------------------------------------------------------------------
-	Returns the K most occurent elements, their respective count and other 
+	Returns the k most occurent elements, how often they occur, and other
 	statistical information.
 
 	Parameters
  	----------
  	k: int, optional
- 		Number of most occurent elements.
+ 		Number of most occurent elements to return.
 
  	Returns
  	-------
@@ -3991,7 +4029,7 @@ Attributes
 
 	See Also
 	--------
-	vDataFrame[].describe : Computes the vcolumn descriptive statistics.
+	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
         return self.describe(method="categorical", max_cardinality=k)
 
@@ -3999,7 +4037,7 @@ Attributes
     def var(self):
         """
 	---------------------------------------------------------------------------
-	Aggregates the vcolumn using 'var' (Variance).
+	Aggregates the vColumn using 'var' (Variance).
 
  	Returns
  	-------

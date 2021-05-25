@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, sys, warnings
+import os, math, shutil, re, sys, warnings, random, itertools
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -61,6 +61,16 @@ from verticapy.errors import *
 #
 # Functions to use to simplify the coding.
 #
+# ---#
+def all_comb(X: list):
+    all_configuration = []
+    for r in range(len(X) + 1):
+        combinations_object = itertools.combinations(X, r)
+        combinations_list = list(combinations_object)
+        if combinations_list[0]:
+            all_configuration += combinations_list
+    return all_configuration
+
 # ---#
 def arange(start: float, stop: float, step: float):
     check_types(
@@ -89,6 +99,7 @@ def category_from_model_type(model_type: str):
         "RandomForestClassifier",
         "KNeighborsClassifier",
         "NearestCentroid",
+        "XGBoostClassifier",
     ]:
         return ("classifier", "multiclass")
     elif model_type in [
@@ -96,6 +107,7 @@ def category_from_model_type(model_type: str):
         "LinearSVR",
         "RandomForestRegressor",
         "KNeighborsRegressor",
+        "XGBoostRegressor",
     ]:
         return ("regressor", "")
     elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
@@ -106,6 +118,8 @@ def category_from_model_type(model_type: str):
         return ("unsupervised", "preprocessing")
     elif model_type in ["LocalOutlierFactor"]:
         return ("unsupervised", "anomaly_detection")
+    else:
+        return ("", "")
 
 
 # ---#
@@ -135,9 +149,9 @@ def category_from_type(ctype: str = ""):
             or (ctype[0:4] == "real")
         ):
             return "float"
-        elif ("binary" in ctype) or ("byte" in ctype) or (ctype == "raw"):
+        elif ("byte" in ctype) or (ctype == "raw"):
             return "binary"
-        elif ctype[0:3] == "geo":
+        elif ("binary" in ctype) or ctype[0:3] == "geo":
             return "spatial"
         elif "uuid" in ctype:
             return "uuid"
@@ -151,7 +165,7 @@ def category_from_type(ctype: str = ""):
 def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
-    from verticapy.connections.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
         if not (cursor) or vdf_cursor:
@@ -348,6 +362,19 @@ def default_model_parameters(model_type: str):
             "min_info_gain": 0.0,
             "nbins": 32,
         }
+    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
+        return {
+            "max_ntree": 10,
+            "max_depth": 5,
+            "nbins": 32,
+            "objective": "squarederror",
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "learning_rate": 0.1,
+            "min_split_loss": 0,
+            "weight_reg": 0,
+            "sampling_size": 1,
+        }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}
     elif model_type in ("PCA"):
@@ -454,7 +481,6 @@ def gen_name(L: list):
             for elem in L
         ]
     )
-
 
 # ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
@@ -563,7 +589,7 @@ def insert_verticapy_schema(
     cursor.execute(sql)
     result = cursor.fetchone()
     if not (result):
-        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and drop_verticapy_schema to drop it if it is corrupted."
+        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
         warnings.warn(warning_message, Warning)
     else:
         size = sys.getsizeof(model_save)
@@ -593,6 +619,23 @@ def insert_verticapy_schema(
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
             raise
+
+# ---#
+def reverse_score(metric: str):
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        return False
+    return True
 
 
 # ---#
@@ -1148,7 +1191,9 @@ def vdf_columns_names(columns: list, vdf):
 
 # ---#
 def vertica_param_name(param: str):
-    if param.lower() == "solver":
+    if param.lower() == "class_weights":
+        return "class_weight"
+    elif param.lower() == "solver":
         return "optimizer"
     elif param.lower() == "tol":
         return "epsilon"
@@ -1200,9 +1245,14 @@ def vertica_param_dict(model):
         elif param == "max_leaf_nodes":
             parameters[vertica_param_name(param)] = int(model.parameters[param])
         elif param == "class_weight":
-            parameters[param] = "'{}'".format(
-                ", ".join([str(item) for item in model.parameters[param]])
-            )
+            if isinstance(model.parameters[param], Iterable):
+                parameters["class_weights"] = "'{}'".format(
+                    ", ".join([str(item) for item in model.parameters[param]])
+                )
+            else:
+                parameters["class_weights"] = "'{}'".format(
+                    model.parameters[param]
+                )
         elif isinstance(model.parameters[param], (str, dict)):
             parameters[vertica_param_name(param)] = "'{}'".format(
                 model.parameters[param]

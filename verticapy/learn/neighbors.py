@@ -58,6 +58,7 @@ from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # Standard Python Modules
 import warnings
@@ -70,14 +71,14 @@ class NeighborsClassifier(vModel):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
-    (AUC, accuracy, PRC AUC, F1...). In case of multiclass classification, it will 
+    (AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will 
     consider each category as positive and switch to the next one during the computation.
 
     Parameters
     ----------
     cutoff: float/list, optional
-        Cutoff for which the tested category will be accepted as prediction. 
-        In case of multiclass classification, each tested category becomes 
+        Cutoff for which the tested category will be accepted as a prediction. 
+        For multiclass classification, each tested category becomes 
         the positives and the others are merged into the negatives. The list will 
         represent the classes threshold. If it is empty, the best cutoff will be used.
     labels: list, optional
@@ -89,12 +90,52 @@ class NeighborsClassifier(vModel):
         An object containing the result. For more information, see
         utilities.tablesample.
         """
+        if not (isinstance(labels, Iterable)) or isinstance(labels, str):
+            labels = [labels]
         check_types(
             [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
         )
         if not (labels):
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+
+    # ---#
+    def cutoff_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+        """
+    ---------------------------------------------------------------------------
+    Draws the model ROC curve.
+
+    Parameters
+    ----------
+    pos_label: int/float/str
+        To draw the ROC curve, one of the response column classes must be the 
+        positive one. The parameter 'pos_label' represents this class.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        pos_label = (
+            self.classes_[1]
+            if (pos_label == None and len(self.classes_) == 2)
+            else pos_label
+        )
+        if pos_label not in self.classes_:
+            raise ParameterError(
+                "'pos_label' must be one of the response column classes"
+            )
+        input_relation = self.deploySQL() + " WHERE predict_neighbors = '{}'".format(
+            pos_label
+        )
+        return roc_curve(
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, cutoff_curve=True, **style_kwds,
+        )
 
     # ---#
     def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
@@ -106,9 +147,9 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative in case of multi classification.
+        considered as negative for multiclass classification.
     cutoff: float, optional
-        Cutoff for which the tested category will be accepted as prediction. If the 
+        Cutoff for which the tested category will be accepted as a prediction. If the 
         cutoff is not between 0 and 1, the entire confusion matrix will be drawn.
 
     Returns
@@ -149,7 +190,7 @@ class NeighborsClassifier(vModel):
             )
 
     # ---#
-    def lift_chart(self, pos_label: (int, float, str) = None, ax=None):
+    def lift_chart(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -157,10 +198,12 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw a lift chart, one of the response column class has to be the 
+        To draw a lift chart, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -181,11 +224,11 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return lift_chart(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
-    def prc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def prc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -193,10 +236,12 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the PRC curve, one of the response column class has to be the 
+        To draw the PRC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -217,7 +262,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return prc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -228,6 +273,7 @@ class NeighborsClassifier(vModel):
         name: str = "",
         cutoff: float = -1,
         all_classes: bool = False,
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
@@ -236,26 +282,28 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
     cutoff: float, optional
-        Cutoff used in case of binary classification. It is the probability to
-        accept the category 1.
+        The cutoff used for binary classification and represents the probability to
+        accept category 1.
     all_classes: bool, optional
-        If set to True, all the classes probabilities will be generated (one 
-        column per category).
+        If True, the probabilities of all classes will be generated (one column per 
+        category).
 
     Returns
     -------
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("cutoff", cutoff, [int, float],),
@@ -270,6 +318,10 @@ class NeighborsClassifier(vModel):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -287,7 +339,7 @@ class NeighborsClassifier(vModel):
                 ", " + ", ".join(key_columns) if key_columns else "",
                 ", ".join(predict),
                 self.deploySQL(
-                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                 ),
                 ", ".join(X + key_columns),
             )
@@ -301,7 +353,7 @@ class NeighborsClassifier(vModel):
                     self.classes_[0],
                     name,
                     self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                     ),
                     self.classes_[1],
                 )
@@ -311,7 +363,7 @@ class NeighborsClassifier(vModel):
                     ", " + ", ".join(key_columns) if key_columns else "",
                     name,
                     self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                     ),
                     self.classes_[1],
                 )
@@ -323,7 +375,7 @@ class NeighborsClassifier(vModel):
                     self.deploySQL(
                         X=X,
                         test_relation=vdf.__genSQL__(),
-                        key_columns=key_columns,
+                        key_columns=key_columns_arg,
                         predict=True,
                     ),
                 )
@@ -331,7 +383,7 @@ class NeighborsClassifier(vModel):
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
     # ---#
-    def roc_curve(self, pos_label: (int, float, str) = None, ax=None):
+    def roc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -339,10 +391,12 @@ class NeighborsClassifier(vModel):
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column class has to be the 
+        To draw the ROC curve, one of the response column classes must be the 
         positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -363,7 +417,7 @@ class NeighborsClassifier(vModel):
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax
+            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -381,9 +435,9 @@ class NeighborsClassifier(vModel):
     ----------
     pos_label: int/float/str, optional
         Label to consider as positive. All the other classes will be merged and
-        considered as negative in case of multi classification.
+        considered as negative for multiclass classification.
     cutoff: float, optional
-        Cutoff for which the tested category will be accepted as prediction. 
+        Cutoff for which the tested category will be accepted as a prediction. 
     method: str, optional
         The method to use to compute the score.
             accuracy    : Accuracy
@@ -431,7 +485,7 @@ class NeighborsClassifier(vModel):
                     pos_label=None,
                 )
             else:
-                return accuracy_score(y_true, y_score, input_relation, self.cursor)
+                return accuracy_score(y_true, y_score, input_relation, self.cursor, pos_label=pos_label,)
         elif method == "auc":
             return auc(y_true, y_proba, input_relation, self.cursor)
         elif method == "prc_auc":
@@ -471,18 +525,18 @@ class NearestCentroid(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a NearestCentroid object by using the K Nearest Centroid Algorithm. 
-This object is using pure SQL to compute all the distances and final score. 
+Creates a NearestCentroid object using the k-nearest centroid algorithm. 
+This object uses pure SQL to compute the distances and final score. 
 
-\u26A0 Warning : As NearestCentroid is using the p-distance, it is highly 
-                 sensible to un-normalized data.  
+\u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
+                 sensitive to unnormalized data.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used 
+	The p corresponding to the one of the p-distances (distance metric used
 	during the model computation).
 	"""
 
@@ -514,13 +568,17 @@ p: int, optional
 	predict: bool, optional
 		If set to True, returns the prediction instead of the probability.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
 	Returns
 	-------
 	str/list
  		the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -529,9 +587,9 @@ p: int, optional
                 ("key_columns", key_columns, [list], False),
             ],
         )
-        X = [str_column(elem) for elem in X] if (X) else self.X
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
+        X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         sql = [
@@ -590,19 +648,21 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -612,7 +672,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -664,23 +724,23 @@ class KNeighborsClassifier(NeighborsClassifier):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a KNeighborsClassifier object by using the K Nearest Neighbors Algorithm. 
-This object is using pure SQL to compute all the distances and final score.
+Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
+This object uses pure SQL to compute the distances and final score.
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As KNeighborsClassifier 
-                 is using the p-distance, it is highly sensible to un-normalized 
-                 data. 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements. Since KNeighborsClassifier 
+                 is uses the p-distance, it is highly sensitive to unnormalized 
+                 data.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used during 
+	The p corresponding to the one of the p-distances (distance metric used during 
 	the model computation).
 	"""
 
@@ -712,13 +772,17 @@ p: int, optional
     predict: bool, optional
         If set to True, returns the prediction instead of the probability.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
     Returns
     -------
     str/list
         the SQL code needed to deploy the model.
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -730,7 +794,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -795,19 +859,21 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -817,7 +883,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -862,12 +928,12 @@ class KernelDensity(Regressor, Tree):
 ---------------------------------------------------------------------------
 [Beta Version]
 Creates a KernelDensity object. 
-This object is using pure SQL to compute the final score.
+This object uses pure SQL to compute the final score.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-    Vertica DB cursor. 
+    Vertica database cursor. 
 bandwidth: float, optional
     The bandwidth of the kernel.
 kernel: str, optional
@@ -877,7 +943,7 @@ kernel: str, optional
         sigmoid   : Sigmoid Kernel.
         silverman : Silverman Kernel.
 p: int, optional
-    The p corresponding to the one of the p-distance (distance metric used during 
+    The p corresponding to the one of the p-distances (distance metric used during 
     the model computation).
 max_leaf_nodes: int, optional
     The maximum number of leaf nodes, an integer between 1 and 1e9, inclusive.
@@ -905,6 +971,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
+        **kwargs,
     ):
         check_types(
             [
@@ -933,6 +1000,10 @@ xlim: list, optional
         )
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
+        if "store" not in kwargs or kwargs["store"]:
+            self.verticapy_store = True
+        else:
+            self.verticapy_store = False
 
     # ---#
     def fit(
@@ -945,7 +1016,7 @@ xlim: list, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list, optional
         List of the predictors.
 
@@ -954,11 +1025,13 @@ xlim: list, optional
     object
         self
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1081,60 +1154,65 @@ xlim: list, optional
             self.parameters["nbins"],
             self.parameters["p"],
         )
-        query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
-            self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
-        )
-        self.cursor.execute(query)
-        r, idx = 0, 0
-        while r < len(y):
-            values = []
-            m = min(r + 100, len(y))
-            for i in range(r, m):
-                values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-            query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
-                self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+        if self.verticapy_store:
+            query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
+                self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
-            executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
-            self.cursor.execute("COMMIT;")
-            r += 100
-            idx += 1
-        self.X, self.input_relation = X, input_relation
-        self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
-        self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
-        self.y = "KDE"
+            self.cursor.execute(query)
+            r, idx = 0, 0
+            while r < len(y):
+                values = []
+                m = min(r + 100, len(y))
+                for i in range(r, m):
+                    values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
+                query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
+                    self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
+                )
+                executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
+                self.cursor.execute("COMMIT;")
+                r += 100
+                idx += 1
+            self.X, self.input_relation = X, input_relation
+            self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
+            self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.y = "KDE"
 
-        from verticapy.learn.tree import DecisionTreeRegressor
+            from verticapy.learn.tree import DecisionTreeRegressor
 
-        model = DecisionTreeRegressor(
-            name=self.tree_name,
-            cursor=self.cursor,
-            max_leaf_nodes=self.parameters["max_leaf_nodes"],
-            max_depth=self.parameters["max_depth"],
-            min_samples_leaf=self.parameters["min_samples_leaf"],
-            nbins=1000,
-        )
-        model.fit(self.map, self.X, "KDE")
-        model_save = {
-            "type": "KernelDensity",
-            "input_relation": self.input_relation,
-            "X": self.X,
-            "map": self.map,
-            "tree_name": self.tree_name,
-            "bandwidth": self.parameters["bandwidth"],
-            "kernel": self.parameters["kernel"],
-            "p": self.parameters["p"],
-            "max_leaf_nodes": self.parameters["max_leaf_nodes"],
-            "max_depth": self.parameters["max_depth"],
-            "min_samples_leaf": self.parameters["min_samples_leaf"],
-            "nbins": self.parameters["nbins"],
-            "xlim": self.parameters["xlim"],
-        }
-        insert_verticapy_schema(
-            model_name=self.name,
-            model_type="KernelDensity",
-            model_save=model_save,
-            cursor=self.cursor,
-        )
+            model = DecisionTreeRegressor(
+                name=self.tree_name,
+                cursor=self.cursor,
+                max_leaf_nodes=self.parameters["max_leaf_nodes"],
+                max_depth=self.parameters["max_depth"],
+                min_samples_leaf=self.parameters["min_samples_leaf"],
+                nbins=1000,
+            )
+            model.fit(self.map, self.X, "KDE")
+            model_save = {
+                "type": "KernelDensity",
+                "input_relation": self.input_relation,
+                "X": self.X,
+                "map": self.map,
+                "tree_name": self.tree_name,
+                "bandwidth": self.parameters["bandwidth"],
+                "kernel": self.parameters["kernel"],
+                "p": self.parameters["p"],
+                "max_leaf_nodes": self.parameters["max_leaf_nodes"],
+                "max_depth": self.parameters["max_depth"],
+                "min_samples_leaf": self.parameters["min_samples_leaf"],
+                "nbins": self.parameters["nbins"],
+                "xlim": self.parameters["xlim"],
+            }
+            insert_verticapy_schema(
+                model_name=self.name,
+                model_type="KernelDensity",
+                model_save=model_save,
+                cursor=self.cursor,
+            )
+        else:
+            self.X, self.input_relation = X, input_relation
+            self.verticapy_x = x
+            self.verticapy_y = y
         return self
 
     # ---#
@@ -1158,10 +1236,13 @@ xlim: list, optional
         Matplotlib axes object
         """
         if len(self.X) == 1:
-            query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
-            self.cursor.execute(query)
-            result = self.cursor.fetchall()
-            x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+            if self.verticapy_store:
+                query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
+                self.cursor.execute(query)
+                result = self.cursor.fetchall()
+                x, y = [elem[0] for elem in result], [elem[1] for elem in result]
+            else:
+                x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
             if not (ax):
                 fig, ax = plt.subplots()
                 if isnotebook():
@@ -1184,17 +1265,20 @@ xlim: list, optional
             ax.set_ylabel("density")
             return ax
         elif len(self.X) == 2:
-            query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
-                self.X[0], self.X[1], self.map,
-            )
-            self.cursor.execute(query)
-            result = self.cursor.fetchall()
             n = self.parameters["nbins"]
-            x, y, z = (
-                [elem[0] for elem in result],
-                [elem[1] for elem in result],
-                [elem[2] for elem in result],
-            )
+            if self.verticapy_store:
+                query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
+                    self.X[0], self.X[1], self.map,
+                )
+                self.cursor.execute(query)
+                result = self.cursor.fetchall()
+                x, y, z = (
+                    [elem[0] for elem in result],
+                    [elem[1] for elem in result],
+                    [elem[2] for elem in result],
+                )
+            else:
+                x, y, z = [elem[0] for elem in self.verticapy_x], [elem[1] for elem in self.verticapy_x], self.verticapy_y
             result, idx = [], 0
             while idx < (n + 1) * (n + 1):
                 result += [[z[idx + i] for i in range(n + 1)]]
@@ -1226,23 +1310,24 @@ class KNeighborsRegressor(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates a KNeighborsRegressor object by using the K Nearest Neighbors Algorithm. 
-This object is using pure SQL to compute all the distances and final score. 
+Creates a KNeighborsRegressor object using the k-nearest neighbors 
+algorithm. This object uses pure SQL to compute all the distances and 
+final score.
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As KNeighborsRegressor 
-                 is using the p-distance, it is highly sensible to un-normalized 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements. Since KNeighborsRegressor 
+                 uses the p-distance, it is highly sensitive to unnormalized 
                  data.
 
 Parameters
 ----------
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p corresponding to the one of the p-distance (distance metric used during 
+	The p corresponding to the one of the p-distances (distance metric used during 
 	the model computation).
 	"""
 
@@ -1266,13 +1351,17 @@ p: int, optional
     test_relation: str, optional
         Relation to use to do the predictions.
     key_columns: list, optional
-        Columns which are not used but to keep during the computations.
+        Unused columns that should be kept during the computation.
 
     Returns
     -------
     str/list
         the SQL code needed to deploy the model.
         """
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("test_relation", test_relation, [str], False),
@@ -1283,7 +1372,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not (key_columns):
+        if not(key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -1334,19 +1423,21 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list
 		List of the predictors.
 	y: str
 		Response column.
 	test_relation: str/vDataFrame, optional
-		Relation to use to test the model.
+		Relation used to test the model.
 
 	Returns
 	-------
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -1356,7 +1447,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1387,7 +1478,7 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = ""):
+    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = "", **kwargs):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1395,9 +1486,9 @@ p: int, optional
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. It can also be a customized relation 
-        but you need to englobe it using an alias. For example "(SELECT 1) x" is 
-        correct whereas "(SELECT 1)" or "SELECT 1" are incorrect.
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
+        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
@@ -1409,6 +1500,8 @@ p: int, optional
     vDataFrame
         the vDataFrame of the prediction
         """
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
                 ("name", name, [str],),
@@ -1416,8 +1509,14 @@ p: int, optional
                 ("vdf", vdf, [str, vDataFrame]),
             ],
         )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1429,7 +1528,7 @@ p: int, optional
             "predict_neighbors",
             name,
             self.deploySQL(
-                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
             ),
         )
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
@@ -1445,23 +1544,23 @@ as defined by Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng and Jörg
 Sander. This object is using pure SQL to compute all the distances and final 
 score.
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements. As LocalOutlierFactor 
-                 is using the p-distance, it is highly sensible to un-normalized 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elementss. Since LocalOutlierFactor 
+                 is uses the p-distance, it is highly sensitive to unnormalized 
                  data. A table will be created at the end of the learning phase.
 
 Parameters
 ----------
 name: str
-	Name of the the model. As it is not a built in model, this name will be used
+	Name of the the model. This is not a built-in model, so this name will be used
 	to build the final table.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p of the p-distance (distance metric used during the model computation).
+	The p of the p-distances (distance metric used during the model computation).
 	"""
 
     def __init__(self, name: str, cursor=None, n_neighbors: int = 20, p: int = 2):
@@ -1486,21 +1585,25 @@ p: int, optional
 	Parameters
 	----------
 	input_relation: str/vDataFrame
-		Train relation.
+		Training relation.
 	X: list, optional
 		List of the predictors.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
-		Index to use to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creation of temporary tables.
+		Index used to identify each row separately. It is highly recommanded to
+        have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------
 	object
  		self
 		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
         check_types(
             [
                 ("input_relation", input_relation, [str, vDataFrame], False),
@@ -1510,7 +1613,7 @@ p: int, optional
             ]
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.key_columns = [str_column(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()

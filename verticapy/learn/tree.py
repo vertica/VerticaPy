@@ -56,15 +56,14 @@ from verticapy.learn.vmodel import *
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Classifier.
- => RandomForestClassifier of one tree using all the data.
+A DecisionTreeClassifier made of a single tree.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -122,15 +121,14 @@ nbins: int, optional
 class DecisionTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Regressor.
- => RandomForestRegressor of one tree using all the data.
+A DecisionTreeRegressor made of a single tree.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -188,15 +186,15 @@ nbins: int, optional
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Classifier. This classifier learns by heart the training data. 
- => very depth RandomForestClassifier of one tree using all the data.
+A classifier that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):
@@ -223,15 +221,15 @@ cursor: DBcursor, optional
 class DummyTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Regressor. This regressor learns by heart the training data. 
- => very depth RandomForestRegressor of one tree using all the data.
+A regressor that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):

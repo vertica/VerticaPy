@@ -52,6 +52,9 @@
 import math
 from collections.abc import Iterable
 
+# Other Modules
+import numpy as np
+
 # VerticaPy Modules
 from verticapy import *
 from verticapy import vDataFrame
@@ -62,6 +65,66 @@ from verticapy.toolbox import *
 #
 # Regression
 #
+# ---#
+def aic_bic(
+    y_true: str,
+    y_score: str,
+    input_relation: (str, vDataFrame),
+    cursor=None,
+    k: int = 1,
+):
+    """
+---------------------------------------------------------------------------
+Computes the AIC (Akaike’s Information Criterion) & BIC (Bayesian Information 
+Criterion).
+
+Parameters
+----------
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str/vDataFrame
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+cursor: DBcursor, optional
+    Vertica database cursor.
+k: int, optional
+    Number of predictors.
+
+Returns
+-------
+tuple of floats
+    (AIC, BIC)
+    """
+    check_types(
+        [
+            ("y_true", y_true, [str],),
+            ("y_score", y_score, [str],),
+            ("input_relation", input_relation, [str, vDataFrame],),
+            ("k", k, [int],),
+        ]
+    )
+    cursor, conn, input_relation = check_cursor(cursor, input_relation)
+    query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {}".format(
+        y_true, y_score, input_relation
+    )
+    executeSQL(cursor, query, "Computing the RSS Score.")
+    rss, n = cursor.fetchone()
+    if rss > 0:
+        result = (
+            n * math.log(rss / n) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
+            n * math.log(rss / n) + (k + 1) * math.log(n),
+        )
+    else:
+        result = -float("inf"), -float("inf")
+    if conn:
+        conn.close()
+    return result
+
+
 # ---#
 def anova_table(
     y_true: str,
@@ -88,7 +151,7 @@ input_relation: str/vDataFrame
 k: int, optional
     Number of predictors.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -156,7 +219,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -201,7 +264,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -248,7 +311,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -295,7 +358,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 root: bool, optional
     If set to True, returns the RMSE (Root Mean Squared Error)
 
@@ -343,7 +406,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -388,7 +451,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -435,7 +498,7 @@ input_relation: str/vDataFrame
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 
 Returns
 -------
@@ -486,7 +549,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 k: int, optional
     Number of predictors. Only used to compute the R2 adjusted.
 adj: bool, optional
@@ -546,7 +609,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 k: int, optional
     Number of predictors. Used to compute the adjusted R2.
 
@@ -585,11 +648,20 @@ tablesample
             "root_mean_squared_error",
             "r2",
             "r2_adj",
+            "aic",
+            "bic",
         ]
     }
     executeSQL(cursor, query, "Computing the Regression Report.")
     result = cursor.fetchone()
     n = result[5]
+    if result[4] > 0:
+        aic, bic = (
+            n * math.log(result[4]) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
+            n * math.log(result[4]) + (k + 1) * math.log(n),
+        )
+    else:
+        aic, bic = -np.inf, -np.inf
     values["value"] = [
         result[0],
         result[1],
@@ -599,6 +671,8 @@ tablesample
         math.sqrt(result[4]),
         r2,
         1 - ((1 - r2) * (n - 1) / (n - k - 1)),
+        aic,
+        bic,
     ]
     if conn:
         conn.close()
@@ -614,7 +688,7 @@ def accuracy_score(
     y_score: str,
     input_relation: (str, vDataFrame),
     cursor=None,
-    pos_label: (int, float, str) = 1,
+    pos_label: (int, float, str) = None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -632,7 +706,7 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
@@ -699,9 +773,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the ROC AUC, one of the response column class has to be the 
+	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -750,13 +824,13 @@ input_relation: str/vDataFrame, optional
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
-	In case of multiclass classification, the list will represent the 
-	the classes threshold. If it is empty, the best cutoff will be used.
+	For multiclass classification, the list will represent the the classes threshold. 
+    If it is empty, the best cutoff will be used.
 estimator: object, optional
 	Estimator to use to compute the classification report.
 
@@ -830,7 +904,7 @@ tablesample
         elif 0 in matrix.values and 1 in matrix.values:
             non_pos_label_, pos_label_ = 0, 1
         else:
-            non_pos_label_, pos_label_ = "0", "1"
+            non_pos_label_, pos_label_ = matrix.values["index"]
         tn, fn, fp, tp = (
             matrix.values[non_pos_label_][0],
             matrix.values[non_pos_label_][1],
@@ -919,10 +993,10 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
-	class has to be the positive one. The parameter 'pos_label' represents 
+	class must be the positive one. The parameter 'pos_label' represents 
 	this class.
 
 Returns
@@ -989,9 +1063,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the CSI, one of the response column class has to be the 
+	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1045,9 +1119,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the F1 Score, one of the response column class has to be the 
+	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1107,9 +1181,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the informedness, one of the response column class has to be the 
+	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1164,9 +1238,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the log loss, one of the response column class has to be the 
+	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1215,9 +1289,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the markedness, one of the response column class has to be the 
+	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1272,10 +1346,10 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
-	class has to be the positive one. The parameter 'pos_label' represents this 
+	class must be the positive one. The parameter 'pos_label' represents this 
 	class.
 
 Returns
@@ -1335,7 +1409,7 @@ input_relation: str/vDataFrame
 labels: list
 	List of the response column categories.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 
 Returns
 -------
@@ -1402,10 +1476,10 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Negative Predictive Score, one of the response column class 
-	has to be the positive one. The parameter 'pos_label' represents this class.
+	must be the positive one. The parameter 'pos_label' represents this class.
 
 Returns
 -------
@@ -1458,9 +1532,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the PRC AUC, one of the response column class has to be the 
+	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1505,9 +1579,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Precision Score, one of the response column class has to be 
+	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1561,9 +1635,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Recall Score, one of the response column class has to be 
+	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
 
 Returns
@@ -1617,9 +1691,9 @@ input_relation: str/vDataFrame
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 pos_label: int/float/str, optional
-	To compute the Specificity Score, one of the response column class has to 
+	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.
 
 Returns

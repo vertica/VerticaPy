@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop
 
 from verticapy import set_option
 
@@ -21,36 +21,36 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.titanic", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def market_vd(base):
-    from verticapy.learn.datasets import load_market
+    from verticapy.datasets import load_market
 
     market = load_market(cursor=base.cursor)
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.market", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
@@ -102,6 +102,40 @@ class TestvDFDescriptiveStat:
         assert result1["max"][1] == pytest.approx(512.3292)
         assert result1["max"][2] == 3
         assert result1["max"][3] == 1
+
+        result1_1 = titanic_vd.agg(
+            func=["unique", "top", "min", "10%", "50%", "90%", "max"],
+            columns=["age", "fare", "pclass", "survived"],
+            ncols_block=2,
+        )
+        assert result1_1["unique"][0] == 96
+        assert result1_1["unique"][1] == 277
+        assert result1_1["unique"][2] == 3
+        assert result1_1["unique"][3] == 2
+        assert result1_1["top"][0] is None
+        assert result1_1["top"][1] == pytest.approx(8.05)
+        assert result1_1["top"][2] == 3
+        assert result1_1["top"][3] == 0
+        assert result1_1["min"][0] == pytest.approx(0.330)
+        assert result1_1["min"][1] == 0
+        assert result1_1["min"][2] == 1
+        assert result1_1["min"][3] == 0
+        assert result1_1["10%"][0] == pytest.approx(14.5)
+        assert result1_1["10%"][1] == pytest.approx(7.5892)
+        assert result1_1["10%"][2] == 1
+        assert result1_1["10%"][3] == 0
+        assert result1_1["50%"][0] == 28
+        assert result1_1["50%"][1] == pytest.approx(14.4542)
+        assert result1_1["50%"][2] == 3
+        assert result1_1["50%"][3] == 0
+        assert result1_1["90%"][0] == 50
+        assert result1_1["90%"][1] == pytest.approx(79.13)
+        assert result1_1["90%"][2] == 3
+        assert result1_1["90%"][3] == 1
+        assert result1_1["max"][0] == 80
+        assert result1_1["max"][1] == pytest.approx(512.3292)
+        assert result1_1["max"][2] == 3
+        assert result1_1["max"][3] == 1
 
         result2 = titanic_vd.agg(
             func=[
@@ -475,6 +509,18 @@ class TestvDFDescriptiveStat:
         assert result4["max"][1] == 1
         assert result4["unique"][1] == 2.0
 
+        result4_1 = titanic_vd.describe(method="numerical", ncols_block=2)
+
+        assert result4_1["count"][1] == 1234
+        assert result4_1["mean"][1] == pytest.approx(0.36466774)
+        assert result4_1["std"][1] == pytest.approx(0.48153201)
+        assert result4_1["min"][1] == 0
+        assert result4_1["25%"][1] == 0
+        assert result4_1["50%"][1] == 0
+        assert result4_1["75%"][1] == 1
+        assert result4_1["max"][1] == 1
+        assert result4_1["unique"][1] == 2.0
+
         result5 = titanic_vd.describe(method="range")
 
         assert result5["dtype"][2] == "numeric(6,3)"
@@ -695,12 +741,18 @@ class TestvDFDescriptiveStat:
         assert result["unique"][2] == 2.0
         assert result["unique"][3] == 182.0
 
-    def test_vDF_numh(self, market_vd):
+    def test_vDF_numh(self, market_vd, amazon_vd):
         assert market_vd["Price"].numh(method="auto") == pytest.approx(0.984707376)
         assert market_vd["Price"].numh(method="freedman_diaconis") == pytest.approx(
             0.450501738
         )
         assert market_vd["Price"].numh(method="sturges") == pytest.approx(0.984707376)
+        assert amazon_vd["date"].numh(method="auto") == pytest.approx(44705828.571428575)
+        assert amazon_vd["date"].numh(method="freedman_diaconis") == pytest.approx(
+            33903959.714834176
+        )
+        assert amazon_vd["date"].numh(method="sturges") == pytest.approx(44705828.571428575)
+
 
     def test_vDF_prod(self, market_vd):
         # testing vDataFrame.prod

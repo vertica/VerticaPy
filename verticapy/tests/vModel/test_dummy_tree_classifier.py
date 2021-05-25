@@ -11,12 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
+import pytest, warnings, os, verticapy
 from verticapy.learn.tree import DummyTreeClassifier
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
-
-from verticapy import set_option
 
 set_option("print_info", False)
 
@@ -62,8 +60,16 @@ def dtc_data_vd(base):
     dtc_data = vDataFrame(input_relation="public.dtc_data", cursor=base.cursor)
     yield dtc_data
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.dtc_data", cursor=base.cursor)
+        drop(name="public.dtc_data", cursor=base.cursor)
 
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
 def model(base, dtc_data_vd):
@@ -77,7 +83,7 @@ def model(base, dtc_data_vd):
     model_class = DummyTreeClassifier("decision_tc_model_test", cursor=base.cursor)
     model_class.input_relation = "public.dtc_data"
     model_class.test_relation = model_class.input_relation
-    model_class.X = ["Gender", '"owned cars"', "cost", "income"]
+    model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = "TransPortation"
     base.cursor.execute(
         "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
@@ -92,6 +98,12 @@ def model(base, dtc_data_vd):
 
 
 class TestDummyTreeClassifier:
+    def test_repr(self, model):
+        assert "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
+        model_repr = DummyTreeClassifier("RF_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<RandomForestClassifier>"
+
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
@@ -125,8 +137,20 @@ class TestDummyTreeClassifier:
         assert conf_mat2["Car"] == [0, 3, 0]
         assert conf_mat2["Train"] == [0, 0, 3]
 
+    def test_contour(self, base, titanic_vd):
+        model_test = DummyTreeClassifier("model_contour", cursor=base.cursor)
+        model_test.drop()
+        model_test.fit(
+            titanic_vd,
+            ["age", "fare",],
+            "survived",
+        )
+        result = model_test.contour()
+        assert len(result.get_default_bbox_extra_artists()) == 34
+        model_test.drop()
+
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_CLASSIFIER(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
+        expected_sql = "PREDICT_RF_CLASSIFIER(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -159,7 +183,7 @@ class TestDummyTreeClassifier:
         assert f_imp["index"] == ["cost", "owned cars", "gender", "income"]
         assert f_imp["importance"] == [75.76, 15.15, 9.09, 0.0]
         assert f_imp["sign"] == [1, 1, 1, 0]
-        plt.close()
+        plt.close("all")
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Bus", nbins=1000)
@@ -170,11 +194,7 @@ class TestDummyTreeClassifier:
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
         assert lift_ch["lift"][900] == pytest.approx(2.5)
-        plt.close()
-
-    @pytest.mark.skip(reason="test not implemented")
-    def test_plot(self):
-        pass
+        plt.close("all")
 
     @pytest.mark.skip(
         reason="Model Conversion for DummyTreeClassifier is not yet supported."
@@ -192,6 +212,34 @@ class TestDummyTreeClassifier:
         )
 
         # 'predict_proba'
+
+    def test_to_python(self, model, titanic_vd):
+        model_test = DummyTreeClassifier("rfc_python_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
+        model_test.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == model_test.to_python(return_str=False)([[30.0, 45.0, 'male']])[0]
+        model_test.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
+        )
+        prediction = model_test.cursor.fetchone()[0]
+        assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
+
+    def test_to_sql(self, model, titanic_vd):
+        model_test = DummyTreeClassifier("rfc_sql_test", cursor=model.cursor)
+        model_test.drop()
+        model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
+        model.cursor.execute(
+            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
+                model_test.to_sql()
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction[0] == pytest.approx(prediction[1])
+        model_test.drop()
 
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
@@ -256,7 +304,7 @@ class TestDummyTreeClassifier:
         assert prc["threshold"][800] == pytest.approx(0.799)
         assert prc["recall"][800] == pytest.approx(1.0)
         assert prc["precision"][800] == pytest.approx(1.0)
-        plt.close()
+        plt.close("all")
 
     def test_predict(self, dtc_data_vd, model):
         dtc_data_copy = dtc_data_vd.copy()
@@ -279,7 +327,7 @@ class TestDummyTreeClassifier:
         assert roc["threshold"][700] == pytest.approx(0.7)
         assert roc["false_positive"][700] == pytest.approx(0.0)
         assert roc["true_positive"][700] == pytest.approx(1.0)
-        plt.close()
+        plt.close("all")
 
     def test_cutoff_curve(self, model):
         cutoff_curve = model.cutoff_curve(pos_label="Train", nbins=1000)
@@ -290,7 +338,7 @@ class TestDummyTreeClassifier:
         assert cutoff_curve["threshold"][700] == pytest.approx(0.7)
         assert cutoff_curve["false_positive"][700] == pytest.approx(0.0)
         assert cutoff_curve["true_positive"][700] == pytest.approx(1.0)
-        plt.close()
+        plt.close("all")
 
     def test_score(self, model):
         assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(1.0)
@@ -368,9 +416,15 @@ class TestDummyTreeClassifier:
             cutoff=0.1, method="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_set_cursor(self):
-        pass
+    def test_set_cursor(self, model):
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"nbins": 100})
@@ -412,6 +466,6 @@ class TestDummyTreeClassifier:
             "Train",
         ]
 
-    @pytest.mark.skip(reason="test not implemented")
     def test_plot_tree(self, model):
-        pass
+        result = model.plot_tree()
+        assert result.by_attr()[0:3] == "[1]"

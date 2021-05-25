@@ -44,3 +44,10 @@
 #
 # VerticaPy aims to solve all of these problems. The idea is simple: instead
 # of moving data around for processing, VerticaPy brings the logic to the data.
+#
+#
+# Modules
+#
+# VerticaPy Modules
+from verticapy.stats.tools import *
+from verticapy.stats.math import *

@@ -11,23 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.decomposition import PCA
-from verticapy import drop_table
-
-from verticapy import set_option
+from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd(base):
-    from verticapy.learn.datasets import load_winequality
+    from verticapy.datasets import load_winequality
 
     winequality = load_winequality(cursor=base.cursor)
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -40,6 +38,12 @@ def model(base, winequality_vd):
 
 
 class TestPCA:
+    def test_repr(self, model):
+        assert "index|     name     |  mean  |   sd" in model.__repr__()
+        model_repr = PCA("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<PCA>"
+
     def test_deploySQL(self, model):
         expected_sql = 'APPLY_PCA("citric_acid", "residual_sugar", "alcohol" USING PARAMETERS model_name = \'pca_model_test\', match_by_pos = \'true\', cutoff = 1)'
         result_sql = model.deploySQL()
@@ -107,7 +111,6 @@ class TestPCA:
         }
 
     def test_to_sklearn(self, model):
-        # Zscore
         md = model.to_sklearn()
         model.cursor.execute(
             "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
@@ -116,6 +119,30 @@ class TestPCA:
         )
         prediction = model.cursor.fetchone()
         assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0])
+
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = model.cursor.fetchone()
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.to_sql()
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
 
     def test_get_transform(self, winequality_vd, model):
         winequality_trans = model.transform(
@@ -142,18 +169,21 @@ class TestPCA:
             winequality_vd["alcohol"].mean(), abs=1e-6
         )
 
-    def test_set_cursor(self, base):
-        model_test = PCA("pca_cursor_test", cursor=base.cursor)
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.winequality", ["alcohol"])
+    def test_pca_score(self, model):
+        result = model.score()
+        assert result["Score"][0] == pytest.approx(0.0, abs=1e-6)
+        assert result["Score"][1] == pytest.approx(0.0, abs=1e-6)
+        assert result["Score"][2] == pytest.approx(0.0, abs=1e-6)
 
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'pca_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "pca_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"n_components": 3})

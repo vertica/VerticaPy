@@ -56,6 +56,7 @@ from verticapy.learn.vmodel import *
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 from verticapy.plot import gen_colors
+from verticapy.learn.tools import *
 
 # Other Python Modules
 from dateutil.parser import parse
@@ -66,15 +67,15 @@ class SARIMAX(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an SARIMAX object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data.
+Creates an SARIMAX object using the Vertica Linear Regression algorithm on 
+the data.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 d: int, optional
@@ -204,9 +205,9 @@ papprox_ma: int, optional
     Parameters
     ----------
     L: list
-        List containing the data. It must be a 2D list containing multiple rows.
-        Each row must include as first element the ordered predictor and as 
-        nth elements the nth - 1 exogenous variable (nth > 2). 
+        List containing the data. It must be a two-dimensional list containing 
+        multiple rows. Each row must include as first element the ordered predictor
+        and as nth elements the nth - 1 exogenous variable (nth > 2). 
 
     Returns
     -------
@@ -325,7 +326,7 @@ papprox_ma: int, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     y: str
         Response column.
     ts: str
@@ -333,7 +334,7 @@ papprox_ma: int, optional
     X: list, optional
         exogenous columns used to fit the model.
     test_relation: str/vDataFrame, optional
-        Relation to use to test the model.
+        Relation used to test the model.
 
     Returns
     -------
@@ -350,7 +351,7 @@ papprox_ma: int, optional
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -403,11 +404,12 @@ papprox_ma: int, optional
         def drop_temp_elem(self, schema):
             try:
                 with warnings.catch_warnings(record=True) as w:
-                    drop_view(
+                    drop(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
                             schema, get_session(self.cursor)
                         ),
                         cursor=self.cursor,
+                        method="view",
                     )
             except:
                 pass
@@ -572,6 +574,7 @@ papprox_ma: int, optional
                 ),
                 self.parameters["Q"] * self.parameters["s"] + 1,
             )
+            n = int(n)
             columns = [
                 "LAG([VerticaPy_y], {}) OVER (ORDER BY [VerticaPy_ts]) AS ARq{}".format(
                     i, i
@@ -1136,15 +1139,15 @@ class VAR(Regressor):
     """
 ---------------------------------------------------------------------------
 [Beta Version]
-Creates an VAR object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data.
+Creates an VAR object using the Vertica Linear Regression algorithm on the 
+data.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 tol: float, optional
@@ -1212,7 +1215,7 @@ solver: str, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Computes the model features importance.
+    Computes the model's features importance.
 
     Parameters
     ----------
@@ -1254,7 +1257,6 @@ solver: str, optional
             vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
-            .values
         )
         coefficient = self.coef_[X_idx].values
         coeff_importances = {}
@@ -1294,13 +1296,13 @@ solver: str, optional
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list
         List of the response columns.
     ts: str
         vcolumn used to order the data.
     test_relation: str/vDataFrame, optional
-        Relation to use to test the model.
+        Relation used to test the model.
 
     Returns
     -------
@@ -1317,7 +1319,7 @@ solver: str, optional
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        check_model(name=self.name, cursor=self.cursor)
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -1360,11 +1362,12 @@ solver: str, optional
         def drop_temp_elem(self, schema):
             try:
                 with warnings.catch_warnings(record=True) as w:
-                    drop_view(
+                    drop(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
                             schema, get_session(self.cursor)
                         ),
                         cursor=self.cursor,
+                        method="view",
                     )
             except:
                 pass
@@ -1422,9 +1425,9 @@ solver: str, optional
     Parameters
     ----------
     L: list
-        List containing the data. It must be a 2D list containing multiple rows.
-        Each row must include as first element the ordered predictor and as 
-        nth elements the nth - 1 exogenous variable (nth > 2). 
+        List containing the data. It must be a two-dimensional list containing 
+        multiple rows. Each row must include as first element the ordered predictor 
+        and as nth elements the nth - 1 exogenous variable (nth > 2).
 
     Returns
     -------

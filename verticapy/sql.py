@@ -57,7 +57,8 @@
 #
 # ---#
 def sql(line, cell=""):
-    from verticapy.connections.connect import read_auto_connect
+    import verticapy
+    from verticapy.connect import read_auto_connect
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
@@ -91,7 +92,7 @@ def sql(line, cell=""):
                 options["limit"] = int(all_options_dict[option])
             elif option.lower() == "-vdf":
                 options["vdf"] = bool(all_options_dict[option])
-            else:
+            elif verticapy.options["print_info"]:
                 print(
                     "\u26A0 Warning : The option '{}' doesn't exist, it was skipped.".format(
                         option
@@ -166,7 +167,8 @@ def sql(line, cell=""):
                 cursor.copy(query, fs)
         elif (i < n - 1) or ((i == n - 1) and (query_type.lower() != "select")):
             cursor.execute(query)
-            print(query_type)
+            if verticapy.options["print_info"]:
+                print(query_type)
         else:
             error = ""
             try:
@@ -178,9 +180,9 @@ def sql(line, cell=""):
                 try:
                     cursor.execute(query)
                     final_result = cursor.fetchone()
-                    if final_result:
+                    if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
-                    else:
+                    elif verticapy.options["print_info"]:
                         print(query_type)
                 except Exception as e:
                     error = e
@@ -189,7 +191,8 @@ def sql(line, cell=""):
     if not (options["vdf"]):
         conn.close()
     elapsed_time = time.time() - start_time
-    display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
+    if verticapy.options["print_info"]:
+        display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
     return result
 
 

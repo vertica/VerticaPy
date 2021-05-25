@@ -74,9 +74,9 @@ list
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create DB cursors.
+new_auto_connection : Saves a connection to automatically create database cursors.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -101,11 +101,11 @@ name: str
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create DB cursors.
+new_auto_connection : Saves a connection to automatically create database cursors.
 read_auto_connect   : Automatically creates a connection.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
@@ -128,7 +128,7 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
 def new_auto_connection(dsn: dict, name: str = "DSN"):
     """
 ---------------------------------------------------------------------------
-Saves a connection to automatically create DB cursors. This will create a 
+Saves a connection to automatically create database cursors. This will create a 
 used-as-needed file to automatically set up a connection, avoiding redundant 
 cursors.
 
@@ -152,7 +152,7 @@ read_auto_connect      : Automatically creates a connection.
 vertica_conn           : Creates a Vertica Database connection.
 	"""
     check_types([("dsn", dsn, [dict],)])
-    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -163,10 +163,11 @@ vertica_conn           : Creates a Vertica Database connection.
         confparser.remove_section(name)
     confparser.add_section(name)
     for elem in dsn:
-        confparser.set(name, elem, dsn[elem])
+        confparser.set(name, elem, str(dsn[elem]))
     f = open(path, "w+")
     confparser.write(f)
     f.close()
+    change_auto_connection(name)
 
 
 # ---#
@@ -183,10 +184,10 @@ conn
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create DB cursors.
+new_auto_connection : Saves a connection to automatically create database cursors.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections/connections.verticapy"
+    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
@@ -241,6 +242,8 @@ dict
                 conn_info["kerberos_service_name"] = elem[1]
             elif elem[0].lower() == "kerberoshostname":
                 conn_info["kerberos_host_name"] = elem[1]
+            elif "vp_test_" in elem[0].lower():
+                conn_info[elem[0].lower()[8:]] = elem[1]
             else:
                 conn_info[elem[0].lower()] = elem[1]
         return conn_info
@@ -271,7 +274,7 @@ conn
 
 See Also
 --------
-new_auto_connection : Saves a connection to automatically create DB cursors.
+new_auto_connection : Saves a connection to automatically create database cursors.
 read_auto_connect   : Automatically creates a connection.
 	"""
     check_types([("dsn", dsn, [str],)])

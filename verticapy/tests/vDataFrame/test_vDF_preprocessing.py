@@ -12,41 +12,39 @@
 # limitations under the License.
 
 import pytest, warnings
-from verticapy import vDataFrame, drop_table, errors
-
-from verticapy import set_option
+from verticapy import vDataFrame, drop, errors, set_option, tablesample
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def market_vd(base):
-    from verticapy.learn.datasets import load_market
+    from verticapy.datasets import load_market
 
     market = load_market(cursor=base.cursor)
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.market", cursor=base.cursor)
+        drop(name="public.market", cursor=base.cursor)
 
 
 class TestvDFPreprocessing:
@@ -54,8 +52,24 @@ class TestvDFPreprocessing:
         train, test = titanic_vd.train_test_split(
             test_size=0.33, order_by={"name": "asc"}, random_state=1
         )
-        assert train.shape() == (pytest.approx(809), 14)
-        assert test.shape() == (pytest.approx(425), 14)
+        assert train.shape() == (pytest.approx(839), 14)
+        assert test.shape() == (pytest.approx(395), 14)
+
+    def test_vDF_add_duplicates(self, base):
+        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf(cursor=base.cursor)
+        result = names.add_duplicates("weight").groupby("name", "COUNT(*) AS cnt").sort("cnt")
+        assert result[0] == ['Badr', 1]
+        assert result[1] == ['Waqas', 2]
+        assert result[2] == ['Pratibha', 3]
+
+    def test_vDF_cut(self, titanic_vd):
+        titanic_copy = titanic_vd.copy()
+        titanic_copy["age"].cut([0, 15, 80])
+        assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
+        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False,)
+        assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
+        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"],)
+        assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
 
     def test_vDF_decode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
@@ -83,7 +97,7 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
 
         # expected exception
-        with pytest.raises(errors.ParameterError) as exception_info:
+        with pytest.raises(AssertionError) as exception_info:
             titanic_copy["age"].discretize(method="same_freq", bins=1)
         # checking the error message
         assert exception_info.match(
@@ -116,7 +130,7 @@ class TestvDFPreprocessing:
         titanic_copy["name"].str_extract(" ([A-Za-z])+\\.")
 
         # expected exception
-        with pytest.raises(errors.ParameterError) as exception_info:
+        with pytest.raises(AssertionError) as exception_info:
             titanic_copy["name"].discretize(method="topk", k=0, new_category="rare")
         # checking the error message
         assert exception_info.match(
@@ -397,7 +411,7 @@ class TestvDFPreprocessing:
         with pytest.raises(errors.ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
-        assert exception_info.match('The vcolumn "sex" can not be converted to int')
+        assert exception_info.match('Could not convert "female" from column titanic.sex to an int8')
 
         titanic_copy["sex"].astype("varchar(10)")
         assert titanic_copy["sex"].dtype() == "varchar(10)"

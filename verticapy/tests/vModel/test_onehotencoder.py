@@ -11,23 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys
+import pytest, warnings, sys, os, verticapy
 from verticapy.learn.preprocessing import OneHotEncoder
-from verticapy import drop_table
-
-from verticapy import set_option
+from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
@@ -40,6 +38,12 @@ def model(base, titanic_vd):
 
 
 class TestOneHotEncoder:
+    def test_repr(self, model):
+        assert "one_hot_encoder_fit" in model.__repr__()
+        model_repr = OneHotEncoder("model_repr")
+        model_repr.drop()
+        assert model_repr.__repr__() == "<OneHotEncoder>"
+
     def test_deploySQL(self, model):
         expected_sql = "APPLY_ONE_HOT_ENCODER(\"pclass\", \"sex\", \"embarked\" USING PARAMETERS model_name = 'ohe_model_test', match_by_pos = 'true', drop_first = False, ignore_null = True, separator = '_', column_naming = 'indices')"
         result_sql = model.deploySQL()
@@ -113,6 +117,39 @@ class TestOneHotEncoder:
             md.transform([[1, "female", "S"]]).toarray()[0]
         )
 
+    def test_to_sql(self, model):
+        model.cursor.execute(
+            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                model.to_sql()
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+
+    def test_to_python(self, model):
+        model.cursor.execute(
+            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                model.name
+            )
+        )
+        prediction = [int(elem) for elem in model.cursor.fetchone()]
+        prediction2 = model.to_python(return_str=False)([[1, 'female', 'S']])[0]
+        assert len(prediction) == len(prediction2)
+        assert prediction[0] == prediction2[0]
+        assert prediction[1] == prediction2[1]
+        assert prediction[2] == prediction2[2]
+        assert prediction[3] == prediction2[3]
+        assert prediction[4] == prediction2[4]
+        assert prediction[5] == prediction2[5]
+        assert prediction[6] == prediction2[6]
+        assert prediction[7] == prediction2[7]
+
     def test_get_transform(self, titanic_vd, model):
         titanic_trans = model.transform(titanic_vd, X=["pclass", "sex", "embarked"])
         assert titanic_trans["pclass_1"].mean() == pytest.approx(
@@ -125,24 +162,19 @@ class TestOneHotEncoder:
             0.086038961038961, abs=1e-6
         )
 
-    @pytest.mark.skip(reason="Vertica OHE has no inverse transform fro now")
+    @pytest.mark.skip(reason="Vertica OHE has no inverse transform from now")
     def test_get_inverse_transform(self, titanic_vd, model):
         pass
 
-    def test_set_cursor(self, base):
-        model_test = OneHotEncoder(
-            "ohe_cursor_test", cursor=base.cursor, drop_first=False
-        )
-        # TODO: creat a new cursor
-        model_test.set_cursor(base.cursor)
-        model_test.drop()
-        model_test.fit("public.titanic", ["pclass"])
-
-        base.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name = 'ohe_cursor_test'"
-        )
-        assert base.cursor.fetchone()[0] == "ohe_cursor_test"
-        model_test.drop()
+    def test_set_cursor(self, model):
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
+        model.set_cursor(cur)
+        model.cursor.execute("SELECT 1;")
+        result = model.cursor.fetchone()
+        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"ignore_null": False})

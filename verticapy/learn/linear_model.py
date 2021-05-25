@@ -59,17 +59,16 @@ from verticapy.learn.vmodel import *
 class ElasticNet(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a ElasticNet object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data. The Elastic Net is a regularized 
-regression method that linearly combines the L1 and L2 penalties of the 
-Lasso and Ridge methods. 
+Creates a ElasticNet object using the Vertica Linear Regression algorithm 
+on the data. The Elastic Net is a regularized regression method that linearly 
+combines the L1 and L2 penalties of the Lasso and Ridge methods.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -118,16 +117,15 @@ l1_ratio: float, optional
 class Lasso(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a Lasso object by using the Vertica Highly Distributed and Scalable 
-Linear Regression on the data. The Lasso is a regularized regression method 
-which uses L1 penalty. 
+Creates a Lasso object using the Vertica Linear Regression algorithm on the 
+data. The Lasso is a regularized regression method which uses an L1 penalty.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -174,15 +172,15 @@ solver: str, optional
 class LinearRegression(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearRegression object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data. 
+Creates a LinearRegression object using the Vertica Linear Regression algorithm 
+on the data.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 max_iter: int, optional
@@ -226,15 +224,15 @@ solver: str, optional
 class LogisticRegression(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
-Creates a LogisticRegression object by using the Vertica Highly Distributed 
-and Scalable Logistic Regression on the data.
+Creates a LogisticRegression object using the Vertica Logistic Regression
+algorithm on the data.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 penalty: str, optional
 	Determines the method of regularization.
 		None : No Regularization
@@ -283,11 +281,13 @@ l1_ratio: float, optional
         )
         if penalty.lower() == "none":
             for elem in ["l1_ratio", "C"]:
-                del self.parameters[elem]
+                if elem in self.parameters:
+                    del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
         elif penalty.lower() in ("l1", "l2"):
-            for elem in ["l1_ratio"]:
-                del self.parameters[elem]
+            for elem in ["l1_ratio",]:
+            	if elem in self.parameters:
+                	del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
         cursor = check_cursor(cursor)[0]
         self.cursor = cursor
@@ -298,16 +298,15 @@ l1_ratio: float, optional
 class Ridge(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a Ridge object by using the Vertica Highly Distributed and Scalable 
-Linear Regression on the data. The Ridge is a regularized regression method 
-which uses L2 penalty. 
+Creates a Ridge object using the Vertica Linear Regression algorithm on the 
+data. The Ridge is a regularized regression method which uses an L2 penalty. 
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional

@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings
-from verticapy import vDataFrame, drop_table
+from verticapy import vDataFrame, drop
 
 from verticapy import set_option
 
@@ -21,34 +21,34 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def market_vd(base):
-    from verticapy.learn.datasets import load_market
+    from verticapy.datasets import load_market
 
     market = load_market(cursor=base.cursor)
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.market", cursor=base.cursor,
         )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop_table(
+        drop(
             name="public.amazon", cursor=base.cursor,
         )
 
@@ -205,7 +205,7 @@ class TestvDFCombineJoinSort:
             expr2=["Name AS Name2"],
         )
         assert table_join.shape() == (194, 2)
-        drop_table(
+        drop(
             "v_temp_schema.not_dried", not_dried._VERTICAPY_VARIABLES_["cursor"],
         )
 

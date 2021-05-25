@@ -48,18 +48,21 @@
 #
 # Modules
 #
+# Standard Python Modules
+import math, decimal, datetime
+
+# Other Python Modules
+from scipy.stats import chi2, norm, f
+import numpy as np
+
 # VerticaPy Modules
+import verticapy
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.plot import gen_colors
 from verticapy.learn.linear_model import LinearRegression
 from verticapy import vDataFrame
 
-# Other modules
-import math
-import matplotlib.pyplot as plt
-from scipy.stats import chi2, norm, f
-
+# Statistical Tests & Tools
 # ---#
 def adfuller(
     vdf: vDataFrame,
@@ -377,6 +380,78 @@ float
     )
     d = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
     return d
+
+
+# ---#
+def endogtest(
+    vdf: vDataFrame, eps: str, X: list,
+):
+    """
+---------------------------------------------------------------------------
+Endogeneity test.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+eps: str
+    Input residual vcolumn.
+X: list
+    Input Variables to test the endogeneity on.
+
+Returns
+-------
+tablesample
+    An object containing the result. For more information, see
+    utilities.tablesample.
+    """
+    check_types(
+        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
+    )
+    columns_check([eps] + X, vdf)
+    eps = vdf_columns_names([eps], vdf)[0]
+    X = vdf_columns_names(X, vdf)
+
+    from verticapy.learn.linear_model import LinearRegression
+
+    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+    if not (schema_writing):
+        schema_writing = "public"
+    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+    )
+    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    try:
+        model.fit(vdf, X, eps)
+        R2 = model.score("r2")
+        model.drop()
+    except:
+        try:
+            model.set_params({"solver": "bfgs"})
+            model.fit(vdf, X, eps)
+            R2 = model.score("r2")
+            model.drop()
+        except:
+            model.drop()
+            raise
+    n = vdf.shape()[0]
+    k = len(X)
+    LM = n * R2
+    lm_pvalue = chi2.sf(LM, k)
+    F = (n - k - 1) * R2 / (1 - R2) / k
+    f_pvalue = f.sf(F, k, n - k - 1)
+    result = tablesample(
+        {
+            "index": [
+                "Lagrange Multiplier Statistic",
+                "lm_p_value",
+                "F Value",
+                "f_p_value",
+            ],
+            "value": [LM, lm_pvalue, F, f_pvalue],
+        }
+    )
+    return result
 
 
 # ---#
@@ -719,7 +794,7 @@ tablesample
 def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
-Jarque Bera test (Distribution Normality).
+Jarque-Bera test (Distribution Normality).
 
 Parameters
 ----------
@@ -1007,121 +1082,181 @@ tablesample
 
 
 # ---#
-def plot_acf_pacf(
+def seasonal_decompose(
     vdf: vDataFrame,
     column: str,
     ts: str,
     by: list = [],
-    p: (int, list) = 15,
-    **style_kwds,
+    period: int = -1,
+    polynomial_order: int = 1,
+    estimate_seasonality: bool = True,
+    rule: (str, datetime.timedelta) = None,
+    mult: bool = False,
+    two_sided: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
-Draws the ACF and PACF Charts.
+Performs a seasonal time series decomposition.
 
 Parameters
 ----------
 vdf: vDataFrame
     Input vDataFrame.
 column: str
-    Response column.
+    Input vcolumn to decompose.
 ts: str
-    vcolumn used as timeline. It will be to use to order the data. 
-    It can be a numerical or type date like (date, datetime, timestamp...) 
-    vcolumn.
+    TS (Time Series) vcolumn to use to order the data. It can be of type date
+    or a numerical vcolumn.
 by: list, optional
     vcolumns used in the partition.
-p: int/list, optional
-    Int equals to the maximum number of lag to consider during the computation
-    or List of the different lags to include during the computation.
-    p must be positive or a list of positive integers.
-**style_kwds
-    Any optional parameter to pass to the Matplotlib functions.
+period: int, optional
+	Time Series period. It is used to retrieve the seasonality component.
+    if period <= 0, the seasonal component will be estimated using ACF. In 
+    this case, polynomial_order must be greater than 0.
+polynomial_order: int, optional
+    If greater than 0, the trend will be estimated using a polynomial of degree
+    'polynomial_order'. The parameter 'two_sided' will be ignored.
+    If equal to 0, the trend will be estimated using Moving Averages.
+estimate_seasonality: bool, optional
+    If set to True, the seasonality will be estimated using cosine and sine
+    functions.
+rule: str / time, optional
+    Interval to use to slice the time. For example, '5 minutes' will create records
+    separated by '5 minutes' time interval.
+mult: bool, optional
+	If set to True, the decomposition type will be 'multiplicative'. Otherwise,
+	it is 'additive'.
+two_sided: bool, optional
+    If set to True, a centered moving average is used for the trend isolation.
+    Otherwise only past values are used.
 
 Returns
 -------
-tablesample
-    An object containing the result. For more information, see
-    utilities.tablesample.
+vDataFrame
+    object containing (ts, column, TS seasonal part, TS trend, TS noise).
     """
+    if isinstance(by, str):
+        by = [by]
     check_types(
         [
-            ("column", column, [str],),
             ("ts", ts, [str],),
+            ("column", column, [str],),
             ("by", by, [list],),
-            ("p", p, [int, float],),
+            ("rule", rule, [str, datetime.timedelta,],),
             ("vdf", vdf, [vDataFrame,],),
-        ]
+            ("period", period, [int,],),
+            ("mult", mult, [bool,],),
+            ("two_sided", two_sided, [bool,],),
+            ("polynomial_order", polynomial_order, [int,],),
+            ("estimate_seasonality", estimate_seasonality, [bool,],),
+        ],
     )
-    tmp_style = {}
-    for elem in style_kwds:
-        if elem not in ("color", "colors"):
-            tmp_style[elem] = style_kwds[elem]
-    if "color" in style_kwds:
-        color = style_kwds["color"]
-    else:
-        color = gen_colors()[0]
+    assert period > 0 or polynomial_order > 0, ParameterError("Parameters 'polynomial_order' and 'period' can not be both null.")
     columns_check([column, ts] + by, vdf)
-    by = vdf_columns_names(by, vdf)
-    column, ts = vdf_columns_names([column, ts], vdf)
-    acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
-    pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
-    result = tablesample(
-        {
-            "index": [i for i in range(0, len(acf.values["value"]))],
-            "acf": acf.values["value"],
-            "pacf": pacf.values["value"],
-            "confidence": pacf.values["confidence"],
-        },
+    ts, column, by = (
+        vdf_columns_names([ts], vdf)[0],
+        vdf_columns_names([column], vdf)[0],
+        vdf_columns_names(by, vdf),
     )
-    fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
-    plt.rcParams["axes.facecolor"] = "#FCFCFC"
-    ax1 = fig.add_subplot(211)
-    x, y, confidence = (
-        result.values["index"],
-        result.values["acf"],
-        result.values["confidence"],
+    if rule:
+        vdf_tmp = vdf.asfreq(ts=ts, rule=period, method={column: "linear"}, by=by)
+    else:
+        vdf_tmp = vdf[[ts, column]]
+    trend_name, seasonal_name, epsilon_name = (
+        "{}_trend".format(column[1:-1]),
+        "{}_seasonal".format(column[1:-1]),
+        "{}_epsilon".format(column[1:-1]),
     )
-    plt.xlim(-1, x[-1] + 1)
-    ax1.bar(
-        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
-    )
-    param = {
-        "s": 90,
-        "marker": "o",
-        "facecolors": color,
-        "edgecolors": "black",
-        "zorder": 2,
-    }
-    ax1.scatter(
-        x, y, **updated_dict(param, tmp_style,),
-    )
-    ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax1.set_title("Autocorrelation")
-    y = result.values["pacf"]
-    ax2 = fig.add_subplot(212)
-    ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(
-        x, y, **updated_dict(param, tmp_style,),
-    )
-    ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
-    )
-    ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
-    ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
-    ax2.set_title("Partial Autocorrelation")
-    plt.show()
-    return result
+    by, by_tmp = "" if not (by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self)) + " ", by
+    if polynomial_order <= 0:
+        if two_sided:
+            if period == 1:
+                window = (-1, 1)
+            else:
+                if period % 2 == 0:
+                    window = (-period / 2 + 1, period / 2)
+                else:
+                    window = (int(-period / 2), int(period / 2))
+        else:
+            if period == 1:
+                window = (-2, 0)
+            else:
+                window = (-period + 1, 0)
+        vdf_tmp.rolling("avg", window, column, by_tmp, ts, trend_name)
+    else:
+        vdf_poly = vdf_tmp.copy()
+        X = []
+        for i in range(1, polynomial_order + 1):
+            vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
+            X += [f"t_{i}"]
+        schema = vdf_poly._VERTICAPY_VARIABLES_["schema_writing"]
+        if not (schema):
+            schema = vdf_poly._VERTICAPY_VARIABLES_["schema"]
+        if not (schema):
+            schema = "public"
+
+        from verticapy.learn.linear_model import LinearRegression
+        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_poly._VERTICAPY_VARIABLES_["cursor"])),
+                                 cursor=vdf_poly._VERTICAPY_VARIABLES_["cursor"],
+                                 solver="bfgs",
+                                 max_iter=100,
+                                 tol=1e-6,)
+        model.drop()
+        model.fit(vdf_poly, X, column)
+        coefficients = model.coef_["coefficient"]
+        coefficients = [str(coefficients[0])] + [f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})" if i != 1 else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})" for i in range(1, polynomial_order + 1)]
+        vdf_tmp[trend_name] = " + ".join(coefficients)
+        model.drop()
+    if mult:
+        vdf_tmp[seasonal_name] = f'{column} / NULLIFZERO("{trend_name}")'
+    else:
+        vdf_tmp[seasonal_name] = vdf_tmp[column] - vdf_tmp[trend_name]
+    if period <= 0:
+        acf = vdf_tmp.acf(column=seasonal_name, ts=ts, p=23, acf_type="heatmap", show=False)
+        period = int(acf["index"][1].split("_")[1])
+        if period == 1:
+            period = int(acf["index"][2].split("_")[1])
+    vdf_tmp["row_number_id"] = f"MOD(ROW_NUMBER() OVER ({by} ORDER BY {ts}), {period})"
+    if mult:
+        vdf_tmp[
+            seasonal_name
+        ] = f"AVG({seasonal_name}) OVER (PARTITION BY row_number_id) / NULLIFZERO(AVG({seasonal_name}) OVER ())"
+    else:
+        vdf_tmp[
+            seasonal_name
+        ] = f"AVG({seasonal_name}) OVER (PARTITION BY row_number_id) - AVG({seasonal_name}) OVER ()"
+    if estimate_seasonality:
+        vdf_seasonality = vdf_tmp.copy()
+        vdf_seasonality["t_cos"] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        vdf_seasonality["t_sin"] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        X = ["t_cos", "t_sin",]
+        schema = vdf_seasonality._VERTICAPY_VARIABLES_["schema_writing"]
+        if not (schema):
+            schema = vdf_seasonality._VERTICAPY_VARIABLES_["schema"]
+        if not (schema):
+            schema = "public"
+
+        from verticapy.learn.linear_model import LinearRegression
+        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_seasonality._VERTICAPY_VARIABLES_["cursor"])),
+                                 cursor=vdf_seasonality._VERTICAPY_VARIABLES_["cursor"],
+                                 solver="bfgs",
+                                 max_iter=100,
+                                 tol=1e-6,)
+        model.drop()
+        model.fit(vdf_seasonality, X, seasonal_name)
+        coefficients = model.coef_["coefficient"]
+        vdf_tmp[seasonal_name] = f"{coefficients[0]} + {coefficients[1]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {coefficients[2]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        model.drop()
+    if mult:
+        vdf_tmp[
+            epsilon_name
+        ] = f'{column} / NULLIFZERO("{trend_name}") / NULLIFZERO("{seasonal_name}")'
+    else:
+        vdf_tmp[epsilon_name] = (
+            vdf_tmp[column] - vdf_tmp[trend_name] - vdf_tmp[seasonal_name]
+        )
+    vdf_tmp["row_number_id"].drop()
+    return vdf_tmp
 
 
 # ---#
@@ -1160,3 +1295,87 @@ tablesample
     pvalue = 2 * norm.sf(abs(Z1))
     result = tablesample({"index": ["Statistic", "p_value",], "value": [Z1, pvalue],})
     return result
+
+
+# ---#
+def variance_inflation_factor(
+    vdf: vDataFrame, X: list, X_idx: int = None,
+):
+    """
+---------------------------------------------------------------------------
+Computes the variance inflation factor (VIF). It can be used to detect
+multicollinearity in an OLS Regression Analysis.
+
+Parameters
+----------
+vdf: vDataFrame
+    Input vDataFrame.
+X: list
+    Input Variables.
+X_idx: int
+    Index of the exogenous variable in X. If left to None, a tablesample will
+    be returned with all the variables VIF.
+
+Returns
+-------
+float
+    VIF.
+    """
+    check_types(
+        [
+            ("X_idx", X_idx, [int],),
+            ("X", X, [list],),
+            ("vdf", vdf, [vDataFrame, str,],),
+        ],
+    )
+    columns_check(X, vdf)
+    X = vdf_columns_names(X, vdf)
+
+    if isinstance(X_idx, str):
+        columns_check([X_idx], vdf)
+        for i in range(len(X)):
+            if str_column(X[i]) == str_column(X_idx):
+                X_idx = i
+                break
+    if isinstance(X_idx, (int, float)):
+        X_r = []
+        for i in range(len(X)):
+            if i != X_idx:
+                X_r += [X[i]]
+        y_r = X[X_idx]
+
+        from verticapy.learn.linear_model import LinearRegression
+
+        schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
+        if not (schema_writing):
+            schema_writing = "public"
+        name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+            get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
+        )
+        model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+        try:
+            model.fit(vdf, X_r, y_r)
+            R2 = model.score("r2")
+            model.drop()
+        except:
+            try:
+                model.set_params({"solver": "bfgs"})
+                model.fit(vdf, X_r, y_r)
+                R2 = model.score("r2")
+                model.drop()
+            except:
+                model.drop()
+                raise
+        if 1 - R2 != 0:
+            return 1 / (1 - R2)
+        else:
+            return np.inf
+    elif X_idx == None:
+        VIF = []
+        for i in range(len(X)):
+            VIF += [variance_inflation_factor(vdf, X, i)]
+        return tablesample({"X_idx": X, "VIF": VIF})
+    else:
+        raise ParameterError(
+            f"Wrong type for Parameter X_idx.\nExpected integer, found {type(X_idx)}."
+        )

@@ -118,7 +118,7 @@ steps: list
     def drop(self):
         """
     ---------------------------------------------------------------------------
-    Drops the model from the Vertica DB.
+    Drops the model from the Vertica database.
         """
         for step in self.steps:
             step[1].drop()
@@ -138,19 +138,21 @@ steps: list
     Parameters
     ----------
     input_relation: str/vDataFrame
-        Train relation.
+        Training relation.
     X: list
         List of the predictors.
     y: str, optional
         Response column.
     test_relation: str/vDataFrame, optional
-        Relation to use to test the model.
+        Relation used to test the model.
 
     Returns
     -------
     object
         model
         """
+        if isinstance(X, str):
+            X = [X]
         if isinstance(input_relation, str):
             vdf = vdf_from_relation(
                 relation=input_relation, cursor=self.steps[0][1].cursor
@@ -174,6 +176,7 @@ steps: list
             self.test_relation = self.steps[-1][1].test_relation
         except:
             pass
+        return self
 
     # ---#
     def get_params(self):
@@ -202,9 +205,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
     name: str, optional
@@ -215,6 +218,8 @@ steps: list
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             self.steps[-1][1].predict
         except:
@@ -292,9 +297,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -303,6 +308,8 @@ steps: list
     vDataFrame
         object result of the model transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             self.steps[-1][1].transform
         except:
@@ -330,9 +337,9 @@ steps: list
     Parameters
     ----------
     vdf: str/vDataFrame, optional
-        Input vDataFrame. It can also be a customized relation but you need to 
-        englobe it using an alias. For example "(SELECT 1) x" is correct whereas 
-        "(SELECT 1)" or "SELECT 1" are incorrect.
+        Input vDataFrame. You can also specify a customized relation, 
+        but you must enclose it with an alias. For example "(SELECT 1) x" is 
+        correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the input vcolumns.
 
@@ -341,6 +348,8 @@ steps: list
     vDataFrame
         object result of the model inverse transformation.
         """
+        if isinstance(X, str):
+            X = [X]
         try:
             for idx in range(len(self.steps)):
                 self.steps[idx][1].inverse_transform
@@ -367,7 +376,7 @@ steps: list
     def set_cursor(self, cursor):
         """
     ---------------------------------------------------------------------------
-    Sets a new DB cursor. It can be very usefull if the connection to the DB is 
+    Sets a new database cursor. It can be very usefull if the connection to the DB is 
     lost.
 
     Parameters
@@ -400,6 +409,53 @@ steps: list
             for step in self.steps:
                 if param.lower() == step[0].lower():
                     step[1].set_params(parameters[param])
+
+    # ---#
+    def to_python(self, 
+                  name: str = "predict", 
+                  return_proba: bool = False, 
+                  return_distance_clusters: bool = False, 
+                  return_str: bool = False,):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Python code needed to deploy the pipeline without using built-in
+    Vertica functions.
+
+    Parameters
+    ----------
+    name: str, optional
+        Function Name.
+    return_proba: bool, optional
+        If set to True and the model is a classifier, the function will return 
+        the model probabilities.
+    return_distance_clusters: bool, optional
+        If set to True and the model type is KMeans or NearestCentroids, the function 
+        will return the model clusters distances.
+    return_str: bool, optional
+        If set to True, the function str will be returned.
+
+
+    Returns
+    -------
+    str / func
+        Python function
+        """
+        if not(return_str):
+            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
+            _locals = locals()
+            exec(func, globals(), _locals)
+            return _locals[name]
+        str_representation = "def {}(X):\n".format(name)
+        final_function = "X"
+        for idx, step in enumerate(self.steps):
+            str_representation += "\t" + step[1].to_python(name=step[0],
+                                                           return_proba=return_proba,
+                                                           return_distance_clusters=return_distance_clusters,
+                                                           return_str=True).replace("\n", "\n\t") + "\n"
+            final_function = step[0]+"({})".format(final_function)
+        str_representation += "\treturn {}".format(final_function)
+        return str_representation
+
 
     # ---#
     def to_sklearn(self):

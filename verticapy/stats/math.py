@@ -48,13 +48,10 @@
 #
 # Modules
 #
-# Standard Python Modules
-import os, math, shutil, re, time, decimal, warnings, datetime
-
 # VerticaPy Modules
-import verticapy
-import vertica_python
+from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.stats.tools import *
 
 #
 # Variables
@@ -64,6 +61,82 @@ e = str_sql("EXP(1)")
 tau = str_sql("2 * PI()")
 inf = str_sql("'inf'::float")
 nan = str_sql("'nan'::float")
+
+
+# Soundex
+# ---#
+def edit_distance(
+    expr1, expr2,
+):
+    """
+---------------------------------------------------------------------------
+Calculates and returns the Levenshtein distance between the two strings.
+
+Parameters
+----------
+expr1: object
+    Expression.
+expr2: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr1 = format_magic(expr1)
+    expr2 = format_magic(expr2)
+    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2,), "int")
+
+
+levenshtein = edit_distance
+
+# ---#
+def soundex(expr,):
+    """
+---------------------------------------------------------------------------
+Returns Soundex encoding of a varchar strings as a four -character string.
+
+Parameters
+----------
+expr: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr = format_magic(expr)
+    return str_sql("SOUNDEX({})".format(expr), "varchar")
+
+
+# ---#
+def soundex_matches(
+    expr1, expr2,
+):
+    """
+---------------------------------------------------------------------------
+Generates and compares Soundex encodings of two strings, and returns a count 
+of the matching characters (ranging from 0 for no match to 4 for an exact 
+match).
+
+Parameters
+----------
+expr1: object
+    Expression.
+expr2: object
+    Expression.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    expr1 = format_magic(expr1)
+    expr2 = format_magic(expr2)
+    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2,), "int")
+
 
 # Regular Expressions
 # ---#
