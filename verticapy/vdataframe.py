@@ -3299,9 +3299,9 @@ vColumns : vColumn
         order_by = vdf_columns_names(order_by, self)
         topk = self[column].topk()
         last_count, last_elem, n = topk["count"][-1], topk["index"][-1], len(topk["index"])
-        if method == "under":
+        if method == "over":
             last_count = last_count * x
-        elif method == "over":
+        elif method == "under":
             last_count = last_count / x
         vdf = self.search("{} = '{}'".format(column, last_elem))
         for i in range(n - 1):
