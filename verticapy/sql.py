@@ -165,7 +165,7 @@ def sql(line, cell=""):
                 file_name = file_name[1:-1]
             with open(file_name, "r") as fs:
                 cursor.copy(query, fs)
-        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() != "select")):
+        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with"))):
             cursor.execute(query)
             if verticapy.options["print_info"]:
                 print(query_type)

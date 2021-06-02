@@ -184,13 +184,9 @@ class TestUtilities:
             drop(
                 "titanic_pandas", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
             )
-        pandas_to_vertica(
+        vdf = pandas_to_vertica(
             df=df,
             cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
-            name="titanic_pandas",
-        )
-        vdf = vDataFrame(
-            "titanic_pandas", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"]
         )
         assert vdf.shape() == (1234, 14)
         drop(

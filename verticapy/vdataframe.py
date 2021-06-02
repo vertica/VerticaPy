@@ -3021,9 +3021,9 @@ vColumns : vColumn
         for column in method:
             assert method[column] in ("bfill", "backfill", "pad", "ffill", "linear"), ParameterError("Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear")
             if method[column] in ("bfill", "backfill"):
-                func, interp = "TS_FIRST_VALUE", "const"
-            elif method[column] in ("pad", "ffill"):
                 func, interp = "TS_LAST_VALUE", "const"
+            elif method[column] in ("pad", "ffill"):
+                func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [
@@ -3255,6 +3255,59 @@ vColumns : vColumn
                 ax=ax,
                 **style_kwds,
             )
+
+    # ---#
+    def balance(
+        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Balances the dataset using the input method.
+
+    \u26A0 Warning : The result may be inconsistent between attempts at SQL
+                     code generation if the data are not sorted.
+
+    Parameters
+    ----------
+    column: str
+        Column used to compute the different categories.
+    method: str, optional
+        The Sample method.
+            hybrid : hybrid sampling.
+            over   : over sampling.
+            under  : under sampling.
+    x: float, optional
+        The desired ratio between the majority class and the minority classes.
+        Only used when method is 'over' or 'under'.
+    order_by: list, optional
+        vColumns used to sort the data.
+
+    Returns
+    -------
+    vDataFrame
+        balanced vDataFrame
+        """
+        if isinstance(method, str): 
+            method = method.lower()
+        check_types([("method", method, ["hybrid", "over", "under",],),
+                     ("x", x, [float,],),
+                     ("column", column, [str],),
+                     ("order_by", order_by, [list],)],)
+        assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
+        columns_check([column] + order_by, self,)
+        column = vdf_columns_names([column], self)[0]
+        order_by = vdf_columns_names(order_by, self)
+        topk = self[column].topk()
+        last_count, last_elem, n = topk["count"][-1], topk["index"][-1], len(topk["index"])
+        if method == "under":
+            last_count = last_count * x
+        elif method == "over":
+            last_count = last_count / x
+        vdf = self.search("{} = '{}'".format(column, last_elem))
+        for i in range(n - 1):
+            vdf = vdf.append(self.search("{} = '{}'".format(column, topk["index"][i])).sample(n = last_count))
+        vdf.sort(order_by)
+        return vdf
 
     # ---#
     def between_time(
@@ -5251,9 +5304,11 @@ vColumns : vColumn
         if not (isinstance(conditions, str)) or (args):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
+            else:
+                conditions = list(conditions)
             conditions += list(args)
             for condition in conditions:
-                self.filter(condition, print_info=False)
+                self.filter(str(condition), print_info=False,)
             count -= self.shape()[0]
             if count > 0:
                 if verticapy.options["print_info"]:

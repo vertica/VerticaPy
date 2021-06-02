@@ -702,6 +702,31 @@ def plot_BKtree(tree, pic_path: str = ""):
             display(HTML("<img src='{}'>".format(pic_path)))
     return RenderTree(tree_nodes[0])
 
+# ---#
+def plot_pca_circle(x: list, y: list, variable_names: list = [], explained_variance: tuple = (None, None), dimensions: tuple = (1, 2), ax=None, **style_kwds):
+    colors = gen_colors()
+    if "color" in style_kwds:
+        colors[0] = style_kwds["color"]
+    circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(6, 6)
+        ax.set_axisbelow(True)
+    n = len(x)
+    ax.add_patch(circle1)
+    for i in range(n):
+        ax.arrow(0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True)
+        ax.text(x[i], y[i], variable_names[i])
+    ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle='--', color="black")
+    ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle='--', color="black")
+    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))),)
+    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))),)
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    return ax
 
 # ---#
 def plot_tree(tree, metric: str = "probability", pic_path: str = ""):

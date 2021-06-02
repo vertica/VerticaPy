@@ -304,7 +304,7 @@ model
             elif model_save["type"] not in ("CountVectorizer", "VAR"):
                 model.key_columns = model_save["key_columns"]
     else:
-        model_type = does_model_exist(name=name, cursor=cursor, raise_error=False, return_model_type=True,)
+        model_type = does_model_exist(name="{}.{}".format(schema, name), cursor=cursor, raise_error=False, return_model_type=True,)
         if model_type.lower() == "kmeans":
             cursor.execute(
                 "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"

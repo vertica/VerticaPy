@@ -138,13 +138,15 @@ class TestvDFPreprocessing:
             "discretization using the method 'topk'"
         )
 
-        titanic_copy["name"].discretize(method="topk", k=5, new_category="rare")
-        assert titanic_copy["name"].distinct() == [
+        titanic_copy["name"].discretize(method="topk", k=6, new_category="rare")
+        result = titanic_copy["name"].distinct()
+        assert result == [
             " Dr.",
             " Master.",
             " Miss.",
             " Mr.",
             " Mrs.",
+            " Rev.",
             "rare",
         ]
 
@@ -293,11 +295,11 @@ class TestvDFPreprocessing:
         assert titanic_copy["fare"].count() == 1234
 
         assert titanic_copy["cabin"].count() == 286
-        titanic_copy["cabin"].fillna(method="bfill", order_by=["pclass", "cabin"])
+        titanic_copy["cabin"].fillna(method="ffill", order_by=["pclass", "cabin"])
         assert titanic_copy["cabin"].count() == 1234
 
         assert titanic_copy["home.dest"].count() == 706
-        titanic_copy["home.dest"].fillna(method="ffill", order_by=["ticket"])
+        titanic_copy["home.dest"].fillna(method="bfill", order_by=["ticket"])
         assert titanic_copy["home.dest"].count() == 1234
 
         assert titanic_copy["body"].count() == 118

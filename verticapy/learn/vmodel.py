@@ -5110,6 +5110,37 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    def plot_circle(
+        self, dimensions: tuple = (1, 2), ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Decomposition Circle.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        if self.type == "SVD":
+            x = self.singular_values_["vector{}".format(dimensions[0])]
+            y = self.singular_values_["vector{}".format(dimensions[1])]
+        else:
+            x = self.components_["PC{}".format(dimensions[0])]
+            y = self.components_["PC{}".format(dimensions[1])]
+        explained_variance = self.explained_variance_["explained_variance"]
+        return plot_pca_circle(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, ax, **style_kwds,)
+
+    # ---#
     def score(
         self, X: list = [], input_relation: str = "", method: str = "avg", p: int = 2
     ):

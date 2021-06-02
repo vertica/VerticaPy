@@ -1365,7 +1365,11 @@ class str_sql:
         return str_sql("DISTINCT ({})".format(self.alias), self.category())
 
     # ---#
-    def _over(self, by=[], order_by=[]):
+    def _over(self, by: (str, list) = [], order_by: (str, list) = []):
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         by = ", ".join([str(elem) for elem in by])
         if by:
             by = "PARTITION BY {}".format(by)
