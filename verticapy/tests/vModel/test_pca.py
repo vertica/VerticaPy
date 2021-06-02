@@ -110,6 +110,12 @@ class TestPCA:
             "scale": False,
         }
 
+    def test_plot_circle(self, model):
+        result = model.plot_circle()
+        assert len(result.get_default_bbox_extra_artists()) == 16
+        result = model.plot_circle(dimensions=(2, 3))
+        assert len(result.get_default_bbox_extra_artists()) == 16
+
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
         model.cursor.execute(

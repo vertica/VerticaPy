@@ -248,14 +248,38 @@ class TestUtilities:
             + "/tests/utilities/titanic-passengers.json",
             base.cursor,
             table_name="titanic_verticapy_test",
+            schema="public",
         )
         assert result.shape() == (891, 15)
         drop("titanic_verticapy_test", base.cursor)
+        with warnings.catch_warnings(record=True) as w:
+            drop(
+                "v_temp_schema.titanic_verticapy_test", base.cursor,
+            )
+        result = read_json(
+            os.path.dirname(verticapy.__file__)
+            + "/tests/utilities/titanic-passengers.json",
+            base.cursor,
+            table_name="titanic_verticapy_test",
+        )
+        assert result.shape() == (891, 15)
+        drop("v_temp_schema.titanic_verticapy_test", base.cursor)
 
     def test_read_csv(self, base):
         with warnings.catch_warnings(record=True) as w:
             drop(
                 "public.titanic_verticapy_test", base.cursor,
+            )
+        result = read_csv(
+            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
+            base.cursor,
+            table_name="titanic_verticapy_test",
+            schema="public"
+        )
+        assert result.shape() == (1234, 14)
+        with warnings.catch_warnings(record=True) as w:
+            drop(
+                "v_temp_schema.titanic_verticapy_test", base.cursor,
             )
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",

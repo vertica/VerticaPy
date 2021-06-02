@@ -56,6 +56,12 @@ class TestSVD:
 
         assert result_sql == expected_sql
 
+    def test_plot_circle(self, model):
+        result = model.plot_circle()
+        assert len(result.get_default_bbox_extra_artists()) == 16
+        result = model.plot_circle(dimensions=(2, 3))
+        assert len(result.get_default_bbox_extra_artists()) == 16
+
     def test_drop(self, base):
         base.cursor.execute("DROP MODEL IF EXISTS SVD_model_test_drop")
         model_test = SVD("SVD_model_test_drop", cursor=base.cursor)

@@ -72,6 +72,23 @@ class TestStats:
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
         assert result["value"][-1] == False
 
+    def test_cochrane_orcutt(self, airline_vd, base):
+        airline_copy = airline_vd.copy()
+        airline_copy["passengers_bias"] = airline_copy["passengers"] ** 2 - 50 * st.random()
+
+        from verticapy.learn.linear_model import LinearRegression
+        base.cursor.execute("DROP MODEL IF EXISTS lin_cochrane_orcutt_model_test")
+        model = LinearRegression("lin_cochrane_orcutt_model_test", cursor=base.cursor)
+        model.fit(
+            airline_copy, ["passengers_bias"], "passengers"
+        )
+        result = st.cochrane_orcutt(
+            model, airline_copy, ts="date", prais_winsten=True,
+        )
+        assert result.coef_["coefficient"][0] == pytest.approx(25.8582027191416, 1e-2)
+        assert result.coef_["coefficient"][1] == pytest.approx(0.00123563974547625, 1e-2)
+        model.drop()
+
     def test_durbin_watson(self, amazon_vd):
         result = st.durbin_watson(amazon_vd, eps="number", ts="date", by=["state"])
         assert result == pytest.approx(0.583991056156811, 1e-2)
