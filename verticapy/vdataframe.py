@@ -3545,6 +3545,78 @@ vColumns : vColumn
         return columns
 
     # ---#
+    def cdt(self, 
+            columns: list = [],
+            max_cardinality: int = 20,
+            nbins: int = 10,
+            tcdt: bool = True):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Completely Disjonctive Table of the vDataFrame.
+    The numerical features are transformed to categorical ones using
+    the 'discretize' method. Applying PCA on TCDT leads to MCA 
+    (Multiple correspondence analysis).
+
+    \u26A0 Warning : This method can become computationally expensive when
+                     dealing with categorical variables having too many
+                     categories.
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vColumns names.
+    max_cardinality: int, optional
+        For any categorical variable, keeps the 'max_cardinality' most frequent 
+        categories and merge the other into one unique category.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1).
+    tcdt: bool, optional
+        If set to True, returns the Transformed Completely Disjonctive Table 
+        (TCDT). 
+
+    Returns
+    -------
+    vDataFrame
+        the CDT relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("tcdt", tcdt, [bool],),
+                ("nbins", nbins, [int],),
+                ("max_cardinality", max_cardinality, [int],),
+            ]
+        )
+        if columns:
+            columns_check(columns, self,)
+            columns = vdf_columns_names(columns, self)
+        else:
+            columns = self.get_columns()
+        vdf = self.copy()
+        columns_to_drop = []
+        for elem in columns:
+            if vdf[elem].isbool():
+                vdf[elem].astype("int")
+            elif vdf[elem].isnum():
+                vdf[elem].discretize(bins=nbins)
+                columns_to_drop += [elem]
+            elif vdf[elem].isdate():
+                vdf[elem].drop()
+            else:
+                vdf[elem].discretize(method="topk", k=max_cardinality)
+                columns_to_drop += [elem]
+        vdf.one_hot_encode(columns=columns, max_cardinality=max(max_cardinality, nbins) + 2, drop_first=False)
+        vdf.drop(columns=columns_to_drop)
+        if tcdt:
+            columns = vdf.get_columns()
+            for elem in columns:
+                sum_cat = vdf[elem].sum()
+                vdf[elem].apply("{} / {} - 1".format("{}", sum_cat))
+        return vdf
+
+    # ---#
     def copy(self):
         """
     ---------------------------------------------------------------------------
@@ -5507,6 +5579,7 @@ vColumns : vColumn
                 warnings.warn(warning_message, Warning)
         return self
 
+    one_hot_encode = get_dummies
     # ---#
     def groupby(
         self, columns: list, expr: list = [],

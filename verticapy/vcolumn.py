@@ -2141,6 +2141,7 @@ Attributes
             )
         return self.parent
 
+    one_hot_encode = get_dummies
     # ---#
     def head(self, limit: int = 5):
         """

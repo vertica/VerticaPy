@@ -62,6 +62,11 @@ class TestvDFPreprocessing:
         assert result[1] == ['Waqas', 2]
         assert result[2] == ['Pratibha', 3]
 
+    def test_vDF_cdt(self, titanic_vd):
+        result = titanic_vd[["age", "fare", "pclass", "boat"]].cdt()
+        assert result.shape() == (1234, 41)
+        assert result["boat_11"].avg() == pytest.approx(-0.999189627228525)
+
     def test_vDF_cut(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
