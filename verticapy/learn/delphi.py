@@ -734,7 +734,12 @@ model_grid_ : tablesample
                     }
                 )
         if self.parameters["preprocess_data"]:
-            model_preprocess = AutoDataPrep(cursor=self.cursor, **self.parameters["preprocess_dict"],)
+            name = self.name
+            if name[-1] == '"':
+                name = name[0:-1] + '_autodataprep_{}"'.format(get_session(self.cursor))
+            else:
+                name = name + '_autodataprep_{}'.format(get_session(self.cursor))
+            model_preprocess = AutoDataPrep(name=name, cursor=self.cursor, **self.parameters["preprocess_dict"],)
             input_relation = model_preprocess.fit(input_relation, X=X,)
             X = [elem for elem in model_preprocess.X_out]
             self.preprocess_ = model_preprocess
