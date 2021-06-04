@@ -46,7 +46,7 @@
 # of moving data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
@@ -88,4 +88,6 @@ verticapy.options = {
     "colors": [],
     "color_style": "default",
     "tqdm": tqdm,
+    "cursor": None,
+    "conn": None,
 }

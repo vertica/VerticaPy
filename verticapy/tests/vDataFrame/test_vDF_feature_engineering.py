@@ -514,7 +514,7 @@ class TestvDFFeatureEngineering:
         assert result1.shape() == (148189, 3)
         assert result1["time"][2] == datetime.datetime(2014, 1, 1, 13, 0)
         assert result1["id"][2] == 0
-        assert result1["val"][2] == pytest.approx(0.029)
+        assert result1["val"][2] == pytest.approx(0.277)
 
         # ffill
         result2 = smart_meters_vd.asfreq(
@@ -525,7 +525,7 @@ class TestvDFFeatureEngineering:
         assert result2.shape() == (148189, 3)
         assert result2["time"][2] == datetime.datetime(2014, 1, 1, 13, 0)
         assert result2["id"][2] == 0
-        assert result2["val"][2] == pytest.approx(0.277)
+        assert result2["val"][2] == pytest.approx(0.029)
 
         # linear method
         result3 = smart_meters_vd.asfreq(

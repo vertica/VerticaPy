@@ -455,29 +455,22 @@ list of tuples
 
 # ---#
 def pandas_to_vertica(
-    df, name: str, cursor=None, schema: str = "public", insert: bool = False
+    df, cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables.
+and then using flex tables. It will create a temporary local table and it
+will be dropped at the end of the local session.
+Use vDataFrame.to_db to store it inside the Database.
 
 Parameters
 ----------
 df: pandas.DataFrame
 	The pandas.DataFrame to ingest.
-name: str
-	Name of the new relation.
 cursor: DBcursor, optional
-	Vertica database cursor. 
-schema: str, optional
-	Schema of the new relation. The default schema is public.
-insert: bool, optional
-	If set to True, the data will be ingested to the input relation. Be sure
-	that your file has a header corresponding to the name of the relation
-	columns otherwise the ingestion will not work.
+	Vertica database cursor.
 	
-
 Returns
 -------
 vDataFrame
@@ -488,25 +481,19 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    check_types(
-        [
-            ("name", name, [str],),
-            ("schema", schema, [str],),
-            ("insert", insert, [bool],),
-        ]
-    )
     cursor, conn = check_cursor(cursor)[0:2]
-    path = "verticapy_{}.csv".format(gen_name([name]))
+    name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
+    path = "{}.csv".format(name)
     try:
         df.to_csv(path, index=False)
-        read_csv(path, cursor, table_name=name, schema=schema, insert=insert)
+        read_csv(path, cursor, table_name=name, temporary_local_table=True, parse_n_lines=10000)
         os.remove(path)
     except:
         os.remove(path)
         raise
     from verticapy import vDataFrame
 
-    return vDataFrame(input_relation=name, schema=schema, cursor=cursor)
+    return vDataFrame(input_relation=name, schema="v_temp_schema", cursor=cursor)
 
 
 # ---#
@@ -664,7 +651,7 @@ read_json : Ingests a JSON file into the Vertica database.
 def read_csv(
     path: str,
     cursor=None,
-    schema: str = "public",
+    schema: str = "",
     table_name: str = "",
     sep: str = ",",
     header: bool = True,
@@ -676,6 +663,8 @@ def read_csv(
     genSQL: bool = False,
     parse_n_lines: int = -1,
     insert: bool = False,
+    temporary_table: bool = False,
+    temporary_local_table: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -722,6 +711,11 @@ insert: bool, optional
 	If set to True, the data will be ingested to the input relation. Be sure
 	that your file has a header corresponding to the name of the relation
 	columns otherwise the ingestion will not work.
+temporary_table: bool, optional
+    If set to True, a temporary table will be created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table will be created. The parameter 'schema'
+    has to be empty, otherwise this parameter is ignored.
 
 Returns
 -------
@@ -747,9 +741,18 @@ read_json : Ingests a JSON file into the Vertica database.
             ("genSQL", genSQL, [bool],),
             ("parse_n_lines", parse_n_lines, [int, float],),
             ("insert", insert, [bool],),
+            ("temporary_table", temporary_table, [bool],),
+            ("temporary_local_table", temporary_local_table, [bool],),
         ]
     )
+    if (schema):
+        temporary_local_table = False
+    elif temporary_local_table:
+        schema = "v_temp_schema"
+    else:
+        schema = "public"
     assert dtype or not(header_names), ParameterError("dtype must be empty when using parameter 'header_names'.")
+    assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
@@ -778,7 +781,10 @@ read_json : Ingests a JSON file into the Vertica database.
             'The table "{}"."{}" doesn\'t exist !'.format(schema, table_name)
         )
     else:
-        input_relation = '"{}"."{}"'.format(schema, table_name)
+        if not(temporary_local_table):
+            input_relation = '"{}"."{}"'.format(schema, table_name)
+        else:
+            input_relation = '"{}"'.format(table_name)
         f = open(path, "r")
         file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
         f.close()
@@ -818,11 +824,15 @@ read_json : Ingests a JSON file into the Vertica database.
                 )
             if parse_n_lines > 0:
                 os.remove(path[0:-4] + "VERTICAPY_COPY.csv")
-            query1 = "CREATE TABLE {}({});".format(
+            temp = "TEMPORARY " if temporary_table else ""
+            temp = "LOCAL TEMPORARY " if temporary_local_table else ""
+            query1 = "CREATE {}TABLE {}({}){};".format(
+                temp,
                 input_relation,
                 ", ".join(
                     ['"{}" {}'.format(column, dtype[column]) for column in header_names]
                 ),
+                " ON COMMIT PRESERVE ROWS" if temp else ""
             )
         skip = " SKIP 1" if (header) else ""
         query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
@@ -845,7 +855,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     cursor.copy(query2.format("STDIN"), fs)
             else:
                 cursor.execute(query2.format("LOCAL '{}'".format(path)))
-            if query1:
+            if query1 and not(temporary_local_table):
                 print(
                     "The table {} has been successfully created.".format(input_relation)
                 )
@@ -863,6 +873,9 @@ def read_json(
     usecols: list = [],
     new_name: dict = {},
     insert: bool = False,
+    temporary_table: bool = False,
+    temporary_local_table: bool = False,
+    print_info: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -892,6 +905,11 @@ insert: bool, optional
 	If set to True, the data will be ingested to the input relation. The JSON
 	parameters must be the same than the input relation otherwise they will
 	not be ingested.
+temporary_table: bool, optional
+    If set to True, a temporary table will be created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table will be created. The parameter 'schema'
+    is then ignored.
 
 Returns
 -------
@@ -909,8 +927,17 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("usecols", usecols, [list],),
             ("new_name", new_name, [dict],),
             ("insert", insert, [bool],),
+            ("temporary_table", temporary_table, [bool],),
+            ("temporary_local_table", temporary_local_table, [bool],),
         ]
     )
+    if (schema):
+        temporary_local_table = False
+    elif temporary_local_table:
+        schema = "v_temp_schema"
+    else:
+        schema = "public"
+    assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     cursor = check_cursor(cursor)[0]
     file = path.split("/")[-1]
     file_extension = file[-4 : len(file)]
@@ -932,10 +959,11 @@ read_csv : Ingests a CSV file into the Vertica database.
             'The table "{}"."{}" doesn\'t exist !'.format(schema, table_name)
         )
     else:
-        input_relation, flex_name = (
-            '"{}"."{}"'.format(schema, table_name),
-            "VERTICAPY_" + str(get_session(cursor)) + "_FLEX",
-        )
+        if not(temporary_local_table):
+            input_relation = '"{}"."{}"'.format(schema, table_name)
+        else:
+            input_relation = '"{}"'.format(table_name)
+        flex_name = "VERTICAPY_" + str(get_session(cursor)) + "_FLEX"
         cursor.execute(
             "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
                 flex_name
@@ -982,12 +1010,15 @@ read_csv : Ingests a CSV file into the Vertica database.
                     if (column in new_name)
                     else '"{}"::{}'.format(column.replace('"', ""), dtype[column])
                 )
+            temp = "TEMPORARY " if temporary_table else ""
+            temp = "LOCAL TEMPORARY " if temporary_local_table else ""
             cursor.execute(
-                "CREATE TABLE {} AS SELECT {} FROM {}".format(
-                    input_relation, ", ".join(cols), flex_name
+                "CREATE {}TABLE {} AS SELECT {} FROM {}".format(
+                    temp, input_relation, ", ".join(cols), flex_name
                 )
             )
-            print("The table {} has been successfully created.".format(input_relation))
+            if not(temporary_local_table):
+                print("The table {} has been successfully created.".format(input_relation))
         else:
             column_name_dtype = {}
             for elem in column_name:

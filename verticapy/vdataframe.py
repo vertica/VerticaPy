@@ -3021,9 +3021,9 @@ vColumns : vColumn
         for column in method:
             assert method[column] in ("bfill", "backfill", "pad", "ffill", "linear"), ParameterError("Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear")
             if method[column] in ("bfill", "backfill"):
-                func, interp = "TS_FIRST_VALUE", "const"
-            elif method[column] in ("pad", "ffill"):
                 func, interp = "TS_LAST_VALUE", "const"
+            elif method[column] in ("pad", "ffill"):
+                func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [
@@ -3255,6 +3255,59 @@ vColumns : vColumn
                 ax=ax,
                 **style_kwds,
             )
+
+    # ---#
+    def balance(
+        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Balances the dataset using the input method.
+
+    \u26A0 Warning : The result may be inconsistent between attempts at SQL
+                     code generation if the data are not sorted.
+
+    Parameters
+    ----------
+    column: str
+        Column used to compute the different categories.
+    method: str, optional
+        The Sample method.
+            hybrid : hybrid sampling.
+            over   : over sampling.
+            under  : under sampling.
+    x: float, optional
+        The desired ratio between the majority class and the minority classes.
+        Only used when method is 'over' or 'under'.
+    order_by: list, optional
+        vColumns used to sort the data.
+
+    Returns
+    -------
+    vDataFrame
+        balanced vDataFrame
+        """
+        if isinstance(method, str): 
+            method = method.lower()
+        check_types([("method", method, ["hybrid", "over", "under",],),
+                     ("x", x, [float,],),
+                     ("column", column, [str],),
+                     ("order_by", order_by, [list],)],)
+        assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
+        columns_check([column] + order_by, self,)
+        column = vdf_columns_names([column], self)[0]
+        order_by = vdf_columns_names(order_by, self)
+        topk = self[column].topk()
+        last_count, last_elem, n = topk["count"][-1], topk["index"][-1], len(topk["index"])
+        if method == "over":
+            last_count = last_count * x
+        elif method == "under":
+            last_count = last_count / x
+        vdf = self.search("{} = '{}'".format(column, last_elem))
+        for i in range(n - 1):
+            vdf = vdf.append(self.search("{} = '{}'".format(column, topk["index"][i])).sample(n = last_count))
+        vdf.sort(order_by)
+        return vdf
 
     # ---#
     def between_time(
@@ -3490,6 +3543,78 @@ vColumns : vColumn
             if is_cat:
                 columns += [column]
         return columns
+
+    # ---#
+    def cdt(self, 
+            columns: list = [],
+            max_cardinality: int = 20,
+            nbins: int = 10,
+            tcdt: bool = True):
+        """
+    ---------------------------------------------------------------------------
+    Returns the Completely Disjonctive Table of the vDataFrame.
+    The numerical features are transformed to categorical ones using
+    the 'discretize' method. Applying PCA on TCDT leads to MCA 
+    (Multiple correspondence analysis).
+
+    \u26A0 Warning : This method can become computationally expensive when
+                     dealing with categorical variables having too many
+                     categories.
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vColumns names.
+    max_cardinality: int, optional
+        For any categorical variable, keeps the 'max_cardinality' most frequent 
+        categories and merge the other into one unique category.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1).
+    tcdt: bool, optional
+        If set to True, returns the Transformed Completely Disjonctive Table 
+        (TCDT). 
+
+    Returns
+    -------
+    vDataFrame
+        the CDT relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("tcdt", tcdt, [bool],),
+                ("nbins", nbins, [int],),
+                ("max_cardinality", max_cardinality, [int],),
+            ]
+        )
+        if columns:
+            columns_check(columns, self,)
+            columns = vdf_columns_names(columns, self)
+        else:
+            columns = self.get_columns()
+        vdf = self.copy()
+        columns_to_drop = []
+        for elem in columns:
+            if vdf[elem].isbool():
+                vdf[elem].astype("int")
+            elif vdf[elem].isnum():
+                vdf[elem].discretize(bins=nbins)
+                columns_to_drop += [elem]
+            elif vdf[elem].isdate():
+                vdf[elem].drop()
+            else:
+                vdf[elem].discretize(method="topk", k=max_cardinality)
+                columns_to_drop += [elem]
+        vdf.one_hot_encode(columns=columns, max_cardinality=max(max_cardinality, nbins) + 2, drop_first=False)
+        vdf.drop(columns=columns_to_drop)
+        if tcdt:
+            columns = vdf.get_columns()
+            for elem in columns:
+                sum_cat = vdf[elem].sum()
+                vdf[elem].apply("{} / {} - 1".format("{}", sum_cat))
+        return vdf
 
     # ---#
     def copy(self):
@@ -5251,9 +5376,11 @@ vColumns : vColumn
         if not (isinstance(conditions, str)) or (args):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
+            else:
+                conditions = list(conditions)
             conditions += list(args)
             for condition in conditions:
-                self.filter(condition, print_info=False)
+                self.filter(str(condition), print_info=False,)
             count -= self.shape()[0]
             if count > 0:
                 if verticapy.options["print_info"]:
@@ -5452,6 +5579,7 @@ vColumns : vColumn
                 warnings.warn(warning_message, Warning)
         return self
 
+    one_hot_encode = get_dummies
     # ---#
     def groupby(
         self, columns: list, expr: list = [],

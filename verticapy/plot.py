@@ -1623,7 +1623,7 @@ def compute_plot_variables(
     cardinality, count, is_numeric, is_date, is_categorical = (
         vdf.nunique(True),
         vdf.parent.shape()[0],
-        vdf.isnum(),
+        vdf.isnum() and not(vdf.isbool()),
         (vdf.category() == "date"),
         False,
     )
