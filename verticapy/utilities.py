@@ -826,12 +826,13 @@ read_json : Ingests a JSON file into the Vertica database.
                 os.remove(path[0:-4] + "VERTICAPY_COPY.csv")
             temp = "TEMPORARY " if temporary_table else ""
             temp = "LOCAL TEMPORARY " if temporary_local_table else ""
-            query1 = "CREATE {}TABLE {}({});".format(
+            query1 = "CREATE {}TABLE {}({}){};".format(
                 temp,
                 input_relation,
                 ", ".join(
                     ['"{}" {}'.format(column, dtype[column]) for column in header_names]
                 ),
+                " ON COMMIT PRESERVE ROWS" if temp else ""
             )
         skip = " SKIP 1" if (header) else ""
         query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(

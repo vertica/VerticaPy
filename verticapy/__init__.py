@@ -89,4 +89,5 @@ verticapy.options = {
     "color_style": "default",
     "tqdm": tqdm,
     "cursor": None,
+    "conn": None,
 }

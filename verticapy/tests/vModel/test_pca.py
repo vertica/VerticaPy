@@ -110,6 +110,12 @@ class TestPCA:
             "scale": False,
         }
 
+    def test_plot(self, model):
+        result = model.plot()
+        assert len(result.get_default_bbox_extra_artists()) == 8
+        result = model.plot(dimensions=(2, 3))
+        assert len(result.get_default_bbox_extra_artists()) == 8
+
     def test_plot_circle(self, model):
         result = model.plot_circle()
         assert len(result.get_default_bbox_extra_artists()) == 16

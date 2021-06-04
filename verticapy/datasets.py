@@ -234,8 +234,8 @@ def load_dataset(
             schema = str_column(schema)
             temp = ""
         cursor.execute(
-            "CREATE {}TABLE {}({});".format(
-                temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create,
+            "CREATE {}TABLE {}({}){};".format(
+                temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create, " ON COMMIT PRESERVE ROWS" if temp else ""
             )
         )
         try:
@@ -252,8 +252,7 @@ def load_dataset(
                     cursor.copy(query.format("STDIN"), fs)
             else:
                 cursor.execute(query.format("LOCAL '{}'".format(path)))
-            if schema != 'v_temp_schema':
-                cursor.execute("COMMIT;")
+            cursor.execute("COMMIT;")
             vdf = vDataFrame(name, cursor, schema=schema)
         except:
             cursor.execute(

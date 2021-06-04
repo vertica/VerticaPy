@@ -58,7 +58,7 @@
 # ---#
 def sql(line, cell=""):
     import verticapy
-    from verticapy.connect import read_auto_connect
+    from verticapy.toolbox import optimized_conn
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
@@ -69,8 +69,7 @@ def sql(line, cell=""):
 
     version = vertica_python.__version__.split(".")
     version = [int(elem) for elem in version]
-    conn = read_auto_connect()
-    cursor = conn.cursor()
+    conn, cursor = optimized_conn()
     queries = line if (not (cell) and (line)) else cell
     options = {"limit": 100, "vdf": False}
     queries = queries.replace("\t", " ")

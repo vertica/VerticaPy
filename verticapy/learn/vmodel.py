@@ -5110,6 +5110,36 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    def plot(
+        self, dimensions: tuple = (1, 2), ax=None, **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws the Decomposition scatter plot.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types([("dimensions", dimensions, [tuple],),])
+        vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+        ax = self.transform(vdf).scatter(columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])], max_nb_points=100000, ax=ax, **style_kwds)
+        explained_variance = self.explained_variance_["explained_variance"]
+        ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
+        ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
+        return ax
+
+    # ---#
     def plot_circle(
         self, dimensions: tuple = (1, 2), ax=None, **style_kwds
     ):
@@ -5131,6 +5161,7 @@ class Decomposition(Preprocessing):
     ax
         Matplotlib axes object
         """
+        check_types([("dimensions", dimensions, [tuple],),])
         if self.type == "SVD":
             x = self.singular_values_["vector{}".format(dimensions[0])]
             y = self.singular_values_["vector{}".format(dimensions[1])]
