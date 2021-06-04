@@ -5115,7 +5115,7 @@ class Decomposition(Preprocessing):
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Decomposition scatter plot.
+    Draws a decomposition scatter plot.
 
     Parameters
     ----------
@@ -5145,7 +5145,7 @@ class Decomposition(Preprocessing):
     ):
         """
     ---------------------------------------------------------------------------
-    Draws the Decomposition Circle.
+    Draws a decomposition circle.
 
     Parameters
     ----------
