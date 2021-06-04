@@ -460,9 +460,9 @@ def pandas_to_vertica(
     """
 ---------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables. It will create a temporary local table and it
-will be dropped at the end of the local session.
-Use vDataFrame.to_db to store it inside the Database.
+and then using flex tables. This creates a temporary local table that
+will be dropped at the end of the local session. Use vDataFrame.to_db 
+to store it inside the database.
 
 Parameters
 ----------
@@ -710,12 +710,12 @@ parse_n_lines: int, optional
 insert: bool, optional
 	If set to True, the data will be ingested to the input relation. Be sure
 	that your file has a header corresponding to the name of the relation
-	columns otherwise the ingestion will not work.
+	columns, otherwise ingestion will fail.
 temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
-    has to be empty, otherwise this parameter is ignored.
+    must to be empty, otherwise this parameter is ignored.
 
 Returns
 -------
@@ -908,8 +908,8 @@ insert: bool, optional
 temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created. The parameter 'schema'
-    is then ignored.
+    If set to True, a temporary local table will be created and the parameter
+    'schema' is ignored.
 
 Returns
 -------

@@ -334,30 +334,31 @@ def cochrane_orcutt(
 ):
     """
 ---------------------------------------------------------------------------
-Cochrane Orcutt.
+Performs a Cochrane-Orcutt estimation.
 
 Parameters
 ----------
 model: vModel
-    Linear Regression Object.
+    Linear regression object.
 vdf: vDataFrame / str
     Input relation.
 ts: str
-    vcolumn used as timeline. It will be to use to order the data. It can be
-    a numerical or type date like (date, datetime, timestamp...) vcolumn.
+    vcolumn of numeric or date-like type (date, datetime, timestamp, etc.)
+    used as the timeline and to order the data.
 prais_winsten: bool, optional
-    If set to True, the first term is not lost which leads to more precision.
-    This configuration is called the Prais–Winsten estimation.
+    If true, retains the first observation of the time series, increasing
+    precision and efficiency. This configuration is called the 
+    Prais–Winsten estimation.
 drop_tmp_model: bool, optional
-    If set to True, it drops the temporary model.
+    If true, it drops the temporary model.
 
 Returns
 -------
 model
     A Linear Model with the different information stored as attributes:
      - coef_        : Model's coefficients.
-     - pho_         : Cochrane Orcutt pho.
-     - anova_table_ : Anova Table.
+     - pho_         : Cochrane-Orcutt pho.
+     - anova_table_ : ANOVA table.
      - r2_          : R2
     """
     check_types(

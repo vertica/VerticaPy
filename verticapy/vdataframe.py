@@ -3264,20 +3264,20 @@ vColumns : vColumn
     ---------------------------------------------------------------------------
     Balances the dataset using the input method.
 
-    \u26A0 Warning : The result may be inconsistent between attempts at SQL
-                     code generation if the data are not sorted.
+    \u26A0 Warning : If the data is not sorted, the generated SQL code may
+                     differ between attempts.
 
     Parameters
     ----------
     column: str
         Column used to compute the different categories.
     method: str, optional
-        The Sample method.
-            hybrid : hybrid sampling.
-            over   : over sampling.
-            under  : under sampling.
+        The method with which to sample the data
+            hybrid : hybrid sampling
+            over   : oversampling
+            under  : undersampling
     x: float, optional
-        The desired ratio between the majority class and the minority classes.
+        The desired ratio between the majority class and minority classes.
         Only used when method is 'over' or 'under'.
     order_by: list, optional
         vColumns used to sort the data.
@@ -3552,26 +3552,25 @@ vColumns : vColumn
             tcdt: bool = True):
         """
     ---------------------------------------------------------------------------
-    Returns the Completely Disjonctive Table of the vDataFrame.
-    The numerical features are transformed to categorical ones using
+    Returns the complete disjunctive table of the vDataFrame.
+    Numerical features are transformed to categorical using
     the 'discretize' method. Applying PCA on TCDT leads to MCA 
     (Multiple correspondence analysis).
 
     \u26A0 Warning : This method can become computationally expensive when
-                     dealing with categorical variables having too many
-                     categories.
+                     used with categorical variables with many categories.
 
     Parameters
     ----------
     columns: list, optional
         List of the vColumns names.
     max_cardinality: int, optional
-        For any categorical variable, keeps the 'max_cardinality' most frequent 
-        categories and merge the other into one unique category.
+        For any categorical variable, keeps the most frequent categories and 
+        merges the less frequent categories into a new unique category.
     nbins: int, optional
         Number of bins used for the discretization (must be > 1).
     tcdt: bool, optional
-        If set to True, returns the Transformed Completely Disjonctive Table 
+        If set to True, returns the transformed complete disjunctive table 
         (TCDT). 
 
     Returns
