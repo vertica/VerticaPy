@@ -140,7 +140,9 @@ def hchart_from_vdf(
         is_num = vdf[x].isnum()
         order_by = " ORDER BY 2 DESC "
         if unique > max_cardinality:
-            if is_num:
+            if not(aggregate):
+                limit = min(limit, max_cardinality)
+            elif is_num:
                 order_by = " ORDER BY MIN({}) DESC ".format(x)
                 x = vdf[x].discretize(h=h, return_enum_trans=True)[0].replace(
                     "{}", x
