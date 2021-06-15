@@ -51,6 +51,7 @@
 # Standard Python Modules
 from random import shuffle
 import math, statistics, warnings
+from typing import Union
 
 # Other Python Modules
 import matplotlib.pyplot as plt
@@ -1489,7 +1490,7 @@ def contour_plot(
     func,
     nbins: int = 100,
     cbar_title: str = "",
-    pos_label: (int, str, float) = None,
+    pos_label: Union[int, str, float] = None,
     ax=None,
     **style_kwds,
 ):

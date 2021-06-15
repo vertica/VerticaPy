@@ -51,6 +51,7 @@
 # Standard Python Modules
 import math
 from collections.abc import Iterable
+from typing import Union
 
 # Other Modules
 import numpy as np
@@ -69,7 +70,7 @@ from verticapy.toolbox import *
 def aic_bic(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     k: int = 1,
 ):
@@ -129,7 +130,7 @@ tuple of floats
 def anova_table(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     k: int = 1,
     cursor=None,
 ):
@@ -201,7 +202,7 @@ tablesample
 
 # ---#
 def explained_variance(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -246,7 +247,7 @@ float
 
 # ---#
 def max_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -293,7 +294,7 @@ float
 
 # ---#
 def mean_absolute_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -338,7 +339,7 @@ float
 def mean_squared_error(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     root: bool = False,
 ):
@@ -388,7 +389,7 @@ float
 
 # ---#
 def mean_squared_log_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -433,7 +434,7 @@ float
 
 # ---#
 def median_absolute_error(
-    y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -478,7 +479,7 @@ float
 
 # ---#
 def quantile_error(
-    q: float, y_true: str, y_score: str, input_relation: (str, vDataFrame), cursor=None
+    q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
 ):
     """
 ---------------------------------------------------------------------------
@@ -528,7 +529,7 @@ float
 def r2_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     k: int = 0,
     adj: bool = True,
@@ -589,7 +590,7 @@ float
 def regression_report(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     k: int = 1,
 ):
@@ -686,7 +687,7 @@ tablesample
 def accuracy_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = None,
 ):
@@ -753,7 +754,7 @@ float
 def auc(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -800,7 +801,7 @@ float
 def classification_report(
     y_true: str = "",
     y_score: list = [],
-    input_relation: (str, vDataFrame) = "",
+    input_relation: Union[str, vDataFrame] = "",
     cursor=None,
     labels: list = [],
     cutoff: (float, list) = [],
@@ -973,7 +974,7 @@ tablesample
 def confusion_matrix(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1043,7 +1044,7 @@ tablesample
 def critical_success_index(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1099,7 +1100,7 @@ float
 def f1_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1161,7 +1162,7 @@ float
 def informedness(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1218,7 +1219,7 @@ float
 def log_loss(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1269,7 +1270,7 @@ float
 def markedness(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1326,7 +1327,7 @@ float
 def matthews_corrcoef(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1387,7 +1388,7 @@ float
 def multilabel_confusion_matrix(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     labels: list,
     cursor=None,
 ):
@@ -1456,7 +1457,7 @@ tablesample
 def negative_predictive_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1512,7 +1513,7 @@ float
 def prc_auc(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1559,7 +1560,7 @@ float
 def precision_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1615,7 +1616,7 @@ float
 def recall_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):
@@ -1671,7 +1672,7 @@ float
 def specificity_score(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
 ):

@@ -693,7 +693,7 @@ def bar(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     is_stacked = "stacked" in chart_type
     if chart_type == "stacked_hist":
@@ -916,7 +916,7 @@ def drilldown_chart(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="column",
+    chart_type: str = "column",
 ):
     cursor.execute(query[0])
     data = cursor.fetchall()
@@ -1081,7 +1081,7 @@ def line(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="line",
+    chart_type: str = "line",
     stock: bool = False,
 ):
     is_ts = True if (chart_type == "area_ts") else False
@@ -1335,7 +1335,7 @@ def pie(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     cursor.execute(query)
     data = cursor.fetchall()
@@ -1424,7 +1424,7 @@ def scatter(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     cursor.execute(query)
     data = cursor.fetchall()

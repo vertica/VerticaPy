@@ -51,6 +51,7 @@
 # Standard Python Modules
 import random, datetime
 import numpy as np
+from typing import Union
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -178,7 +179,7 @@ model_grid_ : tablesample
                  normalize_min_cat: int = 6,
                  id_method: int = "drop",
                  apply_pca: bool = False,
-                 rule: (str, datetime.timedelta) = "auto",
+                 rule: Union[str, datetime.timedelta] = "auto",
                  identify_ts: bool = True,
                  save: bool = True,):
         check_types([("name", name, [str],), 
@@ -217,7 +218,7 @@ model_grid_ : tablesample
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
         ts: str = "",
         by: list = [],
@@ -423,7 +424,7 @@ model_: object
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
     ):
         """
@@ -578,11 +579,11 @@ model_grid_ : tablesample
     def __init__(self,
                  name: str,
                  cursor=None,
-                 estimator: (list, str) = "fast",
+                 estimator: Union[list, str] = "fast",
                  estimator_type: str = "auto",
                  metric: str = "auto",
                  cv: int = 3,
-                 pos_label: (int, float, str) = None,
+                 pos_label: Union[int, float, str] = None,
                  cutoff: float = -1,
                  nbins: int = 100,
                  lmax: int = 5,
@@ -636,7 +637,7 @@ model_grid_ : tablesample
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
         y: str = "",
     ):
@@ -671,6 +672,7 @@ model_grid_ : tablesample
             self.parameters["estimator"] = self.parameters["estimator"].lower()
             check_types([("estimator", self.parameters["estimator"], ["native", "all", "fast",],),])
             modeltype = None
+            estimator_method = self.parameters["estimator"]
             if not(isinstance(input_relation, vDataFrame)):
                 vdf = vdf_from_relation(input_relation, cursor=self.cursor)
             else:
@@ -678,32 +680,32 @@ model_grid_ : tablesample
             if self.parameters["estimator_type"].lower() == "binary" or (self.parameters["estimator_type"].lower() == "auto" and sorted(vdf[y].distinct()) == [0, 1]):
                 self.parameters["estimator_type"] = "binary"
                 self.parameters["estimator"] = [LogisticRegression(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
-                if self.parameters["estimator"] in ("native", "all"):
+                if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
                         self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [LinearSVC(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor),]
-                if self.parameters["estimator"] == "all":
+                if estimator_method == "all":
                     self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor)]
             elif self.parameters["estimator_type"].lower() == "regressor" or (self.parameters["estimator_type"].lower() == "auto" and vdf[y].isnum()):
                 self.parameters["estimator_type"] = "regressor"
                 self.parameters["estimator"] = [LinearRegression(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor),]
-                if self.parameters["estimator"] in ("native", "all"):
+                if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
                         self.parameters["estimator"] += [XGBoostRegressor(self.name, cursor=self.cursor),]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [LinearSVR(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor),]
-                if self.parameters["estimator"] == "all":
+                if estimator_method == "all":
                     self.parameters["estimator"] += [KNeighborsRegressor(self.name, cursor=self.cursor),]
             elif self.parameters["estimator_type"].lower() in ("multi", "auto",):
                 self.parameters["estimator_type"] = "multi"
                 self.parameters["estimator"] = [NaiveBayes(self.name, cursor=self.cursor)]
-                if self.parameters["estimator"] in ("native", "all"):
+                if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
                         self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [RandomForestClassifier(self.name, cursor=self.cursor),]
-                if self.parameters["estimator"] == "all":
+                if estimator_method == "all":
                     self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor),]
             else:
                 raise ParameterError(f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {estimator_type}.")

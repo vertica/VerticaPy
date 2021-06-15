@@ -51,6 +51,7 @@
 # Standard Python Modules
 import math, re, decimal, warnings, datetime
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -3281,8 +3282,8 @@ Attributes
         self,
         ts: str,
         by: str = "",
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         area: bool = False,
         step: bool = False,
         ax=None,
@@ -3392,8 +3393,8 @@ Attributes
         self,
         ts: str,
         q: tuple = (0.25, 0.75),
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         plot_median: bool = False,
         ax=None,
         **style_kwds,
@@ -3596,8 +3597,8 @@ Attributes
         by: str = "",
         method: str = "density",
         of: str = "",
-        max_cardinality: (int, tuple) = (6, 6),
-        h: (int, float, tuple) = (None, None),
+        max_cardinality: Union[int, tuple] = (6, 6),
+        h: Union[int, float, tuple] = (None, None),
         ax=None,
         **style_kwds,
     ):

@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import random
+from typing import Union
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -192,7 +193,7 @@ max_text_size: int, optional
         return sql.format(", ".join(self.X), self.name)
 
     # ---#
-    def fit(self, input_relation: (str, vDataFrame), X: list = []):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the model.

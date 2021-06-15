@@ -55,6 +55,9 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
+# Standard Python Modules
+from typing import Union
+
 # ---#
 class Pipeline:
     """
@@ -126,10 +129,10 @@ steps: list
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str = "",
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -196,7 +199,7 @@ steps: list
 
     # ---#
     def predict(
-        self, vdf: (str, vDataFrame) = None, X: list = [], name: str = "estimator",
+        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
     ):
         """
     ---------------------------------------------------------------------------
@@ -289,7 +292,7 @@ steps: list
         return self.steps[-1][1].score(method)
 
     # ---#
-    def transform(self, vdf: (str, vDataFrame) = None, X: list = []):
+    def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the model on a vDataFrame.
@@ -329,7 +332,7 @@ steps: list
         return current_vdf
 
     # ---#
-    def inverse_transform(self, vdf: (str, vDataFrame) = None, X: list = []):
+    def inverse_transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the inverse model transformation on a vDataFrame.

@@ -48,6 +48,9 @@
 #
 # Modules
 #
+# Standard Python Modules
+from typing import Union
+
 # VerticaPy Modules
 from verticapy.learn.metrics import *
 from verticapy.learn.mlplot import *
@@ -105,7 +108,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features: (int, str) = "auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,
@@ -180,7 +183,7 @@ nbins: int, optional
         name: str,
         cursor=None,
         n_estimators: int = 10,
-        max_features: (int, str) = "auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         sample: float = 0.632,
         max_depth: int = 5,

@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, time, decimal, warnings
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -787,6 +788,21 @@ read_json : Ingests a JSON file into the Vertica database.
             input_relation = '"{}"'.format(table_name)
         f = open(path, "r")
         file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
+        for idx, col in enumerate(file_header):
+            if col == "":
+                if idx == 0:
+                    position = "beginning"
+                elif idx == len(file_header) - 1:
+                    position = "end"
+                else:
+                    position = "middle"
+                file_header[idx] = "col{}".format(idx)
+                warning_message = "An inconsistent name was found in the {} of the file header (isolated separator). It will be replaced by col{}.".format(
+                    position, idx
+                )
+                if idx == 0:
+                    warning_message += "\nIt can be when exporting a pandas DataFrame to CSV and keeping the indexes.\nTips: Use index=False when exporting using pandas.DataFrame.to_csv."
+                warnings.warn(warning_message, Warning)
         f.close()
         if (header_names == []) and (header):
             header_names = file_header
@@ -868,14 +884,13 @@ read_json : Ingests a JSON file into the Vertica database.
 def read_json(
     path: str,
     cursor=None,
-    schema: str = "public",
+    schema: str = "",
     table_name: str = "",
     usecols: list = [],
     new_name: dict = {},
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = False,
-    print_info: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1110,7 +1125,7 @@ vDataFrame
 
 
 # ---#
-def set_option(option: str, value: (bool, int, str) = None):
+def set_option(option: str, value: Union[bool, int, str] = None):
     """
     ---------------------------------------------------------------------------
     Sets VerticaPy options.

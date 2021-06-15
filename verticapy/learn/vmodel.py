@@ -52,6 +52,7 @@
 import os, warnings
 import numpy as np
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -191,7 +192,7 @@ Main Class for Vertica Model
 
     # ---#
     def contour(
-        self, nbins: int = 100, pos_label: (int, float, str) = None, ax=None, **style_kwds,
+        self, nbins: int = 100, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -2971,10 +2972,10 @@ class Supervised(vModel):
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str,
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -3357,7 +3358,7 @@ class BinaryClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf: (str, vDataFrame),
+        vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -3583,7 +3584,7 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
-    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
+    def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -3618,7 +3619,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
         """
 	---------------------------------------------------------------------------
 	Computes the model confusion matrix.
@@ -3660,7 +3661,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def cutoff_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -3711,7 +3712,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def deploySQL(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
         allSQL: bool = False,
         X: list = [],
@@ -3792,7 +3793,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def lift_chart(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 1000,
         **style_kwds,
@@ -3842,7 +3843,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def prc_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -3892,11 +3893,11 @@ class MulticlassClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf: (str, vDataFrame),
+        vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
         cutoff: float = -1,
-        pos_label: (int, str, float) = None,
+        pos_label: Union[int, str, float] = None,
         inplace: bool = True,
     ):
         """
@@ -3960,7 +3961,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def roc_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -4009,7 +4010,7 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: str = "accuracy",
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
     ):
         """
@@ -4187,7 +4188,7 @@ class Regressor(Supervised):
 
     # ---#
     def predict(
-        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
     ):
         """
 	---------------------------------------------------------------------------
@@ -4578,7 +4579,7 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def fit(self, input_relation: (str, vDataFrame), X: list = []):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
@@ -4948,7 +4949,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def inverse_transform(
-        self, vdf: (str, vDataFrame) = None, X: list = [],
+        self, vdf: Union[str, vDataFrame] = None, X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4995,7 +4996,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def transform(
-        self, vdf: (str, vDataFrame) = None, X: list = [],
+        self, vdf: Union[str, vDataFrame] = None, X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -5270,7 +5271,7 @@ class Decomposition(Preprocessing):
     # ---#
     def transform(
         self,
-        vdf: (str, vDataFrame) = None,
+        vdf: Union[str, vDataFrame] = None,
         X: list = [],
         n_components: int = 0,
         cutoff: float = 1,
@@ -5334,7 +5335,7 @@ class Clustering(Unsupervised):
 
     # ---#
     def predict(
-        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
     ):
         """
 	---------------------------------------------------------------------------

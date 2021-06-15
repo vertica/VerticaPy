@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import datetime, decimal, inspect, os
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -227,8 +228,8 @@ udx_str, sql
 # ---#
 def create_udf(
     function,
-    arg_types: (list, dict),
-    return_type: (type, dict),
+    arg_types: Union[list, dict],
+    return_type: Union[type, dict],
     parameters: dict = {},
     new_name: str = "",
     library_name: str = "",
@@ -408,7 +409,7 @@ def get_module_func_info(module):
 
 
 # ---#
-def get_set_add_function(ftype, func="get"):
+def get_set_add_function(ftype, func: str = "get"):
     # func = get / set / add
     func = func.lower()
     if ftype == bytes:
