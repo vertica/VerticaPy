@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import math, decimal, datetime
+from typing import Union
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
@@ -330,7 +331,7 @@ tablesample
 
 # ---#
 def cochrane_orcutt(
-    model, vdf: (vDataFrame, str), ts: str, prais_winsten: bool = False, drop_tmp_model: bool = True,
+    model, vdf: Union[vDataFrame, str], ts: str, prais_winsten: bool = False, drop_tmp_model: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1169,7 +1170,7 @@ def seasonal_decompose(
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
-    rule: (str, datetime.timedelta) = None,
+    rule: Union[str, datetime.timedelta] = None,
     mult: bool = False,
     two_sided: bool = False,
 ):

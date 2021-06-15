@@ -454,13 +454,14 @@ def plot_importance(
         color += (
             [color_dict(style_kwds, 0)] if (item == 1) else [color_dict(style_kwds, 1)]
         )
+    plus, minus = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
     param = {"alpha": 0.86}
     style_kwds = updated_dict(param, style_kwds)
     style_kwds["color"] = color
     ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
     if print_legend:
-        orange = mpatches.Patch(color=color_dict(style_kwds, 1), label="sign -")
-        blue = mpatches.Patch(color=color_dict(style_kwds, 0), label="sign +")
+        orange = mpatches.Patch(color=minus, label="sign -")
+        blue = mpatches.Patch(color=plus, label="sign +")
         ax.legend(handles=[blue, orange,], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

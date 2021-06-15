@@ -62,12 +62,13 @@ from verticapy.learn.tools import *
 
 # Standard Python Modules
 import warnings
+from typing import Union
 
 # ---#
 class NeighborsClassifier(vModel):
 
     # ---#
-    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
+    def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
@@ -100,7 +101,7 @@ class NeighborsClassifier(vModel):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def cutoff_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+    def cutoff_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -138,7 +139,7 @@ class NeighborsClassifier(vModel):
         )
 
     # ---#
-    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
         """
     ---------------------------------------------------------------------------
     Computes the model confusion matrix.
@@ -190,7 +191,7 @@ class NeighborsClassifier(vModel):
             )
 
     # ---#
-    def lift_chart(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+    def lift_chart(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -228,7 +229,7 @@ class NeighborsClassifier(vModel):
         )
 
     # ---#
-    def prc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+    def prc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -268,7 +269,7 @@ class NeighborsClassifier(vModel):
     # ---#
     def predict(
         self,
-        vdf: (str, vDataFrame),
+        vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -383,7 +384,7 @@ class NeighborsClassifier(vModel):
         return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
 
     # ---#
-    def roc_curve(self, pos_label: (int, float, str) = None, ax=None, **style_kwds,):
+    def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -424,7 +425,7 @@ class NeighborsClassifier(vModel):
     def score(
         self,
         method: str = "accuracy",
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
     ):
         """
@@ -636,10 +637,10 @@ p: int, optional
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str,
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -847,10 +848,10 @@ p: int, optional
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str,
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -1007,7 +1008,7 @@ xlim: list, optional
 
     # ---#
     def fit(
-        self, input_relation: (str, vDataFrame), X: list = [],
+        self, input_relation: Union[str, vDataFrame], X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -1411,10 +1412,10 @@ p: int, optional
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str,
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -1478,7 +1479,7 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf: (str, vDataFrame), X: list = [], name: str = "", **kwargs):
+    def predict(self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", **kwargs):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1573,7 +1574,7 @@ p: int, optional
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
         key_columns: list = [],
         index: str = "",
