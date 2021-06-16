@@ -9,6 +9,11 @@
 [![PyPI version](https://badge.fury.io/py/verticapy.svg)](https://badge.fury.io/py/verticapy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/pypi/pyversions/verticapy.svg)](https://www.python.org/downloads/)
+[![codecov](https://codecov.io/gh/vertica/VerticaPy/branch/master/graph/badge.svg?token=a6GiFYI9at)](https://codecov.io/gh/vertica/VerticaPy)
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
+</p>
 
 VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
@@ -36,6 +41,7 @@ Main Advantages:
 </p>
 
 ## Installation
+
 To install <b>VerticaPy</b> with pip:
 ```shell
 # Latest release version
@@ -49,31 +55,35 @@ To install <b>VerticaPy</b> from source, run the following command from the root
 root@ubuntu:~$ python3 setup.py install
 ```
 
+A detailed installation guide is available at: <br>
+
+https://www.vertica.com/python/installation.php
+
 ## Documentation
 
-A well-detailed HTML documentation is available at: <br>
+Documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
 
 ## Use-cases
 
-Examples and case-studies: <br>
-
-https://www.vertica.com/python/examples/
-
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
+Examples and case-studies: <br>
+
+https://www.vertica.com/python/examples/
+
 ## Charts
-
-A gallery of VerticaPy-generated charts is available at:<br>
-
-https://www.vertica.com/python/gallery/
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
+
+A gallery of VerticaPy-generated charts is available at:<br>
+
+https://www.vertica.com/python/gallery/
 
 ## Connecting to the Database
 
@@ -85,13 +95,30 @@ VerticaPy is compatible with several clients.
 import vertica_python
 
 # Connection using all the DSN information
-conn_info = {'host': "10.211.55.14", 'port': 5433, 'user': "dbadmin", 'password': "XxX", 'database': "testdb"}
+conn_info = {'host': "10.211.55.14", 
+             'port': 5433, 
+             'user': "dbadmin", 
+             'password': "XxX", 
+             'database': "testdb"}
 cur = vertica_python.connect(** conn_info).cursor()
 
 # Connection using directly the DSN
 from verticapy.utilities import to_vertica_python_format # This function will parse the odbc.ini file
 dsn = "VerticaDSN"
 cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
+```
+
+To save time and avoid creating extra cursors, you can save your credentials in an auto connection:
+
+```python
+from verticapy.connect import *
+# Save a new connection
+new_auto_connection({"host": "10.211.55.14", 
+                     "port": "5433", 
+                     "database": "testdb", 
+                     "password": "XxX", 
+                     "user": "dbadmin"},
+                     name = "VerticaDSN")
 ```
 
 ### ODBC
@@ -182,9 +209,9 @@ pclass             3.0         3
 sibsp              8.0         7  
 survived           1.0         2 
 ```
-Print the SQL query with the <b>sql_on_off</b> method:
+Print the SQL query with the <b>set_option</b> function:
 ```python
-vdf.sql_on_off()
+set_option("sql_on", True)
 vdf.describe()
 
 # Output
@@ -200,11 +227,11 @@ from verticapy.learn.model_selection import cross_validate
 from verticapy.learn.ensemble import RandomForestClassifier
 
 # Data Preparation
-vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")
+vdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(' ([A-Za-z]+)\.').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna()
 
 # Model Evaluation
 cross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), 
-               "titanic_clean", 
+               vdf, 
                ["age", "family_size", "sex", "pclass", "fare", "boat"], 
                "survived", 
                cutoff = 0.35)
