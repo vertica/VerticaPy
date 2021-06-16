@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -51,10 +51,9 @@
 # VerticaPy Modules
 from verticapy import vDataFrame
 from verticapy.learn.metrics import *
-from verticapy.learn.plot import *
+from verticapy.learn.mlplot import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -62,8 +61,8 @@ from verticapy.learn.vmodel import *
 class LinearSVC(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
-Creates a LinearSVC object by using the Vertica Highly Distributed and 
-Scalable SVM on the data. Given a set of training examples, each marked as 
+Creates a LinearSVC object using the Vertica Support Vector Machine (SVM) 
+algorithm on the data. Given a set of training examples, each marked as 
 belonging to one or the other of two categories, an SVM training algorithm 
 builds a model that assigns new examples to one category or the other, making 
 it a non-probabilistic binary linear classifier.
@@ -73,7 +72,7 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	to use to control accuracy.
 C: float, optional
@@ -124,10 +123,7 @@ max_iter: int, optional
                 "max_iter": max_iter,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 0])
 
@@ -136,18 +132,18 @@ max_iter: int, optional
 class LinearSVR(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearSVR object by using the Vertica Highly Distributed and Scalable 
-SVM on the data. This algorithm will find the hyperplan which will approximate
-the data distribution.
+Creates a LinearSVR object using the Vertica SVM (Support Vector Machine) 
+algorithm. This algorithm finds the hyperplane used to approximate 
+distribution of the data..
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
-	to use to control accuracy.
+	To use to control accuracy.
 C: float, optional
 	The weight for misclassification cost. The algorithm minimizes the 
 	regularization cost and the misclassification cost.
@@ -176,15 +172,15 @@ The model will also create extra attributes when fitting the model:
 coef: tablesample
 	Coefficients and their mathematical information (pvalue, std, value...)
 input_relation: str
-	Train relation.
+	Training relation.
 X: list
 	List of the predictors.
 y: str
 	Response column.
 test_relation: str
-	Relation to use to test the model. All the model methods are abstractions
+	Relation used to test the model. All the model methods are abstractions
 	which will simplify the process. The test relation will be used by many
-	methods to evaluate the model. If empty, the train relation will be 
+	methods to evaluate the model. If empty, the training relation will be
 	used as test. You can change it anytime by changing the test_relation
 	attribute of the object.
 	"""
@@ -214,9 +210,6 @@ test_relation: str
                 "max_iter": max_iter,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])

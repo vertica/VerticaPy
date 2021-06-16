@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,45 +11,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop
+
+from verticapy import set_option
+
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd(base):
-    from verticapy.learn.datasets import load_titanic
+    from verticapy.datasets import load_titanic
 
     titanic = load_titanic(cursor=base.cursor)
-    titanic.set_display_parameters(print_info=False)
     yield titanic
-    drop_table(
-        name="public.titanic", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
 def market_vd(base):
-    from verticapy.learn.datasets import load_market
+    from verticapy.datasets import load_market
 
     market = load_market(cursor=base.cursor)
-    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(
-        name="public.market", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.market", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFDescriptiveStat:
@@ -100,6 +103,40 @@ class TestvDFDescriptiveStat:
         assert result1["max"][2] == 3
         assert result1["max"][3] == 1
 
+        result1_1 = titanic_vd.agg(
+            func=["unique", "top", "min", "10%", "50%", "90%", "max"],
+            columns=["age", "fare", "pclass", "survived"],
+            ncols_block=2,
+        )
+        assert result1_1["unique"][0] == 96
+        assert result1_1["unique"][1] == 277
+        assert result1_1["unique"][2] == 3
+        assert result1_1["unique"][3] == 2
+        assert result1_1["top"][0] is None
+        assert result1_1["top"][1] == pytest.approx(8.05)
+        assert result1_1["top"][2] == 3
+        assert result1_1["top"][3] == 0
+        assert result1_1["min"][0] == pytest.approx(0.330)
+        assert result1_1["min"][1] == 0
+        assert result1_1["min"][2] == 1
+        assert result1_1["min"][3] == 0
+        assert result1_1["10%"][0] == pytest.approx(14.5)
+        assert result1_1["10%"][1] == pytest.approx(7.5892)
+        assert result1_1["10%"][2] == 1
+        assert result1_1["10%"][3] == 0
+        assert result1_1["50%"][0] == 28
+        assert result1_1["50%"][1] == pytest.approx(14.4542)
+        assert result1_1["50%"][2] == 3
+        assert result1_1["50%"][3] == 0
+        assert result1_1["90%"][0] == 50
+        assert result1_1["90%"][1] == pytest.approx(79.13)
+        assert result1_1["90%"][2] == 3
+        assert result1_1["90%"][3] == 1
+        assert result1_1["max"][0] == 80
+        assert result1_1["max"][1] == pytest.approx(512.3292)
+        assert result1_1["max"][2] == 3
+        assert result1_1["max"][3] == 1
+
         result2 = titanic_vd.agg(
             func=[
                 "aad",
@@ -133,8 +170,8 @@ class TestvDFDescriptiveStat:
         assert result2["approx_unique"][1] == 3
         assert result2["count"][0] == 997
         assert result2["count"][1] == 1234
-        assert result2["cvar"][0] == pytest.approx(63.32653061)
-        assert result2["cvar"][1] is None
+        assert result2["cvar"][0] == pytest.approx(62.7407407407407)
+        assert result2["cvar"][1] == pytest.approx(3.0)
         assert result2["dtype"][0] == "numeric(6,3)"
         assert result2["dtype"][1] == "int"
         assert result2["iqr"][0] == pytest.approx(18)
@@ -272,7 +309,7 @@ class TestvDFDescriptiveStat:
         assert result3["age"][5] == pytest.approx(11.254785419447906)
         assert result3["age"][6] == 96
         assert result3["age"][7] == 997
-        assert result3["age"][8] == pytest.approx(63.3265306122449)
+        assert result3["age"][8] == pytest.approx(62.7407407407407)
         assert result3["age"][9] == "numeric(6,3)"
         assert result3["age"][10] == 18
         assert result3["age"][11] == pytest.approx(0.15689691331997)
@@ -472,6 +509,18 @@ class TestvDFDescriptiveStat:
         assert result4["max"][1] == 1
         assert result4["unique"][1] == 2.0
 
+        result4_1 = titanic_vd.describe(method="numerical", ncols_block=2)
+
+        assert result4_1["count"][1] == 1234
+        assert result4_1["mean"][1] == pytest.approx(0.36466774)
+        assert result4_1["std"][1] == pytest.approx(0.48153201)
+        assert result4_1["min"][1] == 0
+        assert result4_1["25%"][1] == 0
+        assert result4_1["50%"][1] == 0
+        assert result4_1["75%"][1] == 1
+        assert result4_1["max"][1] == 1
+        assert result4_1["unique"][1] == 2.0
+
         result5 = titanic_vd.describe(method="range")
 
         assert result5["dtype"][2] == "numeric(6,3)"
@@ -581,19 +630,6 @@ class TestvDFDescriptiveStat:
 
         assert result.count == 151
         assert len(result.values) == 3
-
-    def test_vDF_isin(self, amazon_vd):
-        # testing vDataFrame.isin
-        assert amazon_vd.isin(
-            {"state": ["SERGIPE", "TOCANTINS"], "number": [0, 0]}
-        ) == [True, True,]
-
-        # testing vDataFrame[].isin
-        assert amazon_vd["state"].isin(val=["SERGIPE", "TOCANTINS", "PARIS"]) == [
-            True,
-            True,
-            False,
-        ]
 
     def test_vDF_kurt(self, titanic_vd):
         # testing vDataFrame.kurt
@@ -705,12 +741,18 @@ class TestvDFDescriptiveStat:
         assert result["unique"][2] == 2.0
         assert result["unique"][3] == 182.0
 
-    def test_vDF_numh(self, market_vd):
+    def test_vDF_numh(self, market_vd, amazon_vd):
         assert market_vd["Price"].numh(method="auto") == pytest.approx(0.984707376)
         assert market_vd["Price"].numh(method="freedman_diaconis") == pytest.approx(
             0.450501738
         )
         assert market_vd["Price"].numh(method="sturges") == pytest.approx(0.984707376)
+        assert amazon_vd["date"].numh(method="auto") == pytest.approx(44705828.571428575)
+        assert amazon_vd["date"].numh(method="freedman_diaconis") == pytest.approx(
+            33903959.714834176
+        )
+        assert amazon_vd["date"].numh(method="sturges") == pytest.approx(44705828.571428575)
+
 
     def test_vDF_prod(self, market_vd):
         # testing vDataFrame.prod
@@ -752,6 +794,7 @@ class TestvDFDescriptiveStat:
             C=1.0,
             max_iter=100,
             solver="CGD",
+            penalty="ENet",
             l1_ratio=0.5,
         )
 
@@ -761,39 +804,39 @@ class TestvDFDescriptiveStat:
 
         # Computing AUC
         auc = titanic_vd.score(y_true="survived", y_score="survived_pred", method="auc")
-        assert auc == pytest.approx(0.697476274)
+        assert auc == pytest.approx(0.7051784997146537)
 
         # Computing MSE
         mse = titanic_vd.score(y_true="survived", y_score="survived_pred", method="mse")
-        assert mse == pytest.approx(0.224993557)
+        assert mse == pytest.approx(0.228082579110535)
 
         # Drawing ROC Curve
         roc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="roc"
+            y_true="survived", y_score="survived_pred", method="roc", nbins=1000,
         )
         assert roc_res["threshold"][3] == 0.003
         assert roc_res["false_positive"][3] == 1.0
         assert roc_res["true_positive"][3] == 1.0
         assert roc_res["threshold"][300] == 0.3
-        assert roc_res["false_positive"][300] == pytest.approx(0.9900826446)
-        assert roc_res["true_positive"][300] == pytest.approx(0.9974424552)
+        assert roc_res["false_positive"][300] == pytest.approx(1.0)
+        assert roc_res["true_positive"][300] == pytest.approx(1.0)
         assert roc_res["threshold"][900] == 0.9
-        assert roc_res["false_positive"][900] == pytest.approx(0.01818181818)
-        assert roc_res["true_positive"][900] == pytest.approx(0.06649616368)
+        assert roc_res["false_positive"][900] == pytest.approx(0.0148760330578512)
+        assert roc_res["true_positive"][900] == pytest.approx(0.061381074168798)
 
         # Drawing PRC Curve
         prc_res = titanic_vd.score(
-            y_true="survived", y_score="survived_pred", method="prc"
+            y_true="survived", y_score="survived_pred", method="prc", nbins=1000,
         )
         assert prc_res["threshold"][3] == 0.002
         assert prc_res["recall"][3] == 1.0
         assert prc_res["precision"][3] == pytest.approx(0.3925702811)
         assert prc_res["threshold"][300] == 0.299
         assert prc_res["recall"][300] == pytest.approx(1.0)
-        assert prc_res["precision"][300] == pytest.approx(0.3949494949)
+        assert prc_res["precision"][300] == pytest.approx(0.392570281124498)
         assert prc_res["threshold"][900] == 0.899
-        assert prc_res["recall"][900] == pytest.approx(0.06649616368)
-        assert prc_res["precision"][900] == pytest.approx(0.7027027027)
+        assert prc_res["recall"][900] == pytest.approx(0.061381074168798)
+        assert prc_res["precision"][900] == pytest.approx(0.727272727272727)
 
         # dropping the created model
         model.drop()

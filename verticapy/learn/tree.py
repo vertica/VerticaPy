@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -50,23 +50,24 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
-from verticapy.connections.connect import read_auto_connect
+
+# Standard Python Modules
+from typing import Union
 
 
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Classifier.
- => RandomForestClassifier of one tree using all the data.
+A DecisionTreeClassifier made of a single tree.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
-max_features: str, optional
+	Vertica database cursor.
+max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -93,7 +94,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features="auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
@@ -114,10 +115,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -126,16 +124,15 @@ nbins: int, optional
 class DecisionTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Single Decision Tree Regressor.
- => RandomForestRegressor of one tree using all the data.
+A DecisionTreeRegressor made of a single tree.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
-max_features: str, optional
+	Vertica database cursor.
+max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
 	methods.
@@ -162,7 +159,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features="auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
@@ -183,10 +180,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])
 
@@ -195,15 +189,15 @@ nbins: int, optional
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Classifier. This classifier learns by heart the training data. 
- => very depth RandomForestClassifier of one tree using all the data.
+A classifier that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):
@@ -221,10 +215,7 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 1])
 
@@ -233,15 +224,15 @@ cursor: DBcursor, optional
 class DummyTreeRegressor(Regressor, Tree):
     """
 ---------------------------------------------------------------------------
-Dummy Tree Regressor. This regressor learns by heart the training data. 
- => very depth RandomForestRegressor of one tree using all the data.
+A regressor that overfits the training data. These models are typically 
+used as a control to compare with your other models.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor. 
+	Vertica database cursor. 
 	"""
 
     def __init__(self, name: str, cursor=None):
@@ -259,9 +250,6 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 1])

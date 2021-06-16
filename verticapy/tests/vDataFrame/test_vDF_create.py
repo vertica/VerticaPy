@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,27 +11,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
+import pytest, warnings, os, verticapy
+from verticapy import vDataFrame, drop, set_option
+
+set_option("print_info", False)
+
+
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 class TestvDFCreate:
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation(self):
-        pass
+    def test_creating_vDF_using_input_relation(self, base, titanic_vd):
+        tvdf = vDataFrame(input_relation="public.titanic", cursor=base.cursor)
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_schema(self):
-        pass
+        assert tvdf["pclass"].count() == 1234
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_vcolumns(self):
-        pass
+    def test_creating_vDF_using_input_relation_schema(self, base, titanic_vd):
+        tvdf = vDataFrame(input_relation="titanic", schema="public", cursor=base.cursor)
 
-    @pytest.mark.skip(reason="test not implemented")
+        assert tvdf["pclass"].count() == 1234
+
+    def test_creating_vDF_using_input_relation_vcolumns(self, base, titanic_vd):
+        tvdf = vDataFrame(
+            input_relation="public.titanic",
+            usecols=["age", "survived"],
+            cursor=base.cursor,
+        )
+
+        assert tvdf["survived"].count() == 1234
+
     def test_creating_vDF_using_input_relation_dsn(self):
-        pass
+        os.environ["ODBCINI"] = (
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
+        )
+        tvdf = vDataFrame(
+            input_relation="public.titanic",
+            usecols=["age", "survived"],
+            dsn="vp_test_config",
+        )
 
-    @pytest.mark.skip(reason="test not implemented")
-    def test_creating_vDF_using_input_relation_cursor(self):
-        pass
+        assert tvdf["survived"].count() == 1234

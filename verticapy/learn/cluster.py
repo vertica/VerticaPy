@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -52,31 +52,32 @@
 import os
 
 # VerticaPy Modules
+import vertica_python
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import *
 
 # ---#
 class BisectingKMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a Bisecting KMeans object by using the Vertica Highly Distributed and 
-Scalable Bisecting KMeans on the data. KMeans clustering is a method of vector 
-quantization, originally from signal processing, that aims to partition n 
-observations into k clusters in which each observation belongs to the cluster 
-with the nearest mean (cluster centers or cluster centroid), serving as a 
-prototype of the cluster. This results in a partitioning of the data space into 
-Voronoi cells. Bisecting KMeans combines KMeans and Hierarchical clustering.
+Creates a BisectingKMeans object using the Vertica bisecting k-means 
+algorithm on the data. k-means clustering is a method of vector quantization, 
+originally from signal processing, that aims to partition n observations into 
+k clusters. Each observation belongs to the cluster with the nearest 
+mean (cluster centers or cluster centroid), which serves as a prototype of 
+the cluster. This results in a partitioning of the data space into Voronoi
+cells. Bisecting k-means combines k-means and hierarchical clustering.
 
 Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-    Vertica DB cursor.
+    Vertica database cursor.
 n_cluster: int, optional
     Number of clusters
 bisection_iterations: int, optional
@@ -138,18 +139,23 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 3, 1])
+
+    # ---#
+    def get_tree(self):
+        """
+    ---------------------------------------------------------------------------
+    Returns a table containing information about the BK-tree.
+        """
+        return self.cluster_centers_
 
     # ---#
     def plot_tree(self, pic_path: str = ""):
         """
     ---------------------------------------------------------------------------
-    Draws the input BKtree. The module anytree must be installed in the machine.
+    Draws the input BKtree. The module anytree must be installed.
 
     Parameters
     ----------
@@ -159,7 +165,7 @@ tol: float, optional
         check_types(
             [("pic_path", pic_path, [str],),]
         )
-        plot_BKtree(self.centers_.values, pic_path=pic_path)
+        return plot_BKtree(self.cluster_centers_.values, pic_path=pic_path)
 
 
 # ---#
@@ -168,28 +174,28 @@ class DBSCAN(vModel):
 ---------------------------------------------------------------------------
 [Beta Version]
 Creates a DBSCAN object by using the DBSCAN algorithm as defined by Martin 
-Ester, Hans-Peter Kriegel, Jörg Sander and Xiaowei Xu. This object is using 
-pure SQL to compute all the distances and neighbors. It is also using Python 
-to compute the cluster propagation (non scalable phase).
+Ester, Hans-Peter Kriegel, Jörg Sander, and Xiaowei Xu. This object uses 
+pure SQL to compute the distances and neighbors and uses Python to compute 
+the cluster propagation (non-scalable phase).
 
-\u26A0 Warning : This Algorithm is computationally expensive. It is using a CROSS 
-                 JOIN during the computation. The complexity is O(n * n), n 
-                 being the total number of elements.
-                 It will index all the elements of the table in order to be optimal 
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements.
+                 This algorithm indexes elements of the table in order to be optimal 
                  (the CROSS JOIN will happen only with IDs which are integers). 
-                 As DBSCAN is using the p-distance, it is highly sensible to 
-                 un-normalized data. However, DBSCAN is really robust to outliers 
-                 and can find non-linear clusters. It is a very powerful algorithm 
-                 for outliers detection and clustering. A table will be created 
+                 Since DBSCAN is uses the p-distance, it is highly sensitive to 
+                 unnormalized data. However, DBSCAN is robust to outliers and can 
+                 find non-linear clusters. It is a very powerful algorithm for 
+                 outliers detection and clustering. A table will be created 
                  at the end of the learning phase.
 
 Parameters
 ----------
 name: str
-	Name of the the model. As it is not a built in model, this name will be used
-	to build the final table.
+	Name of the the model. This is not a built-in model, so this name will be used
+    to build the final table.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 eps: float, optional
 	The radius of a neighborhood with respect to some point.
 min_samples: int, optional
@@ -204,15 +210,16 @@ p: int, optional
         check_types([("name", name, [str],)])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
     def fit(
-        self, input_relation: str, X: list, key_columns: list = [], index: str = ""
+        self,
+        input_relation: (str, vDataFrame),
+        X: list = [],
+        key_columns: list = [],
+        index: str = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -220,44 +227,55 @@ p: int, optional
 
 	Parameters
 	----------
-	input_relation: str
-		Train relation.
-	X: list
-		List of the predictors.
+	input_relation: str/vDataFrame
+		Training relation.
+	X: list, optional
+		List of the predictors. If empty, all the numerical vcolumns will be used.
 	key_columns: list, optional
 		Columns not used during the algorithm computation but which will be used
 		to create the final relation.
 	index: str, optional
-		Index to use to identify each row separately. It is highly recommanded to
-		have one already in the main table to avoid creation of temporary tables.
+		Index used to identify each row separately. It is highly recommanded to
+        have one already in the main table to avoid creating temporary tables.
 
 	Returns
 	-------
 	object
  		self
 		"""
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        if isinstance(X, str):
+            X = [X]
         check_types(
             [
-                ("input_relation", input_relation, [str],),
+                ("input_relation", input_relation, [str, vDataFrame],),
                 ("X", X, [list],),
                 ("key_columns", key_columns, [list],),
                 ("index", index, [str],),
             ]
         )
-        check_model(name=self.name, cursor=self.cursor)
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        if isinstance(input_relation, vDataFrame):
+            if not (X):
+                X = input_relation.numcol()
+            input_relation = input_relation.__genSQL__()
+        else:
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).numcol()
         X = [str_column(column) for column in X]
         self.X = X
         self.key_columns = [str_column(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
-        relation_alpha = "".join(ch for ch in relation if ch.isalnum())
         cursor = self.cursor
 
-        def drop_temp_elem(cursor, relation_alpha):
+        def drop_temp_elem(cursor):
             try:
                 cursor.execute(
                     "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                        relation_alpha
+                        get_session(cursor)
                     )
                 )
                 cursor.execute(
@@ -269,22 +287,22 @@ p: int, optional
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(relation_alpha)
-                drop_temp_elem(cursor, relation_alpha)
+                main_table = "VERTICAPY_MAIN_{}".format(get_session(self.cursor))
+                drop_temp_elem(cursor)
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
-                    input_relation,
+                    self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                cursor.execute(sql)
+                executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 0.")
             else:
                 cursor.execute(
                     "SELECT {} FROM {} LIMIT 10".format(
-                        ", ".join(X + key_columns + [index]), input_relation
+                        ", ".join(X + key_columns + [index]), self.input_relation
                     )
                 )
-                main_table = input_relation
+                main_table = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
                 for i in range(len(X))
@@ -299,7 +317,7 @@ p: int, optional
             sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
                 sql, self.parameters["min_samples"], self.parameters["eps"]
             )
-            cursor.execute(sql)
+            executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 1.")
             graph = cursor.fetchall()
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
@@ -335,7 +353,7 @@ p: int, optional
                 cursor.execute(
                     "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
                 )
-                if "vertica_python" in str(type(cursor)):
+                if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
                     with open("./VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "r") as fs:
                         cursor.copy(
                             "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';",
@@ -354,19 +372,21 @@ p: int, optional
                 os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
                 raise
             self.n_cluster_ = i
-            cursor.execute(
+            executeSQL(
+                cursor,
                 "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
                     self.name, ", ".join(self.X + self.key_columns), main_table, index
-                )
+                ),
+                "Computing the DBSCAN Table - STEP 2.",
             )
             cursor.execute(
                 "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
             )
             self.n_noise_ = cursor.fetchone()[0]
         except:
-            drop_temp_elem(cursor, relation_alpha)
+            drop_temp_elem(cursor)
             raise
-        drop_temp_elem(cursor, relation_alpha)
+        drop_temp_elem(cursor)
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
@@ -404,19 +424,19 @@ p: int, optional
 class KMeans(Clustering):
     """
 ---------------------------------------------------------------------------
-Creates a KMeans object by using the Vertica Highly Distributed and Scalable 
-KMeans on the data. K-means clustering is a method of vector quantization, 
-originally from signal processing, that aims to partition n observations into 
-k clusters in which each observation belongs to the cluster with the nearest 
-mean (cluster centers or cluster centroid), serving as a prototype of the 
-cluster. This results in a partitioning of the data space into Voronoi cells. 
+Creates a KMeans object using the Vertica k-means algorithm on the data. 
+k-means clustering is a method of vector quantization, originally from signal 
+processing, that aims to partition n observations into k clusters in which 
+each observation belongs to the cluster with the nearest mean (cluster centers 
+or cluster centroid), serving as a prototype of the cluster. This results in 
+a partitioning of the data space into Voronoi cells.
 
 Parameters
 ----------
 name: str
-	Name of the the model. The model will be stored in the DB.
+	Name of the the model. The model will be stored in the database.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_cluster: int, optional
 	Number of clusters
 init: str/list, optional
@@ -451,23 +471,28 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
     # ---#
-    def plot_voronoi(self, ax=None):
+    def plot_voronoi(
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the Voronoi Graph of the model.
 
     Parameters
     ----------
+    max_nb_points: int, optional
+        Maximum number of points to display.
+    plot_crosses: bool, optional
+        If set to True, the centers are represented by white crosses.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
 
     Returns
     -------
@@ -475,13 +500,22 @@ tol: float, optional
         Matplotlib Figure
         """
         if len(self.X) == 2:
-            from verticapy.learn.plot import voronoi_plot
+            from verticapy.learn.mlplot import voronoi_plot
 
             query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
                 self.name
             )
             self.cursor.execute(query)
             clusters = self.cursor.fetchall()
-            return voronoi_plot(clusters=clusters, columns=self.X, ax=ax)
+            return voronoi_plot(
+                clusters=clusters,
+                columns=self.X,
+                input_relation=self.input_relation,
+                cursor=self.cursor,
+                plot_crosses=plot_crosses,
+                ax=ax,
+                max_nb_points=max_nb_points,
+                **style_kwds,
+            )
         else:
             raise Exception("Voronoi Plots are only available in 2D")

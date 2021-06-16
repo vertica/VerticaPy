@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -51,22 +51,21 @@
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.vmodel import *
 
 # ---#
 class PCA(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates a PCA (Principal Component Analysis) object by using the Vertica 
-Highly Distributed and Scalable PCA on the data.
+Creates a PCA (Principal Component Analysis) object using the Vertica PCA
+algorithm on the data.
  
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 
@@ -93,10 +92,7 @@ method: str, optional
         self.set_params(
             {"n_components": n_components, "scale": scale, "method": method.lower()}
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 1, 0])
 
@@ -105,15 +101,15 @@ method: str, optional
 class SVD(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates a SVD (Singular Value Decomposition) object by using the Vertica 
-Highly Distributed and Scalable SVD on the data.
+Creates an SVD (Singular Value Decomposition) object using the Vertica SVD
+algorithm on the data.
  
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 
@@ -130,9 +126,6 @@ method: str, optional
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name
         self.set_params({"n_components": n_components, "method": method.lower()})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 1, 0])

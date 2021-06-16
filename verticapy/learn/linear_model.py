@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -52,7 +52,6 @@
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy.connections.connect import read_auto_connect
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
@@ -60,23 +59,16 @@ from verticapy.learn.vmodel import *
 class ElasticNet(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a ElasticNet object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data. The Elastic Net is a regularized 
-regression method that linearly combines the L1 and L2 penalties of the 
-Lasso and Ridge methods. 
+Creates a ElasticNet object using the Vertica Linear Regression algorithm 
+on the data. The Elastic Net is a regularized regression method that linearly 
+combines the L1 and L2 penalties of the Lasso and Ridge methods.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
-penalty: str, optional
-	Determines the method of regularization.
-		None : No Regularization
-		L1   : L1 Regularization
-		L2   : L2 Regularization
-		ENet : Combination between L1 and L2
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -98,8 +90,7 @@ l1_ratio: float, optional
         self,
         name: str,
         cursor=None,
-        penalty: str = "ENet",
-        tol: float = 1e-4,
+        tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
@@ -109,7 +100,7 @@ l1_ratio: float, optional
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": str(penalty).lower(),
+                "penalty": "enet",
                 "tol": tol,
                 "C": C,
                 "max_iter": max_iter,
@@ -117,10 +108,7 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -129,18 +117,19 @@ l1_ratio: float, optional
 class Lasso(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a Lasso object by using the Vertica Highly Distributed and Scalable 
-Linear Regression on the data. The Lasso is a regularized regression method 
-which uses L1 penalty. 
+Creates a Lasso object using the Vertica Linear Regression algorithm on the 
+data. The Lasso is a regularized regression method which uses an L1 penalty.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
+C: float, optional
+    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
 	achieving the specified accuracy result.
@@ -155,7 +144,8 @@ solver: str, optional
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
+        C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
     ):
@@ -163,16 +153,17 @@ solver: str, optional
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "L1",
+                "penalty": "l1",
                 "tol": tol,
+                "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio"]:
+            if elem in self.parameters:
+                del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -181,15 +172,15 @@ solver: str, optional
 class LinearRegression(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearRegression object by using the Vertica Highly Distributed and 
-Scalable Linear Regression on the data. 
+Creates a LinearRegression object using the Vertica Linear Regression algorithm 
+on the data.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 max_iter: int, optional
@@ -199,31 +190,32 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
 	"""
 
     def __init__(
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
     ):
-        check_types([("name", name, [str],)])
+        check_types(
+            [("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "None",
+                "penalty": "none",
                 "tol": tol,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio", "C"]:
+            if elem in self.parameters:
+                del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -232,15 +224,15 @@ solver: str, optional
 class LogisticRegression(BinaryClassifier):
     """
 ---------------------------------------------------------------------------
-Creates a LogisticRegression object by using the Vertica Highly Distributed 
-and Scalable Logistic Regression on the data.
+Creates a LogisticRegression object using the Vertica Logistic Regression
+algorithm on the data.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 penalty: str, optional
 	Determines the method of regularization.
 		None : No Regularization
@@ -268,11 +260,11 @@ l1_ratio: float, optional
         self,
         name: str,
         cursor=None,
-        penalty: str = "L2",
-        tol: float = 1e-4,
+        penalty: str = "None",
+        tol: float = 1e-6,
         C: int = 1,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
         l1_ratio: float = 0.5,
     ):
         check_types([("name", name, [str],)])
@@ -287,10 +279,17 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        if penalty.lower() == "none":
+            for elem in ["l1_ratio", "C"]:
+                if elem in self.parameters:
+                    del self.parameters[elem]
+            check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
+        elif penalty.lower() in ("l1", "l2"):
+            for elem in ["l1_ratio",]:
+            	if elem in self.parameters:
+                	del self.parameters[elem]
+            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])
 
@@ -299,18 +298,19 @@ l1_ratio: float, optional
 class Ridge(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a Ridge object by using the Vertica Highly Distributed and Scalable 
-Linear Regression on the data. The Ridge is a regularized regression method 
-which uses L2 penalty. 
+Creates a Ridge object using the Vertica Linear Regression algorithm on the 
+data. The Ridge is a regularized regression method which uses an L2 penalty. 
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
+C: float, optional
+    The regularization parameter value. The value must be zero or non-negative.
 max_iter: int, optional
 	Determines the maximum number of iterations the algorithm performs before 
 	achieving the specified accuracy result.
@@ -318,30 +318,33 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
-		CGD    : Coordinate Gradient Descent
 	"""
 
     def __init__(
         self,
         name: str,
         cursor=None,
-        tol: float = 1e-4,
+        tol: float = 1e-6,
+        C: float = 1.0,
         max_iter: int = 100,
-        solver: str = "CGD",
+        solver: str = "Newton",
     ):
-        check_types([("name", name, [str],)])
+        check_types(
+            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)]
+        )
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
-                "penalty": "L2",
+                "penalty": "l2",
                 "tol": tol,
+                "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        for elem in ["l1_ratio"]:
+            if elem in self.parameters:
+                del self.parameters[elem]
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 0, 0])

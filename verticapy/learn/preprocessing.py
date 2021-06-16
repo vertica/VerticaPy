@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -48,11 +48,14 @@
 #
 # Modules
 #
+# Standard Python Modules
+import random
+from typing import Union
+
 # VerticaPy Modules
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy import vDataFrame
-from verticapy.connections.connect import read_auto_connect
 from verticapy.learn.vmodel import *
 
 # ---#
@@ -78,7 +81,7 @@ input_relation: str
 y: str
 	Response column.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to do the balancing.
 		hybrid : Performs over-sampling and under-sampling on different 
@@ -105,16 +108,13 @@ vDataFrame
             ("ratio", ratio, [float],),
         ]
     )
-    if not (cursor):
-        cursor = read_auto_connect().cursor()
-    else:
-        check_cursor(cursor)
+    cursor = check_cursor(cursor)[0]
     version(cursor=cursor, condition=[8, 1, 1])
     method = method.lower()
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
     )
-    cursor.execute(sql)
+    executeSQL(cursor, sql, "Computing the Balanced Relation.")
     return vDataFrame(name, cursor)
 
 
@@ -130,7 +130,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 lowercase: bool, optional
 	Converts all the elements to lowercase before processing.
 max_df: float, optional
@@ -171,10 +171,7 @@ max_text_size: int, optional
                 "max_text_size": max_text_size,
             }
         )
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
 
     # ---#
@@ -196,40 +193,52 @@ max_text_size: int, optional
         return sql.format(", ".join(self.X), self.name)
 
     # ---#
-    def fit(self, input_relation: str, X: list):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
 
 	Parameters
 	----------
-	input_relation: str
-		Train relation.
+	input_relation: str/vDataFrame
+		Training relation.
 	X: list
-		List of the predictors.
+		List of the predictors. If empty, all the columns will be used.
 
 	Returns
 	-------
 	object
  		self
 		"""
-        check_types([("input_relation", input_relation, [str],), ("X", X, [list],)])
-        self.input_relation = input_relation
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+        )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
+        if isinstance(input_relation, vDataFrame):
+            if not (X):
+                X = input_relation.get_columns()
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            if not (X):
+                X = vDataFrame(input_relation, self.cursor).get_columns()
+            self.input_relation = input_relation
         self.X = [str_column(elem) for elem in X]
-        schema, relation = schema_relation(input_relation)
+        schema, relation = schema_relation(self.name)
         schema = str_column(schema)
-        relation_alpha = "".join(ch for ch in relation if ch.isalnum())
+        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}_{}".format(
+            schema, get_session(self.cursor), random.randint(0, 10000000),
+        )
         try:
-            self.cursor.execute(
-                "DROP TABLE IF EXISTS {}.VERTICAPY_COUNT_VECTORIZER_{} CASCADE".format(
-                    schema, relation_alpha
-                )
-            )
+            self.drop()
         except:
             pass
-        sql = "CREATE TABLE {}.VERTICAPY_COUNT_VECTORIZER_{}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
-        self.cursor.execute(
-            sql.format(schema, relation_alpha, self.parameters["max_text_size"])
+        sql = "CREATE TABLE {}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
+        executeSQL(
+            self.cursor,
+            sql.format(tmp_name, self.parameters["max_text_size"]),
+            "Computing the CountVectorizer - STEP 0.",
         )
         text = (
             " || ".join(self.X)
@@ -238,14 +247,14 @@ max_text_size: int, optional
         )
         if self.parameters["ignore_special"]:
             text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
-        sql = "INSERT INTO {}.VERTICAPY_COUNT_VECTORIZER_{}(text) SELECT {} FROM {}".format(
-            schema, relation_alpha, text, input_relation
+        sql = "INSERT INTO {}(text) SELECT {} FROM {}".format(
+            tmp_name, text, self.input_relation
         )
-        self.cursor.execute(sql)
-        sql = "CREATE TEXT INDEX {} ON {}.VERTICAPY_COUNT_VECTORIZER_{}(id, text) stemmer NONE;".format(
-            self.name, schema, relation_alpha
+        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 1.")
+        sql = "CREATE TEXT INDEX {} ON {}(id, text) stemmer NONE;".format(
+            self.name, tmp_name
         )
-        self.cursor.execute(sql)
+        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 2.")
         stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
@@ -255,10 +264,12 @@ max_text_size: int, optional
         self.stop_words_ = [item[0] for item in self.cursor.fetchall()]
         self.cursor.execute(self.deploySQL())
         self.vocabulary_ = [item[0] for item in self.cursor.fetchall()]
+        self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
             "input_relation": self.input_relation,
             "X": self.X,
+            "countvectorizer_table": tmp_name,
             "lowercase": self.parameters["lowercase"],
             "max_df": self.parameters["max_df"],
             "min_df": self.parameters["min_df"],
@@ -271,7 +282,7 @@ max_text_size: int, optional
         insert_verticapy_schema(
             model_name=self.name,
             model_type="CountVectorizer",
-            model_save=str(model_save),
+            model_save=model_save,
             cursor=self.cursor,
         )
         return self
@@ -303,7 +314,7 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 method: str, optional
 	Method to use to normalize.
 		zscore        : Normalization using the Z-Score (avg and std).
@@ -318,69 +329,39 @@ method: str, optional
         check_types([("name", name, [str],)])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[8, 1, 0])
 
-    # ---#
-    def deployInverseSQL(self, X: list = []):
-        """
-    ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy the inverse model. 
 
-    Parameters
-    ----------
-    X: list, optional
-        List of the columns used to deploy the self. If empty, the model
-        predictors will be used.
+# ---#
+class StandardScaler(Normalizer):
+    """i.e. Normalizer with param method = 'zscore'"""
 
-    Returns
-    -------
-    str
-        the SQL code needed to deploy the inverse self.
-        """
-        check_types([("X", X, [list],)])
-        X = [str_column(elem) for elem in X]
-        fun = self.get_model_fun()[2]
-        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
-        return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "zscore")
 
-    # ---#
-    def inverse_transform_preprocessing(self, vdf=None, X: list = []):
-        """
-    ---------------------------------------------------------------------------
-    Creates a vDataFrame of the model.
 
-    Parameters
-    ----------
-    vdf: vDataFrame, optional
-        input vDataFrame.
-    X: list, optional
-        List of the input vcolumns.
+# ---#
+class RobustScaler(Normalizer):
+    """i.e. Normalizer with param method = 'robust_zscore'"""
 
-    Returns
-    -------
-    vDataFrame
-        object result of the model transformation.
-        """
-        check_types([("X", X, [list],)])
-        if vdf:
-            check_types([("vdf", vdf, [vDataFrame],)])
-            X = vdf_columns_names(X, vdf)
-            relation = vdf.__genSQL__()
-        else:
-            relation = self.input_relation
-            X = [str_column(elem) for elem in X]
-        return vdf_from_relation(
-            "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
-                self.deployInverseSQL(self.X if not (X) else X), relation
-            ),
-            self.name,
-            self.cursor,
-        )
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "robust_zscore")
+
+
+# ---#
+class MinMaxScaler(Normalizer):
+    """i.e. Normalizer with param method = 'minmax'"""
+
+    def __init__(
+        self, name: str, cursor=None,
+    ):
+        super().__init__(name, cursor, "minmax")
 
 
 # ---#
@@ -394,30 +375,69 @@ Parameters
 name: str
 	Name of the the model.
 cursor: DBcursor, optional
-	Vertica DB cursor.
+	Vertica database cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
-
-Attributes
-----------
-After the object creation, all the parameters become attributes. 
-The model will also create extra attributes when fitting the model:
-
-param: tablesample
-	The One Hot Encoder parameters.
-input_relation: str
-	Train relation.
-X: list
-	List of the predictors.
+drop_first: bool, optional
+    If set to True, it treats the first level of the categorical variable 
+    as the reference level. Otherwise, every level of the categorical variable 
+    has a corresponding column in the output view.
+ignore_null: bool, optional
+    If set to True, Null values set all corresponding one-hot binary columns to null. 
+    Otherwise, null values in the input columns are treated as a categorical level.
+separator: str, optional
+    The character that separates the input variable name and the indicator variable 
+    level in the output table.To avoid using any separator, set this parameter to 
+    null value.
+column_naming: str, optional
+    Appends categorical levels to column names according to the specified method:
+        indices                : Uses integer indices to represent categorical levels.
+        values/values_relaxed  : Both methods use categorical level names. If duplicate 
+                                 column names occur, the function attempts to disambiguate 
+                                 them by appending _n, where n is a zero-based integer 
+                                 index (_0, _1,…).
+null_column_name: str, optional
+    The string used in naming the indicator column for null values, used only if 
+    ignore_null is set to false and column_naming is set to values or values_relaxed.
 	"""
 
-    def __init__(self, name: str, cursor=None, extra_levels: dict = {}):
-        check_types([("name", name, [str],)])
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+        extra_levels: dict = {},
+        drop_first: bool = True,
+        ignore_null: bool = True,
+        separator: str = "_",
+        column_naming: str = "indices",
+        null_column_name: str = "null",
+    ):
+        check_types(
+            [
+                ("name", name, [str],),
+                ("extra_levels", extra_levels, [dict],),
+                ("drop_first", drop_first, [bool],),
+                ("ignore_null", ignore_null, [bool],),
+                ("separator", separator, [str],),
+                (
+                    "column_naming",
+                    column_naming,
+                    ["indices", "values", "values_relaxed"],
+                ),
+                ("null_column_name", null_column_name, [str],),
+            ]
+        )
         self.type, self.name = "OneHotEncoder", name
-        self.set_params({"extra_levels": extra_levels})
-        if not (cursor):
-            cursor = read_auto_connect().cursor()
-        else:
-            check_cursor(cursor)
+        self.set_params(
+            {
+                "extra_levels": extra_levels,
+                "drop_first": drop_first,
+                "ignore_null": ignore_null,
+                "separator": separator,
+                "column_naming": column_naming,
+                "null_column_name": null_column_name,
+            }
+        )
+        cursor = check_cursor(cursor)[0]
         self.cursor = cursor
         version(cursor=cursor, condition=[9, 0, 0])

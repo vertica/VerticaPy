@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -56,8 +56,12 @@
 ##
 #
 # ---#
-def sql(line, cell=""):
-    from verticapy.connections.connect import read_auto_connect
+from IPython.core.magic import needs_local_scope
+
+@needs_local_scope
+def sql(line, cell="", local_ns=None):
+    import verticapy
+    from verticapy.toolbox import optimized_conn
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
@@ -68,10 +72,9 @@ def sql(line, cell=""):
 
     version = vertica_python.__version__.split(".")
     version = [int(elem) for elem in version]
-    conn = read_auto_connect()
-    cursor = conn.cursor()
+    conn, cursor = optimized_conn()
     queries = line if (not (cell) and (line)) else cell
-    options = {"limit": 100, "columns": 100, "percent_bar": False, "vdf": False}
+    options = {"limit": 100, "vdf": False}
     queries = queries.replace("\t", " ")
     queries = queries.replace("\n", " ")
     queries = re.sub(" +", " ", queries)
@@ -89,13 +92,9 @@ def sql(line, cell=""):
         for option in all_options_dict:
             if option.lower() == "-limit":
                 options["limit"] = int(all_options_dict[option])
-            elif option.lower() == "-ncols":
-                options["columns"] = int(all_options_dict[option])
-            elif option.lower() == "-percent":
-                options["percent_bar"] = bool(all_options_dict[option])
             elif option.lower() == "-vdf":
                 options["vdf"] = bool(all_options_dict[option])
-            else:
+            elif verticapy.options["print_info"]:
                 print(
                     "\u26A0 Warning : The option '{}' doesn't exist, it was skipped.".format(
                         option
@@ -147,6 +146,8 @@ def sql(line, cell=""):
             if (query.split(" ")[0])
             else query.split(" ")[1].upper()
         )
+        if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
+            query_type = "undefined"
         if (
             (query_type == "COPY")
             and ("from local" in query.lower())
@@ -168,34 +169,24 @@ def sql(line, cell=""):
                 file_name = file_name[1:-1]
             with open(file_name, "r") as fs:
                 cursor.copy(query, fs)
-        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() != "select")):
+        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
             cursor.execute(query)
-            print(query_type)
+            if verticapy.options["print_info"]:
+                print(query_type)
         else:
             error = ""
             try:
                 if options["vdf"]:
                     result = vdf_from_relation("({}) x".format(query), cursor=cursor)
-                    result.set_display_parameters(
-                        rows=options["limit"],
-                        columns=options["columns"],
-                        percent_bar=options["percent_bar"],
-                    )
                 else:
-                    result = readSQL(
-                        query,
-                        cursor=cursor,
-                        limit=options["limit"],
-                        display_ncols=options["columns"],
-                        percent_bar=options["percent_bar"],
-                    )
+                    result = readSQL(query, cursor=cursor, limit=options["limit"],)
             except:
                 try:
                     cursor.execute(query)
                     final_result = cursor.fetchone()
-                    if final_result:
+                    if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
-                    else:
+                    elif verticapy.options["print_info"]:
                         print(query_type)
                 except Exception as e:
                     error = e
@@ -204,7 +195,8 @@ def sql(line, cell=""):
     if not (options["vdf"]):
         conn.close()
     elapsed_time = time.time() - start_time
-    display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
+    if verticapy.options["print_info"]:
+        display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
     return result
 
 

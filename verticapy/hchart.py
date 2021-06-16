@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -55,7 +55,9 @@ from collections.abc import Iterable
 try:
     from highcharts import Highchart, Highstock
 except:
-    raise ImportError("The highcharts module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module.")
+    raise ImportError(
+        "The highcharts module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module."
+    )
 
 # VerticaPy Modules
 from verticapy.utilities import *
@@ -138,7 +140,9 @@ def hchart_from_vdf(
         is_num = vdf[x].isnum()
         order_by = " ORDER BY 2 DESC "
         if unique > max_cardinality:
-            if is_num:
+            if not(aggregate):
+                limit = min(limit, max_cardinality)
+            elif is_num:
                 order_by = " ORDER BY MIN({}) DESC ".format(x)
                 x = vdf[x].discretize(h=h, return_enum_trans=True)[0].replace(
                     "{}", x
@@ -229,6 +233,8 @@ def hchart_from_vdf(
         check_types([("y", y, [str, list],)])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
+        if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
+            y = y[0]
         columns_check([x], vdf)
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z):
@@ -431,6 +437,8 @@ def hchart_from_vdf(
             x = x[0]
         columns_check([x], vdf)
         if aggregate:
+            if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
+                y = y[0]
             if isinstance(y, str):
                 query = """SELECT {}::timestamp, 
 			                      APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) AS open,
@@ -462,7 +470,7 @@ def hchart_from_vdf(
         )
     elif kind == "candlestick":
         return candlestick(
-            query=query, cursor=cursor, options=options, width=width, height=height
+            query=query, cursor=cursor, options=options, width=width, height=height,
         )
     elif kind in (
         "area",
@@ -650,6 +658,8 @@ def hchartSQL(
         if len(names) < 2:
             raise ValueError("{} Plots need at least 2 columns.".format(kind))
         x, y, z, c = names[0], names[1:], None, None
+        if kind == "candlestick":
+            aggregate = True
     else:
         if len(names) == 1:
             aggregate = True
@@ -685,7 +695,7 @@ def bar(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     is_stacked = "stacked" in chart_type
     if chart_type == "stacked_hist":
@@ -908,7 +918,7 @@ def drilldown_chart(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="column",
+    chart_type: str = "column",
 ):
     cursor.execute(query[0])
     data = cursor.fetchall()
@@ -1073,7 +1083,7 @@ def line(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="line",
+    chart_type: str = "line",
     stock: bool = False,
 ):
     is_ts = True if (chart_type == "area_ts") else False
@@ -1327,7 +1337,7 @@ def pie(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     cursor.execute(query)
     data = cursor.fetchall()
@@ -1416,7 +1426,7 @@ def scatter(
     options: dict = {},
     width: int = 600,
     height: int = 400,
-    chart_type="regular",
+    chart_type: str = "regular",
 ):
     cursor.execute(query)
     data = cursor.fetchall()

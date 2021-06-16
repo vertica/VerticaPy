@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,43 +11,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from verticapy import vDataFrame
-from verticapy import drop_table
+import pytest, warnings
+from verticapy import vDataFrame, drop
+
+from verticapy import set_option
+
+set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def iris_vd(base):
-    from verticapy.learn.datasets import load_iris
+    from verticapy.datasets import load_iris
 
     iris = load_iris(cursor=base.cursor)
-    iris.set_display_parameters(print_info=False)
     yield iris
-    drop_table(name="public.iris", cursor=base.cursor)
+    with warnings.catch_warnings(record=True) as w:
+        drop(name="public.iris", cursor=base.cursor)
 
 
 @pytest.fixture(scope="module")
 def market_vd(base):
-    from verticapy.learn.datasets import load_market
+    from verticapy.datasets import load_market
 
     market = load_market(cursor=base.cursor)
-    market.set_display_parameters(print_info=False)
     yield market
-    drop_table(
-        name="public.market", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.market", cursor=base.cursor,
+        )
 
 
 @pytest.fixture(scope="module")
 def amazon_vd(base):
-    from verticapy.learn.datasets import load_amazon
+    from verticapy.datasets import load_amazon
 
     amazon = load_amazon(cursor=base.cursor)
-    amazon.set_display_parameters(print_info=False)
     yield amazon
-    drop_table(
-        name="public.amazon", cursor=base.cursor,
-    )
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.amazon", cursor=base.cursor,
+        )
 
 
 class TestvDFCombineJoinSort:
@@ -90,24 +93,12 @@ class TestvDFCombineJoinSort:
             4,
         ), "testing vDataFrame.groupby(columns, expr) failed"
 
-        # check parameter
-        from verticapy.errors import MissingColumn
-
-        with pytest.raises(MissingColumn) as exception_info:
-            result2 = market_vd.groupby(
-                columns=["For", "Name"],
-                expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
-                check=True,
-            )
-        assert exception_info.match("The Virtual Column 'for' doesn't exist")
-
         from vertica_python.errors import VerticaSyntaxError
 
         with pytest.raises(VerticaSyntaxError) as exception_info:
             result2 = market_vd.groupby(
                 columns=["For", "Name"],
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
-                check=False,
             )
         assert exception_info.match('Syntax error at or near "For"')
 
@@ -214,7 +205,7 @@ class TestvDFCombineJoinSort:
             expr2=["Name AS Name2"],
         )
         assert table_join.shape() == (194, 2)
-        drop_table(
+        drop(
             "v_temp_schema.not_dried", not_dried._VERTICAPY_VARIABLES_["cursor"],
         )
 
@@ -234,7 +225,12 @@ class TestvDFCombineJoinSort:
         assert amazon_pivot.shape() == (239, 28)
         assert amazon_pivot["pv_Acre"].count() == 239
 
-    @pytest.mark.xfail(reason = "Wrong result")
+    def testvDF_polynomial_comb(self, iris_vd):
+        assert iris_vd.polynomial_comb(r=3).shape() == (150, 25)
+
+    def testvDF_recommend(self, market_vd):
+        assert market_vd.recommend("Name", "Form").shape() == (126, 4)
+
     def test_vDF_sort(self, iris_vd):
         result1 = iris_vd.copy().sort(columns={"PetalLengthCm": "asc"})
         assert result1["PetalLengthCm"][0] == 1.0

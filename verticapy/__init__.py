@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2020] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -46,7 +46,7 @@
 # of moving data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.2.1"
+__version__ = "0.6.3"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
@@ -60,8 +60,34 @@ from verticapy.vdataframe import *
 from verticapy.utilities import *
 
 # Connect
-from verticapy.connections.connect import *
+from verticapy.connect import *
+
+# SQL Functions
+import verticapy.stats
 
 # Learn
 import verticapy.learn
-import verticapy.learn.tsa
+
+try:
+    import tqdm
+
+    tqdm = True
+except:
+    tqdm = False
+
+verticapy.options = {
+    "cache": True,
+    "max_rows": 100,
+    "max_columns": 50,
+    "percent_bar": None,
+    "print_info": True,
+    "query_on": False,
+    "time_on": False,
+    "mode": None,
+    "random_state": None,
+    "colors": [],
+    "color_style": "default",
+    "tqdm": tqdm,
+    "cursor": None,
+    "conn": None,
+}
