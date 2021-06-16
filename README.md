@@ -55,13 +55,13 @@ To install <b>VerticaPy</b> from source, run the following command from the root
 root@ubuntu:~$ python3 setup.py install
 ```
 
-A well-detailed installation guide is available at: <br>
+A detailed installation guide is available at: <br>
 
 https://www.vertica.com/python/installation.php
 
 ## Documentation
 
-A well-detailed HTML documentation is available at: <br>
+Documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
 
@@ -71,7 +71,7 @@ https://www.vertica.com/python/documentation_last/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
-Many examples of use-cases are available at: <br>
+Examples and case-studies: <br>
 
 https://www.vertica.com/python/examples/
 
@@ -81,7 +81,7 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
-Many examples of charts are available at: <br>
+A gallery of VerticaPy-generated charts is available at:<br>
 
 https://www.vertica.com/python/gallery/
 
@@ -108,7 +108,7 @@ dsn = "VerticaDSN"
 cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
 ```
 
-You can also save your credentials in VerticaPy to avoid creating redundant cursors.
+To save time and avoid creating extra cursors, you can save your credentials in an auto connection:
 
 ```python
 from verticapy.connect import *
