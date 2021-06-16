@@ -95,6 +95,29 @@ class TestvDFFilterSample:
         result = smart_meters_vd.copy().at_time(ts="time", time="12:00",)
         assert result.shape() == (140, 3)
 
+    def test_vDF_balance(self, titanic_vd):
+        # hybrid
+        result = titanic_vd.balance(
+            "embarked", method="hybrid"
+        )["embarked"].topk()
+        assert 30 < result["percent"][0] < 40
+        assert 30 < result["percent"][1] < 40
+        assert 30 < result["percent"][2] < 40
+        # under
+        result = titanic_vd.balance(
+            "embarked", method="under", x = 0.5
+        )["embarked"].topk()
+        assert 35 < result["percent"][0] < 55
+        assert 35 < result["percent"][1] < 55
+        assert 15 < result["percent"][2] < 30
+        # over
+        result = titanic_vd.balance(
+            "embarked", method="over", x = 0.5
+        )["embarked"].topk()
+        assert 40 < result["percent"][0] < 55
+        assert 15 < result["percent"][1] < 35
+        assert 15 < result["percent"][2] < 35
+
     def test_vDF_between_time(self, smart_meters_vd):
         result = smart_meters_vd.copy().between_time(
             ts="time", start_time="12:00", end_time="14:00",

@@ -51,6 +51,7 @@
 import random, time, shutil, re, decimal, warnings, pickle, datetime, math
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
+from typing import Union
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -1463,7 +1464,7 @@ vColumns : vColumn
 
     # ---#
     def add_duplicates(
-        self, weight: (int, str), use_gcd: bool = True,
+        self, weight: Union[int, str], use_gcd: bool = True,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1519,7 +1520,7 @@ vColumns : vColumn
         column: str,
         ts: str,
         by: list = [],
-        p: (int, list) = 12,
+        p: Union[int, list] = 12,
         unit: str = "rows",
         method: str = "pearson",
         acf_type: str = "bar",
@@ -1971,7 +1972,7 @@ vColumns : vColumn
                         )
                 elif fun.lower() == "cvar":
                     q95 = self[column].quantile(0.95)
-                    expr = "AVG(CASE WHEN {}{} > {} THEN {}{} ELSE NULL END)".format(
+                    expr = "AVG(CASE WHEN {}{} >= {} THEN {}{} ELSE NULL END)".format(
                         column, cast, q95, column, cast
                     )
                 elif fun.lower() == "sem":
@@ -2149,9 +2150,9 @@ vColumns : vColumn
     def analytic(
         self,
         func: str,
-        columns: (str, list) = [],
+        columns: Union[str, list] = [],
         by: list = [],
-        order_by: (dict, list) = [],
+        order_by: Union[dict, list] = [],
         name: str = "",
         offset: int = 1,
         x_smoothing: float = 0.5,
@@ -2593,8 +2594,8 @@ vColumns : vColumn
         ts: str,
         columns: list = [],
         by: str = "",
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         kind: str = "auto",
         limit_over: int = 6,
         limit: int = 1000000,
@@ -2969,7 +2970,7 @@ vColumns : vColumn
 
     # ---#
     def asfreq(
-        self, ts: str, rule: (str, datetime.timedelta), method: dict = {}, by: list = []
+        self, ts: str, rule: Union[str, datetime.timedelta], method: dict = {}, by: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -3021,9 +3022,9 @@ vColumns : vColumn
         for column in method:
             assert method[column] in ("bfill", "backfill", "pad", "ffill", "linear"), ParameterError("Each element of the 'method' dictionary must be in bfill|backfill|pad|ffill|linear")
             if method[column] in ("bfill", "backfill"):
-                func, interp = "TS_FIRST_VALUE", "const"
-            elif method[column] in ("pad", "ffill"):
                 func, interp = "TS_LAST_VALUE", "const"
+            elif method[column] in ("pad", "ffill"):
+                func, interp = "TS_FIRST_VALUE", "const"
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [
@@ -3051,6 +3052,7 @@ vColumns : vColumn
             "({}) asfreq".format(table), "asfreq", "[Asfreq]: The data was resampled"
         )
 
+    interpolate = asfreq
     # ---#
     def astype(self, dtype: dict):
         """
@@ -3076,7 +3078,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def at_time(self, ts: str, time: (str, datetime.timedelta)):
+    def at_time(self, ts: str, time: Union[str, datetime.timedelta]):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the records at the input time.
@@ -3257,11 +3259,64 @@ vColumns : vColumn
             )
 
     # ---#
+    def balance(
+        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Balances the dataset using the input method.
+
+    \u26A0 Warning : If the data is not sorted, the generated SQL code may
+                     differ between attempts.
+
+    Parameters
+    ----------
+    column: str
+        Column used to compute the different categories.
+    method: str, optional
+        The method with which to sample the data
+            hybrid : hybrid sampling
+            over   : oversampling
+            under  : undersampling
+    x: float, optional
+        The desired ratio between the majority class and minority classes.
+        Only used when method is 'over' or 'under'.
+    order_by: list, optional
+        vColumns used to sort the data.
+
+    Returns
+    -------
+    vDataFrame
+        balanced vDataFrame
+        """
+        if isinstance(method, str): 
+            method = method.lower()
+        check_types([("method", method, ["hybrid", "over", "under",],),
+                     ("x", x, [float,],),
+                     ("column", column, [str],),
+                     ("order_by", order_by, [list],)],)
+        assert 0 < x < 1, ParameterError("Parameter 'x' must be between 0 and 1")
+        columns_check([column] + order_by, self,)
+        column = vdf_columns_names([column], self)[0]
+        order_by = vdf_columns_names(order_by, self)
+        topk = self[column].topk()
+        last_count, last_elem, n = topk["count"][-1], topk["index"][-1], len(topk["index"])
+        if method == "over":
+            last_count = last_count * x
+        elif method == "under":
+            last_count = last_count / x
+        vdf = self.search("{} = '{}'".format(column, last_elem))
+        for i in range(n - 1):
+            vdf = vdf.append(self.search("{} = '{}'".format(column, topk["index"][i])).sample(n = last_count))
+        vdf.sort(order_by)
+        return vdf
+
+    # ---#
     def between_time(
         self,
         ts: str,
-        start_time: (str, datetime.timedelta),
-        end_time: (str, datetime.timedelta),
+        start_time: Union[str, datetime.timedelta],
+        end_time: Union[str, datetime.timedelta],
     ):
         """
     ---------------------------------------------------------------------------
@@ -3490,6 +3545,82 @@ vColumns : vColumn
             if is_cat:
                 columns += [column]
         return columns
+
+    # ---#
+    def cdt(self, 
+            columns: list = [],
+            max_cardinality: int = 20,
+            nbins: int = 10,
+            tcdt: bool = True,
+            drop_transf_cols: bool = True,):
+        """
+    ---------------------------------------------------------------------------
+    Returns the complete disjunctive table of the vDataFrame.
+    Numerical features are transformed to categorical using
+    the 'discretize' method. Applying PCA on TCDT leads to MCA 
+    (Multiple correspondence analysis).
+
+    \u26A0 Warning : This method can become computationally expensive when
+                     used with categorical variables with many categories.
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vColumns names.
+    max_cardinality: int, optional
+        For any categorical variable, keeps the most frequent categories and 
+        merges the less frequent categories into a new unique category.
+    nbins: int, optional
+        Number of bins used for the discretization (must be > 1).
+    tcdt: bool, optional
+        If set to True, returns the transformed complete disjunctive table 
+        (TCDT). 
+    drop_transf_cols: bool, optional
+        If set to True, drops the columns used during the transformation.
+
+    Returns
+    -------
+    vDataFrame
+        the CDT relation.
+        """
+        if isinstance(columns, str):
+            columns = [columns]
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("tcdt", tcdt, [bool],),
+                ("nbins", nbins, [int],),
+                ("max_cardinality", max_cardinality, [int],),
+                ("drop_transf_cols", drop_transf_cols, [bool],),
+            ]
+        )
+        if columns:
+            columns_check(columns, self,)
+            columns = vdf_columns_names(columns, self)
+        else:
+            columns = self.get_columns()
+        vdf = self.copy()
+        columns_to_drop = []
+        for elem in columns:
+            if vdf[elem].isbool():
+                vdf[elem].astype("int")
+            elif vdf[elem].isnum():
+                vdf[elem].discretize(bins=nbins)
+                columns_to_drop += [elem]
+            elif vdf[elem].isdate():
+                vdf[elem].drop()
+            else:
+                vdf[elem].discretize(method="topk", k=max_cardinality)
+                columns_to_drop += [elem]
+        vdf.one_hot_encode(columns=columns, max_cardinality=max(max_cardinality, nbins) + 2, drop_first=False)
+        if drop_transf_cols:
+            vdf.drop(columns=columns_to_drop)
+        if tcdt:
+            columns = vdf.get_columns()
+            for elem in columns:
+                sum_cat = vdf[elem].sum()
+                vdf[elem].apply("{} / {} - 1".format("{}", sum_cat))
+        return vdf
 
     # ---#
     def copy(self):
@@ -4049,7 +4180,7 @@ vColumns : vColumn
 
     # ---#
     def cummax(
-        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+        self, column: str, by: list = [], order_by: Union[dict, list] = [], name: str = ""
     ):
         """
     ---------------------------------------------------------------------------
@@ -4089,7 +4220,7 @@ vColumns : vColumn
 
     # ---#
     def cummin(
-        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+        self, column: str, by: list = [], order_by: Union[dict, list] = [], name: str = ""
     ):
         """
     ---------------------------------------------------------------------------
@@ -4129,7 +4260,7 @@ vColumns : vColumn
 
     # ---#
     def cumprod(
-        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+        self, column: str, by: list = [], order_by: Union[dict, list] = [], name: str = ""
     ):
         """
     ---------------------------------------------------------------------------
@@ -4169,7 +4300,7 @@ vColumns : vColumn
 
     # ---#
     def cumsum(
-        self, column: str, by: list = [], order_by: (dict, list) = [], name: str = ""
+        self, column: str, by: list = [], order_by: Union[dict, list] = [], name: str = ""
     ):
         """
     ---------------------------------------------------------------------------
@@ -5216,7 +5347,7 @@ vColumns : vColumn
 
     # ---#
     def filter(
-        self, conditions: (list, str) = [], *args, **kwds,
+        self, conditions: Union[list, str] = [], *args, **kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -5251,9 +5382,11 @@ vColumns : vColumn
         if not (isinstance(conditions, str)) or (args):
             if isinstance(conditions, str) or not (isinstance(conditions, Iterable)):
                 conditions = [conditions]
+            else:
+                conditions = list(conditions)
             conditions += list(args)
             for condition in conditions:
-                self.filter(condition, print_info=False)
+                self.filter(str(condition), print_info=False,)
             count -= self.shape()[0]
             if count > 0:
                 if verticapy.options["print_info"]:
@@ -5452,6 +5585,7 @@ vColumns : vColumn
                 warnings.warn(warning_message, Warning)
         return self
 
+    one_hot_encode = get_dummies
     # ---#
     def groupby(
         self, columns: list, expr: list = [],
@@ -5513,10 +5647,10 @@ vColumns : vColumn
     # ---#
     def hchart(
         self,
-        x: (str, list) = None,
-        y: (str, list) = None,
-        z: (str, list) = None,
-        c: (str, list) = None,
+        x: Union[str, list] = None,
+        y: Union[str, list] = None,
+        z: Union[str, list] = None,
+        c: Union[str, list] = None,
         aggregate: bool = True,
         kind: str = "boxplot",
         width: int = 600,
@@ -5926,7 +6060,7 @@ vColumns : vColumn
         method: str = "density",
         of: str = "",
         max_cardinality: tuple = (6, 6),
-        h: (int, float, tuple) = (None, None),
+        h: Union[int, float, tuple] = (None, None),
         hist_type: str = "auto",
         ax=None,
         **style_kwds,
@@ -6547,7 +6681,7 @@ vColumns : vColumn
     # ---#
     def narrow(
         self,
-        index: (str, list),
+        index: Union[str, list],
         columns: list = [],
         col_name: str = "column",
         val_name: str = "value",
@@ -6877,7 +7011,7 @@ vColumns : vColumn
         column: str,
         ts: str,
         by: list = [],
-        p: (int, list) = 5,
+        p: Union[int, list] = 5,
         unit: str = "rows",
         confidence: bool = True,
         alpha: float = 0.95,
@@ -7109,8 +7243,8 @@ vColumns : vColumn
     def pie(
         self,
         columns: list,
-        max_cardinality: (int, tuple) = None,
-        h: (float, tuple) = None,
+        max_cardinality: Union[int, tuple] = None,
+        h: Union[float, tuple] = None,
         ax=None,
         **style_kwds,
     ):
@@ -7344,8 +7478,8 @@ vColumns : vColumn
         self,
         ts: str,
         columns: list = [],
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         step: bool = False,
         ax=None,
         **style_kwds,
@@ -7513,10 +7647,10 @@ vColumns : vColumn
         unique_id: str,
         item_id: str,
         method: str = "count",
-        rating: (str, tuple) = "",
+        rating: Union[str, tuple] = "",
         ts: str = "",
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -7939,10 +8073,10 @@ vColumns : vColumn
     def rolling(
         self,
         func: str,
-        window: (list, tuple),
-        columns: (str, list),
+        window: Union[list, tuple],
+        columns: Union[str, list],
         by: list = [],
-        order_by: (dict, list) = [],
+        order_by: Union[dict, list] = [],
         name: str = "",
     ):
         """
@@ -8443,10 +8577,10 @@ vColumns : vColumn
     # ---#
     def search(
         self,
-        conditions: (str, list) = "",
+        conditions: Union[str, list] = "",
         usecols: list = [],
         expr: list = [],
-        order_by: (dict, list) = [],
+        order_by: Union[dict, list] = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -8961,7 +9095,7 @@ vColumns : vColumn
 
     skew = skewness
     # ---#
-    def sort(self, columns: (dict, list)):
+    def sort(self, columns: Union[dict, list]):
         """
     ---------------------------------------------------------------------------
     Sorts the vDataFrame using the input vColumns.
@@ -9000,8 +9134,8 @@ vColumns : vColumn
         self,
         ts: str,
         columns: list = [],
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         fully: bool = False,
         ax=None,
         **style_kwds,
@@ -9118,7 +9252,7 @@ vColumns : vColumn
         return self.aggregate(func=["sum"], columns=columns)
 
     # ---#
-    def swap(self, column1: (int, str), column2: (int, str)):
+    def swap(self, column1: Union[int, str], column2: Union[int, str]):
         """
     ---------------------------------------------------------------------------
     Swap the two input vColumns.
@@ -9191,7 +9325,7 @@ vColumns : vColumn
         usecols: list = [],
         header: bool = True,
         new_header: list = [],
-        order_by: (list, dict) = [],
+        order_by: Union[list, dict] = [],
         limit: int = 0,
     ):
         """
@@ -9305,7 +9439,7 @@ vColumns : vColumn
         usecols: list = [],
         relation_type: str = "view",
         inplace: bool = False,
-        db_filter: (str, list) = "",
+        db_filter: Union[str, list] = "",
         nb_split: int = 0,
     ):
         """
@@ -9327,6 +9461,7 @@ vColumns : vColumn
             table     : Table
             temporary : Temporary Table
             local     : Local Temporary Table
+            insert    : Inserts into an existing table
     inplace: bool, optional
         If set to True, the vDataFrame will be replaced using the new relation.
     db_filter: str / list, optional
@@ -9357,7 +9492,7 @@ vColumns : vColumn
                 (
                     "relation_type",
                     relation_type,
-                    ["view", "temporary", "table", "local"],
+                    ["view", "temporary", "table", "local", "insert",],
                 ),
                 ("inplace", inplace, [bool],),
                 ("db_filter", db_filter, [str, list],),
@@ -9388,16 +9523,26 @@ vColumns : vColumn
         if isinstance(db_filter, Iterable) and not (isinstance(db_filter, str)):
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
         db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
-        query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}{}".format(
-            relation_type.upper(),
-            name,
-            commit,
-            usecols,
-            nb_split,
-            self.__genSQL__(),
-            db_filter,
-            last_order_by(self),
-        )
+        if relation_type == "insert":
+            query = "INSERT INTO {} SELECT {}{} FROM {}{}{}".format(
+                name,
+                usecols,
+                nb_split,
+                self.__genSQL__(),
+                db_filter,
+                last_order_by(self),
+            )
+        else:
+            query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}{}".format(
+                relation_type.upper(),
+                name,
+                commit,
+                usecols,
+                nb_split,
+                self.__genSQL__(),
+                db_filter,
+                last_order_by(self),
+            )
         self.__executeSQL__(
             query=query,
             title="Creates a new {} to save the vDataFrame.".format(relation_type),
@@ -9480,7 +9625,7 @@ vColumns : vColumn
         name: str,
         path: str = "",
         usecols: list = [],
-        order_by: (list, dict) = [],
+        order_by: Union[list, dict] = [],
         limit: int = 0,
     ):
         """
@@ -9736,7 +9881,7 @@ vColumns : vColumn
     def train_test_split(
         self,
         test_size: float = 0.33,
-        order_by: (list, dict) = {},
+        order_by: Union[list, dict] = {},
         random_state: int = None,
     ):
         """

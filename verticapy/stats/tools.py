@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import math, decimal, datetime
+from typing import Union
 
 # Other Python Modules
 from scipy.stats import chi2, norm, f
@@ -328,6 +329,85 @@ tablesample
     )
     return result
 
+# ---#
+def cochrane_orcutt(
+    model, vdf: Union[vDataFrame, str], ts: str, prais_winsten: bool = False, drop_tmp_model: bool = True,
+):
+    """
+---------------------------------------------------------------------------
+Performs a Cochrane-Orcutt estimation.
+
+Parameters
+----------
+model: vModel
+    Linear regression object.
+vdf: vDataFrame / str
+    Input relation.
+ts: str
+    vcolumn of numeric or date-like type (date, datetime, timestamp, etc.)
+    used as the timeline and to order the data.
+prais_winsten: bool, optional
+    If true, retains the first observation of the time series, increasing
+    precision and efficiency. This configuration is called the 
+    Prais–Winsten estimation.
+drop_tmp_model: bool, optional
+    If true, it drops the temporary model.
+
+Returns
+-------
+model
+    A Linear Model with the different information stored as attributes:
+     - coef_        : Model's coefficients.
+     - pho_         : Cochrane-Orcutt pho.
+     - anova_table_ : ANOVA table.
+     - r2_          : R2
+    """
+    check_types(
+        [("vdf", vdf, [vDataFrame, str,],),
+         ("ts", ts, [vDataFrame, str,],),
+         ("drop_tmp_model", drop_tmp_model, [bool,],),],
+    )
+    if isinstance(vdf, str):
+        vdf_tmp = vdf_from_relation(vdf, cursor=model.cursor)
+    else:
+        vdf_tmp = vdf.copy()
+    columns_check([ts], vdf_tmp)
+    schema, relation = schema_relation(model.name)
+    name = schema + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        get_session(model.cursor)
+    )
+    param = model.get_params()
+    model_tmp = type(model)(name, model.cursor)
+    model_tmp.set_params(param)
+    X, y = model.X, model.y
+    print_info = verticapy.options["print_info"]
+    verticapy.options["print_info"] = False
+    if prais_winsten:
+        vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
+    verticapy.options["print_info"] = print_info
+    prediction_name = "prediction_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    eps_name = "eps_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    model.predict(vdf_tmp, X=X, name=prediction_name,)
+    vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
+    query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())
+    vdf.__executeSQL__(
+        query,
+        title="Computes the Cochrane Orcutt pho.",
+    )
+    pho = vdf_tmp._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    for elem in X + [y]:
+        new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
+        if prais_winsten:
+            new_val = "COALESCE({}, {} * {})".format(new_val, elem, (1 - pho ** 2) ** (0.5))
+        vdf_tmp[elem] = new_val
+    model_tmp.drop()
+    model_tmp.fit(vdf_tmp, X, y)
+    model_tmp.pho_ = pho
+    model_tmp.anova_table_ = model.regression_report("anova")
+    model_tmp.r2_ = model.score("r2")
+    if drop_tmp_model:
+        model_tmp.drop()
+    return model_tmp
 
 # ---#
 def durbin_watson(
@@ -1090,7 +1170,7 @@ def seasonal_decompose(
     period: int = -1,
     polynomial_order: int = 1,
     estimate_seasonality: bool = True,
-    rule: (str, datetime.timedelta) = None,
+    rule: Union[str, datetime.timedelta] = None,
     mult: bool = False,
     two_sided: bool = False,
 ):

@@ -62,6 +62,11 @@ class TestvDFPreprocessing:
         assert result[1] == ['Waqas', 2]
         assert result[2] == ['Pratibha', 3]
 
+    def test_vDF_cdt(self, titanic_vd):
+        result = titanic_vd[["age", "fare", "pclass", "boat"]].cdt()
+        assert result.shape() == (1234, 41)
+        assert result["boat_11"].avg() == pytest.approx(-0.999189627228525)
+
     def test_vDF_cut(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
@@ -138,13 +143,15 @@ class TestvDFPreprocessing:
             "discretization using the method 'topk'"
         )
 
-        titanic_copy["name"].discretize(method="topk", k=5, new_category="rare")
-        assert titanic_copy["name"].distinct() == [
+        titanic_copy["name"].discretize(method="topk", k=6, new_category="rare")
+        result = titanic_copy["name"].distinct()
+        assert result == [
             " Dr.",
             " Master.",
             " Miss.",
             " Mr.",
             " Mrs.",
+            " Rev.",
             "rare",
         ]
 
@@ -293,11 +300,11 @@ class TestvDFPreprocessing:
         assert titanic_copy["fare"].count() == 1234
 
         assert titanic_copy["cabin"].count() == 286
-        titanic_copy["cabin"].fillna(method="bfill", order_by=["pclass", "cabin"])
+        titanic_copy["cabin"].fillna(method="ffill", order_by=["pclass", "cabin"])
         assert titanic_copy["cabin"].count() == 1234
 
         assert titanic_copy["home.dest"].count() == 706
-        titanic_copy["home.dest"].fillna(method="ffill", order_by=["ticket"])
+        titanic_copy["home.dest"].fillna(method="bfill", order_by=["ticket"])
         assert titanic_copy["home.dest"].count() == 1234
 
         assert titanic_copy["body"].count() == 118

@@ -51,6 +51,7 @@
 # Standard Python Modules
 import random, datetime
 import numpy as np
+from typing import Union
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -178,7 +179,7 @@ model_grid_ : tablesample
                  normalize_min_cat: int = 6,
                  id_method: int = "drop",
                  apply_pca: bool = False,
-                 rule: (str, datetime.timedelta) = "auto",
+                 rule: Union[str, datetime.timedelta] = "auto",
                  identify_ts: bool = True,
                  save: bool = True,):
         check_types([("name", name, [str],), 
@@ -217,7 +218,7 @@ model_grid_ : tablesample
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
         ts: str = "",
         by: list = [],
@@ -423,7 +424,7 @@ model_: object
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
     ):
         """
@@ -578,11 +579,11 @@ model_grid_ : tablesample
     def __init__(self,
                  name: str,
                  cursor=None,
-                 estimator: (list, str) = "fast",
+                 estimator: Union[list, str] = "fast",
                  estimator_type: str = "auto",
                  metric: str = "auto",
                  cv: int = 3,
-                 pos_label: (int, float, str) = None,
+                 pos_label: Union[int, float, str] = None,
                  cutoff: float = -1,
                  nbins: int = 100,
                  lmax: int = 5,
@@ -636,7 +637,7 @@ model_grid_ : tablesample
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list = [],
         y: str = "",
     ):
@@ -667,37 +668,45 @@ model_grid_ : tablesample
             else:
                 X = input_relation.get_columns(exclude_columns = exclude_columns)
         if isinstance(self.parameters["estimator"], str):
+            v = version(self.cursor)
             self.parameters["estimator"] = self.parameters["estimator"].lower()
             check_types([("estimator", self.parameters["estimator"], ["native", "all", "fast",],),])
             modeltype = None
+            estimator_method = self.parameters["estimator"]
             if not(isinstance(input_relation, vDataFrame)):
                 vdf = vdf_from_relation(input_relation, cursor=self.cursor)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (self.parameters["estimator_type"].lower() == "auto" and sorted(vdf[y].distinct()) == [0, 1]):
                 self.parameters["estimator_type"] = "binary"
-                if self.parameters["estimator"] == "native":
-                    self.parameters["estimator"] = [LinearSVC(self.name, cursor=self.cursor), LogisticRegression(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor), XGBoostClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
-                elif self.parameters["estimator"] == "fast":
-                    self.parameters["estimator"] = [LogisticRegression(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
-                else:
-                    self.parameters["estimator"] = [LinearSVC(self.name, cursor=self.cursor), LogisticRegression(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor), XGBoostClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor), KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor)]
+                self.parameters["estimator"] = [LogisticRegression(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
+                if estimator_method in ("native", "all"):
+                    if v[0] >= 10 and v[1] >= 1:
+                        self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
+                    if v[0] >= 9:
+                        self.parameters["estimator"] += [LinearSVC(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor),]
+                if estimator_method == "all":
+                    self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor)]
             elif self.parameters["estimator_type"].lower() == "regressor" or (self.parameters["estimator_type"].lower() == "auto" and vdf[y].isnum()):
                 self.parameters["estimator_type"] = "regressor"
-                if self.parameters["estimator"] == "native":
-                    self.parameters["estimator"] = [LinearSVR(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), LinearRegression(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor), XGBoostRegressor(self.name, cursor=self.cursor),]
-                elif self.parameters["estimator"] == "fast":
-                    self.parameters["estimator"] = [LinearRegression(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor),]
-                else:
-                    self.parameters["estimator"] = [LinearSVR(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), LinearRegression(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor), XGBoostRegressor(self.name, cursor=self.cursor), KNeighborsRegressor(self.name, cursor=self.cursor),]
+                self.parameters["estimator"] = [LinearRegression(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor),]
+                if estimator_method in ("native", "all"):
+                    if v[0] >= 10 and v[1] >= 1:
+                        self.parameters["estimator"] += [XGBoostRegressor(self.name, cursor=self.cursor),]
+                    if v[0] >= 9:
+                        self.parameters["estimator"] += [LinearSVR(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor),]
+                if estimator_method == "all":
+                    self.parameters["estimator"] += [KNeighborsRegressor(self.name, cursor=self.cursor),]
             elif self.parameters["estimator_type"].lower() in ("multi", "auto",):
                 self.parameters["estimator_type"] = "multi"
-                if self.parameters["estimator"] == "native":
-                    self.parameters["estimator"] = [RandomForestClassifier(self.name, cursor=self.cursor), XGBoostClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
-                elif self.parameters["estimator"] == "fast":
-                    self.parameters["estimator"] = [RandomForestClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
-                else:
-                    self.parameters["estimator"] = [RandomForestClassifier(self.name, cursor=self.cursor), XGBoostClassifier(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor), KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor)]
+                self.parameters["estimator"] = [NaiveBayes(self.name, cursor=self.cursor)]
+                if estimator_method in ("native", "all"):
+                    if v[0] >= 10 and v[1] >= 1:
+                        self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
+                    if v[0] >= 9:
+                        self.parameters["estimator"] += [RandomForestClassifier(self.name, cursor=self.cursor),]
+                if estimator_method == "all":
+                    self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor),]
             else:
                 raise ParameterError(f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {estimator_type}.")
         elif isinstance(self.parameters["estimator"], (RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier, NaiveBayes, LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression, KNeighborsRegressor, KNeighborsClassifier, NearestCentroid, LinearSVC, LinearSVR)):
@@ -727,7 +736,12 @@ model_grid_ : tablesample
                     }
                 )
         if self.parameters["preprocess_data"]:
-            model_preprocess = AutoDataPrep(cursor=self.cursor, **self.parameters["preprocess_dict"],)
+            name = self.name
+            if name[-1] == '"':
+                name = name[0:-1] + '_autodataprep_{}"'.format(get_session(self.cursor))
+            else:
+                name = name + '_autodataprep_{}'.format(get_session(self.cursor))
+            model_preprocess = AutoDataPrep(name=name, cursor=self.cursor, **self.parameters["preprocess_dict"],)
             input_relation = model_preprocess.fit(input_relation, X=X,)
             X = [elem for elem in model_preprocess.X_out]
             self.preprocess_ = model_preprocess

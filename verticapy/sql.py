@@ -56,9 +56,12 @@
 ##
 #
 # ---#
-def sql(line, cell=""):
+from IPython.core.magic import needs_local_scope
+
+@needs_local_scope
+def sql(line, cell="", local_ns=None):
     import verticapy
-    from verticapy.connect import read_auto_connect
+    from verticapy.toolbox import optimized_conn
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
@@ -69,8 +72,7 @@ def sql(line, cell=""):
 
     version = vertica_python.__version__.split(".")
     version = [int(elem) for elem in version]
-    conn = read_auto_connect()
-    cursor = conn.cursor()
+    conn, cursor = optimized_conn()
     queries = line if (not (cell) and (line)) else cell
     options = {"limit": 100, "vdf": False}
     queries = queries.replace("\t", " ")
@@ -144,6 +146,8 @@ def sql(line, cell=""):
             if (query.split(" ")[0])
             else query.split(" ")[1].upper()
         )
+        if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
+            query_type = "undefined"
         if (
             (query_type == "COPY")
             and ("from local" in query.lower())
@@ -165,7 +169,7 @@ def sql(line, cell=""):
                 file_name = file_name[1:-1]
             with open(file_name, "r") as fs:
                 cursor.copy(query, fs)
-        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() != "select")):
+        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
             cursor.execute(query)
             if verticapy.options["print_info"]:
                 print(query_type)

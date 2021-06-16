@@ -51,6 +51,9 @@
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
 
+# Standard Python Modules
+from typing import Union
+
 
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
@@ -91,7 +94,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features: (int, str) = "auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,
@@ -156,7 +159,7 @@ nbins: int, optional
         self,
         name: str,
         cursor=None,
-        max_features: (int, str) = "auto",
+        max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
         min_samples_leaf: int = 1,

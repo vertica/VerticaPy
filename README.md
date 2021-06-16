@@ -11,6 +11,10 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/verticapy.svg)](https://www.python.org/downloads/)
 [![codecov](https://codecov.io/gh/vertica/VerticaPy/branch/master/graph/badge.svg?token=a6GiFYI9at)](https://codecov.io/gh/vertica/VerticaPy)
 
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
+</p>
+
 VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
@@ -37,6 +41,7 @@ Main Advantages:
 </p>
 
 ## Installation
+
 To install <b>VerticaPy</b> with pip:
 ```shell
 # Latest release version
@@ -50,11 +55,35 @@ To install <b>VerticaPy</b> from source, run the following command from the root
 root@ubuntu:~$ python3 setup.py install
 ```
 
+A detailed installation guide is available at: <br>
+
+https://www.vertica.com/python/installation.php
+
 ## Documentation
 
-A well-detailed HTML documentation is available at: <br>
+Documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
+
+## Use-cases
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
+</p>
+
+Examples and case-studies: <br>
+
+https://www.vertica.com/python/examples/
+
+## Charts
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
+</p>
+
+A gallery of VerticaPy-generated charts is available at:<br>
+
+https://www.vertica.com/python/gallery/
 
 ## Connecting to the Database
 
@@ -77,6 +106,19 @@ cur = vertica_python.connect(** conn_info).cursor()
 from verticapy.utilities import to_vertica_python_format # This function will parse the odbc.ini file
 dsn = "VerticaDSN"
 cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
+```
+
+To save time and avoid creating extra cursors, you can save your credentials in an auto connection:
+
+```python
+from verticapy.connect import *
+# Save a new connection
+new_auto_connection({"host": "10.211.55.14", 
+                     "port": "5433", 
+                     "database": "testdb", 
+                     "password": "XxX", 
+                     "user": "dbadmin"},
+                     name = "VerticaDSN")
 ```
 
 ### ODBC

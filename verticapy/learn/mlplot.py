@@ -454,13 +454,14 @@ def plot_importance(
         color += (
             [color_dict(style_kwds, 0)] if (item == 1) else [color_dict(style_kwds, 1)]
         )
+    plus, minus = color_dict(style_kwds, 0), color_dict(style_kwds, 1)
     param = {"alpha": 0.86}
     style_kwds = updated_dict(param, style_kwds)
     style_kwds["color"] = color
     ax.barh(range(0, len(importances)), importances, 0.9, **style_kwds)
     if print_legend:
-        orange = mpatches.Patch(color=color_dict(style_kwds, 1), label="sign -")
-        blue = mpatches.Patch(color=color_dict(style_kwds, 0), label="sign +")
+        orange = mpatches.Patch(color=minus, label="sign -")
+        blue = mpatches.Patch(color=plus, label="sign +")
         ax.legend(handles=[blue, orange,], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -702,6 +703,31 @@ def plot_BKtree(tree, pic_path: str = ""):
             display(HTML("<img src='{}'>".format(pic_path)))
     return RenderTree(tree_nodes[0])
 
+# ---#
+def plot_pca_circle(x: list, y: list, variable_names: list = [], explained_variance: tuple = (None, None), dimensions: tuple = (1, 2), ax=None, **style_kwds):
+    colors = gen_colors()
+    if "color" in style_kwds:
+        colors[0] = style_kwds["color"]
+    circle1 = plt.Circle((0, 0), 1, edgecolor=colors[0], facecolor="none")
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(6, 6)
+        ax.set_axisbelow(True)
+    n = len(x)
+    ax.add_patch(circle1)
+    for i in range(n):
+        ax.arrow(0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True)
+        ax.text(x[i], y[i], variable_names[i])
+    ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle='--', color="black")
+    ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle='--', color="black")
+    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))),)
+    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))),)
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    return ax
 
 # ---#
 def plot_tree(tree, metric: str = "probability", pic_path: str = ""):

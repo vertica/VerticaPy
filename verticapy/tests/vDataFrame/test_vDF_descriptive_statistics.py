@@ -170,8 +170,8 @@ class TestvDFDescriptiveStat:
         assert result2["approx_unique"][1] == 3
         assert result2["count"][0] == 997
         assert result2["count"][1] == 1234
-        assert result2["cvar"][0] == pytest.approx(63.32653061)
-        assert result2["cvar"][1] is None
+        assert result2["cvar"][0] == pytest.approx(62.7407407407407)
+        assert result2["cvar"][1] == pytest.approx(3.0)
         assert result2["dtype"][0] == "numeric(6,3)"
         assert result2["dtype"][1] == "int"
         assert result2["iqr"][0] == pytest.approx(18)
@@ -309,7 +309,7 @@ class TestvDFDescriptiveStat:
         assert result3["age"][5] == pytest.approx(11.254785419447906)
         assert result3["age"][6] == 96
         assert result3["age"][7] == 997
-        assert result3["age"][8] == pytest.approx(63.3265306122449)
+        assert result3["age"][8] == pytest.approx(62.7407407407407)
         assert result3["age"][9] == "numeric(6,3)"
         assert result3["age"][10] == 18
         assert result3["age"][11] == pytest.approx(0.15689691331997)

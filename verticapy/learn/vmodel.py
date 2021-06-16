@@ -52,6 +52,7 @@
 import os, warnings
 import numpy as np
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -191,7 +192,7 @@ Main Class for Vertica Model
 
     # ---#
     def contour(
-        self, nbins: int = 100, pos_label: (int, float, str) = None, ax=None, **style_kwds,
+        self, nbins: int = 100, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -2971,10 +2972,10 @@ class Supervised(vModel):
     # ---#
     def fit(
         self,
-        input_relation: (str, vDataFrame),
+        input_relation: Union[str, vDataFrame],
         X: list,
         y: str,
-        test_relation: (str, vDataFrame) = "",
+        test_relation: Union[str, vDataFrame] = "",
     ):
         """
 	---------------------------------------------------------------------------
@@ -3357,7 +3358,7 @@ class BinaryClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf: (str, vDataFrame),
+        vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
         cutoff: float = -1,
@@ -3583,7 +3584,7 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
-    def classification_report(self, cutoff: (float, list) = [], labels: list = []):
+    def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -3618,7 +3619,7 @@ class MulticlassClassifier(Classifier):
         )
 
     # ---#
-    def confusion_matrix(self, pos_label: (int, float, str) = None, cutoff: float = -1):
+    def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
         """
 	---------------------------------------------------------------------------
 	Computes the model confusion matrix.
@@ -3660,7 +3661,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def cutoff_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -3711,7 +3712,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def deploySQL(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
         allSQL: bool = False,
         X: list = [],
@@ -3792,7 +3793,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def lift_chart(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 1000,
         **style_kwds,
@@ -3842,7 +3843,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def prc_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -3892,11 +3893,11 @@ class MulticlassClassifier(Classifier):
     # ---#
     def predict(
         self,
-        vdf: (str, vDataFrame),
+        vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
         cutoff: float = -1,
-        pos_label: (int, str, float) = None,
+        pos_label: Union[int, str, float] = None,
         inplace: bool = True,
     ):
         """
@@ -3960,7 +3961,7 @@ class MulticlassClassifier(Classifier):
     # ---#
     def roc_curve(
         self,
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         ax=None,
         nbins: int = 30,
         **style_kwds,
@@ -4009,7 +4010,7 @@ class MulticlassClassifier(Classifier):
     def score(
         self,
         method: str = "accuracy",
-        pos_label: (int, float, str) = None,
+        pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
     ):
         """
@@ -4187,7 +4188,7 @@ class Regressor(Supervised):
 
     # ---#
     def predict(
-        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
     ):
         """
 	---------------------------------------------------------------------------
@@ -4578,7 +4579,7 @@ class Regressor(Supervised):
 class Unsupervised(vModel):
 
     # ---#
-    def fit(self, input_relation: (str, vDataFrame), X: list = []):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
 	---------------------------------------------------------------------------
 	Trains the model.
@@ -4948,7 +4949,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def inverse_transform(
-        self, vdf: (str, vDataFrame) = None, X: list = [],
+        self, vdf: Union[str, vDataFrame] = None, X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4995,7 +4996,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def transform(
-        self, vdf: (str, vDataFrame) = None, X: list = [],
+        self, vdf: Union[str, vDataFrame] = None, X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -5110,6 +5111,68 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
+    def plot(
+        self, dimensions: tuple = (1, 2), ax=None, **style_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a decomposition scatter plot.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types([("dimensions", dimensions, [tuple],),])
+        vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+        ax = self.transform(vdf).scatter(columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])], max_nb_points=100000, ax=ax, **style_kwds)
+        explained_variance = self.explained_variance_["explained_variance"]
+        ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
+        ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
+        return ax
+
+    # ---#
+    def plot_circle(
+        self, dimensions: tuple = (1, 2), ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a decomposition circle.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types([("dimensions", dimensions, [tuple],),])
+        if self.type == "SVD":
+            x = self.singular_values_["vector{}".format(dimensions[0])]
+            y = self.singular_values_["vector{}".format(dimensions[1])]
+        else:
+            x = self.components_["PC{}".format(dimensions[0])]
+            y = self.components_["PC{}".format(dimensions[1])]
+        explained_variance = self.explained_variance_["explained_variance"]
+        return plot_pca_circle(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, ax, **style_kwds,)
+
+    # ---#
     def score(
         self, X: list = [], input_relation: str = "", method: str = "avg", p: int = 2
     ):
@@ -5208,7 +5271,7 @@ class Decomposition(Preprocessing):
     # ---#
     def transform(
         self,
-        vdf: (str, vDataFrame) = None,
+        vdf: Union[str, vDataFrame] = None,
         X: list = [],
         n_components: int = 0,
         cutoff: float = 1,
@@ -5272,7 +5335,7 @@ class Clustering(Unsupervised):
 
     # ---#
     def predict(
-        self, vdf: (str, vDataFrame), X: list = [], name: str = "", inplace: bool = True
+        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
     ):
         """
 	---------------------------------------------------------------------------

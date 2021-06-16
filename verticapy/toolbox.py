@@ -160,12 +160,35 @@ def category_from_type(ctype: str = ""):
     else:
         return "undefined"
 
+# ---#
+def conn_already_available():
+    try:
+        verticapy.options["cursor"].execute("SELECT 1;")
+        result = verticapy.options["cursor"].fetchone()[0]
+        conn = verticapy.options["conn"]
+        cursor = verticapy.options["cursor"]
+        return (conn, cursor)
+    except:
+        return False
+
+# ---#
+def optimized_conn():
+    result = conn_already_available()
+    if result:
+        conn, cursor = result
+    else:
+        from verticapy.connect import read_auto_connect
+
+        conn = read_auto_connect()
+        cursor = conn.cursor()
+        verticapy.options["conn"] = conn
+        verticapy.options["cursor"] = cursor
+    return conn, cursor
 
 # ---#
 def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
 
     from verticapy import vDataFrame
-    from verticapy.connect import read_auto_connect
 
     if isinstance(vdf, vDataFrame):
         if not (cursor) or vdf_cursor:
@@ -178,8 +201,7 @@ def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
     else:
         input_relation = vdf
     if not (cursor):
-        conn = read_auto_connect()
-        cursor = conn.cursor()
+        conn, cursor = optimized_conn()
     else:
         conn = False
         if "cursor" not in (str(type(cursor))).lower():
@@ -1365,7 +1387,11 @@ class str_sql:
         return str_sql("DISTINCT ({})".format(self.alias), self.category())
 
     # ---#
-    def _over(self, by=[], order_by=[]):
+    def _over(self, by: (str, list) = [], order_by: (str, list) = []):
+        if isinstance(by, str):
+            by = [by]
+        if isinstance(order_by, str):
+            order_by = [order_by]
         by = ", ".join([str(elem) for elem in by])
         if by:
             by = "PARTITION BY {}".format(by)

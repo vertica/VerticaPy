@@ -51,6 +51,7 @@
 # Standard Python Modules
 import math, re, decimal, warnings, datetime
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 import verticapy
@@ -1919,7 +1920,7 @@ Attributes
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
             assert order_by, ParameterError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data")
-            desc = " DESC" if (method in ("ffill", "pad")) else ""
+            desc = "" if (method in ("ffill", "pad")) else " DESC"
             partition_by = (
                 "PARTITION BY {}".format(
                     ", ".join([str_column(column) for column in by])
@@ -2141,6 +2142,7 @@ Attributes
             )
         return self.parent
 
+    one_hot_encode = get_dummies
     # ---#
     def head(self, limit: int = 5):
         """
@@ -3280,8 +3282,8 @@ Attributes
         self,
         ts: str,
         by: str = "",
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         area: bool = False,
         step: bool = False,
         ax=None,
@@ -3391,8 +3393,8 @@ Attributes
         self,
         ts: str,
         q: tuple = (0.25, 0.75),
-        start_date: (str, datetime.datetime, datetime.date,) = "",
-        end_date: (str, datetime.datetime, datetime.date,) = "",
+        start_date: Union[str, datetime.datetime, datetime.date] = "",
+        end_date: Union[str, datetime.datetime, datetime.date] = "",
         plot_median: bool = False,
         ax=None,
         **style_kwds,
@@ -3595,8 +3597,8 @@ Attributes
         by: str = "",
         method: str = "density",
         of: str = "",
-        max_cardinality: (int, tuple) = (6, 6),
-        h: (int, float, tuple) = (None, None),
+        max_cardinality: Union[int, tuple] = (6, 6),
+        h: Union[int, float, tuple] = (None, None),
         ax=None,
         **style_kwds,
     ):
@@ -3969,43 +3971,28 @@ Attributes
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
         check_types([("k", k, [int, float],), ("dropna", dropna, [bool],)])
-        try:
-            version(
-                cursor=self.parent._VERTICAPY_VARIABLES_["cursor"], condition=[9, 0, 1]
-            )
-            topk = "" if (k < 1) else "TOPK = {},".format(k)
-            query = "SELECT SUMMARIZE_CATCOL({}::varchar USING PARAMETERS {} WITH_TOTALCOUNT = False) OVER () FROM {}".format(
-                self.alias, topk, self.parent.__genSQL__()
-            )
-            if dropna:
-                query += " WHERE {} IS NOT NULL".format(self.alias)
-            self.parent.__executeSQL__(
-                query,
-                title="Computes the top{} categories of {}.".format(
-                    k if k > 0 else "", self.alias
-                ),
-            )
-        except:
-            topk = "" if (k < 1) else "LIMIT {}".format(k)
-            query = "SELECT {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
-                convert_special_type(self.category(), True, self.alias),
-                self.alias,
-                self.parent.shape()[0],
-                self.parent.__genSQL__(),
-                self.alias,
-                topk,
-            )
-            self.parent.__executeSQL__(
-                query,
-                title="Computes the top{} categories of {}.".format(
-                    k if k > 0 else "", self.alias
-                ),
-            )
+        topk = "" if (k < 1) else "LIMIT {}".format(k)
+        dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
+        query = "SELECT {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
+            convert_special_type(self.category(), True, self.alias),
+            self.alias,
+            self.parent.shape()[0],
+            self.parent.__genSQL__(),
+            dropna,
+            self.alias,
+            topk,
+        )
+        self.parent.__executeSQL__(
+            query,
+            title="Computes the top{} categories of {}.".format(
+                k if k > 0 else "", self.alias
+            ),
+        )
         result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
         values = {
             "index": [item[0] for item in result],
-            "count": [item[1] for item in result],
-            "percent": [round(item[2], 3) for item in result],
+            "count": [int(item[1]) for item in result],
+            "percent": [float(round(item[2], 3)) for item in result],
         }
         return tablesample(values)
 

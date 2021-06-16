@@ -53,6 +53,7 @@ import statistics, random, time
 from collections.abc import Iterable
 from itertools import product
 import numpy as np
+from typing import Union
 
 # VerticaPy Modules
 from verticapy import vDataFrame
@@ -70,14 +71,14 @@ import matplotlib.patches as mpatches
 # ---#
 def bayesian_search_cv(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
-    param_grid: (dict, list) = {},
+    param_grid: Union[dict, list] = {},
     random_nbins: int = 16,
     bayesian_nbins: int = None,
     random_grid: bool = False,
@@ -295,11 +296,11 @@ tablesample
 
 # ---#
 def best_k(
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list = [],
     cursor=None,
-    n_cluster: (tuple, list) = (1, 100),
-    init: (str, list) = "kmeanspp",
+    n_cluster: Union[tuple, list] = (1, 100),
+    init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
     tol: float = 1e-4,
     elbow_score_stop: float = 0.8,
@@ -405,12 +406,12 @@ int
 # ---#
 def cross_validate(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
-    metric: (str, list) = "all",
+    metric: Union[str, list] = "all",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     show_time: bool = True,
     training_score: bool = False,
@@ -708,11 +709,11 @@ tablesample
 
 # ---#
 def elbow(
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list = [],
     cursor=None,
-    n_cluster: (tuple, list) = (1, 15),
-    init: (str, list) = "kmeanspp",
+    n_cluster: Union[tuple, list] = (1, 15),
+    init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
     tol: float = 1e-4,
     ax=None,
@@ -833,7 +834,7 @@ tablesample
 
 # ---#
 def enet_search_cv(
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
@@ -1285,13 +1286,13 @@ tablesample
 # ---#
 def grid_search_cv(
     estimator,
-    param_grid: (dict, list),
-    input_relation: (str, vDataFrame),
+    param_grid: Union[dict, list],
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     training_score: bool = True,
     skip_error: bool = True,
@@ -1505,14 +1506,14 @@ tablesample
 # ---#
 def learning_curve(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     sizes: list = [0.1, 0.33, 0.55, 0.78, 1.0],
     method="efficiency",
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     std_coeff: float = 1,
     ax=None,
@@ -1719,9 +1720,9 @@ tablesample
 def lift_chart(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     ax=None,
     **style_kwds,
@@ -1854,7 +1855,7 @@ def plot_acf_pacf(
     column: str,
     ts: str,
     by: list = [],
-    p: (int, list) = 15,
+    p: Union[int, list] = 15,
     **style_kwds,
 ):
     """
@@ -1972,9 +1973,9 @@ tablesample
 def prc_curve(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_prc: bool = False,
     ax=None,
@@ -2087,12 +2088,12 @@ tablesample
 # ---#
 def randomized_features_search_cv(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     training_score: bool = True,
     comb_limit: int = 100,
@@ -2299,12 +2300,12 @@ tablesample
 # ---#
 def randomized_search_cv(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     nbins: int = 1000,
     lmax: int = 4,
@@ -2397,9 +2398,9 @@ tablesample
 def roc_curve(
     y_true: str,
     y_score: str,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     cursor=None,
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_roc: bool = False,
     best_threshold: bool = False,
@@ -2568,7 +2569,7 @@ tablesample
 # ---#
 def stepwise(
     estimator,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     criterion: str = "bic",
@@ -2756,12 +2757,12 @@ def validation_curve(
     estimator,
     param_name: str,
     param_range: list,
-    input_relation: (str, vDataFrame),
+    input_relation: Union[str, vDataFrame],
     X: list,
     y: str,
     metric: str = "auto",
     cv: int = 3,
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
     cutoff: float = -1,
     std_coeff: float = 1,
     ax=None,

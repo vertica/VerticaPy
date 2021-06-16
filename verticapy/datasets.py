@@ -226,9 +226,16 @@ def load_dataset(
     try:
         vdf = vDataFrame(name, cursor, schema=schema)
     except:
+        name = str_column(name)
+        if not(schema):
+            schema = "v_temp_schema"
+            temp = "LOCAL TEMPORARY "
+        else:
+            schema = str_column(schema)
+            temp = ""
         cursor.execute(
-            "CREATE TABLE {}.{}({});".format(
-                str_column(schema), str_column(name), str_create,
+            "CREATE {}TABLE {}({}){};".format(
+                temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create, " ON COMMIT PRESERVE ROWS" if temp else ""
             )
         )
         try:
@@ -273,7 +280,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 
@@ -305,7 +313,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -337,7 +346,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 
@@ -370,7 +380,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 
@@ -404,7 +415,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 
@@ -436,7 +448,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -468,7 +481,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -503,7 +517,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 
@@ -535,7 +550,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -567,7 +583,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -599,7 +616,8 @@ Parameters
 cursor: DBcursor, optional
 	Vertica database cursor. 
 schema: str, optional
-	Schema of the new relation. The default schema is public.
+	Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
 	Name of the new relation.
 
@@ -631,7 +649,8 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor. 
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation. If empty, a temporary local table will be
+    created.
 name: str, optional
     Name of the new relation.
 

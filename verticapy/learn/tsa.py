@@ -50,6 +50,7 @@
 #
 # Standard Python Modules
 import math, warnings
+from typing import Union
 
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
@@ -313,11 +314,11 @@ papprox_ma: int, optional
     # ---#
     def fit(
         self,
-        input_relation: (vDataFrame, str),
+        input_relation: Union[vDataFrame, str],
         y: str,
         ts: str,
         X: list = [],
-        test_relation: (vDataFrame, str) = "",
+        test_relation: Union[vDataFrame, str] = "",
     ):
         """
     ---------------------------------------------------------------------------
@@ -1284,10 +1285,10 @@ solver: str, optional
     # ---#
     def fit(
         self,
-        input_relation: (vDataFrame, str),
+        input_relation: Union[vDataFrame, str],
         X: list,
         ts: str,
-        test_relation: (vDataFrame, str) = "",
+        test_relation: Union[vDataFrame, str] = "",
     ):
         """
     ---------------------------------------------------------------------------
