@@ -85,6 +85,10 @@ https://www.vertica.com/python/gallery/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
+## Contributing
+
+See how to contribute by clicking here: <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
+
 ## Connecting to the Database
 
 VerticaPy is compatible with several clients.
