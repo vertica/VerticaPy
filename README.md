@@ -67,23 +67,23 @@ https://www.vertica.com/python/documentation_last/
 
 ## Use-cases
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
-</p>
-
 Examples and case-studies: <br>
 
 https://www.vertica.com/python/examples/
 
-## Charts
-
 <p align="center">
-<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
+
+## Charts
 
 A gallery of VerticaPy-generated charts is available at:<br>
 
 https://www.vertica.com/python/gallery/
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
+</p>
 
 ## Connecting to the Database
 
