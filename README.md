@@ -55,6 +55,29 @@ A well-detailed HTML documentation is available at: <br>
 
 https://www.vertica.com/python/documentation_last/
 
+<<<<<<< Updated upstream
+=======
+## Use-cases
+
+Examples and case-studies: <br>
+
+https://www.vertica.com/python/examples/
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
+</p>
+
+## Charts
+
+A gallery of VerticaPy-generated charts is available at:<br>
+
+https://www.vertica.com/python/gallery/
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
+</p>
+
+>>>>>>> Stashed changes
 ## Connecting to the Database
 
 VerticaPy is compatible with several clients.
