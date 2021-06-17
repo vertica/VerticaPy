@@ -1,4 +1,4 @@
-Thank you for considering contributing to *VerticaPy* and helping to make it even better than what it is today!
+Thank you for considering contributing to *VerticaPy* and helping to make it even better than it is today!
 
 This document will guide you through the contribution process. There are a number of ways you can help:
 
@@ -66,7 +66,7 @@ pip3 install -r requirements-dev.txt
 
 ## Step 4: Get the test suite running (Under development)
 
-*VerticaPy* comes with a test suite of its own, in the `verticapy/tests` directory of the code base. It’s our policy to make sure all tests pass at all times.
+*VerticaPy* comes with its own test suite in the `verticapy/tests` directory. It’s our policy to make sure all tests pass at all times.
 
 We appreciate any and all [contributions to the test suite](#tests)! These tests use a Python module: [pytest](https://docs.pytest.org/en/latest/). You might want to check out the pytest documentation for more details.
 
@@ -154,7 +154,7 @@ At this point, you're ready to make your changes! Feel free to ask for help; eve
 
 ### Feature Example
 
-The vDataFrame a powerful Python object lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.
+The vDataFrame a powerful Python object that lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.
 
 You can find the vDataFrame's many methods in vdataframe.py under the '# Methods' comment.
 
@@ -170,13 +170,13 @@ For any function definition, you should note the type hints for every variable. 
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/function.png' width="60%">
 </p>
 
-Be sure to write a detailed function description explaining how it works.
+Be sure to write a detailed description for each function that explains how it works.
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/description.png' width="60%">
 </p>
 
-Uses the check_types() function to verify the types of each parameter, columns_check() to verify that the specified column belongs to the main vDataFrame, and vdf_columns_names() to format it.
+Uses the check_types() function to verify the types of each parameter, columns_check() to verify that the specified column belongs to the main vDataFrame, and vdf_columns_names() to format column names.
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/check_types.png' width="60%">
@@ -358,15 +358,15 @@ def pearson(self, column1: str, column2: str):
     columns_check([column1, column2], self)
     # Format the columns
     column1, column2 = vdf_columns_names([column1, column2], self)
-    # Getting the current vDataFrame relation
+    # Get the current vDataFrame relation
     table = self.__genSQL__()
-    # Creating the SQL statement
+    # Create the SQL statement
     query = f"SELECT CORR({column1}, {column2}) FROM {table};"
-    # Executing the SQL query
+    # Execute the SQL query
     self.__executeSQL__(query, title = "Computing Pearson coefficient")
-    # Getting the result
+    # Get the result
     result = self._VERTICAPY_VARIABLES_["cursor"].fetchone()
-    # Returning the result
+    # Return the result
     return result[0]
 ```
 Same can be done with vColumn methods.
