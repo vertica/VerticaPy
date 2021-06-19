@@ -126,6 +126,7 @@ class TestNearestCentroid:
             titanic_copy,
             X=["age", "fare",],
             name="predicted_quality",
+            inplace=False,
         )
 
         assert titanic_copy["predicted_quality"].mean() == pytest.approx(

@@ -327,6 +327,7 @@ class NeighborsClassifier(vModel):
                                cutoff=cutoff,
                                all_classes=all_classes,
                                **kwargs,)
+            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
@@ -1531,6 +1532,7 @@ p: int, optional
                                name=name,
                                inplace=False,
                                **kwargs,)
+            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
