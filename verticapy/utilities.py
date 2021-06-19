@@ -338,10 +338,13 @@ def readSQL(
     try:
         verticapy.options["time_on"] = time_on
         verticapy.options["query_on"] = False
-        result = to_tablesample(
-            "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT {}".format(query, limit),
-            cursor,
-        )
+        try:
+            result = to_tablesample(
+                "{} LIMIT {}".format(query, limit),
+                cursor,
+            )
+        except:
+            result = to_tablesample(query, cursor,)
     except:
         verticapy.options["time_on"] = time_on_init
         verticapy.options["query_on"] = query_on_init

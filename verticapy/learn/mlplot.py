@@ -704,7 +704,13 @@ def plot_BKtree(tree, pic_path: str = ""):
     return RenderTree(tree_nodes[0])
 
 # ---#
-def plot_pca_circle(x: list, y: list, variable_names: list = [], explained_variance: tuple = (None, None), dimensions: tuple = (1, 2), ax=None, **style_kwds):
+def plot_pca_circle(x: list, 
+                    y: list, 
+                    variable_names: list = [], 
+                    explained_variance: tuple = (None, None), 
+                    dimensions: tuple = (1, 2),
+                    ax=None, 
+                    **style_kwds):
     colors = gen_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -727,6 +733,47 @@ def plot_pca_circle(x: list, y: list, variable_names: list = [], explained_varia
     ax.yaxis.set_ticks_position("left")
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
+    return ax
+
+# ---#
+def plot_var(x: list, 
+             y: list,
+             variable_names: list = [], 
+             explained_variance: tuple = (None, None), 
+             dimensions: tuple = (1, 2),
+             bar_name: str = "",
+             ax=None, 
+             **style_kwds):
+    colors = gen_colors()
+    if "color" in style_kwds:
+        colors[0] = style_kwds["color"]
+    if not (ax):
+        fig, ax = plt.subplots()
+        if isnotebook():
+            fig.set_size_inches(6, 6)
+        ax.set_axisbelow(True)
+        ax.grid()
+    else:
+        fig = plt
+    n = len(x)
+    delta_y = (max(y) - min(y)) * 0.04
+    delta_x = (max(x) - min(x)) * 0.04
+    for i in range(n):
+        ax.text(x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center",)
+    param = {"marker": "^", "s": 100, "edgecolors": "black",}
+    if "c" not in style_kwds:
+        param["color"] = colors[0]
+    img = ax.scatter(x, y, **updated_dict(param, style_kwds, 0),)
+    ax.plot([min(x) - 5 * delta_x, max(x) + 5 * delta_x], [0.0, 0.0], linestyle='--', color="black")
+    ax.plot([0.0, 0.0], [min(y) - 5 * delta_y, max(y) + 5 * delta_y], linestyle='--', color="black")
+    ax.set_xlim(min(x) - 5 * delta_x, max(x) + 5 * delta_x)
+    ax.set_ylim(min(y) - 5 * delta_y, max(y) + 5 * delta_y)
+    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))),)
+    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))),)
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+    if "c" in style_kwds:
+        fig.colorbar(img).set_label(bar_name)
     return ax
 
 # ---#

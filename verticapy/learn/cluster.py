@@ -419,7 +419,6 @@ p: int, optional
 		"""
         return vDataFrame(self.name, self.cursor)
 
-
 # ---#
 class KMeans(Clustering):
     """

@@ -3612,12 +3612,13 @@ vColumns : vColumn
             else:
                 vdf[elem].discretize(method="topk", k=max_cardinality)
                 columns_to_drop += [elem]
+        new_columns = vdf.get_columns()
         vdf.one_hot_encode(columns=columns, max_cardinality=max(max_cardinality, nbins) + 2, drop_first=False)
+        new_columns = vdf.get_columns(exclude_columns=new_columns)
         if drop_transf_cols:
             vdf.drop(columns=columns_to_drop)
         if tcdt:
-            columns = vdf.get_columns()
-            for elem in columns:
+            for elem in new_columns:
                 sum_cat = vdf[elem].sum()
                 vdf[elem].apply("{} / {} - 1".format("{}", sum_cat))
         return vdf
@@ -4045,7 +4046,7 @@ vColumns : vColumn
             x = val * val * n * min(k, r)
             pvalue = chi2.sf(x, (k - 1) * (r - 1))
         return (val, pvalue)
-
+    
     # ---#
     def count(
         self,
@@ -8442,6 +8443,7 @@ vColumns : vColumn
         cat_priority: list = [],
         with_others: bool = True,
         max_nb_points: int = 20000,
+        dimensions: tuple = None,
         bbox: list = [],
         img: str = "",
         ax=None,
@@ -8454,7 +8456,7 @@ vColumns : vColumn
     Parameters
     ----------
     columns: list
-        List of the vColumns names. The list must have two or three elements.
+        List of the vColumns names. 
     catcol: str, optional
         Categorical vColumn to use to label the data.
     max_cardinality: int, optional
@@ -8470,6 +8472,10 @@ vColumns : vColumn
         will not be drawn.
     max_nb_points: int, optional
         Maximum number of points to display.
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the PCA's components.
+        If empty and the number of input columns is greater than 3, the
+        first and second PCA will be drawn.
     bbox: list, optional
         List of 4 elements to delimit the boundaries of the final Plot. 
         It must be similar the following list: [xmin, xmax, ymin, ymax]
@@ -8490,6 +8496,41 @@ vColumns : vColumn
     vDataFrame.bubble      : Draws the bubble plot of the input vColumns.
     vDataFrame.pivot_table : Draws the pivot table of vColumns based on an aggregation.
         """
+        if len(columns) > 3 and dimensions == None:
+            dimensions = (1, 2)
+        else:
+            check_types(
+                [
+                    ("dimensions", dimensions, [tuple, list],),
+                ]
+            )
+        if isinstance(dimensions, Iterable):
+            schema = self._VERTICAPY_VARIABLES_["schema_writing"]
+            if not (schema):
+                schema = "public"
+            model_name = "_VERTICAPY_TEMPORARY_PCA_PLOT_MODEL_{}_".format(get_session(self._VERTICAPY_VARIABLES_["cursor"]))
+            from verticapy.learn.decomposition import PCA
+            
+            model = PCA(model_name)
+            model.drop()
+            try:
+                model.fit(self, columns)
+                ax = model.transform(self).scatter(
+                    columns=["col1", "col2"],
+                    catcol=catcol,
+                    max_cardinality=100,
+                    max_nb_points=max_nb_points,
+                    ax=ax,
+                    **style_kwds,
+                )
+                explained_variance = model.explained_variance_["explained_variance"]
+                ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[dimensions[0] - 1]) else "({}%)".format(round(explained_variance[dimensions[0] - 1] * 100, 1))),)
+                ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[dimensions[1] - 1]) else "({}%)".format(round(explained_variance[dimensions[1] - 1] * 100, 1))),)
+                model.drop()
+            except:
+                model.drop()
+                raise
+            return ax
         if isinstance(columns, str):
             columns = [columns]
         check_types(

@@ -112,7 +112,7 @@ def category_from_model_type(model_type: str):
         return ("regressor", "")
     elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
         return ("unsupervised", "clustering")
-    elif model_type in ["PCA", "SVD"]:
+    elif model_type in ["PCA", "SVD", "MCA",]:
         return ("unsupervised", "decomposition")
     elif model_type in ["Normalizer", "OneHotEncoder"]:
         return ("unsupervised", "preprocessing")
@@ -399,8 +399,10 @@ def default_model_parameters(model_type: str):
         }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}
-    elif model_type in ("PCA"):
+    elif model_type in ("PCA",):
         return {"n_components": 0, "scale": False, "method": "lapack"}
+    elif model_type in ("MCA",):
+        return {}
     elif model_type in ("OneHotEncoder"):
         return {
             "extra_levels": {},
@@ -553,6 +555,16 @@ def get_session(cursor, add_username: bool = True):
         result = "{}_{}".format(cursor.fetchone()[0], result)
     return result
 
+# ---#
+def get_connection_path():
+    env_vars = os.environ
+    if "VERTICAPY" in env_vars:
+        path = env_vars["VERTICAPY"]
+    else:
+        path = env_vars["HOME"]
+    if not(os.path.isdir(path + "/VerticaPy")):
+        os.mkdir(path + "/VerticaPy", mode = 0o700,)
+    return path + "/VerticaPy"
 
 # ---#
 def indentSQL(query: str):
@@ -1371,12 +1383,29 @@ class str_sql:
             x = [elem for elem in argv]
         assert isinstance(x, Iterable) and not (
             isinstance(x, str)
-        ), "Method 'in_' only works on iterable elements other than str. Found {}.".format(
+        ), "Method '_in' only works on iterable elements other than str. Found {}.".format(
             x
         )
         val = [str(format_magic(elem)) for elem in x]
         val = ", ".join(val)
         return str_sql("({}) IN ({})".format(self.alias, val), self.category())
+
+    # ---#
+    def _not_in(self, *argv):
+        if (len(argv) == 1) and (isinstance(argv[0], list)):
+            x = argv[0]
+        elif len(argv) == 0:
+            ParameterError("Method '_not_in' doesn't work with no parameters.")
+        else:
+            x = [elem for elem in argv]
+        assert isinstance(x, Iterable) and not (
+            isinstance(x, str)
+        ), "Method '_not_in' only works on iterable elements other than str. Found {}.".format(
+            x
+        )
+        val = [str(format_magic(elem)) for elem in x]
+        val = ", ".join(val)
+        return str_sql("({}) NOT IN ({})".format(self.alias, val), self.category())
 
     # ---#
     def _as(self, x):

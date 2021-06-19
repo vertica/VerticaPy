@@ -54,6 +54,158 @@ from verticapy.toolbox import *
 from verticapy.learn.vmodel import *
 
 # ---#
+class MCA(Decomposition):
+    """
+---------------------------------------------------------------------------
+Creates a MCA (Multiple correspondence analysis) object using the Vertica PCA
+algorithm on the data. It will use the property that sees MCA as a PCA applied 
+to the complete disjunctive table. The input relation will be transformed to
+TCDT (transformed complete disjunctive table) before applying PCA on it.
+ 
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+cursor: DBcursor, optional
+    Vertica database cursor.
+    """
+    def __init__(
+        self,
+        name: str,
+        cursor=None,
+    ):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "MCA", name
+        self.set_params({})
+        cursor = check_cursor(cursor)[0]
+        self.cursor = cursor
+        version(cursor=cursor, condition=[9, 1, 0])
+
+    # ---#
+    def plot_var(
+        self, dimensions: tuple = (1, 2), method: str = "auto", ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a MCA variables plot.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    method: str, optional
+        auto   : Only the variables are displayed.
+        cos2   : The cos2 is used as CMAP.
+        contrib: The feature contribution is used as CMAP.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        check_types([("dimensions", dimensions, [tuple],),
+                     ("method", method, ["auto", "cos2", "contrib"],),])
+        x = self.components_["PC{}".format(dimensions[0])]
+        y = self.components_["PC{}".format(dimensions[1])]
+        n = len(self.cos2_["PC{}".format(dimensions[0])])
+        if method in ("cos2", "contrib"):
+            if method == "cos2":
+                c = [self.cos2_["PC{}".format(dimensions[0])][i] + self.cos2_["PC{}".format(dimensions[1])][i] for i in range(n)]
+            else:
+                sum_1, sum_2 = sum(self.cos2_["PC{}".format(dimensions[0])]), sum(self.cos2_["PC{}".format(dimensions[1])])
+                c = [0.5 * 100 * (self.cos2_["PC{}".format(dimensions[0])][i] / sum_1 + self.cos2_["PC{}".format(dimensions[1])][i] / sum_2) for i in range(n)]
+            style_kwds["c"] = c
+            if "cmap" not in style_kwds:
+                from verticapy.plot import gen_cmap, gen_colors
+
+                style_kwds["cmap"] = gen_cmap(color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]])
+        explained_variance = self.explained_variance_["explained_variance"]
+        return plot_var(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, method, ax, **style_kwds,)
+
+    # ---#
+    def plot_contrib(
+        self, dimension: int = 1, ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a decomposition contribution plot of the input dimension.
+
+    Parameters
+    ----------
+    dimension: int, optional
+        Integer representing the IDs of the model's component.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        contrib = self.components_["PC{}".format(dimension)]
+        contrib = [elem ** 2 for elem in contrib]
+        total = sum(contrib)
+        contrib = [100 * elem / total for elem in contrib]
+        n = len(contrib)
+        variables, contribution = zip(*sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True))
+        contrib = tablesample({"row_nb": [i + 1 for i in range(n)], "contrib": contribution}).to_vdf(self.cursor)
+        contrib["row_nb_2"] = contrib["row_nb"] + 0.5
+        ax = contrib["row_nb"].hist(method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwds)
+        ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
+        ax.set_xlim(1, n + 1)
+        ax.set_xticks([i + 1.5 for i in range(n)],)
+        ax.set_xticklabels(variables,)
+        ax.set_ylabel('Cos2 - Quality of Representation')
+        ax.set_xlabel('')
+        ax.set_title('Contribution of variables to Dim {}'.format(dimension))
+        ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c='r', linestyle='--',)
+        for i in range(n):
+            ax.text(i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1)))
+        return ax
+
+    # ---#
+    def plot_cos2(
+        self, dimensions: tuple = (1, 2), ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a MCA cos2 plot of the two input dimensions.
+
+    Parameters
+    ----------
+    dimensions: tuple, optional
+        Tuple of two elements representing the IDs of the model's components.
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        cos2_1 = self.cos2_["PC{}".format(dimensions[0])]
+        cos2_2 = self.cos2_["PC{}".format(dimensions[1])]
+        n = len(cos2_1)
+        quality = []
+        for i in range(n):
+            quality += [cos2_1[i] + cos2_2[i]]
+        variables, quality = zip(*sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True))
+        quality = tablesample({"variables": variables, "quality": quality}).to_vdf(self.cursor)
+        ax = quality["variables"].hist(method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwds)
+        ax.set_ylabel('Cos2 - Quality of Representation')
+        ax.set_xlabel('')
+        ax.set_title('Cos2 of variables to Dim {}-{}'.format(dimensions[0], dimensions[1]))
+        return ax
+
+# ---#
 class PCA(Decomposition):
     """
 ---------------------------------------------------------------------------
