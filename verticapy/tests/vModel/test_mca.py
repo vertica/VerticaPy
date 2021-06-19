@@ -37,7 +37,7 @@ def model(base, market_vd):
     model_class.drop()
 
 
-class TestPCA:
+class TestMCA:
     def test_repr(self, model):
         assert "index|                name                 |  mean  |   sd   " in model.__repr__()
         model_repr = MCA("mca_repr")
@@ -93,15 +93,15 @@ class TestPCA:
 
         m_att_details = model.get_attr(attr_name="principal_components")
 
-        assert m_att_details["PC1"][0] == pytest.approx(-8.40681285066429e-18, abs=1e-2)
-        assert m_att_details["PC1"][1] == pytest.approx(6.69930488797486e-17, abs=1e-2)
-        assert m_att_details["PC1"][2] == pytest.approx(-8.57930855866453e-17, abs=1e-2)
-        assert m_att_details["PC2"][0] == pytest.approx(-0.00490495400370651, abs=1e-2)
-        assert m_att_details["PC2"][1] == pytest.approx(-0.00591611533838104, abs=1e-2)
-        assert m_att_details["PC2"][2] == pytest.approx(-0.00508231564856379, abs=1e-2)
-        assert m_att_details["PC3"][0] == pytest.approx(-0.00205641099322215, abs=1e-2)
-        assert m_att_details["PC3"][1] == pytest.approx(-0.129029981029071, abs=1e-2)
-        assert m_att_details["PC3"][2] == pytest.approx(-0.00343091837157043, abs=1e-2)
+        assert m_att_details["PC1"][0] == pytest.approx(-8.40681285066429e-18, abs=1e-1)
+        assert m_att_details["PC1"][1] == pytest.approx(6.69930488797486e-17, abs=1e-1)
+        assert m_att_details["PC1"][2] == pytest.approx(-8.57930855866453e-17, abs=1e-1)
+        assert m_att_details["PC2"][0] == pytest.approx(-0.00490495400370651, abs=1e-1)
+        assert m_att_details["PC2"][1] == pytest.approx(-0.00591611533838104, abs=1e-1)
+        assert m_att_details["PC2"][2] == pytest.approx(-0.00508231564856379, abs=1e-1)
+        assert m_att_details["PC3"][0] == pytest.approx(-0.00205641099322215, abs=1e-1)
+        assert m_att_details["PC3"][1] == pytest.approx(-0.129029981029071, abs=1e-1)
+        assert m_att_details["PC3"][2] == pytest.approx(-0.00343091837157043, abs=1e-1)
 
     def test_get_params(self, model):
         assert model.get_params() == {}
@@ -146,7 +146,7 @@ class TestPCA:
 
     def test_to_python(self, model):
         prediction = model.to_python()([[0 for i in range(52)]])
-        assert sum(sum(prediction)) == pytest.approx(27.647893864490204, abs=1e-1)
+        assert sum(sum(prediction)) == pytest.approx(27.647893864490204, abs=1)
 
     def test_to_sql(self, model):
         assert '("Name_Apples"' in model.to_sql()
