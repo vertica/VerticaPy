@@ -94,9 +94,10 @@ cursor: DBcursor, optional
     dimensions: tuple, optional
         Tuple of two elements representing the IDs of the model's components.
     method: str, optional
-        auto   : Only the variables are displayed.
-        cos2   : The cos2 is used as CMAP.
-        contrib: The feature contribution is used as CMAP.
+        Method used to draw the variables plot.
+            auto   : Only the variables are displayed.
+            cos2   : The cos2 is used as CMAP.
+            contrib: The feature contribution is used as CMAP.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds

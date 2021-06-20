@@ -556,17 +556,6 @@ def get_session(cursor, add_username: bool = True):
     return result
 
 # ---#
-def get_connection_path():
-    env_vars = os.environ
-    if "VERTICAPY" in env_vars:
-        path = env_vars["VERTICAPY"]
-    else:
-        path = env_vars["HOME"]
-    if not(os.path.isdir(path + "/VerticaPy")):
-        os.mkdir(path + "/VerticaPy", mode = 0o700,)
-    return path + "/VerticaPy"
-
-# ---#
 def indentSQL(query: str):
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
