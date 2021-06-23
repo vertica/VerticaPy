@@ -65,16 +65,16 @@ import vertica_python
 def get_connection_file():
     """
 ---------------------------------------------------------------------------
-Gets (and creates, if necessary) the auto connection file.
-If the environment variable 'VERTICAPY_CONNECTIONS' is set, this is assumed 
-to be the full path to the connections file.
+Gets (and creates, if necessary) the auto-connection file.
+If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
+to be the full path to the auto-connection file.
 Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
-folder in the user's home.
+folder in the user's home directory.
 
 Returns
 -------
 string
-        the full path to the auto connection file.
+        the full path to the auto-connection file.
         """
     if 'VERTICAPY_CONNECTIONS' in os.environ:
         return os.environ['VERTICAPY_CONNECTIONS']

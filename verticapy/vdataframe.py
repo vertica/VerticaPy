@@ -124,7 +124,7 @@ Attributes
 _VERTICAPY_VARIABLES_: dict
     Dictionary containing all vDataFrame attributes.
         allcols_ind, int      : Int to use to optimize the SQL code generation.
-        columns, list         : List of the vColumns names.
+        columns, list         : List of the vColumn names.
         count, int            : Number of elements of the vDataFrame (catalog).
         cursor, DBcursor      : Vertica database cursor.
         dsn, str              : Vertica database DSN.
@@ -8473,7 +8473,7 @@ vColumns : vColumn
     max_nb_points: int, optional
         Maximum number of points to display.
     dimensions: tuple, optional
-        Tuple of two elements representing the IDs of the PCA's components.
+        Tuple of two IDs of the PCA's components.
         If empty and the number of input columns is greater than 3, the
         first and second PCA will be drawn.
     bbox: list, optional

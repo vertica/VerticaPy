@@ -465,11 +465,13 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
 ```
 If you need a database cursor but can't retrieve one from the input parameters, you can also add a 'cursor' parameter.
 
-When creating a function, you need also to submit unit tests. It is very importance to maintain the function. Unit Tests are located in the 'tests' folder. Tests are sorted by thematic. You'll easily find your function thematic. For the function we just created, it can be stored in 'test_vDF_correlation.py' in the 'vDataFrame' directory. For a test, it is possible to use one of the default datasets and test some of the values.
+Functions must include unit tests. Unit tests are located in the 'tests' folder and sorted by theme. Unit tests can be tested with the default VerticaPy datasets.
 
-Let's take the example of our first function.
+For the function we just created, we would place the unit tests 'test_vDF_correlation.py' in the 'vDataFrame' directory.
+
+A unit test might look like this:
 ```python
-# Example test pearson
+# Example unit test function
 
 def test_pearson(self, titanic_vd):
   result_1 = titanic_vd.pearson("age", "fare")

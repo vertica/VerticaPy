@@ -57,15 +57,15 @@ from verticapy.learn.vmodel import *
 class MCA(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates a MCA (Multiple correspondence analysis) object using the Vertica PCA
-algorithm on the data. It will use the property that sees MCA as a PCA applied 
-to the complete disjunctive table. The input relation will be transformed to
-TCDT (transformed complete disjunctive table) before applying PCA on it.
+Creates a MCA (multiple correspondence analysis) object using the Vertica PCA
+algorithm on the data. It uses the property that the MCA is a PCA applied 
+to a complete disjunctive table. The input relation is transformed to a
+TCDT (transformed complete disjunctive table) before applying the PCA.
  
 Parameters
 ----------
 name: str
-    Name of the the model. The model will be stored in the DB.
+    Name of the the model. The model will be stored in the database.
 cursor: DBcursor, optional
     Vertica database cursor.
     """
@@ -87,14 +87,14 @@ cursor: DBcursor, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Draws a MCA variables plot.
+    Draws the MCA (multiple correspondence analysis) graph.
 
     Parameters
     ----------
     dimensions: tuple, optional
-        Tuple of two elements representing the IDs of the model's components.
+        Tuple of two IDs of the model's components.
     method: str, optional
-        Method used to draw the variables plot.
+        Method used to draw the plot.
             auto   : Only the variables are displayed.
             cos2   : The cos2 is used as CMAP.
             contrib: The feature contribution is used as CMAP.
@@ -176,12 +176,13 @@ cursor: DBcursor, optional
     ):
         """
     ---------------------------------------------------------------------------
-    Draws a MCA cos2 plot of the two input dimensions.
+    Draws a MCA (multiple correspondence analysis) cos2 plot of 
+    the two input dimensions.
 
     Parameters
     ----------
     dimensions: tuple, optional
-        Tuple of two elements representing the IDs of the model's components.
+        Tuple of two IDs of the model's components.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
