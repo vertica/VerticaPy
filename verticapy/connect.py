@@ -152,10 +152,11 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
 def new_auto_connection(dsn: dict, name: str = "DSN"):
     """
 ---------------------------------------------------------------------------
-Saves a connection to automatically create database cursors. This will create a 
-used-as-needed file to automatically set up a connection, avoiding redundant 
-cursors.
-The function 'get_connection_file' is used to get the connection file location.
+Saves a connection to automatically create database cursors, creating a 
+used-as-needed file to automatically set up a connection. Useful for
+preventing redundant cursors.
+
+The function 'get_connection_file' returns the connection file path.
 
 Parameters
 ----------
