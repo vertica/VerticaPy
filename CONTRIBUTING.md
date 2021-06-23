@@ -276,21 +276,21 @@ vdf_columns_names(["BoAt"], titanic)
 ```
 ['"boat"']
 ```
-Use the gen_SQL method to get the current vDataFrame relation.
+Use the \_genSQL\_ method to get the current vDataFrame relation.
 ```python
 titanic.__genSQL__()
 ```
 ```
 '"public"."titanic"'
 ```
-And the executeSQL method to execute a SQL query.
+And the \_executeSQL\_ method to execute a SQL query.
 ```python
 titanic.__executeSQL__("SELECT * FROM {} LIMIT 2".format(titanic.__genSQL__()))
 ```
 ```
 <vertica_python.vertica.cursor.Cursor at 0x115f972e8>
 ```
-The result of the query is accessible using the cursor stored in the VERTICAPY_VARIABLES attribute.
+The result of the query is accessible using the cursor stored in the \_VERTICAPY_VARIABLES\_ attribute.
 ```python
 titanic._VERTICAPY_VARIABLES_["cursor"].fetchall()
 ```
@@ -465,6 +465,23 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
 ```
 If you need a database cursor but can't retrieve one from the input parameters, you can also add a 'cursor' parameter.
 
+Functions must include unit tests. Unit tests are located in the 'tests' folder and sorted by theme. Unit tests can be tested with the default VerticaPy datasets.
+
+For the function we just created, we would place the unit tests 'test_vDF_correlation.py' in the 'vDataFrame' directory.
+
+A unit test might look like this:
+```python
+# Example unit test function
+
+def test_pearson(self, titanic_vd):
+  result_1 = titanic_vd.pearson("age", "fare")
+  result_2 = titanic_vd.pearson("age", "survived")
+  # we can test approximately the result of our function for some known values
+  assert result == pytest.approx(0.178575164117464, 1e-2)
+  assert result == pytest.approx(-0.0422446185581737, 1e-2)
+```
+
+You are now ready to create your first contribution!
 
 ### License Headers
 
