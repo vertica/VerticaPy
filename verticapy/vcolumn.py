@@ -912,7 +912,7 @@ Attributes
 	Parameters
  	----------
  	argv: object
-        Infinite Number of Expressions.
+        Any amount of expressions.
         The expression generated will look like:
         even: CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... END
         odd : CASE ... WHEN vColumn = argv[2 * i] THEN argv[2 * i + 1] ... ELSE argv[n] END

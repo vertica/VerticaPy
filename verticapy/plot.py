@@ -1516,13 +1516,13 @@ def contour_plot(
         else:
             if func.type in ("RandomForestClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier",):
                 if func.type in ("NearestCentroid", "KNeighborsClassifier",):
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", all_classes=True, key_columns=None,)
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", inplace=False, all_classes=True, key_columns=None,)
                     y = "verticapy_predict_{}".format(pos_label)
                 else:
                     vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", pos_label=pos_label)
             else:
                 if func.type in ("KNeighborsRegressor",):
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", key_columns=None,)
+                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", inplace=False, key_columns=None,)
                 else:
                     vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict",)
         dataset = vdf_tmp[[columns[1], columns[0], y]].sort(columns).to_numpy()

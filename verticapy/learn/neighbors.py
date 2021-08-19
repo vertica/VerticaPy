@@ -272,6 +272,7 @@ class NeighborsClassifier(vModel):
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
+        inplace: bool = True,
         cutoff: float = -1,
         all_classes: bool = False,
         **kwargs,
@@ -291,6 +292,8 @@ class NeighborsClassifier(vModel):
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
     cutoff: float, optional
         The cutoff used for binary classification and represents the probability to
         accept category 1.
@@ -312,9 +315,19 @@ class NeighborsClassifier(vModel):
                 ("name", name, [str],),
                 ("cutoff", cutoff, [int, float],),
                 ("X", X, [list],),
+                ("inplace", inplace, [bool],),
                 ("vdf", vdf, [str, vDataFrame],),
             ],
         )
+        if inplace:
+            vdf = self.predict(vdf=vdf,
+                               X=X,
+                               name=name,
+                               inplace=False,
+                               cutoff=cutoff,
+                               all_classes=all_classes,
+                               **kwargs,)
+            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
@@ -1479,7 +1492,7 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", **kwargs):
+    def predict(self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True, **kwargs):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1495,6 +1508,8 @@ p: int, optional
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
 
     Returns
     -------
@@ -1508,8 +1523,16 @@ p: int, optional
                 ("name", name, [str],),
                 ("X", X, [list],),
                 ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool],),
             ],
         )
+        if inplace:
+            vdf = self.predict(vdf=vdf,
+                               X=X,
+                               name=name,
+                               inplace=False,
+                               **kwargs,)
+            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X

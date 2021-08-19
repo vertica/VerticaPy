@@ -491,7 +491,7 @@ Main Class for Vertica Model
             return ("KMEANS", "APPLY_KMEANS", "")
         elif self.type == "BisectingKMeans":
             return ("BISECTING_KMEANS", "APPLY_BISECTING_KMEANS", "")
-        elif self.type == "PCA":
+        elif self.type in ("PCA", "MCA",):
             return ("PCA", "APPLY_PCA", "APPLY_INVERSE_PCA")
         elif self.type == "SVD":
             return ("SVD", "APPLY_SVD", "APPLY_INVERSE_SVD")
@@ -586,30 +586,14 @@ Main Class for Vertica Model
             else:
                 vdf = vdf_from_relation(self.name, cursor=self.cursor)
                 catcol = "dbscan_cluster"
-            if 2 <= len(self.X) <= 3:
-                return vdf.scatter(
-                    columns=self.X,
-                    catcol=catcol,
-                    max_cardinality=100,
-                    max_nb_points=max_nb_points,
-                    ax=ax,
-                    **style_kwds,
-                )
-            else:
-                raise Exception("Clustering Plots are only available in 2D or 3D.")
-        elif self.type in ("PCA", "SVD"):
-            if 2 <= self.parameters["n_components"] or (
-                self.parameters["n_components"] <= 0 and len(self.X) > 1
-            ):
-                X = [
-                    "col{}".format(i + 1)
-                    for i in range(min(max(self.parameters["n_components"], 2), 3))
-                ]
-                return self.transform().scatter(
-                    columns=X, max_nb_points=max_nb_points, ax=ax, **style_kwds,
-                )
-            else:
-                raise Exception("Decomposition Plots are not available in 1D")
+            return vdf.scatter(
+                columns=self.X,
+                catcol=catcol,
+                max_cardinality=100,
+                max_nb_points=max_nb_points,
+                ax=ax,
+                **style_kwds,
+            )
         elif self.type in ("LocalOutlierFactor"):
             query = "SELECT COUNT(*) FROM {}".format(self.name)
             tablesample = 100 * min(
@@ -1517,7 +1501,7 @@ Main Class for Vertica Model
                 model_parameters["acceptable_error_margin"] = self.parameters[
                     "acceptable_error_margin"
                 ]
-        elif self.type in ("PCA", "SVD"):
+        elif self.type in ("PCA", "SVD", "MCA",):
             if ("scale" in parameters) and self.type in ("PCA"):
                 check_types([("scale", parameters["scale"], [bool],)])
                 model_parameters["scale"] = parameters["scale"]
@@ -1525,30 +1509,31 @@ Main Class for Vertica Model
                 model_parameters["scale"] = default_parameters["scale"]
             elif self.type in ("PCA",):
                 model_parameters["scale"] = self.parameters["scale"]
-            if "method" in parameters:
-                check_types([("method", parameters["method"], [str],)])
-                assert str(parameters["method"]).lower() in ["lapack"], ParameterError(
-                    "Incorrect parameter 'method'.\nThe decomposition method must be in (lapack), found '{}'.".format(
-                        parameters["method"]
+            if self.type in ("PCA", "SVD",):
+                if "method" in parameters:
+                    check_types([("method", parameters["method"], [str],)])
+                    assert str(parameters["method"]).lower() in ["lapack"], ParameterError(
+                        "Incorrect parameter 'method'.\nThe decomposition method must be in (lapack), found '{}'.".format(
+                            parameters["method"]
+                        )
                     )
-                )
-                model_parameters["method"] = parameters["method"]
-            elif "method" not in self.parameters:
-                model_parameters["method"] = default_parameters["method"]
-            else:
-                model_parameters["method"] = self.parameters["method"]
-            if "n_components" in parameters:
-                check_types(
-                    [("n_components", parameters["n_components"], [int, float],)]
-                )
-                assert 0 <= parameters["n_components"], ParameterError(
-                    "Incorrect parameter 'n_components'.\nThe number of components must be positive. If it is equal to 0, all the components will be considered."
-                )
-                model_parameters["n_components"] = parameters["n_components"]
-            elif "n_components" not in self.parameters:
-                model_parameters["n_components"] = default_parameters["n_components"]
-            else:
-                model_parameters["n_components"] = self.parameters["n_components"]
+                    model_parameters["method"] = parameters["method"]
+                elif "method" not in self.parameters:
+                    model_parameters["method"] = default_parameters["method"]
+                else:
+                    model_parameters["method"] = self.parameters["method"]
+                if "n_components" in parameters:
+                    check_types(
+                        [("n_components", parameters["n_components"], [int, float],)]
+                    )
+                    assert 0 <= parameters["n_components"], ParameterError(
+                        "Incorrect parameter 'n_components'.\nThe number of components must be positive. If it is equal to 0, all the components will be considered."
+                    )
+                    model_parameters["n_components"] = parameters["n_components"]
+                elif "n_components" not in self.parameters:
+                    model_parameters["n_components"] = default_parameters["n_components"]
+                else:
+                    model_parameters["n_components"] = self.parameters["n_components"]
         elif self.type in ("OneHotEncoder",):
             if "extra_levels" in parameters:
                 check_types([("extra_levels", parameters["extra_levels"], [dict],)])
@@ -2008,7 +1993,7 @@ Main Class for Vertica Model
                         cat_tmp += [elem]
                     categories += [np.array(cat_tmp)]
                 model.categories_ = categories
-        elif self.type in ("PCA", "SVD"):
+        elif self.type in ("PCA", "SVD", "MCA",):
             import sklearn.decomposition as skdcp
 
             if isinstance(self, (vdcp.PCA,)):
@@ -2053,6 +2038,10 @@ Main Class for Vertica Model
                 for i in range(len(model.components_)):
                     for j in range(len(model.components_[0])):
                         model.components_[i][j] /= model.singular_values_[i]
+            elif isinstance(self, (vdcp.MCA,)):
+                raise ModelError(
+                    "Models of type 'MCA' are not supported by Scikit Learn."
+                )
         elif self.type in ("NaiveBayes",):
             import sklearn.naive_bayes as sknb
 
@@ -2453,7 +2442,7 @@ Main Class for Vertica Model
                     func += "\t\tresult = np.where(result == tmp_idx, c, result)\n"
             func += "\treturn result\n"
             return func
-        elif self.type in ("PCA",):
+        elif self.type in ("PCA", "MCA",):
             avg = self.get_attr("columns")["mean"]
             pca = []
             attr = self.get_attr("principal_components")
@@ -2841,7 +2830,7 @@ Main Class for Vertica Model
                 sql_final += " WHEN {} THEN {}".format(sql[i], k - i - 1)
             sql_final += " ELSE 0 END"
             return sql_final
-        elif self.type in ("PCA",):
+        elif self.type in ("PCA", "MCA",):
             avg = self.get_attr("columns")["mean"]
             pca = self.get_attr("principal_components")
             sql = []
@@ -4603,7 +4592,17 @@ class Unsupervised(vModel):
         )
         self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        if isinstance(input_relation, str) and self.type == "MCA":
+            input_relation = vdf_from_relation(input_relation, cursor=self.cursor)
         if isinstance(input_relation, vDataFrame):
+            if self.type == "MCA":
+                result = input_relation.sum(columns=X)
+                if isinstance(result, (int, float)):
+                    result = [result]
+                else:
+                    result = result["sum"]
+                result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
+                assert abs(result) < 0.01, ConversionError("MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation.")
             self.input_relation = input_relation.__genSQL__()
             schema, relation = schema_relation(self.name)
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
@@ -4626,7 +4625,7 @@ class Unsupervised(vModel):
         parameters = vertica_param_dict(self)
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
-        fun = self.get_model_fun()[0]
+        fun = self.get_model_fun()[0] if self.type != "MCA" else "PCA"
         query = "SELECT {}('{}', '{}', '{}'".format(
             fun, self.name, relation, ", ".join(self.X)
         )
@@ -4635,7 +4634,7 @@ class Unsupervised(vModel):
         elif self.type == "Normalizer":
             query += ", {}".format(parameters["method"])
             del parameters["method"]
-        if self.type != "Normalizer":
+        if self.type not in ("Normalizer", "MCA",):
             query += " USING PARAMETERS "
         if (
             "init_method" in parameters
@@ -4725,8 +4724,19 @@ class Unsupervised(vModel):
         elif self.type in ("BisectingKMeans"):
             self.metrics_ = self.get_attr("Metrics")
             self.cluster_centers_ = self.get_attr("BKTree")
-        elif self.type in ("PCA"):
+        elif self.type in ("PCA", "MCA",):
             self.components_ = self.get_attr("principal_components")
+            if self.type in ("MCA",):
+                self.cos2_ = self.components_.to_list()
+                for i in range(len(self.cos2_)):
+                    self.cos2_[i] = [elem ** 2 for elem in self.cos2_[i]]
+                    total = sum(self.cos2_[i])
+                    self.cos2_[i] = [elem / total for elem in self.cos2_[i]]
+                values = {"index": self.X}
+                for idx, elem in enumerate(self.components_.values):
+                    if elem != "index":
+                        values[elem] = [item[idx - 1] for item in self.cos2_]
+                self.cos2_ = tablesample(values)
             self.explained_variance_ = self.get_attr("singular_values")
             self.mean_ = self.get_attr("columns")
         elif self.type in ("SVD"):
@@ -4903,9 +4913,12 @@ class Preprocessing(Unsupervised):
         X = [str_column(elem) for elem in X]
         if not (X):
             X = self.X
-        if self.type in ("PCA", "SVD") and not (inverse):
-            n = self.parameters["n_components"]
-            if not (n):
+        if self.type in ("PCA", "SVD", "MCA",) and not (inverse):
+            if self.type in ("PCA", "SVD",):
+                n = self.parameters["n_components"]
+                if not (n):
+                    n = len(self.X)
+            else:
                 n = len(self.X)
             return [f"col{i}" for i in range(1, n + 1)]
         elif self.type in ("OneHotEncoder") and not (inverse):
@@ -4983,7 +4996,6 @@ class Preprocessing(Unsupervised):
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
-        columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -5117,7 +5129,6 @@ class Decomposition(Preprocessing):
         """
     ---------------------------------------------------------------------------
     Draws a decomposition scatter plot.
-
     Parameters
     ----------
     dimensions: tuple, optional
@@ -5126,7 +5137,6 @@ class Decomposition(Preprocessing):
         The axes to plot on.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
-
     Returns
     -------
     ax
@@ -5136,8 +5146,8 @@ class Decomposition(Preprocessing):
         vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
         ax = self.transform(vdf).scatter(columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])], max_nb_points=100000, ax=ax, **style_kwds)
         explained_variance = self.explained_variance_["explained_variance"]
-        ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
-        ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
+        ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[dimensions[0] - 1]) else "({}%)".format(round(explained_variance[dimensions[0] - 1] * 100, 1))))
+        ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[dimensions[1] - 1]) else "({}%)".format(round(explained_variance[dimensions[1] - 1] * 100, 1))))
         return ax
 
     # ---#
@@ -5171,6 +5181,41 @@ class Decomposition(Preprocessing):
             y = self.components_["PC{}".format(dimensions[1])]
         explained_variance = self.explained_variance_["explained_variance"]
         return plot_pca_circle(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, ax, **style_kwds,)
+
+    # ---#
+    def plot_scree(
+        self, ax=None, **style_kwds
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Draws a decomposition scree plot.
+
+    Parameters
+    ----------
+    ax: Matplotlib axes object, optional
+        The axes to plot on.
+    **style_kwds
+        Any optional parameter to pass to the Matplotlib functions.
+
+    Returns
+    -------
+    ax
+        Matplotlib axes object
+        """
+        explained_variance = self.explained_variance_["explained_variance"]
+        explained_variance, n = [100 * elem for elem in explained_variance], len(explained_variance)
+        information = tablesample({"dimensions": [i + 1 for i in range(n)], "percentage_explained_variance": explained_variance}).to_vdf(self.cursor)
+        information["dimensions_center"] = information["dimensions"] + 0.5
+        ax = information["dimensions"].hist(method="avg", of="percentage_explained_variance", h=1, max_cardinality=1, ax=ax, **style_kwds)
+        ax = information["percentage_explained_variance"].plot(ts="dimensions_center", ax=ax, color="black")
+        ax.set_xlim(1, n + 1)
+        ax.set_xticks([i + 1.5 for i in range(n)],)
+        ax.set_xticklabels([i + 1 for i in range(n)],)
+        ax.set_ylabel('"percentage_explained_variance"')
+        ax.set_xlabel('"dimensions"')
+        for i in range(n):
+            ax.text(i + 1.5, explained_variance[i] + 1, "{}%".format(round(explained_variance[i], 1)))
+        return ax
 
     # ---#
     def score(
@@ -5220,8 +5265,11 @@ class Decomposition(Preprocessing):
         method = str(method).upper()
         if method == "MEDIAN":
             method = "APPROXIMATE_MEDIAN"
-        n_components = self.parameters["n_components"]
-        if not (n_components):
+        if self.type in ("PCA", "SVD",):
+            n_components = self.parameters["n_components"]
+            if not (n_components):
+                n_components = len(X)
+        else:
             n_components = len(X)
         col_init_1 = ["{} AS col_init{}".format(X[idx], idx) for idx in range(len(X))]
         col_init_2 = ["col_init{}".format(idx) for idx in range(len(X))]
@@ -5335,7 +5383,7 @@ class Clustering(Unsupervised):
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
+        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True,
     ):
         """
 	---------------------------------------------------------------------------

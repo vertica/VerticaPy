@@ -1,4 +1,4 @@
-Thank you for considering contributing to *VerticaPy* and helping to make it even better than what it is today!
+Thank you for considering contributing to *VerticaPy* and helping to make it even better than it is today!
 
 This document will guide you through the contribution process. There are a number of ways you can help:
 
@@ -66,7 +66,7 @@ pip3 install -r requirements-dev.txt
 
 ## Step 4: Get the test suite running (Under development)
 
-*VerticaPy* comes with a test suite of its own, in the `verticapy/tests` directory of the code base. It’s our policy to make sure all tests pass at all times.
+*VerticaPy* comes with its own test suite in the `verticapy/tests` directory. It’s our policy to make sure all tests pass at all times.
 
 We appreciate any and all [contributions to the test suite](#tests)! These tests use a Python module: [pytest](https://docs.pytest.org/en/latest/). You might want to check out the pytest documentation for more details.
 
@@ -152,6 +152,337 @@ For more usages about [tox](https://tox.readthedocs.io), see the Python document
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
 
+### Feature Example
+
+The vDataFrame a powerful Python object that lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.
+
+You can find the vDataFrame's many methods in vdataframe.py under the '# Methods' comment.
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/vdf_file.png' width="60%">
+</p>
+
+You can define any new vDataFrame function after this comment. The same applies to vColumns.
+
+For any function definition, you should note the type hints for every variable. For variables of multiple types, use the union operator.
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/function.png' width="60%">
+</p>
+
+Be sure to write a detailed description for each function that explains how it works.
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/description.png' width="60%">
+</p>
+
+Uses the check_types() function to verify the types of each parameter, columns_check() to verify that the specified column belongs to the main vDataFrame, and vdf_columns_names() to format column names.
+
+<p align="center">
+<img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/check_types.png' width="60%">
+</p>
+
+When using check_types(), create tuples with the variable name, the variable, and a list of the different types:
+
+```python
+from verticapy import *
+
+x = 1
+
+# Correct Type
+check_types([("x", x, [int])])
+```
+
+```python
+# Incorrect Type
+check_types([("x", x, [str])])
+```
+```
+/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py:252: Warning: Parameter 'x' must be of type <class 'str'>, found type <class 'int'>
+  warnings.warn(warning_message, Warning)
+```
+
+To add a parameter with specific values, use a list:
+
+```python
+x = "apple"
+
+# Correct parameter
+check_types([("x", x, ["apple", "banana", "lemon"])])
+```
+
+```python
+x = "apple"
+
+# Incorrect parameter
+check_types([("x", x, ["potato", "tomato", "salad"])])
+```
+```
+/Users/Badr/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py:236: Warning: Parameter 'x' must be in [potato|tomato|salad], found 'apple'
+  warnings.warn(warning_message, Warning)
+```
+
+Remember: the columns_check() and vdf_columns_names() functions are essential for correctly formated input column names.
+
+```python
+# Displaying columns from the titanic dataset
+from verticapy.datasets import load_titanic
+titanic = load_titanic()
+titanic.get_columns()
+```
+```
+['"pclass"',
+ '"survived"',
+ '"name"',
+ '"sex"',
+ '"age"',
+ '"sibsp"',
+ '"parch"',
+ '"ticket"',
+ '"fare"',
+ '"cabin"',
+ '"embarked"',
+ '"boat"',
+ '"body"',
+ '"home.dest"']
+```
+```python
+# Verify that the 'boat' column is inside the vDataFrame
+columns_check(["boat"], titanic)
+```
+```python
+# Verify that the 'wrong_name' column is not inside the vDataFrame
+columns_check(["wrong_name"], titanic)
+```
+```
+---------------------------------------------------------------------------
+MissingColumn                             Traceback (most recent call last)
+<ipython-input-7-cc3ed6e11e0c> in <module>()
+----> 1 columns_check(["wrong_name"], titanic)
+
+~/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py in columns_check(columns, vdf, columns_nb)
+    288             raise MissingColumn(
+    289                 "The Virtual Column '{}' doesn't exist{}.".format(
+--> 290                     column.lower().replace('"', ""), e
+    291                 )
+    292             )
+
+MissingColumn: The Virtual Column 'wrong_name' doesn't exist.
+```
+```python
+# vdf_columns_names() automatically formats names
+vdf_columns_names(["BoAt"], titanic)
+```
+```
+['"boat"']
+```
+Use the \_genSQL\_ method to get the current vDataFrame relation.
+```python
+titanic.__genSQL__()
+```
+```
+'"public"."titanic"'
+```
+And the \_executeSQL\_ method to execute a SQL query.
+```python
+titanic.__executeSQL__("SELECT * FROM {} LIMIT 2".format(titanic.__genSQL__()))
+```
+```
+<vertica_python.vertica.cursor.Cursor at 0x115f972e8>
+```
+The result of the query is accessible using the cursor stored in the \_VERTICAPY_VARIABLES\_ attribute.
+```python
+titanic._VERTICAPY_VARIABLES_["cursor"].fetchall()
+```
+```
+[[1,
+  0,
+  'Allison, Miss. Helen Loraine',
+  'female',
+  Decimal('2.000'),
+  1,
+  2,
+  '113781',
+  Decimal('151.55000'),
+  'C22 C26',
+  'S',
+  None,
+  None,
+  'Montreal, PQ / Chesterville, ON'],
+ [1,
+  0,
+  'Allison, Mr. Hudson Joshua Creighton',
+  'male',
+  Decimal('30.000'),
+  1,
+  2,
+  '113781',
+  Decimal('151.55000'),
+  'C22 C26',
+  'S',
+  None,
+  135,
+  'Montreal, PQ / Chesterville, ON']]
+```
+For example, let's create a method to compute the correlations between two vDataFrame columns.
+```python
+# Example correlation method for a vDataFrame
+
+# Add type hints
+def pearson(self, column1: str, column2: str):
+    # Describe the function
+    """
+    ---------------------------------------------------------------------------
+    Computes the Pearson Correlation Coefficient of the two input vColumns. 
+
+    Parameters
+    ----------
+    column1: str
+        Input vColumn.
+    column2: str
+        Input vColumn.
+
+    Returns
+    -------
+    Float
+        Pearson Correlation Coefficient
+
+    See Also
+    --------
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+        """
+    # Check data types
+    check_types([("column1", column1, [str]),
+                 ("column2", column2, [str]),])
+    # Check if the columns belong to the vDataFrame
+    columns_check([column1, column2], self)
+    # Format the columns
+    column1, column2 = vdf_columns_names([column1, column2], self)
+    # Get the current vDataFrame relation
+    table = self.__genSQL__()
+    # Create the SQL statement
+    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Execute the SQL query
+    self.__executeSQL__(query, title = "Computing Pearson coefficient")
+    # Get the result
+    result = self._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Return the result
+    return result[0]
+```
+Same can be done with vColumn methods.
+```python
+# Example Method for a vColumn
+
+# Add types hints
+def pearson(self, column: str,):
+    # Describe the function
+    """
+    ---------------------------------------------------------------------------
+    Computes the Pearson Correlation Coefficient of the vColumn and the input 
+    vColumn. 
+
+    Parameters
+    ----------
+    column: str
+        Input vColumn.
+
+    Returns
+    -------
+    Float
+        Pearson Correlation Coefficient
+
+    See Also
+    --------
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+        """
+    # Check data types
+    check_types([("column", column, [str]),])
+    # Check if the column belongs to the vDataFrame 
+    # self.parent represents the vColumn parent
+    columns_check([column], self.parent)
+    # Format the column
+    column1 = vdf_columns_names([column], self)[0]
+    # Get the current vColumn name
+    column2 = self.alias
+    # Get the current vDataFrame relation
+    table = self.parent.__genSQL__()
+    # Create the SQL statement
+    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Execute the SQL query
+    self.parent.__executeSQL__(query, title = "Computing Pearson coefficient")
+    # Get the result
+    result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Return the result
+    return result[0]
+```
+Functions will work exactly the same.
+```python
+# Example function
+
+# Add type hints
+def pearson(vdf: vDataFrame, column1: str, column2: str):
+    # Describe the function
+    """
+    ---------------------------------------------------------------------------
+    Computes the Pearson Correlation Coefficient of the two input vColumns. 
+
+    Parameters
+    ----------
+    vdf: vDataFrame
+        Input vDataFrame.
+    column1: str
+        Input vColumn.
+    column2: str
+        Input vColumn.
+
+    Returns
+    -------
+    Float
+        Pearson Correlation Coefficient
+
+    See Also
+    --------
+    vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
+        """
+    # Check data types
+    check_types([("vdf", vdf, [vDataFrame]),
+                 ("column1", column1, [str]),
+                 ("column2", column2, [str]),])
+    # Check if the columns belong to the vDataFrame
+    columns_check([column1, column2], vdf)
+    # Format the columns
+    column1, column2 = vdf_columns_names([column1, column2], vdf)
+    # Get the current vDataFrame relation
+    table = vdf.__genSQL__()
+    # Create the SQL statement
+    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Execute the SQL query
+    vdf.__executeSQL__(query, title = "Computing Pearson coefficient")
+    # Get the result
+    result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Return the result
+    return result[0]
+```
+If you need a database cursor but can't retrieve one from the input parameters, you can also add a 'cursor' parameter.
+
+Functions must include unit tests. Unit tests are located in the 'tests' folder and sorted by theme. Unit tests can be tested with the default VerticaPy datasets.
+
+For the function we just created, we would place the unit tests 'test_vDF_correlation.py' in the 'vDataFrame' directory.
+
+A unit test might look like this:
+```python
+# Example unit test function
+
+def test_pearson(self, titanic_vd):
+  result_1 = titanic_vd.pearson("age", "fare")
+  result_2 = titanic_vd.pearson("age", "survived")
+  # we can test approximately the result of our function for some known values
+  assert result == pytest.approx(0.178575164117464, 1e-2)
+  assert result == pytest.approx(-0.0422446185581737, 1e-2)
+```
+
+You are now ready to create your first contribution!
+
 ### License Headers
 
 Every file in this project must use the following Apache 2.0 header (with the appropriate year or years in the "[yyyy]" box; if a copyright statement from another party is already present in the code, you may add the statement on top of the existing copyright statement):
@@ -231,4 +562,6 @@ Pull requests are usually reviewed within a few days. If there are comments to a
 That's it! Thank you for your code contribution!
 
 After your pull request is merged, you can safely delete your branch and pull the changes from the upstream repository.
+
+
 

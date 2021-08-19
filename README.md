@@ -67,23 +67,27 @@ https://www.vertica.com/python/documentation_last/
 
 ## Use-cases
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
-</p>
-
 Examples and case-studies: <br>
 
 https://www.vertica.com/python/examples/
 
+<p align="center">
+<img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
+</p>
+
 ## Charts
+
+A gallery of VerticaPy-generated charts is available at:<br>
+
+https://www.vertica.com/python/gallery/
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/charts.gif" width="92%">
 </p>
 
-A gallery of VerticaPy-generated charts is available at:<br>
+## Contributing
 
-https://www.vertica.com/python/gallery/
+For a short guide on contribution standards, see <a href='https://github.com/vertica/VerticaPy/blob/master/CONTRIBUTING.md'>CONTRIBUTING.md</a>
 
 ## Connecting to the Database
 

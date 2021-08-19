@@ -62,6 +62,30 @@ import vertica_python
 
 #
 # ---#
+def get_connection_file():
+    """
+---------------------------------------------------------------------------
+Gets (and creates, if necessary) the auto-connection file.
+If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
+to be the full path to the auto-connection file.
+Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
+folder in the user's home directory.
+
+Returns
+-------
+string
+        the full path to the auto-connection file.
+        """
+    if 'VERTICAPY_CONNECTIONS' in os.environ:
+        return os.environ['VERTICAPY_CONNECTIONS']
+    # path = os.path.join(os.path.dirname(verticapy.__file__), "connections.verticapy")
+    path = os.path.join(os.path.expanduser('~'), '.vertica')
+    os.makedirs(path, 0o700, exist_ok = True) 
+    path = os.path.join(path, 'connections.verticapy') 
+    return path
+
+#
+# ---#
 def available_auto_connection():
     """
 ---------------------------------------------------------------------------
@@ -76,7 +100,7 @@ See Also
 --------
 new_auto_connection : Saves a connection to automatically create database cursors.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
+    path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -105,7 +129,7 @@ new_auto_connection : Saves a connection to automatically create database cursor
 read_auto_connect   : Automatically creates a connection.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
+    path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
@@ -128,9 +152,11 @@ vertica_conn        : Creates a Vertica Database cursor using the input method.
 def new_auto_connection(dsn: dict, name: str = "DSN"):
     """
 ---------------------------------------------------------------------------
-Saves a connection to automatically create database cursors. This will create a 
-used-as-needed file to automatically set up a connection, avoiding redundant 
-cursors.
+Saves a connection to automatically create database cursors, creating a 
+used-as-needed file to automatically set up a connection. Useful for
+preventing redundant cursors.
+
+The function 'get_connection_file' returns the connection file path.
 
 Parameters
 ----------
@@ -152,7 +178,7 @@ read_auto_connect      : Automatically creates a connection.
 vertica_conn           : Creates a Vertica Database connection.
 	"""
     check_types([("dsn", dsn, [dict],)])
-    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
+    path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     try:
@@ -187,7 +213,7 @@ See Also
 new_auto_connection : Saves a connection to automatically create database cursors.
 vertica_conn        : Creates a Vertica Database cursor using the input method.
 	"""
-    path = os.path.dirname(verticapy.__file__) + "/connections.verticapy"
+    path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
