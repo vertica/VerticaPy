@@ -1527,14 +1527,14 @@ def prc_auc(
 ):
     """
 ---------------------------------------------------------------------------
-Computes the PRC AUC (Area Under Curve).
+Computes the area under the curve (AUC) of a Precision-Recall (PRC) curve.
 
 Parameters
 ----------
 y_true: str
 	Response column.
 y_score: str
-	Prediction Probability.
+	Prediction probability.
 input_relation: str/vDataFrame
 	Relation to use to do the scoring. The relation can be a view or a table
 	or even a customized relation. For example, you could write:
@@ -1548,7 +1548,7 @@ pos_label: int/float/str, optional
 nbins: int, optional
     An integer value that determines the number of decision boundaries. Decision 
     boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
-    The greater number of decision boundaries, the more precise the AUC will be, but 
+    The greater number of decision boundaries, the greater precision, but 
     the greater decrease in performance. Maximum value: 999,999. If negative, the
     maximum value is used.
 

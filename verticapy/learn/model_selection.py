@@ -1749,7 +1749,7 @@ pos_label: int/float/str, optional
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds
@@ -2004,7 +2004,7 @@ pos_label: int/float/str, optional
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
 auc_prc: bool, optional
     If set to True, the function will return the PRC AUC without drawing the 
     curve.
@@ -2434,7 +2434,7 @@ pos_label: int/float/str, optional
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
     An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+    boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
 auc_roc: bool, optional
     If set to true, the function will return the ROC AUC without drawing the 
     curve.

@@ -3608,7 +3608,7 @@ class MulticlassClassifier(Classifier):
         The axes to plot on.
     nbins: int, optional
         An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3741,7 +3741,7 @@ class MulticlassClassifier(Classifier):
         The axes to plot on.
     nbins: int, optional
         An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3792,7 +3792,7 @@ class MulticlassClassifier(Classifier):
         The axes to plot on.
     nbins: int, optional
         An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3911,7 +3911,7 @@ class MulticlassClassifier(Classifier):
         The axes to plot on.
     nbins: int, optional
         An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3979,11 +3979,11 @@ class MulticlassClassifier(Classifier):
 			recall	    : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp)
     nbins: int, optional
-        [Only when method is set to auc|prc_auc|best_cutoff]
+        [Only used when the method is set to 'auc,' 'prc_auc,' or 'best_cutoff']
         An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
-        The higher it is, the more precise the AUC will be. However, it can decrease
-        considerably performances. The maximum value is 999,999. If negative, the
+        boundaries are set at equally-spaced intervals between 0 and 1, inclusive.
+        The greater number of decision boundaries, the greater precision, but  
+        the greater decrease in performance. Maximum value: 999,999. If negative, the
         maximum value is used.
 
 	Returns

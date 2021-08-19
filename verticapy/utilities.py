@@ -561,7 +561,7 @@ read_json : Ingests a JSON file into the Vertica database.
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
         ),
-        "Creating Flex Table to identify the data types."
+        "Creating flex table to identify the data types."
     )
     header_names = (
         ""
@@ -678,9 +678,9 @@ cursor: DBcursor, optional
 schema: str, optional
 	Schema where the CSV file will be ingested.
 table_name: str, optional
-	Final relation name. If nothing is indicated, the name of the file or the
+	The final relation/table name. If unspecified, the the name is set to the 
+    name of the file or parent directory. is indicated, the name of the file or the
     parent directory will be used.
-    used in case 
 sep: str, optional
 	Column separator.
 header: bool, optional
@@ -772,7 +772,7 @@ read_json : Ingests a JSON file into the Vertica database.
         raise ExtensionError("The file extension is incorrect !")
     table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
     if table_name == "*":
-        assert dtype, ParameterError("Parameter 'dtype' must include all the table columns types when ingesting multiple files.")
+        assert dtype, ParameterError("Parameter 'dtype' must include the types of all columns in the table when ingesting multiple files.")
         table_name = path.split("/")[-2]
     query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
@@ -808,7 +808,7 @@ read_json : Ingests a JSON file into the Vertica database.
                         position, idx
                     )
                     if idx == 0:
-                        warning_message += "\nIt can be when exporting a pandas DataFrame to CSV and keeping the indexes.\nTips: Use index=False when exporting using pandas.DataFrame.to_csv."
+                        warning_message += "\nThis can happen when exporting a pandas DataFrame to CSV while retaining its indexes.\nTip: Use index=False when exporting with pandas.DataFrame.to_csv."
                     warnings.warn(warning_message, Warning)
             f.close()
         if (header_names == []) and (header):
