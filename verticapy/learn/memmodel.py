@@ -106,8 +106,7 @@ def predict_from_coef(X: Union[list, np.array],
 def sql_from_coef(X: list, 
                   coefficients: list, 
                   intercept: float, 
-                  method: str = "LinearRegression",
-                  return_proba: bool = False,):
+                  method: str = "LinearRegression",):
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a linear model using its attributes.
@@ -132,8 +131,7 @@ def sql_from_coef(X: list,
     check_types([("X", X, [list],), 
                  ("coefficients", coefficients, [list],),
                  ("intercept", intercept, [float, int,],),
-                 ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),
-                 ("return_proba", return_proba, [bool],),])
+                 ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),])
     assert len(X) == len(coefficients), ParameterError("The length of parameter 'X' must be equal to the number of coefficients.")
     sql = [str(intercept)] + [f"{coefficients[idx]} * {(X[idx])}" for idx in range(len(coefficients))]
     sql = " + ".join(sql)
@@ -312,7 +310,8 @@ def sql_from_clusters(X: list,
                       clusters: list,
                       return_distance_clusters: bool = False,
                       return_proba: bool = False,
-                      classes: list = []):
+                      classes: list = [],
+                      p: int = 2,):
     """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy a k-means or nearest centroids model 
@@ -330,6 +329,8 @@ def sql_from_clusters(X: list,
         If set to True, the probability to belong to the clusters is returned.
     classes: list, optional
         The classes for the nearest centroids model.
+    p: int, optional
+        The p corresponding to the one of the p-distances.
 
     Returns
     -------
@@ -356,8 +357,8 @@ def sql_from_clusters(X: list,
     for c in clusters:
         list_tmp = []
         for idx, col in enumerate(X):
-            list_tmp += ["POWER({} - {}, 2)".format((X[idx]), c[idx])]
-        clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
+            list_tmp += ["POWER({} - {}, {})".format((X[idx]), c[idx], p)]
+        clusters_distance += ["POWER(" + " + ".join(list_tmp) + ", {})".format(p)]
     if return_distance_clusters:
         return clusters_distance
     if return_proba:
@@ -590,7 +591,7 @@ def transform_from_one_hot_encoder(X: list,
     ----------
     X: list / numpy.array
         Data to transform.
-    categories: list / numpy.array
+    categories: list
         List of the categories of the different input columns.
     drop_first: bool, optional
         If set to False, the first dummy of each category will be dropped.
@@ -635,7 +636,7 @@ def sql_from_one_hot_encoder(X: list,
         If set to False, the first dummy of each category will be dropped.
     column_naming: str, optional
         Appends categorical levels to column names according to the specified method:
-            indices                : Uses integer indices to represent categorical 
+            indices    : Uses integer indices to represent categorical 
                                      levels.
             values/values_relaxed  : Both methods use categorical-level names. If 
                                      duplicate column names occur, the function 
@@ -650,7 +651,7 @@ def sql_from_one_hot_encoder(X: list,
     check_types([("X", X, [list],), 
                  ("categories", categories, [list],),
                  ("drop_first", drop_first, [bool],),
-                 ("column_naming", column_naming, ["indices", "values", "values_relaxed",],),])
+                 ("column_naming", column_naming, ["indices", "values", "values_relaxed", None,],),])
     assert len(X) == len(categories), ParameterError("The length of parameter 'X' must be equal to the length of the list 'values'.")
     sql = []
     for i in range(len(X)):
@@ -662,7 +663,7 @@ def sql_from_one_hot_encoder(X: list,
                     val = "'{}'".format(val)
                 elif val == None:
                     val = "NULL"
-                sql_tmp_feature = "(CASE WHEN \"{}\" = {} THEN 1 ELSE 0 END)".format(X[i], val)
+                sql_tmp_feature = "(CASE WHEN {} = {} THEN 1 ELSE 0 END)".format(X[i], val)
                 if column_naming == "indices":
                     sql_tmp_feature += " AS \"{}_{}\"".format((X[i]), j)
                 elif column_naming in ("values", "values_relaxed",):
@@ -673,7 +674,7 @@ def sql_from_one_hot_encoder(X: list,
 
 # ---#
 class memModel:
-	"""
+    """
 ---------------------------------------------------------------------------
 Independent machine learning models that can easily be deployed 
 using standard SQL or standard Python code.
@@ -681,346 +682,355 @@ using standard SQL or standard Python code.
 Parameters
 ----------
 model_type: str
-	The model type, one of the following: 'OneHotEncoder,' 'Normalizer,' 
+    The model type, one of the following: 'OneHotEncoder,' 'Normalizer,' 
     'SVD,' 'PCA,' 'BisectingKMeans,' 'KMeans,' 'NaiveBayes,' 
     'XGBoostClassifier,' 'XGBoostRegressor,' 'RandomForestClassifier,' 
     'RandomForestRegressor,' 'LinearSVR,' 'LinearSVC,' 'LogisticRegression,' 
     'LinearRegression'
 attributes: dict
-	Dictionary which includes all the model's attributes.
-		For OneHotEncoder: {"categories": List of the different feature categories.
-							"drop_first": Boolean, whether the first category
-										  should be dropped.
-							"column_naming": Appends categorical levels to column names 
-											 according to the specified method. 
-											 It can be set to 'indices' or 'values'.}
-		For LinearSVR, LinearSVC, LogisticRegression, LinearRegression: 
-						   {"coefficients": List of the model's coefficients.
-							"intercept": Intercept or constant value.}
-		For BisectingKMeans: 
-						   {"clusters": List of the model's cluster centers.
-							"left_child": List of the model's left children IDs.
-							"right_child": List of the model's right children IDs.
-							"p": The p corresponding to the one of the p-distances.}
-		For KMeans: 	   {"clusters": List of the model's cluster centers.
-							"p": The p corresponding to the one of the p-distances.}
-		For NearestCentroids:
-						   {"clusters": List of the model's cluster centers.
-							"p": The p corresponding to the one of the p-distances.
-							"classes": Represents the classes of the nearest centroids.}
-		For PCA:		   {"principal_components": Matrix of the principal components.
-							"mean": List of the input predictors average.}
-		For SVD:		   {"vectors": Matrix of the right singular vectors.
-							"values": List of the singular values.}
-		For Normalizer:	   {"values": List of tuples including the model's attributes.
+    Dictionary which includes all the model's attributes.
+        For OneHotEncoder: {"categories": List of the different feature categories.
+                            "drop_first": Boolean, whether the first category
+                                          should be dropped.
+                            "column_naming": Appends categorical levels to column names 
+                                             according to the specified method. 
+                                             It can be set to 'indices' or 'values'.}
+        For LinearSVR, LinearSVC, LogisticRegression, LinearRegression: 
+                           {"coefficients": List of the model's coefficients.
+                            "intercept": Intercept or constant value.}
+        For BisectingKMeans: 
+                           {"clusters": List of the model's cluster centers.
+                            "left_child": List of the model's left children IDs.
+                            "right_child": List of the model's right children IDs.
+                            "p": The p corresponding to the one of the p-distances.}
+        For KMeans:        {"clusters": List of the model's cluster centers.
+                            "p": The p corresponding to the one of the p-distances.}
+        For NearestCentroids:
+                           {"clusters": List of the model's cluster centers.
+                            "p": The p corresponding to the one of the p-distances.
+                            "classes": Represents the classes of the nearest centroids.}
+        For PCA:           {"principal_components": Matrix of the principal components.
+                            "mean": List of the input predictors average.}
+        For SVD:           {"vectors": Matrix of the right singular vectors.
+                            "values": List of the singular values.}
+        For Normalizer:       {"values": List of tuples including the model's attributes.
                                       The required tuple depends on the specified method: 
-									    'zscore': (mean, std)
-									    'robust_zscore': (median, mad)
-									    'minmax': (min, max)
-							"method": The model's category, one of the following: 'zscore', 
+                                       'zscore': (mean, std)
+                                       'robust_zscore': (median, mad)
+                                       'minmax': (min, max)
+                            "method": The model's category, one of the following: 'zscore', 
                                       'robust_zscore', or 'minmax'.}
-	"""
-	#
-	# Special Methods
-	#
-	# ---#
-	def __init__(
-		self,
-		model_type: str,
-		attributes: dict,
-	):
-		check_types([("attributes", attributes, [dict],), 
-					 ("model_type", model_type, ["OneHotEncoder", 
-					 							 "Normalizer",
-					 							 "SVD",
-					 							 "PCA",
-					 							 "BisectingKMeans",
-					 							 "KMeans",
-					 							 "NaiveBayes",
-					 							 "XGBoostClassifier",
-					 							 "XGBoostRegressor",
-					 							 "RandomForestClassifier",
-					 							 "RandomForestRegressor",
-					 							 "LinearSVR",
-					 							 "LinearSVC",
-					 							 "LogisticRegression",
-					 							 "LinearRegression",
-					 							 "NearestCentroids",],),])
-		attributes_ = {}
-		if model_type == "OneHotEncoder":
-			if "categories" not in attributes:
-				raise ParameterError("OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter.")
-			attributes_["categories"] = np.copy(attributes["categories"])
-			if "drop_first" not in attributes:
-				attributes_["drop_first"] = False
-			else:
-				attributes_["drop_first"] = attributes["drop_first"]
-			if "column_naming" not in attributes:
-				attributes_["column_naming"] = "indices"
-			else:
-				attributes_["column_naming"] = attributes["column_naming"]
-			check_types([("categories", attributes_["categories"], [list],),
-						 ("drop_first", attributes_["drop_first"], [bool],),
-						 ("column_naming", attributes_["column_naming"], ["indices", "values",],),])
-			represent = "<{}>\n\ncategories = {}\n\ndrop_first = {}\n\ncolumn_naming = {}".format(model_type, attributes_["categories"], attributes_["drop_first"], attributes_["column_naming"])
-		elif model_type in ("LinearSVR", "LinearSVC", "LogisticRegression", "LinearRegression",):
-			if ("coefficients" not in attributes or "intercept" not in attributes):
-				raise ParameterError("{}'s attributes must include a list with the 'coefficients' and the 'intercept' value.".format(model_type))
-			attributes_["coefficients"] = np.copy(attributes["coefficients"])
-			attributes_["intercept"] = attributes["intercept"]
-			check_types([("coefficients", attributes_["coefficients"], [list],),
-						 ("intercept", attributes_["intercept"], [int, float],),])
-			represent = "<{}>\n\ncoefficients = {}\n\nintercept = {}".format(model_type, attributes_["coefficients"], attributes_["intercept"])
-		elif model_type in ("BisectingKMeans",):
-			if ("clusters" not in attributes or "left_child" not in attributes or "right_child" not in attributes):
-				raise ParameterError("BisectingKMeans's attributes must include three lists: one with all the 'clusters' centers, one with all the cluster's right children, and one with all the cluster's left children.")
-			attributes_["clusters"] = np.copy(attributes["clusters"])
-			attributes_["left_child"] = np.copy(attributes["left_child"])
-			attributes_["right_child"] = np.copy(attributes["right_child"])
-			if "p" not in attributes:
-				attributes_["p"] = 2
-			else:
-				attributes_["p"] = attributes["p"]
-			check_types([("clusters", attributes_["clusters"], [list,],),
-						 ("left_child", attributes_["left_child"], [list,],),
-						 ("right_child", attributes_["right_child"], [list,],),
-						 ("p", attributes_["p"], [int,],),])
-			represent = "<{}>\n\nclusters = {}\n\nleft_child = {}\n\nright_child = {}\n\np = {}".format(model_type, attributes_["left_child"], attributes_["right_child"], attributes_["p"])
-		elif model_type in ("KMeans", "NearestCentroids",):
-			if ("clusters" not in attributes):
-				raise ParameterError("{}'s attributes must include a list with all the 'clusters' centers.".format(model_type))
-			attributes_["clusters"] = np.copy(attributes["clusters"])
-			if "p" not in attributes:
-				attributes_["p"] = 2
-			else:
-				attributes_["p"] = attributes["p"]
-			check_types([("clusters", attributes_["clusters"], [list,],),
-						 ("p", attributes_["p"], [int,],),])
-			represent = "<{}>\n\nclusters = {}\n\np = {}".format(model_type, attributes_["clusters"], attributes_["p"])
-			if model_type in ("NearestCentroids"):
-				if "classes" not in attributes:
-					attributes_["classes"] = None
-				else:
-					attributes_["classes"] = [c for c in attributes["classes"]]
-				check_types([("classes", attributes_["classes"], [list,],),])
-				represent += "\n\nclasses = {}".format(attributes_["classes"])
-		elif model_type in ("PCA",):
-			if ("principal_components" not in attributes or "mean" not in attributes):
-				raise ParameterError("PCA's attributes must include two lists: one with all the principal components and one with all the averages of each input feature.")
-			attributes_["principal_components"] = np.copy(attributes["principal_components"])
-			attributes_["mean"] = np.copy(attributes["mean"])
-			check_types([("principal_components", attributes_["principal_components"], [list,],),
-						 ("mean", attributes_["mean"], [list,],),])
-			represent = "<{}>\n\nprincipal_components = {}\n\nmean = {}".format(model_type, attributes_["principal_components"], attributes_["mean"])
-		elif model_type in ("SVD",):
-			if ("vectors" not in attributes or "values" not in attributes):
-				raise ParameterError("SVD's attributes must include 2 lists: one with all the right singular vectors and one with the singular values of each input feature.")
-			attributes_["vectors"] = np.copy(attributes["vectors"])
-			attributes_["values"] = np.copy(attributes["values"])
-			check_types([("vectors", attributes_["vectors"], [list,],),
-						 ("values", attributes_["values"], [list,],),])
-			represent = "<{}>\n\nvectors = {}\n\nvalues = {}".format(model_type, attributes_["vectors"], attributes_["values"])
-		elif model_type in ("Normalizer",):
-			if ("values" not in attributes or "method" not in attributes):
-				raise ParameterError("Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method.")
-			attributes_["values"] = np.copy(attributes["values"])
-			attributes_["method"] = attributes["method"]
-			check_types([("values", attributes_["values"], [list,],),
-						 ("method", attributes_["method"], ["minmax", "zscore", "robust_zscore",],),])
-			represent = "<{}>\n\nvalues = {}\n\nmethod = {}".format(model_type, attributes_["values"], attributes_["method"])
-		else:
-			raise ParameterError("Model type '{}' is not yet available.".format(self.model_type_))
-		self.attributes_ = attributes_
-		self.model_type_ = model_type
-		self.represent_ = represent
+    """
+    #
+    # Special Methods
+    #
+    # ---#
+    def __init__(
+        self,
+        model_type: str,
+        attributes: dict,
+    ):
+        check_types([("attributes", attributes, [dict],), 
+                     ("model_type", model_type, ["OneHotEncoder", 
+                                                  "Normalizer",
+                                                  "SVD",
+                                                  "PCA",
+                                                  "BisectingKMeans",
+                                                  "KMeans",
+                                                  "NaiveBayes",
+                                                  "XGBoostClassifier",
+                                                  "XGBoostRegressor",
+                                                  "RandomForestClassifier",
+                                                  "RandomForestRegressor",
+                                                  "LinearSVR",
+                                                  "LinearSVC",
+                                                  "LogisticRegression",
+                                                  "LinearRegression",
+                                                  "NearestCentroids",],),])
+        attributes_ = {}
+        if model_type == "OneHotEncoder":
+            if "categories" not in attributes:
+                raise ParameterError("OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter.")
+            attributes_["categories"] = attributes["categories"].copy()
+            if "drop_first" not in attributes:
+                attributes_["drop_first"] = False
+            else:
+                attributes_["drop_first"] = attributes["drop_first"]
+            if "column_naming" not in attributes:
+                attributes_["column_naming"] = "indices"
+            else:
+                attributes_["column_naming"] = attributes["column_naming"]
+            check_types([("categories", attributes_["categories"], [list],),
+                         ("drop_first", attributes_["drop_first"], [bool],),
+                         ("column_naming", attributes_["column_naming"], ["indices", "values", None,],),])
+            represent = "<{}>\n\ncategories = {}\n\ndrop_first = {}\n\ncolumn_naming = {}".format(model_type, attributes_["categories"], attributes_["drop_first"], attributes_["column_naming"])
+        elif model_type in ("LinearSVR", "LinearSVC", "LogisticRegression", "LinearRegression",):
+            if ("coefficients" not in attributes or "intercept" not in attributes):
+                raise ParameterError("{}'s attributes must include a list with the 'coefficients' and the 'intercept' value.".format(model_type))
+            attributes_["coefficients"] = np.copy(attributes["coefficients"])
+            attributes_["intercept"] = attributes["intercept"]
+            check_types([("coefficients", attributes_["coefficients"], [list],),
+                         ("intercept", attributes_["intercept"], [int, float],),])
+            represent = "<{}>\n\ncoefficients = {}\n\nintercept = {}".format(model_type, attributes_["coefficients"], attributes_["intercept"])
+        elif model_type in ("BisectingKMeans",):
+            if ("clusters" not in attributes or "left_child" not in attributes or "right_child" not in attributes):
+                raise ParameterError("BisectingKMeans's attributes must include three lists: one with all the 'clusters' centers, one with all the cluster's right children, and one with all the cluster's left children.")
+            attributes_["clusters"] = np.copy(attributes["clusters"])
+            attributes_["left_child"] = np.copy(attributes["left_child"])
+            attributes_["right_child"] = np.copy(attributes["right_child"])
+            if "p" not in attributes:
+                attributes_["p"] = 2
+            else:
+                attributes_["p"] = attributes["p"]
+            check_types([("clusters", attributes_["clusters"], [list,],),
+                         ("left_child", attributes_["left_child"], [list,],),
+                         ("right_child", attributes_["right_child"], [list,],),
+                         ("p", attributes_["p"], [int,],),])
+            represent = "<{}>\n\nclusters = {}\n\nleft_child = {}\n\nright_child = {}\n\np = {}".format(model_type, attributes_["clusters"], attributes_["left_child"], attributes_["right_child"], attributes_["p"])
+        elif model_type in ("KMeans", "NearestCentroids",):
+            if ("clusters" not in attributes):
+                raise ParameterError("{}'s attributes must include a list with all the 'clusters' centers.".format(model_type))
+            attributes_["clusters"] = np.copy(attributes["clusters"])
+            if "p" not in attributes:
+                attributes_["p"] = 2
+            else:
+                attributes_["p"] = attributes["p"]
+            check_types([("clusters", attributes_["clusters"], [list,],),
+                         ("p", attributes_["p"], [int,],),])
+            represent = "<{}>\n\nclusters = {}\n\np = {}".format(model_type, attributes_["clusters"], attributes_["p"])
+            if model_type in ("NearestCentroids"):
+                if "classes" not in attributes:
+                    attributes_["classes"] = None
+                else:
+                    attributes_["classes"] = [c for c in attributes["classes"]]
+                check_types([("classes", attributes_["classes"], [list,],),])
+                represent += "\n\nclasses = {}".format(attributes_["classes"])
+        elif model_type in ("PCA",):
+            if ("principal_components" not in attributes or "mean" not in attributes):
+                raise ParameterError("PCA's attributes must include two lists: one with all the principal components and one with all the averages of each input feature.")
+            attributes_["principal_components"] = np.copy(attributes["principal_components"])
+            attributes_["mean"] = np.copy(attributes["mean"])
+            check_types([("principal_components", attributes_["principal_components"], [list,],),
+                         ("mean", attributes_["mean"], [list,],),])
+            represent = "<{}>\n\nprincipal_components = {}\n\nmean = {}".format(model_type, attributes_["principal_components"], attributes_["mean"])
+        elif model_type in ("SVD",):
+            if ("vectors" not in attributes or "values" not in attributes):
+                raise ParameterError("SVD's attributes must include 2 lists: one with all the right singular vectors and one with the singular values of each input feature.")
+            attributes_["vectors"] = np.copy(attributes["vectors"])
+            attributes_["values"] = np.copy(attributes["values"])
+            check_types([("vectors", attributes_["vectors"], [list,],),
+                         ("values", attributes_["values"], [list,],),])
+            represent = "<{}>\n\nvectors = {}\n\nvalues = {}".format(model_type, attributes_["vectors"], attributes_["values"])
+        elif model_type in ("Normalizer",):
+            if ("values" not in attributes or "method" not in attributes):
+                raise ParameterError("Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method.")
+            attributes_["values"] = np.copy(attributes["values"])
+            attributes_["method"] = attributes["method"]
+            check_types([("values", attributes_["values"], [list,],),
+                         ("method", attributes_["method"], ["minmax", "zscore", "robust_zscore",],),])
+            represent = "<{}>\n\nvalues = {}\n\nmethod = {}".format(model_type, attributes_["values"], attributes_["method"])
+        else:
+            raise ParameterError("Model type '{}' is not yet available.".format(self.model_type_))
+        self.attributes_ = attributes_
+        self.model_type_ = model_type
+        self.represent_ = represent
 
-	# ---#
-	def __repr__(self):
-		return self.represent_
+    # ---#
+    def __repr__(self):
+        return self.represent_
 
-	#
-	# Methods
-	#
-	# ---#
-	def get_attributes(self,):
-		"""
-	---------------------------------------------------------------------------
-	Returns model's attributes.
-		"""
-		return self.attributes_
+    #
+    # Methods
+    #
+    # ---#
+    def get_attributes(self,):
+        """
+    ---------------------------------------------------------------------------
+    Returns model's attributes.
+        """
+        return self.attributes_
 
-	# ---#
-	def set_attributes(self, attributes: dict,):
-		"""
-	---------------------------------------------------------------------------
-	Sets new model's attributes.
+    # ---#
+    def set_attributes(self, attributes: dict,):
+        """
+    ---------------------------------------------------------------------------
+    Sets new model's attributes.
 
-	Parameters
-	----------
-	attributes: dict
-		New attributes. See method '__init__' for more information.
-		"""
-		self.__init__(model_type=self.model_type_, attributes=attributes)
+    Parameters
+    ----------
+    attributes: dict
+        New attributes. See method '__init__' for more information.
+        """
+        attributes_tmp = {}
+        for elem in self.attributes_:
+            attributes_tmp[elem] = self.attributes_[elem]
+        for elem in attributes:
+            attributes_tmp[elem] = attributes[elem]
+        self.__init__(model_type=self.model_type_, attributes=attributes_tmp)
 
-	# ---#
-	def predict(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Predicts using the model's attributes.
+    # ---#
+    def predict(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Predicts using the model's attributes.
 
-	Parameters
-	----------
-	X: list / numpy.array
-		data.
+    Parameters
+    ----------
+    X: list / numpy.array
+        data.
 
-	Returns
-	-------
-	numpy.array
-		Predicted values
-		"""
-		if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
-			return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
-		elif self.model_type_ in ("KMeans",):
-			return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
-		elif self.model_type_ in ("NearestCentroids",):
-			return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
-		elif self.model_type_ in ("BisectingKMeans",):
-			return predict_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
-		else:
-			raise FunctionError("Method 'predict' is not available for model type '{}'.".format(self.model_type_))
+    Returns
+    -------
+    numpy.array
+        Predicted values
+        """
+        if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
+            return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+        elif self.model_type_ in ("KMeans",):
+            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
+        elif self.model_type_ in ("NearestCentroids",):
+            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
+        elif self.model_type_ in ("BisectingKMeans",):
+            return predict_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+        else:
+            raise FunctionError("Method 'predict' is not available for model type '{}'.".format(self.model_type_))
 
-	# ---#
-	def predict_sql(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model.
+    # ---#
+    def predict_sql(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model.
 
-	Parameters
-	----------
-	X: list
-		Names or values of the input predictors.
+    Parameters
+    ----------
+    X: list
+        Names or values of the input predictors.
 
-	Returns
-	-------
-	str
-		SQL code
-		"""
-		if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
-			return sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
-		elif self.model_type_ in ("KMeans",):
-			return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
-		elif self.model_type_ in ("NearestCentroids",):
-			return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
-		elif self.model_type_ in ("BisectingKMeans",):
-			return sql_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
-		else:
-			raise FunctionError("Method 'predict_sql' is not available for model type '{}'.".format(self.model_type_)) 
+    Returns
+    -------
+    str
+        SQL code
+        """
+        if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
+            result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+            if self.model_type_ in ("LinearSVC", "LogisticRegression",):
+                result = "(({}) > 0.5)::int".format(result)
+            return result
+        elif self.model_type_ in ("KMeans",):
+            return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
+        elif self.model_type_ in ("NearestCentroids",):
+            return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
+        elif self.model_type_ in ("BisectingKMeans",):
+            return sql_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+        else:
+            raise FunctionError("Method 'predict_sql' is not available for model type '{}'.".format(self.model_type_)) 
 
-	# ---#
-	def predict_proba(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Predicts probabilities using the model's attributes.
+    # ---#
+    def predict_proba(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Predicts probabilities using the model's attributes.
 
-	Parameters
-	----------
-	X: list / numpy.array
-		data.
+    Parameters
+    ----------
+    X: list / numpy.array
+        data.
 
-	Returns
-	-------
-	numpy.array
-		Predicted values
-		"""
-		if self.model_type_ in ("LinearSVC", "LogisticRegression",):
-			return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_, return_proba=True,)
-		elif self.model_type_ in ("KMeans",):
-			return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
-		elif self.model_type_ in ("NearestCentroids",):
-			return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
-		else:
-			raise FunctionError("Method 'predict_proba' is not available for model type '{}'.".format(self.model_type_))
+    Returns
+    -------
+    numpy.array
+        Predicted values
+        """
+        if self.model_type_ in ("LinearSVC", "LogisticRegression",):
+            return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_, return_proba=True,)
+        elif self.model_type_ in ("KMeans",):
+            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
+        elif self.model_type_ in ("NearestCentroids",):
+            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+        else:
+            raise FunctionError("Method 'predict_proba' is not available for model type '{}'.".format(self.model_type_))
 
-	# ---#
-	def predict_proba_sql(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the probabilities model.
+    # ---#
+    def predict_proba_sql(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the probabilities model.
 
-	Parameters
-	----------
-	X: list
-		Names or values of the input predictors.
+    Parameters
+    ----------
+    X: list
+        Names or values of the input predictors.
 
-	Returns
-	-------
-	str
-		SQL code
-		"""
-		if self.model_type_ in ("LinearSVC", "LogisticRegression",):
-			return sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_, return_proba=True,)
-		elif self.model_type_ in ("KMeans",):
-			return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
-		elif self.model_type_ in ("NearestCentroids",):
-			return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
-		else:
-			raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
+    Returns
+    -------
+    str
+        SQL code
+        """
+        if self.model_type_ in ("LinearSVC", "LogisticRegression",):
+            result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+            return ["1 - ({})".format(result), result] 
+        elif self.model_type_ in ("KMeans",):
+            return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
+        elif self.model_type_ in ("NearestCentroids",):
+            return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+        else:
+            raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
 
-	# ---#
-	def transform(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Transforms the data using the model's attributes.
+    # ---#
+    def transform(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Transforms the data using the model's attributes.
 
-	Parameters
-	----------
-	X: list / numpy.array
-		Data to transform.
+    Parameters
+    ----------
+    X: list / numpy.array
+        Data to transform.
 
-	Returns
-	-------
-	numpy.array
-		Transformed data
-		"""
-		if self.model_type_ in ("Normalizer",):
-			return transform_from_normalizer(X, self.attributes_["values"], self.attributes_["method"],)
-		elif self.model_type_ in ("PCA",):
-			return transform_from_pca(X, self.attributes_["principal_components"], self.attributes_["mean"],)
-		elif self.model_type_ in ("SVD",):
-			return transform_from_svd(X, self.attributes_["vectors"], self.attributes_["values"],)
-		elif self.model_type_ in ("OneHotEncoder",):
-			return transform_from_one_hot_encoder(X, self.attributes_["categories"], self.attributes_["drop_first"],)
-		elif self.model_type_ in ("KMeans", "NearestCentroids", "BisectingKMeans",):
-			return predict_from_clusters(X, self.attributes_["clusters"], return_distance_clusters=True)
-		else:
-			raise FunctionError("Method 'transform' is not available for model type '{}'.".format(self.model_type_))
+    Returns
+    -------
+    numpy.array
+        Transformed data
+        """
+        if self.model_type_ in ("Normalizer",):
+            return transform_from_normalizer(X, self.attributes_["values"], self.attributes_["method"],)
+        elif self.model_type_ in ("PCA",):
+            return transform_from_pca(X, self.attributes_["principal_components"], self.attributes_["mean"],)
+        elif self.model_type_ in ("SVD",):
+            return transform_from_svd(X, self.attributes_["vectors"], self.attributes_["values"],)
+        elif self.model_type_ in ("OneHotEncoder",):
+            return transform_from_one_hot_encoder(X, self.attributes_["categories"], self.attributes_["drop_first"],)
+        elif self.model_type_ in ("KMeans", "NearestCentroids", "BisectingKMeans",):
+            return predict_from_clusters(X, self.attributes_["clusters"], return_distance_clusters=True)
+        else:
+            raise FunctionError("Method 'transform' is not available for model type '{}'.".format(self.model_type_))
 
-	# ---#
-	def transform_sql(self, X: list):
-		"""
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model.
+    # ---#
+    def transform_sql(self, X: list):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model.
 
-	Parameters
-	----------
-	X: list
-		Name or values of the input predictors.
+    Parameters
+    ----------
+    X: list
+        Name or values of the input predictors.
 
-	Returns
-	-------
-	list
-		SQL code
-		"""
-		if self.model_type_ in ("Normalizer",):
-			return sql_from_normalizer(X, self.attributes_["values"], self.attributes_["method"],)
-		elif self.model_type_ in ("PCA",):
-			return sql_from_pca(X, self.attributes_["principal_components"], self.attributes_["mean"],)
-		elif self.model_type_ in ("SVD",):
-			return sql_from_svd(X, self.attributes_["vectors"], self.attributes_["values"],)
-		elif self.model_type_ in ("OneHotEncoder",):
-			return sql_from_one_hot_encoder(X, self.attributes_["categories"], self.attributes_["drop_first"],)
-		elif self.model_type_ in ("KMeans", "NearestCentroids", "BisectingKMeans",):
-			return sql_from_clusters(X, self.attributes_["clusters"], return_distance_clusters=True)
-		else:
-			raise FunctionError("Method 'transform_sql' is not available for model type '{}'.".format(self.model_type_))
+    Returns
+    -------
+    list
+        SQL code
+        """
+        if self.model_type_ in ("Normalizer",):
+            return sql_from_normalizer(X, self.attributes_["values"], self.attributes_["method"],)
+        elif self.model_type_ in ("PCA",):
+            return sql_from_pca(X, self.attributes_["principal_components"], self.attributes_["mean"],)
+        elif self.model_type_ in ("SVD",):
+            return sql_from_svd(X, self.attributes_["vectors"], self.attributes_["values"],)
+        elif self.model_type_ in ("OneHotEncoder",):
+            return sql_from_one_hot_encoder(X, self.attributes_["categories"], self.attributes_["drop_first"], self.attributes_["column_naming"],)
+        elif self.model_type_ in ("KMeans", "NearestCentroids", "BisectingKMeans",):
+            return sql_from_clusters(X, self.attributes_["clusters"], return_distance_clusters=True)
+        else:
+            raise FunctionError("Method 'transform_sql' is not available for model type '{}'.".format(self.model_type_))
 

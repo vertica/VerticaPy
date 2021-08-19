@@ -224,12 +224,12 @@ def check_types(types_list: list = [],):
             if not (isinstance(sub_elem, type)):
                 list_check = True
         if list_check:
-            if not (isinstance(elem[1], str)):
+            if not (isinstance(elem[1], str)) and (elem[1] != None):
                 warning_message = "Parameter '{}' must be of type {}, found type {}".format(
                     elem[0], str, type(elem[1])
                 )
                 warnings.warn(warning_message, Warning)
-            if elem[1].lower() not in elem[2] and elem[1] not in elem[2]:
+            if (elem[1] != None) and (elem[1].lower() not in elem[2] and elem[1] not in elem[2]):
                 warning_message = "Parameter '{}' must be in [{}], found '{}'".format(
                     elem[0], "|".join(elem[2]), elem[1]
                 )
