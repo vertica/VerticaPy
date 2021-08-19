@@ -63,21 +63,21 @@ def predict_from_coef(X: Union[list, np.array],
                       return_proba: bool = False,):
     """
     ---------------------------------------------------------------------------
-    Predicts using the input attributes.
+    Predicts using a linear regression model and the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        Data on which to make the prediction.
     coefficients: list / numpy.array
         List of the model's coefficients.
     intercept: float
-        Intercept's value.
+        The intercept or constant value.
     method: str, optional
-        Model's category. It can be 'LinearRegression', 'LinearSVR', 
-        'LogisticRegression' or 'LinearSVC'.
+        The model category, one of the following: 'LinearRegression', 'LinearSVR', 
+        'LogisticRegression', or 'LinearSVC'.
     return_proba: bool, optional
-        If set to True and method is set to 'LogisticRegression' or 'LinearSVC', 
+        If set to True and the method is set to 'LogisticRegression' or 'LinearSVC', 
         the probability is returned.
 
     Returns
@@ -115,14 +115,14 @@ def sql_from_coef(X: list,
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        The name or values of the input predictors.
     coefficients: list
         List of the model's coefficients.
     intercept: float
-        Intercept's value.
+        The intercept or constant value.
     method: str, optional
-        Model's category. It can be 'LinearRegression', 'LinearSVR', 
-        'LogisticRegression' or 'LinearSVC'.
+        The model category, one of the following: 'LinearRegression', 'LinearSVR', 
+        'LogisticRegression', or 'LinearSVC'.
 
     Returns
     -------
@@ -134,7 +134,7 @@ def sql_from_coef(X: list,
                  ("intercept", intercept, [float, int,],),
                  ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),
                  ("return_proba", return_proba, [bool],),])
-    assert len(X) == len(coefficients), ParameterError("The length of parameter 'X' must be the same as the number of coefficients.")
+    assert len(X) == len(coefficients), ParameterError("The length of parameter 'X' must be equal to the number of coefficients.")
     sql = [str(intercept)] + [f"{coefficients[idx]} * {(X[idx])}" for idx in range(len(coefficients))]
     sql = " + ".join(sql)
     if method in ("LogisticRegression",):
@@ -151,12 +151,12 @@ def predict_from_bisecting_kmeans(X: Union[list, np.array],
                                   p: int = 2,):
     """
     ---------------------------------------------------------------------------
-    Predicts using the input attributes.
+    Predicts using a bisecting k-means model and the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        The data on which to make the prediction.
     clusters: list / numpy.array
         List of the model's cluster centers.
     left_child: list / numpy.array
@@ -202,13 +202,13 @@ def sql_from_bisecting_kmeans(X: list,
                               p: int = 2,):
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a bisecting kmeans model using its 
+    Returns the SQL code needed to deploy a bisecting k-means model using its 
     attributes.
 
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        The names or values of the input predictors.
     clusters: list
         List of the model's cluster centers.
     left_child: list
@@ -262,12 +262,12 @@ def predict_from_clusters(X: Union[list, np.array],
                           p: int = 2,):
     """
     ---------------------------------------------------------------------------
-    Predicts using the input attributes.
+    Predicts using a k-means or nearest centroid model and the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        The data on which to make the prediction.
     clusters: list / numpy.array
         List of the model's cluster centers.
     return_distance_clusters: bool, optional
@@ -275,7 +275,7 @@ def predict_from_clusters(X: Union[list, np.array],
     return_proba: bool, optional
         If set to True, the probability to belong to the clusters is returned.
     classes: list / numpy.array, optional
-        If not empty, it represents the nearest centroids classes.
+        The classes for the nearest centroids model.
     p: int, optional
         The p corresponding to the one of the p-distances.
 
@@ -290,7 +290,7 @@ def predict_from_clusters(X: Union[list, np.array],
                  ("return_proba", return_proba, [bool,],),
                  ("classes", classes, [list,],),
                  ("p", p, [int,],),])
-    assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' can not be set to True at the same time.")
+    assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True.")
     centroids = np.array(clusters)
     result = []
     for centroid in centroids:
@@ -315,13 +315,13 @@ def sql_from_clusters(X: list,
                       classes: list = []):
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a kmeans / nearest centroids model 
+    Returns the SQL code needed to deploy a k-means or nearest centroids model 
     using its attributes.
 
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        The names or values of the input predictors.
     clusters: list
         List of the model's cluster centers.
     return_distance_clusters: bool, optional
@@ -329,7 +329,7 @@ def sql_from_clusters(X: list,
     return_proba: bool, optional
         If set to True, the probability to belong to the clusters is returned.
     classes: list, optional
-        If not empty, it represents the nearest centroids classes.
+        The classes for the nearest centroids model.
 
     Returns
     -------
@@ -343,7 +343,7 @@ def sql_from_clusters(X: list,
                  ("classes", classes, [list],),])
     for c in clusters:
         assert len(X) == len(c), ParameterError("The length of parameter 'X' must be the same as the length of each cluster.")
-    assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' can not be set to True at the same time.")
+    assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' cannot be set to True.")
     classes_tmp = []
     for i in range(len(classes)):
         val = classes[i]
@@ -385,16 +385,16 @@ def transform_from_pca(X: Union[list, np.array],
                        mean: Union[list, np.array]):
     """
     ---------------------------------------------------------------------------
-    Transforms the data using the input attributes.
+    Transforms the data with a PCA model using the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        Data to transform.
     principal_components: list / numpy.array
         Matrix of the principal components.
     mean: list / numpy.array
-        List of the input predictors average.
+        List of the averages of each input feature.
 
     Returns
     -------
@@ -417,16 +417,16 @@ def sql_from_pca(X: list,
                  mean: list):
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a pca model using its attributes.
+    Returns the SQL code needed to deploy a PCA model using its attributes.
 
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        Names or values of the input predictors.
     principal_components: list
         Matrix of the principal components.
     mean: list
-        List of the input predictors average.
+        List of the averages of each input feature.
 
     Returns
     -------
@@ -436,7 +436,7 @@ def sql_from_pca(X: list,
     check_types([("X", X, [list],), 
                  ("principal_components", principal_components, [list],),
                  ("mean", mean, [list],),])
-    assert len(X) == len(mean), ParameterError("The length of parameter 'X' must be the same as the length of the vector 'mean'.")
+    assert len(X) == len(mean), ParameterError("The length of parameter 'X' must be equal to the length of the vector 'mean'.")
     sql = []
     for i in range(len(X)):
         sql_tmp = []
@@ -451,16 +451,16 @@ def transform_from_svd(X: list,
                        values: list):
     """
     ---------------------------------------------------------------------------
-    Transforms the data using the input attributes.
+    Transforms the data with an SVD model using the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        Data to transform.
     vectors: list / numpy.array
         Matrix of the right singular vectors.
     values: list / numpy.array
-        List of the singular values.
+        List of the singular values for each input feature.
 
     Returns
     -------
@@ -482,7 +482,7 @@ def sql_from_svd(X: list,
                  values: list):
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a svd model using its attributes.
+    Returns the SQL code needed to deploy a SVD model using its attributes.
 
     Parameters
     ----------
@@ -491,7 +491,7 @@ def sql_from_svd(X: list,
     vectors: list
         List of the model's right singular vectors.
     values: list
-        List of the singular values.
+        List of the singular values for each input feature.
 
     Returns
     -------
@@ -501,7 +501,7 @@ def sql_from_svd(X: list,
     check_types([("X", X, [list],), 
                  ("vectors", vectors, [list],),
                  ("values", values, [list],),])
-    assert len(X) == len(values), ParameterError("The length of parameter 'X' must be the same as the length of the vector 'values'.")
+    assert len(X) == len(values), ParameterError("The length of parameter 'X' must be equal to the length of the vector 'values'.")
     sql = []
     for i in range(len(X)):
         sql_tmp = []
@@ -516,19 +516,19 @@ def transform_from_normalizer(X: list,
                               method: str = "zscore",):
     """
     ---------------------------------------------------------------------------
-    Transforms the data using the input attributes.
+    Transforms the data with a normalizer model using the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        The data to transform.
     values: list
-        List of tuples including the model's attributes:
-            (mean, std) when method is set to 'zscore'.
-            (median, mad) when method is set to 'robust_zscore'.
-            (min, max) when method is set to 'minmax'.
+        List of tuples. These tuples depend on the specified method:
+            'zscore': (mean, std)
+            'robust_zscore': (median, mad)
+            'minmax': (min, max)
     method: str, optional
-        Model's category. It can be 'zscore', 'robust_zscore' or 'minmax'.
+        The model's category, one of the following: 'zscore', 'robust_zscore', or 'minmax'.
 
     Returns
     -------
@@ -554,14 +554,15 @@ def sql_from_normalizer(X: list,
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        Names or values of the input predictors.
     values: list
-        List of tuples including the model's attributes:
-            (mean, std) when method is set to 'zscore'.
-            (median, mad) when method is set to 'robust_zscore'.
-            (min, max) when method is set to 'minmax'.
+        List of tuples, including the model's attributes. These required tuple  
+        depends on the specified method:
+            'zscore': (mean, std)
+            'robust_zscore': (median, mad)
+            'minmax': (min, max)
     method: str, optional
-        Model's category. It can be 'zscore', 'robust_zscore' or 'minmax'.
+        The model's category, one of the following: 'zscore', 'robust_zscore', or 'minmax'.
 
     Returns
     -------
@@ -571,7 +572,7 @@ def sql_from_normalizer(X: list,
     check_types([("X", X, [list],), 
                  ("values", values, [list],),
                  ("method", method, ["zscore", "robust_zscore", "minmax"],),])
-    assert len(X) == len(values), ParameterError("The length of parameter 'X' must be the same as the length of the list 'values'.")
+    assert len(X) == len(values), ParameterError("The length of parameter 'X' must be equal to the length of the list 'values'.")
     sql = []
     for i in range(len(X)):
         sql += ["({} - {}) / {}".format(X[i], values[i][0], values[i][1] - values[i][0] if method == "minmax" else values[i][1],)]
@@ -583,14 +584,14 @@ def transform_from_one_hot_encoder(X: list,
                                    drop_first: bool = False,):
     """
     ---------------------------------------------------------------------------
-    Transforms the data using the input attributes.
+    Transforms the data with a one-hot encoder model using the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
-        data.
+        Data to transform.
     categories: list / numpy.array
-        List of the different input columns categories.
+        List of the categories of the different input columns.
     drop_first: bool, optional
         If set to False, the first dummy of each category will be dropped.
 
@@ -621,22 +622,22 @@ def sql_from_one_hot_encoder(X: list,
                              column_naming: str = None):
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a one hot encoder model using its 
+    Returns the SQL code needed to deploy a one-hot encoder model using its 
     attributes.
 
     Parameters
     ----------
     X: list
-        input predictors name or values.
+        The names or values of the input predictors.
     categories: list
-        List of the different input columns categories.
+        List of the categories of the different input columns.
     drop_first: bool, optional
         If set to False, the first dummy of each category will be dropped.
     column_naming: str, optional
         Appends categorical levels to column names according to the specified method:
             indices                : Uses integer indices to represent categorical 
                                      levels.
-            values/values_relaxed  : Both methods use categorical level names. If 
+            values/values_relaxed  : Both methods use categorical-level names. If 
                                      duplicate column names occur, the function 
                                      attempts to disambiguate them by appending _n, 
                                      where n is a zero-based integer index (_0, _1,…).
@@ -650,7 +651,7 @@ def sql_from_one_hot_encoder(X: list,
                  ("categories", categories, [list],),
                  ("drop_first", drop_first, [bool],),
                  ("column_naming", column_naming, ["indices", "values", "values_relaxed",],),])
-    assert len(X) == len(categories), ParameterError("The length of parameter 'X' must be the same as the length of the list 'values'.")
+    assert len(X) == len(categories), ParameterError("The length of parameter 'X' must be equal to the length of the list 'values'.")
     sql = []
     for i in range(len(X)):
         sql_tmp = []
@@ -674,26 +675,28 @@ def sql_from_one_hot_encoder(X: list,
 class memModel:
 	"""
 ---------------------------------------------------------------------------
-Independant ML Models which can easily be deployed using standard SQL or 
-standard Python code.
+Independent machine learning models that can easily be deployed 
+using standard SQL or standard Python code.
 
 Parameters
 ----------
 model_type: str
-	Model's type. It can be in [OneHotEncoder, Normalizer, SVD, PCA, BisectingKMeans,
-	KMeans, NaiveBayes, XGBoostClassifier, XGBoostRegressor, RandomForestClassifier, 
-	RandomForestRegressor, LinearSVR, LinearSVC, LogisticRegression, LinearRegression]
+	The model type, one of the following: 'OneHotEncoder,' 'Normalizer,' 
+    'SVD,' 'PCA,' 'BisectingKMeans,' 'KMeans,' 'NaiveBayes,' 
+    'XGBoostClassifier,' 'XGBoostRegressor,' 'RandomForestClassifier,' 
+    'RandomForestRegressor,' 'LinearSVR,' 'LinearSVC,' 'LogisticRegression,' 
+    'LinearRegression'
 attributes: dict
 	Dictionary which includes all the model's attributes.
-		For OneHotEncoder: {"categories": List of the different features categories.
-							"drop_first": Boolean which indicates if the first category
+		For OneHotEncoder: {"categories": List of the different feature categories.
+							"drop_first": Boolean, whether the first category
 										  should be dropped.
 							"column_naming": Appends categorical levels to column names 
 											 according to the specified method. 
 											 It can be set to 'indices' or 'values'.}
 		For LinearSVR, LinearSVC, LogisticRegression, LinearRegression: 
 						   {"coefficients": List of the model's coefficients.
-							"intercept": Intercept's value.}
+							"intercept": Intercept or constant value.}
 		For BisectingKMeans: 
 						   {"clusters": List of the model's cluster centers.
 							"left_child": List of the model's left children IDs.
@@ -704,17 +707,18 @@ attributes: dict
 		For NearestCentroids:
 						   {"clusters": List of the model's cluster centers.
 							"p": The p corresponding to the one of the p-distances.
-							"classes": Represents the nearest centroids classes.}
+							"classes": Represents the classes of the nearest centroids.}
 		For PCA:		   {"principal_components": Matrix of the principal components.
 							"mean": List of the input predictors average.}
 		For SVD:		   {"vectors": Matrix of the right singular vectors.
 							"values": List of the singular values.}
-		For Normalizer:	   {"values": List of tuples including the model's attributes:
-									  (mean, std) when method is set to 'zscore'.
-									  (median, mad) when method is set to 'robust_zscore'.
-									  (min, max) when method is set to 'minmax'.
-							"method": Model's category. It can be 'zscore', 'robust_zscore' 
-									  or 'minmax'.}
+		For Normalizer:	   {"values": List of tuples including the model's attributes.
+                                      The required tuple depends on the specified method: 
+									    'zscore': (mean, std)
+									    'robust_zscore': (median, mad)
+									    'minmax': (min, max)
+							"method": The model's category, one of the following: 'zscore', 
+                                      'robust_zscore', or 'minmax'.}
 	"""
 	#
 	# Special Methods
@@ -745,7 +749,7 @@ attributes: dict
 		attributes_ = {}
 		if model_type == "OneHotEncoder":
 			if "categories" not in attributes:
-				raise ParameterError("OneHotEncoder's attributes must include a list with all the levels 'categories'.")
+				raise ParameterError("OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter.")
 			attributes_["categories"] = np.copy(attributes["categories"])
 			if "drop_first" not in attributes:
 				attributes_["drop_first"] = False
@@ -769,7 +773,7 @@ attributes: dict
 			represent = "<{}>\n\ncoefficients = {}\n\nintercept = {}".format(model_type, attributes_["coefficients"], attributes_["intercept"])
 		elif model_type in ("BisectingKMeans",):
 			if ("clusters" not in attributes or "left_child" not in attributes or "right_child" not in attributes):
-				raise ParameterError("BisectingKMeans's attributes must include 3 lists: one with all the 'clusters' centers, one with all the cluster's right children and one with all the cluster's left children.")
+				raise ParameterError("BisectingKMeans's attributes must include three lists: one with all the 'clusters' centers, one with all the cluster's right children, and one with all the cluster's left children.")
 			attributes_["clusters"] = np.copy(attributes["clusters"])
 			attributes_["left_child"] = np.copy(attributes["left_child"])
 			attributes_["right_child"] = np.copy(attributes["right_child"])
@@ -802,7 +806,7 @@ attributes: dict
 				represent += "\n\nclasses = {}".format(attributes_["classes"])
 		elif model_type in ("PCA",):
 			if ("principal_components" not in attributes or "mean" not in attributes):
-				raise ParameterError("PCA's attributes must include 2 lists: one with all the principal components and one with all the features average.")
+				raise ParameterError("PCA's attributes must include two lists: one with all the principal components and one with all the averages of each input feature.")
 			attributes_["principal_components"] = np.copy(attributes["principal_components"])
 			attributes_["mean"] = np.copy(attributes["mean"])
 			check_types([("principal_components", attributes_["principal_components"], [list,],),
@@ -810,7 +814,7 @@ attributes: dict
 			represent = "<{}>\n\nprincipal_components = {}\n\nmean = {}".format(model_type, attributes_["principal_components"], attributes_["mean"])
 		elif model_type in ("SVD",):
 			if ("vectors" not in attributes or "values" not in attributes):
-				raise ParameterError("SVD's attributes must include 2 lists: one with all the right singular vectors and one with all the singular values.")
+				raise ParameterError("SVD's attributes must include 2 lists: one with all the right singular vectors and one with the singular values of each input feature.")
 			attributes_["vectors"] = np.copy(attributes["vectors"])
 			attributes_["values"] = np.copy(attributes["values"])
 			check_types([("vectors", attributes_["vectors"], [list,],),
@@ -894,7 +898,7 @@ attributes: dict
 	Parameters
 	----------
 	X: list
-		input predictors name or values.
+		Names or values of the input predictors.
 
 	Returns
 	-------
@@ -941,12 +945,12 @@ attributes: dict
 	def predict_proba_sql(self, X: list):
 		"""
 	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model probabilities.
+	Returns the SQL code needed to deploy the probabilities model.
 
 	Parameters
 	----------
 	X: list
-		input predictors name or values.
+		Names or values of the input predictors.
 
 	Returns
 	-------
@@ -966,12 +970,12 @@ attributes: dict
 	def transform(self, X: list):
 		"""
 	---------------------------------------------------------------------------
-	Transforms using the model's attributes.
+	Transforms the data using the model's attributes.
 
 	Parameters
 	----------
 	X: list / numpy.array
-		data.
+		Data to transform.
 
 	Returns
 	-------
@@ -1000,7 +1004,7 @@ attributes: dict
 	Parameters
 	----------
 	X: list
-		input predictors name or values.
+		Name or values of the input predictors.
 
 	Returns
 	-------
