@@ -63,6 +63,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
+from verticapy.learn.memmodel import *
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -368,7 +369,7 @@ Main Class for Vertica Model
         return tablesample(values=importances).transpose()
 
     # ---#
-    def get_attr(self, attr_name: str = ""):
+    def get_attr(self, attr_name: str = "",):
         """
 	---------------------------------------------------------------------------
 	Returns the model attribute.
@@ -2432,7 +2433,7 @@ Main Class for Vertica Model
             func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(self.parameters["p"] if self.type == "NearestCentroid" else 2, self.parameters["p"] if self.type == "NearestCentroid" else 2)
             func += "\tresult = np.column_stack(result)\n"
             if self.type == "NearestCentroid" and return_proba and not(return_distance_clusters):
-                func += "\tresult = result / np.sum(result, axis=1)[:,None]\n"
+                func += "\t1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:,None]\n"
             elif not(return_distance_clusters):
                 func += "\tresult = np.argmin(result, axis=1)\n"
                 if self.type == "NearestCentroid" and self.classes_ != [i for i in range(len(self.classes_))]:
@@ -2638,7 +2639,7 @@ Main Class for Vertica Model
             func += "\t\t\t\treturn predict_tree(tree, left_node, X)\n"
             func += "\t\t\telse:\n"
             func += "\t\t\t\treturn predict_tree(tree, right_node, X)\n"
-            func += "\tdef predict_tree_final(X):\n".format(n)
+            func += "\tdef predict_tree_final(X):\n"
             func += "\t\tresult = [predict_tree(tree, 0, X,) for tree in tree_list]\n"
             if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
                 func += "\t\tall_classes_score = {}\n"
@@ -2710,19 +2711,7 @@ Main Class for Vertica Model
             X = [elem for elem in self.X]
         assert len(X) == len(self.X), ParameterError("The length of parameter 'X' must be the same as the number of predictors.")
         if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
-            coefs = self.coef_["coefficient"]
-            sql = []
-            for idx, coef in enumerate(coefs):
-                if idx == 0:
-                    sql += [str(coef)]
-                else:
-                    sql += [f"{coef} * {X[idx - 1]}"]
-            sql = " + ".join(sql)
-            if self.type in ("LogisticRegression",):
-                return f"1 / (1 + EXP(- ({sql})))"
-            elif self.type in ("LinearSVC",):
-                return f"1 - 1 / (1 + EXP({sql}))"
-            return sql
+            return sql_from_coef(X, self.coef_["coefficient"][1:], self.coef_["coefficient"][0], self.type)
         elif self.type in ("NaiveBayes",):
             if sorted(self.classes_) == [0, 1]:
                 vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
@@ -2792,95 +2781,35 @@ Main Class for Vertica Model
                 raise "MulticlassClassifier are not yet supported for method 'to_sql'."
         elif self.type in ("BisectingKMeans",):
             bktree = self.get_attr("BKTree")
-            cluster = [elem[1:-7] for elem in bktree.to_list()]
-            clusters_distance = []
-            for elem in cluster:
-                list_tmp = []
-                for idx, col in enumerate(X):
-                    list_tmp += ["POWER({} - {}, 2)".format(X[idx], elem[idx])]
-                clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
-            def predict_tree(tree_dict, node_id: int, clusters_distance: list):
-                if tree_dict["left_child"][node_id] == tree_dict["right_child"][node_id] == None:
-                    return int(node_id)
-                else:
-                    right_node = int(tree_dict["right_child"][node_id])
-                    left_node = int(tree_dict["left_child"][node_id])
-                    return "(CASE WHEN {} < {} THEN {} ELSE {} END)".format(clusters_distance[left_node], clusters_distance[right_node], predict_tree(tree_dict, left_node, clusters_distance), predict_tree(tree_dict, right_node, clusters_distance))
-            sql_final = "(CASE WHEN {} THEN NULL ELSE {} END)".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]), predict_tree(bktree, 0, clusters_distance))
-            return sql_final
+            return sql_from_bisecting_kmeans(X, [c[1:-7] for c in bktree.to_list()], bktree["left_child"], bktree["right_child"])
         elif self.type in ("KMeans",):
-            cluster = self.get_attr("centers").to_list()
-            clusters_distance = []
-            for elem in cluster:
-                list_tmp = []
-                for idx, col in enumerate(X):
-                    list_tmp += ["POWER({} - {}, 2)".format(X[idx], elem[idx])]
-                clusters_distance += ["SQRT(" + " + ".join(list_tmp) + ")"]
-            sql = []
-            k = len(clusters_distance)
-            for i in range(k):
-                list_tmp = []
-                for j in range(i):
-                    list_tmp += ["{} <= {}".format(clusters_distance[i], clusters_distance[j])]
-                sql += [" AND ".join(list_tmp)]
-            sql = sql[1:]
-            sql.reverse()
-            sql_final = "CASE WHEN {} THEN NULL".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]))
-            for i in range(k - 1):
-                sql_final += " WHEN {} THEN {}".format(sql[i], k - i - 1)
-            sql_final += " ELSE 0 END"
-            return sql_final
+            return sql_from_clusters(X, self.get_attr("centers").to_list(),)
         elif self.type in ("PCA", "MCA",):
-            avg = self.get_attr("columns")["mean"]
-            pca = self.get_attr("principal_components")
-            sql = []
-            for i in range(len(X)):
-                sql_tmp = []
-                for j in range(len(X)):
-                    sql_tmp += ["({} - {}) * {}".format(X[j], avg[j], pca["PC{}".format(i + 1)][j])]
-                sql += [" + ".join(sql_tmp) + " AS pca{}".format(i + 1)]
-            return ", ".join(sql)
+            result = sql_from_pca(X, self.get_attr("principal_components").to_list(), self.get_attr("columns")["mean"])
+            for i in range(len(result)):
+                result[i] += " AS pca{}".format(i + 1)
+            return ", ".join(result)
         elif self.type in ("Normalizer",):
             details = self.get_attr("details")
-            sql = []
             if "min" in details.values:
-                for i in range(len(X)):
-                    sql += ["({} - {}) / {} AS {}".format(X[i], details["min"][i], details["max"][i] - details["min"][i], X[i])]
+                method, a, b = "minmax", "min", "max"
             elif "median" in details.values:
-                for i in range(len(X)):
-                    sql += ["({} - {}) / {} AS {}".format(X[i], details["median"][i], details["mad"][i], X[i])]
+                method, a, b = "robust_zscore", "median", "mad"
             else:
-                for i in range(len(X)):
-                    sql += ["({} - {}) / {} AS {}".format(X[i], details["avg"][i], details["std_dev"][i], X[i])]
-            return ", ".join(sql)
+                method, a, b = "zscore", "avg", "std_dev"
+            result = sql_from_normalizer(X, list(zip(details[a], details[b])), method)
+            for i in range(len(result)):
+                result[i] += " AS {}".format(X[i])
+            return ", ".join(result)
         elif self.type in ("OneHotEncoder",):
-            details = self.param_.values
-            n = len(details["category_name"])
-            sql = []
-            cat_idx, current_cat = 0, details["category_name"][0]
-            for i in range(n):
-                if current_cat != details["category_name"][i]:
-                    cat_idx = 0
-                    current_cat = details["category_name"][i]
-                if cat_idx != 0 or not(self.parameters["drop_first"]):
-                    end_name = details["category_level_index"][i] if self.parameters["column_naming"] != 'values' else details["category_level"][i]
-                    end_name = 'NULL' if end_name == None else end_name
-                    sql += ["(CASE WHEN \"{}\" = {} THEN 1 ELSE 0 END) AS \"{}_{}\"".format(details["category_name"][i], "'" + str(details["category_level"][i]) + "'" if details["category_level"][i] != None else 'NULL', details["category_name"][i], end_name)]
-                cat_idx += 1
-            sql = ", ".join(sql)
-            for idx, elem in enumerate(X):
-                sql = sql.replace(self.X[idx], str_column(X[idx]))
-            return sql
+            X, cat = ooe_details_transform([l[0:2] for l in self.param_.to_list()])
+            sql = sql_from_one_hot_encoder(X, cat, self.parameters["drop_first"], self.parameters["column_naming"])
+            return ", ".join([", ".join(c) for c in sql])
         elif self.type in ("SVD",):
-            value = self.get_attr("singular_values")["value"]
-            sv = self.get_attr("right_singular_vectors")
-            sql = []
-            for i in range(len(X)):
-                sql_tmp = []
-                for j in range(len(X)):
-                    sql_tmp += ["{} * {} / {}".format(X[j], sv["vector{}".format(i + 1)][j], value[i])]
-                sql += [" + ".join(sql_tmp) + " AS svd{}".format(i + 1)]
-            return ", ".join(sql)
+            result = sql_from_svd(X,  self.get_attr("right_singular_vectors").to_list(), self.get_attr("singular_values")["value"])
+            for i in range(len(result)):
+                result[i] += " AS svd{}".format(i + 1)
+            return ", ".join(result)
         elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier",):
             def predict_rf():
                 def predict_tree(tree_dict, node_id, is_regressor: bool = True,):
@@ -3469,7 +3398,10 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def score(self, method: str = "accuracy", cutoff: float = 0.5):
+    def score(self, 
+              method: str = "accuracy", 
+              cutoff: float = 0.5,
+              nbins: int = 10000,):
         """
 	---------------------------------------------------------------------------
 	Computes the model score.
@@ -3494,16 +3426,24 @@ class BinaryClassifier(Classifier):
 			precision   : Precision = tp / (tp + fp)
 			recall	    : Recall = tp / (tp + fn)
 			specificity : Specificity = tn / (tn + fp)
-
 	cutoff: float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
+    nbins: int, optional
+        [Only when method is set to auc|prc_auc|best_cutoff]
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        The higher it is, the more precise the AUC will be. However, it can decrease
+        considerably performances. The maximum value is 999,999. If negative, the
+        maximum value is used.
 
 	Returns
 	-------
 	float
 		score
 		"""
-        check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
+        check_types([("cutoff", cutoff, [int, float],), 
+                     ("method", method, [str],),
+                     ("nbins", nbins, [int],)])
         if method in ("accuracy", "acc"):
             return accuracy_score(
                 self.y, self.deploySQL(cutoff), self.test_relation, self.cursor, pos_label=1,
@@ -3513,9 +3453,9 @@ class BinaryClassifier(Classifier):
         elif method == "bic":
             return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[1]
         elif method == "prc_auc":
-            return prc_auc(self.y, self.deploySQL(), self.test_relation, self.cursor)
+            return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_prc=True, nbins=nbins,)
         elif method == "auc":
-            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True, nbins=10000,)
+            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True, nbins=nbins,)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 self.y,
@@ -3523,7 +3463,7 @@ class BinaryClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
-                nbins=10000,
+                nbins=nbins,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
@@ -3667,7 +3607,8 @@ class MulticlassClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        The number of bins.
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3799,7 +3740,8 @@ class MulticlassClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        The number of bins.
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3849,7 +3791,8 @@ class MulticlassClassifier(Classifier):
     ax: Matplotlib axes object, optional
         The axes to plot on.
     nbins: int, optional
-        The number of bins.
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -3966,6 +3909,9 @@ class MulticlassClassifier(Classifier):
 		positive one. The parameter 'pos_label' represents this class.
     ax: Matplotlib axes object, optional
         The axes to plot on.
+    nbins: int, optional
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
     **style_kwds
         Any optional parameter to pass to the Matplotlib functions.
 
@@ -4001,6 +3947,7 @@ class MulticlassClassifier(Classifier):
         method: str = "accuracy",
         pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
+        nbins: int = 10000,
     ):
         """
 	---------------------------------------------------------------------------
@@ -4030,14 +3977,23 @@ class MulticlassClassifier(Classifier):
 			prc_auc	    : Area Under the Curve (PRC)
 			precision   : Precision = tp / (tp + fp)
 			recall	    : Recall = tp / (tp + fn)
-			specificity : Specificity = tn / (tn + fp) 
+			specificity : Specificity = tn / (tn + fp)
+    nbins: int, optional
+        [Only when method is set to auc|prc_auc|best_cutoff]
+        An integer value that determines the number of decision boundaries. Decision 
+        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+        The higher it is, the more precise the AUC will be. However, it can decrease
+        considerably performances. The maximum value is 999,999. If negative, the
+        maximum value is used.
 
 	Returns
 	-------
 	float
 		score
 		"""
-        check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
+        check_types([("cutoff", cutoff, [int, float],), 
+                     ("method", method, [str],),
+                     ("nbins", nbins, [int],)])
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -4063,6 +4019,7 @@ class MulticlassClassifier(Classifier):
                 self.deploySQL(allSQL=True)[0].format(pos_label),
                 self.test_relation,
                 self.cursor,
+                nbins=nbins,
             )
         elif method == "aic":
             return aic_bic(
@@ -4086,6 +4043,7 @@ class MulticlassClassifier(Classifier):
                 self.deploySQL(allSQL=True)[0].format(pos_label),
                 self.test_relation,
                 self.cursor,
+                nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
@@ -4094,7 +4052,7 @@ class MulticlassClassifier(Classifier):
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
-                nbins=1000,
+                nbins=nbins,
             )
         elif method in ("recall", "tpr"):
             return recall_score(

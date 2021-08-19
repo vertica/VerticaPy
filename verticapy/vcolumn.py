@@ -1410,7 +1410,7 @@ Attributes
             nb = int(float(count / int(bins - 1)))
             assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
             total, query, nth_elems = nb, [], []
-            while total < count - 1:
+            while total < count:
                 nth_elems += [str(total)]
                 total += nb
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
@@ -2420,7 +2420,7 @@ Attributes
         query = "SELECT {}, ord, non_events, events, non_events / NULLIFZERO(SUM(non_events) OVER ()) AS pt_non_events, events / NULLIFZERO(SUM(events) OVER ()) AS pt_events FROM ({}) x".format(
             self.alias, query,
         )
-        query = "SELECT {} AS index, non_events, events, pt_non_events, pt_events, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS woe, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE (pt_non_events - pt_events) * ZEROIFNULL(LOG(pt_non_events / NULLIFZERO(pt_events))) END AS iv FROM ({}) x ORDER BY ord".format(
+        query = "SELECT {} AS index, non_events, events, pt_non_events, pt_events, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE ZEROIFNULL(LN(pt_non_events / NULLIFZERO(pt_events))) END AS woe, CASE WHEN non_events = 0 OR events = 0 THEN 0 ELSE (pt_non_events - pt_events) * ZEROIFNULL(LN(pt_non_events / NULLIFZERO(pt_events))) END AS iv FROM ({}) x ORDER BY ord".format(
             self.alias, query,
         )
         title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)

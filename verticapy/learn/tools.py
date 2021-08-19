@@ -52,6 +52,10 @@
 from verticapy.toolbox import *
 from verticapy.utilities import *
 
+# Standard Python Modules
+import numpy as np
+from typing import Union
+
 #
 # ---#
 def does_model_exist(name: str, cursor=None, raise_error: bool = False, return_model_type: bool = False):
@@ -80,8 +84,8 @@ int
     check_types([("name", name, [str],)])
     cursor, conn = check_cursor(cursor)[0:2]
     model_type = None
-    schema, name = schema_relation(name)
-    schema, name = schema[1:-1], name[1:-1]
+    schema, model_name = schema_relation(name)
+    schema, model_name = schema[1:-1], model_name[1:-1]
     cursor.execute("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1")
     result = cursor.fetchone()
     if result:
@@ -95,7 +99,7 @@ int
             model_type = result[0]
             result = 2
     if not(result):
-        cursor.execute("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(name, schema))
+        cursor.execute("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema))
         result = cursor.fetchone()
         if result:
             model_type = result[0]
@@ -109,7 +113,6 @@ int
     if return_model_type:
         return model_type
     return result
-
 
 # ---#
 def load_model(name: str, cursor=None, input_relation: str = "", test_relation: str = ""):
@@ -141,8 +144,8 @@ model
                  ("input_relation", input_relation, [str],),])
     cursor = check_cursor(cursor)[0]
     does_exist = does_model_exist(name=name, cursor=cursor, raise_error=False)
-    schema, name = schema_relation(name)
-    schema, name = schema[1:-1], name[1:-1]
+    schema, model_name = schema_relation(name)
+    schema, model_name = schema[1:-1], name[1:-1]
     assert does_exist, NameError("The model '{}' doesn't exist.".format(name))
     if does_exist == 2:
         cursor.execute(
@@ -304,7 +307,7 @@ model
             elif model_save["type"] not in ("CountVectorizer", "VAR"):
                 model.key_columns = model_save["key_columns"]
     else:
-        model_type = does_model_exist(name="{}.{}".format(schema, name), cursor=cursor, raise_error=False, return_model_type=True,)
+        model_type = does_model_exist(name=name, cursor=cursor, raise_error=False, return_model_type=True,)
         if model_type.lower() == "kmeans":
             cursor.execute(
                 "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"

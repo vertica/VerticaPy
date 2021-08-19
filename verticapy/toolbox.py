@@ -149,10 +149,10 @@ def category_from_type(ctype: str = ""):
             or (ctype[0:4] == "real")
         ):
             return "float"
-        elif ("byte" in ctype) or (ctype == "raw"):
-            return "binary"
-        elif ("binary" in ctype) or ctype[0:3] == "geo":
+        elif ctype[0:3] == "geo" or ("long varbinary" in ctype.lower()):
             return "spatial"
+        elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
+            return "binary"
         elif "uuid" in ctype:
             return "uuid"
         else:
@@ -723,6 +723,19 @@ def nearest_column(columns: list, column: str):
                 result = (elem, d)
     return result
 
+# ---#
+def ooe_details_transform(L: list):
+    cat, tmp_cat, init_cat, X = [], [], L[0][0], [L[0][0]]
+    for c in L:
+        if c[0] != init_cat:
+            init_cat = c[0]
+            X += [c[0]]
+            cat += [tmp_cat]
+            tmp_cat = [c[1]]
+        else:
+            tmp_cat += [c[1]]
+    cat += [tmp_cat]
+    return X, cat
 
 # ---#
 def order_discretized_classes(categories):

@@ -296,12 +296,12 @@ class TestvDFCorrelation:
         # testing vDataFrame.iv_woe
         result = titanic_vd.iv_woe("survived",)
         plt.close("all")
-        assert result["iv"][0] == pytest.approx(0.552533238835721)
-        assert result["iv"][1] == pytest.approx(0.498896347729338)
-        assert result["iv"][2] == pytest.approx(0.21502042620992767)
+        assert result["iv"][0] == pytest.approx(1.272254799126849)
+        assert result["iv"][1] == pytest.approx(1.148751293230747)
+        assert result["iv"][2] == pytest.approx(0.4951028280802058)
         # testing vDataFrame[].iv_woe
         result2 = titanic_vd["pclass"].iv_woe("survived",)
-        assert result2["iv"][-1] == pytest.approx(0.21502042620992767)
+        assert result2["iv"][-1] == pytest.approx(0.4951028280802058)
         assert result2["non_events"][-1] == pytest.approx(784)
 
 

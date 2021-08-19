@@ -757,6 +757,7 @@ def auc(
     input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
+    nbins: int = 10000,
 ):
     """
 ---------------------------------------------------------------------------
@@ -778,6 +779,12 @@ cursor: DBcursor, optional
 pos_label: int/float/str, optional
 	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
+nbins: int, optional
+    An integer value that determines the number of decision boundaries. Decision 
+    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+    The higher it is, the more precise the AUC will be. However, it can decrease
+    considerably performances. The maximum value is 999,999. If negative, the
+    maximum value is used.
 
 Returns
 -------
@@ -793,7 +800,7 @@ float
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return roc_curve(
-        y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_roc=True
+        y_true, y_score, input_relation, cursor, pos_label, nbins=nbins, auc_roc=True
     )
 
 
@@ -1516,6 +1523,7 @@ def prc_auc(
     input_relation: Union[str, vDataFrame],
     cursor=None,
     pos_label: (int, float, str) = 1,
+    nbins: int = 10000,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1537,6 +1545,12 @@ cursor: DBcursor, optional
 pos_label: int/float/str, optional
 	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
+nbins: int, optional
+    An integer value that determines the number of decision boundaries. Decision 
+    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
+    The higher it is, the more precise the AUC will be. However, it can decrease
+    considerably performances. The maximum value is 999,999. If negative, the
+    maximum value is used.
 
 Returns
 -------
@@ -1548,11 +1562,12 @@ float
             ("y_true", y_true, [str],),
             ("y_score", y_score, [str],),
             ("input_relation", input_relation, [str, vDataFrame],),
+            ("nbins", nbins, [int],),
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     return prc_curve(
-        y_true, y_score, input_relation, cursor, pos_label, nbins=10000, auc_prc=True
+        y_true, y_score, input_relation, cursor, pos_label, nbins=nbins, auc_prc=True,
     )
 
 

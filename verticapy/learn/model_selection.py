@@ -1748,7 +1748,8 @@ pos_label: int/float/str, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
-    The number of bins.
+    An integer value that determines the number of decision boundaries. Decision 
+    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
 ax: Matplotlib axes object, optional
     The axes to plot on.
 **style_kwds
@@ -2002,7 +2003,8 @@ pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
-    The number of bins.
+    An integer value that determines the number of decision boundaries. Decision 
+    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
 auc_prc: bool, optional
     If set to True, the function will return the PRC AUC without drawing the 
     curve.
@@ -2026,6 +2028,8 @@ tablesample
             ("auc_prc", auc_prc, [bool],),
         ]
     )
+    if nbins < 0:
+        nbins = 999999
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
@@ -2429,7 +2433,8 @@ pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
-    The number of bins.
+    An integer value that determines the number of decision boundaries. Decision 
+    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
 auc_roc: bool, optional
     If set to true, the function will return the ROC AUC without drawing the 
     curve.
@@ -2461,6 +2466,8 @@ tablesample
             ("cutoff_curve", cutoff_curve, [bool],),
         ]
     )
+    if nbins < 0:
+        nbins = 999999
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
     version(cursor=cursor, condition=[8, 0, 0])
     query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"

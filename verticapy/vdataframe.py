@@ -124,7 +124,7 @@ Attributes
 _VERTICAPY_VARIABLES_: dict
     Dictionary containing all vDataFrame attributes.
         allcols_ind, int      : Int to use to optimize the SQL code generation.
-        columns, list         : List of the vColumn names.
+        columns, list         : List of the vColumns names.
         count, int            : Number of elements of the vDataFrame (catalog).
         cursor, DBcursor      : Vertica database cursor.
         dsn, str              : Vertica database DSN.
@@ -363,7 +363,7 @@ vColumns : vColumn
 
     # ---#
     def __setattr__(self, attr, val):
-        if isinstance(val, (str, str_sql)) and not isinstance(val, vColumn):
+        if isinstance(val, (str, str_sql, int, float,)) and not isinstance(val, vColumn):
             val = str(val)
             if column_check_ambiguous(attr, self.get_columns()):
                 self[attr].apply(func=val)
@@ -1120,7 +1120,15 @@ vColumns : vColumn
     DBcursor
         The database cursor.
         """
-        return executeSQL(self._VERTICAPY_VARIABLES_["cursor"], query, title,)
+        try:
+            result = executeSQL(self._VERTICAPY_VARIABLES_["cursor"], query, title,)
+        except Exception as e:
+            if str(e) == "Cursor is closed":
+                self._VERTICAPY_VARIABLES_["cursor"] = check_cursor(None)[0]
+                result = executeSQL(self._VERTICAPY_VARIABLES_["cursor"], query, title,)
+            else:
+                raise
+        return result
 
     # ---#
     def __genSQL__(
@@ -7382,6 +7390,67 @@ vColumns : vColumn
         )
 
     # ---#
+    def pivot_table_chi2(
+        self,
+        response_column: str,
+        columns: list = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the chi2 using the pivot table of the response vColumn against the
+    input vcolumns.
+
+    Parameters
+    ----------
+    response_column: str
+        Response vColumn.
+    columns: list, optional
+        List of the vColumns names.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+        """
+        import numpy as np
+
+        if isinstance(columns, str):
+            columns = [columns]
+        check_types(
+            [
+                ("columns", columns, [list],),
+                ("response_column", response_column, [str],),
+            ]
+        )
+        columns_check(columns + [response_column], self,)
+        if not(columns):
+            columns = self.catcol(max_cardinality=20)
+        else:
+            columns = vdf_columns_names(columns, self)
+            for col in columns:
+                assert not(self[col].isdate()) and (not(self[col].isnum()) or self[col].ctype() != "float"), TypeError("vColumn '{}' is not categorical. Method 'pivot_table_chi2' only accepts categorical inputs.".format(col))
+        response_column = vdf_columns_names([response_column], self)[0]
+        if response_column in columns:
+            columns.remove(response_column)
+        chi2_list = []
+        for col in columns:
+            tmp_res = self.pivot_table(columns = [col, response_column],
+                                       max_cardinality = (10000, 100),
+                                       show = False).to_numpy()[:,1:]
+            all_chi2 = []
+            for row in tmp_res:
+                L = [int(x) if x != '' else 0 for x in row]
+                n = sum(L)
+                expected = n / len(L)
+                all_chi2 += [np.sqrt((x - expected) ** 2 / expected) for x in L]
+            chi2_list += [(col, sum(all_chi2))]
+        chi2_list = sorted(chi2_list, key=lambda tup: tup[1], reverse=True)
+        result = {"index": [elem[0] for elem in chi2_list], 
+                  "chi2": [elem[1] for elem in chi2_list]}
+        return tablesample(result)
+
+    # ---#
     def pivot_table(
         self,
         columns: list,
@@ -8473,7 +8542,7 @@ vColumns : vColumn
     max_nb_points: int, optional
         Maximum number of points to display.
     dimensions: tuple, optional
-        Tuple of two IDs of the PCA's components.
+        Tuple of two elements representing the IDs of the PCA's components.
         If empty and the number of input columns is greater than 3, the
         first and second PCA will be drawn.
     bbox: list, optional
@@ -8792,7 +8861,7 @@ vColumns : vColumn
         by = vdf_columns_names(by, self)
         ts = vdf_columns_names([ts], self)[0]
         partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
-        expr = "CONDITIONAL_TRUE_EVENT({} - LAG({}) > '{}') OVER ({} ORDER BY {})".format(
+        expr = "CONDITIONAL_TRUE_EVENT({}::timestamp - LAG({}::timestamp) > '{}') OVER ({} ORDER BY {})".format(
             ts, ts, session_threshold, partition, ts
         )
         return self.eval(name=name, expr=expr)
@@ -9588,6 +9657,11 @@ vColumns : vColumn
             query=query,
             title="Creates a new {} to save the vDataFrame.".format(relation_type),
         )
+        if relation_type == "insert":
+            self.__executeSQL__(
+                query="COMMIT;",
+                title="Committing the insertion.",
+            )
         self.__add_to_history__(
             "[Save]: The vDataFrame was saved into a {} named '{}'.".format(
                 relation_type, name
@@ -9960,7 +10034,8 @@ vColumns : vColumn
             ]
         )
         order_by = sort_str(order_by, self)
-        random_state = verticapy.options["random_state"]
+        if not random_state:
+            random_state = verticapy.options["random_state"]
         random_seed = (
             random_state
             if isinstance(random_state, int)
