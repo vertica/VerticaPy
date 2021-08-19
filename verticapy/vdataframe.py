@@ -7397,7 +7397,7 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the chi-square using the pivot table of the response vColumn 
+    Returns the chi-squared term using the pivot table of the response vColumn 
     against the input vcolumns.
 
     Parameters
