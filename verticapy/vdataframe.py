@@ -7397,8 +7397,8 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the chi2 using the pivot table of the response vColumn against the
-    input vcolumns.
+    Returns the chi-square using the pivot table of the response vColumn 
+    against the input vcolumns.
 
     Parameters
     ----------
