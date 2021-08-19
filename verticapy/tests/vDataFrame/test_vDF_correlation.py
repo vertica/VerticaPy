@@ -304,6 +304,18 @@ class TestvDFCorrelation:
         assert result2["iv"][-1] == pytest.approx(0.4951028280802058)
         assert result2["non_events"][-1] == pytest.approx(784)
 
+    def test_vDF_pivot_table_chi2(self, titanic_vd):
+        result = titanic_vd.pivot_table_chi2("survived")["chi2"]
+        assert result[0] == pytest.approx(1741.482681718805)
+        assert result[1] == pytest.approx(1273.63811602459)
+        assert result[2] == pytest.approx(506.808072908203)
+        assert result[3] == pytest.approx(249.01231020774316)
+        assert result[4] == pytest.approx(130.58280874846372)
+        assert result[5] == pytest.approx(38.3735130215037)
+        assert result[6] == pytest.approx(30.01795504289887)
+        assert result[7] == pytest.approx(29.210493262943615)
+        assert result[8] == pytest.approx(28.096344784906517)
+        assert result[9] == pytest.approx(22.976823435582784)
 
     def test_vDF_pacf(self, amazon_vd):
         # testing vDataFrame.pacf
