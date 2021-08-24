@@ -725,6 +725,7 @@ def nearest_column(columns: list, column: str):
 
 # ---#
 def ooe_details_transform(L: list):
+    # Allows to split the One Hot Encoder Array by features categories
     cat, tmp_cat, init_cat, X = [], [], L[0][0], [L[0][0]]
     for c in L:
         if c[0] != init_cat:

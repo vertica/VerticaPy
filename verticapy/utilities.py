@@ -77,7 +77,7 @@ Parameters
 cursor: DBcursor, optional
     Vertica database cursor.
     """
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     sql = "CREATE SCHEMA verticapy;"
     executeSQL(cursor, sql, "Creating VerticaPy schema.")
     sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
@@ -133,7 +133,7 @@ bool
             ),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     schema, relation = schema_relation(name)
     schema, relation = schema[1:-1], relation[1:-1]
     if not (name):
@@ -319,7 +319,6 @@ def readSQL(
             ("limit", limit, [int, float],),
         ]
     )
-    conn = False
     if not (cursor) and not (dsn):
         conn = read_auto_connect()
         cursor = conn.cursor()
@@ -384,7 +383,7 @@ Returns
 list of tuples
 	The list of the different columns and their respective type.
 	"""
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
 
     if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
         try:
@@ -453,7 +452,7 @@ list of tuples
 
 # ---#
 def pandas_to_vertica(
-    df, cursor=None, name: str = "", schema: str = "public",
+    df, cursor=None, name: str = "", schema: str = "public", parse_n_lines: int = 10000,
 ):
     """
 ---------------------------------------------------------------------------
@@ -472,6 +471,12 @@ name: str, optional
     Name of the new relation. If empty, a temporary local table is created.
 schema: str, optional
     Schema of the new relation. The default schema is public.
+parse_n_lines: int, optional
+    If this parameter is greater than 0. A new file of 'parse_n_lines' lines
+    will be created and ingested first to identify the data types. It will be
+    then dropped and the entire file will be ingested. The data types identification
+    will be less precise but this parameter can make the process faster if the
+    file is heavy.
 	
 Returns
 -------
@@ -489,16 +494,18 @@ read_json : Ingests a JSON file into the Vertica database.
             ("schema", schema, [str],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     if not(name):
-        name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
+        tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
+    else:
+        tmp_name = False
     path = "{}.csv".format(name)
     try:
         df.to_csv(path, index=False)
-        if not(name):
-            vdf = read_csv(path, cursor, table_name=name, temporary_local_table=True, parse_n_lines=10000)
+        if not(tmp_name):
+            vdf = read_csv(path, cursor, table_name=tmp_name, temporary_local_table=True, parse_n_lines=parse_n_lines,)
         else:
-            vdf = read_csv(path, cursor, table_name=name, schema=schema, temporary_local_table=False, parse_n_lines=10000)
+            vdf = read_csv(path, cursor, table_name=tmp_name, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines,)
         os.remove(path)
     except:
         os.remove(path)
@@ -555,7 +562,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     executeSQL(cursor, 
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -623,7 +630,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
     executeSQL(cursor, 
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
@@ -679,8 +686,7 @@ schema: str, optional
 	Schema where the CSV file will be ingested.
 table_name: str, optional
 	The final relation/table name. If unspecified, the the name is set to the 
-    name of the file or parent directory. is indicated, the name of the file or the
-    parent directory will be used.
+    name of the file or parent directory.
 sep: str, optional
 	Column separator.
 header: bool, optional
@@ -1632,7 +1638,7 @@ def to_tablesample(
 	tablesample : Object in memory created for rendering purposes.
 	"""
     check_types([("query", query, [str],)])
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -1811,7 +1817,7 @@ list
     check_types(
         [("condition", condition, [list],),]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
+    cursor = check_cursor(cursor)[0]
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not(verticapy.options["vertica_version"]):

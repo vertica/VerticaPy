@@ -91,10 +91,8 @@ def predict_from_coef(X: Union[list, np.array],
                  ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),
                  ("return_proba", return_proba, [bool],),])
     result = intercept + np.sum(np.array(coefficients) * np.array(X), axis=1)
-    if method in ("LogisticRegression",):
+    if method in ("LogisticRegression", "LinearSVC",):
         result = 1 / (1 + np.exp(- (result)))
-    elif method in ("LinearSVC",):
-        result =  1 - 1 / (1 + np.exp(result))
     else:
         return result
     if return_proba:
@@ -135,10 +133,8 @@ def sql_from_coef(X: list,
     assert len(X) == len(coefficients), ParameterError("The length of parameter 'X' must be equal to the number of coefficients.")
     sql = [str(intercept)] + [f"{coefficients[idx]} * {(X[idx])}" for idx in range(len(coefficients))]
     sql = " + ".join(sql)
-    if method in ("LogisticRegression",):
+    if method in ("LogisticRegression", "LinearSVC",):
         return f"1 / (1 + EXP(- ({sql})))"
-    elif method in ("LinearSVC",):
-        return f"1 - 1 / (1 + EXP({sql}))"
     return sql
 
 # ---#
