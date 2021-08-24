@@ -73,13 +73,13 @@ class Test_memModel:
         model = memModel("LinearSVC", {"coefficients": [0.5, 0.6,], 
                                        "intercept": 0.8})
         assert model.predict([[0.4, 0.5]])[0] == pytest.approx(1)
-        assert model.predict_sql([0.4, 0.5]) == '((1 - 1 / (1 + EXP(0.8 + 0.5 * 0.4 + 0.6 * 0.5))) > 0.5)::int'
+        assert model.predict_sql([0.4, 0.5]) == '((1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5)))) > 0.5)::int'
         predict_proba_val = model.predict_proba([[0.4, 0.5]])
         assert predict_proba_val[0][0] == pytest.approx(0.21416502)
         assert predict_proba_val[0][1] == pytest.approx(0.78583498)
         predict_proba_val_sql = model.predict_proba_sql([0.4, 0.5])
-        assert predict_proba_val_sql[0] == '1 - (1 - 1 / (1 + EXP(0.8 + 0.5 * 0.4 + 0.6 * 0.5)))'
-        assert predict_proba_val_sql[1] == '1 - 1 / (1 + EXP(0.8 + 0.5 * 0.4 + 0.6 * 0.5))'
+        assert predict_proba_val_sql[0] == '1 - (1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5))))'
+        assert predict_proba_val_sql[1] == '1 / (1 + EXP(- (0.8 + 0.5 * 0.4 + 0.6 * 0.5)))'
         attributes = model.get_attributes()
         assert attributes["coefficients"][0] == 0.5
         assert attributes["coefficients"][1] == 0.6
