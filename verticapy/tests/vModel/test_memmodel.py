@@ -113,6 +113,12 @@ class Test_memModel:
         assert attributes["principal_components"][0][1] == 0.2
         assert attributes["principal_components"][1][0] == 0.7
         assert attributes["principal_components"][1][1] == 0.8
+        model = model.rotate()
+        attributes = model.get_attributes()
+        assert attributes["principal_components"][0][0] == pytest.approx(0.05887149)
+        assert attributes["principal_components"][0][1] == pytest.approx(0.21571775)
+        assert attributes["principal_components"][1][0] == pytest.approx(0.01194755)
+        assert attributes["principal_components"][1][1] == pytest.approx(1.06294744)
         assert attributes["mean"][0] == 0.9
         assert attributes["mean"][1] == 0.8
         assert model.model_type_ == "PCA"

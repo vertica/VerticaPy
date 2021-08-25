@@ -54,6 +54,8 @@ from verticapy.utilities import *
 
 # Standard Python Modules
 import numpy as np
+from numpy import eye, asarray, dot, sum, diag
+from numpy.linalg import svd
 from typing import Union
 
 #
@@ -636,3 +638,50 @@ model
         if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
             model.coef_ = model.get_attr("details")
     return model
+
+# ---#
+# This piece of code was taken from
+# https://en.wikipedia.org/wiki/Talk:Varimax_rotation
+def matrix_rotation(Phi: list, 
+					gamma: float = 1.0, 
+					q: int = 20, 
+					tol: float = 1e-6):
+    """
+---------------------------------------------------------------------------
+Rotates the input Matrix using the Oblimin rotation (VARIMAX, QUARTIMAX...).
+
+Parameters
+----------
+Phi: list / numpy.array
+	input matrix.
+gamma: float, optional
+	Oblimin Factor.
+	It must be between 0.0 and 1.0.
+		gamma = 0.0 is equivalent to quartimax.
+		gamma = 1.0 is equivalent to varimax.
+q: int, optional
+	Maximum number of iterations.
+tol: float, optional
+	Determines whether the algorithm has reached the specified accuracy result.
+
+Returns
+-------
+model
+    The model.
+    """
+    check_types([("Phi", Phi, [list,],),
+    			 ("gamma", gamma, [int, float,],),
+    			 ("q", q, [int, float,],),
+    			 ("tol", tol, [int, float,],),])
+    Phi = np.array(Phi)
+    p,k = Phi.shape
+    R = eye(k)
+    d=0
+    for i in range(q):
+        d_old = d
+        Lambda = dot(Phi, R)
+        u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
+        R = dot(u,vh)
+        d = sum(s)
+        if d_old!=0 and d/d_old < 1 + tol: break
+    return dot(Phi, R)

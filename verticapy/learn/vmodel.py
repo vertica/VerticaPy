@@ -51,7 +51,6 @@
 # Standard Python Modules
 import os, warnings
 import numpy as np
-from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
@@ -2387,10 +2386,8 @@ Main Class for Vertica Model
         func = "def {}(X):\n\timport numpy as np\n\t".format(name)
         if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
             result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(self.coef_["coefficient"][0], self.coef_["coefficient"][1:])
-            if self.type in ("LogisticRegression",):
+            if self.type in ("LogisticRegression", "LinearSVC",):
                 func += f"result = 1 / (1 + np.exp(- ({result})))"
-            elif self.type in ("LinearSVC",):
-                func += f"result =  1 - 1 / (1 + np.exp({result}))"
             else:
                 func += "result =  " + result
             if return_proba and self.type in ("LogisticRegression", "LinearSVC",):

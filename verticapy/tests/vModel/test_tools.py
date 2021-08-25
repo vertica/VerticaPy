@@ -24,6 +24,7 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.decomposition import *
 from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
+from verticapy.learn.tools import *
 
 import matplotlib.pyplot as plt
 
@@ -291,5 +292,15 @@ class TestTools:
         #model.drop()
         base.cursor.execute("DROP SCHEMA load_model_test CASCADE")
 
-
+    def test_matrix_rotation(self,):
+        result = matrix_rotation([[0.5, 0.6], [0.1, 0.2]])
+        assert result[0][0] == pytest.approx(0.01539405)
+        assert result[0][1] == pytest.approx(0.78087324)
+        assert result[1][0] == pytest.approx(0.05549495)
+        assert result[1][1] == pytest.approx(0.21661097)
+        result = matrix_rotation([[0.5, 0.6], [0.1, 0.2]], gamma=0.0)
+        assert result[0][0] == pytest.approx(0.0010429389547800816)
+        assert result[0][1] == pytest.approx(0.78102427)
+        assert result[1][0] == pytest.approx(-0.05092405)
+        assert result[1][1] == pytest.approx(0.21773089)
     
