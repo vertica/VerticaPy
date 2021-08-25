@@ -182,7 +182,11 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
                 return value[node_id][prob_ID]
             else:
                 if not(is_regressor) and isinstance(classes, Iterable) and len(classes) > 0:
-                    return classes[np.argmax(value[node_id])]
+                    result = classes[np.argmax(value[node_id])]
+                    if isinstance(result, str):
+                      return "'" + result + "'"
+                    else:
+                      return result
                 else:
                     return value[node_id]
         else:
