@@ -44,233 +44,242 @@ def titanic_vd(base):
 
 class TestTools:
     def test_does_model_exist(self, base, titanic_vd):
-        model = LinearRegression("model_test", cursor=base.cursor,)
+        try:
+            base.cursor.execute("CREATE SCHEMA load_model_test")
+        except:
+            pass
+        model = LinearRegression("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
-        assert does_model_exist("model_test", base.cursor) == False
+        assert does_model_exist("load_model_test.model_test", base.cursor) == False
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        assert does_model_exist("model_test", base.cursor) == True
-        assert does_model_exist("model_test", base.cursor, return_model_type=True).lower() == "linear_regression"
+        assert does_model_exist("load_model_test.model_test", base.cursor) == True
+        assert does_model_exist("load_model_test.model_test", base.cursor, return_model_type=True).lower() == "linear_regression"
         model.drop()
+        base.cursor.execute("DROP SCHEMA load_model_test CASCADE")
 
     def test_load_model(self, base, titanic_vd):
         try:
             create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
         except:
             pass
+        try:
+            base.cursor.execute("CREATE SCHEMA load_model_test")
+        except:
+            pass
         # VAR
-        model = VAR("model_test", cursor=base.cursor, max_iter=100)
+        model = VAR("load_model_test.model_test", cursor=base.cursor, max_iter=100)
         model.drop()
         model.fit(titanic_vd, ["fare"], "age",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, VAR) and result.get_params()["max_iter"] == 100
         model.drop()
         # SARIMAX
-        model = SARIMAX("model_test", cursor=base.cursor, max_iter=100)
+        model = SARIMAX("load_model_test.model_test", cursor=base.cursor, max_iter=100)
         model.drop()
         model.fit(titanic_vd, "fare", "age",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, SARIMAX) and result.get_params()["max_iter"] == 100
         model.drop()
         # Normalizer
-        model = Normalizer("model_test", cursor=base.cursor, method='minmax')
+        model = Normalizer("load_model_test.model_test", cursor=base.cursor, method='minmax')
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, Normalizer) and result.get_params()["method"] == 'minmax'
         model.drop()
         # Normalizer
-        model = Normalizer("model_test", cursor=base.cursor, method='minmax')
+        model = Normalizer("load_model_test.model_test", cursor=base.cursor, method='minmax')
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, Normalizer) and result.get_params()["method"] == 'minmax'
         model.drop()
         # OneHotEncoder
-        model = OneHotEncoder("model_test", cursor=base.cursor,)
+        model = OneHotEncoder("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
         model.fit(titanic_vd, ["sex", "embarked"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, OneHotEncoder)
         model.drop()
         # LOF
-        model = LocalOutlierFactor("model_test", cursor=base.cursor, p=3)
+        model = LocalOutlierFactor("load_model_test.model_test", cursor=base.cursor, p=3)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, LocalOutlierFactor) and result.get_params()["p"] == 3
         model.drop()
         # DBSCAN
-        model = DBSCAN("model_test", cursor=base.cursor, p=3)
+        model = DBSCAN("load_model_test.model_test", cursor=base.cursor, p=3)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, DBSCAN) and result.get_params()["p"] == 3
         model.drop()
         # PCA
-        model = PCA("model_test", cursor=base.cursor,)
+        model = PCA("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, PCA)
         model.drop()
         # SVD
-        model = SVD("model_test", cursor=base.cursor,)
+        model = SVD("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, SVD)
         model.drop()
         # LinearRegression
-        model = LinearRegression("model_test", cursor=base.cursor, tol=1e-88)
+        model = LinearRegression("load_model_test.model_test", cursor=base.cursor, tol=1e-88)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, LinearRegression) and result.get_params()["penalty"] == 'none'
         model.drop()
         # ElasticNet
-        model = ElasticNet("model_test", cursor=base.cursor, tol=1e-88)
+        model = ElasticNet("load_model_test.model_test", cursor=base.cursor, tol=1e-88)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, ElasticNet) and result.get_params()["penalty"] == 'enet'
         model.drop()
         # Lasso
-        model = Lasso("model_test", cursor=base.cursor, tol=1e-88)
+        model = Lasso("load_model_test.model_test", cursor=base.cursor, tol=1e-88)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, Lasso) and result.get_params()["penalty"] == 'l1'
         model.drop()
         # Ridge
-        model = Ridge("model_test", cursor=base.cursor, tol=1e-88)
+        model = Ridge("load_model_test.model_test", cursor=base.cursor, tol=1e-88)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert result.get_params()["tol"] == 1e-88
         assert isinstance(result, Ridge) and result.get_params()["penalty"] == 'l2'
         model.drop()
         # LogisticRegression
-        model = LogisticRegression("model_test", cursor=base.cursor, tol=1e-88, penalty="enet", solver="cgd")
+        model = LogisticRegression("load_model_test.model_test", cursor=base.cursor, tol=1e-88, penalty="enet", solver="cgd")
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert result.get_params()["tol"] == 1e-88
         assert result.get_params()["penalty"] == 'enet'
         assert isinstance(result, LogisticRegression) and result.get_params()["solver"] == 'cgd'
         model.drop()
         # DummyTreeClassifier
-        model = DummyTreeClassifier("model_test", cursor=base.cursor,)
+        model = DummyTreeClassifier("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestClassifier)
         model.drop()
         # DummyTreeRegressor
-        model = DummyTreeRegressor("model_test", cursor=base.cursor,)
+        model = DummyTreeRegressor("load_model_test.model_test", cursor=base.cursor,)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestRegressor)
         model.drop()
         # DecisionTreeClassifier
-        model = DecisionTreeClassifier("model_test", cursor=base.cursor, max_depth=3)
+        model = DecisionTreeClassifier("load_model_test.model_test", cursor=base.cursor, max_depth=3)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestClassifier) and result.get_params()["max_depth"] == 3
         model.drop()
         # DecisionTreeRegressor
-        model = DecisionTreeRegressor("model_test", cursor=base.cursor, max_depth=3)
+        model = DecisionTreeRegressor("load_model_test.model_test", cursor=base.cursor, max_depth=3)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestRegressor) and result.get_params()["max_depth"] == 3
         model.drop()
         # RandomForestClassifier
-        model = RandomForestClassifier("model_test", cursor=base.cursor, n_estimators=33)
+        model = RandomForestClassifier("load_model_test.model_test", cursor=base.cursor, n_estimators=33)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestClassifier) and result.get_params()["n_estimators"] == 33
         model.drop()
         # RandomForestRegressor
-        model = RandomForestRegressor("model_test", cursor=base.cursor, n_estimators=33)
+        model = RandomForestRegressor("load_model_test.model_test", cursor=base.cursor, n_estimators=33)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, RandomForestRegressor) and result.get_params()["n_estimators"] == 33
         model.drop()
         # XGBoostClassifier
-        model = XGBoostClassifier("model_test", cursor=base.cursor, max_ntree=12)
+        model = XGBoostClassifier("load_model_test.model_test", cursor=base.cursor, max_ntree=12)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, XGBoostClassifier) and result.get_params()["max_ntree"] == 12
         model.drop()
         # XGBoostRegressor
-        model = XGBoostRegressor("model_test", cursor=base.cursor, max_ntree=12)
+        model = XGBoostRegressor("load_model_test.model_test", cursor=base.cursor, max_ntree=12)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, XGBoostRegressor) and result.get_params()["max_ntree"] == 12
         model.drop()
         # NaiveBayes
-        model = NaiveBayes("model_test", cursor=base.cursor, alpha=0.5)
+        model = NaiveBayes("load_model_test.model_test", cursor=base.cursor, alpha=0.5)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, NaiveBayes) and result.get_params()["alpha"] == 0.5
         model.drop()
         # LinearSVC
-        model = LinearSVC("model_test", cursor=base.cursor, tol=1e-4)
+        model = LinearSVC("load_model_test.model_test", cursor=base.cursor, tol=1e-4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, LinearSVC) and result.get_params()["tol"] == 1e-4
         model.drop()
         # LinearSVR
-        model = LinearSVR("model_test", cursor=base.cursor, tol=1e-4)
+        model = LinearSVR("load_model_test.model_test", cursor=base.cursor, tol=1e-4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, LinearSVR) and result.get_params()["tol"] == 1e-4
         model.drop()
         # KMeans
-        model = KMeans("model_test", cursor=base.cursor, tol=1e-4)
+        model = KMeans("load_model_test.model_test", cursor=base.cursor, tol=1e-4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, KMeans) and result.get_params()["tol"] == 1e-4
         model.drop()
         # BisectingKMeans
-        model = BisectingKMeans("model_test", cursor=base.cursor, tol=1e-4)
+        model = BisectingKMeans("load_model_test.model_test", cursor=base.cursor, tol=1e-4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"],)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, BisectingKMeans) and result.get_params()["tol"] == 1e-4
         model.drop()
         # KNeighborsClassifier
-        model = KNeighborsClassifier("model_test", cursor=base.cursor, p=4)
+        model = KNeighborsClassifier("load_model_test.model_test", cursor=base.cursor, p=4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, KNeighborsClassifier) and result.get_params()["p"] == 4
         model.drop()
         # KNeighborsRegressor
-        model = KNeighborsRegressor("model_test", cursor=base.cursor, p=4)
+        model = KNeighborsRegressor("load_model_test.model_test", cursor=base.cursor, p=4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, KNeighborsRegressor) and result.get_params()["p"] == 4
         model.drop()
         # NearestCentroid
-        model = NearestCentroid("model_test", cursor=base.cursor, p=4)
+        model = NearestCentroid("load_model_test.model_test", cursor=base.cursor, p=4)
         model.drop()
         model.fit(titanic_vd, ["age", "fare"], "survived",)
-        result = load_model("model_test", base.cursor)
+        result = load_model("load_model_test.model_test", base.cursor)
         assert isinstance(result, NearestCentroid) and result.get_params()["p"] == 4
         model.drop()
         # KernelDensity - BUG
@@ -280,6 +289,7 @@ class TestTools:
         #result = load_model("model_test", base.cursor)
         #assert isinstance(result, KernelDensity) and result.get_params()["p"] == 2
         #model.drop()
+        base.cursor.execute("DROP SCHEMA load_model_test CASCADE")
 
 
     

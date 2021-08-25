@@ -388,7 +388,7 @@ class TestNB:
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
             cutoff=0.9, method="best_cutoff", pos_label="Iris-virginica"
-        ) == pytest.approx(0.509)
+        ) == pytest.approx(0.5099, 1e-2)
         assert model.score(
             cutoff=0.9, method="bm", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)
