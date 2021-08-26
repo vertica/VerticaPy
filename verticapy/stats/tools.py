@@ -644,7 +644,7 @@ vdf: vDataFrame
 eps: str
     Input residual vColumn.
 X: list
-    The exogenous variables on which to test for heteroskedasticity.
+    The exogenous variables to test.
 
 Returns
 -------
