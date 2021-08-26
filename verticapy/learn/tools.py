@@ -648,21 +648,22 @@ def matrix_rotation(Phi: list,
 					tol: float = 1e-6):
     """
 ---------------------------------------------------------------------------
-Rotates the input Matrix using the Oblimin rotation (VARIMAX, QUARTIMAX...).
+Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
+PCA matrix.
 
 Parameters
 ----------
 Phi: list / numpy.array
 	input matrix.
 gamma: float, optional
-	Oblimin Factor.
-	It must be between 0.0 and 1.0.
-		gamma = 0.0 is equivalent to quartimax.
-		gamma = 1.0 is equivalent to varimax.
+    Oblimin rotation factor, determines the type of rotation.
+    It must be between 0.0 and 1.0.
+        gamma = 0.0 results in a Quartimax rotation.
+        gamma = 1.0 results in a Varimax rotation.
 q: int, optional
 	Maximum number of iterations.
 tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
+    The algorithm stops when the Frobenius norm of gradient is less than tol.
 
 Returns
 -------

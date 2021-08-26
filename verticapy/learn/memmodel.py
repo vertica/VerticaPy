@@ -75,13 +75,13 @@ def predict_from_binary_tree(X: Union[list, np.ndarray],
     X: list / numpy.array
         Data on which to make the prediction.
     children_left: list
-        children_left[i] holds the node id of the left child of node i.
+        A list of node IDs, where children_left[i] is the node id of the left child of node i.
     children_right: list
-        children_right[i] holds the node id of the right child of node i.
+        A list of node IDs, children_right[i] is the node id of the right child of node i.
     feature: list
-        feature[i] holds the feature to split on, for the internal node i.
+        A list of features, where feature[i] is the feature to split on for the internal node i.
     threshold: list
-        threshold[i] holds the threshold for the internal node i.
+        A list of thresholds, where threshold[i] is the threshold for the internal node i.
     value: list
         Contains the constant prediction value of each node.
     classes: list / numpy.array, optional
@@ -143,17 +143,16 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
     X: list / numpy.array
         Data on which to make the prediction.
     children_left: list
-        children_left[i] holds the node id of the left child of node i.
+        A list of node IDs, where children_left[i] is the node id of the left child of node i.
     children_right: list
-        children_right[i] holds the node id of the right child of node i.
+        A list of node IDs, children_right[i] is the node id of the right child of node i.
     feature: list
-        feature[i] holds the feature to split on, for the internal node i.
+        A list of features, where feature[i] is the feature to split on for the internal node i.
     threshold: list
-        threshold[i] holds the threshold for the internal node i.
+        A list of thresholds, where threshold[i] is the threshold for the internal node i.
     value: list
-        Contains the constant prediction value of each node. In case of classification
-        and if return_proba is set to True, each element of the list must be a sublist
-        with the classes probabilities.
+        Contains the constant prediction value of each node. If used for classification and if return_proba is set to True, each element of the list must be a sublist
+        with the probabilities of each classes.
     classes: list / numpy.array, optional
         The classes for the binary tree model.
     return_proba: bool, optional
@@ -863,13 +862,13 @@ attributes: dict
                             "method": The model's category, one of the following: 'zscore', 
                                       'robust_zscore', or 'minmax'.}
         For BinaryTreeRegressor, BinaryTreeClassifier:
-                            {children_left: children_left[i] holds the node id of the left 
-                                            child of node i.
-                             children_right: children_right[i] holds the node id of the 
+                            {children_left: A list of node IDs, where children_left[i] is the node id of the left 
+                                            A list of node IDs, where child of node i.
+                             children_right: children_right[i] is the node id of the 
                                              right child of node i.
-                             feature: feature[i] holds the feature to split on, for the internal 
+                             feature: A list of features, where feature[i] is the feature to split on, for the internal 
                                       node i.
-                             threshold: threshold[i] holds the threshold for the internal node i.
+                             threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
         For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor:
@@ -880,7 +879,7 @@ attributes: dict
                              mean: [Only for XGBoostRegressor]
                                    Average of the response column.
                              logodds: [Only for XGBoostClassifier]
-                                   List including all the response's classes logodds.}
+                                   List of the logodds of the response classes.}
 
 
     """
@@ -1344,19 +1343,20 @@ attributes: dict
     def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
         """
     ---------------------------------------------------------------------------
-    Rotates the model's Matrix using the Oblimin rotation (VARIMAX, QUARTIMAX...).
+    Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
+    PCA matrix.
 
     Parameters
     ----------
     gamma: float, optional
-        Oblimin Factor.
+        Oblimin rotation factor, determines the type of rotation.
         It must be between 0.0 and 1.0.
-            gamma = 0.0 is equivalent to quartimax.
-            gamma = 1.0 is equivalent to varimax.
+            gamma = 0.0 results in a Quartimax rotation.
+            gamma = 1.0 results in a Varimax rotation.
     q: int, optional
         Maximum number of iterations.
     tol: float, optional
-        Determines whether the algorithm has reached the specified accuracy result.
+        The algorithm stops when the Frobenius norm of gradient is less than tol.
 
     Returns
     -------
