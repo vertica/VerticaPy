@@ -50,14 +50,159 @@
 #
 # Standard Python Modules
 import numpy as np
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
-def predict_from_coef(X: Union[list, np.array], 
-                      coefficients: Union[list, np.array], 
+def predict_from_binary_tree(X: Union[list, np.ndarray], 
+                             children_left: list,
+                             children_right: list,
+                             feature: list,
+                             threshold: list,
+                             value: list,
+                             classes: Union[list, np.ndarray] = [],
+                             return_proba: bool = False,
+                             is_regressor: bool = True,):
+    """
+    ---------------------------------------------------------------------------
+    Predicts using a binary tree model and the input attributes.
+
+    Parameters
+    ----------
+    X: list / numpy.array
+        Data on which to make the prediction.
+    children_left: list
+        A list of node IDs, where children_left[i] is the node id of the left child of node i.
+    children_right: list
+        A list of node IDs, children_right[i] is the node id of the right child of node i.
+    feature: list
+        A list of features, where feature[i] is the feature to split on for the internal node i.
+    threshold: list
+        A list of thresholds, where threshold[i] is the threshold for the internal node i.
+    value: list
+        Contains the constant prediction value of each node.
+    classes: list / numpy.array, optional
+        The classes for the binary tree model.
+    return_proba: bool, optional
+        If set to True, the probability of each class is returned.
+    is_regressor: bool, optional
+        If set to True, the parameter 'value' corresponds to the result of
+        a regression.
+
+    Returns
+    -------
+    numpy.array
+        Predicted values
+    """
+    check_types([("X", X, [list, np.ndarray,],),
+                 ("children_left", children_left, [list,],),
+                 ("children_right", children_right, [list,],),
+                 ("feature", feature, [list,],),
+                 ("threshold", threshold, [list,],),
+                 ("value", value, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
+                 ("return_proba", return_proba, [bool,],),
+                 ("is_regressor", is_regressor, [bool,],),])
+    def predict_tree(children_left, children_right, feature, threshold, value,  node_id, X,):
+        if children_left[node_id] == children_right[node_id]:
+            if not(is_regressor) and not(return_proba) and isinstance(value, Iterable):
+                if isinstance(classes, Iterable) and len(classes) > 0:
+                    return classes[np.argmax(value[node_id])]
+                else:
+                    return np.argmax(value[node_id])
+            else:
+                return value[node_id]
+        else:
+            if (isinstance(threshold[node_id], str) and str(X[feature[node_id]]) == threshold[node_id]) or (not(isinstance(threshold[node_id], str)) and float(X[feature[node_id]]) < float(threshold[node_id])):
+                return predict_tree(children_left, children_right, feature, threshold, value, children_left[node_id], X)
+            else:
+                return predict_tree(children_left, children_right, feature, threshold, value, children_right[node_id], X)
+    def predict_tree_final(X,):
+        return predict_tree(children_left, children_right, feature, threshold, value, 0, X,)
+    return np.apply_along_axis(predict_tree_final, 1, np.array(X))
+
+# ---#
+def sql_from_binary_tree(X: Union[list, np.ndarray], 
+                         children_left: list,
+                         children_right: list,
+                         feature: list,
+                         threshold: list,
+                         value: list,
+                         classes: Union[list, np.ndarray] = [],
+                         return_proba: bool = False,
+                         is_regressor: bool = True,):
+    """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy a binary tree model using its attributes.
+
+    Parameters
+    ----------
+    X: list / numpy.array
+        Data on which to make the prediction.
+    children_left: list
+        A list of node IDs, where children_left[i] is the node id of the left child of node i.
+    children_right: list
+        A list of node IDs, children_right[i] is the node id of the right child of node i.
+    feature: list
+        A list of features, where feature[i] is the feature to split on for the internal node i.
+    threshold: list
+        A list of thresholds, where threshold[i] is the threshold for the internal node i.
+    value: list
+        Contains the constant prediction value of each node. If used for classification and if return_proba is set to True, each element of the list must be a sublist
+        with the probabilities of each classes.
+    classes: list / numpy.array, optional
+        The classes for the binary tree model.
+    return_proba: bool, optional
+        If set to True, the probability of each class is returned.
+    is_regressor: bool, optional
+        If set to True, the parameter 'value' corresponds to the result of
+        a regression.
+
+    Returns
+    -------
+    str / list
+        SQL code
+    """
+    check_types([("X", X, [list, np.ndarray,],),
+                 ("children_left", children_left, [list,],),
+                 ("children_right", children_right, [list,],),
+                 ("feature", feature, [list,],),
+                 ("threshold", threshold, [list,],),
+                 ("value", value, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
+                 ("return_proba", return_proba, [bool,],),
+                 ("is_regressor", is_regressor, [bool,],),])
+    def predict_tree(children_left, children_right, feature, threshold, value,  node_id, X, prob_ID = 0):
+        if children_left[node_id] == children_right[node_id]:
+            if return_proba:
+                return value[node_id][prob_ID]
+            else:
+                if not(is_regressor) and isinstance(classes, Iterable) and len(classes) > 0:
+                    result = classes[np.argmax(value[node_id])]
+                    if isinstance(result, str):
+                      return "'" + result + "'"
+                    else:
+                      return result
+                else:
+                    return value[node_id]
+        else:
+            op = '=' if isinstance(threshold[node_id], str) else '<'
+            return "(CASE WHEN {} {} '{}' THEN {} ELSE {} END)".format(X[feature[node_id]], 
+                                                                       op, threshold[node_id], 
+                                                                       predict_tree(children_left, children_right, feature, threshold, value, children_left[node_id], X, prob_ID), 
+                                                                       predict_tree(children_left, children_right, feature, threshold, value, children_right[node_id], X, prob_ID))
+    if return_proba:
+        n = max([len(l) if l != None else 0 for l in value])
+        return [predict_tree(children_left, children_right, feature, threshold, value, 0, X, i) for i in range(n)]
+    else:
+        return predict_tree(children_left, children_right, feature, threshold, value, 0, X,)
+
+# ---#
+def predict_from_coef(X: Union[list, np.ndarray], 
+                      coefficients: Union[list, np.ndarray], 
                       intercept: float, 
                       method: str = "LinearRegression",
                       return_proba: bool = False,):
@@ -85,8 +230,8 @@ def predict_from_coef(X: Union[list, np.array],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("coefficients", coefficients, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("coefficients", coefficients, [list, np.ndarray,],),
                  ("intercept", intercept, [float, int,],),
                  ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),
                  ("return_proba", return_proba, [bool],),])
@@ -138,10 +283,10 @@ def sql_from_coef(X: list,
     return sql
 
 # ---#
-def predict_from_bisecting_kmeans(X: Union[list, np.array], 
-                                  clusters: Union[list, np.array],
-                                  left_child: Union[list, np.array],
-                                  right_child: Union[list, np.array],
+def predict_from_bisecting_kmeans(X: Union[list, np.ndarray], 
+                                  clusters: Union[list, np.ndarray],
+                                  left_child: Union[list, np.ndarray],
+                                  right_child: Union[list, np.ndarray],
                                   p: int = 2,):
     """
     ---------------------------------------------------------------------------
@@ -167,10 +312,10 @@ def predict_from_bisecting_kmeans(X: Union[list, np.array],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("clusters", clusters, [list,],),
-                 ("left_child", left_child, [list,],),
-                 ("right_child", right_child, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("clusters", clusters, [list, np.ndarray,],),
+                 ("left_child", left_child, [list, np.ndarray,],),
+                 ("right_child", right_child, [list, np.ndarray,],),
                  ("p", p, [int,],),])
     centroids = np.array(clusters)
     def predict_tree(right_child, left_child, row, node_id, centroids):
@@ -248,11 +393,11 @@ def sql_from_bisecting_kmeans(X: list,
     return sql_final
 
 # ---#
-def predict_from_clusters(X: Union[list, np.array], 
-                          clusters: Union[list, np.array],
+def predict_from_clusters(X: Union[list, np.ndarray], 
+                          clusters: Union[list, np.ndarray],
                           return_distance_clusters: bool = False,
                           return_proba: bool = False,
-                          classes: Union[list, np.array] = [],
+                          classes: Union[list, np.ndarray] = [],
                           p: int = 2,):
     """
     ---------------------------------------------------------------------------
@@ -278,11 +423,11 @@ def predict_from_clusters(X: Union[list, np.array],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("clusters", clusters, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("clusters", clusters, [list, np.ndarray,],),
                  ("return_distance_clusters", return_distance_clusters, [bool,],),
                  ("return_proba", return_proba, [bool,],),
-                 ("classes", classes, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
                  ("p", p, [int,],),])
     assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True.")
     centroids = np.array(clusters)
@@ -377,9 +522,9 @@ def sql_from_clusters(X: list,
     return sql_final
 
 # ---#
-def transform_from_pca(X: Union[list, np.array],
-                       principal_components: Union[list, np.array],
-                       mean: Union[list, np.array]):
+def transform_from_pca(X: Union[list, np.ndarray],
+                       principal_components: Union[list, np.ndarray],
+                       mean: Union[list, np.ndarray]):
     """
     ---------------------------------------------------------------------------
     Transforms the data with a PCA model using the input attributes.
@@ -398,9 +543,9 @@ def transform_from_pca(X: Union[list, np.array],
     numpy.array
         Transformed data
     """
-    check_types([("X", X, [list],), 
-                 ("principal_components", principal_components, [list],),
-                 ("mean", mean, [list],),])
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("principal_components", principal_components, [list, np.ndarray,],),
+                 ("mean", mean, [list, np.ndarray,],),])
     pca_values = np.array(principal_components)
     result = (X - np.array(mean))
     L, n = [], len(principal_components[0])
@@ -682,7 +827,7 @@ model_type: str
     'SVD,' 'PCA,' 'BisectingKMeans,' 'KMeans,' 'NaiveBayes,' 
     'XGBoostClassifier,' 'XGBoostRegressor,' 'RandomForestClassifier,' 
     'RandomForestRegressor,' 'LinearSVR,' 'LinearSVC,' 'LogisticRegression,' 
-    'LinearRegression'
+    'LinearRegression', 'BinaryTreeRegressor', 'BinaryTreeClassifier'
 attributes: dict
     Dictionary which includes all the model's attributes.
         For OneHotEncoder: {"categories": List of the different feature categories.
@@ -709,13 +854,34 @@ attributes: dict
                             "mean": List of the input predictors average.}
         For SVD:           {"vectors": Matrix of the right singular vectors.
                             "values": List of the singular values.}
-        For Normalizer:       {"values": List of tuples including the model's attributes.
-                                      The required tuple depends on the specified method: 
-                                       'zscore': (mean, std)
-                                       'robust_zscore': (median, mad)
-                                       'minmax': (min, max)
+        For Normalizer:    {"values": List of tuples including the model's attributes.
+                                The required tuple depends on the specified method: 
+                                    'zscore': (mean, std)
+                                    'robust_zscore': (median, mad)
+                                    'minmax': (min, max)
                             "method": The model's category, one of the following: 'zscore', 
                                       'robust_zscore', or 'minmax'.}
+        For BinaryTreeRegressor, BinaryTreeClassifier:
+                            {children_left: A list of node IDs, where children_left[i] is the node id of the left 
+                                            A list of node IDs, where child of node i.
+                             children_right: children_right[i] is the node id of the 
+                                             right child of node i.
+                             feature: A list of features, where feature[i] is the feature to split on, for the internal 
+                                      node i.
+                             threshold: threshold[i] is the threshold for the internal node i.
+                             value: Contains the constant prediction value of each node.
+                             classes: [Only for Classifier] The classes for the binary tree model.}
+        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor:
+                            {trees: list of memModels of type 'BinaryTreeRegressor' or 
+                                    'BinaryTreeClassifier'
+                             learning_rate: [Only for XGBoostClassifier and XGBoostRegressor]
+                                            Learning rate.
+                             mean: [Only for XGBoostRegressor]
+                                   Average of the response column.
+                             logodds: [Only for XGBoostClassifier]
+                                   List of the logodds of the response classes.}
+
+
     """
     #
     # Special Methods
@@ -737,6 +903,8 @@ attributes: dict
                                                   "XGBoostClassifier",
                                                   "XGBoostRegressor",
                                                   "RandomForestClassifier",
+                                                  "BinaryTreeClassifier",
+                                                  "BinaryTreeRegressor",
                                                   "RandomForestRegressor",
                                                   "LinearSVR",
                                                   "LinearSVC",
@@ -744,7 +912,56 @@ attributes: dict
                                                   "LinearRegression",
                                                   "NearestCentroids",],),])
         attributes_ = {}
-        if model_type == "OneHotEncoder":
+        if model_type in ("RandomForestRegressor", "XGBoostRegressor", "RandomForestClassifier", "XGBoostClassifier",):
+            if ("trees" not in attributes):
+                raise ParameterError("{}'s attributes must include a list of memModels representing each tree.".format(model_type))
+            attributes_["trees"] = []
+            for tree in attributes["trees"]:
+                assert isinstance(tree, memModel), ParameterError("Each tree of the model must be a memModel, found '{}'.".format(type(tree)))
+                if model_type in ("RandomForestClassifier", "XGBoostClassifier",):
+                    assert tree.model_type_ in ("BinaryTreeClassifier",), ParameterError("Each tree of the model must be a BinaryTreeClassifier, found '{}'.".format(tree.model_type_))
+                else:
+                    assert tree.model_type_ in ("BinaryTreeRegressor",), ParameterError("Each tree of the model must be a BinaryTreeRegressor, found '{}'.".format(tree.model_type_))
+                attributes_["trees"] += [tree]
+            represent = "<{}>\n\nntrees = {}".format(model_type, len(attributes_["trees"]))
+            if model_type == "XGBoostRegressor":
+                if ("learning_rate" not in attributes or 'mean' not in attributes):
+                    raise ParameterError("{}'s attributes must include the response average and the learning rate.".format(model_type))
+                attributes_["mean"] = attributes["mean"]
+                check_types([("mean", attributes_["mean"], [int, float,],),])
+                represent += "\n\nmean = {}".format(attributes_["mean"])
+            if model_type == "XGBoostClassifier":
+                if ("learning_rate" not in attributes or 'logodds' not in attributes):
+                    raise ParameterError("{}'s attributes must include the response classes logodds and the learning rate.".format(model_type))
+                attributes_["logodds"] = np.copy(attributes["logodds"])
+                check_types([("logodds", attributes_["logodds"], [list,],),])
+                represent += "\n\nlogodds = {}".format(attributes_["logodds"])
+            if model_type in ("XGBoostRegressor", "XGBoostClassifier",):
+                attributes_["learning_rate"] = attributes["learning_rate"]
+                check_types([("learning_rate", attributes_["learning_rate"], [int, float,],),])
+                represent += "\n\nlearning_rate = {}".format(attributes_["learning_rate"])
+        elif model_type in ("BinaryTreeClassifier", "BinaryTreeRegressor"):
+            if ("children_left" not in attributes or "children_right" not in attributes or "feature" not in attributes or "threshold" not in attributes or "value" not in attributes):
+                raise ParameterError("{}'s attributes must include at least the following lists: children_left, children_right, feature, threshold, value.".format(model_type))
+            for elem in ("children_left", "children_right", "feature", "threshold", "value",):
+                if isinstance(attributes[elem], list):
+                    attributes_[elem] = attributes[elem].copy()
+                else:
+                    attributes_[elem] = np.copy(attributes[elem])
+            check_types([("children_left", attributes_["children_left"], [list,],),
+                         ("children_right", attributes_["children_right"], [list,],),
+                         ("feature", attributes_["feature"], [list,],),
+                         ("threshold", attributes_["threshold"], [list,],),
+                         ("value", attributes_["value"], [list,],),])
+            represent = "<{}>\n\nchildren_left = {}\n\nchildren_right = {}\n\nfeature = {}\n\nthreshold = {}\n\nvalue =\n{}".format(model_type, attributes_["children_left"], attributes_["children_right"], attributes_["feature"], attributes_["threshold"], attributes_["value"])
+            if model_type in ("BinaryTreeClassifier",):
+                if "classes" not in attributes:
+                    attributes_["classes"] = []
+                else:
+                    attributes_["classes"] = np.copy(attributes["classes"])
+                check_types([("classes", attributes_["classes"], [list,],),])
+                represent += "\n\nclasses = {}".format(attributes_["classes"])
+        elif model_type == "OneHotEncoder":
             if "categories" not in attributes:
                 raise ParameterError("OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter.")
             attributes_["categories"] = attributes["categories"].copy()
@@ -808,7 +1025,7 @@ attributes: dict
             attributes_["mean"] = np.copy(attributes["mean"])
             check_types([("principal_components", attributes_["principal_components"], [list,],),
                          ("mean", attributes_["mean"], [list,],),])
-            represent = "<{}>\n\nprincipal_components = {}\n\nmean = {}".format(model_type, attributes_["principal_components"], attributes_["mean"])
+            represent = "<{}>\n\nprincipal_components = \n{}\n\nmean = {}".format(model_type, attributes_["principal_components"], attributes_["mean"])
         elif model_type in ("SVD",):
             if ("vectors" not in attributes or "values" not in attributes):
                 raise ParameterError("SVD's attributes must include 2 lists: one with all the right singular vectors and one with the singular values of each input feature.")
@@ -816,7 +1033,7 @@ attributes: dict
             attributes_["values"] = np.copy(attributes["values"])
             check_types([("vectors", attributes_["vectors"], [list,],),
                          ("values", attributes_["values"], [list,],),])
-            represent = "<{}>\n\nvectors = {}\n\nvalues = {}".format(model_type, attributes_["vectors"], attributes_["values"])
+            represent = "<{}>\n\nvectors = \n{}\n\nvalues = {}".format(model_type, attributes_["vectors"], attributes_["values"])
         elif model_type in ("Normalizer",):
             if ("values" not in attributes or "method" not in attributes):
                 raise ParameterError("Normalizer's attributes must include a list including the model's aggregations and a string representing the model's method.")
@@ -826,7 +1043,7 @@ attributes: dict
                          ("method", attributes_["method"], ["minmax", "zscore", "robust_zscore",],),])
             represent = "<{}>\n\nvalues = {}\n\nmethod = {}".format(model_type, attributes_["values"], attributes_["method"])
         else:
-            raise ParameterError("Model type '{}' is not yet available.".format(self.model_type_))
+            raise ParameterError("Model type '{}' is not yet available.".format(model_type))
         self.attributes_ = attributes_
         self.model_type_ = model_type
         self.represent_ = represent
@@ -888,6 +1105,18 @@ attributes: dict
             return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
         elif self.model_type_ in ("BisectingKMeans",):
             return predict_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+        elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
+            return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
+        elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor",):
+            result = [tree.predict(X) for tree in self.attributes_["trees"]]
+            if self.model_type_ in ("RandomForestRegressor",):
+                return np.average(np.column_stack(result), axis=1)
+            else:
+                return np.sum(np.column_stack(result), axis=1) * self.attributes_["learning_rate"] + self.attributes_["mean"]
+        elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier",):
+            result = np.argmax(self.predict_proba(X), axis=1)
+            result = np.array([self.attributes_["trees"][0].attributes_["classes"][i] for i in result])
+            return result
         else:
             raise FunctionError("Method 'predict' is not available for model type '{}'.".format(self.model_type_))
 
@@ -918,11 +1147,40 @@ attributes: dict
             return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
         elif self.model_type_ in ("BisectingKMeans",):
             return sql_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+        elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
+            return sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
+        elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor",):
+            result = [tree.predict_sql(X) for tree in self.attributes_["trees"]]
+            if self.model_type_ in ("RandomForestRegressor",):
+                return "(" + " + ".join(result) + ") / {}".format(len(result))
+            else:
+                return "(" + " + ".join(result) + ") * {} + {}".format(self.attributes_["learning_rate"], self.attributes_["mean"],)
+        elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier",):
+            classes = self.attributes_["trees"][0].attributes_["classes"]
+            m = len(classes)
+            result_proba = self.predict_proba_sql(X,)
+            if m == 2:
+                return "(CASE WHEN {} > 0.5 THEN {} ELSE {} END)".format(result_proba[1], classes[1], classes[0])
+            else:
+                sql = []
+                for i in range(m):
+                    list_tmp = []
+                    for j in range(i):
+                        list_tmp += ["{} <= {}".format(result_proba[i], result_proba[j])]
+                    sql += [" AND ".join(list_tmp)]
+                sql = sql[1:]
+                sql.reverse()
+                sql_final = "CASE WHEN {} THEN NULL".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]))
+                for i in range(m - 1):
+                    class_i = classes[m - i - 1]
+                    sql_final += " WHEN {} THEN {}".format(sql[i], "'{}'".format(class_i) if isinstance(class_i, str) else class_i)
+                sql_final += " ELSE {} END".format("'{}'".format(classes[0]) if isinstance(classes[0], str) else classes[0])
+                return sql_final
         else:
             raise FunctionError("Method 'predict_sql' is not available for model type '{}'.".format(self.model_type_)) 
 
     # ---#
-    def predict_proba(self, X: list):
+    def predict_proba(self, X: list,):
         """
     ---------------------------------------------------------------------------
     Predicts probabilities using the model's attributes.
@@ -943,6 +1201,24 @@ attributes: dict
             return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
         elif self.model_type_ in ("NearestCentroids",):
             return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+        elif self.model_type_ in ("BinaryTreeClassifier",):
+            return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
+        elif self.model_type_ in ("RandomForestClassifier",):
+            result, n = 0, len(self.attributes_["trees"])
+            for i in range(n):
+                result_tmp = self.attributes_["trees"][i].predict_proba(X)
+                result_tmp_arg = np.zeros_like(result_tmp)
+                result_tmp_arg[np.arange(len(result_tmp)), result_tmp.argmax(1)] = 1
+                result += result_tmp_arg
+            return result / n
+        elif self.model_type_ in ("XGBoostClassifier",):
+            result = 0
+            for tree in self.attributes_["trees"]:
+                result += tree.predict_proba(X)
+            result = self.attributes_["logodds"] + self.attributes_["learning_rate"] * result
+            result = 1 / (1 + np.exp(- result))
+            result /=  np.sum(result, axis=1)[:,None]
+            return result
         else:
             raise FunctionError("Method 'predict_proba' is not available for model type '{}'.".format(self.model_type_))
 
@@ -969,6 +1245,39 @@ attributes: dict
             return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
         elif self.model_type_ in ("NearestCentroids",):
             return sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+        elif self.model_type_ in ("BinaryTreeClassifier",):
+            return sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
+        elif self.model_type_ in ("RandomForestClassifier",):
+            trees, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
+            for i in range(n):
+                val = []
+                for elem in self.attributes_["trees"][i].attributes_["value"]:
+                    if isinstance(elem, type(None)):
+                        val += [elem]
+                    else:
+                        value_tmp = np.zeros_like([elem])
+                        value_tmp[np.arange(1), np.array([elem]).argmax(1)] = 1
+                        val += [list(value_tmp[0])]
+                tree = memModel("BinaryTreeClassifier", {"children_left": self.attributes_["trees"][i].attributes_["children_left"],
+                                                         "children_right": self.attributes_["trees"][i].attributes_["children_right"],
+                                                         "feature": self.attributes_["trees"][i].attributes_["feature"],
+                                                         "threshold": self.attributes_["trees"][i].attributes_["threshold"],
+                                                         "value": val,
+                                                         "classes": self.attributes_["trees"][i].attributes_["classes"],})
+                trees += [tree]
+            result = [trees[i].predict_proba_sql(X) for i in range(n)]
+            classes_proba = []
+            for i in range(m):
+                classes_proba += ["(" + " + ".join([val[i] for val in result]) + ") / {}".format(n)]
+            return classes_proba
+        elif self.model_type_ in ("XGBoostClassifier",):
+            result, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
+            all_probas = [self.attributes_["trees"][i].predict_proba_sql(X) for i in range(n)]
+            for i in range(m):
+                result += ["(1 / (1 + EXP(- ({} + {} * (".format(self.attributes_["logodds"][i], self.attributes_["learning_rate"]) + " + ".join(all_probas[i]) + ")))))"]
+            sum_result = "(" + " + ".join(result) + ")"
+            result = [item + " / {}".format(sum_result) for item in result]
+            return result
         else:
             raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
 
@@ -1030,3 +1339,35 @@ attributes: dict
         else:
             raise FunctionError("Method 'transform_sql' is not available for model type '{}'.".format(self.model_type_))
 
+    # ---#
+    def rotate(self, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
+        """
+    ---------------------------------------------------------------------------
+    Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
+    PCA matrix.
+
+    Parameters
+    ----------
+    gamma: float, optional
+        Oblimin rotation factor, determines the type of rotation.
+        It must be between 0.0 and 1.0.
+            gamma = 0.0 results in a Quartimax rotation.
+            gamma = 1.0 results in a Varimax rotation.
+    q: int, optional
+        Maximum number of iterations.
+    tol: float, optional
+        The algorithm stops when the Frobenius norm of gradient is less than tol.
+
+    Returns
+    -------
+    self
+        memModel
+        """
+        from verticapy.learn.tools import matrix_rotation
+
+        if self.model_type_ in ("PCA",):
+            principal_components = matrix_rotation(self.get_attributes()["principal_components"], gamma, q, tol)
+            self.set_attributes({"principal_components": principal_components})
+        else:
+            raise FunctionError("Method 'rotate' is not available for model type '{}'.".format(self.model_type_))
+        return self
