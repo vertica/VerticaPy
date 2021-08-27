@@ -97,13 +97,13 @@ def predict_from_binary_tree(X: Union[list, np.ndarray],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],),
+    check_types([("X", X, [list, np.ndarray,],),
                  ("children_left", children_left, [list,],),
                  ("children_right", children_right, [list,],),
                  ("feature", feature, [list,],),
                  ("threshold", threshold, [list,],),
                  ("value", value, [list,],),
-                 ("classes", classes, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
                  ("return_proba", return_proba, [bool,],),
                  ("is_regressor", is_regressor, [bool,],),])
     def predict_tree(children_left, children_right, feature, threshold, value,  node_id, X,):
@@ -166,13 +166,13 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
     str / list
         SQL code
     """
-    check_types([("X", X, [list,],),
+    check_types([("X", X, [list, np.ndarray,],),
                  ("children_left", children_left, [list,],),
                  ("children_right", children_right, [list,],),
                  ("feature", feature, [list,],),
                  ("threshold", threshold, [list,],),
                  ("value", value, [list,],),
-                 ("classes", classes, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
                  ("return_proba", return_proba, [bool,],),
                  ("is_regressor", is_regressor, [bool,],),])
     def predict_tree(children_left, children_right, feature, threshold, value,  node_id, X, prob_ID = 0):
@@ -230,8 +230,8 @@ def predict_from_coef(X: Union[list, np.ndarray],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("coefficients", coefficients, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("coefficients", coefficients, [list, np.ndarray,],),
                  ("intercept", intercept, [float, int,],),
                  ("method", method, ["LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"],),
                  ("return_proba", return_proba, [bool],),])
@@ -312,10 +312,10 @@ def predict_from_bisecting_kmeans(X: Union[list, np.ndarray],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("clusters", clusters, [list,],),
-                 ("left_child", left_child, [list,],),
-                 ("right_child", right_child, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("clusters", clusters, [list, np.ndarray,],),
+                 ("left_child", left_child, [list, np.ndarray,],),
+                 ("right_child", right_child, [list, np.ndarray,],),
                  ("p", p, [int,],),])
     centroids = np.array(clusters)
     def predict_tree(right_child, left_child, row, node_id, centroids):
@@ -423,11 +423,11 @@ def predict_from_clusters(X: Union[list, np.ndarray],
     numpy.array
         Predicted values
     """
-    check_types([("X", X, [list,],), 
-                 ("clusters", clusters, [list,],),
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("clusters", clusters, [list, np.ndarray,],),
                  ("return_distance_clusters", return_distance_clusters, [bool,],),
                  ("return_proba", return_proba, [bool,],),
-                 ("classes", classes, [list,],),
+                 ("classes", classes, [list, np.ndarray,],),
                  ("p", p, [int,],),])
     assert not(return_distance_clusters) or not(return_proba), ParameterError("Parameters 'return_distance_clusters' and 'return_proba' cannot both be set to True.")
     centroids = np.array(clusters)
@@ -543,9 +543,9 @@ def transform_from_pca(X: Union[list, np.ndarray],
     numpy.array
         Transformed data
     """
-    check_types([("X", X, [list],), 
-                 ("principal_components", principal_components, [list],),
-                 ("mean", mean, [list],),])
+    check_types([("X", X, [list, np.ndarray,],), 
+                 ("principal_components", principal_components, [list, np.ndarray,],),
+                 ("mean", mean, [list, np.ndarray,],),])
     pca_values = np.array(principal_components)
     result = (X - np.array(mean))
     L, n = [], len(principal_components[0])
