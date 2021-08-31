@@ -13,7 +13,7 @@
 
 import pytest, warnings
 from verticapy.learn.preprocessing import Balance
-from verticapy import drop_table, set_option
+from verticapy import drop, set_option
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,7 +26,7 @@ def titanic_vd(base):
     titanic = load_titanic(cursor=base.cursor)
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop_table(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", cursor=base.cursor)
 
 
 class TestBalance:

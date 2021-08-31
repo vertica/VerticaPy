@@ -635,16 +635,16 @@ def het_breuschpagan(
 ):
     """
 ---------------------------------------------------------------------------
-Breusch-Pagan test for heteroscedasticity.
+Uses the Breusch-Pagan to test a model for heteroskedasticity.
 
 Parameters
 ----------
 vdf: vDataFrame
     Input vDataFrame.
 eps: str
-    Input residual vcolumn.
+    Input residual vColumn.
 X: list
-    Exogenous Variables to test the heteroscedasticity on.
+    The exogenous variables to test.
 
 Returns
 -------

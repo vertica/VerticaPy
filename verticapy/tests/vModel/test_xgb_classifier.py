@@ -121,7 +121,7 @@ class TestXGBC:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.681)
+        assert cls_rep1["cutoff"][0] == pytest.approx(0.6811, 1e-2)
 
         cls_rep2 = model.classification_report(cutoff=0.681).transpose()
 
@@ -346,10 +346,10 @@ class TestXGBC:
         ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="best_cutoff", pos_label="Train"
-        ) == pytest.approx(0.633)
+        ) == pytest.approx(0.6338, 1e-2)
         assert model.score(
             cutoff=0.1, method="best_cutoff", pos_label="Train"
-        ) == pytest.approx(0.633)
+        ) == pytest.approx(0.6338, 1e-2)
         assert model.score(
             cutoff=0.633, method="bm", pos_label="Train"
         ) == pytest.approx(0.0)

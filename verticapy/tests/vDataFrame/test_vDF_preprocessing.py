@@ -52,8 +52,8 @@ class TestvDFPreprocessing:
         train, test = titanic_vd.train_test_split(
             test_size=0.33, order_by={"name": "asc"}, random_state=1
         )
-        assert train.shape() == (pytest.approx(839), 14)
-        assert test.shape() == (pytest.approx(395), 14)
+        assert train.shape() == (pytest.approx(809), 14)
+        assert test.shape() == (pytest.approx(425), 14)
 
     def test_vDF_add_duplicates(self, base):
         names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf(cursor=base.cursor)
@@ -115,7 +115,8 @@ class TestvDFPreprocessing:
             "[0.330;21.000]",
             "[21.000;28.000]",
             "[28.000;39.000]",
-            "[39.000;80.000]",
+            "[39.000;76.000]",
+            "[76.000;80.000]",
         ]
 
         ### method = "smart"
