@@ -242,7 +242,7 @@ class TestUtilities:
             "fields.survived": "Boolean",
             "fields.ticket": "Varchar(36)",
             "record_timestamp": "Timestamp",
-            "recordid": "Uuid",
+            "recordid": "Varchar(80)",
         }
 
     def test_read_json(self, base):

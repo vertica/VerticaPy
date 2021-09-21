@@ -352,7 +352,7 @@ class TestNB:
         assert iris_copy["pred_class1"].mode() == "Iris-setosa"
 
         model.predict(iris_copy, name="pred_class2", cutoff=0.3)
-        assert iris_copy["pred_class2"].mode() == "Iris-setosa"
+        assert iris_copy["pred_class2"].mode() == "Iris-versicolor"
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Iris-virginica", nbins=1000)
