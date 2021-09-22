@@ -346,13 +346,13 @@ class TestNB:
         iris_copy = iris_vd.copy()
 
         model.predict(iris_copy, name="pred_probability")
-        assert iris_copy["pred_probability"].mode() == "Iris-setosa"
+        assert iris_copy["pred_probability"][0] == "Iris-setosa"
 
         model.predict(iris_copy, name="pred_class1", cutoff=0.7)
-        assert iris_copy["pred_class1"].mode() == "Iris-setosa"
+        assert iris_copy["pred_class1"][0] == "Iris-setosa"
 
         model.predict(iris_copy, name="pred_class2", cutoff=0.3)
-        assert iris_copy["pred_class2"].mode() == "Iris-setosa"
+        assert iris_copy["pred_class2"][0] == "Iris-setosa"
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Iris-virginica", nbins=1000)
@@ -388,7 +388,7 @@ class TestNB:
         ) == pytest.approx(0.9923999999999998)
         assert model.score(
             cutoff=0.9, method="best_cutoff", pos_label="Iris-virginica"
-        ) == pytest.approx(0.509)
+        ) == pytest.approx(0.5099, 1e-2)
         assert model.score(
             cutoff=0.9, method="bm", pos_label="Iris-virginica"
         ) == pytest.approx(0.0)

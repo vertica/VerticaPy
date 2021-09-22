@@ -187,11 +187,18 @@ class TestUtilities:
         vdf = pandas_to_vertica(
             df=df,
             cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            name="titanic_pandas",
         )
         assert vdf.shape() == (1234, 14)
         drop(
             "titanic_pandas", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
         )
+        vdf = pandas_to_vertica(
+            df=df,
+            cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+        )
+        assert vdf.shape() == (1234, 14)
+
 
     def test_pcsv(self, base):
         result = pcsv(
@@ -235,7 +242,7 @@ class TestUtilities:
             "fields.survived": "Boolean",
             "fields.ticket": "Varchar(36)",
             "record_timestamp": "Timestamp",
-            "recordid": "Uuid",
+            "recordid": "Varchar(80)",
         }
 
     def test_read_json(self, base):

@@ -192,8 +192,6 @@ def sql(line, cell="", local_ns=None):
                     error = e
             if error:
                 raise QueryError(error)
-    if not (options["vdf"]):
-        conn.close()
     elapsed_time = time.time() - start_time
     if verticapy.options["print_info"]:
         display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))

@@ -214,7 +214,7 @@ class TestXGBR:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', max_ntree=3, max_depth=6, nbins=40, objective=squarederror, split_proposal_method=global, epsilon=0.001, learning_rate=0.2, min_split_loss=0.1, weight_reg=0, sampling_size=1, seed=1, id_column='id')"
+            == "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', max_ntree=3, max_depth=6, nbins=40, objective=squarederror, split_proposal_method=global, epsilon=0.001, learning_rate=0.2, min_split_loss=0.1, weight_reg=0, sampling_size=1, col_sample_by_tree=1, col_sample_by_node=1, seed=1, id_column='id')"
         )
 
     def test_get_params(self, model):
@@ -374,7 +374,7 @@ class TestXGBR:
 
     def test_export_graphviz(self, model):
         gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 1.100000", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 10 [label = "yes", color = "black"];\n6 -> 11 [label = "no", color = "black"];\n10 [label = "income == Low ?", color="blue"];\n10 -> 14 [label = "yes", color = "black"];\n10 -> 15 [label = "no", color = "black"];\n14 [label = "prediction: -0.900000", color="red"];\n15 [label = "prediction: 0.100000", color="red"];\n11 [label = "prediction: -0.900000", color="red"];\n7 [label = "prediction: 0.100000", color="red"];\n}'
+        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 1.100000", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: -0.900000", color="red"];\n25 [label = "prediction: 0.100000", color="red"];\n13 [label = "prediction: -0.900000", color="red"];\n7 [label = "prediction: 0.100000", color="red"];\n}'
 
         assert gvz_tree_0 == expected_gvz_0
 
