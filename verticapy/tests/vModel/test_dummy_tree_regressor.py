@@ -231,6 +231,20 @@ class TestDummyTreeRegressor:
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
+    def test_to_memmodel(self, model,):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
+                              ['Female', 1, 'Expensive', 'Low']])
+        res_py = model.to_python()([['Male', 0, 'Cheap', 'Low'],
+                                    ['Female', 1, 'Expensive', 'Low']])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = vDataFrame("public.tr_data", cursor = model.cursor)
+        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
+        model.predict(vdf, name = "prediction_vertica_sql")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        assert score == pytest.approx(1.0)
+
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()

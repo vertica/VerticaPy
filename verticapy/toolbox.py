@@ -674,7 +674,6 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
-
 # ---#
 def last_order_by(vdf):
     max_pos, order_by = 0, ""
@@ -737,6 +736,84 @@ def ooe_details_transform(L: list):
             tmp_cat += [c[1]]
     cat += [tmp_cat]
     return X, cat
+
+# ---#
+def tree_attributes_list(tree, X: list, model_type: str, return_probability: bool = False):
+    # Returns trees list of attributes.
+    def map_idx(x):
+        for idx, elem in enumerate(X):
+            if str_column(x).lower() == str_column(elem).lower():
+                return idx
+    tree_list = []
+    for idx in range(len(tree["tree_id"])):
+        tree.values["left_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["left_child_id"]]
+        tree.values["right_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["right_child_id"]]
+        tree.values["node_id"][idx] = idx
+        tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
+        if model_type in ("XGBoostClassifier",) and isinstance(tree["log_odds"][idx], str):
+            val, all_val = tree["log_odds"][idx].split(","), {}
+            for elem in val:
+                all_val[elem.split(":")[0]] = float(elem.split(":")[1])
+            tree.values["log_odds"][idx] = all_val
+    tree_list = [tree["left_child_id"], tree["right_child_id"], tree["split_predictor"], tree["split_value"], tree["prediction"], tree["is_categorical_split"]]
+    if model_type in ("XGBoostClassifier",):
+        tree_list += [tree["log_odds"]]
+    if return_probability:
+        tree_list += [tree["probability/variance"]]
+    return tree_list
+
+# ---#
+def nb_var_info(model):
+    # Returns a list of dictionary for each of the NB variables.
+    # It is used to translate NB to Python
+    from verticapy.utilities import vdf_from_relation
+
+    vdf = vdf_from_relation(model.input_relation, cursor=model.cursor)
+    var_info = {}
+    gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
+    for idx, elem in enumerate(model.X):
+        var_info[elem] = {"rank": idx}
+        if vdf[elem].isbool():
+            var_info[elem]["type"] = "bernoulli"
+            for c in model.classes_:
+                var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))["probability"][bernoulli_incr]
+            bernoulli_incr += 1
+        elif vdf[elem].category() in ("int",):
+            var_info[elem]["type"] = "multinomial"
+            for c in model.classes_:
+                multinomial = model.get_attr("multinomial.{}".format(c))
+                var_info[elem][c] = multinomial["probability"][multinomial_incr]
+            multinomial_incr += 1
+        elif vdf[elem].isnum():
+            var_info[elem]["type"] = "gaussian"
+            for c in model.classes_:
+                gaussian = model.get_attr("gaussian.{}".format(c))
+                var_info[elem][c] = {"mu": gaussian["mu"][gaussian_incr], "sigma_sq": gaussian["sigma_sq"][gaussian_incr]}
+            gaussian_incr += 1
+        else:
+            var_info[elem]["type"] = "categorical"
+            my_cat = "categorical." + str_column(elem)[1:-1]
+            attr = model.get_attr()["attr_name"]
+            for item in attr:
+                if item.lower() == my_cat.lower():
+                    my_cat = item
+                    break
+            val = model.get_attr(my_cat).values
+            for item in val:
+                if item != "category":
+                    if item not in var_info[elem]:
+                        var_info[elem][item] = {}
+                    for i, p in enumerate(val[item]):
+                        var_info[elem][item][val["category"][i]] = p
+    var_info_simplified = []
+    for i in range(len(var_info)):
+        for elem in var_info:
+            if var_info[elem]["rank"] == i:
+                var_info_simplified += [var_info[elem]]
+                break
+    for elem in var_info_simplified:
+        del elem["rank"]
+    return var_info_simplified
 
 # ---#
 def order_discretized_classes(categories):

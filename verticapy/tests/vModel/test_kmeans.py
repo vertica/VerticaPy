@@ -207,7 +207,7 @@ class TestKMeans:
             model.to_python(return_str=False, return_distance_clusters=True)([[5.006, 3.418, 1.464, 0.244]])[0][0]
         )
 
-    def test_to_sql(self, model):
+    def test_to_sql(self, model,):
         model.cursor.execute(
             "SELECT APPLY_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
@@ -216,7 +216,21 @@ class TestKMeans:
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_get_voronoi_plot(self, base, iris_vd):
+    def test_to_memmodel(self, model, iris_vd,):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244,],
+                              [3.0, 11.0, 1993., 0.,]])
+        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244,],
+                                    [3.0, 11.0, 1993., 0.,]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = iris_vd.copy()
+        vdf["prediction_sql"] = mmodel.predict_sql(["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"])
+        model.predict(vdf, name = "prediction_vertica_sql",)
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        assert score == pytest.approx(1.0)
+
+    def test_get_voronoi_plot(self, base, iris_vd,):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = KMeans("model_test_plot", cursor=base.cursor)
         model_test.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm",])

@@ -464,9 +464,9 @@ to store it inside the database.
 Parameters
 ----------
 df: pandas.DataFrame
-	The pandas.DataFrame to ingest.
+    The pandas.DataFrame to ingest.
 cursor: DBcursor, optional
-	Vertica database cursor.
+    Vertica database cursor.
 name: str, optional
     Name of the new relation. If empty, a temporary local table is created.
 schema: str, optional
@@ -477,17 +477,17 @@ parse_n_lines: int, optional
     then dropped and the entire file will be ingested. The data types identification
     will be less precise but this parameter can make the process faster if the
     file is heavy.
-	
+    
 Returns
 -------
 vDataFrame
-	vDataFrame of the new relation.
+    vDataFrame of the new relation.
 
 See Also
 --------
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
-	"""
+    """
     check_types(
         [
             ("name", name, [str],),
