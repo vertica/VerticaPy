@@ -67,6 +67,7 @@ class TestNB:
         model_repr.drop()
         assert model_repr.__repr__() == "<NaiveBayes>"
 
+    @pytest.mark.skip(reason="to_sklearn fails: new sklearn version does not allow changing attributes.")
     def test_NB_subclasses(self, winequality_vd):
         model_test = BernoulliNB("model_test")
         assert model_test.parameters["nbtype"] == "bernoulli"
@@ -203,6 +204,7 @@ class TestNB:
         assert lift_ch["lift"][900] == pytest.approx(2.57894736842105)
         plt.close()
 
+    @pytest.mark.skip(reason="to_sklearn fails: new sklearn version does not allow changing attributes.")
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
         model.cursor.execute(

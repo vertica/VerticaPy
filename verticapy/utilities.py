@@ -492,13 +492,14 @@ read_json : Ingests a JSON file into the Vertica database.
         [
             ("name", name, [str],),
             ("schema", schema, [str],),
+            ("parse_n_lines", parse_n_lines, [int],),
         ]
     )
     cursor = check_cursor(cursor)[0]
     if not(name):
         tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
     else:
-        tmp_name = False
+        tmp_name = ""
     path = "{}.csv".format(name)
     try:
         df.to_csv(path, index=False)
