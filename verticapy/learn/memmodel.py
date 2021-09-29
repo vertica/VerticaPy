@@ -64,15 +64,15 @@ def predict_from_nb(X: Union[list, np.ndarray],
                     return_proba: bool = False,) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
-    Predicts using a naive bayes model and the input attributes.
+    Predicts using a naive Bayes model and the input attributes.
 
     Parameters
     ----------
     X: list / numpy.array
         Data on which to make the prediction.
     attributes: list
-        List of the model's attributes. Each of the features must be represented
-        by a dictionary that will be different for each type.
+        List of the model's attributes. Each feature must be represented
+        by a dictionary, which differs based on the distribution.
           For 'gaussian':
             Key 'type' must have as value 'gaussian'.
             Each of the model's classes must include a dictionary with two keys:
@@ -84,16 +84,16 @@ def predict_from_nb(X: Union[list, np.ndarray],
                       'S': {'mu': 27.6928120412844, 'sigma_sq': 1428.57067393938}}
           For 'multinomial':
             Key 'type' must have as value 'multinomial'.
-            Each of the model's classes must be represented by a key with as value
-            their probability.
+            Each of the model's classes must be represented by a key with its
+            probability as the value.
             Example: {'type': 'multinomial', 
                       'C': 0.771666666666667, 
                       'Q': 0.910714285714286, 
                       'S': 0.878216123499142}
           For 'bernoulli':
             Key 'type' must have as value 'bernoulli'.
-            Each of the model's classes must be represented by a key with as value
-            their probability.
+            Each of the model's classes must be represented by a key with its
+            probability as the value.
             Example: {'type': 'bernoulli', 
                       'C': 0.537254901960784, 
                       'Q': 0.277777777777778, 
@@ -107,7 +107,7 @@ def predict_from_nb(X: Union[list, np.ndarray],
                       'Q': {'female': 0.416666666666667, 'male': 0.583333333333333}, 
                       'S': {'female': 0.311212814645309, 'male': 0.688787185354691}}
     classes: list / numpy.array
-        The classes for the naive bayes model.
+        The classes for the naive Bayes model.
     prior: list / numpy.array
         The model's classes probabilities.
     return_proba: bool, optional
@@ -154,18 +154,18 @@ def sql_from_nb(X: Union[list, np.ndarray],
                 prior: Union[list, np.ndarray],) -> list:
     """
     ---------------------------------------------------------------------------
-    Predicts using a naive bayes model and the input attributes. This function
-    returns the unnormalized naive bayes probabilities.
+    Predicts using a naive Bayes model and the input attributes. This function
+    returns the unnormalized probabilities of each class as raw SQL code to deploy the model.
 
     Parameters
     ----------
     X: list / numpy.array
         Data on which to make the prediction.
     attributes: list
-        List of the model's attributes. Each of the features must be represented
-        by a dictionary that will be different for each type.
+        List of the model's attributes. Each feature is respresented a dictionary,
+        the contents of which differs for each distribution type.
           For 'gaussian':
-            Key 'type' must have as value 'gaussian'.
+            Key 'type' must have the value 'gaussian'.
             Each of the model's classes must include a dictionary with two keys:
               sigma_sq: Square root of the standard deviation.
               mu: Average.
@@ -174,23 +174,23 @@ def sql_from_nb(X: Union[list, np.ndarray],
                       'Q': {'mu': 13.0217386792453, 'sigma_sq': 211.626862330204}, 
                       'S': {'mu': 27.6928120412844, 'sigma_sq': 1428.57067393938}}
           For 'multinomial':
-            Key 'type' must have as value 'multinomial'.
-            Each of the model's classes must be represented by a key with as value
-            their probability.
+            Key 'type' must have the value 'multinomial'.
+            Each of the model's classes must be represented by a key with its 
+            probability as the value.
             Example: {'type': 'multinomial', 
                       'C': 0.771666666666667, 
                       'Q': 0.910714285714286, 
                       'S': 0.878216123499142}
           For 'bernoulli':
-            Key 'type' must have as value 'bernoulli'.
-            Each of the model's classes must be represented by a key with as value
-            their probability.
+            Key 'type' must have the value 'bernoulli'.
+            Each of the model's classes must be represented by a key with its 
+            probability as the value.
             Example: {'type': 'bernoulli', 
                       'C': 0.537254901960784, 
                       'Q': 0.277777777777778, 
                       'S': 0.324942791762014}
           For 'categorical':
-            Key 'type' must have as value 'categorical'.
+            Key 'type' must have the value 'categorical'.
             Each of the model's classes must include a dictionary with all the feature
             categories.
             Example: {'type': 'categorical', 
@@ -264,7 +264,7 @@ def predict_from_binary_tree(X: Union[list, np.ndarray],
     value: list
         Contains the constant prediction value of each node. If used for classification 
         and if return_proba is set to True, each element of the list must be a sublist
-        with the probabilities of each classes.
+        with the probabilities of each class.
     classes: list / numpy.array, optional
         The classes for the binary tree model.
     return_proba: bool, optional
@@ -338,7 +338,7 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
     value: list
         Contains the constant prediction value of each node. If used for classification 
         and if return_proba is set to True, each element of the list must be a sublist
-        with the probabilities of each classes.
+        with the probabilities of each class.
     classes: list / numpy.array, optional
         The classes for the binary tree model.
     return_proba: bool, optional
@@ -1009,7 +1009,7 @@ class memModel:
     """
 ---------------------------------------------------------------------------
 Independent machine learning models that can easily be deployed 
-using standard SQL or standard Python code.
+using raw SQL or Python code.
 
 Parameters
 ----------
@@ -1072,12 +1072,12 @@ attributes: dict
                              logodds: [Only for XGBoostClassifier]
                                    List of the logodds of the response classes.}
         For NaiveBayes:     {classes: The classes for the naive bayes model.
-                             prior: The model's classes probabilities.
-                             attributes: List of the model's attributes. Each of the features 
-                                         must be represented by a dictionary that will be different 
-                                         for each type.
+                             prior: The model probabilities of each class.
+                             attributes: List of the model's attributes. Each feature is represented 
+                                         by a dictionary, the contents of which differs for each 
+                                         distribution type.
                                             For 'gaussian':
-                                              Key 'type' must have as value 'gaussian'.
+                                              Key 'type' must have the value 'gaussian'.
                                               Each of the model's classes must include a dictionary with two keys:
                                                 sigma_sq: Square root of the standard deviation.
                                                 mu: Average.
@@ -1086,23 +1086,23 @@ attributes: dict
                                                         'Q': {'mu': 13.0217386792453, 'sigma_sq': 211.626862330204}, 
                                                         'S': {'mu': 27.6928120412844, 'sigma_sq': 1428.57067393938}}
                                             For 'multinomial':
-                                              Key 'type' must have as value 'multinomial'.
-                                              Each of the model's classes must be represented by a key with as value
-                                              their probability.
+                                              Key 'type' must have the value 'multinomial'.
+                                              Each of the model's classes must be represented by a key its probability
+                                              as the value.
                                               Example: {'type': 'multinomial', 
                                                         'C': 0.771666666666667, 
                                                         'Q': 0.910714285714286, 
                                                         'S': 0.878216123499142}
                                             For 'bernoulli':
-                                              Key 'type' must have as value 'bernoulli'.
-                                              Each of the model's classes must be represented by a key with as value
-                                              their probability.
+                                              Key 'type' must have the value 'bernoulli'.
+                                              Each of the model's classes must be represented by a key its probability
+                                              as the value.
                                               Example: {'type': 'bernoulli', 
                                                         'C': 0.537254901960784, 
                                                         'Q': 0.277777777777778, 
                                                         'S': 0.324942791762014}
                                             For 'categorical':
-                                              Key 'type' must have as value 'categorical'.
+                                              Key 'type' must have the value 'categorical'.
                                               Each of the model's classes must include a dictionary with all the feature
                                               categories.
                                               Example: {'type': 'categorical', 

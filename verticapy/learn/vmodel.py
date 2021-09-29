@@ -1831,7 +1831,7 @@ Main Class for Vertica Model
     def to_memmodel(self):
         """
     ---------------------------------------------------------------------------
-    Converts the Vertica model to a memModel model.
+    Converts a specified Vertica model to a memModel model.
 
     Returns
     -------
@@ -2773,8 +2773,8 @@ Main Class for Vertica Model
     def to_sql(self, X: list = [], return_proba: bool = False,):
         """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy the model without using Vertica 
-    built-in functions.
+    Returns the SQL code needed to deploy the model without using built-in 
+    Vertica functions.
 
     Parameters
     ----------
@@ -2782,7 +2782,7 @@ Main Class for Vertica Model
         input predictors name.
     return_proba: bool, optional
         If set to True and the model is a classifier, the function will return 
-        the model probabilities.
+        the class probabilities.
 
     Returns
     -------
@@ -3343,12 +3343,12 @@ class BinaryClassifier(Classifier):
 	cutoff: float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
     nbins: int, optional
-        [Only when method is set to auc|prc_auc|best_cutoff]
-        An integer value that determines the number of decision boundaries. Decision 
-        boundaries are set at equally spaced intervals between 0 and 1, inclusive.
-        The higher it is, the more precise the AUC will be. However, it can decrease
-        considerably performances. The maximum value is 999,999. If negative, the
-        maximum value is used.
+        [Only when method is set to auc|prc_auc|best_cutoff] 
+        An integer value that determines the number of decision boundaries. 
+        Decision boundaries are set at equally spaced intervals between 0 and 1, 
+        inclusive. Greater values for nbins give more precise estimations of the AUC, 
+        but can potentially decrease performance. The maximum value is 999,999. 
+        If negative, the maximum value is used.
 
 	Returns
 	-------
