@@ -81,7 +81,7 @@ class XGBoost_to_json:
         ----------
         path: str, optional
             The path and name of the output file. If the file with the same name 
-	    already exists, the function returns an error.
+            already exists, the function returns an error.
 
         Returns
         -------
