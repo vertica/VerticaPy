@@ -69,12 +69,12 @@ class XGBoost_to_json:
         """
         ---------------------------------------------------------------------------
         Creates a Python XGBoost JSON file that can be imported into the Python
-	XGBoost API.
+        XGBoost API.
         
         \u26A0 Warning : For multiclass classifiers, the probabilities 
         returned will not match exactly because of normalization; Vertica uses
         is using multinomial logistic regression whereas the XGBoost Python API
-	uses Softmax. This difference will not impact the final predictions. 
+        uses Softmax. This difference will not impact the final predictions. 
         Categorical predictors must be encoded.
 
         Parameters
