@@ -50,6 +50,8 @@
 #
 # Standard Python Modules
 from typing import Union
+import random
+import numpy as np
 
 # VerticaPy Modules
 from verticapy.learn.metrics import *
@@ -59,6 +61,167 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+
+# ---#
+class XGBoost_to_json:
+    # Class to export Vertica XGBoost to the Python XGBoost JSON format.
+    def to_json(self, path: str = ""):
+        """
+        ---------------------------------------------------------------------------
+        Creates the JSON file used to import it in the Python XGBoost API.
+        
+        \u26A0 Warning : In case of multiclass classifiers, the probabilities 
+        returned will not matched exactly due to normalization reasons. Vertica 
+        is using Multi-Logit whereas the Python API is using Softmax. It will not 
+        impact the final prediction. 
+        This function will work if all the categorical predictors are encoded.
+
+        Parameters
+        ----------
+        path: str, optional
+            The path and name of the file. If it already exists, the function returns
+            an error.
+
+        Returns
+        -------
+        str
+            The string of the JSON file if variable 'path' is empty. Otherwise,
+            nothing is returned.
+        """
+        def xgboost_to_json(model):
+            def xgboost_dummy_tree_dict(model, c: str = None):
+                condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+                model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, c))
+                avg = model.cursor.fetchone()[0]
+                model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),))
+                avg /= model.cursor.fetchone()[0]
+                split_conditions = [np.log(avg / (1 - avg))]
+                result = {"base_weights": [0.0],
+                          "categories": [],
+                          "categories_nodes": [],
+                          "categories_segments": [],
+                          "categories_sizes": [],
+                          "default_left": [True],
+                          "id": -1,
+                          "left_children": [-1],
+                          "loss_changes": [0.0],
+                          "parents": [random.randint(2, 999999999)],
+                          "right_children": [-1],
+                          "split_conditions": split_conditions,
+                          "split_indices": [0],
+                          "split_type": [0],
+                          "sum_hessian": [0.0],
+                          "tree_param": {"num_deleted": "0",
+                                         "num_feature": str(len(model.X)),
+                                         "num_nodes": "1",
+                                         "size_leaf_vector": "0"}}
+                return result
+            def xgboost_tree_dict(model, tree_id: int, c: str = None):
+                tree = model.get_tree(tree_id)
+                attributes = tree_attributes_list(tree, model.X, model.type)
+                n_nodes = len(attributes[0])
+                split_conditions = []
+                parents = [0 for i in range(n_nodes)]
+                parents[0] = random.randint(n_nodes + 1, 999999999)
+                for i in range(n_nodes):
+                    left_child = attributes[0][i]
+                    right_child = attributes[1][i]
+                    if left_child != right_child:
+                        parents[left_child] = i
+                        parents[right_child] = i
+                    if attributes[5][i]:
+                        split_conditions += [attributes[3][i]]
+                    elif attributes[5][i] == None:
+                        if model.type == "XGBoostRegressor":
+                            split_conditions += [float(attributes[4][i]) * model.parameters["learning_rate"]]
+                        elif len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0:
+                            split_conditions += [model.parameters["learning_rate"] * float(attributes[6][i]["1"])]
+                        else:
+                            split_conditions += [model.parameters["learning_rate"] * float(attributes[6][i][c])]
+                    else:
+                        split_conditions += [float(attributes[3][i])]
+                result = {"base_weights": [0.0 for i in range(n_nodes)],
+                          "categories": [],
+                          "categories_nodes": [],
+                          "categories_segments": [],
+                          "categories_sizes": [],
+                          "default_left": [True for i in range(n_nodes)],
+                          "id": tree_id,
+                          "left_children": [-1 if x is None else x for x in attributes[0]],
+                          "loss_changes": [0.0 for i in range(n_nodes)],
+                          "parents": parents,
+                          "right_children": [-1 if x is None else x for x in attributes[1]],
+                          "split_conditions": split_conditions,
+                          "split_indices": [0 if x is None else x for x in attributes[2]],
+                          "split_type": [int(x) if isinstance(x, bool) else int(attributes[5][0]) for x in attributes[5]],
+                          "sum_hessian": [0.0 for i in range(n_nodes)],
+                          "tree_param": {"num_deleted": "0",
+                                         "num_feature": str(len(model.X)),
+                                         "num_nodes": str(n_nodes),
+                                         "size_leaf_vector": "0"}}
+                return result
+            def xgboost_tree_dict_list(model):
+                n = model.get_attr("tree_count")["tree_count"][0]
+                if model.type == "XGBoostClassifier" and (len(model.classes_) > 2 or model.classes_[1] != 1 or model.classes_[0] != 0):
+                    trees = []
+                    for i in range(n):
+                        for c in model.classes_:
+                            trees += [xgboost_tree_dict(model, i, str(c))]
+                    for c in model.classes_:
+                        trees += [xgboost_dummy_tree_dict(model, str(c))]
+                    tree_info = [i for i in range(len(model.classes_))] * (n + 1)
+                    for idx, tree in enumerate(trees):
+                        tree["id"] = idx
+                else:
+                    trees = [xgboost_tree_dict(model, i) for i in range(n)]
+                    tree_info = [0 for i in range(n)]
+                return {"model": {"trees": trees,
+                                  "tree_info": tree_info,
+                                  "gbtree_model_param": {"num_trees": str(len(trees)), "size_leaf_vector": "0"},},
+                        "name": "gbtree",}
+            def xgboost_learner(model):
+                condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+                if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
+                    objective = "reg:squarederror"
+                    model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
+                    bs = model.cursor.fetchone()[0]
+                    if model.type == "XGBoostClassifier":
+                        objective = "binary:logistic"
+                    num_class = "0"
+                    param = "reg_loss_param"
+                    param_val = {"scale_pos_weight":"1"}
+                    attributes_dict = {}
+                else:
+                    n = model.get_attr("tree_count")["tree_count"][0]
+                    objective = "multi:softprob"
+                    bs = 0.5
+                    num_class = str(len(model.classes_))
+                    param = "softmax_multiclass_param"
+                    param_val = {"num_class": num_class}
+                    attributes_dict = {"scikit_learn": "{\"use_label_encoder\": true, \"n_estimators\": " + str(n) + ", \"objective\": \"multi:softprob\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": null, \"colsample_bylevel\": null, \"colsample_bynode\": null, \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"classes_\": " + str(model.classes_) + ", \"n_classes_\": " + str(len(model.classes_)) + ", \"_le\": {\"classes_\": " + str(model.classes_) + "}, \"_estimator_type\": \"classifier\"}"}
+                    attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace('"', '++++')
+                gradient_booster = xgboost_tree_dict_list(model)
+                return {"attributes": attributes_dict,
+                        "feature_names": [],
+                        "feature_types": [],
+                        "gradient_booster": gradient_booster,
+                        "learner_model_param": {"base_score": np.format_float_scientific(bs, precision=7).upper(),
+                                                "num_class": num_class,
+                                                "num_feature": str(len(model.X))},
+                        "objective": {"name": objective,
+                                      param: param_val}}
+            res = {"learner": xgboost_learner(model,),
+                   "version": [1,4,2]}
+            res = str(res)
+            res = res.replace("'", '"').replace("True", "true").replace("False", "false").replace("++++", "\\\"")
+            return res
+        result = xgboost_to_json(self)
+        if path:
+            f = open(path, "w+")
+            f.write(result)
+        else:
+            return result
+
 
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
@@ -211,7 +374,7 @@ nbins: int, optional
 
 
 # ---#
-class XGBoostClassifier(MulticlassClassifier, Tree):
+class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_to_json):
     """
 ---------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
@@ -294,7 +457,7 @@ sample: float, optional
 
 
 # ---#
-class XGBoostRegressor(Regressor, Tree):
+class XGBoostRegressor(Regressor, Tree, XGBoost_to_json):
     """
 ---------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
