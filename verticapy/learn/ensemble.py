@@ -73,8 +73,8 @@ class XGBoost_to_json:
         
         \u26A0 Warning : For multiclass classifiers, the probabilities returned 
         by the VerticaPy and exported model may differ slightly because of 
-        normalization; while Vertica uses multinomial logistic regression, the 
-        XGBoost Python API uses Softmax. This difference does not affect the model's 
+        normalization; while Vertica uses multinomial logistic regression,  
+        XGBoost Python uses Softmax. This difference does not affect the model's 
         final predictions. Categorical predictors must be encoded.
 
         Parameters
