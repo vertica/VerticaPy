@@ -196,12 +196,42 @@ class TestLogisticRegression:
 
     def test_to_sql(self, model):
         model.cursor.execute(
-            "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True, class=1, type='probability')::float, {}::float".format(
+            "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([3.0, 11.0])
             )
         )
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
+
+    def test_to_memmodel(self, model, titanic_vd):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([[3.0, 11.0,],
+                              [11.0, 1.0,]])
+        res_py = model.to_python()([[3.0, 11.0,],
+                                   [11.0, 1.0,]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        res = mmodel.predict_proba([[3.0, 11.0,],
+                                    [11.0, 1.0,]])
+        res_py = model.to_python(return_proba = True)([[3.0, 11.0,],
+                                                       [11.0, 1.0,]])
+        assert res[0][0] == res_py[0][0]
+        assert res[0][1] == res_py[0][1]
+        assert res[1][0] == res_py[1][0]
+        assert res[1][1] == res_py[1][1]
+        vdf = titanic_vd.copy()
+        vdf["prediction_sql"] = mmodel.predict_sql(["age", "fare"])
+        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
+        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
+        model.predict(vdf, name = "prediction_vertica_sql", cutoff = 0.5)
+        model.predict(vdf, name = "prediction_proba_vertica_sql_1")
+        vdf["prediction_proba_vertica_sql_0"] = 1 - vdf["prediction_proba_vertica_sql_1"]
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        assert score == pytest.approx(1.0)
+        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        assert score == pytest.approx(1.0)
+        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        assert score == pytest.approx(1.0)
 
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):

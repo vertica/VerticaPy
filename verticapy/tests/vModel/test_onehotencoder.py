@@ -119,6 +119,21 @@ class TestOneHotEncoder:
 
     def test_to_sql(self, model):
         model.cursor.execute(
+            "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=True) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
+                ", ".join([", ".join(elem) for elem in model.to_sql()])
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+
+    def test_to_memmodel(self, model):
+        model.cursor.execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
                 model.name
             )
@@ -126,11 +141,20 @@ class TestOneHotEncoder:
         prediction = [float(elem) for elem in model.cursor.fetchone()]
         model.cursor.execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.to_sql()
+                ", ".join([", ".join(elem) for elem in model.to_memmodel().transform_sql(["pclass", "sex", "embarked"])])
             )
         )
         prediction2 = [float(elem) for elem in model.cursor.fetchone()]
         assert prediction == pytest.approx(prediction2)
+        prediction3 = model.to_memmodel().transform([[1, 'female', 'S']])
+        assert prediction[0] == pytest.approx(prediction3[0][0])
+        assert prediction[1] == pytest.approx(prediction3[0][1])
+        assert prediction[2] == pytest.approx(prediction3[0][2])
+        assert prediction[3] == pytest.approx(prediction3[0][3])
+        assert prediction[4] == pytest.approx(prediction3[0][4])
+        assert prediction[5] == pytest.approx(prediction3[0][5])
+        assert prediction[6] == pytest.approx(prediction3[0][6])
+        assert prediction[7] == pytest.approx(prediction3[0][7])
 
     def test_to_python(self, model):
         model.cursor.execute(

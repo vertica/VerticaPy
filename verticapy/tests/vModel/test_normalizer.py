@@ -193,7 +193,7 @@ class TestNormalizer:
         prediction = [float(elem) for elem in model.cursor.fetchone()]
         model.cursor.execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.to_sql()
+                ", ".join(model.to_sql())
             )
         )
         prediction2 = [float(elem) for elem in model.cursor.fetchone()]
@@ -210,7 +210,7 @@ class TestNormalizer:
         prediction = [float(elem) for elem in model2.cursor.fetchone()]
         model2.cursor.execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model2.to_sql()
+                ", ".join(model2.to_sql())
             )
         )
         prediction2 = [float(elem) for elem in model2.cursor.fetchone()]
@@ -230,11 +230,77 @@ class TestNormalizer:
         prediction = [float(elem) for elem in model3.cursor.fetchone()]
         model3.cursor.execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model3.to_sql()
+                ", ".join(model3.to_sql())
             )
         )
         prediction2 = [float(elem) for elem in model3.cursor.fetchone()]
         assert prediction == pytest.approx(prediction2)
+        model3.drop()
+
+    def test_to_memmodel(self, model,):
+        # Zscore
+        model.cursor.execute(
+            "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                ", ".join(model.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+        prediction3 = model.to_memmodel().transform([[3.0, 11.0, 93.]])
+        assert prediction[0] == pytest.approx(prediction3[0][0])
+        assert prediction[1] == pytest.approx(prediction3[0][1])
+        assert prediction[2] == pytest.approx(prediction3[0][2])
+        # Minmax
+        model2 = Normalizer("norm_model_test2", cursor=model.cursor, method="minmax")
+        model2.drop()
+        model2.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
+        model2.cursor.execute(
+            "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model2.name
+            )
+        )
+        prediction = [float(elem) for elem in model2.cursor.fetchone()]
+        model2.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                ", ".join(model2.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+            )
+        )
+        prediction2 = [float(elem) for elem in model2.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+        prediction3 = model2.to_memmodel().transform([[3.0, 11.0, 93.]])
+        assert prediction[0] == pytest.approx(prediction3[0][0])
+        assert prediction[1] == pytest.approx(prediction3[0][1])
+        assert prediction[2] == pytest.approx(prediction3[0][2])
+        model2.drop()
+        # Robust Zscore
+        model3 = Normalizer(
+            "norm_model_test2", cursor=model.cursor, method="robust_zscore"
+        )
+        model3.drop()
+        model3.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
+        model3.cursor.execute(
+            "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model3.name
+            )
+        )
+        prediction = [float(elem) for elem in model3.cursor.fetchone()]
+        model3.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                ", ".join(model3.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+            )
+        )
+        prediction2 = [float(elem) for elem in model3.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+        prediction3 = model3.to_memmodel().transform([[3.0, 11.0, 93.]])
+        assert prediction[0] == pytest.approx(prediction3[0][0])
+        assert prediction[1] == pytest.approx(prediction3[0][1])
+        assert prediction[2] == pytest.approx(prediction3[0][2])
         model3.drop()
 
     def test_get_transform(self, winequality_vd, model):

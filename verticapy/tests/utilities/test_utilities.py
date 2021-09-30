@@ -190,9 +190,10 @@ class TestUtilities:
             name="titanic_pandas",
         )
         assert vdf.shape() == (1234, 14)
-        drop(
-            "titanic_pandas", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
+        with warnings.catch_warnings(record=True) as w:
+            drop(
+                "titanic_pandas", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
         vdf = pandas_to_vertica(
             df=df,
             cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"],
@@ -258,7 +259,8 @@ class TestUtilities:
             schema="public",
         )
         assert result.shape() == (891, 15)
-        drop("titanic_verticapy_test", base.cursor)
+        with warnings.catch_warnings(record=True) as w:
+            drop("titanic_verticapy_test", base.cursor)
         with warnings.catch_warnings(record=True) as w:
             drop(
                 "v_temp_schema.titanic_verticapy_test", base.cursor,
@@ -270,7 +272,8 @@ class TestUtilities:
             table_name="titanic_verticapy_test",
         )
         assert result.shape() == (891, 15)
-        drop("v_temp_schema.titanic_verticapy_test", base.cursor)
+        with warnings.catch_warnings(record=True) as w:
+            drop("v_temp_schema.titanic_verticapy_test", base.cursor)
 
     def test_read_csv(self, base):
         with warnings.catch_warnings(record=True) as w:
