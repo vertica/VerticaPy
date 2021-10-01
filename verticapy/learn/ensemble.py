@@ -205,7 +205,7 @@ class XGBoost_to_json:
                     param = "softmax_multiclass_param"
                     param_val = {"num_class": num_class}
                     attributes_dict = {"scikit_learn": "{\"use_label_encoder\": true, \"n_estimators\": " + str(n) + ", \"objective\": \"multi:softprob\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": null, \"colsample_bylevel\": null, \"colsample_bynode\": null, \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"classes_\": " + str(model.classes_) + ", \"n_classes_\": " + str(len(model.classes_)) + ", \"_le\": {\"classes_\": " + str(model.classes_) + "}, \"_estimator_type\": \"classifier\"}"}
-                    attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace('"', '++++')
+                attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace('"', '++++')
                 gradient_booster = xgboost_tree_dict_list(model)
                 return {"attributes": attributes_dict,
                         "feature_names": [],
