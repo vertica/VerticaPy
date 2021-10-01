@@ -76,13 +76,11 @@ class XGBoost_to_json:
         normalization; while Vertica uses multinomial logistic regression,  
         XGBoost Python uses Softmax. This difference does not affect the model's 
         final predictions. Categorical predictors must be encoded.
-
         Parameters
         ----------
         path: str, optional
             The path and name of the output file. If a file with the same name 
             already exists, the function returns an error.
-
         Returns
         -------
         str
@@ -91,6 +89,9 @@ class XGBoost_to_json:
         """
         def xgboost_to_json(model):
             def xgboost_dummy_tree_dict(model, c: str = None):
+                # Dummy trees are used to store the prior probabilities.
+                # The Python XGBoost API do not use those information and start
+                # the training with priors = 0
                 condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
                 model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, c))
                 avg = model.cursor.fetchone()[0]
@@ -184,6 +185,7 @@ class XGBoost_to_json:
                 condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
                 if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
                     objective = "reg:squarederror"
+                    # Computing prior probability
                     model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
                     bs = model.cursor.fetchone()[0]
                     if model.type == "XGBoostClassifier":
@@ -232,40 +234,39 @@ Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER
 function. It is one of the ensemble learning methods for classification 
 that operates by constructing a multitude of decision trees at 
 training-time and outputting a class with the mode.
-
 Parameters
 ----------
 name: str
-	Name of the the model. The model will be stored in the DB.
+  Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+  Vertica database cursor.
 n_estimators: int, optional
-	The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
-	The number of randomly chosen features from which to pick the best feature 
-	to split on a given tree node. It can be an integer or one of the two following
-	methods.
-		auto : square root of the total number of predictors.
-		max  : number of predictors.
+  The number of randomly chosen features from which to pick the best feature 
+  to split on a given tree node. It can be an integer or one of the two following
+  methods.
+    auto : square root of the total number of predictors.
+    max  : number of predictors.
 max_leaf_nodes: int, optional
-	The maximum number of leaf nodes a tree in the forest can have, an integer 
-	between 1 and 1e9, inclusive.
+  The maximum number of leaf nodes a tree in the forest can have, an integer 
+  between 1 and 1e9, inclusive.
 sample: float, optional
-	The portion of the input data set that is randomly picked for training each tree, 
-	a float between 0.0 and 1.0, inclusive. 
+  The portion of the input data set that is randomly picked for training each tree, 
+  a float between 0.0 and 1.0, inclusive. 
 max_depth: int, optional
-	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+  The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
 min_samples_leaf: int, optional
-	The minimum number of samples each branch must have after splitting a node, an 
-	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-	is discarded. 
+  The minimum number of samples each branch must have after splitting a node, an 
+  integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+  is discarded. 
 min_info_gain: float, optional
-	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-	A split with information gain less than this threshold is discarded.
+  The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+  A split with information gain less than this threshold is discarded.
 nbins: int, optional 
-	The number of bins to use for continuous features, an integer between 2 and 1000, 
-	inclusive.
-	"""
+  The number of bins to use for continuous features, an integer between 2 and 1000, 
+  inclusive.
+  """
 
     def __init__(
         self,
@@ -307,40 +308,39 @@ Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR
 function. It is one of the ensemble learning methods for regression that 
 operates by constructing a multitude of decision trees at training-time 
 and outputting a class with the mode.
-
 Parameters
 ----------
 name: str
-	Name of the the model. The model will be stored in the DB.
+  Name of the the model. The model will be stored in the DB.
 cursor: DBcursor, optional
-	Vertica database cursor.
+  Vertica database cursor.
 n_estimators: int, optional
-	The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
-	The number of randomly chosen features from which to pick the best feature 
-	to split on a given tree node. It can be an integer or one of the two following
-	methods.
-		auto : square root of the total number of predictors.
-		max  : number of predictors.
+  The number of randomly chosen features from which to pick the best feature 
+  to split on a given tree node. It can be an integer or one of the two following
+  methods.
+    auto : square root of the total number of predictors.
+    max  : number of predictors.
 max_leaf_nodes: int, optional
-	The maximum number of leaf nodes a tree in the forest can have, an integer 
-	between 1 and 1e9, inclusive.
+  The maximum number of leaf nodes a tree in the forest can have, an integer 
+  between 1 and 1e9, inclusive.
 sample: float, optional
-	The portion of the input data set that is randomly picked for training each tree, 
-	a float between 0.0 and 1.0, inclusive. 
+  The portion of the input data set that is randomly picked for training each tree, 
+  a float between 0.0 and 1.0, inclusive. 
 max_depth: int, optional
-	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
+  The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
 min_samples_leaf: int, optional
-	The minimum number of samples each branch must have after splitting a node, an 
-	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-	is discarded. 
+  The minimum number of samples each branch must have after splitting a node, an 
+  integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
+  is discarded. 
 min_info_gain: float, optional
-	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-	A split with information gain less than this threshold is discarded.
+  The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
+  A split with information gain less than this threshold is discarded.
 nbins: int, optional 
-	The number of bins to use for continuous features, an integer between 2 and 1000, 
-	inclusive.
-	"""
+  The number of bins to use for continuous features, an integer between 2 and 1000, 
+  inclusive.
+  """
 
     def __init__(
         self,
@@ -380,7 +380,6 @@ class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_to_json):
 ---------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
-
 Parameters
 ----------
 name: str
@@ -397,7 +396,8 @@ nbins: int, optional
     better splits.
 objective: str, optional
     The objective/loss function that will be used to iteratively 
-    improve the model.
+    improve the model. Only 'crossentropy' is available at the
+    moment.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
@@ -428,7 +428,7 @@ sample: float, optional
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
-        objective: str = "squarederror",
+        objective: str = "crossentropy",
         split_proposal_method: str = "global",
         tol: float = 0.001,
         learning_rate: float = 0.1,
@@ -463,7 +463,6 @@ class XGBoostRegressor(Regressor, Tree, XGBoost_to_json):
 ---------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
-
 Parameters
 ----------
 name: str
@@ -480,7 +479,8 @@ nbins: int, optional
     better splits.
 objective: str, optional
     The objective/loss function that will be used to iteratively 
-    improve the model.
+    improve the model. Only 'squarederror' is available at the
+    moment.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
