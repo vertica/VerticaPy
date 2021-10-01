@@ -183,6 +183,7 @@ class XGBoost_to_json:
                         "name": "gbtree",}
             def xgboost_learner(model):
                 condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+                n = model.get_attr("tree_count")["tree_count"][0]
                 if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
                     objective = "reg:squarederror"
                     # Computing prior probability
@@ -198,7 +199,6 @@ class XGBoost_to_json:
                     else:
                       attributes_dict = {"scikit_learn": "{\"use_label_encoder\": true, \"n_estimators\": " + str(n) + ", \"objective\": \"binary:logistic\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": null, \"colsample_bylevel\": null, \"colsample_bynode\": null, \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"classes_\": [0, 1], \"n_classes_\": 2, \"_le\": {\"classes_\": [0, 1]}, \"_estimator_type\": \"classifier\"}"}
                 else:
-                    n = model.get_attr("tree_count")["tree_count"][0]
                     objective = "multi:softprob"
                     bs = 0.5
                     num_class = str(len(model.classes_))
@@ -397,10 +397,6 @@ nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
     better splits.
-objective: str, optional
-    The objective/loss function that will be used to iteratively 
-    improve the model. Only 'crossentropy' is available at the
-    moment.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
@@ -431,7 +427,6 @@ sample: float, optional
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
-        objective: str = "crossentropy",
         split_proposal_method: str = "global",
         tol: float = 0.001,
         learning_rate: float = 0.1,
@@ -446,7 +441,6 @@ sample: float, optional
                 "max_ntree": max_ntree,
                 "max_depth": max_depth,
                 "nbins": nbins,
-                "objective": objective,
                 "split_proposal_method": split_proposal_method,
                 "tol": tol,
                 "learning_rate": learning_rate,
@@ -480,10 +474,6 @@ nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
     better splits.
-objective: str, optional
-    The objective/loss function that will be used to iteratively 
-    improve the model. Only 'squarederror' is available at the
-    moment.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
@@ -514,7 +504,6 @@ sample: float, optional
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
-        objective: str = "squarederror",
         split_proposal_method: str = "global",
         tol: float = 0.001,
         learning_rate: float = 0.1,
@@ -529,7 +518,6 @@ sample: float, optional
                 "max_ntree": max_ntree,
                 "max_depth": max_depth,
                 "nbins": nbins,
-                "objective": objective,
                 "split_proposal_method": split_proposal_method,
                 "tol": tol,
                 "learning_rate": learning_rate,

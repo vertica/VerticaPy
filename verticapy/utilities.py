@@ -502,9 +502,7 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = ""
     path = "{}.csv".format(name)
     try:
-        import csv
-        
-        df.to_csv(path, index=False, quoting = csv.QUOTE_NONNUMERIC,)
+        df.to_csv(path, index=False,)
         if not(tmp_name):
             vdf = read_csv(path, cursor, table_name=tmp_name, temporary_local_table=True, parse_n_lines=parse_n_lines,)
         else:

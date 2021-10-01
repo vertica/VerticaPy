@@ -389,7 +389,6 @@ def default_model_parameters(model_type: str):
             "max_ntree": 10,
             "max_depth": 5,
             "nbins": 32,
-            "objective": "squarederror",
             "split_proposal_method": "global",
             "tol": 0.001,
             "learning_rate": 0.1,
