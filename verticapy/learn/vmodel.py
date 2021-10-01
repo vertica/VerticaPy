@@ -1096,7 +1096,7 @@ Main Class for Vertica Model
                 model_parameters["max_ntree"] = self.parameters["max_ntree"]
             if "objective" in parameters:
                 assert str(parameters["objective"]).lower() in [
-                    "squarederror",
+                    "squarederror", "crossentropy",
                 ], ParameterError(
                     "Incorrect parameter 'objective'.\nThe objective function must be in (squarederror,), found '{}'.".format(
                         parameters["objective"]

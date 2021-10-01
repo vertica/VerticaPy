@@ -491,3 +491,63 @@ class TestXGBC:
     def test_plot_tree(self, model):
         result = model.plot_tree()
         assert result.by_attr()[0:3] == "[1]"
+
+    def test_to_json_binary(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["pclass", "age", "fare"]
+        y = "survived"
+        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5, objective = "crossentropy", cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python(return_proba = True)(X_test)
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBClassifier()
+        model_python.load_model(path)
+        y_test_python = model_python.predict_proba(X_test)
+        result = abs(y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == pytest.approx(0.0, abs = 1.0E-14)
+        y_test_vertica = model.to_python()(X_test)
+        y_test_python = model_python.predict(X_test)
+        result = abs(y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        model.drop()
+        os.remove(path)
+
+    def test_to_json_multiclass(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["survived", "age", "fare"]
+        y = "pclass"
+        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5, objective = "crossentropy", cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python(return_proba = True)(X_test).argsort()
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBClassifier()
+        model_python.load_model(path)
+        y_test_python = model_python.predict_proba(X_test).argsort()
+        result = abs(y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        y_test_vertica = model.to_python()(X_test)
+        y_test_python = model_python.predict(X_test)
+        result = abs(y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        model.drop()
+        os.remove(path)

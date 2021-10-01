@@ -419,3 +419,29 @@ class TestXGBR:
     def test_plot_tree(self, model):
         result = model.plot_tree()
         assert result.by_attr()[0:3] == "[1]"
+
+    def test_to_json(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["pclass", "age", "survived"]
+        y = "fare"
+        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python()(X_test)
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBRegressor()
+        model_python.load_model(path)
+        y_test_python = model_python.predict(X_test)
+        result = abs(y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == pytest.approx(0.0, abs = 1.0E-11)
+        model.drop()
+        os.remove(path)
+
