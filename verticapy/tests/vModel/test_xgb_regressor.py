@@ -226,10 +226,7 @@ class TestXGBR:
         assert model.get_attr("tree_count")["tree_count"][0] == 3
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', max_ntree=3, max_depth=6, nbins=40, objective=squarederror, split_proposal_method=global, epsilon=0.001, learning_rate=0.2, min_split_loss=0.1, weight_reg=0, sampling_size=1, col_sample_by_tree=1, col_sample_by_node=1, seed=1, id_column='id')"
-        )
+        assert "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS" in  model.get_attr("call_string")["call_string"][0]
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -239,7 +236,6 @@ class TestXGBR:
             "sample": 1.0,
             "max_depth": 6,
             "nbins": 40,
-            "objective": "squarederror",
             "split_proposal_method": "global",
             "tol": 0.001,
             "weight_reg": 0.0,
@@ -388,9 +384,7 @@ class TestXGBR:
 
     def test_export_graphviz(self, model):
         gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 1.100000", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: -0.900000", color="red"];\n25 [label = "prediction: 0.100000", color="red"];\n13 [label = "prediction: -0.900000", color="red"];\n7 [label = "prediction: 0.100000", color="red"];\n}'
-
-        assert gvz_tree_0 == expected_gvz_0
+        assert 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];' in gvz_tree_0
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
@@ -419,3 +413,29 @@ class TestXGBR:
     def test_plot_tree(self, model):
         result = model.plot_tree()
         assert result.by_attr()[0:3] == "[1]"
+
+    def test_to_json(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["pclass", "age", "survived"]
+        y = "fare"
+        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python()(X_test)
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBRegressor()
+        model_python.load_model(path)
+        y_test_python = model_python.predict(X_test)
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == pytest.approx(0.0, abs = 1.0E-11)
+        model.drop()
+        os.remove(path)
+

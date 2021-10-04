@@ -309,10 +309,7 @@ class TestXGBC:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("tree_count")["tree_count"][0] == 3
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "xgb_classifier('public.xgbc_model_test', 'public.xgbc_data', '\"transportation\"', \'*\' USING PARAMETERS exclude_columns='id, TransPortation', max_ntree=3, max_depth=6, nbins=40, objective=squarederror, split_proposal_method=global, epsilon=0.001, learning_rate=0.2, min_split_loss=0.1, weight_reg=0, sampling_size=1, col_sample_by_tree=1, col_sample_by_node=1, seed=1, id_column='id')"
-        )
+        assert "xgb_classifier('public.xgbc_model_test', 'public.xgbc_data', '\"transportation\"', \'*\' USING PARAMETERS" in model.get_attr("call_string")["call_string"][0]
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -322,7 +319,6 @@ class TestXGBC:
             "sample": 1.0,
             "max_depth": 6,
             "nbins": 40,
-            "objective": "squarederror",
             "split_proposal_method": "global",
             "tol": 0.001,
             "weight_reg": 0.0,
@@ -479,9 +475,7 @@ class TestXGBC:
 
     def test_export_graphviz(self, model):
         gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "log_odds: Bus:-1.66667,Car:3.33333,Train:-1.42857", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "log_odds: Bus:2.5,Car:-1.42857,Train:-1.42857", color="red"];\n25 [label = "log_odds: Bus:-1.66667,Car:-1.42857,Train:3.33333", color="red"];\n13 [label = "log_odds: Bus:2.5,Car:-1.42857,Train:-1.42857", color="red"];\n7 [label = "log_odds: Bus:-1.66667,Car:-1.42857,Train:3.33333", color="red"];\n}'
-
-        assert gvz_tree_0 == expected_gvz_0
+        assert 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];' in gvz_tree_0
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
@@ -491,3 +485,63 @@ class TestXGBC:
     def test_plot_tree(self, model):
         result = model.plot_tree()
         assert result.by_attr()[0:3] == "[1]"
+
+    def test_to_json_binary(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["pclass", "age", "fare"]
+        y = "survived"
+        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python(return_proba = True)(X_test)
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBClassifier()
+        model_python.load_model(path)
+        y_test_python = model_python.predict_proba(X_test)
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == pytest.approx(0.0, abs = 1.0E-14)
+        y_test_vertica = model.to_python()(X_test)
+        y_test_python = model_python.predict(X_test)
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        model.drop()
+        os.remove(path)
+
+    def test_to_json_multiclass(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["survived", "age", "fare"]
+        y = "pclass"
+        model = XGBoostClassifier("verticapy_xgb_multiclass_classifier_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python(return_proba = True)(X_test).argsort()
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBClassifier()
+        model_python.load_model(path)
+        y_test_python = model_python.predict_proba(X_test).argsort()
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        y_test_vertica = model.to_python()(X_test)
+        y_test_python = model_python.predict(X_test)
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == 0.0
+        model.drop()
+        os.remove(path)
