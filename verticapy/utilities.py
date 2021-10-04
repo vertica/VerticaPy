@@ -502,6 +502,8 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = ""
     path = "{}.csv".format(name)
     try:
+        # Adding the quotes to STR pandas columns in order to simplify the ingestion.
+        # Not putting them can lead to wrong data ingestion.
         str_cols = []
         for c in df.columns:
             if df[c].dtype == object and isinstance(df[c].loc[df[c].first_valid_index()], str):

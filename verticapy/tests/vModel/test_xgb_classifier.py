@@ -505,12 +505,12 @@ class TestXGBC:
         model_python = xgb.XGBClassifier()
         model_python.load_model(path)
         y_test_python = model_python.predict_proba(X_test)
-        result = abs(y_test_vertica - y_test_python) ** 2
+        result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == pytest.approx(0.0, abs = 1.0E-14)
         y_test_vertica = model.to_python()(X_test)
         y_test_python = model_python.predict(X_test)
-        result = abs(y_test_vertica - y_test_python) ** 2
+        result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == 0.0
         model.drop()
@@ -524,7 +524,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["survived", "age", "fare"]
         y = "pclass"
-        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model = XGBoostClassifier("verticapy_xgb_multiclass_classifier_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()
@@ -535,12 +535,12 @@ class TestXGBC:
         model_python = xgb.XGBClassifier()
         model_python.load_model(path)
         y_test_python = model_python.predict_proba(X_test).argsort()
-        result = abs(y_test_vertica - y_test_python) ** 2
+        result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == 0.0
         y_test_vertica = model.to_python()(X_test)
         y_test_python = model_python.predict(X_test)
-        result = abs(y_test_vertica - y_test_python) ** 2
+        result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == 0.0
         model.drop()

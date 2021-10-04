@@ -433,7 +433,7 @@ class TestXGBR:
         model_python = xgb.XGBRegressor()
         model_python.load_model(path)
         y_test_python = model_python.predict(X_test)
-        result = abs(y_test_vertica - y_test_python) ** 2
+        result = (y_test_vertica - y_test_python) ** 2
         result = result.sum() / len(result)
         assert result == pytest.approx(0.0, abs = 1.0E-11)
         model.drop()
