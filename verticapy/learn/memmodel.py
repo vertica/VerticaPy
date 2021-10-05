@@ -1087,7 +1087,7 @@ attributes: dict
                                                         'S': {'mu': 27.6928120412844, 'sigma_sq': 1428.57067393938}}
                                             For 'multinomial':
                                               Key 'type' must have the value 'multinomial'.
-                                              Each of the model's classes must be represented by a key its probability
+                                              Each of the model's classes must be represented by a key with its probability
                                               as the value.
                                               Example: {'type': 'multinomial', 
                                                         'C': 0.771666666666667, 
@@ -1095,7 +1095,7 @@ attributes: dict
                                                         'S': 0.878216123499142}
                                             For 'bernoulli':
                                               Key 'type' must have the value 'bernoulli'.
-                                              Each of the model's classes must be represented by a key its probability
+                                              Each of the model's classes must be represented by a key with its probability
                                               as the value.
                                               Example: {'type': 'bernoulli', 
                                                         'C': 0.537254901960784, 
