@@ -1014,45 +1014,19 @@ using raw SQL or Python code.
 Parameters
 ----------
 model_type: str
-    The model type, one of the following: 'OneHotEncoder,' 'Normalizer,' 
-    'SVD,' 'PCA,' 'BisectingKMeans,' 'KMeans,' 'NaiveBayes,' 
-    'XGBoostClassifier,' 'XGBoostRegressor,' 'RandomForestClassifier,' 
-    'RandomForestRegressor,' 'LinearSVR,' 'LinearSVC,' 'LogisticRegression,' 
-    'LinearRegression', 'BinaryTreeRegressor', 'BinaryTreeClassifier'
+    The model type, one of the following: 
+    'BinaryTreeClassifier', 'BinaryTreeRegressor', 'BisectingKMeans',  'KMeans', 
+    'LinearSVC', 'LinearSVR', 'LinearRegression', 'LogisticRegression', 'NaiveBayes', 
+    'NearestCentroid', 'Normalizer', 'OneHotEncoder', 'PCA', 'RandomForestClassifier', 
+    'RandomForestRegressor', 'SVD', 'XGBoostClassifier', 'XGBoostRegressor'.
 attributes: dict
     Dictionary which includes all the model's attributes.
-        For OneHotEncoder: {"categories": List of the different feature categories.
-                            "drop_first": Boolean, whether the first category
-                                          should be dropped.
-                            "column_naming": Appends categorical levels to column names 
-                                             according to the specified method. 
-                                             It can be set to 'indices' or 'values'.}
-        For LinearSVR, LinearSVC, LogisticRegression, LinearRegression: 
-                           {"coefficients": List of the model's coefficients.
-                            "intercept": Intercept or constant value.}
         For BisectingKMeans: 
                            {"clusters": List of the model's cluster centers.
                             "left_child": List of the model's left children IDs.
                             "right_child": List of the model's right children IDs.
                             "p": The p corresponding to the one of the p-distances.}
-        For KMeans:        {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to the one of the p-distances.}
-        For NearestCentroid:
-                           {"clusters": List of the model's cluster centers.
-                            "p": The p corresponding to the one of the p-distances.
-                            "classes": Represents the classes of the nearest centroids.}
-        For PCA:           {"principal_components": Matrix of the principal components.
-                            "mean": List of the input predictors average.}
-        For SVD:           {"vectors": Matrix of the right singular vectors.
-                            "values": List of the singular values.}
-        For Normalizer:    {"values": List of tuples including the model's attributes.
-                                The required tuple depends on the specified method: 
-                                    'zscore': (mean, std)
-                                    'robust_zscore': (median, mad)
-                                    'minmax': (min, max)
-                            "method": The model's category, one of the following: 'zscore', 
-                                      'robust_zscore', or 'minmax'.}
-        For BinaryTreeRegressor, BinaryTreeClassifier:
+        For BinaryTreeClassifier, BinaryTreeRegressor:
                             {children_left:  A list of node IDs, where children_left[i] is the node id 
                                              of the left child of node i.
                              children_right: A list of node IDs, where children_right[i] is the node id 
@@ -1062,15 +1036,11 @@ attributes: dict
                              threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
-        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor:
-                            {trees: list of memModels of type 'BinaryTreeRegressor' or 
-                                    'BinaryTreeClassifier'
-                             learning_rate: [Only for XGBoostClassifier and XGBoostRegressor]
-                                            Learning rate.
-                             mean: [Only for XGBoostRegressor]
-                                   Average of the response column.
-                             logodds: [Only for XGBoostClassifier]
-                                   List of the logodds of the response classes.}
+        For KMeans:        {"clusters": List of the model's cluster centers.
+                            "p": The p corresponding to the one of the p-distances.}
+        For LinearSVC, LinearSVR, LinearSVC, LinearRegression, LogisticRegression: 
+                           {"coefficients": List of the model's coefficients.
+                            "intercept": Intercept or constant value.}¨
         For NaiveBayes:     {classes: The classes for the naive bayes model.
                              prior: The model probabilities of each class.
                              attributes: List of the model's attributes. Each feature is represented 
@@ -1109,8 +1079,36 @@ attributes: dict
                                                         'C': {'female': 0.407843137254902, 'male': 0.592156862745098}, 
                                                         'Q': {'female': 0.416666666666667, 'male': 0.583333333333333}, 
                                                         'S': {'female': 0.311212814645309, 'male': 0.688787185354691}}}
-
-
+        For NearestCentroid:
+                           {"clusters": List of the model's cluster centers.
+                            "p": The p corresponding to the one of the p-distances.
+                            "classes": Represents the classes of the nearest centroids.}
+        For Normalizer:    {"values": List of tuples including the model's attributes.
+                                The required tuple depends on the specified method: 
+                                    'zscore': (mean, std)
+                                    'robust_zscore': (median, mad)
+                                    'minmax': (min, max)
+                            "method": The model's category, one of the following: 'zscore', 
+                                      'robust_zscore', or 'minmax'.}
+        For OneHotEncoder: {"categories": List of the different feature categories.
+                            "drop_first": Boolean, whether the first category
+                                          should be dropped.
+                            "column_naming": Appends categorical levels to column names 
+                                             according to the specified method. 
+                                             It can be set to 'indices' or 'values'.}
+        For PCA:           {"principal_components": Matrix of the principal components.
+                            "mean": List of the input predictors average.}
+        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor:
+                            {trees: list of memModels of type 'BinaryTreeRegressor' or 
+                                    'BinaryTreeClassifier'
+                             learning_rate: [Only for XGBoostClassifier and XGBoostRegressor]
+                                            Learning rate.
+                             mean: [Only for XGBoostRegressor]
+                                   Average of the response column.
+                             logodds: [Only for XGBoostClassifier]
+                                   List of the logodds of the response classes.}
+        For SVD:           {"vectors": Matrix of the right singular vectors.
+                            "values": List of the singular values.}
     """
     #
     # Special Methods

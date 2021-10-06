@@ -65,7 +65,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class XGBoost_to_json:
     # Class to export Vertica XGBoost to the Python XGBoost JSON format.
-    def to_json(self, path: str = ""):
+    def to_json(self, path: str = "",):
         """
         ---------------------------------------------------------------------------
         Creates a Python XGBoost JSON file that can be imported into the Python
@@ -76,11 +76,13 @@ class XGBoost_to_json:
         normalization; while Vertica uses multinomial logistic regression,  
         XGBoost Python uses Softmax. This difference does not affect the model's 
         final predictions. Categorical predictors must be encoded.
+
         Parameters
         ----------
         path: str, optional
             The path and name of the output file. If a file with the same name 
             already exists, the function returns an error.
+            
         Returns
         -------
         str
@@ -88,16 +90,10 @@ class XGBoost_to_json:
             nothing is returned.
         """
         def xgboost_to_json(model):
-            def xgboost_dummy_tree_dict(model, c: str = None):
+            def xgboost_dummy_tree_dict(model, i: int = 0):
                 # Dummy trees are used to store the prior probabilities.
                 # The Python XGBoost API do not use those information and start
                 # the training with priors = 0
-                condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
-                model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, c))
-                avg = model.cursor.fetchone()[0]
-                model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),))
-                avg /= model.cursor.fetchone()[0]
-                split_conditions = [np.log(avg / (1 - avg))]
                 result = {"base_weights": [0.0],
                           "categories": [],
                           "categories_nodes": [],
@@ -109,7 +105,7 @@ class XGBoost_to_json:
                           "loss_changes": [0.0],
                           "parents": [random.randint(2, 999999999)],
                           "right_children": [-1],
-                          "split_conditions": split_conditions,
+                          "split_conditions": [model.prior_[i]],
                           "split_indices": [0],
                           "split_type": [0],
                           "sum_hessian": [0.0],
@@ -169,9 +165,12 @@ class XGBoost_to_json:
                     for i in range(n):
                         for c in model.classes_:
                             trees += [xgboost_tree_dict(model, i, str(c))]
-                    for c in model.classes_:
-                        trees += [xgboost_dummy_tree_dict(model, str(c))]
-                    tree_info = [i for i in range(len(model.classes_))] * (n + 1)
+                    v = version(cursor = model.cursor)
+                    v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+                    if not(v):
+                      for i in range(len(model.classes_)):
+                          trees += [xgboost_dummy_tree_dict(model, i)]
+                    tree_info = [i for i in range(len(model.classes_))] * (n + int(not(v)))
                     for idx, tree in enumerate(trees):
                         tree["id"] = idx
                 else:
@@ -186,9 +185,7 @@ class XGBoost_to_json:
                 n = model.get_attr("tree_count")["tree_count"][0]
                 if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
                     objective = "reg:squarederror"
-                    # Computing prior probability
-                    model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
-                    bs = model.cursor.fetchone()[0]
+                    bs = model.prior_
                     if model.type == "XGBoostClassifier":
                         objective = "binary:logistic"
                     num_class = "0"

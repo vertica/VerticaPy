@@ -51,6 +51,7 @@
 # Standard Python Modules
 import os, math, shutil, re, sys, warnings, random, itertools
 from collections.abc import Iterable
+import numpy as np
 
 # VerticaPy Modules
 import verticapy
@@ -1394,6 +1395,29 @@ def str_category(expr):
             category = ""
     return category
 
+# ---#
+def xgb_prior(model):
+    # Computing XGB prior probabilities
+    from verticapy.utilities import version
+
+    condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+    v = version(cursor = model.cursor)
+    v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+    if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
+        model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
+        prior_ = model.cursor.fetchone()[0]
+    elif not(v):
+        prior_ = []
+        for elem in model.classes_:
+            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem))
+            avg = model.cursor.fetchone()[0]
+            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),))
+            avg /= model.cursor.fetchone()[0]
+            logodds = np.log(avg / (1 - avg))
+            prior_ += [logodds]
+    else:
+        prior_ = [0.0 for elem in model.classes_]
+    return prior_
 
 # ---#
 class str_sql:

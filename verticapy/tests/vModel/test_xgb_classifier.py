@@ -13,7 +13,7 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostClassifier
-from verticapy import vDataFrame, drop, version, set_option, vertica_conn
+from verticapy import vDataFrame, drop, version, set_option, vertica_conn, xgb_prior
 from verticapy.tests.conftest import get_version
 import matplotlib.pyplot as plt
 
@@ -101,6 +101,7 @@ def model(base, xgbc_data_vd):
     )
     classes = base.cursor.fetchall()
     model_class.classes_ = [item[0] for item in classes]
+    model_class.prior_ = xgb_prior(model_class)
 
     yield model_class
     model_class.drop()
@@ -113,7 +114,7 @@ class TestXGBC:
         assert cls_rep1["auc"][0] == pytest.approx(1.0)
         assert cls_rep1["prc_auc"][0] == pytest.approx(1.0)
         assert cls_rep1["accuracy"][0] == pytest.approx(1.0)
-        assert cls_rep1["log_loss"][0] == pytest.approx(0.127588478759147)
+        assert cls_rep1["log_loss"][0] in (pytest.approx(0.127588478759147), pytest.approx(0.23458261830345))
         assert cls_rep1["precision"][0] == pytest.approx(1.0)
         assert cls_rep1["recall"][0] == pytest.approx(1.0)
         assert cls_rep1["f1_score"][0] == pytest.approx(1.0)
@@ -121,7 +122,7 @@ class TestXGBC:
         assert cls_rep1["informedness"][0] == pytest.approx(1.0)
         assert cls_rep1["markedness"][0] == pytest.approx(1.0)
         assert cls_rep1["csi"][0] == pytest.approx(1.0)
-        assert cls_rep1["cutoff"][0] == pytest.approx(0.6811, 1e-2)
+        assert cls_rep1["cutoff"][0] in (pytest.approx(0.6811, 1e-2), pytest.approx(0.3863, 1e-2))
 
         cls_rep2 = model.classification_report(cutoff=0.681).transpose()
 
@@ -149,7 +150,7 @@ class TestXGBC:
             "survived",
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 38
+        assert len(result.get_default_bbox_extra_artists()) in (38, 43)
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -329,7 +330,7 @@ class TestXGBC:
 
         assert prc["threshold"][300] == pytest.approx(0.299)
         assert prc["recall"][300] == pytest.approx(1.0)
-        assert prc["precision"][300] == pytest.approx(1.0)
+        assert prc["precision"][300] in (pytest.approx(1.0), pytest.approx(0.6))
         plt.close("all")
 
     def test_predict(self, xgbc_data_vd, model):
@@ -377,10 +378,10 @@ class TestXGBC:
         ) == pytest.approx(1.0)
         assert model.score(
             cutoff=0.9, method="best_cutoff", pos_label="Train"
-        ) == pytest.approx(0.6338, 1e-2)
+        ) in (pytest.approx(0.6338, 1e-2), pytest.approx(0.3863, 1e-2))
         assert model.score(
             cutoff=0.1, method="best_cutoff", pos_label="Train"
-        ) == pytest.approx(0.6338, 1e-2)
+        ) in (pytest.approx(0.6338, 1e-2), pytest.approx(0.3863, 1e-2))
         assert model.score(
             cutoff=0.633, method="bm", pos_label="Train"
         ) == pytest.approx(0.0)
@@ -401,10 +402,10 @@ class TestXGBC:
         ) == pytest.approx(0.0)
         assert model.score(
             cutoff=0.9, method="logloss", pos_label="Train"
-        ) == pytest.approx(0.111961142833969)
+        ) in (pytest.approx(0.111961142833969), pytest.approx(0.21696238336042))
         assert model.score(
             cutoff=0.1, method="logloss", pos_label="Train"
-        ) == pytest.approx(0.111961142833969)
+        ) in (pytest.approx(0.111961142833969), pytest.approx(0.21696238336042))
         assert model.score(
             cutoff=0.9, method="mcc", pos_label="Train"
         ) == pytest.approx(0.0)
