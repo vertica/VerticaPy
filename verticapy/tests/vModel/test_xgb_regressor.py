@@ -240,6 +240,18 @@ class TestXGBR:
             "split_proposal_method": "global",
             "tol": 0.001,
             "weight_reg": 0.0,
+        } or model.get_params() == {
+            "max_ntree": 3,
+            "min_split_loss": 0.1,
+            "learning_rate": 0.2,
+            "sample": 1.0,
+            "max_depth": 6,
+            "nbins": 40,
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "weight_reg": 0.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
         }
 
     @pytest.mark.skip(reason="not yet available.")

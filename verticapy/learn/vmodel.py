@@ -1161,14 +1161,37 @@ Main Class for Vertica Model
                 model_parameters["weight_reg"] = self.parameters["weight_reg"]
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float],)])
-                assert 0 <= parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0, inclusive."
+                assert 0 < parameters["sample"] <= 1, ParameterError(
+                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0."
                 )
                 model_parameters["sample"] = parameters["sample"]
             elif "sample" not in self.parameters:
                 model_parameters["sample"] = default_parameters["sample"]
             else:
                 model_parameters["sample"] = self.parameters["sample"]
+            v = version(cursor = self.cursor)
+            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            if v:
+                if "col_sample_by_tree" in parameters:
+                    check_types([("col_sample_by_tree", parameters["col_sample_by_tree"], [int, float],)])
+                    assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
+                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter 'col_sample_by_tree' must be between 0.0 and 1.0."
+                    )
+                    model_parameters["col_sample_by_tree"] = parameters["col_sample_by_tree"]
+                elif "col_sample_by_tree" not in self.parameters:
+                    model_parameters["col_sample_by_tree"] = default_parameters["col_sample_by_tree"]
+                else:
+                    model_parameters["col_sample_by_tree"] = self.parameters["col_sample_by_tree"]
+                if "col_sample_by_node" in parameters:
+                    check_types([("col_sample_by_node", parameters["col_sample_by_node"], [int, float],)])
+                    assert 0 < parameters["col_sample_by_node"] <= 1, ParameterError(
+                        "Incorrect parameter 'col_sample_by_node'.\nThe parameter 'col_sample_by_node' must be between 0.0 and 1.0."
+                    )
+                    model_parameters["col_sample_by_node"] = parameters["col_sample_by_node"]
+                elif "col_sample_by_tree" not in self.parameters:
+                    model_parameters["col_sample_by_node"] = default_parameters["col_sample_by_node"]
+                else:
+                    model_parameters["col_sample_by_node"] = self.parameters["col_sample_by_node"]
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int],)])
                 assert 1 <= parameters["max_depth"] <= 20, ParameterError(

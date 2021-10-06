@@ -393,9 +393,11 @@ def default_model_parameters(model_type: str):
             "split_proposal_method": "global",
             "tol": 0.001,
             "learning_rate": 0.1,
-            "min_split_loss": 0,
-            "weight_reg": 0,
-            "sampling_size": 1,
+            "min_split_loss": 0.0,
+            "weight_reg": 0.0,
+            "sample": 1.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
         }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}

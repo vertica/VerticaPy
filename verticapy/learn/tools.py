@@ -643,6 +643,12 @@ model
             model.classes_ = [0, 1]
         if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
             model.coef_ = model.get_attr("details")
+        if model_type in ("xgb_classifier", "xgb_regressor",):
+            v = version(cursor = cursor)
+            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            if v:
+                model.set_params({"col_sample_by_tree": float(parameters_dict["col_sample_by_tree"]),
+                                  "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),})
     return model
 
 # ---#
