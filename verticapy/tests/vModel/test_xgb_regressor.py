@@ -14,7 +14,7 @@
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostRegressor
 from verticapy.tests.conftest import get_version
-from verticapy import vDataFrame, drop, version, set_option, vertica_conn
+from verticapy import vDataFrame, drop, version, set_option, vertica_conn, xgb_prior
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -104,6 +104,7 @@ def model(base, xgbr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
+    model_class.prior_ = xgb_prior(model_class)
 
     yield model_class
     model_class.drop()
@@ -119,7 +120,7 @@ class TestXGBR:
             "survived",
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 34
+        assert len(result.get_default_bbox_extra_artists()) in (37, 34,)
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -239,6 +240,18 @@ class TestXGBR:
             "split_proposal_method": "global",
             "tol": 0.001,
             "weight_reg": 0.0,
+        } or model.get_params() == {
+            "max_ntree": 3,
+            "min_split_loss": 0.1,
+            "learning_rate": 0.2,
+            "sample": 1.0,
+            "max_depth": 6,
+            "nbins": 40,
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "weight_reg": 0.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
         }
 
     @pytest.mark.skip(reason="not yet available.")
@@ -267,9 +280,7 @@ class TestXGBR:
             name="predicted_quality",
         )
 
-        assert xgbr_data_copy["predicted_quality"].mean() == pytest.approx(
-            0.9, abs=1e-6
-        )
+        assert xgbr_data_copy["predicted_quality"].mean() in (pytest.approx(0.9, abs=1e-6), pytest.approx(0.908453240740741, abs=1e-6))
 
     def test_regression_report(self, model):
         reg_rep = model.regression_report()
@@ -286,16 +297,16 @@ class TestXGBR:
             "aic",
             "bic",
         ]
-        assert reg_rep["value"][0] == pytest.approx(0.737856, abs=1e-6)
-        assert reg_rep["value"][1] == pytest.approx(0.5632, abs=1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.4608, abs=1e-6)
-        assert reg_rep["value"][3] == pytest.approx(0.36864, abs=1e-6)
-        assert reg_rep["value"][4] == pytest.approx(0.18087936, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.42529914178140543, abs=1e-6)
-        assert reg_rep["value"][6] == pytest.approx(0.737856, abs=1e-6)
-        assert reg_rep["value"][7] == pytest.approx(0.5281407999999999, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(7.900750107239094, abs=1e-6)
-        assert reg_rep["value"][9] == pytest.approx(-5.586324427790675, abs=1e-6)
+        assert reg_rep["value"][0] in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.60448287427822, abs=1e-6))
+        assert reg_rep["value"][1] in (pytest.approx(0.5632, abs=1e-6), pytest.approx(0.6755375, abs=1e-6))
+        assert reg_rep["value"][2] in (pytest.approx(0.4608, abs=1e-6), pytest.approx(0.5527125, abs=1e-6))
+        assert reg_rep["value"][3] in (pytest.approx(0.36864, abs=1e-6), pytest.approx(0.454394259259259, abs=1e-6))
+        assert reg_rep["value"][4] in (pytest.approx(0.18087936, abs=1e-6), pytest.approx(0.272978274027049, abs=1e-6))
+        assert reg_rep["value"][5] in (pytest.approx(0.42529914178140543, abs=1e-6), pytest.approx(0.5224732280481451, abs=1e-6))
+        assert reg_rep["value"][6] in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.604379313004277, abs=1e-6))
+        assert reg_rep["value"][7] in (pytest.approx(0.5281407999999999, abs=1e-6), pytest.approx(0.2878827634076987, abs=1e-6))
+        assert reg_rep["value"][8] in (pytest.approx(7.900750107239094, abs=1e-6), pytest.approx(12.016369307174802, abs=1e-6))
+        assert reg_rep["value"][9] in (pytest.approx(-5.586324427790675, abs=1e-6), pytest.approx(-1.4707052278549675, abs=1e-6))
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -308,6 +319,16 @@ class TestXGBR:
             pytest.approx(-1.73372940858763),
             pytest.approx(0.223450528977454),
             pytest.approx(3.76564442746721),
+        ] or reg_rep_details["value"][2:] == [
+            10.0,
+            4,
+            pytest.approx(0.604379313004277),
+            pytest.approx(0.2878827634076987),
+            pytest.approx(0.4418800475932531),
+            pytest.approx(0.7760066793800073),
+            pytest.approx(-1.73372940858763),
+            pytest.approx(0.223450528977454),
+            pytest.approx(3.76564442746721),
         ]
 
         reg_rep_anova = model.regression_report("anova")
@@ -315,45 +336,42 @@ class TestXGBR:
             pytest.approx(1.6431936),
             pytest.approx(1.8087936),
             pytest.approx(6.9),
+        ] or reg_rep_anova["SS"] == [
+            pytest.approx(0.964989221751972),
+            pytest.approx(2.72978274027049),
+            pytest.approx(6.9),
         ]
         assert reg_rep_anova["MS"][:-1] == [
             pytest.approx(0.4107984),
             pytest.approx(0.36175872),
+        ] or reg_rep_anova["MS"][:-1] == [
+            pytest.approx(0.241247305437993),
+            pytest.approx(0.545956548054098),
         ]
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(0.5632, abs=1e-6)
+        assert model.score(method="max") in (pytest.approx(0.5632, abs=1e-6), pytest.approx(0.6755375, abs=1e-6))
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0.36864, abs=1e-6)
+        assert model.score(method="mae") in (pytest.approx(0.36864, abs=1e-6), pytest.approx(0.454394259259259, abs=1e-6))
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.4608, abs=1e-6)
+        assert model.score(method="median") in (pytest.approx(0.4608, abs=1e-6), pytest.approx(0.5527125, abs=1e-6))
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.18087936, abs=1e-6)
+        assert model.score(method="mse") in (pytest.approx(0.18087936, abs=1e-6), pytest.approx(0.272978274027049, abs=1e-6))
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(
-            0.42529914178140543, abs=1e-6
-        )
+        assert model.score(method="rmse") in (pytest.approx(0.42529914178140543, abs=1e-6), pytest.approx(0.5224732280481451, abs=1e-6))
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(
-            0.0133204031846029, abs=1e-6
-        )
+        assert model.score(method="msle") in (pytest.approx(0.0133204031846029, abs=1e-6), pytest.approx(0.0195048419826687, abs=1e-6))
         # method = "r2"
-        assert model.score() == pytest.approx(0.737856, abs=1e-6)
+        assert model.score() in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.604379313004277, abs=1e-6))
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(
-            0.5281407999999999, abs=1e-6
-        )
+        assert model.score(method="r2a") in (pytest.approx(0.5281407999999999, abs=1e-6), pytest.approx(0.2878827634076987, abs=1e-6))
         # method = "var"
-        assert model.score(method="var") == pytest.approx(0.737856, abs=1e-6)
+        assert model.score(method="var") in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.60448287427822, abs=1e-6))
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(
-            7.900750107239094, abs=1e-6
-        )
+        assert model.score(method="aic") in (pytest.approx(7.900750107239094, abs=1e-6), pytest.approx(12.016369307174802, abs=1e-6))
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(
-            -5.586324427790675, abs=1e-6
-        )
+        assert model.score(method="bic") in (pytest.approx(-5.586324427790675, abs=1e-6), pytest.approx(-1.4707052278549675, abs=1e-6))
 
     def test_set_cursor(self, model):
         cur = vertica_conn(
@@ -388,25 +406,22 @@ class TestXGBR:
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
-
-        assert tree_1["prediction"] == [
-            None,
-            "0.880000",
-            None,
-            None,
-            "0.080000",
-            None,
-            "-0.720000",
-            "-0.720000",
-            "0.080000",
-        ]
+        assert tree_1["prediction"][0] == None
+        assert tree_1["prediction"][1] in ("0.880000", "0.701250")
+        assert tree_1["prediction"][2] == None
+        assert tree_1["prediction"][3] == None
+        assert tree_1["prediction"][4] in ("0.080000", '0.057778')
+        assert tree_1["prediction"][5] == None
+        assert tree_1["prediction"][6] in ("-0.720000", '-0.573750')
+        assert tree_1["prediction"][7] in ("-0.720000", '-0.405000')
+        assert tree_1["prediction"][8] in ("0.080000", '0.045000')
 
     def test_get_plot(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = XGBoostRegressor("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
-        assert len(result.get_default_bbox_extra_artists()) == 9
+        assert len(result.get_default_bbox_extra_artists()) in (9, 12,)
         plt.close("all")
         model_test.drop()
 

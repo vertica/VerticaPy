@@ -1161,14 +1161,37 @@ Main Class for Vertica Model
                 model_parameters["weight_reg"] = self.parameters["weight_reg"]
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float],)])
-                assert 0 <= parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0, inclusive."
+                assert 0 < parameters["sample"] <= 1, ParameterError(
+                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0."
                 )
                 model_parameters["sample"] = parameters["sample"]
             elif "sample" not in self.parameters:
                 model_parameters["sample"] = default_parameters["sample"]
             else:
                 model_parameters["sample"] = self.parameters["sample"]
+            v = version(cursor = self.cursor)
+            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            if v:
+                if "col_sample_by_tree" in parameters:
+                    check_types([("col_sample_by_tree", parameters["col_sample_by_tree"], [int, float],)])
+                    assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
+                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter 'col_sample_by_tree' must be between 0.0 and 1.0."
+                    )
+                    model_parameters["col_sample_by_tree"] = parameters["col_sample_by_tree"]
+                elif "col_sample_by_tree" not in self.parameters:
+                    model_parameters["col_sample_by_tree"] = default_parameters["col_sample_by_tree"]
+                else:
+                    model_parameters["col_sample_by_tree"] = self.parameters["col_sample_by_tree"]
+                if "col_sample_by_node" in parameters:
+                    check_types([("col_sample_by_node", parameters["col_sample_by_node"], [int, float],)])
+                    assert 0 < parameters["col_sample_by_node"] <= 1, ParameterError(
+                        "Incorrect parameter 'col_sample_by_node'.\nThe parameter 'col_sample_by_node' must be between 0.0 and 1.0."
+                    )
+                    model_parameters["col_sample_by_node"] = parameters["col_sample_by_node"]
+                elif "col_sample_by_tree" not in self.parameters:
+                    model_parameters["col_sample_by_node"] = default_parameters["col_sample_by_node"]
+                else:
+                    model_parameters["col_sample_by_node"] = self.parameters["col_sample_by_node"]
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int],)])
                 assert 1 <= parameters["max_depth"] <= 20, ParameterError(
@@ -1944,19 +1967,12 @@ Main Class for Vertica Model
             attributes = {"trees": trees}
             if self.type in ("XGBoostRegressor", "XGBoostClassifier",):
                 attributes["learning_rate"] = self.parameters["learning_rate"]
-                condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
                 if self.type in ("XGBoostRegressor",):
-                    self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
-                    attributes["mean"] = self.cursor.fetchone()[0]
+                    attributes["mean"] = self.prior_
+                elif not(isinstance(self.prior_, list)):
+                    attributes["logodds"] = [np.log((1 - self.prior_) / self.prior_), np.log(self.prior_ / (1 - self.prior_))]
                 else:
-                    logodds = []
-                    for elem in self.classes_:
-                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(self.input_relation, " AND ".join(condition), self.y, elem))
-                        avg = self.cursor.fetchone()[0]
-                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(self.input_relation, " AND ".join(condition),))
-                        avg /= self.cursor.fetchone()[0]
-                        logodds += [np.log(avg / (1 - avg))]
-                    attributes["logodds"] = logodds
+                    attributes["logodds"] = self.prior_.copy()
         else:
             raise ModelError("Model type '{}' can not be converted to memModel.".format(self.type))
         return memModel(model_type = self.type, attributes = attributes)
@@ -2714,21 +2730,14 @@ Main Class for Vertica Model
                 func += "\t\tfor elem in classes:\n"
                 func += "\t\t\tall_classes_score[elem] = 0\n"
             if self.type in ("XGBoostRegressor", "XGBoostClassifier",):
-                condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + ["{} IS NOT NULL".format(self.y)]
                 if self.type in ("XGBoostRegressor",):
-                    self.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(self.y, self.input_relation, " AND ".join(condition)))
-                    avg = self.cursor.fetchone()[0]
+                    avg = self.prior_
                     func += "\t\treturn {} + {} * np.sum(result)\n".format(avg, self.parameters["learning_rate"])
                 else:
-                    func += "\t\tlogodds = np.array(["
-                    for elem in self.classes_:
-                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(self.input_relation, " AND ".join(condition), self.y, elem))
-                        avg = self.cursor.fetchone()[0]
-                        self.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(self.input_relation, " AND ".join(condition),))
-                        avg /= self.cursor.fetchone()[0]
-                        logodds = np.log(avg / (1 - avg))
-                        func += "{}, ".format(logodds)
-                    func += "])\n"
+                    if not(isinstance(self.prior_, list)):
+                        func += "\t\tlogodds = np.array([{}, {}])\n".format(np.log((1 - self.prior_) / self.prior_), np.log(self.prior_ / (1 - self.prior_)))
+                    else:
+                        func += "\t\tlogodds = np.array({})\n".format(self.prior_)
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
@@ -2933,6 +2942,8 @@ class Supervised(vModel):
                 self.classes_ = [item[0] for item in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
+        if self.type in ("XGBoostClassifier", "XGBoostRegressor",):
+            self.prior_ = xgb_prior(self)
         return self
 
 
