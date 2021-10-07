@@ -192,23 +192,15 @@ class XGBoost_to_json:
                 condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
                 n = model.get_attr("tree_count")["tree_count"][0]
                 if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
-                    objective = "reg:squarederror"
-                    bs = model.prior_
-                    if model.type == "XGBoostClassifier":
-                        objective = "binary:logistic"
-                    num_class = "0"
-                    param = "reg_loss_param"
-                    param_val = {"scale_pos_weight":"1"}
+                    bs, num_class, param, param_val = model.prior_, "0", "reg_loss_param", {"scale_pos_weight":"1"}
                     if model.type == "XGBoostRegressor":
+                      objective = "reg:squarederror"
                       attributes_dict = {"scikit_learn": "{\"n_estimators\": " + str(n) + ", \"objective\": \"reg:squarederror\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": " + str(col_sample_by_tree) + ", \"colsample_bylevel\": null, \"colsample_bynode\": " + str(col_sample_by_node) + ", \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"_estimator_type\": \"regressor\"}"}
                     else:
+                      objective = "binary:logistic"
                       attributes_dict = {"scikit_learn": "{\"use_label_encoder\": true, \"n_estimators\": " + str(n) + ", \"objective\": \"binary:logistic\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": " + str(col_sample_by_tree) + ", \"colsample_bylevel\": null, \"colsample_bynode\": " + str(col_sample_by_node) + ", \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"classes_\": [0, 1], \"n_classes_\": 2, \"_le\": {\"classes_\": [0, 1]}, \"_estimator_type\": \"classifier\"}"}
                 else:
-                    objective = "multi:softprob"
-                    bs = 0.5
-                    num_class = str(len(model.classes_))
-                    param = "softmax_multiclass_param"
-                    param_val = {"num_class": num_class}
+                    objective, bs, num_class, param, param_val = "multi:softprob", 0.5, str(len(model.classes_)), "softmax_multiclass_param", {"num_class": num_class}
                     attributes_dict = {"scikit_learn": "{\"use_label_encoder\": true, \"n_estimators\": " + str(n) + ", \"objective\": \"multi:softprob\", \"max_depth\": " + str(model.parameters["max_depth"]) + ", \"learning_rate\": " + str(model.parameters["learning_rate"]) + ", \"verbosity\": null, \"booster\": null, \"tree_method\": null, \"gamma\": null, \"min_child_weight\": null, \"max_delta_step\": null, \"subsample\": null, \"colsample_bytree\": " + str(col_sample_by_tree) + ", \"colsample_bylevel\": null, \"colsample_bynode\": " + str(col_sample_by_node) + ", \"reg_alpha\": null, \"reg_lambda\": null, \"scale_pos_weight\": null, \"base_score\": null, \"missing\": NaN, \"num_parallel_tree\": null, \"kwargs\": {}, \"random_state\": null, \"n_jobs\": null, \"monotone_constraints\": null, \"interaction_constraints\": null, \"importance_type\": \"gain\", \"gpu_id\": null, \"validate_parameters\": null, \"classes_\": " + str(model.classes_) + ", \"n_classes_\": " + str(len(model.classes_)) + ", \"_le\": {\"classes_\": " + str(model.classes_) + "}, \"_estimator_type\": \"classifier\"}"}
                 attributes_dict["scikit_learn"] = attributes_dict["scikit_learn"].replace('"', '++++')
                 gradient_booster = xgboost_tree_dict_list(model)

@@ -120,7 +120,7 @@ class TestXGBR:
             "survived",
         )
         result = model_test.contour()
-        assert 34 <= len(result.get_default_bbox_extra_artists()) <= 37
+        assert len(result.get_default_bbox_extra_artists()) in (37, 34,)
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -421,7 +421,7 @@ class TestXGBR:
         model_test = XGBoostRegressor("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
-        assert 9 <= len(result.get_default_bbox_extra_artists()) <= 12
+        assert len(result.get_default_bbox_extra_artists()) in (9, 12,)
         plt.close("all")
         model_test.drop()
 
