@@ -52,6 +52,7 @@ import random, time, shutil, re, decimal, warnings, pickle, datetime, math
 from collections.abc import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
+import numpy as np
 
 pickle.DEFAULT_PROTOCOL = 4
 
@@ -3630,6 +3631,128 @@ vColumns : vColumn
                 sum_cat = vdf[elem].sum()
                 vdf[elem].apply("{} / {} - 1".format("{}", sum_cat))
         return vdf
+
+    # ---#
+    def chaid(
+        self,
+        response: str,
+        columns: list,
+        nbins: int = 4,
+        method: str = "same_width",
+        RFmodel_params: dict = {},
+        **kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the CHAID (CHi-squared Automatic Interaction Detector) tree.
+    It is a decision tree technique, based on adjusted significance testing 
+    (Bonferroni testing). CHAID's advantages are that its output is highly 
+    visual and easy to interpret.
+
+    Parameters
+    ----------
+    response: str
+        Response vColumn. It must be categorical.
+    columns: list
+        List of the vColumns names. The maximum number of categories for each
+        categorical columns is 16. Categorical columns with a higher cardinality
+        will be discarded.
+    nbins: int, optional
+        Number of bins used for the numerical features discretization 
+        (must be between 2 and 16).
+    method: str, optional
+        The method to use to discretize the numerical vColumns.
+            same_width : Computes regular width bins.
+            smart      : Uses the Random Forest on a response column to find the most 
+                relevant interval to use for the discretization.
+    RFmodel_params: dict, optional
+        Dictionary of the Random Forest model parameters used to compute the best splits 
+        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
+        is numerical (except ints and bools), a RF Classifier otherwise.
+        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+        20 trees and a maximum depth of 10.
+
+    Returns
+    -------
+    memModel
+        An independant model containing the result. For more information, see
+        learn.memmodel.
+        """
+        if "process" not in kwds or kwds["process"]:
+            if isinstance(columns, str):
+                columns = [columns]
+            check_types(
+                [
+                    ("columns", columns, [list,],),
+                    ("response", response, [str,],),
+                    ("nbins", nbins, [int,],),
+                    ("method", method, ["smart", "same_width",],),
+                    ("RFmodel_params", RFmodel_params, [dict,],),
+                ]
+            )
+            columns_check(columns + [response], self,)
+            assert 2 <= nbins <= 16, ParameterError("Parameter 'nbins' must be between 2 and 16, inclusive.")
+            columns = chaid_columns(self, columns,)
+            if not(columns):
+                raise ValueError("No column to process.")
+        p = self.pivot_table_chi2(response, columns, nbins, method, RFmodel_params,)
+        categories, split_predictor, is_numerical, chi2 = p["categories"][0], p["index"][0], p["is_numerical"][0], p["chi2"][0]
+        split_predictor_idx = get_index(split_predictor, columns if "process" not in kwds or kwds["process"] else kwds["columns_init"])
+        tree = {"split_predictor": split_predictor,
+                "split_predictor_idx": split_predictor_idx,
+                "split_is_numerical": is_numerical,
+                "chi2": chi2,
+                "is_leaf": False,}
+        if is_numerical:
+            if ";" in categories[0]:
+                categories = sorted([float(c.split(";")[1][0:-1]) for c in categories])
+                ctype = "float"
+            else:
+                categories = sorted([int(c) for c in categories])
+                ctype = "int"
+        if "process" not in kwds or kwds["process"]:
+            classes = self[response].distinct()
+        else:
+            classes = kwds["classes"]
+        if len(columns) == 1:
+            if is_numerical:
+                sql = "(CASE "
+                for c in categories:
+                    sql += "WHEN {} <= {} THEN {} ".format(split_predictor, c, c)
+                sql += "ELSE NULL END)::{} AS {}".format(ctype, split_predictor)
+            else:
+                sql = split_predictor
+            sql = "SELECT {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(split_predictor, response, split_predictor, sql, response, self.__genSQL__(), split_predictor, response,)
+            self.__executeSQL__(sql, title="Computes the CHAID tree probability.")
+            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+            children = {}
+            for c in categories:
+                children[c] = {}
+                for cl in classes:
+                    children[c][cl] = 0.0
+            for elem in result:
+                children[elem[0]][elem[1]] = elem[2]
+            for elem in children:
+                children[elem] = {"prediction": [children[elem][c] for c in children[elem]], "is_leaf": True,}
+            tree["children"] = children
+            return tree
+        else:
+            tree["children"] = {}
+            columns_tmp = columns.copy()
+            columns_tmp.remove(split_predictor)
+            for c in categories:
+                if is_numerical:
+                    vdf = self.search("{} < {} AND {} IS NOT NULL AND {} IS NOT NULL".format(split_predictor, c, split_predictor, response,), usecols = columns_tmp + [response],)
+                else:
+                    vdf = self.search("{} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL".format(split_predictor, c, split_predictor, response,), usecols = columns_tmp + [response],)
+                tree["children"][c] = vdf.chaid(response, columns_tmp, nbins, method, RFmodel_params, process = False, columns_init = columns, classes = classes,)
+            if "process" not in kwds or kwds["process"]:
+                from verticapy.learn.memmodel import memModel
+
+                return memModel("CHAID", attributes = {"tree": tree, "classes": classes,})
+            return tree
+
+        
 
     # ---#
     def copy(self):
@@ -7392,8 +7515,11 @@ vColumns : vColumn
     # ---#
     def pivot_table_chi2(
         self,
-        response_column: str,
+        response: str,
         columns: list = [],
+        nbins: int = 16,
+        method: str = "same_width",
+        RFmodel_params: dict = {},
     ):
         """
     ---------------------------------------------------------------------------
@@ -7402,10 +7528,26 @@ vColumns : vColumn
 
     Parameters
     ----------
-    response_column: str
-        Response vColumn.
+    response: str
+        Response vColumn. It must be categorical.
     columns: list, optional
-        List of the vColumns names.
+        List of the vColumns names. The maximum number of categories for each
+        categorical columns is 16. Categorical columns with a higher cardinality
+        will be discarded.
+    nbins: int, optional
+        Number of bins used for the numerical features discretization 
+        (must be between 2 and 16).
+    method: str, optional
+        The method to use to discretize the numerical vColumns.
+            same_width : Computes regular width bins.
+            smart      : Uses the Random Forest on a response column to find the most 
+                relevant interval to use for the discretization.
+    RFmodel_params: dict, optional
+        Dictionary of the Random Forest model parameters used to compute the best splits 
+        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
+        is numerical (except ints and bools), a RF Classifier otherwise.
+        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
+        20 trees and a maximum depth of 10.
 
     Returns
     -------
@@ -7413,41 +7555,53 @@ vColumns : vColumn
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        import numpy as np
-
         if isinstance(columns, str):
             columns = [columns]
         check_types(
             [
-                ("columns", columns, [list],),
-                ("response_column", response_column, [str],),
+                ("columns", columns, [list,],),
+                ("response", response, [str,],),
+                ("nbins", nbins, [int,],),
+                ("method", method, ["smart", "same_width",],),
+                ("RFmodel_params", RFmodel_params, [dict,],),
             ]
         )
-        columns_check(columns + [response_column], self,)
+        columns_check(columns + [response], self,)
+        assert 2 <= nbins <= 16, ParameterError("Parameter 'nbins' must be between 2 and 16, inclusive.")
+        columns = chaid_columns(self, columns,)
+        for col in columns:
+            if str_column(response) == str_column(col):
+                columns.remove(col)
+                break
         if not(columns):
-            columns = self.catcol(max_cardinality=20)
-        else:
-            columns = vdf_columns_names(columns, self)
-            for col in columns:
-                assert not(self[col].isdate()) and (not(self[col].isnum()) or self[col].ctype() != "float"), TypeError("vColumn '{}' is not categorical. Method 'pivot_table_chi2' only accepts categorical inputs.".format(col))
-        response_column = vdf_columns_names([response_column], self)[0]
-        if response_column in columns:
-            columns.remove(response_column)
+            raise ValueError("No column to process.")
+        vdf = self.copy()
+        for col in columns:
+            if vdf[col].isnum():
+                vdf[col].discretize(method = method,
+                                    bins = nbins,
+                                    response = response,
+                                    RFmodel_params = RFmodel_params,)
+        response = vdf_columns_names([response], vdf)[0]
+        if response in columns:
+            columns.remove(response)
         chi2_list = []
         for col in columns:
-            tmp_res = self.pivot_table(columns = [col, response_column],
-                                       max_cardinality = (10000, 100),
-                                       show = False).to_numpy()[:,1:]
+            tmp_res = vdf.pivot_table(columns = [col, response],
+                                      max_cardinality = (10000, 100),
+                                      show = False).to_numpy()[:,1:]
             all_chi2 = []
             for row in tmp_res:
                 L = [int(x) if x != '' else 0 for x in row]
                 n = sum(L)
                 expected = n / len(L)
                 all_chi2 += [np.sqrt((x - expected) ** 2 / expected) for x in L]
-            chi2_list += [(col, sum(all_chi2))]
+            chi2_list += [(col, sum(all_chi2), vdf[col].distinct(), self[col].isnum())]
         chi2_list = sorted(chi2_list, key=lambda tup: tup[1], reverse=True)
         result = {"index": [elem[0] for elem in chi2_list], 
-                  "chi2": [elem[1] for elem in chi2_list]}
+                  "chi2": [elem[1] for elem in chi2_list],
+                  "categories": [elem[2] for elem in chi2_list],
+                  "is_numerical": [elem[3] for elem in chi2_list],}
         return tablesample(result)
 
     # ---#
@@ -9866,8 +10020,6 @@ vColumns : vColumn
     numpy.array
         The numpy array of the current vDataFrame relation.
         """
-        import numpy as np
-
         return np.array(self.to_list())
 
     # ---#

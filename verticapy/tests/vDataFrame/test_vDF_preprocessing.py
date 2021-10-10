@@ -237,7 +237,7 @@ class TestvDFPreprocessing:
 
     def test_vDF_mean_encode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
-        titanic_copy["embarked"].mean_encode(response_column="survived")
+        titanic_copy["embarked"].mean_encode(response="survived")
         result = titanic_copy["embarked"].distinct()
 
         result[0] == pytest.approx(0.2735849)

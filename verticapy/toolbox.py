@@ -509,6 +509,13 @@ def gen_name(L: list):
     )
 
 # ---#
+def get_index(x: str, col_list: list):
+    for idx, col in enumerate(col_list):
+        if str_column(x.lower()) == str_column(col.lower()):
+            return idx
+    return None
+
+# ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
     result = []
     t = t.values
@@ -1420,6 +1427,30 @@ def xgb_prior(model):
     else:
         prior_ = [0.0 for elem in model.classes_]
     return prior_
+
+# ---#
+def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16,):
+    columns_tmp = columns.copy()
+    if not(columns_tmp):
+        columns_tmp = vdf.get_columns()
+        remove_cols = []
+        for col in columns_tmp:
+            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+                remove_cols += [col]
+    else:
+        remove_cols = []
+        columns_tmp = vdf_columns_names(columns_tmp, vdf)
+        for col in columns_tmp:
+            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+                remove_cols += [col]
+                if vdf[col].category() not in ("float", "int", "text",):
+                    warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(col, vdf[col].category())
+                else:
+                    warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(col, max_cardinality)
+                warnings.warn(warning_message, Warning)
+    for col in remove_cols:
+        columns_tmp.remove(col)
+    return columns_tmp
 
 # ---#
 class str_sql:

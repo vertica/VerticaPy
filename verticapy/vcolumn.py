@@ -2534,7 +2534,7 @@ Attributes
         return self.aggregate(["max"]).values[self.alias][0]
 
     # ---#
-    def mean_encode(self, response_column: str):
+    def mean_encode(self, response: str):
         """
 	---------------------------------------------------------------------------
 	Encodes the vColumn using the average of the response partitioned by the 
@@ -2542,7 +2542,7 @@ Attributes
 
 	Parameters
  	----------
- 	response_column: str
+ 	response: str
  		Response vColumn.
 
  	Returns
@@ -2557,18 +2557,18 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
-        check_types([("response_column", response_column, [str],)])
-        columns_check([response_column], self.parent)
-        response_column = vdf_columns_names([response_column], self.parent)[0]
-        assert self.parent[response_column].isnum(), TypeError("The response column must be numerical to use a mean encoding")
-        max_floor = len(self.parent[response_column].transformations) - len(
+        check_types([("response", response, [str],)])
+        columns_check([response], self.parent)
+        response = vdf_columns_names([response], self.parent)[0]
+        assert self.parent[response].isnum(), TypeError("The response column must be numerical to use a mean encoding")
+        max_floor = len(self.parent[response].transformations) - len(
             self.transformations
         )
         for k in range(max_floor):
             self.transformations += [("{}", self.ctype(), self.category())]
         self.transformations += [
             (
-                "AVG({}) OVER (PARTITION BY {})".format(response_column, "{}"),
+                "AVG({}) OVER (PARTITION BY {})".format(response, "{}"),
                 "int",
                 "float",
             )
@@ -2576,7 +2576,7 @@ Attributes
         self.parent.__update_catalog__(erase=True, columns=[self.alias])
         self.parent.__add_to_history__(
             "[Mean Encode]: The vColumn {} was transformed using a mean encoding with {} as Response Column.".format(
-                self.alias, response_column
+                self.alias, response
             )
         )
         if verticapy.options["print_info"]:

@@ -150,7 +150,7 @@ class TestXGBC:
             "survived",
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) in (38, 43)
+        assert len(result.get_default_bbox_extra_artists()) in (38, 40, 43)
         model_test.drop()
 
     def test_deploySQL(self, model):
