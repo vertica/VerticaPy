@@ -509,9 +509,9 @@ def gen_name(L: list):
     )
 
 # ---#
-def get_index(x: str, col_list: list):
+def get_index(x: str, col_list: list, str_check: bool = True,):
     for idx, col in enumerate(col_list):
-        if str_column(x.lower()) == str_column(col.lower()):
+        if (str_check and str_column(x.lower()) == str_column(col.lower())) or (x == col):
             return idx
     return None
 

@@ -65,7 +65,319 @@ import warnings
 from typing import Union
 
 # ---#
-class NeighborsClassifier(vModel):
+class NearestCentroid(MulticlassClassifier):
+    """
+---------------------------------------------------------------------------
+[Beta Version]
+Creates a NearestCentroid object using the k-nearest centroid algorithm. 
+This object uses pure SQL to compute the distances and final score. 
+
+\u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
+                 sensitive to unnormalized data.
+
+Parameters
+----------
+cursor: DBcursor, optional
+	Vertica database cursor. 
+p: int, optional
+	The p corresponding to the one of the p-distances (distance metric used
+	during the model computation).
+	"""
+
+    def __init__(self, name: str, cursor=None, p: int = 2):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "NearestCentroid", name
+        self.set_params({"p": p})
+        cursor = check_cursor(cursor)[0]
+        self.cursor = cursor
+
+    # ---#
+    def fit(
+        self,
+        input_relation: Union[str, vDataFrame],
+        X: list,
+        y: str,
+        test_relation: Union[str, vDataFrame] = "",
+    ):
+        """
+	---------------------------------------------------------------------------
+	Trains the model.
+
+	Parameters
+	----------
+	input_relation: str/vDataFrame
+		Training relation.
+	X: list
+		List of the predictors.
+	y: str
+		Response column.
+	test_relation: str/vDataFrame, optional
+		Relation used to test the model.
+
+	Returns
+	-------
+	object
+ 		self
+		"""
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("input_relation", input_relation, [str, vDataFrame], False),
+                ("X", X, [list], False),
+                ("y", y, [str], False),
+                ("test_relation", test_relation, [str, vDataFrame], False),
+            ]
+        )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
+        self.X = [str_column(column) for column in X]
+        self.y = str_column(y)
+        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC".format(
+            ", ".join(
+                ["{}({}) AS {}".format(func, column, column) for column in self.X]
+            ),
+            self.y,
+            self.input_relation,
+            self.y,
+            self.y,
+            self.y,
+        )
+        self.centroids_ = to_tablesample(
+            query=query, cursor=self.cursor, title="Getting Model Centroids.",
+        )
+        self.classes_ = self.centroids_.values[y]
+        model_save = {
+            "type": "NearestCentroid",
+            "input_relation": self.input_relation,
+            "test_relation": self.test_relation,
+            "X": self.X,
+            "y": self.y,
+            "p": self.parameters["p"],
+            "centroids": self.centroids_.values,
+            "classes": self.classes_,
+        }
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="NearestCentroid",
+            model_save=model_save,
+            cursor=self.cursor,
+        )
+        return self
+
+
+# ---#
+class KNeighborsClassifier(vModel):
+    """
+---------------------------------------------------------------------------
+[Beta Version]
+Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
+This object uses pure SQL to compute the distances and final score.
+
+\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
+                 is therefore computationally expensive at O(n * n), where
+                 n is the total number of elements. Since KNeighborsClassifier 
+                 is uses the p-distance, it is highly sensitive to unnormalized 
+                 data.
+
+Parameters
+----------
+cursor: DBcursor, optional
+	Vertica database cursor. 
+n_neighbors: int, optional
+	Number of neighbors to consider when computing the score.
+p: int, optional
+	The p corresponding to the one of the p-distances (distance metric used during 
+	the model computation).
+	"""
+
+    def __init__(self, name: str, cursor=None, n_neighbors: int = 5, p: int = 2):
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "KNeighborsClassifier", name
+        self.set_params({"n_neighbors": n_neighbors, "p": p})
+        cursor = check_cursor(cursor)[0]
+        self.cursor = cursor
+
+    # ---#
+    def deploySQL(
+        self,
+        X: list = [],
+        test_relation: str = "",
+        predict: bool = False,
+        key_columns: list = [],
+    ):
+        """
+	---------------------------------------------------------------------------
+	Returns the SQL code needed to deploy the model. 
+
+    Parameters
+    ----------
+    X: list
+        List of the predictors.
+    test_relation: str, optional
+        Relation to use to do the predictions.
+    predict: bool, optional
+        If set to True, returns the prediction instead of the probability.
+    key_columns: list, optional
+        Unused columns that should be kept during the computation.
+
+    Returns
+    -------
+    str/list
+        the SQL code needed to deploy the model.
+		"""
+        if isinstance(X, str):
+            X = [X]
+        if isinstance(key_columns, str):
+            key_columns = [key_columns]
+        check_types(
+            [
+                ("test_relation", test_relation, [str], False),
+                ("predict", predict, [bool], False),
+                ("X", X, [list], False),
+                ("key_columns", key_columns, [list], False),
+            ],
+        )
+        X = [str_column(elem) for elem in X] if (X) else self.X
+        if not (test_relation):
+            test_relation = self.test_relation
+        if not(key_columns) and key_columns != None:
+            key_columns = [self.y]
+        sql = [
+            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
+            for i in range(len(self.X))
+        ]
+        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
+        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
+            ", ".join(["x.{}".format(item) for item in X]), sql
+        )
+        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
+            ", ".join(["x.{}".format(item) for item in X]),
+            ", " + ", ".join(["x." + str_column(elem) for elem in key_columns])
+            if (key_columns)
+            else "",
+            sql,
+            self.y,
+            test_relation,
+            " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+            self.input_relation,
+            " AND ".join(["{} IS NOT NULL".format(item) for item in self.X]),
+        )
+        sql = "(SELECT row_id, {}{}, predict_neighbors, COUNT(*) / {} AS proba_predict FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id, predict_neighbors) kneighbors_table".format(
+            ", ".join(X),
+            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            if (key_columns)
+            else "",
+            self.parameters["n_neighbors"],
+            sql,
+            self.parameters["n_neighbors"],
+            ", ".join(X),
+            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            if (key_columns)
+            else "",
+        )
+        if predict:
+            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
+                ", ".join(X),
+                ", " + ", ".join([str_column(elem) for elem in key_columns])
+                if (key_columns)
+                else "",
+                ", ".join(X),
+                ", " + ", ".join([str_column(elem) for elem in key_columns])
+                if (key_columns)
+                else "",
+                ", ".join(X),
+                sql,
+            )
+        return sql
+
+    # ---#
+    def fit(
+        self,
+        input_relation: Union[str, vDataFrame],
+        X: list,
+        y: str,
+        test_relation: Union[str, vDataFrame] = "",
+    ):
+        """
+	---------------------------------------------------------------------------
+	Trains the model.
+
+	Parameters
+	----------
+	input_relation: str/vDataFrame
+		Training relation.
+	X: list
+		List of the predictors.
+	y: str
+		Response column.
+	test_relation: str/vDataFrame, optional
+		Relation used to test the model.
+
+	Returns
+	-------
+	object
+ 		self
+		"""
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("input_relation", input_relation, [str, vDataFrame], False),
+                ("X", X, [list], False),
+                ("y", y, [str], False),
+                ("test_relation", test_relation, [str, vDataFrame], False),
+            ]
+        )
+        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
+        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        if isinstance(input_relation, vDataFrame):
+            self.input_relation = input_relation.__genSQL__()
+        else:
+            self.input_relation = input_relation
+        if isinstance(test_relation, vDataFrame):
+            self.test_relation = test_relation.__genSQL__()
+        elif test_relation:
+            self.test_relation = test_relation
+        else:
+            self.test_relation = self.input_relation
+        self.X = [str_column(column) for column in X]
+        self.y = str_column(y)
+        self.cursor.execute(
+            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
+                self.y, self.input_relation, self.y, self.y
+            )
+        )
+        classes = self.cursor.fetchall()
+        self.classes_ = [item[0] for item in classes]
+        model_save = {
+            "type": "KNeighborsClassifier",
+            "input_relation": self.input_relation,
+            "test_relation": self.test_relation,
+            "X": self.X,
+            "y": self.y,
+            "p": self.parameters["p"],
+            "n_neighbors": self.parameters["n_neighbors"],
+            "classes": self.classes_,
+        }
+        insert_verticapy_schema(
+            model_name=self.name,
+            model_type="KNeighborsClassifier",
+            model_save=model_save,
+            cursor=self.cursor,
+        )
+        return self
 
     # ---#
     def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
@@ -532,408 +844,6 @@ class NeighborsClassifier(vModel):
             raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
             )
-
-
-# ---#
-class NearestCentroid(NeighborsClassifier):
-    """
----------------------------------------------------------------------------
-[Beta Version]
-Creates a NearestCentroid object using the k-nearest centroid algorithm. 
-This object uses pure SQL to compute the distances and final score. 
-
-\u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
-                 sensitive to unnormalized data.
-
-Parameters
-----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
-p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used
-	during the model computation).
-	"""
-
-    def __init__(self, name: str, cursor=None, p: int = 2):
-        check_types([("name", name, [str], False)])
-        self.type, self.name = "NearestCentroid", name
-        self.set_params({"p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-
-    # ---#
-    def deploySQL(
-        self,
-        X: list = [],
-        test_relation: str = "",
-        predict: bool = False,
-        key_columns: list = [],
-    ):
-        """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model. 
-
-	Parameters
-	----------
-    X: list
-        List of the predictors.
-    test_relation: str, optional
-        Relation to use to do the predictions.
-	predict: bool, optional
-		If set to True, returns the prediction instead of the probability.
-    key_columns: list, optional
-        Unused columns that should be kept during the computation.
-
-	Returns
-	-------
-	str/list
- 		the SQL code needed to deploy the model.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        check_types(
-            [
-                ("test_relation", test_relation, [str], False),
-                ("predict", predict, [bool], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-            ],
-        )
-        if not(key_columns) and key_columns != None:
-            key_columns = [self.y]
-        X = [str_column(elem) for elem in X] if (X) else self.X
-        if not (test_relation):
-            test_relation = self.test_relation
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
-            for i in range(len(self.X))
-        ]
-        distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join(["x.{}".format(item) for item in X]), distance
-        )
-        where = " AND ".join(["{} IS NOT NULL".format(item) for item in X])
-        sql = "(SELECT {}, {} AS ordered_distance, {} AS distance, y.{} AS predict_neighbors{} FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN ({}) y) nc_distance_table".format(
-            ", ".join(["x.{}".format(item) for item in X]),
-            sql,
-            distance,
-            self.y,
-            ", " + ", ".join(["x." + str_column(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            test_relation,
-            where,
-            self.centroids_.to_sql(),
-        )
-        if predict:
-            sql = "(SELECT {}{}, predict_neighbors FROM {} WHERE ordered_distance = 1) neighbors_table".format(
-                ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                sql,
-            )
-        else:
-            sql = "(SELECT {}{}, predict_neighbors, (1 - DECODE(distance, 0, 0, (distance / SUM(distance) OVER (PARTITION BY {})))) / {} AS proba_predict, ordered_distance FROM {}) neighbors_table".format(
-                ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                len(self.classes_) - 1,
-                sql,
-            )
-        return sql
-
-    # ---#
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: list,
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-	---------------------------------------------------------------------------
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str/vDataFrame
-		Training relation.
-	X: list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str/vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        if isinstance(X, str):
-            X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("y", y, [str], False),
-                ("test_relation", test_relation, [str, vDataFrame], False),
-            ]
-        )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
-        func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
-        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC".format(
-            ", ".join(
-                ["{}({}) AS {}".format(func, column, column) for column in self.X]
-            ),
-            self.y,
-            self.input_relation,
-            self.y,
-            self.y,
-            self.y,
-        )
-        self.centroids_ = to_tablesample(
-            query=query, cursor=self.cursor, title="Getting Model Centroids.",
-        )
-        self.classes_ = self.centroids_.values[y]
-        model_save = {
-            "type": "NearestCentroid",
-            "input_relation": self.input_relation,
-            "test_relation": self.test_relation,
-            "X": self.X,
-            "y": self.y,
-            "p": self.parameters["p"],
-            "centroids": self.centroids_.values,
-            "classes": self.classes_,
-        }
-        insert_verticapy_schema(
-            model_name=self.name,
-            model_type="NearestCentroid",
-            model_save=model_save,
-            cursor=self.cursor,
-        )
-        return self
-
-
-# ---#
-class KNeighborsClassifier(NeighborsClassifier):
-    """
----------------------------------------------------------------------------
-[Beta Version]
-Creates a KNeighborsClassifier object using the k-nearest neighbors algorithm. 
-This object uses pure SQL to compute the distances and final score.
-
-\u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
-                 is therefore computationally expensive at O(n * n), where
-                 n is the total number of elements. Since KNeighborsClassifier 
-                 is uses the p-distance, it is highly sensitive to unnormalized 
-                 data.
-
-Parameters
-----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
-n_neighbors: int, optional
-	Number of neighbors to consider when computing the score.
-p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used during 
-	the model computation).
-	"""
-
-    def __init__(self, name: str, cursor=None, n_neighbors: int = 5, p: int = 2):
-        check_types([("name", name, [str], False)])
-        self.type, self.name = "KNeighborsClassifier", name
-        self.set_params({"n_neighbors": n_neighbors, "p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-
-    # ---#
-    def deploySQL(
-        self,
-        X: list = [],
-        test_relation: str = "",
-        predict: bool = False,
-        key_columns: list = [],
-    ):
-        """
-	---------------------------------------------------------------------------
-	Returns the SQL code needed to deploy the model. 
-
-    Parameters
-    ----------
-    X: list
-        List of the predictors.
-    test_relation: str, optional
-        Relation to use to do the predictions.
-    predict: bool, optional
-        If set to True, returns the prediction instead of the probability.
-    key_columns: list, optional
-        Unused columns that should be kept during the computation.
-
-    Returns
-    -------
-    str/list
-        the SQL code needed to deploy the model.
-		"""
-        if isinstance(X, str):
-            X = [X]
-        if isinstance(key_columns, str):
-            key_columns = [key_columns]
-        check_types(
-            [
-                ("test_relation", test_relation, [str], False),
-                ("predict", predict, [bool], False),
-                ("X", X, [list], False),
-                ("key_columns", key_columns, [list], False),
-            ],
-        )
-        X = [str_column(elem) for elem in X] if (X) else self.X
-        if not (test_relation):
-            test_relation = self.test_relation
-        if not(key_columns) and key_columns != None:
-            key_columns = [self.y]
-        sql = [
-            "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
-            for i in range(len(self.X))
-        ]
-        sql = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-        sql = "ROW_NUMBER() OVER(PARTITION BY {}, row_id ORDER BY {})".format(
-            ", ".join(["x.{}".format(item) for item in X]), sql
-        )
-        sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
-            ", ".join(["x.{}".format(item) for item in X]),
-            ", " + ", ".join(["x." + str_column(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            sql,
-            self.y,
-            test_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
-            self.input_relation,
-            " AND ".join(["{} IS NOT NULL".format(item) for item in self.X]),
-        )
-        sql = "(SELECT row_id, {}{}, predict_neighbors, COUNT(*) / {} AS proba_predict FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id, predict_neighbors) kneighbors_table".format(
-            ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-            self.parameters["n_neighbors"],
-            sql,
-            self.parameters["n_neighbors"],
-            ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
-            if (key_columns)
-            else "",
-        )
-        if predict:
-            sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
-                ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
-                if (key_columns)
-                else "",
-                ", ".join(X),
-                sql,
-            )
-        return sql
-
-    # ---#
-    def fit(
-        self,
-        input_relation: Union[str, vDataFrame],
-        X: list,
-        y: str,
-        test_relation: Union[str, vDataFrame] = "",
-    ):
-        """
-	---------------------------------------------------------------------------
-	Trains the model.
-
-	Parameters
-	----------
-	input_relation: str/vDataFrame
-		Training relation.
-	X: list
-		List of the predictors.
-	y: str
-		Response column.
-	test_relation: str/vDataFrame, optional
-		Relation used to test the model.
-
-	Returns
-	-------
-	object
- 		self
-		"""
-        if isinstance(X, str):
-            X = [X]
-        check_types(
-            [
-                ("input_relation", input_relation, [str, vDataFrame], False),
-                ("X", X, [list], False),
-                ("y", y, [str], False),
-                ("test_relation", test_relation, [str, vDataFrame], False),
-            ]
-        )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
-        else:
-            self.input_relation = input_relation
-        if isinstance(test_relation, vDataFrame):
-            self.test_relation = test_relation.__genSQL__()
-        elif test_relation:
-            self.test_relation = test_relation
-        else:
-            self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
-        self.cursor.execute(
-            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
-                self.y, self.input_relation, self.y, self.y
-            )
-        )
-        classes = self.cursor.fetchall()
-        self.classes_ = [item[0] for item in classes]
-        model_save = {
-            "type": "KNeighborsClassifier",
-            "input_relation": self.input_relation,
-            "test_relation": self.test_relation,
-            "X": self.X,
-            "y": self.y,
-            "p": self.parameters["p"],
-            "n_neighbors": self.parameters["n_neighbors"],
-            "classes": self.classes_,
-        }
-        insert_verticapy_schema(
-            model_name=self.name,
-            model_type="KNeighborsClassifier",
-            model_save=model_save,
-            cursor=self.cursor,
-        )
-        return self
 
 
 # ---#
