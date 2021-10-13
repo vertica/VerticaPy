@@ -245,9 +245,9 @@ def predict_from_chaid_tree(X: Union[list, np.ndarray],
     X: list / numpy.array
       Data on which to make the prediction.
     tree: dict
-      CHAID tree. This tree can be generated using the vDataFrame.chaid method.
+      A CHAID tree. CHAID trees can be generated with the vDataFrame.chaid method.
     classes: list / numpy.array, optional
-      The classes for the CHAID model.
+      The classes in the CHAID model.
     return_proba: bool, optional
       If set to True, the probability of each class is returned.
 
@@ -284,16 +284,16 @@ def sql_from_chaid_tree(X: Union[list, np.ndarray],
                         return_proba: bool = False,) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
-    Predicts using a CHAID model and the input attributes.
+    Returns the SQL code needed to deploy the CHAID model.
 
     Parameters
     ----------
     X: list / numpy.array
       Data on which to make the prediction.
     tree: dict
-      CHAID tree. This tree can be generated using the vDataFrame.chaid method.
+      A CHAID tree. Chaid trees can be generated with the vDataFrame.chaid method.
     classes: list / numpy.array, optional
-      The classes for the CHAID model.
+      The classes in the CHAID model.
     return_proba: bool, optional
       If set to True, the probability of each class is returned.
 

@@ -3644,38 +3644,39 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the CHAID (CHi-squared Automatic Interaction Detector) tree.
-    It is a decision tree technique, based on adjusted significance testing 
-    (Bonferroni testing). CHAID's advantages are that its output is highly 
-    visual and easy to interpret.
+    Returns a CHAID (Chi-square Automatic Interaction Detector) tree.
+    CHAID is a decision tree technique based on adjusted significance testing 
+    (Bonferroni test).
 
     Parameters
     ----------
     response: str
-        Response vColumn. It must be categorical.
+        Categorical response vColumn.
     columns: list
-        List of the vColumns names. The maximum number of categories for each
-        categorical columns is 16. Categorical columns with a higher cardinality
-        will be discarded.
+        List of the vColumn names. The maximum number of categories for each
+        categorical column is 16; categorical columns with a higher cardinality
+        are discarded.
     nbins: int, optional
-        Number of bins used for the numerical features discretization 
-        (must be between 2 and 16).
+        Integer in the range [2,16], the number of bins used 
+        to discretize the numerical features.
     method: str, optional
-        The method to use to discretize the numerical vColumns.
-            same_width : Computes regular width bins.
-            smart      : Uses the Random Forest on a response column to find the most 
-                relevant interval to use for the discretization.
+        The method with which to discretize the numerical vColumns, 
+        one of the following:
+            same_width : Computes bins of regular width.
+            smart      : Uses a random forest model on a response column to find the best
+                interval for discretization.
     RFmodel_params: dict, optional
-        Dictionary of the Random Forest model parameters used to compute the best splits 
-        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
-        is numerical (except ints and bools), a RF Classifier otherwise.
-        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
-        20 trees and a maximum depth of 10.
+        Dictionary of the parameters of the random forest model used to compute the best splits 
+        when 'method' is 'smart'. If the response column is numerical (but not ints or bools), 
+        this function trains and uses a random forest regressor. Otherwise, this function 
+        trains a random forest classifier.
+        For example, to train a random forest with 20 trees and a maximum depth of 10, use:
+            {"n_estimators": 20, "max_depth": 10}
 
     Returns
     -------
     memModel
-        An independant model containing the result. For more information, see
+        An independent model containing the result. For more information, see
         learn.memmodel.
         """
         if "process" not in kwds or kwds["process"]:
@@ -7523,31 +7524,32 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the chi-squared term using the pivot table of the response vColumn 
-    against the input vcolumns.
+    Returns the chi-square term using the pivot table of the response vColumn 
+    against the input vColumns.
 
     Parameters
     ----------
     response: str
-        Response vColumn. It must be categorical.
+        Categorical response vColumn.
     columns: list, optional
-        List of the vColumns names. The maximum number of categories for each
+        List of the vColumn names. The maximum number of categories for each
         categorical columns is 16. Categorical columns with a higher cardinality
-        will be discarded.
+        are discarded.
     nbins: int, optional
-        Number of bins used for the numerical features discretization 
-        (must be between 2 and 16).
+        Integer in the range [2,16], the number of bins used to discretize 
+        the numerical features.
     method: str, optional
         The method to use to discretize the numerical vColumns.
-            same_width : Computes regular width bins.
-            smart      : Uses the Random Forest on a response column to find the most 
-                relevant interval to use for the discretization.
+            same_width : Computes bins of regular width.
+            smart      : Uses a random forest model on a response column to find the best
+                interval for discretization.
     RFmodel_params: dict, optional
-        Dictionary of the Random Forest model parameters used to compute the best splits 
-        when 'method' is set to 'smart'. A RF Regressor will be trained if the response
-        is numerical (except ints and bools), a RF Classifier otherwise.
-        Example: Write {"n_estimators": 20, "max_depth": 10} to train a Random Forest with
-        20 trees and a maximum depth of 10.
+        Dictionary of the parameters of the random forest model used to compute the best splits 
+        when 'method' is 'smart'. If the response column is numerical 
+        (but not integers or booleans), this function trains and uses a random forest regressor. 
+        Otherwise, this function trains a random forest classifier.
+        For example, to train a random forest with 20 trees and a maximum depth of 10, use:
+            {"n_estimators": 20, "max_depth": 10}
 
     Returns
     -------

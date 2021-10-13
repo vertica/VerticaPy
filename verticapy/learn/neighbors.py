@@ -72,7 +72,7 @@ class NearestCentroid(MulticlassClassifier):
 Creates a NearestCentroid object using the k-nearest centroid algorithm. 
 This object uses pure SQL to compute the distances and final score. 
 
-\u26A0 Warning : As NearestCentroid uses p-distances, it is highly 
+\u26A0 Warning : Because this algorithm uses p-distances, it is highly 
                  sensitive to unnormalized data.
 
 Parameters
@@ -81,7 +81,7 @@ cursor: DBcursor, optional
 	Vertica database cursor. 
 p: int, optional
 	The p corresponding to the one of the p-distances (distance metric used
-	during the model computation).
+	to compute the model).
 	"""
 
     def __init__(self, name: str, cursor=None, p: int = 2):
@@ -187,8 +187,8 @@ This object uses pure SQL to compute the distances and final score.
 
 \u26A0 Warning : This algorithm uses a CROSS JOIN during computation and
                  is therefore computationally expensive at O(n * n), where
-                 n is the total number of elements. Since KNeighborsClassifier 
-                 is uses the p-distance, it is highly sensitive to unnormalized 
+                 n is the total number of elements. Because this algorithm  
+                 uses the p-distance, it is highly sensitive to unnormalized 
                  data.
 
 Parameters
@@ -198,8 +198,8 @@ cursor: DBcursor, optional
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
-	The p corresponding to the one of the p-distances (distance metric used during 
-	the model computation).
+	The p corresponding to the one of the p-distances (distance metric used  
+	to compute the model).
 	"""
 
     def __init__(self, name: str, cursor=None, n_neighbors: int = 5, p: int = 2):
@@ -230,7 +230,8 @@ p: int, optional
     predict: bool, optional
         If set to True, returns the prediction instead of the probability.
     key_columns: list, optional
-        Unused columns that should be kept during the computation.
+        A list of columns to include in the results, but to exclude from 
+        computation of the prediction.
 
     Returns
     -------
@@ -384,16 +385,17 @@ p: int, optional
         """
     ---------------------------------------------------------------------------
     Computes a classification report using multiple metrics to evaluate the model
-    (AUC, accuracy, PRC AUC, F1...). For multiclass classification, it will 
-    consider each category as positive and switch to the next one during the computation.
+    (AUC, accuracy, PRC AUC, F1, etc.). For multiclass classification, this 
+    function tests the model by considering one class as the sole positive case, 
+    repeating the process until it tests all classes.
 
     Parameters
     ----------
     cutoff: float/list, optional
-        Cutoff for which the tested category will be accepted as a prediction. 
-        For multiclass classification, each tested category becomes 
-        the positives and the others are merged into the negatives. The list will 
-        represent the classes threshold. If it is empty, the best cutoff will be used.
+        Cutoff for which the tested category is accepted as a prediction. 
+        For multiclass classification, each tested category becomes positive case
+        and untested categories are merged into the negative cases. This list 
+        represents the threshold for each class. If empty, the best cutoff is be used.
     labels: list, optional
         List of the different labels to be used during the computation.
 
@@ -416,13 +418,12 @@ p: int, optional
     def cutoff_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
         """
     ---------------------------------------------------------------------------
-    Draws the model ROC curve.
+    Draws the ROC curve of a classification model.
 
     Parameters
     ----------
     pos_label: int/float/str
-        To draw the ROC curve, one of the response column classes must be the 
-        positive one. The parameter 'pos_label' represents this class.
+        The response column class to be considered positive.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -1275,7 +1276,8 @@ p: int, optional
     test_relation: str, optional
         Relation to use to do the predictions.
     key_columns: list, optional
-        Unused columns that should be kept during the computation.
+        A list of columns to include in the results, but to exclude from 
+        computation of the prediction.
 
     Returns
     -------
