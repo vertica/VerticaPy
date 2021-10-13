@@ -3667,7 +3667,7 @@ vColumns : vColumn
                 interval for discretization.
     RFmodel_params: dict, optional
         Dictionary of the parameters of the random forest model used to compute the best splits 
-        when 'method' is 'smart'. If the response column is numerical (but not ints or bools), 
+        when 'method' is 'smart'. If the response column is numerical (but not of type int or bool), 
         this function trains and uses a random forest regressor. Otherwise, this function 
         trains a random forest classifier.
         For example, to train a random forest with 20 trees and a maximum depth of 10, use:
@@ -7545,9 +7545,9 @@ vColumns : vColumn
                 interval for discretization.
     RFmodel_params: dict, optional
         Dictionary of the parameters of the random forest model used to compute the best splits 
-        when 'method' is 'smart'. If the response column is numerical 
-        (but not integers or booleans), this function trains and uses a random forest regressor. 
-        Otherwise, this function trains a random forest classifier.
+        when 'method' is 'smart'. If the response column is numerical (but not of type int or bool), 
+        this function trains and uses a random forest regressor.  Otherwise, this function 
+        trains a random forest classifier.
         For example, to train a random forest with 20 trees and a maximum depth of 10, use:
             {"n_estimators": 20, "max_depth": 10}
 
