@@ -219,7 +219,7 @@ Main Class for Vertica Model
         if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier",):
             if not(pos_label):
                 pos_label = sorted(self.classes_)[-1]
-            if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes",):
+            if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid",):
                 return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self.deploySQL(X = self.X, pos_label=pos_label), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
             else:
                 return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, pos_label=pos_label, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
@@ -2517,7 +2517,7 @@ Main Class for Vertica Model
         If set to True and the model is a classifier, the function will return 
         the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroids, the function 
+        If set to True and the model type is KMeans or NearestCentroid, the function 
         will return the model clusters distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
@@ -3539,9 +3539,13 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
+        if self.type == "NearestCentroid":
+            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False,)]
+        else:
+            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return roc_curve(
             self.y,
-            self.deploySQL(allSQL=True)[0].format(pos_label),
+            deploySQL_str,
             self.test_relation,
             self.cursor,
             pos_label,
@@ -3595,20 +3599,27 @@ class MulticlassClassifier(Classifier):
         X = [str_column(elem) for elem in X]
         fun = self.get_model_fun()[1]
         if allSQL:
-            sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
-                fun, ", ".join(self.X if not (X) else X), self.name, "{}"
-            )
-            sql = [
-                sql,
-                "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
-                    fun, ", ".join(self.X if not (X) else X), self.name
-                ),
-            ]
-        else:
-            if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
+            if self.type == "NearestCentroid":
+                sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
+            else:
                 sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
-                    fun, ", ".join(self.X if not (X) else X), self.name, pos_label
+                    fun, ", ".join(self.X if not (X) else X), self.name, "{}"
                 )
+                sql = [
+                    sql,
+                    "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
+                        fun, ", ".join(self.X if not (X) else X), self.name
+                    ),
+                ]
+        else:
+            if pos_label in self.classes_:
+                if self.type == "NearestCentroid":
+                    sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)[get_index(pos_label, self.classes_, False,)]
+                else:
+                    sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
+                        fun, ", ".join(self.X if not (X) else X), self.name, pos_label
+                    )
+            if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
                 if len(self.classes_) > 2:
                     sql = "(CASE WHEN {} >= {} THEN '{}' WHEN {} IS NULL THEN NULL ELSE 'Non-{}' END)".format(
                         sql, cutoff, pos_label, sql, pos_label
@@ -3622,14 +3633,13 @@ class MulticlassClassifier(Classifier):
                     sql = "(CASE WHEN {} >= {} THEN '{}' WHEN {} IS NULL THEN NULL ELSE '{}' END)".format(
                         sql, cutoff, pos_label, sql, non_pos_label
                     )
-            elif pos_label in self.classes_:
-                sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
-                    fun, ", ".join(self.X if not (X) else X), self.name, pos_label
-                )
-            else:
-                sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
-                    fun, ", ".join(self.X if not (X) else X), self.name
-                )
+            elif pos_label not in self.classes_:
+                if self.type == "NearestCentroid":
+                    sql = self.to_memmodel().predict_sql(self.X if not (X) else X)
+                else:
+                    sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
+                        fun, ", ".join(self.X if not (X) else X), self.name
+                    )
         return sql
 
     # ---#
@@ -3672,9 +3682,13 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
+        if self.type == "NearestCentroid":
+            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False,)]
+        else:
+            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return lift_chart(
             self.y,
-            self.deploySQL(allSQL=True)[0].format(pos_label),
+            deploySQL_str,
             self.test_relation,
             self.cursor,
             pos_label,
@@ -3723,9 +3737,13 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
+        if self.type == "NearestCentroid":
+            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False,)]
+        else:
+            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return prc_curve(
             self.y,
-            self.deploySQL(allSQL=True)[0].format(pos_label),
+            deploySQL_str,
             self.test_relation,
             self.cursor,
             pos_label,
@@ -3842,9 +3860,13 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
+        if self.type == "NearestCentroid":
+            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False,)]
+        else:
+            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return roc_curve(
             self.y,
-            self.deploySQL(allSQL=True)[0].format(pos_label),
+            deploySQL_str,
             self.test_relation,
             self.cursor,
             pos_label,
@@ -3917,6 +3939,10 @@ class MulticlassClassifier(Classifier):
             )
         elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
             cutoff = self.score("best_cutoff", pos_label, 0.5)
+        if self.type == "NearestCentroid":
+            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False,)]
+        else:
+            deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         if method in ("accuracy", "acc"):
             return accuracy_score(
                 self.y,
@@ -3928,7 +3954,7 @@ class MulticlassClassifier(Classifier):
         elif method == "auc":
             return auc(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
                 nbins=nbins,
@@ -3936,7 +3962,7 @@ class MulticlassClassifier(Classifier):
         elif method == "aic":
             return aic_bic(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
                 len(self.X),
@@ -3944,7 +3970,7 @@ class MulticlassClassifier(Classifier):
         elif method == "bic":
             return aic_bic(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
                 len(self.X),
@@ -3952,7 +3978,7 @@ class MulticlassClassifier(Classifier):
         elif method == "prc_auc":
             return prc_auc(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
                 nbins=nbins,
@@ -3960,7 +3986,7 @@ class MulticlassClassifier(Classifier):
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
                 best_threshold=True,
@@ -3997,7 +4023,7 @@ class MulticlassClassifier(Classifier):
         elif method in ("log_loss", "logloss"):
             return log_loss(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
-                self.deploySQL(allSQL=True)[0].format(pos_label),
+                deploySQL_str,
                 self.test_relation,
                 self.cursor,
             )

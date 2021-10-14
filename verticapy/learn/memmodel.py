@@ -232,6 +232,106 @@ def sql_from_nb(X: Union[list, np.ndarray],
     return result
 
 # ---#
+def predict_from_chaid_tree(X: Union[list, np.ndarray], 
+                            tree: dict,
+                            classes: Union[list, np.ndarray] = [],
+                            return_proba: bool = False,) -> np.ndarray:
+    """
+    ---------------------------------------------------------------------------
+    Predicts using a CHAID model and the input attributes.
+
+    Parameters
+    ----------
+    X: list / numpy.array
+      Data on which to make the prediction.
+    tree: dict
+      A CHAID tree. CHAID trees can be generated with the vDataFrame.chaid method.
+    classes: list / numpy.array, optional
+      The classes in the CHAID model.
+    return_proba: bool, optional
+      If set to True, the probability of each class is returned.
+
+    Returns
+    -------
+    numpy.array
+      Predicted values
+    """
+    check_types([("X", X, [list, np.ndarray,],),
+                 ("tree", tree, [dict,],),
+                 ("classes", classes, [list, np.ndarray,],),
+                 ("return_proba", return_proba, [bool,],),])
+    def predict_tree(X, tree, classes,):
+      if tree["is_leaf"]:
+        if return_proba:
+          return tree["prediction"]
+        elif isinstance(classes, Iterable) and len(classes) > 0:
+          return classes[np.argmax(tree["prediction"])]
+        else:
+          return np.argmax(tree["prediction"])
+      else:
+        for c in tree["children"]:
+          if (tree["split_is_numerical"] and (float(X[tree["split_predictor_idx"]]) <= float(c))) or (not(tree["split_is_numerical"]) and (X[tree["split_predictor_idx"]] == c)):
+            return predict_tree(X, tree["children"][c], classes,)
+        return None
+    def predict_tree_final(X,):
+        return predict_tree(X, tree, classes,)
+    return np.apply_along_axis(predict_tree_final, 1, np.array(X))
+
+# ---#
+def sql_from_chaid_tree(X: Union[list, np.ndarray], 
+                        tree: dict,
+                        classes: Union[list, np.ndarray] = [],
+                        return_proba: bool = False,) -> np.ndarray:
+    """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the CHAID model.
+
+    Parameters
+    ----------
+    X: list / numpy.array
+      Data on which to make the prediction.
+    tree: dict
+      A CHAID tree. Chaid trees can be generated with the vDataFrame.chaid method.
+    classes: list / numpy.array, optional
+      The classes in the CHAID model.
+    return_proba: bool, optional
+      If set to True, the probability of each class is returned.
+
+    Returns
+    -------
+    str / list
+      SQL code
+    """
+    check_types([("X", X, [list, np.ndarray,],),
+                 ("tree", tree, [dict,],),
+                 ("classes", classes, [list, np.ndarray,],),
+                 ("return_proba", return_proba, [bool,],),])
+    def predict_tree(X, tree, classes, prob_ID: int = 0,):
+      if tree["is_leaf"]:
+        if return_proba:
+          return tree["prediction"][prob_ID]
+        elif isinstance(classes, Iterable) and len(classes) > 0:
+          res = classes[np.argmax(tree["prediction"])]
+          if isinstance(res, str):
+            res = "'{}'".format(res)
+          return res
+        else:
+          return np.argmax(tree["prediction"])
+      else:
+        res = "(CASE "
+        for c in tree["children"]:
+          if tree["split_is_numerical"]:
+            res += "WHEN {} <= {} THEN {} ".format(X[tree["split_predictor_idx"]], float(c), predict_tree(X, tree["children"][c], classes, prob_ID))
+          else:
+            res += "WHEN {} = '{}' THEN {} ".format(X[tree["split_predictor_idx"]], c, predict_tree(X, tree["children"][c], classes, prob_ID))
+        return res + "ELSE NULL END)"
+    if return_proba:
+      n = len(classes)
+      return [predict_tree(X, tree, classes, i) for i in range(n)]
+    else:
+      return predict_tree(X, tree, classes,)
+
+# ---#
 def predict_from_binary_tree(X: Union[list, np.ndarray], 
                              children_left: list,
                              children_right: list,
@@ -1036,6 +1136,8 @@ attributes: dict
                              threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
+        For CHAID:         {"tree": CHAID tree. This tree can be generated using the vDataFrame.chaid method.
+                            "classes": The classes for the CHAID model.}
         For KMeans:        {"clusters": List of the model's cluster centers.
                             "p": The p corresponding to the one of the p-distances.}
         For LinearSVC, LinearSVR, LinearSVC, LinearRegression, LogisticRegression: 
@@ -1121,23 +1223,24 @@ attributes: dict
     ):
         check_types([("attributes", attributes, [dict],), 
                      ("model_type", model_type, ["OneHotEncoder", 
-                                                  "Normalizer",
-                                                  "SVD",
-                                                  "PCA",
-                                                  "BisectingKMeans",
-                                                  "KMeans",
-                                                  "NaiveBayes",
-                                                  "XGBoostClassifier",
-                                                  "XGBoostRegressor",
-                                                  "RandomForestClassifier",
-                                                  "BinaryTreeClassifier",
-                                                  "BinaryTreeRegressor",
-                                                  "RandomForestRegressor",
-                                                  "LinearSVR",
-                                                  "LinearSVC",
-                                                  "LogisticRegression",
-                                                  "LinearRegression",
-                                                  "NearestCentroid",],),])
+                                                 "Normalizer",
+                                                 "SVD",
+                                                 "PCA",
+                                                 "CHAID",
+                                                 "BisectingKMeans",
+                                                 "KMeans",
+                                                 "NaiveBayes",
+                                                 "XGBoostClassifier",
+                                                 "XGBoostRegressor",
+                                                 "RandomForestClassifier",
+                                                 "BinaryTreeClassifier",
+                                                 "BinaryTreeRegressor",
+                                                 "RandomForestRegressor",
+                                                 "LinearSVR",
+                                                 "LinearSVC",
+                                                 "LogisticRegression",
+                                                 "LinearRegression",
+                                                 "NearestCentroid",],),])
         attributes_ = {}
         if model_type in ("NaiveBayes",):
           if ("attributes" not in attributes or "prior" not in attributes or "classes" not in attributes):
@@ -1204,6 +1307,18 @@ attributes: dict
                     attributes_["classes"] = np.copy(attributes["classes"])
                 check_types([("classes", attributes_["classes"], [list,],),])
                 represent += "\n\nclasses = {}".format(attributes_["classes"])
+        elif model_type in ("CHAID",):
+            if ("tree" not in attributes):
+                raise ParameterError("{}'s attributes must include at least the CHAID tree.".format(model_type))
+            check_types([("tree", attributes["tree"], [dict,],),])
+            attributes_["tree"] = attributes["tree"]
+            represent = "<{}>\n\ntree = {}".format(model_type, attributes_["tree"],)
+            if "classes" not in attributes:
+                attributes_["classes"] = []
+            else:
+                attributes_["classes"] = np.copy(attributes["classes"])
+            check_types([("classes", attributes_["classes"], [list,],),])
+            represent += "\n\nclasses = {}".format(attributes_["classes"])
         elif model_type == "OneHotEncoder":
             if "categories" not in attributes:
                 raise ParameterError("OneHotEncoder's attributes must include a list with all the feature categories for the 'categories' parameter.")
@@ -1341,27 +1456,29 @@ attributes: dict
         Predicted values
         """
         if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
-            return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+          return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
         elif self.model_type_ in ("NaiveBayes",):
-            return predict_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"], return_proba=False)
+          return predict_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"], return_proba=False)
         elif self.model_type_ in ("KMeans",):
-            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
+          return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
         elif self.model_type_ in ("NearestCentroid",):
-            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
+          return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
         elif self.model_type_ in ("BisectingKMeans",):
-            return predict_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+          return predict_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
         elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
-            return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
+          return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
         elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor",):
-            result = [tree.predict(X) for tree in self.attributes_["trees"]]
-            if self.model_type_ in ("RandomForestRegressor",):
-                return np.average(np.column_stack(result), axis=1)
-            else:
-                return np.sum(np.column_stack(result), axis=1) * self.attributes_["learning_rate"] + self.attributes_["mean"]
+          result = [tree.predict(X) for tree in self.attributes_["trees"]]
+          if self.model_type_ in ("RandomForestRegressor",):
+            return np.average(np.column_stack(result), axis=1)
+          else:
+            return np.sum(np.column_stack(result), axis=1) * self.attributes_["learning_rate"] + self.attributes_["mean"]
         elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier",):
-            result = np.argmax(self.predict_proba(X), axis=1)
-            result = np.array([self.attributes_["trees"][0].attributes_["classes"][i] for i in result])
-            return result
+          result = np.argmax(self.predict_proba(X), axis=1)
+          result = np.array([self.attributes_["trees"][0].attributes_["classes"][i] for i in result])
+          return result
+        elif self.model_type_ in ("CHAID",):
+          return predict_from_chaid_tree(X, self.attributes_["tree"], self.attributes_["classes"], False,)
         else:
             raise FunctionError("Method 'predict' is not available for model type '{}'.".format(self.model_type_))
 
@@ -1382,50 +1499,52 @@ attributes: dict
         SQL code
         """
         if self.model_type_ in ("LinearRegression", "LinearSVC", "LinearSVR", "LogisticRegression",):
-            result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
-            if self.model_type_ in ("LinearSVC", "LogisticRegression",):
-                result = "(({}) > 0.5)::int".format(result)
+          result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+          if self.model_type_ in ("LinearSVC", "LogisticRegression",):
+            result = "(({}) > 0.5)::int".format(result)
         elif self.model_type_ in ("KMeans",):
-            result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
+          result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"])
         elif self.model_type_ in ("NearestCentroid",):
-            result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
+          result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"])
         elif self.model_type_ in ("BisectingKMeans",):
-            result = sql_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
+          result = sql_from_bisecting_kmeans(X, self.attributes_["clusters"], self.attributes_["left_child"], self.attributes_["right_child"], p=self.attributes_["p"])
         elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
-            result = sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
+          result = sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"] if self.model_type_ in ("BinaryTreeClassifier",) else [], is_regressor=self.model_type_ in ("BinaryTreeRegressor",),)
         elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor",):
-            result = [tree.predict_sql(X) for tree in self.attributes_["trees"]]
-            if self.model_type_ in ("RandomForestRegressor",):
-                result = "(" + " + ".join(result) + ") / {}".format(len(result))
-            else:
-                result = "(" + " + ".join(result) + ") * {} + {}".format(self.attributes_["learning_rate"], self.attributes_["mean"],)
+          result = [tree.predict_sql(X) for tree in self.attributes_["trees"]]
+          if self.model_type_ in ("RandomForestRegressor",):
+              result = "(" + " + ".join(result) + ") / {}".format(len(result))
+          else:
+              result = "(" + " + ".join(result) + ") * {} + {}".format(self.attributes_["learning_rate"], self.attributes_["mean"],)
         elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes",):
-            if self.model_type_ == "NaiveBayes":
-              classes = self.attributes_["classes"]
-              result_proba = sql_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"],)
-            else:
-              classes = self.attributes_["trees"][0].attributes_["classes"]
-              result_proba = self.predict_proba_sql(X,)
-            m = len(classes)
-            if m == 2:
-                result = "(CASE WHEN {} > 0.5 THEN {} ELSE {} END)".format(result_proba[1], classes[1], classes[0])
-            else:
-                sql = []
-                for i in range(m):
-                    list_tmp = []
-                    for j in range(i):
-                        list_tmp += ["{} >= {}".format(result_proba[i], result_proba[j])]
-                    sql += [" AND ".join(list_tmp)]
-                sql = sql[1:]
-                sql.reverse()
-                sql_final = "CASE WHEN {} THEN NULL".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]))
-                for i in range(m - 1):
-                    class_i = classes[m - i - 1]
-                    sql_final += " WHEN {} THEN {}".format(sql[i], "'{}'".format(class_i) if isinstance(class_i, str) else class_i)
-                sql_final += " ELSE {} END".format("'{}'".format(classes[0]) if isinstance(classes[0], str) else classes[0])
-                result = sql_final
+          if self.model_type_ == "NaiveBayes":
+            classes = self.attributes_["classes"]
+            result_proba = sql_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"],)
+          else:
+            classes = self.attributes_["trees"][0].attributes_["classes"]
+            result_proba = self.predict_proba_sql(X,)
+          m = len(classes)
+          if m == 2:
+            result = "(CASE WHEN {} > 0.5 THEN {} ELSE {} END)".format(result_proba[1], classes[1], classes[0])
+          else:
+            sql = []
+            for i in range(m):
+              list_tmp = []
+              for j in range(i):
+                  list_tmp += ["{} >= {}".format(result_proba[i], result_proba[j])]
+              sql += [" AND ".join(list_tmp)]
+            sql = sql[1:]
+            sql.reverse()
+            sql_final = "CASE WHEN {} THEN NULL".format(" OR ".join(["{} IS NULL".format(elem) for elem in X]))
+            for i in range(m - 1):
+              class_i = classes[m - i - 1]
+              sql_final += " WHEN {} THEN {}".format(sql[i], "'{}'".format(class_i) if isinstance(class_i, str) else class_i)
+            sql_final += " ELSE {} END".format("'{}'".format(classes[0]) if isinstance(classes[0], str) else classes[0])
+            result = sql_final
+        elif self.model_type_ in ("CHAID",):
+          return sql_from_chaid_tree(X, self.attributes_["tree"], self.attributes_["classes"], False,)
         else:
-            raise FunctionError("Method 'predict_sql' is not available for model type '{}'.".format(self.model_type_))
+          raise FunctionError("Method 'predict_sql' is not available for model type '{}'.".format(self.model_type_))
         return result.replace(u'\xa0', u' ')
 
     # ---#
@@ -1445,33 +1564,35 @@ attributes: dict
         Predicted values
         """
         if self.model_type_ in ("LinearSVC", "LogisticRegression",):
-            return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_, return_proba=True,)
+          return predict_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_, return_proba=True,)
         elif self.model_type_ in ("NaiveBayes",):
-            return predict_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"], return_proba=True)
+          return predict_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"], return_proba=True)
         elif self.model_type_ in ("KMeans",):
-            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
+          return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
         elif self.model_type_ in ("NearestCentroid",):
-            return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+          return predict_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
         elif self.model_type_ in ("BinaryTreeClassifier",):
-            return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
+          return predict_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
         elif self.model_type_ in ("RandomForestClassifier",):
-            result, n = 0, len(self.attributes_["trees"])
-            for i in range(n):
-                result_tmp = self.attributes_["trees"][i].predict_proba(X)
-                result_tmp_arg = np.zeros_like(result_tmp)
-                result_tmp_arg[np.arange(len(result_tmp)), result_tmp.argmax(1)] = 1
-                result += result_tmp_arg
-            return result / n
+          result, n = 0, len(self.attributes_["trees"])
+          for i in range(n):
+              result_tmp = self.attributes_["trees"][i].predict_proba(X)
+              result_tmp_arg = np.zeros_like(result_tmp)
+              result_tmp_arg[np.arange(len(result_tmp)), result_tmp.argmax(1)] = 1
+              result += result_tmp_arg
+          return result / n
         elif self.model_type_ in ("XGBoostClassifier",):
-            result = 0
-            for tree in self.attributes_["trees"]:
-                result += tree.predict_proba(X)
-            result = self.attributes_["logodds"] + self.attributes_["learning_rate"] * result
-            result = 1 / (1 + np.exp(- result))
-            result /=  np.sum(result, axis=1)[:,None]
-            return result
+          result = 0
+          for tree in self.attributes_["trees"]:
+              result += tree.predict_proba(X)
+          result = self.attributes_["logodds"] + self.attributes_["learning_rate"] * result
+          result = 1 / (1 + np.exp(- result))
+          result /=  np.sum(result, axis=1)[:,None]
+          return result
+        elif self.model_type_ in ("CHAID",):
+          return predict_from_chaid_tree(X, self.attributes_["tree"], self.attributes_["classes"], True,)
         else:
-            raise FunctionError("Method 'predict_proba' is not available for model type '{}'.".format(self.model_type_))
+          raise FunctionError("Method 'predict_proba' is not available for model type '{}'.".format(self.model_type_))
 
     # ---#
     def predict_proba_sql(self, X: list) -> list:
@@ -1490,52 +1611,54 @@ attributes: dict
         SQL code
         """
         if self.model_type_ in ("LinearSVC", "LogisticRegression",):
-            result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
-            result = ["1 - ({})".format(result), result] 
+          result = sql_from_coef(X, self.attributes_["coefficients"], self.attributes_["intercept"], self.model_type_,)
+          result = ["1 - ({})".format(result), result] 
         elif self.model_type_ in ("NaiveBayes",):
-            result = sql_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"],)
-            div = "(" + " + ".join(result) + ")"
-            for idx in range(len(result)):
-              result[idx] = "(" + result[idx] + ") / " + div
-            result = result
+          result = sql_from_nb(X, self.attributes_["attributes"], classes=self.attributes_["classes"], prior=self.attributes_["prior"],)
+          div = "(" + " + ".join(result) + ")"
+          for idx in range(len(result)):
+            result[idx] = "(" + result[idx] + ") / " + div
+          result = result
         elif self.model_type_ in ("KMeans",):
-            result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
+          result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], return_proba=True,)
         elif self.model_type_ in ("NearestCentroid",):
-            result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
+          result = sql_from_clusters(X, self.attributes_["clusters"], p=self.attributes_["p"], classes=self.attributes_["classes"], return_proba=True,)
         elif self.model_type_ in ("BinaryTreeClassifier",):
-            result = sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
+          result = sql_from_binary_tree(X, self.attributes_["children_left"], self.attributes_["children_right"], self.attributes_["feature"], self.attributes_["threshold"], self.attributes_["value"], self.attributes_["classes"], True, is_regressor=False,)
         elif self.model_type_ in ("RandomForestClassifier",):
-            trees, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
-            for i in range(n):
-                val = []
-                for elem in self.attributes_["trees"][i].attributes_["value"]:
-                    if isinstance(elem, type(None)):
-                        val += [elem]
-                    else:
-                        value_tmp = np.zeros_like([elem])
-                        value_tmp[np.arange(1), np.array([elem]).argmax(1)] = 1
-                        val += [list(value_tmp[0])]
-                tree = memModel("BinaryTreeClassifier", {"children_left": self.attributes_["trees"][i].attributes_["children_left"],
-                                                         "children_right": self.attributes_["trees"][i].attributes_["children_right"],
-                                                         "feature": self.attributes_["trees"][i].attributes_["feature"],
-                                                         "threshold": self.attributes_["trees"][i].attributes_["threshold"],
-                                                         "value": val,
-                                                         "classes": self.attributes_["trees"][i].attributes_["classes"],})
-                trees += [tree]
-            result = [trees[i].predict_proba_sql(X) for i in range(n)]
-            classes_proba = []
-            for i in range(m):
-                classes_proba += ["(" + " + ".join([val[i] for val in result]) + ") / {}".format(n)]
-            result = classes_proba
+          trees, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
+          for i in range(n):
+              val = []
+              for elem in self.attributes_["trees"][i].attributes_["value"]:
+                  if isinstance(elem, type(None)):
+                      val += [elem]
+                  else:
+                      value_tmp = np.zeros_like([elem])
+                      value_tmp[np.arange(1), np.array([elem]).argmax(1)] = 1
+                      val += [list(value_tmp[0])]
+              tree = memModel("BinaryTreeClassifier", {"children_left": self.attributes_["trees"][i].attributes_["children_left"],
+                                                       "children_right": self.attributes_["trees"][i].attributes_["children_right"],
+                                                       "feature": self.attributes_["trees"][i].attributes_["feature"],
+                                                       "threshold": self.attributes_["trees"][i].attributes_["threshold"],
+                                                       "value": val,
+                                                       "classes": self.attributes_["trees"][i].attributes_["classes"],})
+              trees += [tree]
+          result = [trees[i].predict_proba_sql(X) for i in range(n)]
+          classes_proba = []
+          for i in range(m):
+              classes_proba += ["(" + " + ".join([val[i] for val in result]) + ") / {}".format(n)]
+          result = classes_proba
         elif self.model_type_ in ("XGBoostClassifier",):
-            result, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
-            all_probas = [self.attributes_["trees"][i].predict_proba_sql(X) for i in range(n)]
-            for i in range(m):
-                result += ["(1 / (1 + EXP(- ({} + {} * (".format(self.attributes_["logodds"][i], self.attributes_["learning_rate"]) + " + ".join([c[i] for c in all_probas]) + ")))))"]
-            sum_result = "(" + " + ".join(result) + ")"
-            result = [item + " / {}".format(sum_result) for item in result]
+          result, n, m = [], len(self.attributes_["trees"]), len(self.attributes_["trees"][0].attributes_["classes"])
+          all_probas = [self.attributes_["trees"][i].predict_proba_sql(X) for i in range(n)]
+          for i in range(m):
+              result += ["(1 / (1 + EXP(- ({} + {} * (".format(self.attributes_["logodds"][i], self.attributes_["learning_rate"]) + " + ".join([c[i] for c in all_probas]) + ")))))"]
+          sum_result = "(" + " + ".join(result) + ")"
+          result = [item + " / {}".format(sum_result) for item in result]
+        elif self.model_type_ in ("CHAID",):
+          return sql_from_chaid_tree(X, self.attributes_["tree"], self.attributes_["classes"], True,)
         else:
-            raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
+          raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
         return [r.replace(u'\xa0', u' ') for r in result]
 
     # ---#

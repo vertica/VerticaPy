@@ -13,6 +13,18 @@
 
 import pytest, warnings, os, verticapy
 from verticapy.learn.memmodel import *
+from verticapy import drop
+
+@pytest.fixture(scope="module")
+def titanic_vd(base):
+    from verticapy.datasets import load_titanic
+
+    titanic = load_titanic(cursor=base.cursor)
+    yield titanic
+    with warnings.catch_warnings(record=True) as w:
+        drop(
+            name="public.titanic", cursor=base.cursor,
+        )
 
 class Test_memModel:
     def test_LinearRegression(self,):
@@ -408,6 +420,35 @@ class Test_memModel:
         assert attributes["classes"][1] == 1
         assert attributes["classes"][2] == 2
         assert model.model_type_ == "BinaryTreeClassifier"
+
+    def test_CHAID(self, titanic_vd,):
+        tree = titanic_vd.chaid("survived", ["sex", "fare"]).attributes_["tree"]
+        model = memModel("CHAID", {"tree": tree,
+                                   "classes": ['a', 'b',]})
+        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        assert prediction[0] == 'a'
+        assert prediction[1] == 'b'
+        assert prediction[2] == 'b'
+        assert model.predict_sql(['sex', 'fare']) == "(CASE WHEN sex = 'female' THEN (CASE WHEN fare <= 127.6 THEN 'b' WHEN fare <= 255.2 THEN 'b' WHEN fare <= 382.8 THEN 'b' WHEN fare <= 638.0 THEN 'b' ELSE NULL END) WHEN sex = 'male' THEN (CASE WHEN fare <= 129.36 THEN 'a' WHEN fare <= 258.72 THEN 'a' WHEN fare <= 388.08 THEN 'a' WHEN fare <= 517.44 THEN 'b' ELSE NULL END) ELSE NULL END)"
+        prediction = model.predict_proba([['male', 100], ['female', 20] , ['female', 50]])
+        assert prediction[0][0] == pytest.approx(0.82129278)
+        assert prediction[0][1] == pytest.approx(0.17870722)
+        assert prediction[1][0] == pytest.approx(0.3042328)
+        assert prediction[1][1] == pytest.approx(0.6957672)
+        assert prediction[2][0] == pytest.approx(0.3042328)
+        assert prediction[2][1] == pytest.approx(0.6957672)
+        attributes = model.get_attributes()
+        assert attributes["tree"]["chi2"] == pytest.approx(38.3735130215037)
+        assert not(attributes["tree"]["is_leaf"])
+        assert not(attributes["tree"]["split_is_numerical"])
+        assert attributes["tree"]["split_predictor"] == '"sex"'
+        assert attributes["tree"]["split_predictor_idx"] == 0
+        assert attributes["tree"]["children"]['female']["chi2"] == pytest.approx(23.265415918308957)
+        model.set_attributes({"classes": [0, 1,],})
+        attributes = model.get_attributes()
+        assert attributes["classes"][0] == 0
+        assert attributes["classes"][1] == 1
+        assert model.model_type_ == "CHAID"
 
     def test_RandomForestRegressor(self,):
         model1 = memModel("BinaryTreeRegressor", {"children_left": [1, 3, None, None, None], 

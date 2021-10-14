@@ -81,7 +81,7 @@ import verticapy
 ##
 #
 #
-# Functions used by vDataFrames to draw graphics which are not useful independantly.
+# Functions used by vDataFrames to draw graphics which are not useful independently.
 #
 # ---#
 def acf_plot(
