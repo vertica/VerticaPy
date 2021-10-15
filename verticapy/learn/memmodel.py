@@ -333,11 +333,11 @@ def sql_from_chaid_tree(X: Union[list, np.ndarray],
 
 # ---#
 def predict_from_binary_tree(X: Union[list, np.ndarray], 
-                             children_left: list,
-                             children_right: list,
-                             feature: list,
-                             threshold: list,
-                             value: list,
+                             children_left: Union[list, np.ndarray],
+                             children_right: Union[list, np.ndarray],
+                             feature: Union[list, np.ndarray],
+                             threshold: Union[list, np.ndarray],
+                             value: Union[list, np.ndarray],
                              classes: Union[list, np.ndarray] = [],
                              return_proba: bool = False,
                              is_regressor: bool = True,) -> np.ndarray:
@@ -349,19 +349,19 @@ def predict_from_binary_tree(X: Union[list, np.ndarray],
     ----------
     X: list / numpy.array
         Data on which to make the prediction.
-    children_left: list
+    children_left: list / numpy.array
         A list of node IDs, where children_left[i] is the node id of the left 
         child of node i.
-    children_right: list
+    children_right: list / numpy.array
         A list of node IDs, children_right[i] is the node id of the right child 
         of node i.
-    feature: list
+    feature: list / numpy.array
          A list of features, where feature[i] is the feature to split on for the 
          internal node i.
-    threshold: list
+    threshold: list / numpy.array
         A list of thresholds, where threshold[i] is the threshold for the internal 
         node i.
-    value: list
+    value: list / numpy.array
         Contains the constant prediction value of each node. If used for classification 
         and if return_proba is set to True, each element of the list must be a sublist
         with the probabilities of each class.
@@ -407,11 +407,11 @@ def predict_from_binary_tree(X: Union[list, np.ndarray],
 
 # ---#
 def sql_from_binary_tree(X: Union[list, np.ndarray], 
-                         children_left: list,
-                         children_right: list,
-                         feature: list,
-                         threshold: list,
-                         value: list,
+                         children_left: Union[list, np.ndarray],
+                         children_right: Union[list, np.ndarray],
+                         feature: Union[list, np.ndarray],
+                         threshold: Union[list, np.ndarray],
+                         value: Union[list, np.ndarray],
                          classes: Union[list, np.ndarray] = [],
                          return_proba: bool = False,
                          is_regressor: bool = True,) -> Union[list, str]:
@@ -423,19 +423,19 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
     ----------
     X: list / numpy.array
         Data on which to make the prediction.
-    children_left: list
+    children_left: list / numpy.array
         A list of node IDs, where children_left[i] is the node id of the left 
         child of node i.
-    children_right: list
+    children_right: list / numpy.array
         A list of node IDs, children_right[i] is the node id of the right child 
         of node i.
-    feature: list
+    feature: list / numpy.array
          A list of features, where feature[i] is the feature to split on for the 
          internal node i.
-    threshold: list
+    threshold: list / numpy.array
         A list of thresholds, where threshold[i] is the threshold for the internal 
         node i.
-    value: list
+    value: list / numpy.array
         Contains the constant prediction value of each node. If used for classification 
         and if return_proba is set to True, each element of the list must be a sublist
         with the probabilities of each class.
@@ -490,6 +490,135 @@ def sql_from_binary_tree(X: Union[list, np.ndarray],
         return [predict_tree(children_left, children_right, feature, threshold, value, 0, X, i) for i in range(n)]
     else:
         return predict_tree(children_left, children_right, feature, threshold, value, 0, X,)
+
+def binary_tree_to_graphviz(children_left: Union[list, np.ndarray],
+                            children_right: Union[list, np.ndarray],
+                            feature: Union[list, np.ndarray],
+                            threshold: Union[list, np.ndarray],
+                            value: Union[list, np.ndarray],
+                            feature_names: Union[list, np.ndarray] = [],
+                            classes: Union[list, np.ndarray] = [],
+                            classes_color: list = [],
+                            prefix_pred: str = "prob",
+                            round_pred: int = 2,
+                            percent: bool = False,
+                            vertical: bool = True,
+                            node_style: dict = {"shape": "box", "style": "filled",},
+                            arrow_style: dict = {},
+                            leaf_style: dict = {},):
+    """
+    ---------------------------------------------------------------------------
+    Returns the code for a Graphviz tree.
+
+    Parameters
+    ----------
+    children_left: list / numpy.array
+        A list of node IDs, where children_left[i] is the node ID of the left
+        child of node i.
+    children_right: list / numpy.array
+        A list of node IDs, where children_right[i] is the node ID of the right child
+        of node i.
+    feature: list / numpy.array
+        A list of features, where feature[i] is the feature to split on for
+        internal node i.
+    threshold: list / numpy.array
+        A list of thresholds, where threshold[i] is the threshold for internal
+        node i.
+    value: list / numpy.array
+        A list of constant prediction values of each node. If used for classification
+        and return_proba is set to True, each element of the list must be a sublist
+        with the probabilities of each class.
+    feature_names: list / numpy.array, optional
+        List of the names of each feature.
+    classes: list / numpy.array, optional
+        The classes for the binary tree model.
+    classes_color: list, optional
+        Colors that represent the different classes.
+    prefix_pred: str, optional
+        The prefix for the name of each prediction.
+    round_pred: int, optional
+        The number of decimals to round the prediction to. 0 rounds to an integer.
+    percent: bool, optional
+        If set to True, the probabilities are returned as a percent.
+    vertical: bool, optional
+        If set to True, the function generates a vertical tree.
+    node_style: dict, optional
+        Dictionary of options to customize each node of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    arrow_style: dict, optional
+        Dictionary of options to customize each arrow of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    leaf_style: dict, optional
+        Dictionary of options to customize each leaf of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+
+    Returns
+    -------
+    str
+    Graphviz code.
+    """
+    check_types([("children_left", children_left, [list, np.ndarray,],),
+                 ("children_right", children_right, [list, np.ndarray,],),
+                 ("feature", feature, [list, np.ndarray,],),
+                 ("feature_names", feature_names, [list, np.ndarray,],),
+                 ("threshold", threshold, [list, np.ndarray,],),
+                 ("value", value, [list, np.ndarray,],),
+                 ("classes", classes, [list, np.ndarray,],),
+                 ("classes_color", classes_color, [list,],),
+                 ("prefix_pred", prefix_pred, [str,],),
+                 ("round_pred", round_pred, [int,],),
+                 ("percent", percent, [bool,],),
+                 ("vertical", vertical, [bool,],),
+                 ("node_style", node_style, [dict,],),
+                 ("arrow_style", arrow_style, [dict,],),
+                 ("leaf_style", leaf_style, [dict,],),])
+    if len(classes_color) == 0:
+      classes_color = ["#87cefa", 
+                       "#efc5b5", 
+                       "#d4ede3", 
+                       "#f0ead2", 
+                       "#d2cbaf", 
+                       "#fcf0e5", 
+                       "#f1ece2", 
+                       "#98f6b0", 
+                       "#d7d3a6", 
+                       "#f8f8ff", 
+                       "#d7cec5", 
+                       "#f7d560", 
+                       "#e5e7e9", 
+                       "#ffa180", 
+                       "#efc0fe", 
+                       "#ffc5cb", 
+                       "#eeeeaa", 
+                       "#e7feff",]
+    position = "\ngraph [rankdir = \"LR\"];" if not(vertical) else ""
+    n, res = len(children_left), "digraph Tree{" + position
+    for i in range(n):
+        if children_left[i] != children_right[i]:
+            name = feature_names[feature[i]].replace('"', '\\"') if feature_names else "X{}".format(feature[i])
+            q = "=" if isinstance(threshold[i], str) else "<="
+            not_q = "!=" if isinstance(threshold[i], str) else ">"
+            res += '\n{} [label="{}"{}]'.format(i, name, flat_dict(node_style),)
+            res += '\n{} -> {} [label="{}"{}]'.format(i, children_left[i], "{} {}".format(q, threshold[i]), flat_dict(arrow_style),)
+            res += '\n{} -> {} [label="{}"{}]'.format(i, children_right[i], "{} {}".format(not_q, threshold[i]), flat_dict(arrow_style),)
+        else:
+            color = ""
+            if isinstance(value[i], float):
+                label = '"{}"'.format(value[i])
+            else:
+                if not(leaf_style):
+                  leaf_style = {"shape": "none"}
+                classes_ = [k for k in range(len(value[i]))] if (len(classes) == 0) else classes.copy()
+                color = classes_color[(np.argmax(value[i])) % len(classes_color)]
+                label = "<<table border=\"0\" cellspacing=\"0\"> <tr><td port=\"port1\" border=\"1\" bgcolor=\"{}\"><b> prediction: {} </b></td></tr>".format(color, classes_[np.argmax(value[i])])
+                for j in range(len(value[i])):
+                    val = round(value[i][j] * 100, round_pred) if percent else round(value[i][j], round_pred)
+                    if percent:
+                        val = str(val) + "%"
+                    label += "<tr><td port=\"port{}\" border=\"1\" align=\"left\"> {}({}): {} </td></tr>".format(j, prefix_pred, classes_[j], val,)
+                label += "</table>>"
+            res += '\n{} [label={}{}]'.format(i, label, flat_dict(leaf_style),)
+    return res + "\n}"
 
 # ---#
 def predict_from_coef(X: Union[list, np.ndarray], 
@@ -1660,6 +1789,84 @@ attributes: dict
         else:
           raise FunctionError("Method 'predict_proba_sql' is not available for model type '{}'.".format(self.model_type_))
         return [r.replace(u'\xa0', u' ') for r in result]
+
+    def to_graphviz(self,
+                    tree_id: int = 0,
+                    feature_names: Union[list, np.ndarray] = [],
+                    classes_color: list = [],
+                    round_pred: int = 2,
+                    percent: bool = False,
+                    vertical: bool = True,
+                    node_style: dict = {"shape": "box", "style": "filled",},
+                    arrow_style: dict = {},
+                    leaf_style: dict = {},):
+        """
+        ---------------------------------------------------------------------------
+        Returns the code for a Graphviz tree.
+
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        feature_names: list / numpy.array, optional
+            List of the names of each feature.
+        classes_color: list, optional
+            Colors that represent the different classes.
+        round_pred: int, optional
+            The number of decimals to round the prediction to. 0 rounds to an integer.
+        percent: bool, optional
+            If set to True, the probabilities are returned as a percent.
+        vertical: bool, optional
+            If set to True, the function generates a vertical tree.
+        node_style: dict, optional
+            Dictionary of options to customize each node of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        arrow_style: dict, optional
+            Dictionary of options to customize each arrow of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        leaf_style: dict, optional
+            Dictionary of options to customize each leaf of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+
+        Returns
+        -------
+        str
+            Graphviz code.
+        """
+        if self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
+          prefix_pred = "prob"
+          for elem in self.attributes_["value"]:
+            if isinstance(elem, list) and not(0.99 < sum(elem) <= 1.0):
+              prefix_pred = "logodds"
+              break
+          classes = self.attributes_["classes"] if "classes" in self.attributes_ else []
+          return binary_tree_to_graphviz(children_left = self.attributes_["children_left"],
+                                         children_right = self.attributes_["children_right"],
+                                         feature = self.attributes_["feature"],
+                                         threshold = self.attributes_["threshold"],
+                                         value = self.attributes_["value"],
+                                         feature_names = feature_names,
+                                         classes = classes,
+                                         classes_color = classes_color,
+                                         prefix_pred = prefix_pred,
+                                         round_pred = round_pred,
+                                         percent = percent,
+                                         vertical = vertical,
+                                         node_style = node_style,
+                                         arrow_style = arrow_style,
+                                         leaf_style = leaf_style,)
+        elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier", "RandomForestRegressor", "XGBoostRegressor",):
+          return self.attributes_["trees"][tree_id].to_graphviz(tree_id = tree_id,
+                                                                feature_names = feature_names,
+                                                                classes_color = classes_color,
+                                                                round_pred = round_pred,
+                                                                percent = percent,
+                                                                vertical = vertical,
+                                                                node_style = node_style,
+                                                                arrow_style = arrow_style,
+                                                                leaf_style = leaf_style,)
+        else:
+          raise FunctionError("Method 'to_graphviz' does not exist for model type '{}'.".format(self.model_type_))
 
     # ---#
     def transform(self, X: list) -> np.ndarray:

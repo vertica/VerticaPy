@@ -1838,7 +1838,7 @@ Main Class for Vertica Model
             )
 
     # ---#
-    def to_memmodel(self):
+    def to_memmodel(self, **kwds,):
         """
     ---------------------------------------------------------------------------
     Converts a specified Vertica model to a memModel model.
@@ -1928,42 +1928,46 @@ Main Class for Vertica Model
             tree_type = "BinaryTreeRegressor" if self.type in ("XGBoostRegressor", "RandomForestRegressor",) else "BinaryTreeClassifier"
             return_prob_rf = (self.type in ("RandomForestClassifier",))
             for i in range(n):
-                tree = self.get_tree(i)
-                tree = tree_attributes_list(tree, self.X, self.type, return_prob_rf)
-                tree_attributes = {"children_left": tree[0],
-                                   "children_right": tree[1],
-                                   "feature": tree[2],
-                                   "threshold": tree[3],
-                                   "value": tree[4],}
-                for idx in range(len(tree[5])):
-                    if not(tree[5][idx]) and isinstance(tree_attributes["threshold"][idx], str):
-                        tree_attributes["threshold"][idx] = float(tree_attributes["threshold"][idx])
-                if tree_type == "BinaryTreeClassifier":
-                    tree_attributes["classes"] = self.classes_
-                else:
-                    tree_attributes["value"] = [float(val) if isinstance(val, str) else val for val in tree_attributes["value"]]
-                if self.type in ("XGBoostClassifier",):
-                    tree_attributes["value"] = tree[6]
-                    for idx in range(len(tree[6])):
-                        if tree[6][idx] != None:
-                            all_classes_logodss = []
-                            for c in self.classes_:
-                                all_classes_logodss += [tree[6][idx][str(c)]]
-                            tree_attributes["value"][idx] = all_classes_logodss
-                elif self.type in ("RandomForestClassifier",):
-                    for idx in range(len(tree_attributes["value"])):
-                        if tree_attributes["value"][idx] != None:
-                            prob = [0.0 for i in range(len(self.classes_))]
-                            for idx2, c in enumerate(self.classes_):
-                                if c == tree_attributes["value"][idx]:
-                                    prob[idx2] = tree[6][idx]
-                                    break
-                            other_proba = (1 - tree[6][idx]) / (len(self.classes_) - 1)
-                            for idx2, p in enumerate(prob):
-                                if p == 0.0:
-                                    prob[idx2] = other_proba
-                            tree_attributes["value"][idx] = prob
-                trees += [memModel(model_type = tree_type, attributes = tree_attributes)]
+                if ("return_tree" in kwds and kwds["return_tree"] == i) or ("return_tree" not in kwds):
+                    tree = self.get_tree(i)
+                    tree = tree_attributes_list(tree, self.X, self.type, return_prob_rf)
+                    tree_attributes = {"children_left": tree[0],
+                                       "children_right": tree[1],
+                                       "feature": tree[2],
+                                       "threshold": tree[3],
+                                       "value": tree[4],}
+                    for idx in range(len(tree[5])):
+                        if not(tree[5][idx]) and isinstance(tree_attributes["threshold"][idx], str):
+                            tree_attributes["threshold"][idx] = float(tree_attributes["threshold"][idx])
+                    if tree_type == "BinaryTreeClassifier":
+                        tree_attributes["classes"] = self.classes_
+                    else:
+                        tree_attributes["value"] = [float(val) if isinstance(val, str) else val for val in tree_attributes["value"]]
+                    if self.type in ("XGBoostClassifier",):
+                        tree_attributes["value"] = tree[6]
+                        for idx in range(len(tree[6])):
+                            if tree[6][idx] != None:
+                                all_classes_logodss = []
+                                for c in self.classes_:
+                                    all_classes_logodss += [tree[6][idx][str(c)]]
+                                tree_attributes["value"][idx] = all_classes_logodss
+                    elif self.type in ("RandomForestClassifier",):
+                        for idx in range(len(tree_attributes["value"])):
+                            if tree_attributes["value"][idx] != None:
+                                prob = [0.0 for i in range(len(self.classes_))]
+                                for idx2, c in enumerate(self.classes_):
+                                    if c == tree_attributes["value"][idx]:
+                                        prob[idx2] = tree[6][idx]
+                                        break
+                                other_proba = (1 - tree[6][idx]) / (len(self.classes_) - 1)
+                                for idx2, p in enumerate(prob):
+                                    if p == 0.0:
+                                        prob[idx2] = other_proba
+                                tree_attributes["value"][idx] = prob
+                    model = memModel(model_type = tree_type, attributes = tree_attributes)
+                    if ("return_tree" in kwds and kwds["return_tree"] == i):
+                        return model
+                    trees += [model]
             attributes = {"trees": trees}
             if self.type in ("XGBoostRegressor", "XGBoostClassifier",):
                 attributes["learning_rate"] = self.parameters["learning_rate"]
@@ -1988,6 +1992,8 @@ Main Class for Vertica Model
     object
         sklearn model.
         """
+        warning_message = "'to_sklearn' method is DEPRECATED and it will be removed in VerticaPy 0.9.0. Use 'to_memmodel' instead."
+        warnings.warn(warning_message, Warning)
         if self.type == "AutoML":
             return self.best_model_.to_sklearn()
 
@@ -2951,29 +2957,54 @@ class Supervised(vModel):
 class Tree:
 
     # ---#
-    def export_graphviz(self, tree_id: int = 0):
+    def to_graphviz(self, 
+                    tree_id: int = 0,
+                    classes_color: list = [],
+                    round_pred: int = 2,
+                    percent: bool = False,
+                    vertical: bool = True,
+                    node_style: dict = {"shape": "box", "style": "filled",},
+                    arrow_style: dict = {},
+                    leaf_style: dict = {},):
         """
-	---------------------------------------------------------------------------
-	Converts the input tree to graphviz.
+        ---------------------------------------------------------------------------
+        Returns the code for a Graphviz tree.
 
-	Parameters
-	----------
-	tree_id: int, optional
-		Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        classes_color: list, optional
+            Colors that represent the different classes.
+        round_pred: int, optional
+            The number of decimals to round the prediction to. 0 rounds to an integer.
+        percent: bool, optional
+            If set to True, the probabilities are returned as a percent.
+        vertical: bool, optional
+            If set to True, the function generates a vertical tree.
+        node_style: dict, optional
+            Dictionary of options to customize each node of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        arrow_style: dict, optional
+            Dictionary of options to customize each arrow of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        leaf_style: dict, optional
+            Dictionary of options to customize each leaf of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
 
-	Returns
-	-------
-	str
-		graphviz formatted tree.
-		"""
-        check_types([("tree_id", tree_id, [int, float],)])
-        version(cursor=self.cursor, condition=[9, 1, 1])
-        name = self.tree_name if self.type in ("KernelDensity") else self.name
-        query = "SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'graphviz');".format(
-            name, tree_id
-        )
-        executeSQL(self.cursor, query, "Exporting to graphviz.")
-        return self.cursor.fetchone()[1]
+        Returns
+        -------
+        str
+            Graphviz code.
+        """
+        return self.to_memmodel(return_tree = tree_id).to_graphviz(feature_names = self.X,
+                                                                   classes_color = classes_color,
+                                                                   round_pred = round_pred,
+                                                                   percent = percent,
+                                                                   vertical = vertical,
+                                                                   node_style = node_style,
+                                                                   arrow_style = arrow_style,
+                                                                   leaf_style = leaf_style,)
 
     # ---#
     def get_tree(self, tree_id: int = 0):
@@ -3002,30 +3033,68 @@ class Tree:
         return result
 
     # ---#
-    def plot_tree(self, tree_id: int = 0, pic_path: str = ""):
+    def plot_tree(self, 
+                  tree_id: int = 0,
+                  classes_color: list = [],
+                  round_pred: int = 2,
+                  percent: bool = False,
+                  vertical: bool = True,
+                  node_style: dict = {"shape": "box", "style": "filled",},
+                  arrow_style: dict = {},
+                  leaf_style: dict = {}, 
+                  pic_path: str = ""):
         """
-	---------------------------------------------------------------------------
-	Draws the input tree. Requires the anytree module.
+        ---------------------------------------------------------------------------
+        Draws the input tree. Requires the graphviz module.
 
-	Parameters
-	----------
-	tree_id: int, optional
-		Unique tree identifier. It is an integer between 0 and n_estimators - 1
-	pic_path: str, optional
-		Absolute path to save the image of the tree.
-		"""
-        check_types(
-            [("tree_id", tree_id, [int, float],), ("pic_path", pic_path, [str],),]
-        )
-        if self.type == "RandomForestClassifier":
-            metric = "probability"
-        elif self.type == "XGBoostClassifier":
-            metric = "log_odds"
-        else:
-            metric = "variance"
-        return plot_tree(
-            self.get_tree(tree_id=tree_id).values, metric=metric, pic_path=pic_path
-        )
+        Parameters
+        ----------
+        tree_id: int, optional
+            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        classes_color: list, optional
+            Colors that represent the different classes.
+        round_pred: int, optional
+            The number of decimals to round the prediction to. 0 rounds to an integer.
+        percent: bool, optional
+            If set to True, the probabilities are returned as a percent.
+        vertical: bool, optional
+            If set to True, the function generates a vertical tree.
+        node_style: dict, optional
+            Dictionary of options to customize each node of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        arrow_style: dict, optional
+            Dictionary of options to customize each arrow of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        leaf_style: dict, optional
+            Dictionary of options to customize each leaf of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
+        """
+        try:
+            import graphviz
+        except:
+            raise ImportError(
+                "The graphviz module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
+            )
+        check_types([("pic_path", pic_path, [str],),],)
+        graphviz_str = self.to_graphviz(tree_id = tree_id,
+                                        classes_color = classes_color,
+                                        round_pred = round_pred,
+                                        percent = percent,
+                                        vertical = vertical,
+                                        node_style = node_style,
+                                        arrow_style = arrow_style,
+                                        leaf_style = leaf_style,)
+        res = graphviz.Source(graphviz_str)
+        if (pic_path):
+            res.view(pic_path)
+        return res
 
 
 # ---#

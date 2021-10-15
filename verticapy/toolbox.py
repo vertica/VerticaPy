@@ -1452,6 +1452,17 @@ def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16,):
         columns_tmp.remove(col)
     return columns_tmp
 
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ''
+        res += ["{}={}{}{}".format(elem, q, d[elem], q,)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
+
 # ---#
 class str_sql:
     # ---#

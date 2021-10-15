@@ -376,11 +376,16 @@ class TestDecisionTreeRegressor:
 
         model_test.drop()
 
-    def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 2.000000, variance: 0", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: 0.000000, variance: 0", color="red"];\n25 [label = "prediction: 1.000000, variance: 0", color="red"];\n13 [label = "prediction: 0.000000, variance: 0", color="red"];\n7 [label = "prediction: 1.000000, variance: 0", color="red"];\n}'
-
-        assert gvz_tree_0 == expected_gvz_0
+    def test_to_graphviz(self, model):
+        gvz_tree_0 = model.to_graphviz(tree_id = 0,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert gvz_tree_0 == 'digraph Tree{\ngraph [rankdir = "LR"];\n0 [label="\\"cost\\"", shape="box", style="filled"]\n0 -> 1 [label="= Expensive", color="blue"]\n0 -> 2 [label="!= Expensive", color="blue"]\n1 [label="2.0", shape="circle", style="filled"]\n2 [label="\\"cost\\"", shape="box", style="filled"]\n2 -> 3 [label="= Cheap", color="blue"]\n2 -> 4 [label="!= Cheap", color="blue"]\n3 [label="\\"Gender\\"", shape="box", style="filled"]\n3 -> 5 [label="= Female", color="blue"]\n3 -> 6 [label="!= Female", color="blue"]\n4 [label="1.0", shape="circle", style="filled"]\n5 [label="\\"owned cars\\"", shape="box", style="filled"]\n5 -> 7 [label="<= 0.05", color="blue"]\n5 -> 8 [label="> 0.05", color="blue"]\n6 [label="0.0", shape="circle", style="filled"]\n7 [label="0.0", shape="circle", style="filled"]\n8 [label="1.0", shape="circle", style="filled"]\n}'
 
     def test_get_tree(self, model):
         tree_0 = model.get_tree()
@@ -399,4 +404,4 @@ class TestDecisionTreeRegressor:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[1]"
+        assert model.to_graphviz() == result.source

@@ -400,9 +400,16 @@ class TestXGBR:
 
         model_test.drop()
 
-    def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id=0)
-        assert 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];' in gvz_tree_0
+    def test_to_graphviz(self, model):
+        gvz_tree_1 = model.to_graphviz(tree_id = 1,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert gvz_tree_1 == 'digraph Tree{\ngraph [rankdir = "LR"];\n0 [label="\\"cost\\"", shape="box", style="filled"]\n0 -> 1 [label="= Expensive", color="blue"]\n0 -> 2 [label="!= Expensive", color="blue"]\n1 [label="0.70125", shape="circle", style="filled"]\n2 [label="\\"cost\\"", shape="box", style="filled"]\n2 -> 3 [label="= Cheap", color="blue"]\n2 -> 4 [label="!= Cheap", color="blue"]\n3 [label="\\"Gender\\"", shape="box", style="filled"]\n3 -> 5 [label="= Female", color="blue"]\n3 -> 6 [label="!= Female", color="blue"]\n4 [label="0.057778", shape="circle", style="filled"]\n5 [label="\\"owned cars\\"", shape="box", style="filled"]\n5 -> 7 [label="<= 0.05", color="blue"]\n5 -> 8 [label="> 0.05", color="blue"]\n6 [label="-0.57375", shape="circle", style="filled"]\n7 [label="-0.405", shape="circle", style="filled"]\n8 [label="0.045", shape="circle", style="filled"]\n}'
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
@@ -427,7 +434,7 @@ class TestXGBR:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[1]"
+        assert model.to_graphviz() == result.source
 
     def test_to_json(self, base, titanic_vd):
         import xgboost as xgb
