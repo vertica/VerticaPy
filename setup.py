@@ -37,7 +37,7 @@ setuptools.setup(
     ],
     extras_require = {
         'all': ['tqdm>=4.0.0',
-                'anytree>=2.5.0', 
+                'graphviz>=0.9.0', 
                 'python-highcharts>=0.4.1',
                 'geopandas>=0.8.0',
                 'descartes>=1.0.0',
@@ -45,7 +45,7 @@ setuptools.setup(
                 'scikit-learn>=0.23.0',
                 'shap>=0.36.0',
                 'pandas>=0.23.0',],
-        'plot': ['anytree>=2.5.0', 
+        'plot': ['graphviz>=0.9.0', 
                  'python-highcharts>=0.4.1',],
         'geo': ['geopandas>=0.8.0',
                 'descartes>=1.0.0',
