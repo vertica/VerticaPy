@@ -367,7 +367,8 @@ class TestDummyTreeRegressor:
                                        node_style = {"shape": "box", "style": "filled",},
                                        arrow_style = {"color": "blue",},
                                        leaf_style = {"shape": "circle", "style": "filled",})
-        assert gvz_tree_0 == 'digraph Tree{\ngraph [rankdir = "LR"];\n0 [label="\\"cost\\"", shape="box", style="filled"]\n0 -> 1 [label="= Expensive", color="blue"]\n0 -> 2 [label="!= Expensive", color="blue"]\n1 [label="2.0", shape="circle", style="filled"]\n2 [label="\\"cost\\"", shape="box", style="filled"]\n2 -> 3 [label="= Cheap", color="blue"]\n2 -> 4 [label="!= Cheap", color="blue"]\n3 [label="\\"Gender\\"", shape="box", style="filled"]\n3 -> 5 [label="= Female", color="blue"]\n3 -> 6 [label="!= Female", color="blue"]\n4 [label="1.0", shape="circle", style="filled"]\n5 [label="\\"owned cars\\"", shape="box", style="filled"]\n5 -> 7 [label="<= 0.002", color="blue"]\n5 -> 8 [label="> 0.002", color="blue"]\n6 [label="0.0", shape="circle", style="filled"]\n7 [label="0.0", shape="circle", style="filled"]\n8 [label="1.0", shape="circle", style="filled"]\n}'
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
+        assert '0 -> 1' in gvz_tree_0
 
     def test_get_tree(self, model):
         tree_0 = model.get_tree()

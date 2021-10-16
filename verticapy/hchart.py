@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-from collections.abc import Iterable
+from collections import Iterable
 
 # High Chart
 try:

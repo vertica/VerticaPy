@@ -3696,6 +3696,7 @@ vColumns : vColumn
             columns = chaid_columns(self, columns,)
             if not(columns):
                 raise ValueError("No column to process.")
+        idx = 0 if ("node_id" not in kwds) else kwds["node_id"]
         p = self.pivot_table_chi2(response, columns, nbins, method, RFmodel_params,)
         categories, split_predictor, is_numerical, chi2 = p["categories"][0], p["index"][0], p["is_numerical"][0], p["chi2"][0]
         split_predictor_idx = get_index(split_predictor, columns if "process" not in kwds or kwds["process"] else kwds["columns_init"])
@@ -3703,29 +3704,36 @@ vColumns : vColumn
                 "split_predictor_idx": split_predictor_idx,
                 "split_is_numerical": is_numerical,
                 "chi2": chi2,
-                "is_leaf": False,}
+                "is_leaf": False,
+                "node_id": idx,}
         if is_numerical:
-            if ";" in categories[0]:
-                categories = sorted([float(c.split(";")[1][0:-1]) for c in categories])
-                ctype = "float"
+            if categories:
+                if ";" in categories[0]:
+                    categories = sorted([float(c.split(";")[1][0:-1]) for c in categories])
+                    ctype = "float"
+                else:
+                    categories = sorted([int(c) for c in categories])
+                    ctype = "int"
             else:
-                categories = sorted([int(c) for c in categories])
-                ctype = "int"
+                categories, ctype = [], "int"
         if "process" not in kwds or kwds["process"]:
             classes = self[response].distinct()
         else:
             classes = kwds["classes"]
         if len(columns) == 1:
-            if is_numerical:
-                sql = "(CASE "
-                for c in categories:
-                    sql += "WHEN {} <= {} THEN {} ".format(split_predictor, c, c)
-                sql += "ELSE NULL END)::{} AS {}".format(ctype, split_predictor)
+            if categories:
+                if is_numerical:
+                    sql = "(CASE "
+                    for c in categories:
+                        sql += "WHEN {} <= {} THEN {} ".format(split_predictor, c, c)
+                    sql += "ELSE NULL END)::{} AS {}".format(ctype, split_predictor)
+                else:
+                    sql = split_predictor
+                sql = "SELECT {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(split_predictor, response, split_predictor, sql, response, self.__genSQL__(), split_predictor, response,)
+                self.__executeSQL__(sql, title="Computes the CHAID tree probability.")
+                result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
             else:
-                sql = split_predictor
-            sql = "SELECT {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(split_predictor, response, split_predictor, sql, response, self.__genSQL__(), split_predictor, response,)
-            self.__executeSQL__(sql, title="Computes the CHAID tree probability.")
-            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                result = []
             children = {}
             for c in categories:
                 children[c] = {}
@@ -3734,24 +3742,29 @@ vColumns : vColumn
             for elem in result:
                 children[elem[0]][elem[1]] = elem[2]
             for elem in children:
-                children[elem] = {"prediction": [children[elem][c] for c in children[elem]], "is_leaf": True,}
+                idx += 1
+                children[elem] = {"prediction": [children[elem][c] for c in children[elem]], "is_leaf": True, "node_id": idx,}
             tree["children"] = children
-            return tree
+            if "process" not in kwds or kwds["process"]:
+                from verticapy.learn.memmodel import memModel
+
+                return memModel("CHAID", attributes = {"tree": tree, "classes": classes,})
+            return tree, idx
         else:
             tree["children"] = {}
             columns_tmp = columns.copy()
             columns_tmp.remove(split_predictor)
             for c in categories:
                 if is_numerical:
-                    vdf = self.search("{} < {} AND {} IS NOT NULL AND {} IS NOT NULL".format(split_predictor, c, split_predictor, response,), usecols = columns_tmp + [response],)
+                    vdf = self.search("{} <= {} AND {} IS NOT NULL AND {} IS NOT NULL".format(split_predictor, c, split_predictor, response,), usecols = columns_tmp + [response],)
                 else:
                     vdf = self.search("{} = '{}' AND {} IS NOT NULL AND {} IS NOT NULL".format(split_predictor, c, split_predictor, response,), usecols = columns_tmp + [response],)
-                tree["children"][c] = vdf.chaid(response, columns_tmp, nbins, method, RFmodel_params, process = False, columns_init = columns, classes = classes,)
+                tree["children"][c], idx = vdf.chaid(response, columns_tmp, nbins, method, RFmodel_params, process = False, columns_init = columns, classes = classes, node_id = idx + 1)
             if "process" not in kwds or kwds["process"]:
                 from verticapy.learn.memmodel import memModel
 
                 return memModel("CHAID", attributes = {"tree": tree, "classes": classes,})
-            return tree
+            return tree, idx
 
         
 
@@ -7577,6 +7590,11 @@ vColumns : vColumn
                 break
         if not(columns):
             raise ValueError("No column to process.")
+        if self.shape()[0] == 0:
+            return {"index": columns, 
+                    "chi2": [0.0 for col in columns],
+                    "categories": [[] for col in columns],
+                    "is_numerical": [self[col].isnum() for col in columns],}
         vdf = self.copy()
         for col in columns:
             if vdf[col].isnum():

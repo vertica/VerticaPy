@@ -331,6 +331,119 @@ def sql_from_chaid_tree(X: Union[list, np.ndarray],
     else:
       return predict_tree(X, tree, classes,)
 
+def chaid_to_graphviz(tree: dict,
+                      classes: Union[list, np.ndarray] = [],
+                      classes_color: list = [],
+                      round_pred: int = 2,
+                      percent: bool = False,
+                      vertical: bool = True,
+                      node_style: dict = {},
+                      arrow_style: dict = {},
+                      leaf_style: dict = {},
+                      **kwds,):
+    """
+    ---------------------------------------------------------------------------
+    Returns the code for a Graphviz tree.
+
+    Parameters
+    ----------
+    tree: dict
+      CHAID tree. This tree can be generated using the vDataFrame.chaid method.
+    classes: list, optional
+        The classes for the CHAID model.
+    classes_color: list, optional
+        Colors that represent the different classes.
+    round_pred: int, optional
+        The number of decimals to round the prediction to. 0 rounds to an integer.
+    percent: bool, optional
+        If set to True, the probabilities are returned as a percent.
+    vertical: bool, optional
+        If set to True, the function generates a vertical tree.
+    node_style: dict, optional
+        Dictionary of options to customize each node of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    arrow_style: dict, optional
+        Dictionary of options to customize each arrow of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    leaf_style: dict, optional
+        Dictionary of options to customize each leaf of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+
+    Returns
+    -------
+    str
+      Graphviz code.
+    """
+    if "process" not in kwds or kwds["process"]:
+      check_types([("tree", tree, [dict,],),
+                   ("classes", classes, [list, np.ndarray,],),
+                   ("classes_color", classes_color, [list,],),
+                   ("round_pred", round_pred, [int,],),
+                   ("percent", percent, [bool,],),
+                   ("vertical", vertical, [bool,],),
+                   ("node_style", node_style, [dict,],),
+                   ("arrow_style", arrow_style, [dict,],),
+                   ("leaf_style", leaf_style, [dict,],),])
+      if len(classes_color) == 0:
+        classes_color = ["#87cefa", 
+                         "#efc5b5", 
+                         "#d4ede3", 
+                         "#f0ead2", 
+                         "#d2cbaf", 
+                         "#fcf0e5", 
+                         "#f1ece2", 
+                         "#98f6b0", 
+                         "#d7d3a6", 
+                         "#f8f8ff", 
+                         "#d7cec5", 
+                         "#f7d560", 
+                         "#e5e7e9", 
+                         "#ffa180", 
+                         "#efc0fe", 
+                         "#ffc5cb", 
+                         "#eeeeaa", 
+                         "#e7feff",]
+    if tree["is_leaf"]:
+      color = ""
+      if isinstance(tree["prediction"], float):
+          label = '"{}"'.format(tree["prediction"])
+      else:
+          if not(leaf_style):
+            leaf_style = {"shape": "none"}
+          classes_ = [k for k in range(len(tree["prediction"]))] if (len(classes) == 0) else classes.copy()
+          color = classes_color[(np.argmax(tree["prediction"])) % len(classes_color)]
+          label = "<<table border=\"0\" cellspacing=\"0\"> <tr><td port=\"port1\" border=\"1\" bgcolor=\"{}\"><b> prediction: {} </b></td></tr>".format(color, classes_[np.argmax(tree["prediction"])])
+          for j in range(len(tree["prediction"])):
+              val = round(tree["prediction"][j] * 100, round_pred) if percent else round(tree["prediction"][j], round_pred)
+              if percent:
+                  val = str(val) + "%"
+              label += "<tr><td port=\"port{}\" border=\"1\" align=\"left\"> prob({}): {} </td></tr>".format(j, classes_[j], val,)
+          label += "</table>>"
+      return '{} [label={}{}]'.format(tree["node_id"], label, flat_dict(leaf_style),)
+    else:
+      res = ""
+      for c in tree["children"]:
+        q = "=" if isinstance(c, str) else "<="
+        not_q = "!=" if isinstance(c, str) else ">"
+        res += '\n{} [label="{}"{}]'.format(tree["node_id"], tree["split_predictor"].replace('"', '\\"'), flat_dict(node_style),)
+        if tree["children"][c]["is_leaf"] or tree["children"][c]["children"]:
+          res += '\n{} -> {} [label="{}"{}]'.format(tree["node_id"], tree["children"][c]["node_id"], "{} {}".format(q, c), flat_dict(arrow_style),)
+        res += chaid_to_graphviz(tree = tree["children"][c],
+                                 classes = classes,
+                                 classes_color = classes_color,
+                                 round_pred = round_pred,
+                                 percent = percent,
+                                 vertical = vertical,
+                                 node_style = node_style,
+                                 arrow_style = arrow_style,
+                                 leaf_style = leaf_style,
+                                 process = False,)
+      if "process" not in kwds or kwds["process"]:
+        position = "\ngraph [rankdir = \"LR\"];" if not(vertical) else ""
+        res = "digraph Tree{" + position + res + "\n}"
+      return res
+
+
 # ---#
 def predict_from_binary_tree(X: Union[list, np.ndarray], 
                              children_left: Union[list, np.ndarray],
@@ -503,7 +616,7 @@ def binary_tree_to_graphviz(children_left: Union[list, np.ndarray],
                             round_pred: int = 2,
                             percent: bool = False,
                             vertical: bool = True,
-                            node_style: dict = {"shape": "box", "style": "filled",},
+                            node_style: dict = {},
                             arrow_style: dict = {},
                             leaf_style: dict = {},):
     """
@@ -555,7 +668,7 @@ def binary_tree_to_graphviz(children_left: Union[list, np.ndarray],
     Returns
     -------
     str
-    Graphviz code.
+        Graphviz code.
     """
     check_types([("children_left", children_left, [list, np.ndarray,],),
                  ("children_right", children_right, [list, np.ndarray,],),
@@ -701,6 +814,102 @@ def sql_from_coef(X: list,
     if method in ("LogisticRegression", "LinearSVC",):
         return f"1 / (1 + EXP(- ({sql})))"
     return sql
+
+
+def bisecting_kmeans_to_graphviz(children_left: Union[list, np.ndarray],
+                                 children_right: Union[list, np.ndarray],
+                                 cluster_size: Union[list, np.ndarray] = [],
+                                 cluster_score: Union[list, np.ndarray] = [],
+                                 round_score: int = 2,
+                                 percent: bool = False,
+                                 vertical: bool = True,
+                                 node_style: dict = {},
+                                 arrow_style: dict = {},
+                                 leaf_style: dict = {},):
+    """
+    ---------------------------------------------------------------------------
+    Returns the code for a Graphviz tree.
+
+    Parameters
+    ----------
+    children_left: list / numpy.array
+        A list of node IDs, where children_left[i] is the node ID of the left
+        child of node i.
+    children_right: list / numpy.array
+        A list of node IDs, where children_right[i] is the node ID of the right child
+        of node i.
+    cluster_size: list / numpy.array
+        A list of sizes, where cluster_size[i] is the node i number of elements.
+    cluster_score: list / numpy.array
+        A list of scores, where cluster_score[i] is the score for internal node i.
+        The score is the ratio between the within-cluster sum of squares and the 
+        total within-cluster sum of squares.
+    round_score: int, optional
+        The number of decimals to round the node's score to. 0 rounds to an integer.
+    percent: bool, optional
+        If set to True, the scores are returned as a percent.
+    vertical: bool, optional
+        If set to True, the function generates a vertical tree.
+    node_style: dict, optional
+        Dictionary of options to customize each node of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    arrow_style: dict, optional
+        Dictionary of options to customize each arrow of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+    leaf_style: dict, optional
+        Dictionary of options to customize each leaf of the tree. For a list of options, see
+        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+
+    Returns
+    -------
+    str
+        Graphviz code.
+    """
+    check_types([("children_left", children_left, [list, np.ndarray,],),
+                 ("children_right", children_right, [list, np.ndarray,],),
+                 ("cluster_size", cluster_size, [list, np.ndarray,],),
+                 ("cluster_score", cluster_score, [list, np.ndarray,],),
+                 ("round_score", round_score, [int,],),
+                 ("percent", percent, [bool,],),
+                 ("vertical", vertical, [bool,],),
+                 ("node_style", node_style, [dict,],),
+                 ("arrow_style", arrow_style, [dict,],),
+                 ("leaf_style", leaf_style, [dict,],),])
+    if len(leaf_style) == 0:
+      leaf_style = {"shape": "none",}
+    n, position = len(children_left), "\ngraph [rankdir = \"LR\"];" if not(vertical) else ""
+    res = "digraph Tree{" + position
+    for i in range(n):
+      if (len(cluster_size) == n) and (len(cluster_score) == n):
+        if "bgcolor" in node_style and (children_left[i] != children_right[i]):
+          color = node_style["bgcolor"]
+        elif "color" in node_style and (children_left[i] != children_right[i]):
+          color = node_style["color"]
+        elif (children_left[i] != children_right[i]):
+          color = "#87cefa"
+        elif "bgcolor" in leaf_style:
+          color = node_style["bgcolor"]
+        elif "color" in leaf_style:
+          color = node_style["color"]
+        else:
+          color = "#efc5b5"
+        label = "<<table border=\"0\" cellspacing=\"0\"> <tr><td port=\"port1\" border=\"1\" bgcolor=\"{}\"><b> cluster_id: {} </b></td></tr>".format(color, i)
+        if (len(cluster_size) == n):
+          label += "<tr><td port=\"port2\" border=\"1\" align=\"left\"> size: {} </td></tr>".format(cluster_size[i],)
+        if (len(cluster_score) == n):
+          val = round(cluster_score[i] * 100, round_score) if percent else round(cluster_score[i], round_score)
+          if percent:
+            val = str(val) + "%"
+          label += "<tr><td port=\"port3\" border=\"1\" align=\"left\"> score: {} </td></tr>".format(val,)
+        label += "</table>>"
+      else:
+        label = '"{}"'.format(i)
+      res += '\n{} [label={}{}]'.format(i, label, flat_dict(node_style) if children_left[i] != children_right[i] else flat_dict(leaf_style),)
+      if children_left[i] != children_right[i]:
+        res += '\n{} -> {} [label=""{}]'.format(i, children_left[i], flat_dict(arrow_style),)
+        res += '\n{} -> {} [label=""{}]'.format(i, children_right[i], flat_dict(arrow_style),)
+    return res + "\n}"
+
 
 # ---#
 def predict_from_bisecting_kmeans(X: Union[list, np.ndarray], 
@@ -1487,6 +1696,14 @@ attributes: dict
                          ("right_child", attributes_["right_child"], [list,],),
                          ("p", attributes_["p"], [int,],),])
             represent = "<{}>\n\nclusters =\n{}\n\nleft_child = {}\n\nright_child = {}\n\np = {}".format(model_type, attributes_["clusters"], attributes_["left_child"], attributes_["right_child"], attributes_["p"])
+            if "cluster_size" not in attributes:
+              attributes_["cluster_size"] = []
+            else:
+              attributes_["cluster_size"] = np.copy(attributes["cluster_size"])
+            if "cluster_score" not in attributes:
+              attributes_["cluster_score"] = []
+            else:
+              attributes_["cluster_score"] = np.copy(attributes["cluster_score"])
         elif model_type in ("KMeans", "NearestCentroid",):
             if ("clusters" not in attributes):
                 raise ParameterError("{}'s attributes must include a list with all the 'clusters' centers.".format(model_type))
@@ -1567,6 +1784,73 @@ attributes: dict
         for elem in attributes:
             attributes_tmp[elem] = attributes[elem]
         self.__init__(model_type=self.model_type_, attributes=attributes_tmp)
+
+    def plot_tree(self,
+                  pic_path: str = "",
+                  tree_id: int = 0,
+                  feature_names: Union[list, np.ndarray] = [],
+                  classes_color: list = [],
+                  round_pred: int = 2,
+                  percent: bool = False,
+                  vertical: bool = True,
+                  node_style: dict = {},
+                  arrow_style: dict = {},
+                  leaf_style: dict = {},):
+        """
+        ---------------------------------------------------------------------------
+        Draws the input tree. Requires the graphviz module.
+
+        Parameters
+        ----------
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
+        tree_id: int, optional
+            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        feature_names: list / numpy.array, optional
+            List of the names of each feature.
+        classes_color: list, optional
+            Colors that represent the different classes.
+        round_pred: int, optional
+            The number of decimals to round the prediction to. 0 rounds to an integer.
+        percent: bool, optional
+            If set to True, the probabilities are returned as a percent.
+        vertical: bool, optional
+            If set to True, the function generates a vertical tree.
+        node_style: dict, optional
+            Dictionary of options to customize each node of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        arrow_style: dict, optional
+            Dictionary of options to customize each arrow of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        leaf_style: dict, optional
+            Dictionary of options to customize each leaf of the tree. For a list of options, see
+            the Graphviz API: https://graphviz.org/doc/info/attrs.html
+
+        Returns
+        -------
+        graphviz.Source
+            graphviz object.
+        """
+        try:
+            import graphviz
+        except:
+            raise ImportError(
+                "The graphviz module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
+            )
+        check_types([("pic_path", pic_path, [str],),],)
+        graphviz_str = self.to_graphviz(tree_id = tree_id,
+                                        feature_names = feature_names,
+                                        classes_color = classes_color,
+                                        round_pred = round_pred,
+                                        percent = percent,
+                                        vertical = vertical,
+                                        node_style = node_style,
+                                        arrow_style = arrow_style,
+                                        leaf_style = leaf_style,)
+        res = graphviz.Source(graphviz_str)
+        if (pic_path):
+            res.view(pic_path)
+        return res
 
     # ---#
     def predict(self, X: list) -> np.ndarray:
@@ -1797,7 +2081,7 @@ attributes: dict
                     round_pred: int = 2,
                     percent: bool = False,
                     vertical: bool = True,
-                    node_style: dict = {"shape": "box", "style": "filled",},
+                    node_style: dict = {},
                     arrow_style: dict = {},
                     leaf_style: dict = {},):
         """
@@ -1813,9 +2097,9 @@ attributes: dict
         classes_color: list, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction to. 0 rounds to an integer.
+            The number of decimals to round the prediction / score to. 0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as a percent.
+            If set to True, the probabilities / scores are returned as a percent.
         vertical: bool, optional
             If set to True, the function generates a vertical tree.
         node_style: dict, optional
@@ -1833,13 +2117,17 @@ attributes: dict
         str
             Graphviz code.
         """
+        if len(node_style) == 0 and self.model_type_ not in ("BisectingKMeans",):
+          node_style = {"shape": "box", "style": "filled",}
+        else:
+          node_style = {"shape": "none",}
+        classes = self.attributes_["classes"] if "classes" in self.attributes_ else []
         if self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier",):
           prefix_pred = "prob"
           for elem in self.attributes_["value"]:
             if isinstance(elem, list) and not(0.99 < sum(elem) <= 1.0):
               prefix_pred = "logodds"
               break
-          classes = self.attributes_["classes"] if "classes" in self.attributes_ else []
           return binary_tree_to_graphviz(children_left = self.attributes_["children_left"],
                                          children_right = self.attributes_["children_right"],
                                          feature = self.attributes_["feature"],
@@ -1855,9 +2143,31 @@ attributes: dict
                                          node_style = node_style,
                                          arrow_style = arrow_style,
                                          leaf_style = leaf_style,)
+        elif self.model_type_ in ("BisectingKMeans",):
+          cluster_size = self.attributes_["cluster_size"] if "cluster_size" in self.attributes_ else []
+          cluster_score = self.attributes_["cluster_score"] if "cluster_score" in self.attributes_ else []
+          return bisecting_kmeans_to_graphviz(children_left = self.attributes_["left_child"],
+                                              children_right = self.attributes_["right_child"],
+                                              cluster_size = cluster_size,
+                                              cluster_score = cluster_score,
+                                              round_score = round_pred,
+                                              percent = percent,
+                                              vertical = vertical,
+                                              node_style = node_style,
+                                              arrow_style = arrow_style,
+                                              leaf_style = leaf_style,)
+        elif self.model_type_ in ("CHAID",):
+          return chaid_to_graphviz(tree = self.attributes_["tree"],
+                                   classes = classes,
+                                   classes_color = classes_color,
+                                   round_pred = round_pred,
+                                   percent = percent,
+                                   vertical = vertical,
+                                   node_style = node_style,
+                                   arrow_style = arrow_style,
+                                   leaf_style = leaf_style,)
         elif self.model_type_ in ("RandomForestClassifier", "XGBoostClassifier", "RandomForestRegressor", "XGBoostRegressor",):
-          return self.attributes_["trees"][tree_id].to_graphviz(tree_id = tree_id,
-                                                                feature_names = feature_names,
+          return self.attributes_["trees"][tree_id].to_graphviz(feature_names = feature_names,
                                                                 classes_color = classes_color,
                                                                 round_pred = round_pred,
                                                                 percent = percent,

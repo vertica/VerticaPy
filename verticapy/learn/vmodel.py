@@ -1866,6 +1866,8 @@ Main Class for Vertica Model
             attributes = {"clusters": self.cluster_centers_.to_numpy()[:,1:len(self.X)+1],
                           "left_child": self.cluster_centers_["left_child"],
                           "right_child": self.cluster_centers_["right_child"],
+                          "cluster_size": self.cluster_centers_["cluster_size"],
+                          "cluster_score": [self.cluster_centers_["withinss"][i] / self.cluster_centers_["totWithinss"][i] for i in range(len(self.cluster_centers_["withinss"]))],
                           "p": 2,}
         elif self.type in (
             "KMeans",
@@ -1912,7 +1914,7 @@ Main Class for Vertica Model
         elif self.type in (
             "Normalizer",
         ):
-            attributes = {"values": self.get_attr("details").to_numpy()[:,1:].astype(np.float),
+            attributes = {"values": self.get_attr("details").to_numpy()[:,1:].astype(float),
                           "method": self.parameters["method"],}
         elif self.type in (
             "XGBoostClassifier",
@@ -2963,7 +2965,7 @@ class Tree:
                     round_pred: int = 2,
                     percent: bool = False,
                     vertical: bool = True,
-                    node_style: dict = {"shape": "box", "style": "filled",},
+                    node_style: dict = {},
                     arrow_style: dict = {},
                     leaf_style: dict = {},):
         """
@@ -3033,22 +3035,24 @@ class Tree:
         return result
 
     # ---#
-    def plot_tree(self, 
+    def plot_tree(self,
+                  pic_path: str = "",
                   tree_id: int = 0,
                   classes_color: list = [],
                   round_pred: int = 2,
                   percent: bool = False,
                   vertical: bool = True,
-                  node_style: dict = {"shape": "box", "style": "filled",},
+                  node_style: dict = {},
                   arrow_style: dict = {},
-                  leaf_style: dict = {}, 
-                  pic_path: str = ""):
+                  leaf_style: dict = {},):
         """
         ---------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
 
         Parameters
         ----------
+        pic_path: str, optional
+            Absolute path to save the image of the tree.
         tree_id: int, optional
             Unique tree identifier. It is an integer between 0 and n_estimators - 1
         classes_color: list, optional
@@ -3068,33 +3072,21 @@ class Tree:
         leaf_style: dict, optional
             Dictionary of options to customize each leaf of the tree. For a list of options, see
             the Graphviz API: https://graphviz.org/doc/info/attrs.html
-        pic_path: str, optional
-            Absolute path to save the image of the tree.
 
         Returns
         -------
         graphviz.Source
             graphviz object.
         """
-        try:
-            import graphviz
-        except:
-            raise ImportError(
-                "The graphviz module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
-            )
-        check_types([("pic_path", pic_path, [str],),],)
-        graphviz_str = self.to_graphviz(tree_id = tree_id,
-                                        classes_color = classes_color,
-                                        round_pred = round_pred,
-                                        percent = percent,
-                                        vertical = vertical,
-                                        node_style = node_style,
-                                        arrow_style = arrow_style,
-                                        leaf_style = leaf_style,)
-        res = graphviz.Source(graphviz_str)
-        if (pic_path):
-            res.view(pic_path)
-        return res
+        return self.to_memmodel(return_tree = tree_id).plot_tree(feature_names = self.X,
+                                                                 classes_color = classes_color,
+                                                                 round_pred = round_pred,
+                                                                 percent = percent,
+                                                                 vertical = vertical,
+                                                                 node_style = node_style,
+                                                                 arrow_style = arrow_style,
+                                                                 leaf_style = leaf_style,
+                                                                 pic_path = pic_path,)
 
 
 # ---#

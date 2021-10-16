@@ -650,59 +650,6 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         ax.set_ylabel(y_label,)
     return ax
 
-
-# ---#
-def plot_BKtree(tree, pic_path: str = ""):
-    try:
-        from anytree import Node, RenderTree
-    except:
-        raise ImportError(
-            "The anytree module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
-        )
-    check_types([("pic_path", pic_path, [str],)])
-    try:
-        import shutil
-
-        screen_columns = shutil.get_terminal_size().columns
-    except:
-        import os
-
-        screen_rows, screen_columns = os.popen("stty size", "r").read().split()
-    print("-" * int(screen_columns))
-    print("Bisection Levels: {}".format(max(tree["bisection_level"])))
-    print("Number of Centers: {}".format(len(tree["center_id"])))
-    print("Total Size: {}".format(max(tree["cluster_size"])))
-    print("-" * int(screen_columns))
-    tree_nodes = {}
-    for idx in range(len(tree["center_id"])):
-        tree_nodes[tree["center_id"][idx]] = Node(
-            "[{}] (Size = {} | Score = {})".format(
-                tree["center_id"][idx],
-                tree["cluster_size"][idx],
-                round(tree["withinss"][idx] / tree["totWithinss"][idx], 2),
-            )
-        )
-    for idx, node_id in enumerate(tree["center_id"]):
-        if (
-            tree["left_child"][idx] in tree_nodes
-            and tree["right_child"][idx] in tree_nodes
-        ):
-            tree_nodes[node_id].children = [
-                tree_nodes[tree["left_child"][idx]],
-                tree_nodes[tree["right_child"][idx]],
-            ]
-    for pre, fill, node in RenderTree(tree_nodes[0]):
-        print("%s%s" % (pre, node.name))
-    if pic_path:
-        from anytree.dotexport import RenderTreeGraph
-
-        RenderTreeGraph(tree_nodes[0]).to_picture(pic_path)
-        if isnotebook():
-            from IPython.core.display import HTML, display
-
-            display(HTML("<img src='{}'>".format(pic_path)))
-    return RenderTree(tree_nodes[0])
-
 # ---#
 def plot_pca_circle(x: list, 
                     y: list, 
