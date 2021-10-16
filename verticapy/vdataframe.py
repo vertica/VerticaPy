@@ -49,7 +49,7 @@
 #
 # Standard Python Modules
 import random, time, shutil, re, decimal, warnings, pickle, datetime, math
-from collections.abc import Iterable
+from collections import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
 import numpy as np

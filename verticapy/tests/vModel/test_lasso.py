@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys, verticapy, os
+import pytest, sys, verticapy, os, warnings
 from verticapy.learn.linear_model import Lasso
 from verticapy import drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
@@ -56,7 +56,8 @@ class TestLasso:
             ["residual_sugar", "alcohol",],
             "quality",
         )
-        result = model_test.contour()
+        with warnings.catch_warnings(record=True) as w:
+            result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 10
         model_test.drop()
 

@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, sys, warnings, random, itertools
-from collections.abc import Iterable
+from collections import Iterable
 import numpy as np
 
 # VerticaPy Modules

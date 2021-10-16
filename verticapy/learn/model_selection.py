@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import statistics, random, time
-from collections.abc import Iterable
+from collections import Iterable
 from itertools import product
 import numpy as np
 from typing import Union
