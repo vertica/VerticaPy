@@ -348,15 +348,15 @@ def chaid_to_graphviz(tree: dict,
     Parameters
     ----------
     tree: dict
-      CHAID tree. This tree can be generated using the vDataFrame.chaid method.
+        CHAID tree. You can generate this tree with the vDataFrame.chaid method.
     classes: list, optional
-        The classes for the CHAID model.
+        The classes in the CHAID model.
     classes_color: list, optional
         Colors that represent the different classes.
     round_pred: int, optional
         The number of decimals to round the prediction to. 0 rounds to an integer.
     percent: bool, optional
-        If set to True, the probabilities are returned as a percent.
+        If set to True, the probabilities are returned as percents.
     vertical: bool, optional
         If set to True, the function generates a vertical tree.
     node_style: dict, optional
@@ -652,7 +652,7 @@ def binary_tree_to_graphviz(children_left: Union[list, np.ndarray],
     round_pred: int, optional
         The number of decimals to round the prediction to. 0 rounds to an integer.
     percent: bool, optional
-        If set to True, the probabilities are returned as a percent.
+        If set to True, the probabilities are returned as percents.
     vertical: bool, optional
         If set to True, the function generates a vertical tree.
     node_style: dict, optional
@@ -839,11 +839,11 @@ def bisecting_kmeans_to_graphviz(children_left: Union[list, np.ndarray],
         A list of node IDs, where children_right[i] is the node ID of the right child
         of node i.
     cluster_size: list / numpy.array
-        A list of sizes, where cluster_size[i] is the node i number of elements.
+        A list of sizes, where cluster_size[i] is the number of elements in node i.
     cluster_score: list / numpy.array
         A list of scores, where cluster_score[i] is the score for internal node i.
-        The score is the ratio between the within-cluster sum of squares and the 
-        total within-cluster sum of squares.
+        The score is the ratio between the within-cluster sum of squares of the node 
+        and the total within-cluster sum of squares.
     round_score: int, optional
         The number of decimals to round the node's score to. 0 rounds to an integer.
     percent: bool, optional
@@ -1805,7 +1805,7 @@ attributes: dict
         pic_path: str, optional
             Absolute path to save the image of the tree.
         tree_id: int, optional
-            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
         feature_names: list / numpy.array, optional
             List of the names of each feature.
         classes_color: list, optional
@@ -1813,7 +1813,7 @@ attributes: dict
         round_pred: int, optional
             The number of decimals to round the prediction to. 0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as a percent.
+            If set to True, the probabilities are returned as percents.
         vertical: bool, optional
             If set to True, the function generates a vertical tree.
         node_style: dict, optional
@@ -2091,15 +2091,15 @@ attributes: dict
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
         feature_names: list / numpy.array, optional
             List of the names of each feature.
         classes_color: list, optional
             Colors that represent the different classes.
         round_pred: int, optional
-            The number of decimals to round the prediction / score to. 0 rounds to an integer.
+            The number of decimals to which to round the prediction/score. 0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities / scores are returned as a percent.
+            If set to True, the probabilities/scores are returned as a percent.
         vertical: bool, optional
             If set to True, the function generates a vertical tree.
         node_style: dict, optional

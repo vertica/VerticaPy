@@ -2975,13 +2975,13 @@ class Tree:
         Parameters
         ----------
         tree_id: int, optional
-            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
         classes_color: list, optional
             Colors that represent the different classes.
         round_pred: int, optional
             The number of decimals to round the prediction to. 0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as a percent.
+            If set to True, the probabilities are returned as percents.
         vertical: bool, optional
             If set to True, the function generates a vertical tree.
         node_style: dict, optional
@@ -3017,7 +3017,7 @@ class Tree:
 	Parameters
 	----------
 	tree_id: int, optional
-		Unique tree identifier. It is an integer between 0 and n_estimators - 1
+        Unique tree identifier, an integer in the range [0, n_estimators - 1].
 
 	Returns
 	-------
@@ -3052,15 +3052,15 @@ class Tree:
         Parameters
         ----------
         pic_path: str, optional
-            Absolute path to save the image of the tree.
+            Absolute path to which the function saves the image of the tree.
         tree_id: int, optional
-            Unique tree identifier. It is an integer between 0 and n_estimators - 1
+            Unique tree identifier, an integer in the range [0, n_estimators - 1].
         classes_color: list, optional
             Colors that represent the different classes.
         round_pred: int, optional
             The number of decimals to round the prediction to. 0 rounds to an integer.
         percent: bool, optional
-            If set to True, the probabilities are returned as a percent.
+            If set to True, the probabilities are returned as percents.
         vertical: bool, optional
             If set to True, the function generates a vertical tree.
         node_style: dict, optional
