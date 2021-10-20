@@ -208,9 +208,21 @@ class TestBisectingKMeans:
         plt.close("all")
         model_test.drop()
 
+    def test_to_graphviz(self, model):
+        gvz_tree_0 = model.to_graphviz(tree_id = 0,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
+        assert '0 -> 1' in gvz_tree_0
+
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[0]"
+        assert model.to_graphviz() == result.source
 
     def test_to_python(self, model):
         model.cursor.execute(

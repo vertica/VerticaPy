@@ -1270,7 +1270,7 @@ solver: str, optional
                 val = coefficient["coefficient"][idx]
                 coeff_importances[coef] = abs(val) * (maximum - minimum)
                 coeff_sign[coef] = 1 if val >= 0 else -1
-        total = sum(coeff_importances[elem] for elem in coeff_importances)
+        total = sum([coeff_importances[elem] for elem in coeff_importances])
         for elem in coeff_importances:
             coeff_importances[elem] = 100 * coeff_importances[elem] / total
         if show:

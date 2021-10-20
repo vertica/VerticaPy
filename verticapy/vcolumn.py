@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import math, re, decimal, warnings, datetime
-from collections.abc import Iterable
+from collections import Iterable
 from typing import Union
 
 # VerticaPy Modules

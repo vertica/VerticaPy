@@ -61,7 +61,7 @@ from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *
 
 # ---#
-class BisectingKMeans(Clustering):
+class BisectingKMeans(Clustering, Tree):
     """
 ---------------------------------------------------------------------------
 Creates a BisectingKMeans object using the Vertica bisecting k-means 
@@ -150,22 +150,6 @@ tol: float, optional
     Returns a table containing information about the BK-tree.
         """
         return self.cluster_centers_
-
-    # ---#
-    def plot_tree(self, pic_path: str = ""):
-        """
-    ---------------------------------------------------------------------------
-    Draws the input BKtree. The module anytree must be installed.
-
-    Parameters
-    ----------
-    pic_path: str, optional
-        Absolute path to save the image of the tree.
-        """
-        check_types(
-            [("pic_path", pic_path, [str],),]
-        )
-        return plot_BKtree(self.cluster_centers_.values, pic_path=pic_path)
 
 
 # ---#

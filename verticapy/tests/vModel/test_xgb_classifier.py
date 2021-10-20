@@ -486,10 +486,18 @@ class TestXGBC:
 
         model_test.drop()
 
-    def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id=0)
-        assert 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];' in gvz_tree_0
-
+    def test_to_graphviz(self, model):
+        gvz_tree_1 = model.to_graphviz(tree_id = 1,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
+        assert '0 -> 1' in gvz_tree_1
+        
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
 
@@ -497,7 +505,7 @@ class TestXGBC:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[1]"
+        assert model.to_graphviz() == result.source
 
     def test_to_json_binary(self, base, titanic_vd):
         import xgboost as xgb

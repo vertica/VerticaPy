@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, sys, warnings, random, itertools
-from collections.abc import Iterable
+from collections import Iterable
 import numpy as np
 
 # VerticaPy Modules
@@ -1451,6 +1451,17 @@ def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16,):
     for col in remove_cols:
         columns_tmp.remove(col)
     return columns_tmp
+
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ''
+        res += ["{}={}{}{}".format(elem, q, d[elem], q,)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
 
 # ---#
 class str_sql:

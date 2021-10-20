@@ -117,9 +117,9 @@ class TestvDFCorrelation:
         tree = result.attributes_["tree"]
         assert tree["chi2"] == pytest.approx(38.3735130215037)
         assert tree["children"]["female"]["chi2"] == pytest.approx(26.26212428839676)
-        assert tree["children"]["female"]["children"][19.0]["chi2"] == pytest.approx(10.944833995599527)
-        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][0] == pytest.approx(0.364864864864865)
-        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][1] == pytest.approx(0.635135135135135)
+        assert tree["children"]["female"]["children"][19.0]["chi2"] == pytest.approx(11.9190757915065)
+        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][0] == pytest.approx(0.345679012345679)
+        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][1] == pytest.approx(0.654320987654321)
         assert not(tree["split_is_numerical"])
         assert tree["split_predictor"] == '"sex"'
         assert tree["split_predictor_idx"] == 2
@@ -131,8 +131,8 @@ class TestvDFCorrelation:
                                      [11., 1., 'female']])
         assert pred[0][0] == pytest.approx(0.76859504)
         assert pred[0][1] == pytest.approx(0.23140496)
-        assert pred[1][0] == pytest.approx(0.36486486)
-        assert pred[1][1] == pytest.approx(0.63513514)
+        assert pred[1][0] == pytest.approx(0.345679012345679)
+        assert pred[1][1] == pytest.approx(0.654320987654321)
 
     def test_vDF_corr(self, titanic_vd):
         #
