@@ -208,9 +208,21 @@ class TestBisectingKMeans:
         plt.close("all")
         model_test.drop()
 
+    def test_to_graphviz(self, model):
+        gvz_tree_0 = model.to_graphviz(tree_id = 0,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
+        assert '0 -> 1' in gvz_tree_0
+
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[0]"
+        assert model.to_graphviz() == result.source
 
     def test_to_python(self, model):
         model.cursor.execute(
@@ -223,7 +235,7 @@ class TestBisectingKMeans:
             model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
         )
 
-    def test_to_sql(self, model):
+    def test_to_sql(self, model,):
         model.cursor.execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
@@ -231,3 +243,17 @@ class TestBisectingKMeans:
         )
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
+
+    def test_to_memmodel(self, model,):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244,],
+                              [3.0, 11.0, 1993., 0.,]])
+        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244,],
+                                    [3.0, 11.0, 1993., 0.,]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = vDataFrame('public.bsk_data', cursor = model.cursor,)
+        vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
+        model.predict(vdf, name = "prediction_vertica_sql",)
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        assert score == pytest.approx(1.0)

@@ -144,11 +144,28 @@ class TestSVD:
         prediction = [float(elem) for elem in model.cursor.fetchone()]
         model.cursor.execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.to_sql()
+                ", ".join(model.to_sql())
             )
         )
         prediction2 = [float(elem) for elem in model.cursor.fetchone()]
         assert prediction == pytest.approx(prediction2)
+
+    def test_to_memmodel(self, model):
+        model.cursor.execute(
+            "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                model.name
+            )
+        )
+        prediction = [float(elem) for elem in model.cursor.fetchone()]
+        model.cursor.execute(
+            "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
+                ", ".join(model.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+            )
+        )
+        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        assert prediction == pytest.approx(prediction2)
+        prediction3 = model.to_memmodel().transform([[3.0, 11.0, 93.0]])
+        assert prediction == pytest.approx(list(prediction3[0]))
 
     def test_get_transform(self, winequality_vd, model):
         winequality_trans = model.transform(

@@ -14,7 +14,7 @@
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostRegressor
 from verticapy.tests.conftest import get_version
-from verticapy import vDataFrame, drop, version, set_option, vertica_conn
+from verticapy import vDataFrame, drop, version, set_option, vertica_conn, xgb_prior
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -104,6 +104,7 @@ def model(base, xgbr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
+    model_class.prior_ = xgb_prior(model_class)
 
     yield model_class
     model_class.drop()
@@ -119,7 +120,7 @@ class TestXGBR:
             "survived",
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 34
+        assert len(result.get_default_bbox_extra_artists()) in (37, 34,)
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -165,6 +166,20 @@ class TestXGBR:
         )
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
+
+    def test_to_memmodel(self, model,):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
+                              ['Female', 1, 'Expensive', 'Low']])
+        res_py = model.to_python()([['Male', 0, 'Cheap', 'Low'],
+                                    ['Female', 1, 'Expensive', 'Low']])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = vDataFrame("public.xgbr_data", cursor = model.cursor)
+        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
+        model.predict(vdf, name = "prediction_vertica_sql")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        assert score == pytest.approx(1.0)
 
     @pytest.mark.skip(reason="not yet available")
     def test_features_importance(self, model):
@@ -212,10 +227,7 @@ class TestXGBR:
         assert model.get_attr("tree_count")["tree_count"][0] == 3
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', max_ntree=3, max_depth=6, nbins=40, objective=squarederror, split_proposal_method=global, epsilon=0.001, learning_rate=0.2, min_split_loss=0.1, weight_reg=0, sampling_size=1, col_sample_by_tree=1, col_sample_by_node=1, seed=1, id_column='id')"
-        )
+        assert "xgb_regressor('public.xgbr_model_test', 'public.xgbr_data', '\"transportation\"', '*' USING PARAMETERS" in  model.get_attr("call_string")["call_string"][0]
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -225,10 +237,21 @@ class TestXGBR:
             "sample": 1.0,
             "max_depth": 6,
             "nbins": 40,
-            "objective": "squarederror",
             "split_proposal_method": "global",
             "tol": 0.001,
             "weight_reg": 0.0,
+        } or model.get_params() == {
+            "max_ntree": 3,
+            "min_split_loss": 0.1,
+            "learning_rate": 0.2,
+            "sample": 1.0,
+            "max_depth": 6,
+            "nbins": 40,
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "weight_reg": 0.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
         }
 
     @pytest.mark.skip(reason="not yet available.")
@@ -257,9 +280,7 @@ class TestXGBR:
             name="predicted_quality",
         )
 
-        assert xgbr_data_copy["predicted_quality"].mean() == pytest.approx(
-            0.9, abs=1e-6
-        )
+        assert xgbr_data_copy["predicted_quality"].mean() in (pytest.approx(0.9, abs=1e-6), pytest.approx(0.908453240740741, abs=1e-6))
 
     def test_regression_report(self, model):
         reg_rep = model.regression_report()
@@ -276,16 +297,16 @@ class TestXGBR:
             "aic",
             "bic",
         ]
-        assert reg_rep["value"][0] == pytest.approx(0.737856, abs=1e-6)
-        assert reg_rep["value"][1] == pytest.approx(0.5632, abs=1e-6)
-        assert reg_rep["value"][2] == pytest.approx(0.4608, abs=1e-6)
-        assert reg_rep["value"][3] == pytest.approx(0.36864, abs=1e-6)
-        assert reg_rep["value"][4] == pytest.approx(0.18087936, abs=1e-6)
-        assert reg_rep["value"][5] == pytest.approx(0.42529914178140543, abs=1e-6)
-        assert reg_rep["value"][6] == pytest.approx(0.737856, abs=1e-6)
-        assert reg_rep["value"][7] == pytest.approx(0.5281407999999999, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(7.900750107239094, abs=1e-6)
-        assert reg_rep["value"][9] == pytest.approx(-5.586324427790675, abs=1e-6)
+        assert reg_rep["value"][0] in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.60448287427822, abs=1e-6))
+        assert reg_rep["value"][1] in (pytest.approx(0.5632, abs=1e-6), pytest.approx(0.6755375, abs=1e-6))
+        assert reg_rep["value"][2] in (pytest.approx(0.4608, abs=1e-6), pytest.approx(0.5527125, abs=1e-6))
+        assert reg_rep["value"][3] in (pytest.approx(0.36864, abs=1e-6), pytest.approx(0.454394259259259, abs=1e-6))
+        assert reg_rep["value"][4] in (pytest.approx(0.18087936, abs=1e-6), pytest.approx(0.272978274027049, abs=1e-6))
+        assert reg_rep["value"][5] in (pytest.approx(0.42529914178140543, abs=1e-6), pytest.approx(0.5224732280481451, abs=1e-6))
+        assert reg_rep["value"][6] in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.604379313004277, abs=1e-6))
+        assert reg_rep["value"][7] in (pytest.approx(0.5281407999999999, abs=1e-6), pytest.approx(0.2878827634076987, abs=1e-6))
+        assert reg_rep["value"][8] in (pytest.approx(7.900750107239094, abs=1e-6), pytest.approx(12.016369307174802, abs=1e-6))
+        assert reg_rep["value"][9] in (pytest.approx(-5.586324427790675, abs=1e-6), pytest.approx(-1.4707052278549675, abs=1e-6))
 
         reg_rep_details = model.regression_report("details")
         assert reg_rep_details["value"][2:] == [
@@ -298,6 +319,16 @@ class TestXGBR:
             pytest.approx(-1.73372940858763),
             pytest.approx(0.223450528977454),
             pytest.approx(3.76564442746721),
+        ] or reg_rep_details["value"][2:] == [
+            10.0,
+            4,
+            pytest.approx(0.604379313004277),
+            pytest.approx(0.2878827634076987),
+            pytest.approx(0.4418800475932531),
+            pytest.approx(0.7760066793800073),
+            pytest.approx(-1.73372940858763),
+            pytest.approx(0.223450528977454),
+            pytest.approx(3.76564442746721),
         ]
 
         reg_rep_anova = model.regression_report("anova")
@@ -305,45 +336,42 @@ class TestXGBR:
             pytest.approx(1.6431936),
             pytest.approx(1.8087936),
             pytest.approx(6.9),
+        ] or reg_rep_anova["SS"] == [
+            pytest.approx(0.964989221751972),
+            pytest.approx(2.72978274027049),
+            pytest.approx(6.9),
         ]
         assert reg_rep_anova["MS"][:-1] == [
             pytest.approx(0.4107984),
             pytest.approx(0.36175872),
+        ] or reg_rep_anova["MS"][:-1] == [
+            pytest.approx(0.241247305437993),
+            pytest.approx(0.545956548054098),
         ]
 
     def test_score(self, model):
         # method = "max"
-        assert model.score(method="max") == pytest.approx(0.5632, abs=1e-6)
+        assert model.score(method="max") in (pytest.approx(0.5632, abs=1e-6), pytest.approx(0.6755375, abs=1e-6))
         # method = "mae"
-        assert model.score(method="mae") == pytest.approx(0.36864, abs=1e-6)
+        assert model.score(method="mae") in (pytest.approx(0.36864, abs=1e-6), pytest.approx(0.454394259259259, abs=1e-6))
         # method = "median"
-        assert model.score(method="median") == pytest.approx(0.4608, abs=1e-6)
+        assert model.score(method="median") in (pytest.approx(0.4608, abs=1e-6), pytest.approx(0.5527125, abs=1e-6))
         # method = "mse"
-        assert model.score(method="mse") == pytest.approx(0.18087936, abs=1e-6)
+        assert model.score(method="mse") in (pytest.approx(0.18087936, abs=1e-6), pytest.approx(0.272978274027049, abs=1e-6))
         # method = "rmse"
-        assert model.score(method="rmse") == pytest.approx(
-            0.42529914178140543, abs=1e-6
-        )
+        assert model.score(method="rmse") in (pytest.approx(0.42529914178140543, abs=1e-6), pytest.approx(0.5224732280481451, abs=1e-6))
         # method = "msl"
-        assert model.score(method="msle") == pytest.approx(
-            0.0133204031846029, abs=1e-6
-        )
+        assert model.score(method="msle") in (pytest.approx(0.0133204031846029, abs=1e-6), pytest.approx(0.0195048419826687, abs=1e-6))
         # method = "r2"
-        assert model.score() == pytest.approx(0.737856, abs=1e-6)
+        assert model.score() in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.604379313004277, abs=1e-6))
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(
-            0.5281407999999999, abs=1e-6
-        )
+        assert model.score(method="r2a") in (pytest.approx(0.5281407999999999, abs=1e-6), pytest.approx(0.2878827634076987, abs=1e-6))
         # method = "var"
-        assert model.score(method="var") == pytest.approx(0.737856, abs=1e-6)
+        assert model.score(method="var") in (pytest.approx(0.737856, abs=1e-6), pytest.approx(0.60448287427822, abs=1e-6))
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(
-            7.900750107239094, abs=1e-6
-        )
+        assert model.score(method="aic") in (pytest.approx(7.900750107239094, abs=1e-6), pytest.approx(12.016369307174802, abs=1e-6))
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(
-            -5.586324427790675, abs=1e-6
-        )
+        assert model.score(method="bic") in (pytest.approx(-5.586324427790675, abs=1e-6), pytest.approx(-1.4707052278549675, abs=1e-6))
 
     def test_set_cursor(self, model):
         cur = vertica_conn(
@@ -372,36 +400,65 @@ class TestXGBR:
 
         model_test.drop()
 
-    def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: 1.100000", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: -0.900000", color="red"];\n25 [label = "prediction: 0.100000", color="red"];\n13 [label = "prediction: -0.900000", color="red"];\n7 [label = "prediction: 0.100000", color="red"];\n}'
-
-        assert gvz_tree_0 == expected_gvz_0
+    def test_to_graphviz(self, model):
+        gvz_tree_1 = model.to_graphviz(tree_id = 1,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
+        assert '0 -> 1' in gvz_tree_1
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
-
-        assert tree_1["prediction"] == [
-            None,
-            "0.880000",
-            None,
-            None,
-            "0.080000",
-            None,
-            "-0.720000",
-            "-0.720000",
-            "0.080000",
-        ]
+        assert tree_1["prediction"][0] == None
+        assert tree_1["prediction"][1] in ("0.880000", "0.701250")
+        assert tree_1["prediction"][2] == None
+        assert tree_1["prediction"][3] == None
+        assert tree_1["prediction"][4] in ("0.080000", '0.057778')
+        assert tree_1["prediction"][5] == None
+        assert tree_1["prediction"][6] in ("-0.720000", '-0.573750')
+        assert tree_1["prediction"][7] in ("-0.720000", '-0.405000')
+        assert tree_1["prediction"][8] in ("0.080000", '0.045000')
 
     def test_get_plot(self, base, winequality_vd):
         base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
         model_test = XGBoostRegressor("model_test_plot", cursor=base.cursor)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
-        assert len(result.get_default_bbox_extra_artists()) == 9
+        assert len(result.get_default_bbox_extra_artists()) in (9, 12,)
         plt.close("all")
         model_test.drop()
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[1]"
+        assert model.to_graphviz() == result.source
+
+    def test_to_json(self, base, titanic_vd):
+        import xgboost as xgb
+
+        titanic = titanic_vd.copy()
+        titanic.fillna()
+        path = "verticapy_test_xgbr.json"
+        X = ["pclass", "age", "survived"]
+        y = "fare"
+        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model.drop()
+        model.fit(titanic, X, y)
+        X_test = titanic[X].to_numpy()
+        y_test_vertica = model.to_python()(X_test)
+        if os.path.exists(path):
+            os.remove(path)   
+        model.to_json(path)
+        model_python = xgb.XGBRegressor()
+        model_python.load_model(path)
+        y_test_python = model_python.predict(X_test)
+        result = (y_test_vertica - y_test_python) ** 2
+        result = result.sum() / len(result)
+        assert result == pytest.approx(0.0, abs = 1.0E-11)
+        model.drop()
+        os.remove(path)
+

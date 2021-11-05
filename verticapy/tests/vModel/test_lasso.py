@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys, verticapy, os
+import pytest, sys, verticapy, os, warnings
 from verticapy.learn.linear_model import Lasso
 from verticapy import drop, set_option, vertica_conn
 import matplotlib.pyplot as plt
@@ -56,7 +56,8 @@ class TestLasso:
             ["residual_sugar", "alcohol",],
             "quality",
         )
-        result = model_test.contour()
+        with warnings.catch_warnings(record=True) as w:
+            result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 10
         model_test.drop()
 
@@ -185,6 +186,20 @@ class TestLasso:
         )
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
+
+    def test_to_memmodel(self, model, winequality_vd):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([[3.0, 11.0, 93.],
+                              [11.0, 1.0, 99.]])
+        res_py = model.to_python()([[3.0, 11.0, 93.],
+                                   [11.0, 1.0, 99.]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = winequality_vd.copy()
+        vdf["prediction_sql"] = mmodel.predict_sql(["total_sulfur_dioxide", "residual_sugar", "alcohol"])
+        model.predict(vdf, name = "prediction_vertica_sql")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        assert score == pytest.approx(1.0)
 
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):

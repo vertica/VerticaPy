@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import math
-from collections.abc import Iterable
+from collections import Iterable
 from typing import Union
 
 # Other Modules
@@ -780,11 +780,11 @@ pos_label: int/float/str, optional
 	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
 nbins: int, optional
-    An integer value that determines the number of decision boundaries. Decision 
-    boundaries are set at equally spaced intervals between 0 and 1, inclusive.
-    The higher it is, the more precise the AUC will be. However, it can decrease
-    considerably performances. The maximum value is 999,999. If negative, the
-    maximum value is used.
+    An integer value that determines the number of decision boundaries. 
+    Decision boundaries are set at equally spaced intervals between 0 and 1, 
+    inclusive. Greater values for nbins give more precise estimations of the AUC, 
+    but can potentially decrease performance. The maximum value is 999,999. 
+    If negative, the maximum value is used.
 
 Returns
 -------

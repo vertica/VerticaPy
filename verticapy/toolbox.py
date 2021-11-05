@@ -50,7 +50,8 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, sys, warnings, random, itertools
-from collections.abc import Iterable
+from collections import Iterable
+import numpy as np
 
 # VerticaPy Modules
 import verticapy
@@ -389,13 +390,14 @@ def default_model_parameters(model_type: str):
             "max_ntree": 10,
             "max_depth": 5,
             "nbins": 32,
-            "objective": "squarederror",
             "split_proposal_method": "global",
             "tol": 0.001,
             "learning_rate": 0.1,
-            "min_split_loss": 0,
-            "weight_reg": 0,
-            "sampling_size": 1,
+            "min_split_loss": 0.0,
+            "weight_reg": 0.0,
+            "sample": 1.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
         }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}
@@ -505,6 +507,13 @@ def gen_name(L: list):
             for elem in L
         ]
     )
+
+# ---#
+def get_index(x: str, col_list: list, str_check: bool = True,):
+    for idx, col in enumerate(col_list):
+        if (str_check and str_column(x.lower()) == str_column(col.lower())) or (x == col):
+            return idx
+    return None
 
 # ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
@@ -674,7 +683,6 @@ def isnotebook():
     except NameError:
         return False  # Probably standard Python interpreter
 
-
 # ---#
 def last_order_by(vdf):
     max_pos, order_by = 0, ""
@@ -737,6 +745,84 @@ def ooe_details_transform(L: list):
             tmp_cat += [c[1]]
     cat += [tmp_cat]
     return X, cat
+
+# ---#
+def tree_attributes_list(tree, X: list, model_type: str, return_probability: bool = False):
+    # Returns trees list of attributes.
+    def map_idx(x):
+        for idx, elem in enumerate(X):
+            if str_column(x).lower() == str_column(elem).lower():
+                return idx
+    tree_list = []
+    for idx in range(len(tree["tree_id"])):
+        tree.values["left_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["left_child_id"]]
+        tree.values["right_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["right_child_id"]]
+        tree.values["node_id"][idx] = idx
+        tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
+        if model_type in ("XGBoostClassifier",) and isinstance(tree["log_odds"][idx], str):
+            val, all_val = tree["log_odds"][idx].split(","), {}
+            for elem in val:
+                all_val[elem.split(":")[0]] = float(elem.split(":")[1])
+            tree.values["log_odds"][idx] = all_val
+    tree_list = [tree["left_child_id"], tree["right_child_id"], tree["split_predictor"], tree["split_value"], tree["prediction"], tree["is_categorical_split"]]
+    if model_type in ("XGBoostClassifier",):
+        tree_list += [tree["log_odds"]]
+    if return_probability:
+        tree_list += [tree["probability/variance"]]
+    return tree_list
+
+# ---#
+def nb_var_info(model):
+    # Returns a list of dictionary for each of the NB variables.
+    # It is used to translate NB to Python
+    from verticapy.utilities import vdf_from_relation
+
+    vdf = vdf_from_relation(model.input_relation, cursor=model.cursor)
+    var_info = {}
+    gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
+    for idx, elem in enumerate(model.X):
+        var_info[elem] = {"rank": idx}
+        if vdf[elem].isbool():
+            var_info[elem]["type"] = "bernoulli"
+            for c in model.classes_:
+                var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))["probability"][bernoulli_incr]
+            bernoulli_incr += 1
+        elif vdf[elem].category() in ("int",):
+            var_info[elem]["type"] = "multinomial"
+            for c in model.classes_:
+                multinomial = model.get_attr("multinomial.{}".format(c))
+                var_info[elem][c] = multinomial["probability"][multinomial_incr]
+            multinomial_incr += 1
+        elif vdf[elem].isnum():
+            var_info[elem]["type"] = "gaussian"
+            for c in model.classes_:
+                gaussian = model.get_attr("gaussian.{}".format(c))
+                var_info[elem][c] = {"mu": gaussian["mu"][gaussian_incr], "sigma_sq": gaussian["sigma_sq"][gaussian_incr]}
+            gaussian_incr += 1
+        else:
+            var_info[elem]["type"] = "categorical"
+            my_cat = "categorical." + str_column(elem)[1:-1]
+            attr = model.get_attr()["attr_name"]
+            for item in attr:
+                if item.lower() == my_cat.lower():
+                    my_cat = item
+                    break
+            val = model.get_attr(my_cat).values
+            for item in val:
+                if item != "category":
+                    if item not in var_info[elem]:
+                        var_info[elem][item] = {}
+                    for i, p in enumerate(val[item]):
+                        var_info[elem][item][val["category"][i]] = p
+    var_info_simplified = []
+    for i in range(len(var_info)):
+        for elem in var_info:
+            if var_info[elem]["rank"] == i:
+                var_info_simplified += [var_info[elem]]
+                break
+    for elem in var_info_simplified:
+        del elem["rank"]
+    return var_info_simplified
 
 # ---#
 def order_discretized_classes(categories):
@@ -1318,6 +1404,64 @@ def str_category(expr):
             category = ""
     return category
 
+# ---#
+def xgb_prior(model):
+    # Computing XGB prior probabilities
+    from verticapy.utilities import version
+
+    condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+    v = version(cursor = model.cursor)
+    v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+    if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
+        model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
+        prior_ = model.cursor.fetchone()[0]
+    elif not(v):
+        prior_ = []
+        for elem in model.classes_:
+            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem))
+            avg = model.cursor.fetchone()[0]
+            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),))
+            avg /= model.cursor.fetchone()[0]
+            logodds = np.log(avg / (1 - avg))
+            prior_ += [logodds]
+    else:
+        prior_ = [0.0 for elem in model.classes_]
+    return prior_
+
+# ---#
+def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16,):
+    columns_tmp = columns.copy()
+    if not(columns_tmp):
+        columns_tmp = vdf.get_columns()
+        remove_cols = []
+        for col in columns_tmp:
+            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+                remove_cols += [col]
+    else:
+        remove_cols = []
+        columns_tmp = vdf_columns_names(columns_tmp, vdf)
+        for col in columns_tmp:
+            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+                remove_cols += [col]
+                if vdf[col].category() not in ("float", "int", "text",):
+                    warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(col, vdf[col].category())
+                else:
+                    warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(col, max_cardinality)
+                warnings.warn(warning_message, Warning)
+    for col in remove_cols:
+        columns_tmp.remove(col)
+    return columns_tmp
+
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ''
+        res += ["{}={}{}{}".format(elem, q, d[elem], q,)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
 
 # ---#
 class str_sql:

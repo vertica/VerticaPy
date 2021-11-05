@@ -238,19 +238,54 @@ class TestRFC:
         prediction = model_test.cursor.fetchone()[0]
         assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
 
-
     def test_to_sql(self, model, titanic_vd):
         model_test = RandomForestClassifier("rfc_sql_test", cursor=model.cursor)
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         model.cursor.execute(
-            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True, class=1, type='probability')::float, {}::float FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
+            "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True)::int, {}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
                 model_test.to_sql()
             )
         )
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
         model_test.drop()
+
+    def test_to_memmodel(self, model,):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([["Male", 0, "Cheap", "Low",],
+                              ["Female", 3, "Expensive", "Hig",]])
+        res_py = model.to_python()([["Male", 0, "Cheap", "Low",],
+                                    ["Female", 3, "Expensive", "Hig",]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low",],
+                                    ["Female", 3, "Expensive", "Hig",]])
+        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low",],
+                                                       ["Female", 3, "Expensive", "Hig",]])
+        assert res[0][0] == res_py[0][0]
+        assert res[0][1] == res_py[0][1]
+        assert res[0][2] == res_py[0][2]
+        assert res[1][0] == res_py[1][0]
+        assert res[1][1] == res_py[1][1]
+        assert res[1][2] == res_py[1][2]
+        vdf = vDataFrame("public.rfc_data", cursor = model.cursor)
+        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
+        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[0]
+        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[1]
+        vdf["prediction_proba_sql_2"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[2]
+        model.predict(vdf, name = "prediction_vertica_sql")
+        model.predict(vdf, name = "prediction_proba_vertica_sql_0", pos_label = model.classes_[0])
+        model.predict(vdf, name = "prediction_proba_vertica_sql_1", pos_label = model.classes_[1])
+        model.predict(vdf, name = "prediction_proba_vertica_sql_2", pos_label = model.classes_[2])
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
+        assert score == pytest.approx(1.0)
+        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        assert score == pytest.approx(1.0)
+        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        assert score == pytest.approx(1.0)
+        score = vdf.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
+        assert score == pytest.approx(1.0)
 
     @pytest.mark.skip(reason="not yet available")
     def test_shapExplainer(self, model):
@@ -456,12 +491,18 @@ class TestRFC:
 
         model_test.drop()
 
-    def test_export_graphviz(self, model):
-        gvz_tree_0 = model.export_graphviz(tree_id=0)
-        expected_gvz_0 = 'digraph Tree{\n1 [label = "cost == Expensive ?", color="blue"];\n1 -> 2 [label = "yes", color = "black"];\n1 -> 3 [label = "no", color = "black"];\n2 [label = "prediction: Car, probability: 1", color="red"];\n3 [label = "cost == Cheap ?", color="blue"];\n3 -> 6 [label = "yes", color = "black"];\n3 -> 7 [label = "no", color = "black"];\n6 [label = "gender == Female ?", color="blue"];\n6 -> 12 [label = "yes", color = "black"];\n6 -> 13 [label = "no", color = "black"];\n12 [label = "owned cars < 0.050000 ?", color="blue"];\n12 -> 24 [label = "yes", color = "black"];\n12 -> 25 [label = "no", color = "black"];\n24 [label = "prediction: Bus, probability: 1", color="red"];\n25 [label = "prediction: Train, probability: 1", color="red"];\n13 [label = "prediction: Bus, probability: 1", color="red"];\n7 [label = "prediction: Train, probability: 1", color="red"];\n}'
-
-        assert gvz_tree_0 == expected_gvz_0
-
+    def test_to_graphviz(self, model):
+        gvz_tree_1 = model.to_graphviz(tree_id = 1,
+                                       classes_color = ["red", "blue", "green"],
+                                       round_pred = 4,
+                                       percent = True,
+                                       vertical = False,
+                                       node_style = {"shape": "box", "style": "filled",},
+                                       arrow_style = {"color": "blue",},
+                                       leaf_style = {"shape": "circle", "style": "filled",})
+        assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
+        assert '0 -> 1' in gvz_tree_1
+        
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
 
@@ -479,4 +520,4 @@ class TestRFC:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert result.by_attr()[0:3] == "[1]"
+        assert model.to_graphviz() == result.source

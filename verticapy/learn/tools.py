@@ -366,6 +366,14 @@ model
         for elem in parameters_dict:
             if isinstance(parameters_dict[elem], str):
                 parameters_dict[elem] = parameters_dict[elem].replace("'", "")
+        if "split_proposal_method" in parameters_dict:
+            split_proposal_method = parameters_dict["split_proposal_method"]
+        else:
+            split_proposal_method = "global"
+        if "epsilon" in parameters_dict:
+            epsilon = parameters_dict["epsilon"]
+        else:
+            epsilon = 0.001
         if model_type == "rf_regressor":
             from verticapy.learn.ensemble import RandomForestRegressor
 
@@ -405,9 +413,8 @@ model
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
                 int(parameters_dict["nbins"]),
-                parameters_dict["objective"],
-                parameters_dict["split_proposal_method"],
-                float(parameters_dict["epsilon"]),
+                split_proposal_method,
+                float(epsilon),
                 float(parameters_dict["learning_rate"]),
                 float(parameters_dict["min_split_loss"]),
                 float(parameters_dict["weight_reg"]),
@@ -422,9 +429,8 @@ model
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
                 int(parameters_dict["nbins"]),
-                parameters_dict["objective"],
-                parameters_dict["split_proposal_method"],
-                float(parameters_dict["epsilon"]),
+                split_proposal_method,
+                float(epsilon),
                 float(parameters_dict["learning_rate"]),
                 float(parameters_dict["min_split_loss"]),
                 float(parameters_dict["weight_reg"]),
@@ -637,6 +643,12 @@ model
             model.classes_ = [0, 1]
         if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
             model.coef_ = model.get_attr("details")
+        if model_type in ("xgb_classifier", "xgb_regressor",):
+            v = version(cursor = cursor)
+            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            if v:
+                model.set_params({"col_sample_by_tree": float(parameters_dict["col_sample_by_tree"]),
+                                  "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),})
     return model
 
 # ---#

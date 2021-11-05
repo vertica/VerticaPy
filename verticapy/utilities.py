@@ -464,9 +464,9 @@ to store it inside the database.
 Parameters
 ----------
 df: pandas.DataFrame
-	The pandas.DataFrame to ingest.
+    The pandas.DataFrame to ingest.
 cursor: DBcursor, optional
-	Vertica database cursor.
+    Vertica database cursor.
 name: str, optional
     Name of the new relation. If empty, a temporary local table is created.
 schema: str, optional
@@ -477,31 +477,48 @@ parse_n_lines: int, optional
     then dropped and the entire file will be ingested. The data types identification
     will be less precise but this parameter can make the process faster if the
     file is heavy.
-	
+    
 Returns
 -------
 vDataFrame
-	vDataFrame of the new relation.
+    vDataFrame of the new relation.
 
 See Also
 --------
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
-	"""
+    """
     check_types(
         [
             ("name", name, [str],),
             ("schema", schema, [str],),
+            ("parse_n_lines", parse_n_lines, [int],),
         ]
     )
     cursor = check_cursor(cursor)[0]
     if not(name):
         tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
     else:
-        tmp_name = False
+        tmp_name = ""
     path = "{}.csv".format(name)
     try:
-        df.to_csv(path, index=False)
+        # Adding the quotes to STR pandas columns in order to simplify the ingestion.
+        # Not putting them can lead to wrong data ingestion.
+        str_cols = []
+        for c in df.columns:
+            if df[c].dtype == object and isinstance(df[c].loc[df[c].first_valid_index()], str):
+                str_cols += [c]
+        if str_cols:
+            tmp_df = df.copy()
+            for c in str_cols:
+                tmp_df[c] = '"' + tmp_df[c] + '"'
+            clear = True
+        else:
+            tmp_df = df
+            clear = False
+        import csv
+
+        tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\\',)
         if not(tmp_name):
             vdf = read_csv(path, cursor, table_name=tmp_name, temporary_local_table=True, parse_n_lines=parse_n_lines,)
         else:
@@ -509,7 +526,11 @@ read_json : Ingests a JSON file into the Vertica database.
         os.remove(path)
     except:
         os.remove(path)
+        if clear:
+            del tmp_df
         raise
+    if clear:
+        del tmp_df
     return vdf
 
 

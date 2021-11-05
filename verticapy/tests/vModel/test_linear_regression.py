@@ -189,6 +189,20 @@ class TestLinearRegression:
         prediction = model.cursor.fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
+    def test_to_memmodel(self, model, winequality_vd):
+        mmodel = model.to_memmodel()
+        res = mmodel.predict([[3.0, 11.0, 93.],
+                              [11.0, 1.0, 99.]])
+        res_py = model.to_python()([[3.0, 11.0, 93.],
+                                   [11.0, 1.0, 99.]])
+        assert res[0] == res_py[0]
+        assert res[1] == res_py[1]
+        vdf = winequality_vd.copy()
+        vdf["prediction_sql"] = mmodel.predict_sql(["citric_acid", "residual_sugar", "alcohol"])
+        model.predict(vdf, name = "prediction_vertica_sql")
+        score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
+        assert score == pytest.approx(1.0)
+
     @pytest.mark.skip(reason="shap doesn't want to get installed.")
     def test_shapExplainer(self, model):
         explainer = model.shapExplainer()
