@@ -188,7 +188,7 @@ vdf = vDataFrame("my_relation", cursor = cur)
 ```
 If you don't have data on hand, you can easily import well-known datasets.
 ```python
-from verticapy.datasets import load_titanic
+from verticapy.learn.datasets import load_titanic
 vdf = load_titanic(cursor = cur)
 ```
 Examine your data:
