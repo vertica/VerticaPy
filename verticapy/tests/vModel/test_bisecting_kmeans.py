@@ -222,7 +222,7 @@ class TestBisectingKMeans:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert graphviz.Source(model.to_graphviz()) == result.source
+        assert model.to_graphviz() == result.source.strip()
 
     def test_to_python(self, model):
         model.cursor.execute(
