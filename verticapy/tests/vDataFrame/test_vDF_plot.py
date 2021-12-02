@@ -228,6 +228,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_boxplot(self, titanic_vd):
         # testing vDataFrame[].boxplot
         result = titanic_vd["age"].boxplot(color="b",)
@@ -257,6 +258,7 @@ class TestvDFPlot:
         ] == pytest.approx(512.3292)
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_bubble(self, iris_vd, titanic_vd,):
         # testing vDataFrame.bubble - img
         result = titanic_vd.bubble(columns=["fare", "age"], size_bubble_col="pclass", color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
@@ -293,6 +295,7 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
         try:
@@ -334,6 +337,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_heatmap(self, iris_vd):
         result = iris_vd.heatmap(
             ["PetalLengthCm", "SepalLengthCm"],
@@ -344,6 +348,7 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[-2].get_size() == (5, 4)
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_hexbin(self, titanic_vd):
         result = titanic_vd.hexbin(columns=["fare", "age"], img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
         result = result.get_default_bbox_extra_artists()[0]
@@ -514,6 +519,7 @@ class TestvDFPlot:
         ].get_height() == pytest.approx(0.4327390599675851)
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_pie(self, titanic_vd):
         # testing vDataFrame[].pie
         result = titanic_vd["pclass"].pie(method="avg", of="survived", colors=["b", "r",],)
@@ -604,6 +610,7 @@ class TestvDFPlot:
         )
         plt.close("all")
 
+    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_scatter(self, iris_vd, titanic_vd,):
         # testing vDataFrame.scatter
         result = titanic_vd.scatter(columns=["fare", "age"], color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10],)
