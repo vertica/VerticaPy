@@ -31,10 +31,7 @@ def amazon_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, amazon_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    create_verticapy_schema(base.cursor)
     model_class = SARIMAX("sarimax_model_test", cursor=base.cursor, p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
     model_class.drop()
     model_class.fit("public.amazon", "number", "date",)

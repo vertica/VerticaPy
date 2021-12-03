@@ -298,10 +298,7 @@ class TestvDFPlot:
     @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
-        try:
-            create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
-        except:
-            pass
+        create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20, color="b",)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25

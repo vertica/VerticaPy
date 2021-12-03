@@ -59,14 +59,8 @@ class TestTools:
         base.cursor.execute("DROP SCHEMA load_model_test CASCADE")
 
     def test_load_model(self, base, titanic_vd):
-        try:
-            create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
-        except:
-            pass
-        try:
-            base.cursor.execute("CREATE SCHEMA load_model_test")
-        except:
-            pass
+        create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
+        base.cursor.execute("CREATE SCHEMA IF NOT EXISTS load_model_test")
         # VAR
         model = VAR("load_model_test.model_test", cursor=base.cursor, max_iter=100)
         model.drop()

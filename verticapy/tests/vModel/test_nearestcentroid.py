@@ -31,10 +31,7 @@ def titanic_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    create_verticapy_schema(base.cursor)
     model_class = NearestCentroid("nc_model_test", cursor=base.cursor)
     model_class.drop()
     model_class.fit(
