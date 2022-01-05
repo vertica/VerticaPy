@@ -401,4 +401,4 @@ class TestRFR:
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
-        assert model.to_graphviz() == result.source
+        assert model.to_graphviz() == result.source.strip()

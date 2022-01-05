@@ -30,10 +30,7 @@ def titanic_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    verticapy.utilities.create_verticapy_schema(base.cursor)
     model_class = CountVectorizer("model_test", cursor=base.cursor)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
@@ -64,7 +61,7 @@ class TestCountVectorizer:
         assert model_test.cursor.fetchone()[0] in ("model_test_drop", '"model_test_drop"')
         model_test.drop()
         model_test.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name LIKE 'model_test_drop'"
+            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
         assert model_test.cursor.fetchone() is None
 

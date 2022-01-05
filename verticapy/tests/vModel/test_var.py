@@ -31,10 +31,7 @@ def commodities_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, commodities_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    create_verticapy_schema(base.cursor)
     model_class = VAR("var_model_test", cursor=base.cursor, p=1,)
     model_class.drop()
     model_class.fit("public.commodities", ["gold", "oil"], "date",)

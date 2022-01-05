@@ -83,7 +83,10 @@ class TestModelSelection:
         )
         assert result in [3, 4]
 
-    def test_cross_validate(self, winequality_vd):
+    def test_cross_validate(self, base, winequality_vd):
+        base.cursor.execute(
+            "DROP MODEL IF EXISTS model_test"
+        )
         result = cross_validate(
             LinearRegression(
                 "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],

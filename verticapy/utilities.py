@@ -78,11 +78,11 @@ cursor: DBcursor, optional
     Vertica database cursor.
     """
     cursor = check_cursor(cursor)[0]
-    sql = "CREATE SCHEMA verticapy;"
+    sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
     executeSQL(cursor, sql, "Creating VerticaPy schema.")
-    sql = "CREATE TABLE verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
+    sql = "CREATE TABLE IF NOT EXISTS verticapy.models (model_name VARCHAR(128), category VARCHAR(128), model_type VARCHAR(128), create_time TIMESTAMP, size INT);"
     executeSQL(cursor, sql, "Creating the models table.")
-    sql = "CREATE TABLE verticapy.attr (model_name VARCHAR(128), attr_name VARCHAR(128), value VARCHAR(65000));"
+    sql = "CREATE TABLE IF NOT EXISTS verticapy.attr (model_name VARCHAR(128), attr_name VARCHAR(128), value VARCHAR(65000));"
     executeSQL(cursor, sql, "Creating the attr table.")
 
 
