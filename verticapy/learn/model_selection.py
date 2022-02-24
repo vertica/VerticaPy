@@ -216,12 +216,9 @@ tablesample
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
     if isinstance(input_relation, str):
-        schema, relation = schema_relation(input_relation)
+        schema = schema_relation(input_relation)[0]
     else:
-        if input_relation._VERTICAPY_VARIABLES_["schema_writing"]:
-            schema = input_relation._VERTICAPY_VARIABLES_["schema_writing"]
-        else:
-            schema, relation = schema_relation(input_relation.__genSQL__())
+        schema = verticapy.options["temp_schema"]
     relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session(estimator.cursor))
     model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session(estimator.cursor))
     estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
@@ -364,9 +361,8 @@ int
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    if isinstance(input_relation, vDataFrame):
-        if not (schema):
-            schema = "public"
+    if not (schema):
+        schema = verticapy.options["temp_schema"]
     schema = str_column(schema)
     if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
         from tqdm.auto import tqdm
@@ -534,14 +530,6 @@ tablesample
     result = {"index": final_metrics}
     if training_score:
         result_train = {"index": final_metrics}
-    try:
-        schema = schema_relation(estimator.name)[0]
-    except:
-        schema = schema_relation(input_relation)[0]
-    try:
-        input_relation.set_schema_writing(str_column(schema)[1:-1])
-    except:
-        pass
     total_time = []
     if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
         from tqdm.auto import tqdm

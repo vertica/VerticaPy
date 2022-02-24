@@ -247,7 +247,10 @@ dict
     confparser = ConfigParser()
     confparser.optionxform = str
     if not dsn:
-        dsn = os.environ["ODBCINI"]
+        if "ODBCINI" in os.environ:
+            dsn = os.environ["ODBCINI"]
+        else:
+            raise EnvironmentError("Environment variable 'ODBCINI' does not exist. You can still use the variable 'dsn' to indicate manually the path to the file containing the credentials.")
     confparser.read(dsn)
     if confparser.has_section(section):
         options = confparser.items(section)

@@ -109,8 +109,8 @@ tuple of floats
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {}".format(
-        y_true, y_score, input_relation
+    query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the RSS Score.")
     rss, n = cursor.fetchone()
@@ -169,11 +169,11 @@ tablesample
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT COUNT(*), AVG({}) FROM {}".format(y_true, input_relation)
+    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation, y_true, y_score,)
     executeSQL(cursor, query, "Computing n and the average of y.")
     n, avg = cursor.fetchone()[0:2]
-    query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {}".format(
-        y_score, avg, y_true, y_score, y_true, avg, input_relation
+    query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_score, avg, y_true, y_score, y_true, avg, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing SSR, SSE, SST.")
     SSR, SSE, SST = cursor.fetchone()[0:3]
@@ -235,8 +235,8 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {}".format(
-        y_score, y_true, y_true, input_relation
+    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_score, y_true, y_true, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the Explained Variance.")
     result = cursor.fetchone()[0]
@@ -280,7 +280,7 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT MAX(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
+    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
     executeSQL(cursor, query, "Computing the Max Error.")
     result = cursor.fetchone()[0]
     if conn:
@@ -327,7 +327,7 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT AVG(ABS({} - {})) FROM {}".format(y_true, y_score, input_relation)
+    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
     executeSQL(cursor, query, "Computing the Mean Absolute Error.")
     result = cursor.fetchone()[0]
     if conn:
@@ -377,7 +377,7 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT MSE({}, {}) OVER () FROM {}".format(y_true, y_score, input_relation)
+    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
     executeSQL(cursor, query, "Computing the MSE.")
     result = cursor.fetchone()[0]
     if root:
@@ -422,8 +422,8 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {}".format(
-        y_true, y_score, input_relation
+    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the Mean Squared Log Error.")
     result = cursor.fetchone()[0]
@@ -467,8 +467,8 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {}".format(
-        y_true, y_score, input_relation
+    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the Median Absolute Error.")
     result = cursor.fetchone()[0]
@@ -515,8 +515,8 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {}".format(
-        y_true, y_score, q, input_relation
+    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, q, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the Quantile Error.")
     result = cursor.fetchone()[0]
@@ -571,13 +571,13 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT RSQUARED({}, {}) OVER() FROM {}".format(
-        y_true, y_score, input_relation
+    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, input_relation, y_true, y_score,
     )
     executeSQL(cursor, query, "Computing the R2 Score.")
     result = cursor.fetchone()[0]
     if adj and k > 0:
-        query = "SELECT COUNT(*) FROM {}".format(input_relation)
+        query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score,)
         executeSQL(cursor, query, "Computing the table number of elements.")
         n = cursor.fetchone()[0]
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
@@ -635,8 +635,8 @@ tablesample
     query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(
         y_true, y_score, y_true, y_score
     )
-    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {}".format(
-        y_true, y_score, input_relation
+    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        y_true, y_score, input_relation, y_true, y_score,
     )
     r2 = r2_score(y_true, y_score, input_relation, cursor)
     values = {
@@ -737,11 +737,11 @@ float
         acc = (tp + tn) / (tp + tn + fn + fp)
     else:
         try:
-            query = "SELECT AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL"
+            query = "SELECT AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
             query = query.format(y_true, y_score, input_relation, y_true, y_score)
             executeSQL(cursor, query, "Computing the Accuracy Score.")
         except:
-            query = "SELECT AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL"
+            query = "SELECT AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
             query = query.format(y_true, y_score, input_relation, y_true, y_score)
             executeSQL(cursor, query, "Computing the Accuracy Score.")
         acc = cursor.fetchone()[0]
@@ -1025,8 +1025,8 @@ tablesample
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
         y_true
     )
-    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE".format(
-        pos_label, y_score, pos_label, input_relation
+    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(
+        pos_label, y_score, pos_label, input_relation,
     )
     result = to_tablesample(query, cursor, title="Computing Confusion matrix.",)
     if conn:
@@ -1264,8 +1264,8 @@ float
         ]
     )
     cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {};"
-    query = query.format(y_true, pos_label, y_score, y_score, input_relation)
+    query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
+    query = query.format(y_true, pos_label, y_score, y_score, input_relation, y_true, y_score,)
     executeSQL(cursor, query, "Computing the Log Loss.")
     result = cursor.fetchone()[0]
     if conn:
@@ -1444,7 +1444,7 @@ tablesample
     query += ") AS obs, DECODE({}".format(y_score)
     for idx, item in enumerate(labels):
         query += ", '{}', {}".format(item, idx)
-    query += ") AS response FROM {}) VERTICAPY_SUBTABLE".format(input_relation)
+    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation,)
     result = to_tablesample(query, cursor, title="Computing Confusion Matrix.",)
     if conn:
         conn.close()

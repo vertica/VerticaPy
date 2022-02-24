@@ -230,9 +230,7 @@ tablesample
     ts = vdf_columns_names([ts], vdf)[0]
     column = vdf_columns_names([column], vdf)[0]
     by = vdf_columns_names(by, vdf)
-    schema = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema):
-        schema = "public"
+    schema = verticapy.options["temp_schema"]
     name = "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         schema, gen_name([column]).upper()
     )
@@ -372,7 +370,7 @@ model
     else:
         vdf_tmp = vdf.copy()
     columns_check([ts], vdf_tmp)
-    schema, relation = schema_relation(model.name)
+    schema = schema_relation(model.name)[0]
     name = schema + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(model.cursor)
     )
@@ -494,10 +492,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema_writing):
-        schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
     )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
@@ -589,10 +584,7 @@ tablesample
     vdf_lags = vdf_from_relation(query, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     from verticapy.learn.linear_model import LinearRegression
 
-    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema_writing):
-        schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
     )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
@@ -661,10 +653,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema_writing):
-        schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
     )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
@@ -705,7 +694,7 @@ tablesample
 
 # ---#
 def het_goldfeldquandt(
-    vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5
+    vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing",
 ):
     """
 ---------------------------------------------------------------------------
@@ -724,6 +713,9 @@ idx: int, optional
     for the split.
 split: float, optional
     Float to indicate where to split (Example: 0.5 to split on the median).
+alternative: str, optional
+    This specifies the alternative for the p-value calculation.
+    It can be in "increasing", "decreasing", "two-sided".
 
 Returns
 -------
@@ -733,15 +725,13 @@ tablesample
     """
 
     def model_fit(input_relation, X, y, model):
-        var = []
+        mse = []
         for vdf_tmp in input_relation:
             model.drop()
             model.fit(vdf_tmp, X, y)
-            model.predict(vdf_tmp, name="verticapy_prediction")
-            vdf_tmp["residual_0"] = vdf_tmp[y] - vdf_tmp["verticapy_prediction"]
-            var += [vdf_tmp["residual_0"].var()]
+            mse += [model.score(method = "mse")]
             model.drop()
-        return var
+        return mse
 
     check_types(
         [
@@ -750,6 +740,7 @@ tablesample
             ("idx", idx, [int, float],),
             ("split", split, [int, float],),
             ("vdf", vdf, [vDataFrame, str,],),
+            ("alternative", alternative, ["increasing", "decreasing", "two-sided",],),
         ],
     )
     columns_check([y] + X, vdf)
@@ -760,25 +751,29 @@ tablesample
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
     from verticapy.learn.linear_model import LinearRegression
 
-    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema_writing):
-        schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
     )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
     try:
-        var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+        mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
         try:
             model.set_params({"solver": "bfgs"})
-            var0, var1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
+            mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
         except:
             model.drop()
             raise
-    n, m = vdf_0_half.shape()[0], vdf_1_half.shape()[0]
-    F = var0 / var1
-    f_pvalue = f.sf(F, n, m)
+    n, m, k = vdf_0_half.shape()[0], vdf_1_half.shape()[0], len(X)
+    F = mse1 / mse0
+    if alternative.lower() in ["increasing",]:
+        f_pvalue = f.sf(F, n - k, m - k)
+    elif alternative.lower() in ["decreasing",]:
+        f_pvalue = f.sf(1. / F, m - k, n - k)
+    elif alternative.lower() in ["two-sided",]:
+        fpval_sm = f.cdf(F, m - k, n - k)
+        fpval_la = f.sf(F, m - k, n - k)
+        f_pvalue = 2 * min(fpval_sm, fpval_la)
     result = tablesample({"index": ["F Value", "f_p_value",], "value": [F, f_pvalue],})
     return result
 
@@ -827,10 +822,7 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-    if not (schema_writing):
-        schema_writing = "public"
-    name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
         get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
     )
     model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
@@ -1017,7 +1009,7 @@ tablesample
     by = vdf_columns_names(by, vdf)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
-        acf = acf.values["value"]
+        acf = acf.values["value"][1:]
     else:
         acf = [acf]
     n = vdf[column].count()
@@ -1091,7 +1083,7 @@ tablesample
     except:
         S = None
     n = vdf[column].count()
-    query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
+    query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
     vdf.__executeSQL__(query, title="Computes the Mann Kendall S standard deviation.")
@@ -1269,11 +1261,7 @@ vDataFrame
         for i in range(1, polynomial_order + 1):
             vdf_poly[f"t_{i}"] = f"POWER(ROW_NUMBER() OVER ({by}ORDER BY {ts}), {i})"
             X += [f"t_{i}"]
-        schema = vdf_poly._VERTICAPY_VARIABLES_["schema_writing"]
-        if not (schema):
-            schema = vdf_poly._VERTICAPY_VARIABLES_["schema"]
-        if not (schema):
-            schema = "public"
+        schema = verticapy.options["temp_schema"]
 
         from verticapy.learn.linear_model import LinearRegression
         model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_poly._VERTICAPY_VARIABLES_["cursor"])),
@@ -1310,11 +1298,7 @@ vDataFrame
         vdf_seasonality["t_cos"] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         vdf_seasonality["t_sin"] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin",]
-        schema = vdf_seasonality._VERTICAPY_VARIABLES_["schema_writing"]
-        if not (schema):
-            schema = vdf_seasonality._VERTICAPY_VARIABLES_["schema"]
-        if not (schema):
-            schema = "public"
+        schema = verticapy.options["temp_schema"]
 
         from verticapy.learn.linear_model import LinearRegression
         model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_seasonality._VERTICAPY_VARIABLES_["cursor"])),
@@ -1426,10 +1410,7 @@ float
 
         from verticapy.learn.linear_model import LinearRegression
 
-        schema_writing = vdf._VERTICAPY_VARIABLES_["schema_writing"]
-        if not (schema_writing):
-            schema_writing = "public"
-        name = schema_writing + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
+        name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
             get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
         )
         model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])

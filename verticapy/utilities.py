@@ -358,7 +358,7 @@ def readSQL(
 
 # ---#
 def get_data_types(
-    expr: str, cursor=None, column_name: str = "", schema_writing: str = ""
+    expr: str, cursor=None, column_name: str = "",
 ):
     """
 ---------------------------------------------------------------------------
@@ -374,9 +374,6 @@ cursor: DBcursor, optional
 column_name: str, optional
 	If not empty, it will return only the data type of the input column if it
 	is in the relation.
-schema_writing: str, optional
-	Schema to use to create the temporary table. If empty, the function will 
-	create a local temporary table.
 
 Returns
 -------
@@ -415,7 +412,7 @@ list of tuples
         except:
             pass
     tmp_name = "_VERTICAPY_TEMPORARY_TABLE_{}".format(get_session(cursor))
-    schema = "v_temp_schema" if not (schema_writing) else schema_writing
+    schema = "v_temp_schema"
     try:
         cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, tmp_name))
     except:
@@ -1157,7 +1154,7 @@ vDataFrame
 
 
 # ---#
-def set_option(option: str, value: Union[bool, int, str] = None):
+def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
     """
     ---------------------------------------------------------------------------
     Sets VerticaPy options.
@@ -1171,6 +1168,11 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             aggregations.
         colors       : list
             List of the colors used to draw the graphics.
+        color_style  : str
+            Style used to color the different graphics. It can be in:
+            "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
+            "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
+            "summer", "tropical", "india", "default".
         max_rows     : int
             Maximum number of rows to display. If the parameter is incorrect, 
             nothing will be changed.
@@ -1190,10 +1192,15 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             Integer used to seed the random number generation in VerticaPy.
         sql_on       : bool
             If set to True, displays all the SQL queries.
+        temp_schema  : str
+            Some functions/methods may need to write an intermediate objects. 
+            It is the schema to use to create them.
         time_on      : bool
             If set to True, displays all the SQL queries elapsed time.
     value: object, optional
         New value of option.
+    cursor: DBcursor, optional
+        Vertica database cursor.
     """
     try:
         option = option.lower()
@@ -1208,14 +1215,15 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "cache",
                     "colors",
                     "color_style",
-                    "max_rows",
                     "max_columns",
+                    "max_rows",
+                    "mode",
                     "percent_bar",
                     "print_info",
                     "random_state",
                     "sql_on",
+                    "temp_schema",
                     "time_on",
-                    "mode",
                 ],
             ),
         ]
@@ -1224,30 +1232,34 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
             verticapy.options["cache"] = value
-    elif option == "color_style":
-        check_types([("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])])
-        if isinstance(value, str):
-            verticapy.options["color_style"] = value
     elif option == "colors":
         check_types([("value", value, [list])])
         if isinstance(value, list):
             verticapy.options["colors"] = [str(elem) for elem in value]
-    elif option == "max_rows":
-        check_types([("value", value, [int, float])])
-        if value >= 0:
-            verticapy.options["max_rows"] = int(value)
+    elif option == "color_style":
+        check_types([("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])])
+        if isinstance(value, str):
+            verticapy.options["color_style"] = value
     elif option == "max_columns":
         check_types([("value", value, [int, float])])
         if value > 0:
             verticapy.options["max_columns"] = int(value)
-    elif option == "print_info":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["print_info"] = value
+    elif option == "max_rows":
+        check_types([("value", value, [int, float])])
+        if value >= 0:
+            verticapy.options["max_rows"] = int(value)
+    elif option == "mode":
+        check_types([("value", value, ["light", "full"])])
+        if value.lower() in ["light", "full", None]:
+            verticapy.options["mode"] = value.lower()
     elif option == "percent_bar":
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options["percent_bar"] = value
+    elif option == "print_info":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["print_info"] = value
     elif option == "random_state":
         check_types([("value", value, [int])])
         if value < 0:
@@ -1260,14 +1272,21 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
             verticapy.options["query_on"] = value
+    elif option == "temp_schema":
+        check_types([("value", value, [str])])
+        if isinstance(value, str):
+            cur = check_cursor(cursor)[0]
+            query = "SELECT table_schema FROM columns WHERE table_schema = '{}' LIMIT 1;".format(value.replace("'", "''"))
+            executeSQL(cur, query, title="Looking if the schema exists.")
+            res = cur.fetchone()
+            if res:
+                verticapy.options["temp_schema"] = str(value)
+            else:
+                raise ParameterError("The schema '{}' could not be found.".format(value))
     elif option == "time_on":
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
             verticapy.options["time_on"] = value
-    elif option == "mode":
-        check_types([("value", value, ["light", "full"])])
-        if value.lower() in ["light", "full", None]:
-            verticapy.options["mode"] = value.lower()
     else:
         raise ParameterError("Option '{}' does not exist.".format(option))
 
@@ -1697,7 +1716,6 @@ def vdf_from_relation(
     cursor=None,
     dsn: str = "",
     schema: str = "public",
-    schema_writing: str = "",
     history: list = [],
     saving: list = [],
 ):
@@ -1727,9 +1745,6 @@ dsn: str, optional
 schema: str, optional
 	Relation schema. It can be to use to be less ambiguous and allow to create schema 
 	and relation name with dots '.' inside.
-schema_writing: str, optional
-	Schema to use to create the temporary table. If empty, the function will create 
-	a local temporary table.
 history: list, optional
 	vDataFrame history (user modifications). to use to keep the previous vDataFrame
 	history.
@@ -1765,7 +1780,6 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["input_relation"] = name
     vdf._VERTICAPY_VARIABLES_["main_relation"] = relation
     vdf._VERTICAPY_VARIABLES_["schema"] = schema
-    vdf._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
     vdf._VERTICAPY_VARIABLES_["cursor"] = cursor
     vdf._VERTICAPY_VARIABLES_["where"] = []
     vdf._VERTICAPY_VARIABLES_["order_by"] = {}

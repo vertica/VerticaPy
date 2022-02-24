@@ -137,16 +137,16 @@ class TestSARIMAX:
             "aic",
             "bic",
         ]
-        assert reg_rep["value"][0] == pytest.approx(-0.772114907643978, abs=1e-6)
+        assert reg_rep["value"][0] == pytest.approx(-0.755650497621303, abs=1e-6)
         assert float(reg_rep["value"][1]) == pytest.approx(28044.894016038184, abs=1e-6)
         assert reg_rep["value"][2] == pytest.approx(337.270572384534, abs=1e-6)
         assert reg_rep["value"][3] == pytest.approx(1089.45677026604, abs=1e-6)
         assert reg_rep["value"][4] == pytest.approx(4992560.88725707, abs=1e-6)
         assert reg_rep["value"][5] == pytest.approx(2234.403922136074, abs=1e-6)
         assert reg_rep["value"][6] == pytest.approx(-0.823855565723365, abs=1e-6)
-        assert reg_rep["value"][7] == pytest.approx(-0.8249868143297991, abs=1e-6)
-        assert reg_rep["value"][8] == pytest.approx(99553.01717600155, abs=1e-6)
-        assert reg_rep["value"][9] == pytest.approx(99586.8701476537, abs=1e-6)
+        assert reg_rep["value"][7] == pytest.approx(-0.8249988696354311, abs=1e-6)
+        assert reg_rep["value"][8] == pytest.approx(98504.22202646323, abs=1e-6)
+        assert reg_rep["value"][9] == pytest.approx(98538.0219389409, abs=1e-6)
 
     def test_score(self, model):
         # method = "max"
@@ -162,13 +162,13 @@ class TestSARIMAX:
         # method = "r2"
         assert model.score() == pytest.approx(-0.823855565723365, abs=1e-6)
         # method = "r2a"
-        assert model.score(method="r2a") == pytest.approx(-0.8249868143297991, abs=1e-6)
+        assert model.score(method="r2a") == pytest.approx(-0.8249988696354311, abs=1e-6)
         # method = "var"
-        assert model.score(method="var") == pytest.approx(-0.772114907643978, abs=1e-6)
+        assert model.score(method="var") == pytest.approx(-0.755650497621303, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic") == pytest.approx(99484.6564122794, abs=1e-6)
+        assert model.score(method="aic") == pytest.approx(98504.22202646323, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic") == pytest.approx(99518.50938393154, abs=1e-6)
+        assert model.score(method="bic") == pytest.approx(98538.0219389409, abs=1e-6)
 
     def test_set_cursor(self, model):
         cur = vertica_conn(

@@ -111,13 +111,11 @@ class TestvDFPreprocessing:
         )
 
         titanic_copy["age"].discretize(method="same_freq", bins=5)
-        assert titanic_copy["age"].distinct() == [
-            "[0.330;21.000]",
-            "[21.000;28.000]",
-            "[28.000;39.000]",
-            "[39.000;76.000]",
-            "[76.000;80.000]",
-        ]
+        assert titanic_copy["age"].distinct() == ['[0.330;19.000]',
+                                                  '[19.000;25.000]',
+                                                  '[25.000;31.000]',
+                                                  '[31.000;42.000]',
+                                                  '[42.000;80.000]']
 
         ### method = "smart"
         titanic_copy = titanic_vd.copy()

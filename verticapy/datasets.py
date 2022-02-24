@@ -96,6 +96,7 @@ vDataFrame
     check_types([("features_ranges", features_ranges, [dict],), 
                  ("nrows", nrows, [int],),])
     cursor = check_cursor(cursor)[0]
+    version(cursor=cursor, condition=[9, 3, 0])
     sql = []
     for param in features_ranges:
         if features_ranges[param]["type"] == str:

@@ -1121,10 +1121,7 @@ def schema_relation(relation):
     from verticapy import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema = relation._VERTICAPY_VARIABLES_["schema_writing"]
-        relation = ""
-        if not (schema):
-            schema = "public"
+        schema, relation = verticapy.options["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):

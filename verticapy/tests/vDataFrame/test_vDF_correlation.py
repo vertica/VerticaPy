@@ -115,11 +115,11 @@ class TestvDFCorrelation:
         result = titanic_vd.chaid("survived",
                                   ["age", "fare", "sex",])
         tree = result.attributes_["tree"]
-        assert tree["chi2"] == pytest.approx(38.3735130215037)
-        assert tree["children"]["female"]["chi2"] == pytest.approx(26.26212428839676)
-        assert tree["children"]["female"]["children"][19.0]["chi2"] == pytest.approx(11.9190757915065)
-        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][0] == pytest.approx(0.345679012345679)
-        assert tree["children"]["female"]["children"][19.0]["children"][64.42]["prediction"][1] == pytest.approx(0.654320987654321)
+        assert tree["chi2"] == pytest.approx(345.12775126385327)
+        assert tree["children"]["female"]["chi2"] == pytest.approx(10.472532457814179)
+        assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(3.479525088868805)
+        assert tree["children"]["female"]["children"][127.6]["children"][19.0]["prediction"][0] == pytest.approx(0.325581395348837)
+        assert tree["children"]["female"]["children"][127.6]["children"][38.0]["prediction"][1] == pytest.approx(0.720496894409938)
         assert not(tree["split_is_numerical"])
         assert tree["split_predictor"] == '"sex"'
         assert tree["split_predictor_idx"] == 2
@@ -129,10 +129,10 @@ class TestvDFCorrelation:
         assert pred[1] == 1
         pred = result.predict_proba([[3., 11., 'male'],
                                      [11., 1., 'female']])
-        assert pred[0][0] == pytest.approx(0.76859504)
-        assert pred[0][1] == pytest.approx(0.23140496)
-        assert pred[1][0] == pytest.approx(0.345679012345679)
-        assert pred[1][1] == pytest.approx(0.654320987654321)
+        assert pred[0][0] == pytest.approx(0.75968992)
+        assert pred[0][1] == pytest.approx(0.24031008)
+        assert pred[1][0] == pytest.approx(0.3255814)
+        assert pred[1][1] == pytest.approx(0.6744186)
 
     def test_vDF_corr(self, titanic_vd):
         #
@@ -328,25 +328,32 @@ class TestvDFCorrelation:
         assert result2["non_events"][-1] == pytest.approx(784)
 
     def test_vDF_pivot_table_chi2(self, titanic_vd):
-        result = titanic_vd.pivot_table_chi2("survived")["chi2"]
-        assert result[0] == pytest.approx(44.05296124485184)
-        assert result[1] == pytest.approx(38.3735130215037)
-        assert result[2] == pytest.approx(35.80021927080476)
-        assert result[3] == pytest.approx(30.01795504289887)
-        assert result[4] == pytest.approx(29.210493262943615)
-        assert result[5] == pytest.approx(28.096344784906517)
-        assert result[6] == pytest.approx(22.976823435582784)
-        assert result[7] == pytest.approx(0.0)
+        result = titanic_vd.pivot_table_chi2("survived")
+        assert result["chi2"][0] == pytest.approx(345.12775126385327)
+        assert result["chi2"][1] == pytest.approx(139.2026595859198)
+        assert result["chi2"][2] == pytest.approx(103.48373526643627)
+        assert result["chi2"][3] == pytest.approx(53.47413727076916)
+        assert result["chi2"][4] == pytest.approx(44.074789072247576)
+        assert result["chi2"][5] == pytest.approx(42.65927519250441)
+        assert result["chi2"][6] == pytest.approx(34.54227539207669)
+        assert result["chi2"][7] == pytest.approx(-2.6201263381153694e-14)
+        assert result["p_value"][0] == pytest.approx(4.8771014178794746e-77)
+        assert result["p_value"][1] == pytest.approx(6.466448884215497e-32)
+        assert result["p_value"][2] == pytest.approx(5.922792773022131e-31)
+        assert result["p_value"][3] == pytest.approx(2.9880194205753303e-09)
+        assert result["p_value"][4] == pytest.approx(7.143900900120299e-08)
+        assert result["p_value"][5] == pytest.approx(5.4532585750903e-10)
+        assert result["p_value"][6] == pytest.approx(0.0028558258758971957)
         set_option("random_state", 0)
-        result = titanic_vd.pivot_table_chi2("survived", method="smart")["chi2"]
-        assert result[0] == pytest.approx(62.93869563254498)
-        assert result[1] == pytest.approx(42.67732197716373)
-        assert result[2] == pytest.approx(38.3735130215037)
-        assert result[3] == pytest.approx(29.210493262943615)
-        assert result[4] == pytest.approx(27.84535604989029)
-        assert result[5] == pytest.approx(26.92477190965271)
-        assert result[6] == pytest.approx(22.976823435582784)
-        assert result[7] == pytest.approx(0.0)
+        result = titanic_vd.pivot_table_chi2("survived", method="smart")
+        assert result["chi2"][0] == pytest.approx(345.12775126385327)
+        assert result["chi2"][1] == pytest.approx(187.75090682844288)
+        assert result["chi2"][2] == pytest.approx(139.2026595859198)
+        assert result["chi2"][3] == pytest.approx(53.474137270768885)
+        assert result["chi2"][4] == pytest.approx(44.074789072247576)
+        assert result["chi2"][5] == pytest.approx(42.65927519250441)
+        assert result["chi2"][6] == pytest.approx(38.109904618027755)
+        assert result["chi2"][7] == pytest.approx(0.0)
 
     def test_vDF_pacf(self, amazon_vd):
         # testing vDataFrame.pacf
