@@ -1169,7 +1169,7 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
         colors       : list
             List of the colors used to draw the graphics.
         color_style  : str
-            Style used to color the different graphics. It can be in:
+            Style used to color the graphics, one of the following:
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
@@ -1193,8 +1193,9 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
         sql_on       : bool
             If set to True, displays all the SQL queries.
         temp_schema  : str
-            Some functions/methods may need to write an intermediate objects. 
-            It is the schema to use to create them.
+            Specifies the temporary schema that certain methods/functions use to 
+            create intermediate objects, if needed. 
+            
         time_on      : bool
             If set to True, displays all the SQL queries elapsed time.
     value: object, optional
@@ -1277,7 +1278,7 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
         if isinstance(value, str):
             cur = check_cursor(cursor)[0]
             query = "SELECT table_schema FROM columns WHERE table_schema = '{}' LIMIT 1;".format(value.replace("'", "''"))
-            executeSQL(cur, query, title="Looking if the schema exists.")
+            executeSQL(cur, query, title="Checking if the schema exists.")
             res = cur.fetchone()
             if res:
                 verticapy.options["temp_schema"] = str(value)

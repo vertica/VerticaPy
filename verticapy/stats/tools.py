@@ -714,8 +714,8 @@ idx: int, optional
 split: float, optional
     Float to indicate where to split (Example: 0.5 to split on the median).
 alternative: str, optional
-    This specifies the alternative for the p-value calculation.
-    It can be in "increasing", "decreasing", "two-sided".
+    Specifies the alternative hypothesis for the p-value calculation,
+    one of the following variances: "increasing", "decreasing", "two-sided".
 
 Returns
 -------

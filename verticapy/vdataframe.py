@@ -9089,7 +9089,7 @@ vColumns : vColumn
     vDataFrame.set_cursor : Sets a new database cursor.
     vDataFrame.set_dsn    : Sets a new database DSN.
         """
-        warning_message = "'set_schema_writing' method is DEPRECATED and it will be removed in VerticaPy 0.10.0. Use the general 'set_option' function instead."
+        warning_message = "'The set_schema_writing' method is deprecated and will be removed in VerticaPy 0.10.0. Use the general 'set_option' function instead."
         from verticapy.utilities import set_option
 
         set_option("temp_schema", schema_writing,)
