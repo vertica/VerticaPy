@@ -136,7 +136,6 @@ _VERTICAPY_VARIABLES_: dict
         order_by, dict        : Dictionary of all rules to sort the vDataFrame.
         saving, list          : List to use to reconstruct the vDataFrame.
         schema, str           : Schema of the input relation.
-        schema_writing, str   : Schema to use to create temporary tables when needed.
         where, list           : List of all rules to filter the vDataFrame.
 vColumns : vColumn
     Each vColumn of the vDataFrame is accessible by entering its name between brackets
@@ -248,7 +247,6 @@ vColumns : vColumn
                 self._VERTICAPY_VARIABLES_["schema"],
                 self._VERTICAPY_VARIABLES_["input_relation"],
             )
-            self._VERTICAPY_VARIABLES_["schema_writing"] = ""
 
     # ---#
     def __abs__(self):
@@ -1404,11 +1402,10 @@ vColumns : vColumn
         cursor = self._VERTICAPY_VARIABLES_["cursor"]
         dsn = self._VERTICAPY_VARIABLES_["dsn"]
         schema = self._VERTICAPY_VARIABLES_["schema"]
-        schema_writing = self._VERTICAPY_VARIABLES_["schema_writing"]
         history = self._VERTICAPY_VARIABLES_["history"] + [history]
         saving = self._VERTICAPY_VARIABLES_["saving"]
         return vdf_from_relation(
-            table, func, cursor, dsn, schema, schema_writing, history, saving,
+            table, func, cursor, dsn, schema, history, saving,
         )
 
     #
@@ -3813,9 +3810,6 @@ vColumns : vColumn
         copy_vDataFrame._VERTICAPY_VARIABLES_["saving"] = [
             item for item in self._VERTICAPY_VARIABLES_["saving"]
         ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_[
-            "schema_writing"
-        ] = self._VERTICAPY_VARIABLES_["schema_writing"]
         for column in self._VERTICAPY_VARIABLES_["columns"]:
             new_vColumn = vColumn(
                 column,
@@ -5240,7 +5234,6 @@ vColumns : vColumn
                     ),
                     self._VERTICAPY_VARIABLES_["cursor"],
                     name.replace('"', "").replace("'", "''"),
-                    self._VERTICAPY_VARIABLES_["schema_writing"],
                 )
             except:
                 raise QueryError(f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work.")
@@ -7252,9 +7245,7 @@ vColumns : vColumn
             relation = "(SELECT {} FROM {}) pacf".format(
                 ", ".join([column] + columns), table
             )
-            schema = self._VERTICAPY_VARIABLES_["schema_writing"]
-            if not (schema):
-                schema = "public"
+            schema = verticapy.options["temp_schema"]
 
             def drop_temp_elem(self, schema):
                 try:
@@ -7610,18 +7601,30 @@ vColumns : vColumn
             tmp_res = vdf.pivot_table(columns = [col, response],
                                       max_cardinality = (10000, 100),
                                       show = False).to_numpy()[:,1:]
+            tmp_res = np.where(tmp_res == '', '0', tmp_res)
+            tmp_res = tmp_res.astype(float)
+            i = 0
             all_chi2 = []
             for row in tmp_res:
-                L = [int(x) if x != '' else 0 for x in row]
-                n = sum(L)
-                expected = n / len(L)
-                all_chi2 += [np.sqrt((x - expected) ** 2 / expected) for x in L]
-            chi2_list += [(col, sum(all_chi2), vdf[col].distinct(), self[col].isnum())]
+                j = 0
+                for col_in_row in row:
+                    all_chi2 += [col_in_row ** 2 / (sum(tmp_res[i]) * sum(tmp_res[:,j]))]
+                    j += 1
+                i += 1
+            from scipy.stats import t, norm, chi2
+
+            val = sum(sum(tmp_res)) * (sum(all_chi2) - 1)
+            k, r = tmp_res.shape
+            dof = (k - 1) * (r - 1)
+            pval = chi2.sf(val, dof)
+            chi2_list += [(col, val, pval, dof, vdf[col].distinct(), self[col].isnum())]
         chi2_list = sorted(chi2_list, key=lambda tup: tup[1], reverse=True)
         result = {"index": [elem[0] for elem in chi2_list], 
                   "chi2": [elem[1] for elem in chi2_list],
-                  "categories": [elem[2] for elem in chi2_list],
-                  "is_numerical": [elem[3] for elem in chi2_list],}
+                  "p_value": [elem[2] for elem in chi2_list],
+                  "dof": [elem[3] for elem in chi2_list],
+                  "categories": [elem[4] for elem in chi2_list],
+                  "is_numerical": [elem[5] for elem in chi2_list],}
         return tablesample(result)
 
     # ---#
@@ -8748,9 +8751,7 @@ vColumns : vColumn
                 ]
             )
         if isinstance(dimensions, Iterable):
-            schema = self._VERTICAPY_VARIABLES_["schema_writing"]
-            if not (schema):
-                schema = "public"
+            schema = verticapy.options["temp_schema"]
             model_name = "_VERTICAPY_TEMPORARY_PCA_PLOT_MODEL_{}_".format(get_session(self._VERTICAPY_VARIABLES_["cursor"]))
             from verticapy.learn.decomposition import PCA
             
@@ -9088,14 +9089,10 @@ vColumns : vColumn
     vDataFrame.set_cursor : Sets a new database cursor.
     vDataFrame.set_dsn    : Sets a new database DSN.
         """
-        check_types([("schema_writing", schema_writing, [str],)])
-        self._VERTICAPY_VARIABLES_["cursor"].execute(
-            "SELECT table_schema FROM columns WHERE table_schema = '{}'".format(
-                schema_writing.replace("'", "''")
-            )
-        )
-        assert (self._VERTICAPY_VARIABLES_["cursor"].fetchone()) or (schema_writing.lower() not in ['"v_temp_schema"', "v_temp_schema", '"public"', "public"]), MissingSchema(f"The schema '{schema_writing}' doesn't exist or is not accessible.\nThe attribute of the vDataFrame 'schema_writing' did not change.")
-        self._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
+        warning_message = "'The set_schema_writing' method is deprecated and will be removed in VerticaPy 0.10.0. Use the general 'set_option' function instead."
+        from verticapy.utilities import set_option
+
+        set_option("temp_schema", schema_writing,)
         return self
 
     # ---#

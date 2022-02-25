@@ -52,6 +52,9 @@
 class ConversionError(Exception):
     pass
 
+# ---#
+class EnvironmentError(Exception):
+    pass
 
 # ---#
 class EmptyParameter(Exception):

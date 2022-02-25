@@ -418,11 +418,6 @@ class TestvDFUtilities:
         result.set_cursor(cursor)
         assert isinstance(result._VERTICAPY_VARIABLES_["cursor"], type(cursor))
 
-    def test_vDF_set_schema_writing(self, titanic_vd):
-        result = titanic_vd.copy()
-        result.set_schema_writing("test")
-        assert result._VERTICAPY_VARIABLES_["schema_writing"] == "test"
-
     def test_vDF_catcol(self, titanic_vd):
         result = [
             elem.replace('"', "").lower()
@@ -591,7 +586,7 @@ class TestvDFUtilities:
 
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
-        assert result2["value"][0] == pytest.approx(862, 5e-2)
+        assert result2["value"][0] == pytest.approx(799, 5e-2)
         assert result2["value"][1] == pytest.approx(1712, 5e-2)
         assert result2["value"][2] == pytest.approx(1713, 5e-2)
         assert result2["value"][3] == pytest.approx(1714, 5e-2)

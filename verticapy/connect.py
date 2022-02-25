@@ -247,7 +247,10 @@ dict
     confparser = ConfigParser()
     confparser.optionxform = str
     if not dsn:
-        dsn = os.environ["ODBCINI"]
+        if "ODBCINI" in os.environ:
+            dsn = os.environ["ODBCINI"]
+        else:
+            raise EnvironmentError("The environment variable 'ODBCINI' does not exist. Alternatively, you can manually specify the path to a DSN configuration file with the 'dsn' variable.")
     confparser.read(dsn)
     if confparser.has_section(section):
         options = confparser.items(section)
