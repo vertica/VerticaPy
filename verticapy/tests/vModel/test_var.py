@@ -72,10 +72,10 @@ class TestVAR:
         m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
-            "coef",
+            "coefficients",
         ]
 
-        m_att_details = model.get_attr(attr_name="coef")[0]
+        m_att_details = model.get_attr(attr_name="coefficients")[0]
 
         assert m_att_details["predictor"] == [
             "Intercept",

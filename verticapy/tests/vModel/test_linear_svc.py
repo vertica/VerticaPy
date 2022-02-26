@@ -64,7 +64,7 @@ class TestLinearSVC:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
         assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
         assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444, 1e-2)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.30906081919735207, 1e-2)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.29122807017543856, 1e-2)
         assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555, 1e-2)
         assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408, 1e-2)
         assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453, 1e-2)

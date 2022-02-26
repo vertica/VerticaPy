@@ -449,7 +449,7 @@ list of tuples
 
 # ---#
 def pandas_to_vertica(
-    df, cursor=None, name: str = "", schema: str = "public", parse_n_lines: int = 10000,
+    df, cursor=None, name: str = "", schema: str = "public", dtype: dict = {}, parse_n_lines: int = 10000, temp_path: str = "",
 ):
     """
 ---------------------------------------------------------------------------
@@ -468,12 +468,18 @@ name: str, optional
     Name of the new relation. If empty, a temporary local table is created.
 schema: str, optional
     Schema of the new relation. The default schema is public.
+dtype: dict, optional
+    Dictionary of the user types. Providing a dictionary can increase 
+    ingestion speed and precision; instead of parsing the file to guess 
+    the different types, VerticaPy will use the input types.
 parse_n_lines: int, optional
     If this parameter is greater than 0. A new file of 'parse_n_lines' lines
     will be created and ingested first to identify the data types. It will be
     then dropped and the entire file will be ingested. The data types identification
     will be less precise but this parameter can make the process faster if the
     file is heavy.
+temp_path: str, optional
+    Path of the location used to store the intermediate CSV file.
     
 Returns
 -------
@@ -487,9 +493,11 @@ read_json : Ingests a JSON file into the Vertica database.
     """
     check_types(
         [
-            ("name", name, [str],),
-            ("schema", schema, [str],),
-            ("parse_n_lines", parse_n_lines, [int],),
+            ("name", name, [str,],),
+            ("schema", schema, [str,],),
+            ("parse_n_lines", parse_n_lines, [int,],),
+            ("dtype", dtype, [dict,],),
+            ("temp_path", temp_path, [str,],),
         ]
     )
     cursor = check_cursor(cursor)[0]
@@ -497,7 +505,7 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
     else:
         tmp_name = ""
-    path = "{}.csv".format(name)
+    path = "{}{}{}.csv".format(temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,)
     try:
         # Adding the quotes to STR pandas columns in order to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
@@ -515,11 +523,11 @@ read_json : Ingests a JSON file into the Vertica database.
             clear = False
         import csv
 
-        tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\\',)
-        if not(tmp_name):
-            vdf = read_csv(path, cursor, table_name=tmp_name, temporary_local_table=True, parse_n_lines=parse_n_lines,)
+        tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\027',)
+        if (tmp_name):
+            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines,)
         else:
-            vdf = read_csv(path, cursor, table_name=tmp_name, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines,)
+            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines,)
         os.remove(path)
     except:
         os.remove(path)
@@ -540,7 +548,7 @@ def pcsv(
     header_names: list = [],
     na_rep: str = "",
     quotechar: str = '"',
-    escape: str = "\\",
+    escape: str = "\027",
     ingest_local: bool = True,
 ):
     """
@@ -582,6 +590,7 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     cursor = check_cursor(cursor)[0]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
+    flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
     executeSQL(cursor, 
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
@@ -650,6 +659,7 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     cursor = check_cursor(cursor)[0]
     flex_name = "VERTICAPY_{}_FLEX".format(get_session(cursor))
+    flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
     executeSQL(cursor, 
         "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
             flex_name
@@ -682,7 +692,7 @@ def read_csv(
     dtype: dict = {},
     na_rep: str = "",
     quotechar: str = '"',
-    escape: str = "\\",
+    escape: str = "\027",
     genSQL: bool = False,
     parse_n_lines: int = -1,
     insert: bool = False,
@@ -1013,6 +1023,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         else:
             input_relation = '"{}"'.format(table_name)
         flex_name = "VERTICAPY_" + str(get_session(cursor)) + "_FLEX"
+        flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
         executeSQL(cursor, 
             "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
                 flex_name
@@ -1719,6 +1730,7 @@ def vdf_from_relation(
     schema: str = "public",
     history: list = [],
     saving: list = [],
+    vdf=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1768,9 +1780,12 @@ vDataFrame
         ]
     )
     name = gen_name([name])
-    from verticapy import vDataFrame
+    if vdf:
+        vdf.__init__("", empty=True)
+    else:
+        from verticapy import vDataFrame
 
-    vdf = vDataFrame("", empty=True)
+        vdf = vDataFrame("", empty=True)
     vdf._VERTICAPY_VARIABLES_["dsn"] = dsn
     if not (cursor) and not (dsn):
         cursor = read_auto_connect().cursor()

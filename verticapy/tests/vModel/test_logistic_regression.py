@@ -64,7 +64,7 @@ class TestLogisticRegression:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.271495668573431)
         assert cls_rep1["precision"][0] == pytest.approx(0.6758620689655173)
         assert cls_rep1["recall"][0] == pytest.approx(0.21777777777777776)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.3536312493573768)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.32941176470588235)
         assert cls_rep1["mcc"][0] == pytest.approx(0.2359133929510658)
         assert cls_rep1["informedness"][0] == pytest.approx(0.15782879818594098)
         assert cls_rep1["markedness"][0] == pytest.approx(0.35262974573319417)

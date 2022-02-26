@@ -8630,7 +8630,9 @@ vColumns : vColumn
             by = [by]
         columns_check(by, self)
         by = vdf_columns_names(by, self)
-        name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
+        random_int = random.randint(0, 10000000)
+        name = "__verticapy_random_{}__".format(random_int)
+        name2 = "__verticapy_random_{}__".format(random_int + 1)
         vdf = self.copy()
         assert (0 < x < 1), ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
@@ -8642,9 +8644,10 @@ vColumns : vColumn
             )
             random_func = "SEEDED_RANDOM({})".format(random_seed)
             vdf.eval(name, random_func)
+            q = vdf[name].quantile(x)
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("{} < {}".format(name, x),)
+            vdf.filter("{} <= {}".format(name, q),)
             verticapy.options["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
@@ -8652,11 +8655,12 @@ vColumns : vColumn
             if method == "stratified":
                 order_by = "ORDER BY " + ", ".join(by)
             vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
+            vdf.eval(name2, "MIN({}) OVER (PARTITION BY CAST({} * {} AS Integer) ORDER BY {} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)".format(name, name, x, name))
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("MOD({}, {}) = 0".format(name, int(1 / x)))
+            vdf.filter("{} = {}".format(name, name2))
             verticapy.options["print_info"] = print_info_init
-            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
+            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
         return vdf
 
     # ---#
@@ -10211,11 +10215,14 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = "SEEDED_RANDOM({})".format(random_seed)
+        query = "SELECT APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(random_func, test_size, self.__genSQL__(),)
+        self.__executeSQL__(query, title="Computing the seeded numbers quantile.")
+        q = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         return (
             vdf_from_relation(

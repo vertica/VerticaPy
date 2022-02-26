@@ -48,6 +48,16 @@ class TestNearestCentroid:
         model_repr.drop()
         assert model_repr.__repr__() == "<NearestCentroid>"
 
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["centroids", "classes", "p",]
+        m_att = model.get_attr("centroids")
+        assert m_att == model.centroids_
+        m_att = model.get_attr("p")
+        assert m_att == model.parameters["p"]
+        m_att = model.get_attr("classes")
+        assert m_att == model.classes_
+
     # TODO
     def test_contour(self, base, titanic_vd):
         model_test = NearestCentroid("model_contour", cursor=base.cursor)
@@ -172,7 +182,7 @@ class TestNearestCentroid:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.282873255537287)
         assert cls_rep1["precision"][0] == pytest.approx(0.5680628272251309)
         assert cls_rep1["recall"][0] == pytest.approx(0.5549872122762148)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.6295557570262921)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.5614489003880982)
         assert cls_rep1["mcc"][0] == pytest.approx(0.28346499991292595)
         assert cls_rep1["informedness"][0] == pytest.approx(0.282259939548942)
         assert cls_rep1["markedness"][0] == pytest.approx(0.28467520507529365)

@@ -923,7 +923,7 @@ tablesample
         tpr = tp / (tp + fn) if (tp + fn != 0) else 0  # recall
         tnr = tn / (tn + fp) if (tn + fp != 0) else 0
         npv = tn / (tn + fn) if (tn + fn != 0) else 0
-        f1 = 2 * (tpr * tnr) / (tpr + tnr) if (tpr + tnr != 0) else 0  # f1
+        f1 = 2 * (tpr * ppv) / (tpr + ppv) if (tpr + ppv != 0) else 0  # f1
         csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0  # csi
         bm = tpr + tnr - 1  # informedness
         mk = ppv + npv - 1  # markedness
@@ -947,7 +947,7 @@ tablesample
             logloss = log_loss(y_t, y_s, input_relation, cursor, 1)
             if not (cutoff):
                 current_cutoff = roc_curve(
-                    y_t, y_p, input_relation, cursor, best_threshold=True
+                    y_t, y_p, input_relation, cursor, best_threshold=True, nbins=10000,
                 )
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:

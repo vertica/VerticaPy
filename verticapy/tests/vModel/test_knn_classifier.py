@@ -48,6 +48,16 @@ class TestKNeighborsClassifier:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsClassifier>"
 
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["n_neighbors", "p", "classes",]
+        m_att = model.get_attr("n_neighbors")
+        assert m_att == model.parameters["n_neighbors"]
+        m_att = model.get_attr("p")
+        assert m_att == model.parameters["p"]
+        m_att = model.get_attr("classes")
+        assert m_att == model.classes_
+
     def test_contour(self, base, titanic_vd):
         model_test = KNeighborsClassifier("model_contour", cursor=base.cursor)
         model_test.drop()
@@ -150,7 +160,7 @@ class TestKNeighborsClassifier:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.248241359319007)
         assert cls_rep1["precision"][0] == pytest.approx(0.8679245283018868)
         assert cls_rep1["recall"][0] == pytest.approx(0.35384615384615387)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.5157548811134738)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.5027322404371585)
         assert cls_rep1["mcc"][0] == pytest.approx(0.38437795748893316)
         assert cls_rep1["informedness"][0] == pytest.approx(0.3046658259773014)
         assert cls_rep1["markedness"][0] == pytest.approx(0.4849458048976314)

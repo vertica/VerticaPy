@@ -69,12 +69,12 @@ class TestSARIMAX:
         m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
-            "coef",
+            "coefficients",
             "ma_avg",
             "ma_piq",
         ]
 
-        m_att_details = model.get_attr(attr_name="coef")
+        m_att_details = model.get_attr(attr_name="coefficients")
 
         assert m_att_details["predictor"] == [
             "Intercept",

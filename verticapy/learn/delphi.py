@@ -198,7 +198,7 @@ model_grid_ : tablesample
                      ("save", save, [bool,],),])
         self.type, self.name = "AutoDataPrep", name
         if not(self.name):
-            self.name = "AutoDataPrep_{}".format(get_session(cursor))
+            self.name = "\"{}\".AutoDataPrep_{}".format(verticapy.options["temp_schema"], get_session(cursor),)
         self.parameters = {"cat_method": cat_method,
                            "num_method": num_method,
                            "nbins": nbins,
