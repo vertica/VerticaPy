@@ -176,7 +176,7 @@ class TestvDFUtilities:
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
-        shutil.rmtree(name)
+        #shutil.rmtree(name) # trying to erase the folder
 
     def test_vDF_to_db(self, titanic_vd):
         try:
