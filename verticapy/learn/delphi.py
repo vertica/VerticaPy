@@ -162,8 +162,6 @@ sql_: str
     SQL needed to deploy the model.
 final_relation_: vDataFrame
     Relation created after fitting the model.
-model_grid_ : tablesample
-    Grid containing the different models information.
     """
     # ---#
     def __init__(self,

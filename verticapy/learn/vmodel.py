@@ -4991,7 +4991,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def inverse_transform(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [],
+        self, vdf: Union[str, vDataFrame], X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4999,7 +4999,7 @@ class Preprocessing(Unsupervised):
 
     Parameters
     ----------
-    vdf: str/vDataFrame, optional
+    vdf: str/vDataFrame
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.

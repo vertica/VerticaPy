@@ -3872,7 +3872,7 @@ vColumns : vColumn
     ----------
     columns: list
         List of the vColumns names. The list must have two elements.
-    func: function / str, optional
+    func: function / str
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional
@@ -10071,6 +10071,116 @@ vColumns : vColumn
         df = pd.DataFrame(data)
         df.columns = column_names
         return df
+
+    # ---#
+    def to_parquet(
+        self,
+        directory: str,
+        compression: str = "snappy",
+        rowGroupSizeMB: int = 512,
+        fileSizeMB: int = 10000,
+        fileMode: int = 660,
+        dirMode: int = 755,
+        int96AsTimestamp: bool = True,
+        by: list = [],
+        order_by: Union[list, dict] = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Exports a table, columns from a table, or query results to files in the 
+    Parquet format.
+    You can partition data instead of or in addition to exporting the column data. 
+    Partitioning data can improve query performance by enabling partition pruning. 
+
+    Parameters
+    ----------
+    directory: str
+        The destination directory for the output files. The directory must not exist, 
+        and the current user must have permission to write it. The destination can be 
+        on any of the following file systems: 
+            HDFS File System
+            S3 Object Store
+            Google Cloud Storage (GCS) Object Store
+            Azure Blob Storage Object Store
+            Linux file system, either an NFS mount or local storage on each node
+    compression: str, optional
+        Column compression type, one of:        
+            Snappy (default)
+            GZIP
+            Brotli
+            ZSTD
+            Uncompressed
+    rowGroupSizeMB: int, optional
+        The uncompressed size of exported row groups, in MB, an integer value between 1 
+        and fileSizeMB , inclusive, or unlimited if fileSizeMB is 0.
+        The row groups in the exported files are smaller than this value because Parquet 
+        files are compressed on write. For best performance when exporting to HDFS, set 
+        size to be smaller than the HDFS block size.
+    fileSizeMB: int, optional
+        The maximum file size of a single output file. This value is a hint, not a hard limit. 
+        A value of 0 specifies no limit.
+        This value affects the size of individual output files, not the total output size. 
+        For smaller values, Vertica divides the output into more files; all data is still exported.
+    fileMode: int, optional
+        For writes to HDFS only, permission to apply to all exported files. You can specify 
+        the value in Unix octal format (such as 665) or user-group-other format—for example, 
+        rwxr-xr-x. The value must be formatted as a string even if using the octal format.
+        Valid octal values range between 0 and 1777, inclusive. See HDFS Permissions in the 
+        Apache Hadoop documentation.
+        When writing files to any destination other than HDFS, this parameter has no effect.
+    dirMode: int, optional
+        For writes to HDFS only, permission to apply to all exported directories. Values follow 
+        the same rules as those for fileMode. Further, you must give the Vertica HDFS user full 
+        permission, at least rwx------ or 700.
+        When writing files to any destination other than HDFS, this parameter has no effect.
+    int96AsTimestamp: bool, optional
+        Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
+        physical type (False).
+    by: list, optional
+        vColumns used in the partition.
+    order_by: dict / list, optional
+        List of the vColumns to use to sort the data using asc order or
+        dictionary of all sorting methods. For example, to sort by "column1"
+        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+
+    Returns
+    -------
+    tablesample
+        An object containing the number of rows exported. For more information, 
+        see utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
+    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica database.
+    vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
+        """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(by, str):
+            by = [by]
+        check_types(
+            [
+                ("directory", directory, [str,],),
+                ("compression", compression, ["snappy", "gzip", "brotli", "zstd", "uncompressed",],),
+                ("rowGroupSizeMB", rowGroupSizeMB, [int,],),
+                ("fileSizeMB", fileSizeMB, [int,],),
+                ("fileMode", fileMode, [int,],),
+                ("dirMode", dirMode, [int,],),
+                ("int96AsTimestamp", int96AsTimestamp, [bool,],),
+                ("by", by, [list,],),
+                ("order_by", order_by, [list, dict,],),
+            ]
+        )
+        assert (0 < rowGroupSizeMB), ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
+        assert (0 < fileSizeMB), ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
+        assert (0 <= fileMode <= 1777), ParameterError("Parameter 'fileMode' must be between 0 and 1777, inclusive.")
+        by = vdf_columns_names(by, self)
+        partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
+        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = {}, dirMode = {}, int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(directory, compression, rowGroupSizeMB, fileSizeMB, fileMode, dirMode, str(int96AsTimestamp).lower(), partition, sort_str(order_by, self), self.__genSQL__(),)
+        title = "Exporting data to Parquet format."
+        result = to_tablesample(query, self._VERTICAPY_VARIABLES_["cursor"], title=title,)
+        return result
 
     # ---#
     def to_pickle(self, name: str):

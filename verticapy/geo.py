@@ -331,7 +331,8 @@ def split_polygon_n(p: str, cursor=None, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
 Splits a polygon into (nbins ** 2) smaller polygons with approximately
-the same total area.
+the same total area. Splitting polygons will lead to edge effects. 
+This one will be higher when the number of bins is smaller.
 
 Parameters
 ----------
