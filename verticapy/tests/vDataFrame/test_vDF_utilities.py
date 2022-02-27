@@ -175,7 +175,7 @@ class TestvDFUtilities:
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
-        assert result["Rows Exported"] == 1234
+        assert result["Rows Exported"][0] == 1234
         shutil.rmtree(name)
 
     def test_vDF_to_db(self, titanic_vd):
