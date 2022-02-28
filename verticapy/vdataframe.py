@@ -10079,8 +10079,8 @@ vColumns : vColumn
         compression: str = "snappy",
         rowGroupSizeMB: int = 512,
         fileSizeMB: int = 10000,
-        fileMode: int = 660,
-        dirMode: int = 755,
+        fileMode: int = "660",
+        dirMode: int = "755",
         int96AsTimestamp: bool = True,
         by: list = [],
         order_by: Union[list, dict] = [],
@@ -10121,14 +10121,14 @@ vColumns : vColumn
         A value of 0 specifies no limit.
         This value affects the size of individual output files, not the total output size. 
         For smaller values, Vertica divides the output into more files; all data is still exported.
-    fileMode: int, optional
+    fileMode: str, optional
         For writes to HDFS only, permission to apply to all exported files. You can specify 
         the value in Unix octal format (such as 665) or user-group-other format—for example, 
         rwxr-xr-x. The value must be formatted as a string even if using the octal format.
         Valid octal values range between 0 and 1777, inclusive. See HDFS Permissions in the 
         Apache Hadoop documentation.
         When writing files to any destination other than HDFS, this parameter has no effect.
-    dirMode: int, optional
+    dirMode: str, optional
         For writes to HDFS only, permission to apply to all exported directories. Values follow 
         the same rules as those for fileMode. Further, you must give the Vertica HDFS user full 
         permission, at least rwx------ or 700.
@@ -10165,8 +10165,8 @@ vColumns : vColumn
                 ("compression", compression, ["snappy", "gzip", "brotli", "zstd", "uncompressed",],),
                 ("rowGroupSizeMB", rowGroupSizeMB, [int,],),
                 ("fileSizeMB", fileSizeMB, [int,],),
-                ("fileMode", fileMode, [int,],),
-                ("dirMode", dirMode, [int,],),
+                ("fileMode", fileMode, [str,],),
+                ("dirMode", dirMode, [str,],),
                 ("int96AsTimestamp", int96AsTimestamp, [bool,],),
                 ("by", by, [list,],),
                 ("order_by", order_by, [list, dict,],),
@@ -10174,10 +10174,9 @@ vColumns : vColumn
         )
         assert (0 < rowGroupSizeMB), ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
         assert (0 < fileSizeMB), ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
-        assert (0 <= fileMode <= 1777), ParameterError("Parameter 'fileMode' must be between 0 and 1777, inclusive.")
         by = vdf_columns_names(by, self)
         partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
-        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = {}, dirMode = {}, int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(directory, compression, rowGroupSizeMB, fileSizeMB, fileMode, dirMode, str(int96AsTimestamp).lower(), partition, sort_str(order_by, self), self.__genSQL__(),)
+        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = '{}', dirMode = '{}', int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(directory, compression, rowGroupSizeMB, fileSizeMB, fileMode, dirMode, str(int96AsTimestamp).lower(), partition, sort_str(order_by, self), self.__genSQL__(),)
         title = "Exporting data to Parquet format."
         result = to_tablesample(query, self._VERTICAPY_VARIABLES_["cursor"], title=title,)
         return result

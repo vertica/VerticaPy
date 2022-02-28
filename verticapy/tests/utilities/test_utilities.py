@@ -359,7 +359,7 @@ class TestUtilities:
         )
         assert result["verticapy test *+"].avg() == 1.0
 
-    # TODO
+    @pytest.mark.skip(reason="this test will be implemented later")
     def test_set_option(self, base):
         pass
 
