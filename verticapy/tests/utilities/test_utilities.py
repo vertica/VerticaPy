@@ -359,6 +359,10 @@ class TestUtilities:
         )
         assert result["verticapy test *+"].avg() == 1.0
 
+    @pytest.mark.skip(reason="this test will be implemented later")
+    def test_set_option(self, base):
+        pass
+
     def test_version(self, base):
         result = version(base.cursor,)
         assert result[0] < 20

@@ -447,7 +447,37 @@ Main Class for Vertica Model
             elif not (attr_name):
                 result = tablesample(
                     values={
-                        "attr_name": ["centroids", "classes", "p"],
+                        "attr_name": ["centroids", "classes", "p",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("KNeighborsClassifier",):
+            if attr_name == "p":
+                return self.parameters["p"]
+            elif attr_name == "n_neighbors":
+                return self.parameters["n_neighbors"]
+            elif attr_name == "classes":
+                return self.classes_
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["n_neighbors", "p", "classes",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("KNeighborsRegressor",):
+            if attr_name == "p":
+                return self.parameters["p"]
+            elif attr_name == "n_neighbors":
+                return self.parameters["n_neighbors"]
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["n_neighbors", "p",],
                     },
                 )
                 return result
@@ -464,7 +494,7 @@ Main Class for Vertica Model
             else:
                 raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
         elif self.type in ("SARIMAX",):
-            if attr_name == "coef":
+            if attr_name == "coefficients":
                 return self.coef_
             elif attr_name == "ma_avg":
                 return self.ma_avg_
@@ -472,16 +502,16 @@ Main Class for Vertica Model
                 return self.ma_piq_
             elif not (attr_name):
                 result = tablesample(
-                    values={"attr_name": ["coef", "ma_avg", "ma_piq"]},
+                    values={"attr_name": ["coefficients", "ma_avg", "ma_piq",]},
                 )
                 return result
             else:
                 raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
         elif self.type in ("VAR",):
-            if attr_name == "coef":
+            if attr_name == "coefficients":
                 return self.coef_
             elif not (attr_name):
-                result = tablesample(values={"attr_name": ["coef"]},)
+                result = tablesample(values={"attr_name": ["coefficients",]},)
                 return result
             else:
                 raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
@@ -4961,7 +4991,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def inverse_transform(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [],
+        self, vdf: Union[str, vDataFrame], X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4969,7 +4999,7 @@ class Preprocessing(Unsupervised):
 
     Parameters
     ----------
-    vdf: str/vDataFrame, optional
+    vdf: str/vDataFrame
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.

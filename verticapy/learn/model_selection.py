@@ -56,6 +56,7 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
+import verticapy
 from verticapy import vDataFrame
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -215,10 +216,7 @@ tablesample
             elif elem == "max":
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
-    if isinstance(input_relation, str):
-        schema = schema_relation(input_relation)[0]
-    else:
-        schema = verticapy.options["temp_schema"]
+    schema = verticapy.options["temp_schema"]
     relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session(estimator.cursor))
     model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session(estimator.cursor))
     estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
@@ -911,9 +909,9 @@ tablesample
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = LogisticRegression("verticapy_enet_search_{}".format(get_session(cursor)), cursor=cursor)
+        estimator = LogisticRegression("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
     else:
-        estimator = ElasticNet("verticapy_enet_search_{}".format(get_session(cursor)), cursor=cursor)
+        estimator = ElasticNet("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
     result = bayesian_search_cv(
         estimator,
         input_relation,

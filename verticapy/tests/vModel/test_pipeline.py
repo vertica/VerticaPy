@@ -176,7 +176,7 @@ class TestPipeline:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.182720882885624)
         assert cls_rep1["precision"][0] == pytest.approx(0.5595463137996219)
         assert cls_rep1["recall"][0] == pytest.approx(0.2317932654659358)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.37307094353346476)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.3277962347729789)
         assert cls_rep1["mcc"][0] == pytest.approx(0.2719537880298097)
         assert cls_rep1["informedness"][0] == pytest.approx(0.18715725014026519)
         assert cls_rep1["markedness"][0] == pytest.approx(0.3951696381964047)

@@ -632,15 +632,6 @@ p: int, optional
                 ("vdf", vdf, [str, vDataFrame],),
             ],
         )
-        if inplace:
-            vdf = self.predict(vdf=vdf,
-                               X=X,
-                               name=name,
-                               inplace=False,
-                               cutoff=cutoff,
-                               all_classes=all_classes,
-                               **kwargs,)
-            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
@@ -707,7 +698,10 @@ p: int, optional
                     ),
                 )
         sql = "({}) VERTICAPY_SUBTABLE".format(sql)
-        return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
+        if inplace:
+            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor, vdf=vdf,)
+        else:
+            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor,)
 
     # ---#
     def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
@@ -1438,13 +1432,6 @@ p: int, optional
                 ("inplace", inplace, [bool],),
             ],
         )
-        if inplace:
-            vdf = self.predict(vdf=vdf,
-                               X=X,
-                               name=name,
-                               inplace=False,
-                               **kwargs,)
-            return vdf
         if isinstance(vdf, str):
             vdf = vdf_from_relation(vdf, self.cursor)
         X = [str_column(elem) for elem in X] if (X) else self.X
@@ -1467,7 +1454,10 @@ p: int, optional
                 X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
             ),
         )
-        return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor)
+        if inplace:
+            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor, vdf=vdf,)
+        else:
+            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor,)
 
 
 # ---#

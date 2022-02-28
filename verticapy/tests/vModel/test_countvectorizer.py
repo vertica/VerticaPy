@@ -45,6 +45,26 @@ class TestCountVectorizer:
         model_repr.drop()
         assert model_repr.__repr__() == "<CountVectorizer>"
 
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words",]
+        m_att = model.get_attr("lowercase")
+        assert m_att == model.parameters["lowercase"]
+        m_att = model.get_attr("max_df")
+        assert m_att == model.parameters["max_df"]
+        m_att = model.get_attr("min_df")
+        assert m_att == model.parameters["min_df"]
+        m_att = model.get_attr("max_features")
+        assert m_att == model.parameters["max_features"]
+        m_att = model.get_attr("ignore_special")
+        assert m_att == model.parameters["ignore_special"]
+        m_att = model.get_attr("max_text_size")
+        assert m_att == model.parameters["max_text_size"]
+        m_att = model.get_attr("vocabulary")
+        assert m_att == model.parameters["vocabulary"]
+        m_att = model.get_attr("stop_words")
+        assert m_att == model.parameters["stop_words"]
+
     def test_deploySQL(self, model):
         expected_sql = 'SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)'
         result_sql = model.deploySQL()

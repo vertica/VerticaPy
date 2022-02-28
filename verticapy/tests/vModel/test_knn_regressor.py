@@ -48,6 +48,14 @@ class TestKNeighborsRegressor:
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsRegressor>"
 
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["n_neighbors", "p",]
+        m_att = model.get_attr("n_neighbors")
+        assert m_att == model.parameters["n_neighbors"]
+        m_att = model.get_attr("p")
+        assert m_att == model.parameters["p"]
+
     def test_contour(self, base, titanic_vd):
         model_test = KNeighborsRegressor("model_contour", cursor=base.cursor)
         model_test.drop()

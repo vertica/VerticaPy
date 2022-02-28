@@ -1161,7 +1161,7 @@ def sort_str(columns, vdf):
             else:
                 order_by += ["{} {}".format(column_name, columns[elem].upper())]
     else:
-        order_by = [elem for elem in columns]
+        order_by = [str_column(elem) for elem in columns]
     return " ORDER BY {}".format(", ".join(order_by))
 
 

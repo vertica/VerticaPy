@@ -330,8 +330,10 @@ bool
 def split_polygon_n(p: str, cursor=None, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
-Splits a polygon into (nbins ** 2) smaller polygons with approximately
-the same total area.
+Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
+total area. This process is inexact, and the split polygons have approximated
+edges; greater values for nbins produces more accurate and precise edge 
+approximations.
 
 Parameters
 ----------
@@ -341,6 +343,8 @@ cursor: DBcursor, optional
     Vertica database cursor.
 nbins: int, optional
     Number of bins used to cut the longitude and the latitude.
+    Split polygons have approximated edges, and greater values for nbins
+    leads to more accurate and precise edge approximations.
 
 Returns
 -------

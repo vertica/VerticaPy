@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, os, warnings
+import pytest, os, warnings, shutil
 from math import ceil, floor
 from verticapy import vDataFrame, get_session, drop
 from verticapy import set_option, read_shp
@@ -170,6 +170,13 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_{}.csv".format(session_id))
         file.close()
+
+    def test_vDF_to_parquet(self, titanic_vd):
+        session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        name = "parquet_test_{}".format(session_id)
+        result = titanic_vd.to_parquet(name)
+        assert result["Rows Exported"][0] == 1234
+        #shutil.rmtree(name) # trying to erase the folder
 
     def test_vDF_to_db(self, titanic_vd):
         try:

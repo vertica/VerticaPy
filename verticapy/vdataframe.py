@@ -3872,7 +3872,7 @@ vColumns : vColumn
     ----------
     columns: list
         List of the vColumns names. The list must have two elements.
-    func: function / str, optional
+    func: function / str
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional
@@ -8630,7 +8630,9 @@ vColumns : vColumn
             by = [by]
         columns_check(by, self)
         by = vdf_columns_names(by, self)
-        name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
+        random_int = random.randint(0, 10000000)
+        name = "__verticapy_random_{}__".format(random_int)
+        name2 = "__verticapy_random_{}__".format(random_int + 1)
         vdf = self.copy()
         assert (0 < x < 1), ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
@@ -8642,9 +8644,10 @@ vColumns : vColumn
             )
             random_func = "SEEDED_RANDOM({})".format(random_seed)
             vdf.eval(name, random_func)
+            q = vdf[name].quantile(x)
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("{} < {}".format(name, x),)
+            vdf.filter("{} <= {}".format(name, q),)
             verticapy.options["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
@@ -8652,11 +8655,12 @@ vColumns : vColumn
             if method == "stratified":
                 order_by = "ORDER BY " + ", ".join(by)
             vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
+            vdf.eval(name2, "MIN({}) OVER (PARTITION BY CAST({} * {} AS Integer) ORDER BY {} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)".format(name, name, x, name))
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("MOD({}, {}) = 0".format(name, int(1 / x)))
+            vdf.filter("{} = {}".format(name, name2))
             verticapy.options["print_info"] = print_info_init
-            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
+            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
         return vdf
 
     # ---#
@@ -10069,6 +10073,116 @@ vColumns : vColumn
         return df
 
     # ---#
+    def to_parquet(
+        self,
+        directory: str,
+        compression: str = "snappy",
+        rowGroupSizeMB: int = 512,
+        fileSizeMB: int = 10000,
+        fileMode: int = "660",
+        dirMode: int = "755",
+        int96AsTimestamp: bool = True,
+        by: list = [],
+        order_by: Union[list, dict] = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Exports a table, columns from a table, or query results to Parquet files.
+    You can partition data instead of or in addition to exporting the column data, 
+    which enables partition pruning and improves query performance. 
+
+    Parameters
+    ----------
+    directory: str
+        The destination directory for the output file(s). The directory must not 
+        already exist, and the current user must have write permissions on it. 
+        The destination can be one of the following file systems: 
+            HDFS File System
+            S3 Object Store
+            Google Cloud Storage (GCS) Object Store
+            Azure Blob Storage Object Store
+            Linux file system (either an NFS mount or local storage on each node)
+    compression: str, optional
+        Column compression type, one the following:        
+            Snappy (default)
+            gzip
+            Brotli
+            zstd
+            Uncompressed
+    rowGroupSizeMB: int, optional
+        The uncompressed size, in MB, of exported row groups, an integer value in the range
+        [1, fileSizeMB]. If fileSizeMB is 0, the uncompressed size is unlimited.
+        Row groups in the exported files are smaller than this value because Parquet 
+        files are compressed on write. 
+        For best performance when exporting to HDFS, set this rowGroupSizeMB to be 
+        smaller than the HDFS block size.
+    fileSizeMB: int, optional
+        The maximum file size of a single output file. This fileSizeMB is a hint/ballpark 
+        and not a hard limit. 
+        A value of 0 indicates that the size of a single output file is unlimited.  
+        This parameter affects the size of individual output files, not the total output size. 
+        For smaller values, Vertica divides the output into more files; all data is still exported.
+    fileMode: int, optional
+        HDFS only: the permission to apply to all exported files. You can specify 
+        the value in octal (such as 755) or symbolic (such as rwxr-xr-x) modes. 
+        The value must be a string even when using octal mode.
+        Valid octal values are in the range [0,1777]. For details, see HDFS Permissions in the 
+        Apache Hadoop documentation.
+        If the destination is not HDFS, this parameter has no effect.
+    dirMode: int, optional
+        HDFS only: the permission to apply to all exported directories. Values follow 
+        the same rules as those for fileMode. Additionally, you must give the Vertica HDFS user full 
+        permissions: at least rwx------ (symbolic) or 700 (octal).
+        If the destination is not HDFS, this parameter has no effect.
+    int96AsTimestamp: bool, optional
+        Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
+        physical type (False).
+    by: list, optional
+        vColumns used in the partition.
+    order_by: dict / list, optional
+        If specified as a list: the list of vColumns useed to sort the data in ascending order.
+        If specified as a dictionary: a dictionary of all sorting methods.
+        For example, to sort by "column1" ASC and "column2" DESC: {"column1": "asc", "column2": "desc"}
+
+    Returns
+    -------
+    tablesample
+        An object containing the number of rows exported. For details, 
+        see utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
+    vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
+    vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
+        """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(by, str):
+            by = [by]
+        check_types(
+            [
+                ("directory", directory, [str,],),
+                ("compression", compression, ["snappy", "gzip", "brotli", "zstd", "uncompressed",],),
+                ("rowGroupSizeMB", rowGroupSizeMB, [int,],),
+                ("fileSizeMB", fileSizeMB, [int,],),
+                ("fileMode", fileMode, [str,],),
+                ("dirMode", dirMode, [str,],),
+                ("int96AsTimestamp", int96AsTimestamp, [bool,],),
+                ("by", by, [list,],),
+                ("order_by", order_by, [list, dict,],),
+            ]
+        )
+        assert (0 < rowGroupSizeMB), ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
+        assert (0 < fileSizeMB), ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
+        by = vdf_columns_names(by, self)
+        partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
+        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = '{}', dirMode = '{}', int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(directory, compression, rowGroupSizeMB, fileSizeMB, fileMode, dirMode, str(int96AsTimestamp).lower(), partition, sort_str(order_by, self), self.__genSQL__(),)
+        title = "Exporting data to Parquet format."
+        result = to_tablesample(query, self._VERTICAPY_VARIABLES_["cursor"], title=title,)
+        return result
+
+    # ---#
     def to_pickle(self, name: str):
         """
     ---------------------------------------------------------------------------
@@ -10211,11 +10325,14 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = "SEEDED_RANDOM({})".format(random_seed)
+        query = "SELECT APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(random_func, test_size, self.__genSQL__(),)
+        self.__executeSQL__(query, title="Computing the seeded numbers quantile.")
+        q = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         return (
             vdf_from_relation(
