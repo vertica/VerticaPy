@@ -478,8 +478,8 @@ parse_n_lines: int, optional
     ingesting the intermediate CSV file containing the rest of the data. This method of 
     data type identification is less accurate, but is much faster for large datasets.
 temp_path: str, optional
-    The path to which to write the intermediate CSV file. This might be useful
-    in cases where you do not have write permissions on your current directory.
+    The path to which to write the intermediate CSV file. This is useful
+    in cases where the user does not have write permissions on the current directory.
     
 Returns
 -------
