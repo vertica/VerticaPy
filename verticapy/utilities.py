@@ -476,7 +476,7 @@ parse_n_lines: int, optional
     If this parameter is greater than 0, VerticaPy creates and ingests a temporary file 
     containing 'parse_n_lines' number of lines to determine the input data types before
     ingesting the intermediate CSV file containing the rest of the data. This method of 
-    data type identification is less accurate, but is must faster for large datasets.
+    data type identification is less accurate, but is much faster for large datasets.
 temp_path: str, optional
     The path to which to write the intermediate CSV file. This might be useful
     in cases where you do not have write permissions on your current directory.
