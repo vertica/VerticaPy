@@ -469,17 +469,17 @@ name: str, optional
 schema: str, optional
     Schema of the new relation. The default schema is public.
 dtype: dict, optional
-    Dictionary of the user types. Providing a dictionary can increase 
-    ingestion speed and precision; instead of parsing the file to guess 
-    the different types, VerticaPy will use the input types.
+    Dictionary of input types. Providing a dictionary can increase ingestion 
+    speed and precision. If specified, rather than parsing the intermediate CSV 
+    and guessing the input types, VerticaPy uses the specified input types instead.
 parse_n_lines: int, optional
-    If this parameter is greater than 0. A new file of 'parse_n_lines' lines
-    will be created and ingested first to identify the data types. It will be
-    then dropped and the entire file will be ingested. The data types identification
-    will be less precise but this parameter can make the process faster if the
-    file is heavy.
+    If this parameter is greater than 0, VerticaPy creates and ingests a temporary file 
+    containing 'parse_n_lines' number of lines to determine the input data types before
+    ingesting the intermediate CSV file containing the rest of the data. This method of 
+    data type identification is less preceise, but is must faster for large datasets.
 temp_path: str, optional
-    Path of the location used to store the intermediate CSV file.
+    The path to which to write the intermediate CSV file. This might be useful
+    in cases where you do not have write permissions on your current directory.
     
 Returns
 -------

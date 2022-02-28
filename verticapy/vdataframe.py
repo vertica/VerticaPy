@@ -10087,72 +10087,73 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Exports a table, columns from a table, or query results to files in the 
-    Parquet format.
-    You can partition data instead of or in addition to exporting the column data. 
-    Partitioning data can improve query performance by enabling partition pruning. 
+    Exports a table, columns from a table, or query results to Parquet files.
+    You can partition data instead of or in addition to exporting the column data, 
+    which enables partition pruning and improves query performance. 
 
     Parameters
     ----------
     directory: str
-        The destination directory for the output files. The directory must not exist, 
-        and the current user must have permission to write it. The destination can be 
-        on any of the following file systems: 
+        The destination directory for the output file(s). The directory must not 
+        already exist, and the current user must have write permissions on it. 
+        The destination can be one of the following file systems: 
             HDFS File System
             S3 Object Store
             Google Cloud Storage (GCS) Object Store
             Azure Blob Storage Object Store
-            Linux file system, either an NFS mount or local storage on each node
+            Linux file system (either an NFS mount or local storage on each node)
     compression: str, optional
-        Column compression type, one of:        
+        Column compression type, one the following:        
             Snappy (default)
-            GZIP
+            gzip
             Brotli
-            ZSTD
+            zstd
             Uncompressed
     rowGroupSizeMB: int, optional
-        The uncompressed size of exported row groups, in MB, an integer value between 1 
-        and fileSizeMB , inclusive, or unlimited if fileSizeMB is 0.
-        The row groups in the exported files are smaller than this value because Parquet 
-        files are compressed on write. For best performance when exporting to HDFS, set 
-        size to be smaller than the HDFS block size.
+        The uncompressed size, in MB, of exported row groups, an integer value in the range
+        [1, fileSizeMB]. If fileSizeMB is 0, the uncompressed size is unlimited.
+        Row groups in the exported files are smaller than this value because Parquet 
+        files are compressed on write. 
+        For best performance when exporting to HDFS, set this rowGroupSizeMB to be 
+        smaller than the HDFS block size.
     fileSizeMB: int, optional
-        The maximum file size of a single output file. This value is a hint, not a hard limit. 
-        A value of 0 specifies no limit.
-        This value affects the size of individual output files, not the total output size. 
+        The maximum file size of a single output file. This fileSizeMB is a hint/ballpark 
+        and not a hard limit. 
+        A value of 0 indicates that the size of a single output file is unlimited.  
+        This parameter affects the size of individual output files, not the total output size. 
         For smaller values, Vertica divides the output into more files; all data is still exported.
     fileMode: int, optional
-        For writes to HDFS only, permission to apply to all exported files. You can specify 
-        the value in Unix octal format (such as 665) or user-group-other format—for example, 
-        rwxr-xr-x. The value must be formatted as a string even if using the octal format.
-        Valid octal values range between 0 and 1777, inclusive. See HDFS Permissions in the 
+        HDFS only: the permission to apply to all exported files. You can specify 
+        the value in octal (such as 755) or symbolic (such as rwxr-xr-x) modes. 
+        The value must be a string even when using octal mode.
+        Valid octal values are in the range [0,1777]. For details, see HDFS Permissions in the 
         Apache Hadoop documentation.
-        When writing files to any destination other than HDFS, this parameter has no effect.
+        If the destination is not HDFS, this parameter has no effect.
     dirMode: int, optional
-        For writes to HDFS only, permission to apply to all exported directories. Values follow 
-        the same rules as those for fileMode. Further, you must give the Vertica HDFS user full 
-        permission, at least rwx------ or 700.
-        When writing files to any destination other than HDFS, this parameter has no effect.
+        HDFS only: the permission to apply to all exported directories. Values follow 
+        the same rules as those for fileMode. Additionally, you must give the Vertica HDFS user full 
+        permissions: at least rwx------ (symbolic) or 700 (octal).
+        If the destination is not HDFS, this parameter has no effect.
     int96AsTimestamp: bool, optional
         Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
         physical type (False).
     by: list, optional
         vColumns used in the partition.
     order_by: dict / list, optional
-        List of the vColumns to use to sort the data using asc order or
-        dictionary of all sorting methods. For example, to sort by "column1"
-        ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
+        If specified as a list: the list of vColumns useed to sort the data in ascending order.
+        If specified as a dictionary: a dictionary of all sorting methods.
+        For example, to sort by "column1" ASC and "column2" DESC: {"column1": "asc", "column2": "desc"}
 
     Returns
     -------
     tablesample
-        An object containing the number of rows exported. For more information, 
+        An object containing the number of rows exported. For details, 
         see utilities.tablesample.
 
     See Also
     --------
     vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
-    vDataFrame.to_db  : Saves the vDataFrame current relation to the Vertica database.
+    vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
     vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
         """
         if isinstance(order_by, str):
