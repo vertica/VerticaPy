@@ -452,7 +452,7 @@ def pandas_to_vertica(
     df, 
     cursor=None, 
     name: str = "", 
-    schema: str = "public", 
+    schema: str = verticapy.options["temp_schema"], 
     dtype: dict = {}, 
     parse_n_lines: int = 10000, 
     temp_path: str = "", 
@@ -551,7 +551,7 @@ read_json : Ingests a JSON file into the Vertica database.
         elif (tmp_name):
             vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines, escape='\\',)
         else:
-            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines, escape='\\',)
+            vdf = read_csv(path, cursor, table_name=name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines, escape='\\',)
         os.remove(path)
     except:
         os.remove(path)

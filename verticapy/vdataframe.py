@@ -114,10 +114,10 @@ usecols: list, optional
     including less columns makes the process faster. Do not hesitate to not include 
     useless columns.
 schema: str, optional
-    Relation schema. It can be to use to be less ambiguous and allow to create schema 
+    Relation schema. It can be used to be less ambiguous and allow to create schema 
     and relation name with dots '.' inside.
 empty: bool, optional
-    If set to True, the created object will be empty. It can be to use to create customized 
+    If set to True, the created object will be empty. It can be used to create customized 
     vDataFrame without going through the initialization check.
 
 Attributes
