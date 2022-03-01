@@ -452,7 +452,7 @@ def pandas_to_vertica(
     df, 
     cursor=None, 
     name: str = "", 
-    schema: str = verticapy.options["temp_schema"], 
+    schema: str = "", 
     dtype: dict = {}, 
     parse_n_lines: int = 10000, 
     temp_path: str = "", 
@@ -475,7 +475,7 @@ name: str, optional
     Name of the new relation or the relation in which to insert the data. 
     If unspecified, a temporary local table is created.
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation.
 dtype: dict, optional
     Dictionary of input types. Providing a dictionary can increase ingestion 
     speed and precision. If specified, rather than parsing the intermediate CSV 
@@ -512,6 +512,8 @@ read_json : Ingests a JSON file into the Vertica database.
             ("insert", insert, [bool,],),
         ]
     )
+    if not(schema):
+        schema = verticapy.options["temp_schema"]
     assert name or not(insert), ParameterError("Parameter 'name' can not be empty when parameter 'insert' is set to True.")
     cursor = check_cursor(cursor)[0]
     if not(name):
