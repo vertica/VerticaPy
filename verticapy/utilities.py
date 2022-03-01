@@ -472,8 +472,8 @@ df: pandas.DataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 name: str, optional
-    Name of the new relation or the relation to insert the data in. 
-    If empty, a temporary local table is created.
+    Name of the new relation or the relation in which to insert the data. 
+    If unspecified, a temporary local table is created.
 schema: str, optional
     Schema of the new relation. The default schema is public.
 dtype: dict, optional
@@ -489,8 +489,8 @@ temp_path: str, optional
     The path to which to write the intermediate CSV file. This is useful
     in cases where the user does not have write permissions on the current directory.
 insert: bool, optional
-    If set to True, the data will be ingested to the input relation. Be sure that your 
-    pandas.DataFrame column names match exactly with your table column names.
+    If set to True, the data is ingested into the input relation.
+    The column names of your table and the pandas.DataFrame must match.
     
 Returns
 -------

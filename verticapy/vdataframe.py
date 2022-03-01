@@ -2989,17 +2989,16 @@ vColumns : vColumn
         TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...)
     rule: str / time
-        Interval to use to slice the time. Each interval will be used to do the final
-        interpolation. For example, '5 minutes' will create records separated by '5 minutes' 
-        time interval.
+        Interval used to create the time slices. The final interpolation is divided by these 
+        intervals. For example, specifying '5 minutes' creates records separated by 
+        time intervals of '5 minutes' 
     method: dict, optional
-        Dictionary of all different methods of interpolation. The dict must be 
-        similar to the following:
+        Dictionary, with the following format, of interpolation methods:
         {"column1": "interpolation1" ..., "columnk": "interpolationk"}
-        3 types of interpolations are possible:
-            bfill  : Constant propagation of the last value of the interval (Back Propagation).
-            ffill  : Constant propagation of the first value of the interval (First Propagation).
-            linear : Linear Interpolation.
+        Interpolation methods must be one of the following:
+            bfill  : Interpolates with the last value of the time series.
+            ffill  : Interpolates with the first value of the time series.
+            linear : Linear interpolation.
     by: list, optional
         vColumns used in the partition.
 
@@ -9643,10 +9642,10 @@ vColumns : vColumn
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     n_files: int, optional
-        Must be greater or equal to 1. It represents the number of CSV files generated. 
-        It can be to use to minimize memory impacts. Be sure to keep the same order 
-        to avoid unexpected results. It is recommended to use a column with unique values
-        to sort the data.
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
@@ -9939,10 +9938,10 @@ vColumns : vColumn
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
     n_files: int, optional
-        Must be greater or equal to 1. It represents the number of JSON files generated. 
-        It can be to use to minimize memory impacts. Be sure to keep the same order 
-        to avoid unexpected results. It is recommended to use a column with unique values
-        to sort the data.
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
