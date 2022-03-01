@@ -200,6 +200,24 @@ class TestUtilities:
         )
         assert vdf.shape() == (1234, 14)
 
+        import pandas as pd
+        d = {'col1': [1, 2, 3, 4], 'col2': ["red", "gre\"en", "b\lue", "p\i\"\"nk"]}
+        df = pd.DataFrame(data=d)
+        vdf = pandas_to_vertica(df)
+        assert vdf.shape() == (4, 2)
+        with warnings.catch_warnings(record=True) as w:
+            drop(
+                "test_df", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
+        pandas_to_vertica(df, name= "test_df", schema="public",)
+        pandas_to_vertica(df, name= "test_df", schema="public", insert=True,)
+        vdf = pandas_to_vertica(df, name= "test_df", schema="public", insert=True,)
+        assert vdf.shape() == (12, 2)
+        with warnings.catch_warnings(record=True) as w:
+            drop(
+                "test_df", titanic_vd._VERTICAPY_VARIABLES_["cursor"],
+            )
+
 
     def test_pcsv(self, base):
         result = pcsv(

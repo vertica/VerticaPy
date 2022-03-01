@@ -449,7 +449,14 @@ list of tuples
 
 # ---#
 def pandas_to_vertica(
-    df, cursor=None, name: str = "", schema: str = "public", dtype: dict = {}, parse_n_lines: int = 10000, temp_path: str = "",
+    df, 
+    cursor=None, 
+    name: str = "", 
+    schema: str = "", 
+    dtype: dict = {}, 
+    parse_n_lines: int = 10000, 
+    temp_path: str = "", 
+    insert: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -465,9 +472,10 @@ df: pandas.DataFrame
 cursor: DBcursor, optional
     Vertica database cursor.
 name: str, optional
-    Name of the new relation. If empty, a temporary local table is created.
+    Name of the new relation or the relation in which to insert the data. 
+    If unspecified, a temporary local table is created.
 schema: str, optional
-    Schema of the new relation. The default schema is public.
+    Schema of the new relation.
 dtype: dict, optional
     Dictionary of input types. Providing a dictionary can increase ingestion 
     speed and precision. If specified, rather than parsing the intermediate CSV 
@@ -480,6 +488,9 @@ parse_n_lines: int, optional
 temp_path: str, optional
     The path to which to write the intermediate CSV file. This is useful
     in cases where the user does not have write permissions on the current directory.
+insert: bool, optional
+    If set to True, the data is ingested into the input relation.
+    The column names of your table and the pandas.DataFrame must match.
     
 Returns
 -------
@@ -498,8 +509,12 @@ read_json : Ingests a JSON file into the Vertica database.
             ("parse_n_lines", parse_n_lines, [int,],),
             ("dtype", dtype, [dict,],),
             ("temp_path", temp_path, [str,],),
+            ("insert", insert, [bool,],),
         ]
     )
+    if not(schema):
+        schema = verticapy.options["temp_schema"]
+    assert name or not(insert), ParameterError("Parameter 'name' can not be empty when parameter 'insert' is set to True.")
     cursor = check_cursor(cursor)[0]
     if not(name):
         tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
@@ -516,7 +531,7 @@ read_json : Ingests a JSON file into the Vertica database.
         if str_cols:
             tmp_df = df.copy()
             for c in str_cols:
-                tmp_df[c] = '"' + tmp_df[c] + '"'
+                tmp_df[c] = '"' + tmp_df[c].str.replace('\\','\\\\').str.replace('"','\\"') + '"'
             clear = True
         else:
             tmp_df = df
@@ -524,10 +539,21 @@ read_json : Ingests a JSON file into the Vertica database.
         import csv
 
         tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\027',)
-        if (tmp_name):
-            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines,)
+        if (insert):
+            input_relation = "{}.{}".format(str_column(schema), str_column(name))
+            query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
+                input_relation,
+                ", ".join(['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]),
+                path,
+            )
+            executeSQL(cursor, query, "Inserting the pandas.DataFrame.")
+            from verticapy import vDataFrame
+
+            vdf = vDataFrame(name, cursor=cursor, schema=schema)
+        elif (tmp_name):
+            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines, escape='\\',)
         else:
-            vdf = read_csv(path, cursor, table_name=tmp_name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines,)
+            vdf = read_csv(path, cursor, table_name=name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines, escape='\\',)
         os.remove(path)
     except:
         os.remove(path)

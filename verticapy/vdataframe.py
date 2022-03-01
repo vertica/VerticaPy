@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings, pickle, datetime, math
+import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os
 from collections import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
@@ -114,10 +114,10 @@ usecols: list, optional
     including less columns makes the process faster. Do not hesitate to not include 
     useless columns.
 schema: str, optional
-    Relation schema. It can be to use to be less ambiguous and allow to create schema 
+    Relation schema. It can be used to be less ambiguous and allow to create schema 
     and relation name with dots '.' inside.
 empty: bool, optional
-    If set to True, the created object will be empty. It can be to use to create customized 
+    If set to True, the created object will be empty. It can be used to create customized 
     vDataFrame without going through the initialization check.
 
 Attributes
@@ -1157,7 +1157,7 @@ vColumns : vColumn
         The SQL final relation.
         """
         # The First step is to find the Max Floor
-        all_imputations_grammar = []
+        all_imputations_grammar, force_columns_copy = [], [elem for elem in force_columns]
         if not (force_columns):
             force_columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in force_columns:
@@ -1253,7 +1253,7 @@ vColumns : vColumn
             table = "(SELECT *{} FROM {}) VERTICAPY_SUBTABLE".format(split, table)
         if (self._VERTICAPY_VARIABLES_["exclude_columns"]) and not (split):
             table = "(SELECT {}{} FROM {}) VERTICAPY_SUBTABLE".format(
-                ", ".join(self.get_columns()), split, table
+                ", ".join(self.get_columns() if not(force_columns_copy) else force_columns_copy), split, table
             )
         main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
         all_main_relation = "(SELECT * FROM {}) VERTICAPY_SUBTABLE".format(
@@ -2989,16 +2989,16 @@ vColumns : vColumn
         TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...)
     rule: str / time
-        Interval to use to slice the time. For example, '5 minutes' will create records
-        separated by '5 minutes' time interval.
+        Interval used to create the time slices. The final interpolation is divided by these 
+        intervals. For example, specifying '5 minutes' creates records separated by 
+        time intervals of '5 minutes' 
     method: dict, optional
-        Dictionary of all different methods of interpolation. The dict must be 
-        similar to the following:
+        Dictionary, with the following format, of interpolation methods:
         {"column1": "interpolation1" ..., "columnk": "interpolationk"}
-        3 types of interpolations are possible:
-            bfill  : Constant propagation of the next value (Back Propagation).
-            ffill  : Constant propagation of the first value (First Propagation).
-            linear : Linear Interpolation.
+        Interpolation methods must be one of the following:
+            bfill  : Interpolates with the last value of the time series.
+            ffill  : Interpolates with the first value of the time series.
+            linear : Linear interpolation.
     by: list, optional
         vColumns used in the partition.
 
@@ -9611,11 +9611,11 @@ vColumns : vColumn
         header: bool = True,
         new_header: list = [],
         order_by: Union[list, dict] = [],
-        limit: int = 0,
+        n_files: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a CSV file of the current vDataFrame relation.
+    Creates a CSV file or folder of CSV files of the current vDataFrame relation.
 
     Parameters
     ----------
@@ -9641,10 +9641,11 @@ vColumns : vColumn
         List of the vColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    limit: int, optional
-        If greater than 0, the maximum number of elements to write at the same time 
-        in the CSV file. It can be to use to minimize memory impacts. Be sure to keep
-        the same order to avoid unexpected results.
+    n_files: int, optional
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
@@ -9671,50 +9672,50 @@ vColumns : vColumn
                 ("header", header, [bool],),
                 ("new_header", new_header, [list],),
                 ("order_by", order_by, [list, dict],),
-                ("limit", limit, [int, float],),
+                ("n_files", n_files, [int, float],),
             ]
         )
-        file = open("{}{}.csv".format(path, name), "w+")
+        assert n_files >= 1, ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+        assert (n_files == 1) or order_by, ParameterError("If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed.")
+        file_name = "{}{}{}".format(path, "/" if (len(path) > 1 and path[-1] != "/") else "", name)
         columns = (
             self.get_columns()
             if not (usecols)
             else [str_column(column) for column in usecols]
         )
         assert not(new_header) or len(new_header) == len(columns), ParsingError("The header has an incorrect number of columns")
-        if new_header:
-            file.write(sep.join(new_header))
-        elif header:
-            file.write(sep.join([column.replace('"', "") for column in columns]))
         total = self.shape()[0]
-        current_nb_rows_written = 0
-        if limit <= 0:
-            limit = total
+        current_nb_rows_written, file_id = 0, 0
+        limit = int(total / n_files) + 1
         order_by = sort_str(order_by, self)
         if not (order_by):
             order_by = last_order_by(self)
+        if n_files > 1:
+        	os.makedirs(file_name)
         while current_nb_rows_written < total:
-            self._VERTICAPY_VARIABLES_["cursor"].execute(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                )
-            )
-            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            for row in result:
-                tmp_row = []
-                for item in row:
-                    if isinstance(item, str):
-                        tmp_row += [quotechar + item + quotechar]
-                    elif item == None:
-                        tmp_row += [na_rep]
-                    else:
-                        tmp_row += [str(item)]
-                file.write("\n" + sep.join(tmp_row))
-            current_nb_rows_written += limit
-        file.close()
+        	if n_files == 1:
+        		file = open(file_name + ".csv", "w+")
+        	else:
+        		file = open(file_name + "/{}.csv".format(file_id), "w+")
+	        if new_header:
+	            file.write(sep.join(new_header))
+	        elif header:
+	            file.write(sep.join([column.replace('"', "") for column in columns]))
+	        self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(", ".join(columns), self.__genSQL__(), order_by, limit, current_nb_rows_written,))
+	        result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+	        for row in result:
+	        	tmp_row = []
+	        	for item in row:
+	        		if isinstance(item, str):
+	        			tmp_row += [quotechar + item + quotechar]
+	        		elif item == None:
+	        			tmp_row += [na_rep]
+	        		else:
+	        			tmp_row += [str(item)]
+	        	file.write("\n" + sep.join(tmp_row))
+	        current_nb_rows_written += limit
+	        file_id += 1
+	        file.close()
         return self
 
     # ---#
@@ -9916,11 +9917,11 @@ vColumns : vColumn
         path: str = "",
         usecols: list = [],
         order_by: Union[list, dict] = [],
-        limit: int = 0,
+        n_files: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a JSON file of the current vDataFrame relation.
+    Creates a JSON file or folder of JSON files of the current vDataFrame relation.
 
     Parameters
     ----------
@@ -9936,10 +9937,11 @@ vColumns : vColumn
         List of the vColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    limit: int, optional
-        If greater than 0, the maximum number of elements to write at the same time 
-        in the JSON file. It can be to use to minimize memory impacts. Be sure to keep
-        the same order to avoid unexpected results.
+    n_files: int, optional
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
@@ -9961,45 +9963,45 @@ vColumns : vColumn
                 ("path", path, [str],),
                 ("usecols", usecols, [list],),
                 ("order_by", order_by, [list, dict],),
-                ("limit", limit, [int, float],),
+                ("n_files", n_files, [int, float],),
             ]
         )
-        file = open("{}{}.json".format(path, name), "w+")
+        assert n_files >= 1, ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+        assert (n_files == 1) or order_by, ParameterError("If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed.")
+        file_name = "{}{}{}".format(path, "/" if (len(path) > 1 and path[-1] != "/") else "", name)
         columns = (
             self.get_columns()
             if not (usecols)
             else [str_column(column) for column in usecols]
         )
         total = self.shape()[0]
-        current_nb_rows_written = 0
-        if limit <= 0:
-            limit = total
-        file.write("[\n")
+        current_nb_rows_written, file_id = 0, 0
+        limit = int(total / n_files) + 1
         order_by = sort_str(order_by, self)
         if not (order_by):
             order_by = last_order_by(self)
+        if n_files > 1:
+        	os.makedirs(file_name)
         while current_nb_rows_written < total:
-            self._VERTICAPY_VARIABLES_["cursor"].execute(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                )
-            )
-            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            for row in result:
-                tmp_row = []
-                for i, item in enumerate(row):
-                    if isinstance(item, str):
-                        tmp_row += ['{}: "{}"'.format(str_column(columns[i]), item)]
-                    elif item != None:
-                        tmp_row += ["{}: {}".format(str_column(columns[i]), item)]
-                file.write("{" + ", ".join(tmp_row) + "},\n")
-            current_nb_rows_written += limit
-        file.write("]")
-        file.close()
+        	if n_files == 1:
+        		file = open(file_name + ".json", "w+")
+        	else:
+        		file = open(file_name + "/{}.json".format(file_id), "w+")
+        	file.write("[\n")
+        	self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(", ".join(columns), self.__genSQL__(), order_by, limit, current_nb_rows_written,))
+        	result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        	for row in result:
+        		tmp_row = []
+        		for i, item in enumerate(row):
+        			if isinstance(item, str):
+        				tmp_row += ['{}: "{}"'.format(str_column(columns[i]), item)]
+        			elif item != None:
+        				tmp_row += ["{}: {}".format(str_column(columns[i]), item)]
+        		file.write("{" + ", ".join(tmp_row) + "},\n")
+        	current_nb_rows_written += limit
+        	file_id += 1
+        	file.write("]")
+        	file.close()
         return self
 
     # ---#
@@ -10079,8 +10081,8 @@ vColumns : vColumn
         compression: str = "snappy",
         rowGroupSizeMB: int = 512,
         fileSizeMB: int = 10000,
-        fileMode: int = "660",
-        dirMode: int = "755",
+        fileMode: str = "660",
+        dirMode: str = "755",
         int96AsTimestamp: bool = True,
         by: list = [],
         order_by: Union[list, dict] = [],
