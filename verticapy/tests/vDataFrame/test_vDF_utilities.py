@@ -170,6 +170,7 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_{}.csv".format(session_id))
         file.close()
+        # TODO - test with multiple CSV files.
 
     def test_vDF_to_parquet(self, titanic_vd):
         session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
@@ -335,6 +336,7 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_{}.json".format(session_id))
         file.close()
+        # TODO - test with multiple JSON files.
 
     def test_vDF_to_list(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_list()
