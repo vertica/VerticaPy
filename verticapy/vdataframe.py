@@ -2996,8 +2996,8 @@ vColumns : vColumn
         Dictionary, with the following format, of interpolation methods:
         {"column1": "interpolation1" ..., "columnk": "interpolationk"}
         Interpolation methods must be one of the following:
-            bfill  : Interpolates with the last value of the time series.
-            ffill  : Interpolates with the first value of the time series.
+            bfill  : Interpolates with the final value of the time slice.
+            ffill  : Interpolates with the first value of the time slice.
             linear : Linear interpolation.
     by: list, optional
         vColumns used in the partition.
