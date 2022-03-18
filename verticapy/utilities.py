@@ -1009,7 +1009,7 @@ read_json : Ingests a JSON file into the Vertica database.
             skip,
         )
         if genSQL:
-            print(query1 + "\n" + query2)
+            return [query1, query2]
         else:
             if query1:
                 executeSQL(cursor, query1, "Creating the table.")
