@@ -890,7 +890,9 @@ read_json : Ingests a JSON file into the Vertica database.
         schema = "v_temp_schema"
     else:
         schema = "public"
-    assert header_names or not(dtype), ParameterError("dtype must be empty when using parameter 'header_names'.")
+    if header_names and dtype:
+        warning_message = "Parameters 'header_names' and 'dtype' are both defined. Only 'dtype' will be used."
+        warnings.warn(warning_message, Warning)
     assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
