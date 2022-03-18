@@ -460,25 +460,25 @@ Inserts the dataset into an existing Vertica table.
 Parameters
 ----------
 table_name: str
-    Name of the table.
+    Name of the table to insert into.
 column_names: list
-    Name of the columns used during the data insertion.
+    Name of the column(s) to insert into.
 data: list
     The data to ingest.
 cursor: DBcursor, optional
     Vertica database cursor.
 copy: bool, optional
-    If set to True, the batch insert is converted into a COPY statement 
-    by using prepared statements. Otherwise, the insertions will happen
-    one by one.
+    If set to True, the batch insert is converted to a COPY statement 
+    with prepared statements. Otherwise, the INSERTs are performed
+    sequentially.
 genSQL: bool, optional
-    If set to True, the SQL code used to insert the data will be generated 
-    but not executed. It is a good way to customize the data ingestion.
+    If set to True, the SQL code that would be used to insert the data 
+    is generated, but not executed.
 
 Returns
 -------
 int
-    number of rows ingested.
+    The number of rows ingested.
 
 See Also
 --------
