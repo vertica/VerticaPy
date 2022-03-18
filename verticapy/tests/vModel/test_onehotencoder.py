@@ -105,6 +105,7 @@ class TestOneHotEncoder:
             "separator": "_",
         }
 
+    @pytest.mark.skip(reason="The function is DEPRECATED.")
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
         model.cursor.execute(
