@@ -178,7 +178,7 @@ bool
             end_conditions = True
         if not (result):
             try:
-                query = f'SELECT * FROM "{schema}"."{relation}" LIMIT 1;'
+                query = f'SELECT * FROM "{schema}"."{relation}" LIMIT 0;'
                 cursor.execute(query)
                 method = "text"
             except:
@@ -446,6 +446,81 @@ list of tuples
     cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, tmp_name))
     return ctype
 
+# ---#
+def insert_into(table_name: str, 
+                column_names: list, 
+                data: list, 
+                cursor = None,
+                copy: bool = True,
+                genSQL: bool = False,):
+    """
+---------------------------------------------------------------------------
+Inserts the dataset into an existing Vertica table.
+
+Parameters
+----------
+table_name: str
+    Name of the table.
+column_names: list
+    Name of the columns used during the data insertion.
+data: list
+    The data to ingest.
+cursor: DBcursor, optional
+    Vertica database cursor.
+copy: bool, optional
+    If set to True, the batch insert is converted into a COPY statement 
+    by using prepared statements. Otherwise, the insertions will happen
+    one by one.
+genSQL: bool, optional
+    If set to True, the SQL code used to insert the data will be generated 
+    but not executed. It is a good way to customize the data ingestion.
+
+Returns
+-------
+int
+    number of rows ingested.
+
+See Also
+--------
+pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
+    """
+    cursor = check_cursor(cursor)[0]
+    if copy and not(genSQL):
+        sql = "INSERT INTO {} ({}) VALUES ({})".format(table_name, ", ".join(column_names), ", ".join(["%s" for i in range(len(column_names))]))
+        executeSQL(cursor, sql, "Insert new lines in the {} table. The batch insert is converted into a COPY statement by using prepared statements.".format(table_name), list(map(tuple, data)))
+        executeSQL(cursor, "COMMIT;", "Commit.")
+        return len(data)
+    else:
+        if genSQL:
+            sql = []
+        i, n, total_rows = 0, len(data), 0
+        header = "INSERT INTO {} ({}) VALUES ".format(table_name, ", ".join(column_names))
+        for i in range(n):
+            sql_tmp = "("
+            for elem in data[i]:
+                if isinstance(elem, str):
+                    sql_tmp += "'{}'".format(elem.replace("'","''"))
+                elif elem is None or elem != elem:
+                    sql_tmp += "NULL"
+                else:
+                    sql_tmp += "'{}'".format(elem)
+                sql_tmp += ","
+            sql_tmp = sql_tmp[:-1] + ");"
+            query = header + sql_tmp
+            if genSQL:
+                sql += [query]
+            else:
+                try:
+                    executeSQL(cursor, query, "Insert a new line in the {} table.".format(table_name))
+                    executeSQL(cursor, "COMMIT;", "Commit.")
+                    total_rows += 1
+                except Exception as e:
+                    warning_message = "Line {} was skipped.\n{}".format(i, e)
+                    warnings.warn(warning_message, Warning)
+        if genSQL:
+            return sql
+        else:
+            return total_rows
 
 # ---#
 def pandas_to_vertica(
@@ -489,7 +564,7 @@ temp_path: str, optional
     The path to which to write the intermediate CSV file. This is useful
     in cases where the user does not have write permissions on the current directory.
 insert: bool, optional
-    If set to True, the data is ingested into the input relation.
+    If set to True, the data are ingested into the input relation.
     The column names of your table and the pandas.DataFrame must match.
     
 Returns
@@ -815,7 +890,7 @@ read_json : Ingests a JSON file into the Vertica database.
         schema = "v_temp_schema"
     else:
         schema = "public"
-    assert dtype or not(header_names), ParameterError("dtype must be empty when using parameter 'header_names'.")
+    assert header_names or not(dtype), ParameterError("dtype must be empty when using parameter 'header_names'.")
     assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     cursor = check_cursor(cursor)[0]
     path, sep, header_names, na_rep, quotechar, escape = (
@@ -852,9 +927,10 @@ read_json : Ingests a JSON file into the Vertica database.
             input_relation = '"{}"."{}"'.format(schema, table_name)
         else:
             input_relation = '"{}"'.format(table_name)
+        f = open(path, "r")
+        file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
+        f.close()
         if not(header_names) and not(dtype):
-            f = open(path, "r")
-            file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
             for idx, col in enumerate(file_header):
                 if col == "":
                     if idx == 0:
@@ -870,7 +946,6 @@ read_json : Ingests a JSON file into the Vertica database.
                     if idx == 0:
                         warning_message += "\nThis can happen when exporting a pandas DataFrame to CSV while retaining its indexes.\nTip: Use index=False when exporting with pandas.DataFrame.to_csv."
                     warnings.warn(warning_message, Warning)
-            f.close()
         if (header_names == []) and (header):
             if not(dtype):
                 header_names = file_header
@@ -1746,7 +1821,6 @@ def to_tablesample(
                     values[elem][idx] = float(values[elem][idx])
     return tablesample(values=values, dtype=dtype)
 
-
 # ---#
 def vdf_from_relation(
     relation: str,
@@ -1805,7 +1879,6 @@ vDataFrame
             ("saving", saving, [list],),
         ]
     )
-    name = gen_name([name])
     if vdf:
         vdf.__init__("", empty=True)
     else:
@@ -1828,26 +1901,9 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
-    try:
-        cursor.execute(
-            "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_{}_TEST;".format(name)
-        )
-    except:
-        pass
-    cursor.execute(
-        "CREATE LOCAL TEMPORARY TABLE VERTICAPY_{}_TEST ON COMMIT PRESERVE ROWS AS SELECT * FROM {} LIMIT 10;".format(
-            name, relation
-        )
-    )
-    cursor.execute(
-        "SELECT column_name, data_type FROM columns WHERE table_name = 'VERTICAPY_{}_TEST' AND table_schema = 'v_temp_schema' ORDER BY ordinal_position".format(
-            name
-        )
-    )
-    result = cursor.fetchall()
-    cursor.execute("DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_{}_TEST;".format(name))
-    vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in result]
-    for column, ctype in result:
+    dtypes = get_data_types("SELECT * FROM {} LIMIT 0".format(relation), cursor,)
+    vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
+    for column, ctype in dtypes:
         if '"' in column:
             warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
                 column, column.replace('"', "_")

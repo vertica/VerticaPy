@@ -468,12 +468,15 @@ def default_model_parameters(model_type: str):
 
 
 # ---#
-def executeSQL(cursor, query: str, title: str = ""):
+def executeSQL(cursor, query: str, title: str = "", data: list = [],):
     check_types([("query", query, [str],), ("title", title, [str],)])
     if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
-    cursor.execute(query)
+    if (data):
+        cursor.executemany(query, data)
+    else:
+        cursor.execute(query)
     elapsed_time = time.time() - start_time
     if verticapy.options["time_on"]:
         print_time(elapsed_time)
@@ -498,6 +501,12 @@ def format_magic(x, return_cat: bool = False):
     else:
         return val
 
+# ---#
+def get_data_types_vdf(vdf):
+    result, columns = [], vdf.get_columns()
+    for col in columns:
+        result += [(col, vdf[col].ctype())]
+    return result
 
 # ---#
 def gen_name(L: list):
