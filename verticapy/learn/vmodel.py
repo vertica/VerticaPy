@@ -2610,9 +2610,9 @@ Main Class for Vertica Model
         """
         if not(return_str):
             func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
-            _locals = locals()
-            exec(func, globals(), _locals)
-            return _locals[name]
+            all_vars = {}
+            exec(func, {}, all_vars)
+            return all_vars[name]
         func = "def {}(X):\n\timport numpy as np\n\t".format(name)
         if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
             result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(self.coef_["coefficient"][0], self.coef_["coefficient"][1:])
