@@ -536,7 +536,7 @@ def pandas_to_vertica(
     """
 ---------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables.
+and then using flex tables to load the data.
 
 Parameters
 ----------
@@ -546,10 +546,10 @@ cursor: DBcursor, optional
     Vertica database cursor.
 name: str, optional
     Name of the new relation or the relation in which to insert the data. 
-    If unspecified, a temporary local table is created. This one will be 
+    If unspecified, a temporary local table is created. This temporary table is
     dropped at the end of the local session.
 schema: str, optional
-    Schema of the new relation. If empty, the temporary schema will be used. To
+    Schema of the new relation. If empty, a temporary schema is used. To
     modify the temporary schema, use the 'set_option' function.
 dtype: dict, optional
     Dictionary of input types. Providing a dictionary can increase ingestion 
@@ -1289,10 +1289,10 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
             "summer", "tropical", "india", "default".
         max_columns  : int
             Maximum number of columns to display. If the parameter is incorrect, 
-            nothing will be changed.
+            nothing is changed.
         max_rows     : int
             Maximum number of rows to display. If the parameter is incorrect, 
-            nothing will be changed.
+            nothing is changed.
         mode         : str
             How to display VerticaPy outputs.
                 full  : VerticaPy regular display mode.
