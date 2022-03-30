@@ -536,9 +536,7 @@ def pandas_to_vertica(
     """
 ---------------------------------------------------------------------------
 Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables. This creates a temporary local table that
-will be dropped at the end of the local session. Use vDataFrame.to_db 
-to store it inside the database.
+and then using flex tables to load the data.
 
 Parameters
 ----------
@@ -548,9 +546,11 @@ cursor: DBcursor, optional
     Vertica database cursor.
 name: str, optional
     Name of the new relation or the relation in which to insert the data. 
-    If unspecified, a temporary local table is created.
+    If unspecified, a temporary local table is created. This temporary table is
+    dropped at the end of the local session.
 schema: str, optional
-    Schema of the new relation.
+    Schema of the new relation. If empty, a temporary schema is used. To
+    modify the temporary schema, use the 'set_option' function.
 dtype: dict, optional
     Dictionary of input types. Providing a dictionary can increase ingestion 
     speed and precision. If specified, rather than parsing the intermediate CSV 
@@ -1287,12 +1287,12 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
-        max_rows     : int
-            Maximum number of rows to display. If the parameter is incorrect, 
-            nothing will be changed.
         max_columns  : int
             Maximum number of columns to display. If the parameter is incorrect, 
-            nothing will be changed.
+            nothing is changed.
+        max_rows     : int
+            Maximum number of rows to display. If the parameter is incorrect, 
+            nothing is changed.
         mode         : str
             How to display VerticaPy outputs.
                 full  : VerticaPy regular display mode.
@@ -1309,7 +1309,6 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
         temp_schema  : str
             Specifies the temporary schema that certain methods/functions use to 
             create intermediate objects, if needed. 
-            
         time_on      : bool
             If set to True, displays all the SQL queries elapsed time.
     value: object, optional
@@ -1317,10 +1316,8 @@ def set_option(option: str, value: Union[bool, int, str] = None, cursor=None,):
     cursor: DBcursor, optional
         Vertica database cursor.
     """
-    try:
+    if isinstance(option, str):
         option = option.lower()
-    except:
-        pass
     check_types(
         [
             (
