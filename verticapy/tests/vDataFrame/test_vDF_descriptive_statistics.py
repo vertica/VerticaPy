@@ -20,39 +20,33 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
+def market_vd():
     from verticapy.datasets import load_market
 
-    market = load_market(cursor=base.cursor)
+    market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.market", cursor=base.cursor,
-        )
+        drop(name="public.market",)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon",)
 
 
 class TestvDFDescriptiveStat:
@@ -784,12 +778,11 @@ class TestvDFDescriptiveStat:
         assert titanic_vd["age"].quantile(x=0.5) == pytest.approx(28.0)
         assert titanic_vd["fare"].quantile(x=0.1) == pytest.approx(7.5892)
 
-    def test_vDF_score(self, base, titanic_vd):
+    def test_vDF_score(self, titanic_vd):
         from verticapy.learn.linear_model import LogisticRegression
 
         model = LogisticRegression(
             name="public.LR_titanic",
-            cursor=base.cursor,
             tol=1e-4,
             C=1.0,
             max_iter=100,

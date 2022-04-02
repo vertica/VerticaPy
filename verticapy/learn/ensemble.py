@@ -165,7 +165,7 @@ class XGBoost_to_json:
                     for i in range(n):
                         for c in model.classes_:
                             trees += [xgboost_tree_dict(model, i, str(c))]
-                    v = version(cursor = model.cursor)
+                    v = version()
                     v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
                     if not(v):
                       for i in range(len(model.classes_)):
@@ -181,7 +181,7 @@ class XGBoost_to_json:
                                   "gbtree_model_param": {"num_trees": str(len(trees)), "size_leaf_vector": "0"},},
                         "name": "gbtree",}
             def xgboost_learner(model):
-                v = version(cursor = model.cursor)
+                v = version()
                 v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
                 if v:
                   col_sample_by_tree = model.parameters["col_sample_by_tree"]
@@ -238,8 +238,6 @@ Parameters
 ----------
 name: str
   Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-  Vertica database cursor.
 n_estimators: int, optional
   The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
@@ -271,7 +269,6 @@ nbins: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
@@ -281,7 +278,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(cursor=cursor, condition=[8, 1, 1])
+        version(condition=[8, 1, 1],)
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -296,8 +293,6 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
 # ---#
 class RandomForestRegressor(Regressor, Tree):
@@ -311,8 +306,6 @@ Parameters
 ----------
 name: str
   Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-  Vertica database cursor.
 n_estimators: int, optional
   The number of trees in the forest, an integer between 0 and 1000, inclusive.
 max_features: int/str, optional
@@ -344,7 +337,6 @@ nbins: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         n_estimators: int = 10,
         max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
@@ -354,7 +346,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(cursor=cursor, condition=[9, 0, 1])
+        version(condition=[9, 0, 1],)
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -369,8 +361,6 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
 # ---#
 class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_to_json):
@@ -382,8 +372,6 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-    Vertica database cursor.
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
@@ -423,7 +411,6 @@ col_sample_by_node: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
@@ -436,9 +423,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(cursor=cursor, condition=[10, 1, 0])
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
+        version(condition=[10, 1, 0],)
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostClassifier", name
         params = {"max_ntree": max_ntree,
@@ -450,7 +435,7 @@ col_sample_by_node: float, optional
                   "min_split_loss": min_split_loss,
                   "weight_reg": weight_reg,
                   "sample": sample,}
-        v = version(cursor = cursor)
+        v = version()
         v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
         if v:
           params["col_sample_by_tree"] = col_sample_by_tree
@@ -467,8 +452,6 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-    Vertica database cursor.
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
@@ -508,7 +491,6 @@ col_sample_by_node: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         max_ntree: int = 10,
         max_depth: int = 5,
         nbins: int = 32,
@@ -521,9 +503,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(cursor=cursor, condition=[10, 1, 0])
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
+        version(condition=[10, 1, 0],)
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostRegressor", name
         params = {"max_ntree": max_ntree,
@@ -535,7 +515,7 @@ col_sample_by_node: float, optional
                   "min_split_loss": min_split_loss,
                   "weight_reg": weight_reg,
                   "sample": sample,}
-        v = version(cursor = cursor)
+        v = version()
         v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
         if v:
           params["col_sample_by_tree"] = col_sample_by_tree

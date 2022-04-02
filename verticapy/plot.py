@@ -187,11 +187,7 @@ def animated_bar(
     where = " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
     query = "SELECT * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(order_by, ", ".join(columns), vdf.__genSQL__(), order_by, " AND ".join([f"{elem} IS NOT NULL" for elem in columns]) + where, limit_over, order_by, columns[1], order_by, columns[1], limit,)
-    vdf.__executeSQL__(
-        query=query,
-        title="Select points to draw the animated bar chart."
-    )
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(query=query, title="Selecting points to draw the animated bar chart.", method="fetchall",)
     order_by_values = [item[0] for item in query_result]
     column1 = [item[1] for item in query_result]
     column2 = [float(item[2]) for item in query_result]
@@ -384,11 +380,7 @@ def animated_bubble_plot(
         order_by,
         limit,
     )
-    vdf.__executeSQL__(
-        query=query,
-        title="Select points to draw the animated bubble plot."
-    )
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(query=query, title="Selecting points to draw the animated bubble plot.", method="fetchall",)
     size = 50
     order_by_values = [item[0] for item in query_result]
     if columns[2] != 1:
@@ -544,8 +536,7 @@ def animated_ts_plot(
     query += " ORDER BY {}".format(order_by)
     if limit:
         query += " LIMIT {}".format(limit)
-    vdf.__executeSQL__(query=query, title="Select the needed points to draw the curves")
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(query=query, title="Selecting the needed points to draw the curves", method="fetchall",)
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -923,9 +914,7 @@ def boxplot(
                 query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
                     by, table, vdf.alias, by, max_cardinality
                 )
-                query_result = vdf.__executeSQL__(
-                    query=query, title="Compute the categories of {}".format(by)
-                ).fetchall()
+                query_result = executeSQL(query=query, title="Computing the categories of {}".format(by), method="fetchall",)
                 cat_priority = [item for sublist in query_result for item in sublist]
             with_summarize = False
             query = []
@@ -954,11 +943,7 @@ def boxplot(
                 table, " UNION ALL ".join(query)
             )
             try:
-                vdf.__executeSQL__(
-                    query=query,
-                    title="Compute all the descriptive statistics for each category to draw the box plot",
-                )
-                query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                query_result = executeSQL(query=query, title="Computing all the descriptive statistics for each category to draw the box plot", method="fetchall",)
             except:
                 query_result = []
                 for idx, category in enumerate(cat_priority):
@@ -983,13 +968,7 @@ def boxplot(
                             by, str(category).replace("'", "''")
                         )
                     )
-                    vdf.__executeSQL__(
-                        query=tmp_query,
-                        title="Compute all the descriptive statistics for each category to draw the box plot, one at a time",
-                    )
-                    query_result += [
-                        vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
-                    ]
+                    query_result += [executeSQL(query=tmp_query, title="Computing all the descriptive statistics for each category to draw the box plot, one at a time", method="fetchone",)]
             cat_priority = [item[-1] for item in query_result]
             result = [[float(item[i]) for i in range(0, 5)] for item in query_result]
             result.reverse()
@@ -1177,9 +1156,7 @@ def bubble(
             columns[2],
             max_nb_points,
         )
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select random points to draw the scatter plot"
-        ).fetchall()
+        query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot", method="fetchall",)
         size = 50
         if columns[2] != 1:
             max_size = max([float(item[2]) for item in query_result])
@@ -1295,13 +1272,7 @@ def bubble(
                     columns[2],
                     int(max_nb_points / len(all_categories)),
                 )
-                vdf.__executeSQL__(
-                    query=query,
-                    title="Select random points to draw the bubble plot (category = '{}')".format(
-                        str(category)
-                    ),
-                )
-                query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                query_result = executeSQL(query=query, title="Selecting random points to draw the bubble plot (category = '{}')".format(str(category)), method="fetchall",)
                 size = 50
                 if columns[2] != 1:
                     size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
@@ -1331,11 +1302,7 @@ def bubble(
                 cmap_col,
                 max_nb_points,
             )
-            vdf.__executeSQL__(
-                query=query,
-                title="Select random points to draw the bubble plot with cmap expr."
-            )
-            query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+            query_result = executeSQL(query=query, title="Selecting random points to draw the bubble plot with cmap expr.", method="fetchall",)
             size = 50
             if columns[2] != 1:
                 size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
@@ -1508,8 +1475,7 @@ def contour_plot(
         from verticapy.datasets import gen_meshgrid
 
         vdf_tmp = gen_meshgrid({str_column(columns[1])[1:-1]: {"type": float, "range": [min_y, max_y], "nbins": nbins},
-                                       str_column(columns[0])[1:-1]: {"type": float, "range": [min_x, max_x], "nbins": nbins},},
-                                       cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+                                       str_column(columns[0])[1:-1]: {"type": float, "range": [min_x, max_x], "nbins": nbins},},)
         y = "verticapy_predict"
         if isinstance(func, (str, str_sql,)):
             vdf_tmp["verticapy_predict"] = func
@@ -1683,8 +1649,7 @@ def compute_plot_variables(
                     aggregate,
                     max_cardinality,
                 )
-        vdf.__executeSQL__(query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(query, title="Computing the histogram heights", method="fetchall",)
         if query_result[-1][1] == None:
             del query_result[-1]
         z = [item[0] for item in query_result]
@@ -1704,16 +1669,14 @@ def compute_plot_variables(
             query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
                 vdf.alias, vdf.alias
             )
-            vdf.__executeSQL__(query=query, title="Compute the histogram interval")
-            query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
+            query_result = executeSQL(query=query, title="Computing the histogram interval", method="fetchone",)
             h = float(query_result[0]) / bins
         min_date = vdf.min()
         converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
         query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
             converted_date, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
-        vdf.__executeSQL__(query=query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(query=query, title="Computing the histogram heights", method="fetchall",)
         x = [float(item[0]) for item in query_result]
         y = (
             [item[1] / float(count) for item in query_result]
@@ -1727,8 +1690,7 @@ def compute_plot_variables(
             )
         query = query[7:-1] + ")"
         h = 0.94 * h
-        vdf.parent._VERTICAPY_VARIABLES_["cursor"].execute(query)
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(query, title="Computing the datetime intervals.", method="fetchall",)
         z = [item[0] for item in query_result]
         z.sort()
         is_categorical = True
@@ -1744,8 +1706,7 @@ def compute_plot_variables(
         query = query.format(
             vdf.alias, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
-        vdf.__executeSQL__(query=query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(query=query, title="Computing the histogram heights", method="fetchall",)
         y = (
             [item[1] / float(count) for item in query_result]
             if (method.lower() == "density")
@@ -1878,9 +1839,7 @@ def hexbin(
         columns[0],
         columns[1],
     )
-    query_result = vdf.__executeSQL__(
-        query=query, title="Group all the elements for the Hexbin Plot"
-    ).fetchall()
+    query_result = executeSQL(query=query, title="Grouping all the elements for the Hexbin Plot", method="fetchall",)
     column1, column2, column3 = [], [], []
     for item in query_result:
         if (item[0] != None) and (item[1] != None) and (item[2] != None):
@@ -2285,8 +2244,7 @@ def multi_ts_plot(
         ["{} IS NOT NULL".format(column) for column in columns]
     )
     query += " ORDER BY {}".format(order_by)
-    vdf.__executeSQL__(query=query, title="Select the needed points to draw the curves")
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(query=query, title="Selecting the needed points to draw the curves", method="fetchall",)
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -2466,9 +2424,7 @@ def range_curve_vdf(
     )
     query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
     query += " GROUP BY 1 ORDER BY 1"
-    query_result = vdf.__executeSQL__(
-        query=query, title="Select points to draw the curve"
-    ).fetchall()
+    query_result = executeSQL(query=query, title="Selecting points to draw the curve", method="fetchall",)
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -2945,7 +2901,7 @@ def pivot_table(
             where,
             order_by,
         )
-        return to_tablesample(query, vdf._VERTICAPY_VARIABLES_["cursor"])
+        return to_tablesample(query,)
     alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
     aggr = ", " + of if (of) else ""
     subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table".format(
@@ -3008,12 +2964,7 @@ def pivot_table(
         columns[0],
         columns[1],
     )
-    vdf.__executeSQL__(
-        query=query, title="Group the features to compute the pivot table"
-    )
-    query_result = vdf.__executeSQL__(
-        query=query, title="Group the features to compute the pivot table"
-    ).fetchall()
+    query_result = executeSQL(query=query, title="Grouping the features to compute the pivot table", method="fetchall",)
     # Column0 sorted categories
     all_column0_categories = list(set([str(item[0]) for item in query_result]))
     all_column0_categories.sort()
@@ -3118,9 +3069,7 @@ def scatter_matrix(
     query = "SELECT {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
         ", ".join(columns), random_func, vdf.__genSQL__(True)
     )
-    all_scatter_points = vdf.__executeSQL__(
-        query=query, title="Select random points to draw the scatter plot"
-    ).fetchall()
+    all_scatter_points = executeSQL(query=query, title="Selecting random points to draw the scatter plot", method="fetchall",)
     all_scatter_columns = []
     for i in range(n):
         all_scatter_columns += [[item[i] for item in all_scatter_points]]
@@ -3195,9 +3144,7 @@ def scatter2D(
             columns[1],
             max_nb_points,
         )
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select random points to draw the scatter plot"
-        ).fetchall()
+        query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot", method="fetchall",)
         column1, column2 = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -3243,9 +3190,7 @@ def scatter2D(
                 column_groupby,
                 max_cardinality,
             )
-            query_result = vdf.__executeSQL__(
-                query=query, title="Compute {} categories".format(column_groupby)
-            ).fetchall()
+            query_result = executeSQL(query=query, title="Computing {} categories".format(column_groupby), method="fetchall",)
             query_result = [item for sublist in query_result for item in sublist]
         all_columns, all_scatter, all_categories = [query_result], [], query_result
         if not (ax):
@@ -3295,13 +3240,7 @@ def scatter2D(
                 columns[1],
                 int(max_nb_points / len(all_categories)),
             )
-            vdf.__executeSQL__(
-                query=query,
-                title="Select random points to draw the scatter plot (category = '{}')".format(
-                    str(category)
-                ),
-            )
-            query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+            query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot (category = '{}')".format(str(category)), method="fetchall",)
             column1, column2 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3330,10 +3269,7 @@ def scatter2D(
                 tablesample,
                 int(max_nb_points / len(all_categories)),
             )
-            query_result = vdf.__executeSQL__(
-                query=query,
-                title="Select random points to draw the scatter plot (category = 'others')",
-            ).fetchall()
+            query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot (category = 'others')", method="fetchall",)
             column1, column2 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3408,9 +3344,7 @@ def scatter3D(
                 columns[2],
                 max_nb_points,
             )
-            query_result = vdf.__executeSQL__(
-                query=query, title="Select random points to draw the scatter plot"
-            ).fetchall()
+            query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot", method="fetchall",)
             column1, column2, column3 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3448,12 +3382,7 @@ def scatter3D(
                     column_groupby,
                     max_cardinality,
                 )
-                query_result = vdf.__executeSQL__(
-                    query=query,
-                    title="Compute the vcolumn {} distinct categories".format(
-                        column_groupby
-                    ),
-                ).fetchall()
+                query_result = executeSQL(query=query, title="Computing the vcolumn {} distinct categories".format(column_groupby), method="fetchall",)
                 query_result = [item for sublist in query_result for item in sublist]
             all_columns, all_scatter, all_categories = [query_result], [], query_result
             if not (ax):
@@ -3486,12 +3415,7 @@ def scatter3D(
                     columns[2],
                     int(max_nb_points / len(all_categories)),
                 )
-                query_result = vdf.__executeSQL__(
-                    query=query,
-                    title="Select random points to draw the scatter plot (category = '{}')".format(
-                        category
-                    ),
-                ).fetchall()
+                query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot (category = '{}')".format(category), method="fetchall",)
                 column1, column2, column3 = (
                     [float(item[0]) for item in query_result],
                     [float(item[1]) for item in query_result],
@@ -3528,10 +3452,7 @@ def scatter3D(
                     tablesample,
                     int(max_nb_points / len(all_categories)),
                 )
-                query_result = vdf.__executeSQL__(
-                    query=query,
-                    title="Select random points to draw the scatter plot (category = 'others')",
-                ).fetchall()
+                query_result = executeSQL(query=query, title="Selecting random points to draw the scatter plot (category = 'others')", method="fetchall",)
                 column1, column2 = (
                     [float(item[0]) for item in query_result],
                     [float(item[1]) for item in query_result],
@@ -3673,9 +3594,7 @@ def ts_plot(
             " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
         )
         query += " ORDER BY {}, {}".format(order_by, vdf.alias)
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select points to draw the curve"
-        ).fetchall()
+        query_result = executeSQL(query=query, title="Selecting points to draw the curve", method="fetchall",)
         order_by_values = [item[0] for item in query_result]
         try:
             if isinstance(order_by_values[0], str):
@@ -3744,9 +3663,7 @@ def ts_plot(
             )
             query += " AND {} = '{}'".format(by, str(column).replace("'", "''"))
             query += " ORDER BY {}, {}".format(order_by, vdf.alias)
-            query_result = vdf.__executeSQL__(
-                query=query, title="Select points to draw the curve"
-            ).fetchall()
+            query_result = executeSQL(query=query, title="Selecting points to draw the curve", method="fetchall",)
             all_data += [
                 [
                     [item[0] for item in query_result],

@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import statistics, random, time
-from collections import Iterable
+from collections.abc import Iterable
 from itertools import product
 import numpy as np
 from typing import Union
@@ -98,7 +98,7 @@ forest model to estimate a probable optimal set of parameters.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -217,10 +217,10 @@ tablesample
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
     schema = verticapy.options["temp_schema"]
-    relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session(estimator.cursor))
-    model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session(estimator.cursor))
-    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
-    estimator.cursor.execute("CREATE TABLE {} AS {}".format(relation, result))
+    relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session())
+    model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session())
+    drop_if_exists(relation, method="table",)
+    executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False,)
     if print_info:
         print(f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n")
     if verticapy.options["tqdm"] and print_info:
@@ -235,14 +235,14 @@ tablesample
             model_grid = {"C": {"type": float, "range": [0.0, 10], "nbins": bayesian_nbins}, "l1_ratio": {"type": float, "range": [0.0, 1.0], "nbins": bayesian_nbins},}
         all_params = list(dict.fromkeys(model_grid))
         from verticapy.learn.ensemble import RandomForestRegressor
-        hyper_param_estimator = RandomForestRegressor(name=estimator.name, cursor=estimator.cursor, **RFmodel_params,)
+        hyper_param_estimator = RandomForestRegressor(name=estimator.name, **RFmodel_params,)
         hyper_param_estimator.fit(relation, all_params, "score")
         from verticapy.datasets import gen_meshgrid, gen_dataset
         if random_grid:
-            vdf = gen_dataset(model_grid, estimator.cursor, nrows=nrows,)
+            vdf = gen_dataset(model_grid, nrows=nrows,)
         else:
-            vdf = gen_meshgrid(model_grid, estimator.cursor,)
-        estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
+            vdf = gen_meshgrid(model_grid,)
+        drop_if_exists(relation, method="table",)
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
         reverse = reverse_score(metric)
@@ -285,15 +285,13 @@ tablesample
     if print_info:
         print("\033[1mBayesian Search Selected Model\033[0m")
         print(f"Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
-    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
-
+    drop_if_exists(relation, method="table",)
     return result
 
 # ---#
 def best_k(
     input_relation: Union[str, vDataFrame],
     X: list = [],
-    cursor=None,
     n_cluster: Union[tuple, list] = (1, 100),
     init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
@@ -312,8 +310,6 @@ input_relation: str/vDataFrame
 X: list, optional
 	List of the predictor columns. If empty, all numerical columns will
     be used.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
     This can also be customized list with various k values to test.
@@ -352,7 +348,6 @@ int
 
     from verticapy.learn.cluster import KMeans
 
-    cursor, conn = check_cursor(cursor, input_relation)[0:2]
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -369,14 +364,9 @@ int
     else:
         loop = L
     for i in loop:
-        cursor.execute(
-            "DROP MODEL IF EXISTS {}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(
-                schema, get_session(cursor)
-            )
-        )
+        drop_if_exists("{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session()), method="model",)
         model = KMeans(
-            "{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session(cursor)),
-            cursor,
+            "{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session()),
             i,
             init,
             max_iter,
@@ -387,8 +377,6 @@ int
         if score > elbow_score_stop:
             return i
         score_prev = score
-    if conn:
-        conn.close()
     print(
         "\u26A0 The K was not found. The last K (= {}) is returned with an elbow score of {}".format(
             i, score
@@ -418,7 +406,7 @@ Computes the K-Fold cross validation of an estimator.
 Parameters
 ----------
 estimator: object
-	Vertica estimator with a fit method and a database cursor.
+	Vertica estimator with a fit.
 input_relation: str/vDataFrame
 	Relation to use to train the model.
 X: list
@@ -485,7 +473,7 @@ tablesample
         ]
     )
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
+        input_relation = vdf_from_relation(input_relation,)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if category_from_model_type(estimator.type)[0] == "regressor":
@@ -697,7 +685,6 @@ tablesample
 def elbow(
     input_relation: Union[str, vDataFrame],
     X: list = [],
-    cursor=None,
     n_cluster: Union[tuple, list] = (1, 15),
     init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
@@ -716,8 +703,6 @@ input_relation: str/vDataFrame
 X: list, optional
     List of the predictor columns. If empty all the numerical vcolumns will
     be used.
-cursor: DBcursor, optional
-    Vertica database cursor.
 n_cluster: tuple/list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
@@ -755,8 +740,7 @@ tablesample
             ("tol", tol, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor, input_relation)[0:2]
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0],)
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -776,16 +760,11 @@ tablesample
     else:
         loop = L
     for i in loop:
-        cursor.execute(
-            "DROP MODEL IF EXISTS {}.VERTICAPY_KMEANS_TMP_{}".format(
-                schema, get_session(cursor)
-            )
-        )
+        drop_if_exists("{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session()), method="model",)
         from verticapy.learn.cluster import KMeans
 
         model = KMeans(
-            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session(cursor)),
-            cursor,
+            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session()),
             i,
             init,
             max_iter,
@@ -794,8 +773,6 @@ tablesample
         model.fit(input_relation, X)
         all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
         model.drop()
-    if conn:
-        conn.close()
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
@@ -827,7 +804,6 @@ def enet_search_cv(
     cv: int = 3,
     estimator_type: str = "auto",
     cutoff: float = -1,
-    cursor=None,
     print_info: bool = True,
     **kwargs,
 ):
@@ -879,8 +855,6 @@ estimator_type: str, optional
         enet : ElasticNet
 cutoff: float, optional
     The model cutoff (logit only).
-cursor: DBcursor, optional
-    Vertica database cursor.
 print_info: bool, optional
     If set to True, prints the model information at each step.
 
@@ -891,7 +865,6 @@ tablesample
     utilities.tablesample.
     """
     check_types([("estimator_type", estimator_type, ["logit", "enet", "auto",]),])
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     param_grid = parameter_grid({"solver": ["cgd",], 
                                  "penalty": ["enet",],
                                  "C": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 5.0, 10.0, 50.0, 100.0] if "small" not in kwargs else [1e-1, 1.0, 10.0,],
@@ -901,7 +874,7 @@ tablesample
 
     if estimator_type == "auto":
         if not(isinstance(input_relation, vDataFrame)):
-            vdf = vdf_from_relation(input_relation, cursor=cursor)
+            vdf = vdf_from_relation(input_relation,)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:
@@ -909,9 +882,9 @@ tablesample
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = LogisticRegression("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
+        estimator = LogisticRegression("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(),),)
     else:
-        estimator = ElasticNet("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
+        estimator = ElasticNet("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(),),)
     result = bayesian_search_cv(
         estimator,
         input_relation,
@@ -927,8 +900,6 @@ tablesample
         print_info=print_info,
         enet=True,
     )
-    if conn:
-        conn.close()
     return result
 
 
@@ -945,7 +916,7 @@ Generates the estimator grid.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 nbins: int, optional
     Number of bins used to discretize numberical features.
 max_nfeatures: int, optional
@@ -1292,7 +1263,7 @@ Computes the k-fold grid search of an estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 param_grid: dict/list
     Dictionary of the parameters to test. It can also be a list of the
     different combinations.
@@ -1512,7 +1483,7 @@ Draws the learning curve.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -1586,7 +1557,7 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
+        input_relation = vdf_from_relation(input_relation,)
     lc_result_final = []
     sizes = sorted(set(sizes))
     if verticapy.options["tqdm"]:
@@ -1707,7 +1678,6 @@ def lift_chart(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     ax=None,
@@ -1728,8 +1698,6 @@ input_relation: str/vDataFrame
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
 pos_label: int/float/str, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -1755,14 +1723,10 @@ tablesample
             ("nbins", nbins, [int, float],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0],)
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the Lift Table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query_result = executeSQL(query, title="Computing the Lift Table.", method="fetchall")
     decision_boundary, positive_prediction_ratio, lift = (
         [item[0] for item in query_result],
         [item[1] for item in query_result],
@@ -1961,7 +1925,6 @@ def prc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_prc: bool = False,
@@ -1983,8 +1946,6 @@ input_relation: str/vDataFrame
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -2016,14 +1977,10 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[9, 1, 0])
+    version(condition=[9, 1, 0],)
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the PRC table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query_result = executeSQL(query, title="Computing the PRC table.", method="fetchall")
     threshold, recall, precision = (
         [0] + [item[0] for item in query_result] + [1],
         [1] + [item[1] for item in query_result] + [0],
@@ -2100,7 +2057,7 @@ the model.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2309,7 +2266,7 @@ Computes the K-Fold randomized search of an estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2389,7 +2346,6 @@ def roc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_roc: bool = False,
@@ -2413,8 +2369,6 @@ input_relation: str/vDataFrame
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -2454,14 +2408,10 @@ tablesample
     )
     if nbins < 0:
         nbins = 999999
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0],)
     query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
     query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the ROC Table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query_result = executeSQL(query, title="Computing the ROC Table.", method="fetchall")
     threshold, false_positive, true_positive = (
         [item[0] for item in query_result],
         [item[1] for item in query_result],
@@ -2584,7 +2534,7 @@ when fitting the estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2641,17 +2591,16 @@ tablesample
             ("x_order", x_order, ["pearson", "spearman", "random", "none",]),
         ]
     )
-    does_model_exist(name=estimator.name, cursor=estimator.cursor, raise_error=True)
+    does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
-    estimator.cursor.execute(f"SELECT AVG({y}) FROM {table}")
-    avg = estimator.cursor.fetchone()[0]
+    avg = executeSQL(f"SELECT AVG({y}) FROM {table}", method="fetchone0", print_time_sql=False,)
     k = 0 if criterion == "aic" else 1
     if x_order == "random":
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(input_relation, cursor=estimator.cursor)
+            vdf = vdf_from_relation(input_relation,)
         else:
             vdf = input_relation
         X = [elem for elem in vdf.corr(method=x_order, focus=y, columns=X, show=False,)["index"]]
@@ -2684,7 +2633,7 @@ tablesample
                 estimator.fit(input_relation, X_test, y)
                 test_score = estimator.score(criterion,)
             else:
-                test_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+                test_score = aic_bic(y, str(avg), input_relation, 0)[k]
             score_diff = test_score - current_score
             if test_score - current_score < criterion_threshold:
                 sign = "-"
@@ -2699,7 +2648,7 @@ tablesample
             current_step += 1
     else:
         X_current = []
-        current_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+        current_score = aic_bic(y, str(avg), input_relation, 0)[k]
         result += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
@@ -2768,7 +2717,7 @@ Draws the validation curve.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 param_name: str
     Parameter name.
 param_range: list

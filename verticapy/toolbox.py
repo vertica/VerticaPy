@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import os, math, shutil, re, sys, warnings, random, itertools
-from collections import Iterable
+from collections.abc import Iterable
 import numpy as np
 
 # VerticaPy Modules
@@ -162,60 +162,16 @@ def category_from_type(ctype: str = ""):
         return "undefined"
 
 # ---#
-def conn_already_available():
-    try:
-        verticapy.options["cursor"].execute("SELECT 1;")
-        result = verticapy.options["cursor"].fetchone()[0]
-        conn = verticapy.options["conn"]
-        cursor = verticapy.options["cursor"]
-        return (conn, cursor)
-    except:
-        return False
+def current_conn():
+    from verticapy.connect import read_auto_connect
+
+    if not(verticapy.options["connection"]["conn"]):
+        read_auto_connect()
+    return verticapy.options["connection"]["conn"]
 
 # ---#
-def optimized_conn():
-    result = conn_already_available()
-    if result:
-        conn, cursor = result
-    else:
-        from verticapy.connect import read_auto_connect
-
-        conn = read_auto_connect()
-        cursor = conn.cursor()
-        verticapy.options["conn"] = conn
-        verticapy.options["cursor"] = cursor
-    return conn, cursor
-
-# ---#
-def check_cursor(cursor, vdf="", vdf_cursor: bool = False):
-
-    from verticapy import vDataFrame
-
-    if isinstance(vdf, vDataFrame):
-        if not (cursor) or vdf_cursor:
-            try:
-                cursor = vdf._VERTICAPY_VARIABLES_["cursor"]
-                cursor.execute("SELECT 1;")
-            except:
-                cursor = None
-        input_relation = vdf.__genSQL__()
-    else:
-        input_relation = vdf
-    if not (cursor):
-        conn, cursor = optimized_conn()
-    else:
-        conn = False
-        if "cursor" not in (str(type(cursor))).lower():
-            try:
-                cursor.execute("SELECT 1;")
-            except:
-                raise TypeError(
-                    "Parameter 'cursor' must be a DataBase cursor, found '{}'\nYou can find how to set up your own cursor using the vHelp function of the utilities module (option number 1).".format(
-                        type(cursor)
-                    )
-                )
-    return (cursor, conn, input_relation)
-
+def current_cursor():
+    return current_conn().cursor()
 
 # ---#
 def check_types(types_list: list = [],):
@@ -468,18 +424,28 @@ def default_model_parameters(model_type: str):
 
 
 # ---#
-def executeSQL(cursor, query: str, title: str = "", data: list = [],):
-    check_types([("query", query, [str],), ("title", title, [str],)])
-    if verticapy.options["query_on"]:
+def executeSQL(query: str, title: str = "", data: list = [], method: str = "cursor", path: str = "", print_time_sql: bool = True,):
+    check_types([("query", query, [str],), ("title", title, [str],), ("method", method, ["cursor", "fetchone", "fetchall", "fetchone0", "copy",])])
+    cursor = current_cursor()
+    if verticapy.options["query_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if (data):
         cursor.executemany(query, data)
+    elif (method == "copy"):
+        with open(path, "r") as fs:
+            cursor.copy(query, fs)
     else:
         cursor.execute(query)
     elapsed_time = time.time() - start_time
-    if verticapy.options["time_on"]:
+    if verticapy.options["time_on"] and print_time_sql:
         print_time(elapsed_time)
+    if method == "fetchone":
+        return cursor.fetchone()
+    elif method == "fetchone0":
+        return cursor.fetchone()[0]
+    elif method == "fetchall":
+        return cursor.fetchall()
     return cursor
 
 
@@ -561,16 +527,14 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 
 
 # ---#
-def get_session(cursor, add_username: bool = True):
+def get_session(add_username: bool = True,):
     query = "SELECT CURRENT_SESSION();"
-    cursor.execute(query)
-    result = cursor.fetchone()[0]
+    result = executeSQL(query, method="fetchone0", print_time_sql=False,)
     result = result.split(":")[1]
     result = int(result, base=16)
     if add_username:
         query = "SELECT USERNAME();"
-        cursor.execute(query)
-        result = "{}_{}".format(cursor.fetchone()[0], result)
+        result = "{}_{}".format(executeSQL(query, method="fetchone0", print_time_sql=False,), result)
     return result
 
 # ---#
@@ -623,12 +587,10 @@ def insert_verticapy_schema(
     model_name: str,
     model_type: str,
     model_save: dict,
-    cursor,
     category: str = "VERTICAPY_MODELS",
 ):
     sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
-    cursor.execute(sql)
-    result = cursor.fetchone()
+    result = executeSQL(sql, method="fetchone", print_time_sql=False,)
     if not (result):
         warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
         warnings.warn(warning_message, Warning)
@@ -640,22 +602,21 @@ def insert_verticapy_schema(
             sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 model_name.lower()
             )
-            cursor.execute(sql)
-            result = cursor.fetchone()
+            result = executeSQL(sql, method="fetchone", print_time_sql=False,)
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
                 sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size) VALUES ('{}', '{}', '{}', '{}', {});".format(
                     model_name, category, model_type, create_time, size
                 )
-                cursor.execute(sql)
-                cursor.execute("COMMIT;")
+                executeSQL(sql, print_time_sql=False,)
+                executeSQL("COMMIT;", print_time_sql=False,)
                 for elem in model_save:
                     sql = "INSERT INTO verticapy.attr(model_name, attr_name, value) VALUES ('{}', '{}', '{}');".format(
                         model_name, elem, str(model_save[elem]).replace("'", "''")
                     )
-                    cursor.execute(sql)
-                    cursor.execute("COMMIT;")
+                    executeSQL(sql, print_time_sql=False,)
+                    executeSQL("COMMIT;", print_time_sql=False,)
         except Exception as e:
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
@@ -786,7 +747,7 @@ def nb_var_info(model):
     # It is used to translate NB to Python
     from verticapy.utilities import vdf_from_relation
 
-    vdf = vdf_from_relation(model.input_relation, cursor=model.cursor)
+    vdf = vdf_from_relation(model.input_relation,)
     var_info = {}
     gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
     for idx, elem in enumerate(model.X):
@@ -1416,18 +1377,15 @@ def xgb_prior(model):
     from verticapy.utilities import version
 
     condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
-    v = version(cursor = model.cursor)
+    v = version()
     v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
     if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
-        model.cursor.execute("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)))
-        prior_ = model.cursor.fetchone()[0]
+        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False,)
     elif not(v):
         prior_ = []
         for elem in model.classes_:
-            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem))
-            avg = model.cursor.fetchone()[0]
-            model.cursor.execute("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),))
-            avg /= model.cursor.fetchone()[0]
+            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchone0", print_time_sql=False,)
+            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),), method="fetchone0", print_time_sql=False,)
             logodds = np.log(avg / (1 - avg))
             prior_ += [logodds]
     else:

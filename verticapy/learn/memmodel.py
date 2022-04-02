@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import numpy as np
-from collections import Iterable
+from collections.abc import Iterable
 
 # VerticaPy Modules
 from verticapy.toolbox import *

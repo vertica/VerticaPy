@@ -13,18 +13,16 @@
 
 import pytest, warnings, os, verticapy
 from verticapy.learn.memmodel import *
-from verticapy import drop
+from verticapy import drop, current_cursor
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic",)
 
 class Test_memModel:
     def test_LinearRegression(self,):
@@ -363,7 +361,7 @@ class Test_memModel:
                                                  "feature": [0, 1, None, None, None],
                                                  "threshold": ['female', 30, None, None, None],
                                                  "value": [None, None, 3, 11, 1993],})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == pytest.approx(3.0)
         assert prediction[1] == pytest.approx(11.0)
         assert prediction[2] == pytest.approx(1993.0)
@@ -388,12 +386,12 @@ class Test_memModel:
                                                   "threshold": ['female', 30, None, None, None],
                                                   "value": [None, None, [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.6]],
                                                   "classes": ['a', 'b', 'c',]})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == 'a'
         assert prediction[1] == 'b'
         assert prediction[2] == 'c'
         assert model.predict_sql(['sex', 'fare']) == "(CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 'b' ELSE 'c' END) ELSE 'a' END)"
-        prediction = model.predict_proba([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict_proba([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0][0] == 0.8
         assert prediction[0][1] == 0.1
         assert prediction[0][2] == 0.1
@@ -425,12 +423,12 @@ class Test_memModel:
         tree = titanic_vd.chaid("survived", ["sex", "fare"]).attributes_["tree"]
         model = memModel("CHAID", {"tree": tree,
                                    "classes": ['a', 'b',]})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == 'a'
         assert prediction[1] == 'b'
         assert prediction[2] == 'b'
         assert model.predict_sql(['sex', 'fare']) == "(CASE WHEN sex = 'female' THEN (CASE WHEN fare <= 127.6 THEN 'b' WHEN fare <= 255.2 THEN 'b' WHEN fare <= 382.8 THEN 'b' WHEN fare <= 638.0 THEN 'b' ELSE NULL END) WHEN sex = 'male' THEN (CASE WHEN fare <= 129.36 THEN 'a' WHEN fare <= 258.72 THEN 'a' WHEN fare <= 388.08 THEN 'a' WHEN fare <= 517.44 THEN 'b' ELSE NULL END) ELSE NULL END)"
-        prediction = model.predict_proba([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict_proba([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0][0] == pytest.approx(0.82129278)
         assert prediction[0][1] == pytest.approx(0.17870722)
         assert prediction[1][0] == pytest.approx(0.3042328)
@@ -467,7 +465,7 @@ class Test_memModel:
                                                   "threshold": ['female', 30, None, None, None],
                                                   "value": [None, None, 0, 3, 6],})
         model = memModel("RandomForestRegressor", {"trees": [model1, model2, model3]})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == pytest.approx(0.0)
         assert prediction[1] == pytest.approx(1.0)
         assert prediction[2] == pytest.approx(2.0)
@@ -505,12 +503,12 @@ class Test_memModel:
                                                    "value": [None, None, [0.3, 0.7, 0.0], [0.0, 0.4, 0.6], [0.9, 0.1, 0.0]],
                                                    "classes": ['a', 'b', 'c'],})
         model = memModel("RandomForestClassifier", {"trees": [model1, model2, model3]})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == 'a'
         assert prediction[1] == 'b'
         assert prediction[2] == 'c'
         assert model.predict_sql(['sex', 'fare']) == "CASE WHEN sex IS NULL OR fare IS NULL THEN NULL WHEN ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END)) / 3 >= ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END)) / 3 AND ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END)) / 3 >= ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END)) / 3 THEN 'c' WHEN ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 1.0 ELSE 0.0 END) ELSE 0.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END)) / 3 >= ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.0 END) ELSE 1.0 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 1.0 END) ELSE 0.0 END)) / 3 THEN 'b' ELSE 'a' END"
-        prediction = model.predict_proba([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict_proba([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0][0] == pytest.approx(0.66666667)
         assert prediction[0][1] == pytest.approx(0.33333333)
         assert prediction[0][2] == pytest.approx(0.0)
@@ -556,7 +554,7 @@ class Test_memModel:
         model = memModel("XGBoostRegressor", {"trees": [model1, model2, model3],
                                               "learning_rate": 0.1,
                                               "mean": 1.0})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == pytest.approx(1.0)
         assert prediction[1] == pytest.approx(1.3)
         assert prediction[2] == pytest.approx(1.6)
@@ -603,12 +601,12 @@ class Test_memModel:
         model = memModel("XGBoostClassifier", {"trees": [model1, model2, model3],
                                                "learning_rate": 0.1,
                                                "logodds": [0.1, 0.12, 0.15]})
-        prediction = model.predict([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0] == 'a'
         assert prediction[1] == 'b'
         assert prediction[2] == 'c'
         assert model.predict_sql(['sex', 'fare']) == "CASE WHEN sex IS NULL OR fare IS NULL THEN NULL WHEN (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) >= (1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) AND (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) >= (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) THEN 'c' WHEN (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) >= (1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) / ((1 / (1 + EXP(- (0.1 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.1 END) ELSE 0.8 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.2 END) ELSE 0.7 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.0 ELSE 0.9 END) ELSE 0.3 END)))))) + (1 / (1 + EXP(- (0.12 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.8 ELSE 0.1 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.2 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.4 ELSE 0.1 END) ELSE 0.7 END)))))) + (1 / (1 + EXP(- (0.15 + 0.1 * ((CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.1 ELSE 0.8 END) ELSE 0.1 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.2 ELSE 0.6 END) ELSE 0.15 END) + (CASE WHEN sex = 'female' THEN (CASE WHEN fare < 30 THEN 0.6 ELSE 0.0 END) ELSE 0.0 END))))))) THEN 'b' ELSE 'a' END"
-        prediction = model.predict_proba([['male', 100], ['female', 20] , ['female', 50]])
+        prediction = model.predict_proba([['male', 100], ['female', 20], ['female', 50]])
         assert prediction[0][0] == pytest.approx(0.34171499)
         assert prediction[0][1] == pytest.approx(0.33211396)
         assert prediction[0][2] == pytest.approx(0.32617105)
@@ -645,12 +643,12 @@ class Test_memModel:
                                                      'S': {'female': 0.406666666666667, 'male': 0.593333333333333},},],
                       "classes": ["C", "Q", "S"],
                       "prior": [0.8, 0.1, 0.1],})
-        prediction = model.predict([[40.0, 1, True, 'male'], [60.0, 3, True, 'male'] , [15.0, 2, False, 'female']])
+        prediction = model.predict([[40.0, 1, True, 'male'], [60.0, 3, True, 'male'], [15.0, 2, False, 'female']])
         assert prediction[0] == 'C'
         assert prediction[1] == 'C'
         assert prediction[2] == 'Q'
         assert model.predict_sql(['age', 'pclass', 'survived', 'sex',]) == "CASE WHEN age IS NULL OR pclass IS NULL OR survived IS NULL OR sex IS NULL THEN NULL WHEN 0.010555023401917874 * EXP(- POWER(age - 27.6928120412844, 2) / 2857.14134787876) * POWER(0.878216123499142, pclass) * (CASE WHEN survived THEN 0.878216123499142 ELSE 0.12178387650085798 END) * DECODE(sex, 'female', 0.406666666666667, 'male', 0.593333333333333) * 0.1 >= 0.004675073323276673 * EXP(- POWER(age - 63.9878308300395, 2) / 14563.75196754392) * POWER(0.771666666666667, pclass) * (CASE WHEN survived THEN 0.771666666666667 ELSE 0.22833333333333306 END) * DECODE(sex, 'female', 0.407843137254902, 'male', 0.592156862745098) * 0.8 AND 0.010555023401917874 * EXP(- POWER(age - 27.6928120412844, 2) / 2857.14134787876) * POWER(0.878216123499142, pclass) * (CASE WHEN survived THEN 0.878216123499142 ELSE 0.12178387650085798 END) * DECODE(sex, 'female', 0.406666666666667, 'male', 0.593333333333333) * 0.1 >= 0.027423612860412977 * EXP(- POWER(age - 13.0217386792453, 2) / 423.253724660408) * POWER(0.910714285714286, pclass) * (CASE WHEN survived THEN 0.910714285714286 ELSE 0.08928571428571397 END) * DECODE(sex, 'female', 0.416666666666667, 'male', 0.583333333333333) * 0.1 THEN 'S' WHEN 0.027423612860412977 * EXP(- POWER(age - 13.0217386792453, 2) / 423.253724660408) * POWER(0.910714285714286, pclass) * (CASE WHEN survived THEN 0.910714285714286 ELSE 0.08928571428571397 END) * DECODE(sex, 'female', 0.416666666666667, 'male', 0.583333333333333) * 0.1 >= 0.004675073323276673 * EXP(- POWER(age - 63.9878308300395, 2) / 14563.75196754392) * POWER(0.771666666666667, pclass) * (CASE WHEN survived THEN 0.771666666666667 ELSE 0.22833333333333306 END) * DECODE(sex, 'female', 0.407843137254902, 'male', 0.592156862745098) * 0.8 THEN 'Q' ELSE 'C' END"
-        prediction = model.predict_proba([[40.0, 1, True, 'male'], [60.0, 3, True, 'male'] , [15.0, 2, False, 'female']])
+        prediction = model.predict_proba([[40.0, 1, True, 'male'], [60.0, 3, True, 'male'], [15.0, 2, False, 'female']])
         assert prediction[0][0] == pytest.approx(0.64564673)
         assert prediction[0][1] == pytest.approx(0.12105224)
         assert prediction[0][2] == pytest.approx(0.23330103)

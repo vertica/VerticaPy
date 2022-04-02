@@ -21,81 +21,67 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
-    drop(
-        name="public.amazon", cursor=base.cursor,
-    )
+    drop(name="public.amazon",)
 
 @pytest.fixture(scope="module")
-def commodities_vd(base):
+def commodities_vd():
     from verticapy.datasets import load_commodities
 
-    commodities = load_commodities(cursor=base.cursor)
+    commodities = load_commodities()
     yield commodities
-    drop(
-        name="public.commodities", cursor=base.cursor,
-    )
+    drop(name="public.commodities",)
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
+def iris_vd():
     from verticapy.datasets import load_iris
 
-    iris = load_iris(cursor=base.cursor)
+    iris = load_iris()
     yield iris
-    drop(
-        name="public.iris", cursor=base.cursor,
-    )
+    drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
-def world_vd(base):
+def world_vd():
     from verticapy.datasets import load_world
 
-    cities = load_world(cursor=base.cursor)
+    cities = load_world()
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.world", cursor=base.cursor,
-        )
+        drop(name="public.world",)
 
 @pytest.fixture(scope="module")
-def pop_growth_vd(base):
+def pop_growth_vd():
     from verticapy.datasets import load_pop_growth
 
-    pop_growth = load_pop_growth(cursor=base.cursor)
+    pop_growth = load_pop_growth()
     yield pop_growth
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.pop_growth", cursor=base.cursor,
-        )
+        drop(name="public.pop_growth",)
 
 @pytest.fixture(scope="module")
-def gapminder_vd(base):
+def gapminder_vd():
     from verticapy.datasets import load_gapminder
 
-    gapminder = load_gapminder(cursor=base.cursor)
+    gapminder = load_gapminder()
     yield gapminder
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.gapminder", cursor=base.cursor,
-        )
+        drop(name="public.gapminder",)
 
 
 class TestvDFPlot:
@@ -298,7 +284,7 @@ class TestvDFPlot:
     @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
-        create_verticapy_schema(iris_vd._VERTICAPY_VARIABLES_["cursor"])
+        create_verticapy_schema()
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
             result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20, color="b",)
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25

@@ -59,7 +59,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
-def gen_dataset(features_ranges: dict, cursor=None, nrows: int = 1000,):
+def gen_dataset(features_ranges: dict, nrows: int = 1000,):
     """
 ---------------------------------------------------------------------------
 Generates a dataset using the input parameters.
@@ -83,8 +83,6 @@ features_ranges: dict,
         For datetime : The subdictionary must include two keys: 'type' must
                        be set to 'date' and 'range' must include the start
                        date and the number of days after.
-cursor: DBcursor, optional
-    Vertica database cursor.
 nrows: int, optional
     The maximum number of rows in the dataset.
 
@@ -95,8 +93,7 @@ vDataFrame
     """    
     check_types([("features_ranges", features_ranges, [dict],), 
                  ("nrows", nrows, [int],),])
-    cursor = check_cursor(cursor)[0]
-    version(cursor=cursor, condition=[9, 3, 0])
+    version(condition=[9, 3, 0],)
     sql = []
     for param in features_ranges:
         if features_ranges[param]["type"] == str:
@@ -129,11 +126,11 @@ vDataFrame
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
     sql = "(SELECT " + ", ".join(sql) + f"FROM (SELECT tm FROM (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
-    return vdf_from_relation(sql, cursor=cursor)
+    return vdf_from_relation(sql,)
 
 
 # ---#
-def gen_meshgrid(features_ranges: dict, cursor=None,):
+def gen_meshgrid(features_ranges: dict,):
     """
 ---------------------------------------------------------------------------
 Generates a dataset using regular steps.
@@ -160,8 +157,6 @@ features_ranges: dict,
         Numerical and date-like features must have an extra key in the dictionary 
         named 'nbins' corresponding to the number of bins used to compute the 
         different categories.
-cursor: DBcursor, optional
-    Vertica database cursor.
 
 Returns
 -------
@@ -169,7 +164,6 @@ vDataFrame
     generated dataset.
     """    
     check_types([("features_ranges", features_ranges, [dict],),])
-    cursor = check_cursor(cursor)[0]
     sql = []
     for idx, param in enumerate(features_ranges):
         if "nbins" in features_ranges[param]:
@@ -212,20 +206,17 @@ vDataFrame
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
     sql = "(SELECT * FROM {}) x".format(" CROSS JOIN ".join(sql))
-    return vdf_from_relation(sql, cursor=cursor)
+    return vdf_from_relation(sql,)
 
 
 # ---#
-def load_dataset(
-    cursor, schema: str, name: str, str_create: str, str_copy: str, dataset_name: str
-):
+def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset_name: str,):
     """
     General Function to ingest a dataset
     """
     check_types([("schema", schema, [str],), ("name", name, [str],)])
-    cursor = check_cursor(cursor)[0]
     try:
-        vdf = vDataFrame(name, cursor, schema=schema)
+        vdf = vDataFrame(name, schema=schema,)
     except:
         name = str_column(name)
         if not(schema):
@@ -234,11 +225,8 @@ def load_dataset(
         else:
             schema = str_column(schema)
             temp = ""
-        cursor.execute(
-            "CREATE {}TABLE {}({}){};".format(
-                temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create, " ON COMMIT PRESERVE ROWS" if temp else ""
-            )
-        )
+        query = "CREATE {}TABLE {}({}){};".format(temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create, " ON COMMIT PRESERVE ROWS" if temp else "")
+        executeSQL(query, title="Creating the {} table.".format(dataset_name))
         try:
             path = os.path.dirname(verticapy.__file__) + "/data/{}.csv".format(
                 dataset_name
@@ -248,17 +236,14 @@ def load_dataset(
             )
             import vertica_python
 
-            if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                with open(path, "r") as fs:
-                    cursor.copy(query.format("STDIN"), fs)
+            if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
+                executeSQL(query.format("STDIN"), title="Ingesting the data.", method="copy", path=path)
             else:
-                cursor.execute(query.format("LOCAL '{}'".format(path)))
-            cursor.execute("COMMIT;")
-            vdf = vDataFrame(name, cursor, schema=schema)
+                executeSQL(query.format("LOCAL '{}'".format(path)), title="Ingesting the file.")
+            executeSQL("COMMIT;", title="Commit.")
+            vdf = vDataFrame(name, schema=schema,)
         except:
-            cursor.execute(
-                "DROP TABLE {}.{}".format(str_column(schema), str_column(name))
-            )
+            executeSQL("DROP TABLE {}.{}".format(str_column(schema), str_column(name)), title="The ingestion failed. The table is dropped.")
             raise
     return vdf
 
@@ -266,9 +251,7 @@ def load_dataset(
 #
 #
 # ---#
-def load_airline_passengers(
-    cursor=None, schema: str = "public", name: str = "airline_passengers"
-):
+def load_airline_passengers(schema: str = "public", name: str = "airline_passengers",):
     """
 ---------------------------------------------------------------------------
 Ingests the airline passengers dataset into the Vertica database. This dataset
@@ -278,8 +261,6 @@ input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -292,7 +273,6 @@ vDataFrame
     the airline passengers vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"date" Date, "passengers" Integer',
@@ -302,7 +282,7 @@ vDataFrame
 
 
 # ---#
-def load_amazon(cursor=None, schema: str = "public", name: str = "amazon"):
+def load_amazon(schema: str = "public", name: str = "amazon",):
     """
 ---------------------------------------------------------------------------
 Ingests the amazon dataset into the Vertica database. This dataset is ideal
@@ -310,9 +290,7 @@ for time series and regression models. If a table with the same name and schema
 already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
-----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
+---------- 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -325,7 +303,6 @@ vDataFrame
 	the amazon vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"date" Date, "state" Varchar(32), "number" Integer',
@@ -335,7 +312,7 @@ vDataFrame
 
 
 # ---#
-def load_cities(cursor=None, schema: str = "public", name: str = "cities"):
+def load_cities(schema: str = "public", name: str = "cities",):
     """
 ---------------------------------------------------------------------------
 Ingests the Cities dataset into the Vertica database. This dataset is ideal
@@ -344,8 +321,6 @@ this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -358,7 +333,6 @@ vDataFrame
     the Cities vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"city" Varchar(82), "geometry" Geometry',
@@ -368,7 +342,7 @@ vDataFrame
 
 
 # ---#
-def load_commodities(cursor=None, schema: str = "public", name: str = "commodities"):
+def load_commodities(schema: str = "public", name: str = "commodities",):
     """
 ---------------------------------------------------------------------------
 Ingests the commodities dataset into the Vertica database. This dataset is
@@ -378,8 +352,6 @@ input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -392,7 +364,6 @@ vDataFrame
     the amazon vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"date" Date, "Gold" Float, "Oil" Float, "Spread" Float, "Vix" Float, "Dol_Eur" Float, "SP500" Float',
@@ -402,9 +373,7 @@ vDataFrame
 
 
 # ---#
-def load_gapminder(
-    cursor=None, schema: str = "public", name: str = "gapminder"
-):
+def load_gapminder(schema: str = "public", name: str = "gapminder",):
     """
 ---------------------------------------------------------------------------
 Ingests the gapminder dataset into the Vertica database. This dataset is ideal
@@ -412,9 +381,7 @@ for time series and regression models. If a table with the same name and schema
 already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
-----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
+---------- 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -427,7 +394,6 @@ vDataFrame
     the gapminder vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"country" Varchar(96), "year" Integer, "pop" Integer, "continent" Varchar(52), "lifeExp" Float, "gdpPercap" Float',
@@ -437,7 +403,7 @@ vDataFrame
 
 
 # ---#
-def load_iris(cursor=None, schema: str = "public", name: str = "iris"):
+def load_iris(schema: str = "public", name: str = "iris",):
     """
 ---------------------------------------------------------------------------
 Ingests the iris dataset into the Vertica database. This dataset is ideal for
@@ -446,8 +412,6 @@ already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -460,7 +424,6 @@ vDataFrame
 	the iris vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"SepalLengthCm" Numeric(5,2), "SepalWidthCm" Numeric(5,2), "PetalLengthCm" Numeric(5,2), "PetalWidthCm" Numeric(5,2), "Species" Varchar(30)',
@@ -470,7 +433,7 @@ vDataFrame
 
 
 # ---#
-def load_market(cursor=None, schema: str = "public", name: str = "market"):
+def load_market(schema: str = "public", name: str = "market",):
     """
 ---------------------------------------------------------------------------
 Ingests the market dataset into the Vertica database. This dataset is ideal
@@ -479,8 +442,6 @@ this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -493,7 +454,6 @@ vDataFrame
 	the market vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"Name" Varchar(32), "Form" Varchar(32), "Price" Float',
@@ -503,9 +463,7 @@ vDataFrame
 
 
 # ---#
-def load_pop_growth(
-    cursor=None, schema: str = "public", name: str = "pop_growth"
-):
+def load_pop_growth(schema: str = "public", name: str = "pop_growth",):
     """
 ---------------------------------------------------------------------------
 Ingests the population growth dataset into the Vertica database. This dataset
@@ -515,8 +473,6 @@ input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -529,7 +485,6 @@ vDataFrame
     the pop growth vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"year" Int, "continent" Varchar(100), "country" Varchar(100), "city" Varchar(100), "population" Float, "lat" Float, "lon" Float',
@@ -539,7 +494,7 @@ vDataFrame
 
 
 # ---#
-def load_smart_meters(cursor=None, schema: str = "public", name: str = "smart_meters"):
+def load_smart_meters(schema: str = "public", name: str = "smart_meters",):
     """
 ---------------------------------------------------------------------------
 Ingests the smart meters dataset into the Vertica database. This dataset is ideal
@@ -548,8 +503,6 @@ already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -562,7 +515,6 @@ vDataFrame
 	the smart meters vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"time" Timestamp, "val" Numeric(11,7), "id" Integer',
@@ -572,7 +524,7 @@ vDataFrame
 
 
 # ---#
-def load_titanic(cursor=None, schema: str = "public", name: str = "titanic"):
+def load_titanic(schema: str = "public", name: str = "titanic",):
     """
 ---------------------------------------------------------------------------
 Ingests the titanic dataset into the Vertica database. This dataset is ideal 
@@ -581,8 +533,6 @@ exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -595,7 +545,6 @@ vDataFrame
 	the titanic vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"pclass" Integer, "survived" Integer, "name" Varchar(164), "sex" Varchar(20), "age" Numeric(6,3), "sibsp" Integer, "parch" Integer, "ticket" Varchar(36), "fare" Numeric(10,5), "cabin" Varchar(30), "embarked" Varchar(20), "boat" Varchar(100), "body" Integer, "home.dest" Varchar(100)',
@@ -605,7 +554,7 @@ vDataFrame
 
 
 # ---#
-def load_winequality(cursor=None, schema: str = "public", name: str = "winequality"):
+def load_winequality(schema: str = "public", name: str = "winequality",):
     """
 ---------------------------------------------------------------------------
 Ingests the winequality dataset into the Vertica database. This dataset is ideal
@@ -614,8 +563,6 @@ already exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 schema: str, optional
 	Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -628,7 +575,6 @@ vDataFrame
 	the winequality vDataFrame.
 	"""
     return load_dataset(
-        cursor,
         schema,
         name,
         '"fixed_acidity" Numeric(6,3), "volatile_acidity" Numeric(7,4), "citric_acid" Numeric(6,3), "residual_sugar" Numeric(7,3), "chlorides" Float, "free_sulfur_dioxide" Numeric(7,2), "total_sulfur_dioxide" Numeric(7,2), "density" Float, "pH" Numeric(6,3), "sulphates" Numeric(6,3), "alcohol" Float, "quality" Integer, "good" Integer, "color" Varchar(20)',
@@ -638,7 +584,7 @@ vDataFrame
 
 
 # ---#
-def load_world(cursor=None, schema: str = "public", name: str = "world"):
+def load_world(schema: str = "public", name: str = "world",):
     """
 ---------------------------------------------------------------------------
 Ingests the World dataset into the Vertica database. This dataset is ideal for
@@ -647,8 +593,6 @@ exists, this function will create a vDataFrame from the input relation.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 schema: str, optional
     Schema of the new relation. If empty, a temporary local table will be
     created.
@@ -661,7 +605,6 @@ vDataFrame
     the World vDataFrame.
     """
     return load_dataset(
-        cursor,
         schema,
         name,
         '"pop_est" Int, "continent" Varchar(32), "country" Varchar(82), "geometry" Geometry',

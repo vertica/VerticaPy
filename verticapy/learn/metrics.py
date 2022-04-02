@@ -50,7 +50,7 @@
 #
 # Standard Python Modules
 import math
-from collections import Iterable
+from collections.abc import Iterable
 from typing import Union
 
 # Other Modules
@@ -71,7 +71,6 @@ def aic_bic(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     k: int = 1,
 ):
     """
@@ -90,8 +89,6 @@ input_relation: str/vDataFrame
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
 k: int, optional
     Number of predictors.
 
@@ -108,12 +105,10 @@ tuple of floats
             ("k", k, [int],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation, y_true, y_score,
+        y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    executeSQL(cursor, query, "Computing the RSS Score.")
-    rss, n = cursor.fetchone()
+    rss, n = executeSQL(query, title="Computing the RSS Score.", method="fetchone")
     if rss > 0:
         result = (
             n * math.log(rss / n) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
@@ -121,8 +116,6 @@ tuple of floats
         )
     else:
         result = -float("inf"), -float("inf")
-    if conn:
-        conn.close()
     return result
 
 
@@ -132,7 +125,6 @@ def anova_table(
     y_score: str,
     input_relation: Union[str, vDataFrame],
     k: int = 1,
-    cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -151,8 +143,6 @@ input_relation: str/vDataFrame
     relation.
 k: int, optional
     Number of predictors.
-cursor: DBcursor, optional
-    Vertica database cursor.
 
 Returns
 -------
@@ -168,15 +158,12 @@ tablesample
             ("k", k, [int],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation, y_true, y_score,)
-    executeSQL(cursor, query, "Computing n and the average of y.")
-    n, avg = cursor.fetchone()[0:2]
+    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    n, avg = executeSQL(query, title="Computing n and the average of y.", method="fetchone")[0:2]
     query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_score, avg, y_true, y_score, y_true, avg, input_relation, y_true, y_score,
+        y_score, avg, y_true, y_score, y_true, avg, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    executeSQL(cursor, query, "Computing SSR, SSE, SST.")
-    SSR, SSE, SST = cursor.fetchone()[0:3]
+    SSR, SSE, SST = executeSQL(query, title="Computing SSR, SSE, SST.", method="fetchone")[0:3]
     dfr, dfe, dft = k, n - 1 - k, n - 1
     MSR, MSE = SSR / dfr, SSE / dfe
     if MSE == 0:
@@ -186,8 +173,6 @@ tablesample
     from scipy.stats import f
 
     pvalue = f.sf(F, k, n)
-    if conn:
-        conn.close()
     return tablesample(
         {
             "index": ["Regression", "Residual", "Total"],
@@ -201,9 +186,7 @@ tablesample
 
 
 # ---#
-def explained_variance(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def explained_variance(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the Explained Variance.
@@ -219,8 +202,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -234,21 +215,14 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_score, y_true, y_true, input_relation, y_true, y_score,
+        y_score, y_true, y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    executeSQL(cursor, query, "Computing the Explained Variance.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    return executeSQL(query, title="Computing the Explained Variance.", method="fetchone0")
 
 
 # ---#
-def max_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the Max Error.
@@ -264,8 +238,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -279,12 +251,8 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
-    executeSQL(cursor, query, "Computing the Max Error.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
+    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    result = executeSQL(query, title="Computing the Max Error.", method="fetchone0")
     try:
         result = float(result)
     except:
@@ -293,9 +261,7 @@ float
 
 
 # ---#
-def mean_absolute_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def mean_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Absolute Error.
@@ -311,8 +277,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -326,13 +290,8 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
-    executeSQL(cursor, query, "Computing the Mean Absolute Error.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    return executeSQL(query, title="Computing the Mean Absolute Error.", method="fetchone0")
 
 
 # ---#
@@ -340,7 +299,6 @@ def mean_squared_error(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     root: bool = False,
 ):
     """
@@ -358,8 +316,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 root: bool, optional
     If set to True, returns the RMSE (Root Mean Squared Error)
 
@@ -376,21 +332,15 @@ float
             ("root", root, [bool],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation, y_true, y_score,)
-    executeSQL(cursor, query, "Computing the MSE.")
-    result = cursor.fetchone()[0]
+    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    result = executeSQL(query, title="Computing the MSE.", method="fetchone0")
     if root:
         result = math.sqrt(result)
-    if conn:
-        conn.close()
     return result
 
 
 # ---#
-def mean_squared_log_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def mean_squared_log_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
@@ -406,8 +356,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -421,21 +369,12 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation, y_true, y_score,
-    )
-    executeSQL(cursor, query, "Computing the Mean Squared Log Error.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    return executeSQL(query, title="Computing the Mean Squared Log Error.", method="fetchone0")
 
 
 # ---#
-def median_absolute_error(
-    y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def median_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the Median Absolute Error.
@@ -451,8 +390,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -466,21 +403,12 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation, y_true, y_score,
-    )
-    executeSQL(cursor, query, "Computing the Median Absolute Error.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    return executeSQL(query, title="Computing the Median Absolute Error.", method="fetchone0")
 
 
 # ---#
-def quantile_error(
-    q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame], cursor=None
-):
+def quantile_error(q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
     """
 ---------------------------------------------------------------------------
 Computes the input Quantile of the Error.
@@ -498,8 +426,6 @@ input_relation: str/vDataFrame
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
     relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
 
 Returns
 -------
@@ -514,15 +440,8 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, q, input_relation, y_true, y_score,
-    )
-    executeSQL(cursor, query, "Computing the Quantile Error.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, q, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    return executeSQL(query, title="Computing the Quantile Error.", method="fetchone0")
 
 
 # ---#
@@ -530,7 +449,6 @@ def r2_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     k: int = 0,
     adj: bool = True,
 ):
@@ -549,8 +467,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 k: int, optional
     Number of predictors. Only used to compute the R2 adjusted.
 adj: bool, optional
@@ -570,19 +486,12 @@ float
             ("adj", adj, [bool],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation, y_true, y_score,
-    )
-    executeSQL(cursor, query, "Computing the R2 Score.")
-    result = cursor.fetchone()[0]
+    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    result = executeSQL(query, title="Computing the R2 Score.", method="fetchone0",)
     if adj and k > 0:
         query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score,)
-        executeSQL(cursor, query, "Computing the table number of elements.")
-        n = cursor.fetchone()[0]
+        n = executeSQL(query, title="Computing the table number of elements.", method="fetchone0")
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
-    if conn:
-        conn.close()
     return result
 
 
@@ -591,7 +500,6 @@ def regression_report(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     k: int = 1,
 ):
     """
@@ -609,8 +517,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 k: int, optional
     Number of predictors. Used to compute the adjusted R2.
 
@@ -628,17 +534,10 @@ tablesample
             ("k", k, [int],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(
-        y_true, y_score, y_true, y_true, y_score
-    )
-    query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(
-        y_true, y_score, y_true, y_score
-    )
-    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation, y_true, y_score,
-    )
-    r2 = r2_score(y_true, y_score, input_relation, cursor)
+    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(y_true, y_score, y_true, y_true, y_score)
+    query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(y_true, y_score, y_true, y_score)
+    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    r2 = r2_score(y_true, y_score, input_relation,)
     values = {
         "index": [
             "explained_variance",
@@ -653,8 +552,7 @@ tablesample
             "bic",
         ]
     }
-    executeSQL(cursor, query, "Computing the Regression Report.")
-    result = cursor.fetchone()
+    result = executeSQL(query, title="Computing the Regression Report.", method="fetchone")
     n = result[5]
     if result[4] > 0:
         aic, bic = (
@@ -675,8 +573,6 @@ tablesample
         aic,
         bic,
     ]
-    if conn:
-        conn.close()
     return tablesample(values)
 
 
@@ -688,7 +584,6 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = None,
 ):
     """
@@ -706,8 +601,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
@@ -724,9 +617,8 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if pos_label != None:
-        matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
+        matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
         non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
         tn, fn, fp, tp = (
             matrix.values[non_pos_label][0],
@@ -735,19 +627,16 @@ float
             matrix.values[pos_label][1],
         )
         acc = (tp + tn) / (tp + tn + fn + fp)
+        return acc
     else:
         try:
             query = "SELECT AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
             query = query.format(y_true, y_score, input_relation, y_true, y_score)
-            executeSQL(cursor, query, "Computing the Accuracy Score.")
+            return executeSQL(query, title="Computing the Accuracy Score.", method="fetchone0")
         except:
             query = "SELECT AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
             query = query.format(y_true, y_score, input_relation, y_true, y_score)
-            executeSQL(cursor, query, "Computing the Accuracy Score.")
-        acc = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return acc
+            return executeSQL(query, title="Computing the Accuracy Score.", method="fetchone0")
 
 
 # ---#
@@ -755,7 +644,6 @@ def auc(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
     nbins: int = 10000,
 ):
@@ -774,8 +662,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -798,10 +684,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    return roc_curve(
-        y_true, y_score, input_relation, cursor, pos_label, nbins=nbins, auc_roc=True
-    )
+    return roc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True,)
 
 
 # ---#
@@ -809,7 +692,6 @@ def classification_report(
     y_true: str = "",
     y_score: list = [],
     input_relation: Union[str, vDataFrame] = "",
-    cursor=None,
     labels: list = [],
     cutoff: (float, list) = [],
     estimator=None,
@@ -831,8 +713,6 @@ input_relation: str/vDataFrame, optional
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
@@ -857,12 +737,10 @@ tablesample
             ("cutoff", cutoff, [int, float, list],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     if estimator:
         num_classes = len(estimator.classes_)
         labels = labels if (num_classes != 2) else [estimator.classes_[1]]
     else:
-        cursor, conn = check_cursor(cursor)[0:2]
         labels = [1] if not (labels) else labels
         num_classes = len(labels) + 1
     values = {
@@ -906,7 +784,7 @@ tablesample
                 y_score[1],
                 "DECODE({}, '{}', 1, 0)".format(y_true, elem),
             )
-            matrix = confusion_matrix(y_true, y_p, input_relation, cursor, pos_label)
+            matrix = confusion_matrix(y_true, y_p, input_relation, pos_label,)
         if non_pos_label in matrix.values and pos_label in matrix.values:
             non_pos_label_, pos_label_ = non_pos_label, pos_label
         elif 0 in matrix.values and 1 in matrix.values:
@@ -941,14 +819,12 @@ tablesample
                 estimator.score(pos_label=pos_label, method="prc_auc"),
             )
         else:
-            auc_score = auc(y_t, y_s, input_relation, cursor, 1)
-            prc_auc_score = prc_auc(y_t, y_s, input_relation, cursor, 1)
+            auc_score = auc(y_t, y_s, input_relation, 1)
+            prc_auc_score = prc_auc(y_t, y_s, input_relation, 1)
             y_p = "DECODE({}, '{}', 1, 0)".format(y_p, elem)
-            logloss = log_loss(y_t, y_s, input_relation, cursor, 1)
+            logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
-                current_cutoff = roc_curve(
-                    y_t, y_p, input_relation, cursor, best_threshold=True, nbins=10000,
-                )
+                current_cutoff = roc_curve(y_t, y_p, input_relation, best_threshold=True, nbins=10000,)
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
@@ -971,9 +847,6 @@ tablesample
             csi,
             current_cutoff,
         ]
-    if not (estimator):
-        if conn:
-            conn.close()
     return tablesample(values)
 
 
@@ -982,7 +855,6 @@ def confusion_matrix(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1000,8 +872,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents 
@@ -1020,17 +890,10 @@ tablesample
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
-    query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(
-        y_true
-    )
-    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(
-        pos_label, y_score, pos_label, input_relation,
-    )
-    result = to_tablesample(query, cursor, title="Computing Confusion matrix.",)
-    if conn:
-        conn.close()
+    version(condition=[8, 0, 0],)
+    query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(y_true)
+    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(pos_label, y_score, pos_label, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
+    result = to_tablesample(query, title="Computing Confusion matrix.",)
     if pos_label in [1, "1"]:
         labels = [0, 1]
     else:
@@ -1052,7 +915,6 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1070,8 +932,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1088,10 +948,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label,)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1108,7 +965,6 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1126,8 +982,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1144,10 +998,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label,)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1170,7 +1021,6 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1188,8 +1038,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1206,10 +1054,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1227,7 +1072,6 @@ def log_loss(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1245,8 +1089,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1263,14 +1105,9 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
     query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
-    query = query.format(y_true, pos_label, y_score, y_score, input_relation, y_true, y_score,)
-    executeSQL(cursor, query, "Computing the Log Loss.")
-    result = cursor.fetchone()[0]
-    if conn:
-        conn.close()
-    return result
+    query = query.format(y_true, pos_label, y_score, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    return executeSQL(query, title="Computing the Log Loss.", method="fetchone0")
 
 
 # ---#
@@ -1278,7 +1115,6 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1296,8 +1132,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1314,10 +1148,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1335,7 +1166,6 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1353,8 +1183,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents this 
@@ -1372,10 +1200,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1397,7 +1222,6 @@ def multilabel_confusion_matrix(
     y_score: str,
     input_relation: Union[str, vDataFrame],
     labels: list,
-    cursor=None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1416,8 +1240,6 @@ input_relation: str/vDataFrame
 	relation.
 labels: list
 	List of the response column categories.
-cursor: DBcursor, optional
-	Vertica database cursor.
 
 Returns
 -------
@@ -1433,8 +1255,7 @@ tablesample
             ("labels", labels, [list],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {}) OVER() FROM (SELECT DECODE({}".format(
         num_classes, y_true
@@ -1444,10 +1265,8 @@ tablesample
     query += ") AS obs, DECODE({}".format(y_score)
     for idx, item in enumerate(labels):
         query += ", '{}', {}".format(item, idx)
-    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation,)
-    result = to_tablesample(query, cursor, title="Computing Confusion Matrix.",)
-    if conn:
-        conn.close()
+    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
+    result = to_tablesample(query, title="Computing Confusion Matrix.",)
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -1465,7 +1284,6 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1483,8 +1301,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Negative Predictive Score, one of the response column class 
 	must be the positive one. The parameter 'pos_label' represents this class.
@@ -1501,10 +1317,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1521,7 +1334,6 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
     nbins: int = 10000,
 ):
@@ -1540,8 +1352,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1565,10 +1375,7 @@ float
             ("nbins", nbins, [int],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    return prc_curve(
-        y_true, y_score, input_relation, cursor, pos_label, nbins=nbins, auc_prc=True,
-    )
+    return prc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True,)
 
 
 # ---#
@@ -1576,7 +1383,6 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1594,8 +1400,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
@@ -1612,10 +1416,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1632,7 +1433,6 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1650,8 +1450,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
@@ -1668,10 +1466,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1688,7 +1483,6 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: (int, float, str) = 1,
 ):
     """
@@ -1706,8 +1500,6 @@ input_relation: str/vDataFrame
 	or even a customized relation. For example, you could write:
 	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 	relation.
-cursor: DBcursor, optional
-	Vertica database cursor.
 pos_label: int/float/str, optional
 	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.
@@ -1724,10 +1516,7 @@ float
             ("input_relation", input_relation, [str, vDataFrame],),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    matrix = confusion_matrix(y_true, y_score, input_relation, cursor, pos_label)
-    if conn:
-        conn.close()
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],

@@ -13,25 +13,25 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.preprocessing import CountVectorizer
-from verticapy import drop, set_option, vertica_conn
+from verticapy import drop, set_option, vertica_conn, current_cursor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", )
 
 
 @pytest.fixture(scope="module")
-def model(base, titanic_vd):
-    verticapy.utilities.create_verticapy_schema(base.cursor)
-    model_class = CountVectorizer("model_test", cursor=base.cursor)
+def model(titanic_vd):
+    verticapy.utilities.create_verticapy_schema()
+    model_class = CountVectorizer("model_test", )
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
     yield model_class
@@ -71,19 +71,19 @@ class TestCountVectorizer:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, model, titanic_vd):
-        model_test = CountVectorizer("model_test_drop", cursor=model.cursor)
+    def test_drop(self, titanic_vd,):
+        model_test = CountVectorizer("model_test_drop",)
         model_test.drop()
         model_test.fit(titanic_vd, ["name"])
-        model_test.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert model_test.cursor.fetchone()[0] in ("model_test_drop", '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in ("model_test_drop", '"model_test_drop"')
         model_test.drop()
-        model_test.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert model_test.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         assert sorted(model.vocabulary_)[0:3] == ['a', 'aaron', 'abbing',]
@@ -105,24 +105,14 @@ class TestCountVectorizer:
         assert result["rnk"][0] == pytest.approx(1)
         assert result.shape() == (1841, 4)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"lowercase": False})
         assert model.get_params()["lowercase"] == False
         model.set_params({"lowercase": True})
         assert model.get_params()["lowercase"] == True
 
-    def test_model_from_vDF(self, base, titanic_vd):
-        model_class = CountVectorizer("model_test_vdf", cursor=base.cursor)
+    def test_model_from_vDF(self, titanic_vd):
+        model_class = CountVectorizer("model_test_vdf", )
         model_class.drop()
         model_class.fit(titanic_vd, ["name"])
         assert model_class.transform().shape() == (1841, 4)

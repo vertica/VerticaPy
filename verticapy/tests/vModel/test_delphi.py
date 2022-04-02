@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, os, verticapy
-from verticapy import set_option
+from verticapy import set_option, current_cursor
 from verticapy.learn.delphi import *
 
 import matplotlib.pyplot as plt
@@ -22,43 +22,37 @@ set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon",)
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.winequality", cursor=base.cursor,
-        )
+        drop(name="public.winequality",)
 
 class TestDelphi:
 
-    def test_AutoML(self, base, titanic_vd):
-        model = AutoML("AutoML_test_ml", cursor=base.cursor)
+    def test_AutoML(self, titanic_vd):
+        model = AutoML("AutoML_test_ml", )
         model.drop()
         model.fit(titanic_vd, y="survived")
         assert model.model_grid_["avg_score"][0] < 0.1
@@ -68,30 +62,30 @@ class TestDelphi:
         plt.close("all")
         model.drop()
 
-    def test_AutoDataPrep(self, base, titanic_vd, amazon_vd):
-        model = AutoDataPrep("AutoML_test_dp", cursor=base.cursor)
+    def test_AutoDataPrep(self, titanic_vd, amazon_vd):
+        model = AutoDataPrep("AutoML_test_dp", )
         model.drop()
         model.fit(titanic_vd)
         assert model.final_relation_.shape() == (1234, 56)
         model.drop()
-        model2 = AutoDataPrep("AutoML_test_dp", cursor=base.cursor, num_method="same_freq")
+        model2 = AutoDataPrep("AutoML_test_dp", num_method="same_freq")
         model2.drop()
         model2.fit(titanic_vd)
         assert model2.final_relation_.shape() == (1234, 101)
         model2.drop()
-        model3 = AutoDataPrep("AutoML_test_dp", cursor=base.cursor, num_method="same_width", na_method="drop", apply_pca=True)
+        model3 = AutoDataPrep("AutoML_test_dp", num_method="same_width", na_method="drop", apply_pca=True)
         model3.drop()
         model3.fit(titanic_vd)
         assert model3.final_relation_.shape() == (112, 122)
         model3.drop()
-        model4 = AutoDataPrep("AutoML_test_dp", cursor=base.cursor)
+        model4 = AutoDataPrep("AutoML_test_dp", )
         model4.drop()
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)
         model4.drop()
 
-    def test_AutoClustering(self, base, titanic_vd):
-        model = AutoClustering("AutoML_test_cluster", cursor=base.cursor)
+    def test_AutoClustering(self, titanic_vd):
+        model = AutoClustering("AutoML_test_cluster", )
         model.drop()
         model.fit(titanic_vd,)
         assert model.model_.parameters["n_cluster"] < 100

@@ -20,37 +20,33 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
+def iris_vd():
     from verticapy.datasets import load_iris
 
-    iris = load_iris(cursor=base.cursor)
+    iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
+def market_vd():
     from verticapy.datasets import load_market
 
-    market = load_market(cursor=base.cursor)
+    market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.market", cursor=base.cursor,
-        )
+        drop(name="public.market",)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon",)
 
 
 class TestvDFCombineJoinSort:
@@ -205,9 +201,7 @@ class TestvDFCombineJoinSort:
             expr2=["Name AS Name2"],
         )
         assert table_join.shape() == (194, 2)
-        drop(
-            "v_temp_schema.not_dried", not_dried._VERTICAPY_VARIABLES_["cursor"],
-        )
+        drop("v_temp_schema.not_dried",)
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
@@ -248,5 +242,5 @@ class TestvDFCombineJoinSort:
         assert result4["SepalWidthCm"][0] == 2.6
 
     @pytest.mark.skip(reason="this test will be implemented later. It should test a combination of operation like joins, imputing missing values...")
-    def test_multiple_operation(self, base):
+    def test_multiple_operation(self):
         pass

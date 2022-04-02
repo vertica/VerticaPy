@@ -71,8 +71,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	to use to control accuracy.
 C: float, optional
@@ -101,7 +99,6 @@ max_iter: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-4,
         C: float = 1.0,
         fit_intercept: bool = True,
@@ -123,9 +120,7 @@ max_iter: int, optional
                 "max_iter": max_iter,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 0])
+        version(condition=[8, 1, 0],)
 
 
 # ---#
@@ -140,8 +135,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	To use to control accuracy.
 C: float, optional
@@ -188,7 +181,6 @@ test_relation: str
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-4,
         C: float = 1.0,
         fit_intercept: bool = True,
@@ -210,6 +202,4 @@ test_relation: str
                 "max_iter": max_iter,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 1])
+        version(condition=[8, 1, 1],)

@@ -13,86 +13,85 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.ensemble import XGBoostRegressor
+from verticapy import vDataFrame, drop, set_option, vertica_conn, xgb_prior, current_cursor
 from verticapy.tests.conftest import get_version
-from verticapy import vDataFrame, drop, version, set_option, vertica_conn, xgb_prior
 import matplotlib.pyplot as plt
 import numpy as np
 
 set_option("print_info", False)
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality",)
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic",)
 
 @pytest.fixture(scope="module")
-def xgbr_data_vd(base):
-    base.cursor.execute("DROP TABLE IF EXISTS public.xgbr_data")
-    base.cursor.execute(
+def xgbr_data_vd():
+    current_cursor().execute("DROP TABLE IF EXISTS public.xgbr_data")
+    current_cursor().execute(
         'CREATE TABLE IF NOT EXISTS public.xgbr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
     )
-    base.cursor.execute(
+    current_cursor().execute(
         "INSERT INTO xgbr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
     )
-    base.cursor.execute("COMMIT")
+    current_cursor().execute("COMMIT")
 
-    xgbr_data = vDataFrame(input_relation="public.xgbr_data", cursor=base.cursor)
+    xgbr_data = vDataFrame(input_relation="public.xgbr_data", )
     yield xgbr_data
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.xgbr_data", cursor=base.cursor)
+        drop(name="public.xgbr_data", )
 
 @pytest.fixture(scope="module")
-def model(base, xgbr_data_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS xgbr_model_test")
+def model(xgbr_data_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS xgbr_model_test")
 
-    base.cursor.execute(
+    current_cursor().execute(
         "SELECT xgb_regressor('xgbr_model_test', 'public.xgbr_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, transportation', min_split_loss=0.1, max_ntree=3, learning_rate=0.2, sampling_size=1, max_depth=6, nbins=40, seed=1, id_column='id')"
     )
 
     # I could use load_model but it is buggy
     model_class = XGBoostRegressor(
         "xgbr_model_test",
-        cursor=base.cursor,
         max_ntree=3,
         min_split_loss=0.1,
         learning_rate=0.2,
@@ -111,8 +110,8 @@ def model(base, xgbr_data_vd):
 
 @pytest.mark.skipif(get_version()[0] < 10 or (get_version()[0] == 10 and get_version()[1] == 0), reason="requires vertica 10.1 or higher")
 class TestXGBR:
-    def test_contour(self, base, titanic_vd):
-        model_test = XGBoostRegressor("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = XGBoostRegressor("model_contour", )
         model_test.drop()
         model_test.fit(
             titanic_vd,
@@ -129,42 +128,42 @@ class TestXGBR:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS xgbr_model_test_drop")
-        model_test = XGBoostRegressor("xgbr_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS xgbr_model_test_drop")
+        model_test = XGBoostRegressor("xgbr_model_test_drop", )
         model_test.fit(
             "public.xgbr_data",
             ['"Gender"', '"owned cars"', '"cost"', '"income"'],
             "TransPortation",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'xgbr_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "xgbr_model_test_drop"
+        assert current_cursor().fetchone()[0] == "xgbr_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'xgbr_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_to_python(self, model, titanic_vd):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
+        prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(float(model.to_python()([["Male", 0, "Cheap", "Low"]])[0]))
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_XGB_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
                 model.name, model.to_sql()
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
     def test_to_memmodel(self, model,):
@@ -175,7 +174,7 @@ class TestXGBR:
                                     ['Female', 1, 'Expensive', 'Low']])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame("public.xgbr_data", cursor = model.cursor)
+        vdf = vDataFrame("public.xgbr_data",)
         vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
         model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
@@ -257,12 +256,12 @@ class TestXGBR:
     @pytest.mark.skip(reason="not yet available.")
     def test_to_sklearn(self, model):
         md = model.to_sklearn()
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_xgb_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
+        prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
             md.predict([["Male", 0, "Cheap", "Low"]])[0]
         )
@@ -373,30 +372,20 @@ class TestXGBR:
         # method = "bic"
         assert model.score(method="bic") in (pytest.approx(-5.586324427790675, abs=1e-6), pytest.approx(-1.4707052278549675, abs=1e-6))
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_ntree": 5})
 
         assert model.get_params()["max_ntree"] == 5
 
-    def test_model_from_vDF(self, base, xgbr_data_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS xgbr_from_vDF")
-        model_test = XGBoostRegressor("xgbr_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, xgbr_data_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS xgbr_from_vDF")
+        model_test = XGBoostRegressor("xgbr_from_vDF", )
         model_test.fit(xgbr_data_vd, ["gender"], "transportation")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'xgbr_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "xgbr_from_vDF"
+        assert current_cursor().fetchone()[0] == "xgbr_from_vDF"
 
         model_test.drop()
 
@@ -424,9 +413,9 @@ class TestXGBR:
         assert tree_1["prediction"][7] in ("-0.720000", '-0.405000')
         assert tree_1["prediction"][8] in ("0.080000", '0.045000')
 
-    def test_get_plot(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = XGBoostRegressor("model_test_plot", cursor=base.cursor)
+    def test_get_plot(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = XGBoostRegressor("model_test_plot", )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) in (9, 12,)
@@ -437,7 +426,7 @@ class TestXGBR:
         result = model.plot_tree()
         assert model.to_graphviz() == result.source.strip()
 
-    def test_to_json(self, base, titanic_vd):
+    def test_to_json(self, titanic_vd):
         import xgboost as xgb
 
         titanic = titanic_vd.copy()
@@ -445,7 +434,7 @@ class TestXGBR:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "survived"]
         y = "fare"
-        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5, cursor = base.cursor)
+        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5,)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()

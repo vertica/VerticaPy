@@ -67,8 +67,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -89,7 +87,6 @@ l1_ratio: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
@@ -108,9 +105,7 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -124,8 +119,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -143,7 +136,6 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
@@ -163,9 +155,7 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -179,8 +169,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 max_iter: int, optional
@@ -195,7 +183,6 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         max_iter: int = 100,
         solver: str = "Newton",
@@ -215,9 +202,7 @@ solver: str, optional
         for elem in ["l1_ratio", "C"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)
 
 
 # ---#
@@ -231,8 +216,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 penalty: str, optional
 	Determines the method of regularization.
 		None : No Regularization
@@ -259,7 +242,6 @@ l1_ratio: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         penalty: str = "None",
         tol: float = 1e-6,
         C: int = 1,
@@ -289,9 +271,7 @@ l1_ratio: float, optional
             	if elem in self.parameters:
                 	del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)
 
 
 # ---#
@@ -305,8 +285,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -323,7 +301,6 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
@@ -345,6 +322,4 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)

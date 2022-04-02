@@ -75,8 +75,6 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 d: int, optional
@@ -109,7 +107,6 @@ papprox_ma: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         p: int = 0,
         d: int = 0,
         q: int = 0,
@@ -157,9 +154,7 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)
 
     # ---#
     def deploySQL(self):
@@ -350,9 +345,8 @@ papprox_ma: int, optional
                 ("ts", ts, [str],),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -387,7 +381,7 @@ papprox_ma: int, optional
             and not (self.exogenous)
         ):
             query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
-            self.ma_avg_ = self.cursor.execute(query).fetchone()[0]
+            self.ma_avg_ = executeSQL(query, method="fetchone0", print_time_sql=False,)
             self.deploy_predict_ = str(self.ma_avg_)
 
         # I(d)
@@ -407,9 +401,8 @@ papprox_ma: int, optional
                 with warnings.catch_warnings(record=True) as w:
                     drop(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                            schema, get_session(self.cursor)
+                            schema, get_session()
                         ),
-                        cursor=self.cursor,
                         method="view",
                     )
             except:
@@ -441,18 +434,18 @@ papprox_ma: int, optional
             drop_temp_elem(self, schema)
             query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
                 schema,
-                get_session(self.cursor),
+                get_session(),
                 relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                self.cursor.execute(query)
+                executeSQL(query, print_time_sql=False,)
                 self.X += AR + X
                 model.fit(
                     input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session(self.cursor)
+                        schema, get_session()
                     ),
                     X=self.X,
                     y=self.y,
@@ -565,7 +558,7 @@ papprox_ma: int, optional
             query = "SELECT COUNT(*), AVG({}) FROM {}".format(
                 self.y, transform_relation.format(self.input_relation)
             )
-            result = self.cursor.execute(query).fetchone()
+            result = executeSQL(query, method="fetchone", print_time_sql=False,)
             self.ma_avg_ = result[1]
             n = result[0]
             n = max(
@@ -591,17 +584,17 @@ papprox_ma: int, optional
             drop_temp_elem(self, schema)
             query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
                 schema,
-                get_session(self.cursor),
+                get_session(),
                 tmp_relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                self.cursor.execute(query)
+                executeSQL(query, print_time_sql=False,)
                 model.fit(
                     input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session(self.cursor)
+                        schema, get_session()
                     ),
                     X=ARq,
                     y=self.y,
@@ -726,7 +719,6 @@ papprox_ma: int, optional
             model_name=self.name,
             model_type="SARIMAX",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -788,7 +780,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation,)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -1078,11 +1070,11 @@ papprox_ma: int, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+            deltat = executeSQL(query, method="fetchone0", print_time_sql=False,)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+            next_t = executeSQL(query, method="fetchone0", print_time_sql=False,)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1107,9 +1099,7 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = (
-                vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
-            )
+            prediction = executeSQL(query, method="fetchone0", print_time_sql=False,)
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {} AS {} {}".format(
                 next_t,
@@ -1127,7 +1117,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "SARIMAX", self.cursor,)
+        result = vdf_from_relation(final_relation, "SARIMAX",)
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1147,8 +1137,6 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-    Vertica database cursor.
 p: int, optional
     Order of the AR (Auto-Regressive) part.
 tol: float, optional
@@ -1165,7 +1153,6 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         p: int = 1,
         tol: float = 1e-4,
         max_iter: int = 1000,
@@ -1179,9 +1166,7 @@ solver: str, optional
         self.set_params(
             {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)
 
     # ---#
     def deploySQL(self):
@@ -1255,7 +1240,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
+            vdf_from_relation(relation=self.input_relation,)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1318,9 +1303,8 @@ solver: str, optional
                 ("test_relation", test_relation, [str, vDataFrame],),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         # Initialization
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -1365,9 +1349,8 @@ solver: str, optional
                 with warnings.catch_warnings(record=True) as w:
                     drop(
                         "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                            schema, get_session(self.cursor)
+                            schema, get_session()
                         ),
-                        cursor=self.cursor,
                         method="view",
                     )
             except:
@@ -1376,14 +1359,14 @@ solver: str, optional
         drop_temp_elem(self, schema)
         try:
             query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
-                schema, get_session(self.cursor), relation
+                schema, get_session(), relation
             )
-            self.cursor.execute(query)
+            executeSQL(query, print_time_sql=False,)
             self.coef_ = []
             for elem in X:
                 model.fit(
                     input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session(self.cursor)
+                        schema, get_session()
                     ),
                     X=AR,
                     y=elem,
@@ -1413,7 +1396,6 @@ solver: str, optional
             model_name=self.name,
             model_type="VAR",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -1514,7 +1496,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=self.input_relation,)
         check_types(
             [
                 ("limit", limit, [int, float],),
@@ -1790,11 +1772,11 @@ solver: str, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+            deltat = executeSQL(query, method="fetchone0", print_time_sql=False,)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()[0]
+            next_t = executeSQL(query, method="fetchone0", print_time_sql=False,)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1815,7 +1797,7 @@ solver: str, optional
             query = "SELECT {} FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
             )
-            prediction = vdf._VERTICAPY_VARIABLES_["cursor"].execute(query).fetchone()
+            prediction = executeSQL(query, method="fetchone", print_time_sql=False,)
             for idx, elem in enumerate(X):
                 prediction[idx] = "{} AS {}".format(prediction[idx], elem)
             columns_tmp = vdf.get_columns(exclude_columns=[ts] + X)
@@ -1834,7 +1816,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "VAR", self.cursor,)
+        result = vdf_from_relation(final_relation, "VAR",)
         if nlead > 0:
             for elem in X:
                 result[elem].apply(

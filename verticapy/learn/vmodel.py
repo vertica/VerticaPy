@@ -102,21 +102,21 @@ Main Class for Vertica Model
             ):
                 name = self.tree_name if self.type in ("KernelDensity") else self.name
                 try:
-                    version(cursor=self.cursor, condition=[9, 0, 0])
-                    executeSQL(
-                        self.cursor,
+                    version(condition=[9, 0, 0],)
+                    res = executeSQL(
                         "SELECT GET_MODEL_SUMMARY(USING PARAMETERS model_name = '{}')".format(
                             name
                         ),
-                        "Summarizing the model.",
+                        title="Summarizing the model.",
+                        method="fetchone0",
                     )
                 except:
-                    executeSQL(
-                        self.cursor,
+                    res = executeSQL(
                         "SELECT SUMMARIZE_MODEL('{}')".format(name),
-                        "Summarizing the model.",
+                        title="Summarizing the model.",
+                        method="fetchone0",
                     )
-                return self.cursor.fetchone()[0]
+                return res
             elif self.type == "AutoML":
                 rep = self.best_model_.__repr__()
             elif self.type == "AutoDataPrep":
@@ -220,15 +220,15 @@ Main Class for Vertica Model
             if not(pos_label):
                 pos_label = sorted(self.classes_)[-1]
             if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid",):
-                return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self.deploySQL(X = self.X, pos_label=pos_label), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+                return vdf_from_relation(self.input_relation,).contour(self.X, self.deploySQL(X = self.X, pos_label=pos_label), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
             else:
-                return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, pos_label=pos_label, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+                return vdf_from_relation(self.input_relation,).contour(self.X, self, pos_label=pos_label, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
         elif self.type in ("KNeighborsRegressor",):
-            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+            return vdf_from_relation(self.input_relation,).contour(self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
         elif self.type in ("KMeans", "BisectingKMeans",):
-            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds,)
+            return vdf_from_relation(self.input_relation,).contour(self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds,)
         else:
-            return vdf_from_relation(self.input_relation, cursor=self.cursor,).contour(self.X, self.deploySQL(X = self.X), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
+            return vdf_from_relation(self.input_relation,).contour(self.X, self.deploySQL(X = self.X), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds,)
 
     # ---#
     def deploySQL(self, X: list = []):
@@ -269,16 +269,9 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
-        if self.type == "AutoDataPrep":
-            with warnings.catch_warnings(record=True) as w:
-                drop(
-                    self.name, self.cursor, method="table",
-                )
-        else:
-            with warnings.catch_warnings(record=True) as w:
-                drop(
-                    self.name, self.cursor, method="model",
-                )
+        with warnings.catch_warnings(record=True) as w:
+            drop(self.name,)
+            drop(self.name,)
 
     # ---#
     def features_importance(
@@ -320,7 +313,7 @@ Main Class for Vertica Model
         ):
             check_types([("tree_id", tree_id, [int])])
             name = self.tree_name if self.type in ("KernelDensity") else self.name
-            version(cursor=self.cursor, condition=[9, 1, 1])
+            version(condition=[9, 1, 1],)
             tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}'{})) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
                 name, tree_id,
@@ -333,7 +326,7 @@ Main Class for Vertica Model
             "LinearSVR",
         ):
             relation = self.input_relation
-            version(cursor=self.cursor, condition=[8, 1, 1])
+            version(condition=[8, 1, 1],)
             query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
             query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
             query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
@@ -348,8 +341,7 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
             )
-        executeSQL(self.cursor, query, "Computing Features Importance.")
-        result = self.cursor.fetchall()
+        result = executeSQL(query, title="Computing Features Importance.", method="fetchall")
         coeff_importances, coeff_sign = {}, {}
         for elem in result:
             coeff_importances[elem[0]] = elem[1]
@@ -387,12 +379,11 @@ Main Class for Vertica Model
             return self.best_model_.get_attr(attr_name)
         if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor", "NearestCentroid", "CountVectorizer",):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
-            version(cursor=self.cursor, condition=[8, 1, 1])
+            version(condition=[8, 1, 1],)
             result = to_tablesample(
                 query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
                     name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
-                cursor=self.cursor,
                 title="Getting Model Attributes.",
             )
             return result
@@ -623,7 +614,6 @@ Main Class for Vertica Model
                     self.y,
                     self.input_relation,
                     coefficients,
-                    self.cursor,
                     max_nb_points,
                     ax=ax,
                     **style_kwds,
@@ -634,7 +624,6 @@ Main Class for Vertica Model
                     self.y,
                     self.input_relation,
                     coefficients,
-                    self.cursor,
                     max_nb_points,
                     ax=ax,
                     **style_kwds,
@@ -645,18 +634,17 @@ Main Class for Vertica Model
                     self.y,
                     self.input_relation,
                     coefficients,
-                    self.cursor,
                     max_nb_points,
                     ax=ax,
                     **style_kwds,
                 )
         elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN"):
             if self.type != "DBSCAN":
-                vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+                vdf = vdf_from_relation(self.input_relation,)
                 self.predict(vdf, name="kmeans_cluster")
                 catcol = "kmeans_cluster"
             else:
-                vdf = vdf_from_relation(self.name, cursor=self.cursor)
+                vdf = vdf_from_relation(self.name,)
                 catcol = "dbscan_cluster"
             return vdf.scatter(
                 columns=self.X,
@@ -669,17 +657,16 @@ Main Class for Vertica Model
         elif self.type in ("LocalOutlierFactor"):
             query = "SELECT COUNT(*) FROM {}".format(self.name)
             tablesample = 100 * min(
-                float(max_nb_points / self.cursor.execute(query).fetchone()[0]), 1
+                float(max_nb_points / executeSQL(query, method="fetchone0", print_time_sql=False,)), 1
             )
             return lof_plot(
-                self.name, self.X, "lof_score", self.cursor, 100, ax=ax, **style_kwds,
+                self.name, self.X, "lof_score", 100, ax=ax, **style_kwds,
             )
         elif self.type in ("RandomForestRegressor", "XGBoostRegressor",):
             return regression_tree_plot(
                 self.X + [self.deploySQL()],
                 self.y,
                 self.input_relation,
-                self.cursor,
                 max_nb_points,
                 ax=ax,
                 **style_kwds,
@@ -688,27 +675,6 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'plot' for '{}' doesn't exist.".format(self.type)
             )
-
-    # ---#
-    def set_cursor(self, cursor):
-        """
-	---------------------------------------------------------------------------
-	Sets a new database cursor.
-
-	Parameters
-	----------
-	cursor: DBcursor
-		New cursor.
-
-	Returns
-	-------
-	model
-		self
-		"""
-        check_cursor(cursor)
-        cursor.execute("SELECT 1;")
-        self.cursor = cursor
-        return self
 
     # ---#
     def set_params(self, parameters: dict = {}):
@@ -1241,7 +1207,7 @@ Main Class for Vertica Model
                 model_parameters["sample"] = default_parameters["sample"]
             else:
                 model_parameters["sample"] = self.parameters["sample"]
-            v = version(cursor = self.cursor)
+            v = version()
             v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
             if v:
                 if "col_sample_by_tree" in parameters:
@@ -1888,7 +1854,7 @@ Main Class for Vertica Model
             "LinearSVC",
             "LinearSVR",
         ):
-            vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(self.input_relation,)
             cov_matrix = vdf.cov(self.X, show=False)
             if len(self.X) == 1:
                 cov_matrix = np.array([[1]])
@@ -2166,11 +2132,7 @@ Main Class for Vertica Model
                     model.scale_ = np.array(attr["std_dev"])
                     model.var_ = model.scale_ ** 2
                     model.n_features_in_ = len(self.X)
-                    model.n_samples_seen_ = np.array(
-                        vdf_from_relation(
-                            self.input_relation, cursor=self.cursor
-                        ).count(columns=self.X)["count"]
-                    )
+                    model.n_samples_seen_ = np.array(vdf_from_relation(self.input_relation,).count(columns=self.X)["count"])
                 elif "median" in attr.values:
                     model = skpp.RobustScaler()
                     model.center_ = np.array(attr["median"])
@@ -2184,15 +2146,7 @@ Main Class for Vertica Model
                     model.scale_ = 1 / model.data_range_
                     model.min_ = 0 - model.data_min_ * model.scale_
                     model.n_features_in_ = len(self.X)
-                    self.cursor.execute(
-                        "SELECT COUNT(*) FROM {} WHERE {}".format(
-                            self.input_relation,
-                            " AND ".join(
-                                ["{} IS NOT NULL".format(elem) for elem in self.X]
-                            ),
-                        )
-                    )
-                    model.n_samples_seen_ = self.cursor.fetchone()[0]
+                    model.n_samples_seen_ = executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(self.input_relation, " AND ".join(["{} IS NOT NULL".format(elem) for elem in self.X]),), method="fetchone0", print_time_sql=False,)
             elif isinstance(self, (vpp.OneHotEncoder,)):
                 drop = None
                 model = skpp.OneHotEncoder()
@@ -2200,7 +2154,7 @@ Main Class for Vertica Model
                 if self.parameters["drop_first"]:
                     model.drop_idx_ = np.array([0 for elem in range(len(self.X))])
                 params = self.param_
-                vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+                vdf = vdf_from_relation(self.input_relation,)
                 categories = []
                 for column in self.X:
                     idx = []
@@ -2292,15 +2246,7 @@ Main Class for Vertica Model
                         raise ModelError(
                             "Naive Bayes Models using different variables types (multinomial, categorical, gaussian...) is not supported by Scikit Learn."
                         )
-                self.cursor.execute(
-                    "SELECT COUNT(*) FROM {} WHERE {}".format(
-                        self.input_relation,
-                        " AND ".join(
-                            ["{} IS NOT NULL".format(elem) for elem in self.X]
-                        ),
-                    )
-                )
-                total_count = self.cursor.fetchone()[0]
+                total_count = executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(self.input_relation, " AND ".join(["{} IS NOT NULL".format(elem) for elem in self.X]),), method="fetchone0", print_time_sql=False,)
                 classes = np.array(self.get_attr("prior")["class"])
                 class_prior = np.array(self.get_attr("prior")["probability"])
                 if current_type == "gaussian":
@@ -2930,22 +2876,17 @@ class Supervised(vModel):
                 elif self.parameters["nbtype"] == "gaussian":
                     new_types[elem] = "float"
             if not (isinstance(input_relation, vDataFrame)):
-                input_relation = vdf_from_relation(input_relation, cursor=self.cursor)
+                input_relation = vdf_from_relation(input_relation,)
             input_relation.astype(new_types)
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
             schema = schema_relation(self.name)[0]
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
-                str_column(schema), get_session(self.cursor)
+                str_column(schema), get_session()
             )
-            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
-            self.cursor.execute(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
-                )
-            )
+            drop_if_exists(relation, method="view",)
+            executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False,)
         else:
             self.input_relation = input_relation
             relation = input_relation
@@ -2996,12 +2937,12 @@ class Supervised(vModel):
             )
         query += ")"
         try:
-            executeSQL(self.cursor, query, "Fitting the model.")
+            executeSQL(query, title="Fitting the model.")
             if isinstance(input_relation, vDataFrame):
-                self.cursor.execute("DROP VIEW {};".format(relation))
+                drop_if_exists(relation, method="view",)
         except:
             if isinstance(input_relation, vDataFrame):
-                self.cursor.execute("DROP VIEW {};".format(relation))
+                drop_if_exists(relation, method="view",)
             raise
         if self.type in (
             "LinearSVC",
@@ -3013,12 +2954,7 @@ class Supervised(vModel):
             self.coef_ = self.get_attr("details")
         elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
             if not (isinstance(input_relation, vDataFrame)):
-                self.cursor.execute(
-                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
-                        self.y, input_relation, self.y
-                    )
-                )
-                classes = self.cursor.fetchall()
+                classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y), method="fetchall", print_time_sql=False,)
                 self.classes_ = [item[0] for item in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
@@ -3098,12 +3034,12 @@ class Tree:
 		utilities.tablesample.
 		"""
         check_types([("tree_id", tree_id, [int, float],)])
-        version(cursor=self.cursor, condition=[9, 1, 1])
+        version(condition=[9, 1, 1],)
         name = self.tree_name if self.type in ("KernelDensity") else self.name
         query = "SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular')) x ORDER BY node_id;".format(
             name, tree_id
         )
-        result = to_tablesample(query=query, cursor=self.cursor, title="Reading Tree.",)
+        result = to_tablesample(query=query, title="Reading Tree.",)
         return result
 
     # ---#
@@ -3196,7 +3132,6 @@ class BinaryClassifier(Classifier):
             self.y,
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
-            self.cursor,
             cutoff=cutoff,
         )
 
@@ -3219,7 +3154,7 @@ class BinaryClassifier(Classifier):
 		"""
         check_types([("cutoff", cutoff, [int, float],)])
         return confusion_matrix(
-            self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+            self.y, self.deploySQL(cutoff), self.test_relation,
         )
 
     # ---#
@@ -3279,7 +3214,6 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            self.cursor,
             ax=ax,
             nbins=nbins,
             **style_kwds,
@@ -3312,7 +3246,6 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            self.cursor,
             ax=ax,
             nbins=nbins,
             **style_kwds,
@@ -3363,7 +3296,7 @@ class BinaryClassifier(Classifier):
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -3402,7 +3335,6 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            self.cursor,
             ax=ax,
             cutoff_curve=True,
             nbins=nbins,
@@ -3436,7 +3368,6 @@ class BinaryClassifier(Classifier):
             self.y,
             self.deploySQL(),
             self.test_relation,
-            self.cursor,
             ax=ax,
             nbins=nbins,
             **style_kwds,
@@ -3490,63 +3421,60 @@ class BinaryClassifier(Classifier):
                      ("method", method, [str],),
                      ("nbins", nbins, [int],)])
         if method in ("accuracy", "acc"):
-            return accuracy_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor, pos_label=1,
-            )
+            return accuracy_score(self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1,)
         elif method == "aic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[0]
+            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[0]
         elif method == "bic":
-            return aic_bic(self.y, self.deploySQL(), self.test_relation, self.cursor, len(self.X))[1]
+            return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
         elif method == "prc_auc":
-            return prc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_prc=True, nbins=nbins,)
+            return prc_curve(self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins,)
         elif method == "auc":
-            return roc_curve(self.y, self.deploySQL(), self.test_relation, self.cursor, auc_roc=True, nbins=nbins,)
+            return roc_curve(self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins,)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 self.y,
                 self.deploySQL(),
                 self.test_relation,
-                self.cursor,
                 best_threshold=True,
                 nbins=nbins,
             )
         elif method in ("recall", "tpr"):
             return recall_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("precision", "ppv"):
             return precision_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("specificity", "tnr"):
             return specificity_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("negative_predictive_value", "npv"):
             return precision_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("log_loss", "logloss"):
-            return log_loss(self.y, self.deploySQL(), self.test_relation, self.cursor)
+            return log_loss(self.y, self.deploySQL(), self.test_relation,)
         elif method == "f1":
             return f1_score(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method == "mcc":
             return matthews_corrcoef(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("bm", "informedness"):
             return informedness(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("mk", "markedness"):
             return markedness(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
-                self.y, self.deploySQL(cutoff), self.test_relation, self.cursor
+                self.y, self.deploySQL(cutoff), self.test_relation,
             )
         else:
             raise ParameterError(
@@ -3588,9 +3516,7 @@ class MulticlassClassifier(Classifier):
         )
         if not (labels):
             labels = self.classes_
-        return classification_report(
-            cutoff=cutoff, estimator=self, labels=labels, cursor=self.cursor
-        )
+        return classification_report(cutoff=cutoff, estimator=self, labels=labels,)
 
     # ---#
     def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
@@ -3624,13 +3550,10 @@ class MulticlassClassifier(Classifier):
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
                 pos_label=pos_label,
             )
         else:
-            return multilabel_confusion_matrix(
-                self.y, self.deploySQL(), self.test_relation, self.classes_, self.cursor
-            )
+            return multilabel_confusion_matrix(self.y, self.deploySQL(), self.test_relation, self.classes_,)
 
     # ---#
     def cutoff_curve(
@@ -3680,7 +3603,6 @@ class MulticlassClassifier(Classifier):
             self.y,
             deploySQL_str,
             self.test_relation,
-            self.cursor,
             pos_label,
             ax=ax,
             cutoff_curve=True,
@@ -3823,7 +3745,6 @@ class MulticlassClassifier(Classifier):
             self.y,
             deploySQL_str,
             self.test_relation,
-            self.cursor,
             pos_label,
             ax=ax,
             nbins=nbins,
@@ -3878,7 +3799,6 @@ class MulticlassClassifier(Classifier):
             self.y,
             deploySQL_str,
             self.test_relation,
-            self.cursor,
             pos_label,
             ax=ax,
             nbins=nbins,
@@ -3935,7 +3855,7 @@ class MulticlassClassifier(Classifier):
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -4001,7 +3921,6 @@ class MulticlassClassifier(Classifier):
             self.y,
             deploySQL_str,
             self.test_relation,
-            self.cursor,
             pos_label,
             ax=ax,
             nbins=nbins,
@@ -4081,7 +4000,6 @@ class MulticlassClassifier(Classifier):
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
                 pos_label,
             )
         elif method == "auc":
@@ -4089,7 +4007,6 @@ class MulticlassClassifier(Classifier):
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
                 nbins=nbins,
             )
         elif method == "aic":
@@ -4097,7 +4014,6 @@ class MulticlassClassifier(Classifier):
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
                 len(self.X),
             )[0]
         elif method == "bic":
@@ -4105,7 +4021,6 @@ class MulticlassClassifier(Classifier):
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
                 len(self.X),
             )[1]
         elif method == "prc_auc":
@@ -4113,7 +4028,6 @@ class MulticlassClassifier(Classifier):
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
                 nbins=nbins,
             )
         elif method in ("best_cutoff", "best_threshold"):
@@ -4121,7 +4035,6 @@ class MulticlassClassifier(Classifier):
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
                 best_threshold=True,
                 nbins=nbins,
             )
@@ -4130,70 +4043,60 @@ class MulticlassClassifier(Classifier):
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("precision", "ppv"):
             return precision_score(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("specificity", "tnr"):
             return specificity_score(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("negative_predictive_value", "npv"):
             return precision_score(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("log_loss", "logloss"):
             return log_loss(
                 "DECODE({}, '{}', 1, 0)".format(self.y, pos_label),
                 deploySQL_str,
                 self.test_relation,
-                self.cursor,
             )
         elif method == "f1":
             return f1_score(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method == "mcc":
             return matthews_corrcoef(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("bm", "informedness"):
             return informedness(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("mk", "markedness"):
             return markedness(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
                 self.y,
                 self.deploySQL(pos_label, cutoff),
                 self.test_relation,
-                self.cursor,
             )
         else:
             raise ParameterError(
@@ -4241,7 +4144,7 @@ class Regressor(Supervised):
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -4330,7 +4233,6 @@ class Regressor(Supervised):
                     y,
                     self.deploySQL()[idx],
                     relation,
-                    self.cursor,
                     len(self.X) * self.parameters["p"],
                 ).values["value"]
             return result
@@ -4340,18 +4242,17 @@ class Regressor(Supervised):
             test_relation = self.test_relation
         if method == "metrics":
             return regression_report(
-                self.y, prediction, test_relation, self.cursor, len(self.X)
+                self.y, prediction, test_relation, len(self.X)
             )
         elif method == "anova":
             return anova_table(
-                self.y, prediction, test_relation, len(self.X), self.cursor
+                self.y, prediction, test_relation, len(self.X),
             )
         elif method == "details":
             vdf = vdf_from_relation(
                 "(SELECT {} FROM ".format(self.y)
                 + self.input_relation
                 + ") VERTICAPY_SUBTABLE",
-                cursor=self.cursor,
             )
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
@@ -4360,7 +4261,7 @@ class Regressor(Supervised):
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
             anova_T = anova_table(
-                self.y, prediction, test_relation, len(self.X), self.cursor
+                self.y, prediction, test_relation, len(self.X),
             )
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
@@ -4481,26 +4382,17 @@ class Regressor(Supervised):
                             y,
                             self.deploySQL()[idx],
                             relation,
-                            self.cursor,
                             len(self.X),
                         )[0]
                     ]
             else:
-                return aic_bic(
-                    self.y, prediction, test_relation, self.cursor, len(self.X),
-                )[0]
+                return aic_bic(self.y, prediction, test_relation, len(self.X),)[0]
         elif method in ("bic",):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        aic_bic(
-                            y, self.deploySQL()[idx], relation, self.cursor, len(self.X)
-                        )[1]
-                    ]
+                    result.values[y] = [aic_bic(y, self.deploySQL()[idx], relation, len(self.X))[1]]
             else:
-                return aic_bic(
-                    self.y, prediction, test_relation, self.cursor, len(self.X)
-                )[1]
+                return aic_bic(self.y, prediction, test_relation, len(self.X))[1]
         elif method in ("r2", "rsquared"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
@@ -4509,83 +4401,58 @@ class Regressor(Supervised):
                             y,
                             self.deploySQL()[idx],
                             relation,
-                            self.cursor,
                             len(self.X) * self.parameters["p"],
                             adj,
                         )
                     ]
             else:
                 return r2_score(
-                    self.y, prediction, test_relation, self.cursor, len(self.X), adj
+                    self.y, prediction, test_relation, len(self.X), adj
                 )
         elif method in ("mae", "mean_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
                         mean_absolute_error(
-                            y, self.deploySQL()[idx], relation, self.cursor
+                            y, self.deploySQL()[idx], relation,
                         )
                     ]
             else:
                 return mean_absolute_error(
-                    self.y, prediction, test_relation, self.cursor
+                    self.y, prediction, test_relation,
                 )
         elif method in ("mse", "mean_squared_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_error(
-                            y, self.deploySQL()[idx], relation, self.cursor, root
-                        )
-                    ]
+                    result.values[y] = [mean_squared_error(y, self.deploySQL()[idx], relation, root)]
             else:
-                return mean_squared_error(
-                    self.y, prediction, test_relation, self.cursor, root
-                )
+                return mean_squared_error(self.y, prediction, test_relation, root)
         elif method in ("msle", "mean_squared_log_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        mean_squared_log_error(
-                            y, self.deploySQL()[idx], relation, self.cursor
-                        )
-                    ]
+                    result.values[y] = [mean_squared_log_error(y, self.deploySQL()[idx], relation,)]
             else:
-                return mean_squared_log_error(
-                    self.y, prediction, test_relation, self.cursor
-                )
+                return mean_squared_log_error(self.y, prediction, test_relation,)
         elif method in ("max", "max_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        max_error(y, self.deploySQL()[idx], relation, self.cursor)
+                        max_error(y, self.deploySQL()[idx], relation,)
                     ]
             else:
-                return max_error(self.y, prediction, test_relation, self.cursor)
+                return max_error(self.y, prediction, test_relation,)
         elif method in ("median", "median_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        median_absolute_error(
-                            y, self.deploySQL()[idx], relation, self.cursor
-                        )
-                    ]
+                    result.values[y] = [median_absolute_error(y, self.deploySQL()[idx], relation,)]
             else:
-                return median_absolute_error(
-                    self.y, prediction, test_relation, self.cursor
-                )
+                return median_absolute_error(self.y, prediction, test_relation,)
         elif method in ("var", "explained_variance"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        explained_variance(
-                            y, self.deploySQL()[idx], relation, self.cursor
-                        )
-                    ]
+                    result.values[y] = [explained_variance(y, self.deploySQL()[idx], relation,)]
             else:
-                return explained_variance(
-                    self.y, prediction, test_relation, self.cursor
-                )
+                return explained_variance(self.y, prediction, test_relation,)
         else:
             raise ParameterError(
                 "The parameter 'method' must be in r2|mae|mse|msle|max|median|var"
@@ -4619,10 +4486,9 @@ class Unsupervised(vModel):
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True,)
         if isinstance(input_relation, str) and self.type == "MCA":
-            input_relation = vdf_from_relation(input_relation, cursor=self.cursor)
+            input_relation = vdf_from_relation(input_relation,)
         if isinstance(input_relation, vDataFrame):
             if self.type == "MCA":
                 result = input_relation.sum(columns=X)
@@ -4634,22 +4500,16 @@ class Unsupervised(vModel):
                 assert abs(result) < 0.01, ConversionError("MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation.")
             self.input_relation = input_relation.__genSQL__()
             schema = schema_relation(self.name)[0]
-            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
-                str_column(schema), get_session(self.cursor)
-            )
-            self.cursor.execute("DROP VIEW IF EXISTS {}".format(relation))
-            self.cursor.execute(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
-                )
-            )
+            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(str_column(schema), get_session())
+            drop_if_exists(relation, method="view",)
+            executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False,)
             if not (X):
                 X = input_relation.numcol()
         else:
             self.input_relation = input_relation
             relation = input_relation
             if not (X):
-                X = vDataFrame(input_relation, self.cursor).numcol()
+                X = vDataFrame(input_relation,).numcol()
         self.X = [str_column(column) for column in X]
         parameters = vertica_param_dict(self)
         if "num_components" in parameters and not (parameters["num_components"]):
@@ -4671,10 +4531,10 @@ class Unsupervised(vModel):
             and self.type in ("KMeans", "BisectingKMeans")
         ):
             schema = schema_relation(self.name)[0]
-            name = "VERTICAPY_KMEANS_INITIAL_{}".format(get_session(self.cursor))
+            name = "VERTICAPY_KMEANS_INITIAL_{}".format(get_session())
             del parameters["init_method"]
             try:
-                self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
+                drop_if_exists("{}.{}".format(schema, name,), method="table",)
             except:
                 pass
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
@@ -4700,7 +4560,7 @@ class Unsupervised(vModel):
                     query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
                 query0 = "CREATE TABLE {}.{} AS {}".format(schema, name, query0)
-                self.cursor.execute(query0)
+                executeSQL(query0, print_time_sql=False,)
                 query += "initial_centers_table = '{}.{}', ".format(schema, name)
         elif "init_method" in parameters:
             del parameters["init_method"]
@@ -4710,18 +4570,18 @@ class Unsupervised(vModel):
         )
         query += ")"
         try:
-            executeSQL(self.cursor, query, "Fitting the model.")
+            executeSQL(query, "Fitting the model.")
             if isinstance(input_relation, vDataFrame):
-                self.cursor.execute("DROP VIEW {};".format(relation))
+                drop_if_exists(relation, method="view",)
         except:
             if isinstance(input_relation, vDataFrame):
-                self.cursor.execute("DROP VIEW {};".format(relation))
+                drop_if_exists(relation, method="view",)
+            if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
+                drop_if_exists("{}.{}".format(schema, name), method="table",)
             raise
         if self.type == "KMeans":
-            try:
-                self.cursor.execute("DROP TABLE IF EXISTS {}.{}".format(schema, name))
-            except:
-                pass
+            if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
+                drop_if_exists("{}.{}".format(schema, name), method="table",)
             self.cluster_centers_ = self.get_attr("centers")
             result = self.get_attr("metrics").values["metrics"][0]
             values = {
@@ -4779,7 +4639,6 @@ class Unsupervised(vModel):
                     query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
                         self.name, self.name
                     ),
-                    cursor=self.cursor,
                     title="Getting Model Attributes.",
                 )
             except:
@@ -4788,7 +4647,6 @@ class Unsupervised(vModel):
                         query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
                             self.name
                         ),
-                        cursor=self.cursor,
                         title="Getting Model Attributes.",
                     )
                 except:
@@ -5024,7 +4882,7 @@ class Preprocessing(Unsupervised):
             X = self.get_names()
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -5033,7 +4891,7 @@ class Preprocessing(Unsupervised):
             self.deployInverseSQL(exclude_columns, exclude_columns, all_columns),
             relation,
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+        return vdf_from_relation(main_relation, "Inverse Transformation",)
 
     # ---#
     def transform(
@@ -5068,7 +4926,7 @@ class Preprocessing(Unsupervised):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
@@ -5077,7 +4935,7 @@ class Preprocessing(Unsupervised):
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             self.deploySQL(exclude_columns, exclude_columns, all_columns), relation
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+        return vdf_from_relation(main_relation, "Inverse Transformation",)
 
 
 # ---#
@@ -5172,7 +5030,7 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         check_types([("dimensions", dimensions, [tuple],),])
-        vdf = vdf_from_relation(self.input_relation, cursor=self.cursor)
+        vdf = vdf_from_relation(self.input_relation,)
         ax = self.transform(vdf).scatter(columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])], max_nb_points=100000, ax=ax, **style_kwds)
         explained_variance = self.explained_variance_["explained_variance"]
         ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[dimensions[0] - 1]) else "({}%)".format(round(explained_variance[dimensions[0] - 1] * 100, 1))))
@@ -5233,7 +5091,7 @@ class Decomposition(Preprocessing):
         """
         explained_variance = self.explained_variance_["explained_variance"]
         explained_variance, n = [100 * elem for elem in explained_variance], len(explained_variance)
-        information = tablesample({"dimensions": [i + 1 for i in range(n)], "percentage_explained_variance": explained_variance}).to_vdf(self.cursor)
+        information = tablesample({"dimensions": [i + 1 for i in range(n)], "percentage_explained_variance": explained_variance}).to_vdf()
         information["dimensions_center"] = information["dimensions"] + 0.5
         ax = information["dimensions"].hist(method="avg", of="percentage_explained_variance", h=1, max_cardinality=1, ax=ax, **style_kwds)
         ax = information["percentage_explained_variance"].plot(ts="dimensions_center", ax=ax, color="black")
@@ -5340,10 +5198,7 @@ class Decomposition(Preprocessing):
             ),
             query,
         )
-        result = to_tablesample(
-            query, cursor=self.cursor, title="Getting Model Score.",
-        ).transpose()
-        return result
+        return to_tablesample(query, title="Getting Model Score.",).transpose()
 
     # ---#
     def transform(
@@ -5392,7 +5247,7 @@ class Decomposition(Preprocessing):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame],),],)
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         columns_check(X, vdf)
         X = vdf_columns_names(X, vdf)
         relation = vdf.__genSQL__()
@@ -5404,7 +5259,7 @@ class Decomposition(Preprocessing):
             ),
             relation,
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation", self.cursor,)
+        return vdf_from_relation(main_relation, "Inverse Transformation",)
 
 
 # ---#
@@ -5447,7 +5302,7 @@ class Clustering(Unsupervised):
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = [str_column(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())

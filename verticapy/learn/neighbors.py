@@ -77,19 +77,15 @@ This object uses pure SQL to compute the distances and final score.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 p: int, optional
 	The p corresponding to the one of the p-distances (distance metric used
 	to compute the model).
 	"""
 
-    def __init__(self, name: str, cursor=None, p: int = 2):
+    def __init__(self, name: str, p: int = 2):
         check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
         self.set_params({"p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -129,8 +125,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -155,7 +150,7 @@ p: int, optional
             self.y,
         )
         self.centroids_ = to_tablesample(
-            query=query, cursor=self.cursor, title="Getting Model Centroids.",
+            query=query, title="Getting Model Centroids.",
         )
         self.classes_ = self.centroids_.values[y]
         model_save = {
@@ -172,7 +167,6 @@ p: int, optional
             model_name=self.name,
             model_type="NearestCentroid",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -193,8 +187,6 @@ This object uses pure SQL to compute the distances and final score.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
@@ -202,12 +194,10 @@ p: int, optional
 	to compute the model).
 	"""
 
-    def __init__(self, name: str, cursor=None, n_neighbors: int = 5, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def deploySQL(
@@ -341,8 +331,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -355,12 +344,7 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
-        self.cursor.execute(
-            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
-                self.y, self.input_relation, self.y, self.y
-            )
-        )
-        classes = self.cursor.fetchall()
+        classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(self.y, self.input_relation, self.y, self.y), method="fetchall", print_time_sql=False,)
         self.classes_ = [item[0] for item in classes]
         model_save = {
             "type": "KNeighborsClassifier",
@@ -376,7 +360,6 @@ p: int, optional
             model_name=self.name,
             model_type="KNeighborsClassifier",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -448,7 +431,7 @@ p: int, optional
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, cutoff_curve=True, **style_kwds,
+            self.y, "proba_predict", input_relation, pos_label, ax=ax, cutoff_curve=True, **style_kwds,
         )
 
     # ---#
@@ -484,7 +467,7 @@ p: int, optional
             )
             y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
             y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
-            result = confusion_matrix(y_true, y_score, input_relation, self.cursor)
+            result = confusion_matrix(y_true, y_score, input_relation,)
             if pos_label == 1:
                 return result
             else:
@@ -500,7 +483,7 @@ p: int, optional
                 ", ".join(self.X), self.deploySQL()
             )
             return multilabel_confusion_matrix(
-                self.y, "predict_neighbors", input_relation, self.classes_, self.cursor
+                self.y, "predict_neighbors", input_relation, self.classes_,
             )
 
     # ---#
@@ -538,7 +521,7 @@ p: int, optional
             pos_label
         )
         return lift_chart(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
+            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -576,7 +559,7 @@ p: int, optional
             pos_label
         )
         return prc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
+            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -633,7 +616,7 @@ p: int, optional
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -699,9 +682,9 @@ p: int, optional
                 )
         sql = "({}) VERTICAPY_SUBTABLE".format(sql)
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor, vdf=vdf,)
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf,)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor,)
+            return vdf_from_relation(name="Neighbors", relation=sql,)
 
     # ---#
     def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
@@ -738,7 +721,7 @@ p: int, optional
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, self.cursor, pos_label, ax=ax, **style_kwds,
+            self.y, "proba_predict", input_relation, pos_label, ax=ax, **style_kwds,
         )
 
     # ---#
@@ -802,39 +785,38 @@ p: int, optional
                     self.y,
                     "predict_neighbors",
                     self.deploySQL(predict=True),
-                    self.cursor,
                     pos_label=None,
                 )
             else:
-                return accuracy_score(y_true, y_score, input_relation, self.cursor, pos_label=pos_label,)
+                return accuracy_score(y_true, y_score, input_relation, pos_label=pos_label,)
         elif method == "auc":
-            return auc(y_true, y_proba, input_relation, self.cursor)
+            return auc(y_true, y_proba, input_relation,)
         elif method == "prc_auc":
-            return prc_auc(y_true, y_proba, input_relation, self.cursor)
+            return prc_auc(y_true, y_proba, input_relation,)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
-                y_true, y_proba, input_relation, self.cursor, best_threshold=True
+                y_true, y_proba, input_relation, best_threshold=True
             )
         elif method in ("recall", "tpr"):
-            return recall_score(y_true, y_score, input_relation, self.cursor)
+            return recall_score(y_true, y_score, input_relation,)
         elif method in ("precision", "ppv"):
-            return precision_score(y_true, y_score, input_relation, self.cursor)
+            return precision_score(y_true, y_score, input_relation,)
         elif method in ("specificity", "tnr"):
-            return specificity_score(y_true, y_score, input_relation, self.cursor)
+            return specificity_score(y_true, y_score, input_relation,)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(y_true, y_score, input_relation, self.cursor)
+            return precision_score(y_true, y_score, input_relation,)
         elif method in ("log_loss", "logloss"):
-            return log_loss(y_true, y_proba, input_relation, self.cursor)
+            return log_loss(y_true, y_proba, input_relation,)
         elif method == "f1":
-            return f1_score(y_true, y_score, input_relation, self.cursor)
+            return f1_score(y_true, y_score, input_relation,)
         elif method == "mcc":
-            return matthews_corrcoef(y_true, y_score, input_relation, self.cursor)
+            return matthews_corrcoef(y_true, y_score, input_relation,)
         elif method in ("bm", "informedness"):
-            return informedness(y_true, y_score, input_relation, self.cursor)
+            return informedness(y_true, y_score, input_relation,)
         elif method in ("mk", "markedness"):
-            return markedness(y_true, y_score, input_relation, self.cursor)
+            return markedness(y_true, y_score, input_relation,)
         elif method in ("csi", "critical_success_index"):
-            return critical_success_index(y_true, y_score, input_relation, self.cursor)
+            return critical_success_index(y_true, y_score, input_relation,)
         else:
             raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
@@ -851,8 +833,6 @@ This object uses pure SQL to compute the final score.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-    Vertica database cursor. 
 bandwidth: float, optional
     The bandwidth of the kernel.
 kernel: str, optional
@@ -881,7 +861,6 @@ xlim: list, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         bandwidth: float = 1,
         kernel: str = "gaussian",
         p: int = 2,
@@ -917,8 +896,6 @@ xlim: list, optional
                 "xlim": xlim,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
         if "store" not in kwargs or kwargs["store"]:
             self.verticapy_store = True
         else:
@@ -949,8 +926,7 @@ xlim: list, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -958,9 +934,9 @@ xlim: list, optional
             input_relation = input_relation.__genSQL__()
         else:
             try:
-                vdf = vDataFrame(input_relation, cursor=self.cursor)
+                vdf = vDataFrame(input_relation,)
             except:
-                vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+                vdf = vdf_from_relation(input_relation,)
             if not (X):
                 X = vdf.numcol()
         columns_check(X, vdf)
@@ -1020,8 +996,7 @@ xlim: list, optional
                         )
                         L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
                     query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
-                    vdf.__executeSQL__(query, "Computing the KDE")
-                    result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()
+                    result = executeSQL(query, title="Computing the KDE", method="fetchone")
                     return [elem for elem in result]
                 else:
                     return 0
@@ -1077,7 +1052,7 @@ xlim: list, optional
             query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
                 self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
-            self.cursor.execute(query)
+            executeSQL(query, print_time_sql=False,)
             r, idx = 0, 0
             while r < len(y):
                 values = []
@@ -1087,8 +1062,8 @@ xlim: list, optional
                 query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )
-                executeSQL(self.cursor, query, "Computing the KDE - STEP {}.".format(idx))
-                self.cursor.execute("COMMIT;")
+                executeSQL(query, "Computing the KDE [Step {}].".format(idx))
+                executeSQL("COMMIT;", print_time_sql=False,)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
@@ -1100,7 +1075,6 @@ xlim: list, optional
 
             model = DecisionTreeRegressor(
                 name=self.tree_name,
-                cursor=self.cursor,
                 max_leaf_nodes=self.parameters["max_leaf_nodes"],
                 max_depth=self.parameters["max_depth"],
                 min_samples_leaf=self.parameters["min_samples_leaf"],
@@ -1126,7 +1100,6 @@ xlim: list, optional
                 model_name=self.name,
                 model_type="KernelDensity",
                 model_save=model_save,
-                cursor=self.cursor,
             )
         else:
             self.X, self.input_relation = X, input_relation
@@ -1157,8 +1130,7 @@ xlim: list, optional
         if len(self.X) == 1:
             if self.verticapy_store:
                 query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
-                self.cursor.execute(query)
-                result = self.cursor.fetchall()
+                result = executeSQL(query, method="fetchall", print_time_sql=False,)
                 x, y = [elem[0] for elem in result], [elem[1] for elem in result]
             else:
                 x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
@@ -1189,8 +1161,7 @@ xlim: list, optional
                 query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
                     self.X[0], self.X[1], self.map,
                 )
-                self.cursor.execute(query)
-                result = self.cursor.fetchall()
+                result = executeSQL(query, method="fetchall", print_time_sql=False,)
                 x, y, z = (
                     [elem[0] for elem in result],
                     [elem[1] for elem in result],
@@ -1241,8 +1212,6 @@ final score.
 
 Parameters
 ----------
-cursor: DBcursor, optional
-	Vertica database cursor. 
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
@@ -1250,12 +1219,10 @@ p: int, optional
 	the model computation).
 	"""
 
-    def __init__(self, name: str, cursor=None, n_neighbors: int = 5, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def deploySQL(self, X: list = [], test_relation: str = "", key_columns: list = []):
@@ -1366,8 +1333,7 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1393,7 +1359,6 @@ p: int, optional
             model_name=self.name,
             model_type="KNeighborsRegressor",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -1433,7 +1398,7 @@ p: int, optional
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(vdf, self.cursor)
+            vdf = vdf_from_relation(vdf,)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1455,9 +1420,9 @@ p: int, optional
             ),
         )
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor, vdf=vdf,)
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf,)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql, cursor=self.cursor,)
+            return vdf_from_relation(name="Neighbors", relation=sql,)
 
 
 # ---#
@@ -1481,20 +1446,16 @@ Parameters
 name: str
 	Name of the the model. This is not a built-in model, so this name will be used
 	to build the final table.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_neighbors: int, optional
 	Number of neighbors to consider when computing the score.
 p: int, optional
 	The p of the p-distances (distance metric used during the model computation).
 	"""
 
-    def __init__(self, name: str, cursor=None, n_neighbors: int = 20, p: int = 2):
+    def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
         check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -1538,8 +1499,7 @@ p: int, optional
                 ("index", index, [str], False),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         self.key_columns = [str_column(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -1548,55 +1508,33 @@ p: int, optional
         else:
             self.input_relation = input_relation
             if not (X):
-                X = vDataFrame(input_relation, self.cursor).numcol()
+                X = vDataFrame(input_relation,).numcol()
         X = [str_column(column) for column in X]
         self.X = X
-        cursor = self.cursor
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
         schema, relation = schema_relation(input_relation)
 
-        def drop_temp_elem(cursor):
-            cursor.execute(
-                "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                    get_session(cursor)
-                )
-            )
-            cursor.execute(
-                "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
-                    get_session(cursor)
-                )
-            )
-            cursor.execute(
-                "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
-                    get_session(cursor)
-                )
-            )
-            cursor.execute(
-                "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
-                    get_session(cursor)
-                )
-            )
+        def drop_temp_elem():
+            drop_if_exists("v_temp_schema.VERTICAPY_MAIN_{}".format(get_session()), method="table",)
+            drop_if_exists("v_temp_schema.VERTICAPY_DISTANCE_{}".format(get_session()), method="table",)
+            drop_if_exists("v_temp_schema.VERTICAPY_LRD_{}".format(get_session()), method="table",)
+            drop_if_exists("v_temp_schema.VERTICAPY_LOF_{}".format(get_session()), method="table",)
 
-        drop_temp_elem(cursor)
+        drop_temp_elem()
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(get_session(self.cursor))
+                main_table = "VERTICAPY_MAIN_{}".format(get_session())
                 schema = "v_temp_schema"
-                try:
-                    cursor.execute(
-                        "DROP TABLE IF EXISTS v_temp_schema.{}".format(main_table)
-                    )
-                except:
-                    pass
+                drop_if_exists("v_temp_schema.{}".format(main_table), method="table",)
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                cursor.execute(sql)
+                executeSQL(sql, print_time_sql=False,)
             else:
                 main_table = self.input_relation
             sql = [
@@ -1618,75 +1556,48 @@ p: int, optional
             sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
                 sql, n_neighbors + 1
             )
-            try:
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DISTANCE_{}".format(
-                        get_session(self.cursor)
-                    )
-                )
-            except:
-                pass
+            drop_if_exists("v_temp_schema.VERTICAPY_DISTANCE_{}".format(get_session()), method="table",)
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(self.cursor), sql
+                get_session(), sql
             )
-            executeSQL(self.cursor, sql, "Computing the LOF - STEP 0.")
+            executeSQL(sql, "Computing the LOF [Step 0].")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
-                get_session(self.cursor), n_neighbors + 1
+                get_session(), n_neighbors + 1
             )
             lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICAPY_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
-                n_neighbors, get_session(self.cursor), kdistance
+                n_neighbors, get_session(), kdistance
             )
-            try:
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LRD_{}".format(
-                        get_session(self.cursor)
-                    )
-                )
-            except:
-                pass
+            drop_if_exists("v_temp_schema.VERTICAPY_LRD_{}".format(get_session()), method="table",)
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(self.cursor), lrd
+                get_session(), lrd
             )
-            executeSQL(self.cursor, sql, "Computing the LOF - STEP 1.")
+            executeSQL(sql, "Computing the LOF [Step 1].")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
                 n_neighbors,
-                get_session(self.cursor),
-                get_session(self.cursor),
-                get_session(self.cursor),
+                get_session(),
+                get_session(),
+                get_session(),
             )
-            try:
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_LOF_{}".format(
-                        get_session(self.cursor)
-                    )
-                )
-            except:
-                pass
+            drop_if_exists("v_temp_schema.VERTICAPY_LOF_{}".format(get_session()), method="table",)
             sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(self.cursor), sql
+                get_session(), sql
             )
-            executeSQL(self.cursor, sql, "Computing the LOF - STEP 2.")
+            executeSQL(sql, "Computing the LOF [Step 2].")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
                 ", ".join(X + self.key_columns),
                 main_table,
-                get_session(self.cursor),
+                get_session(),
                 index,
             )
             executeSQL(
-                self.cursor,
                 "CREATE TABLE {} AS {}".format(self.name, sql),
-                "Computing the LOF - STEP 3.",
+                "Computing the LOF [Step 3].",
             )
-            cursor.execute(
-                "SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(
-                    schema, get_session(self.cursor)
-                )
-            )
-            self.n_errors_ = cursor.fetchone()[0]
+            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(schema, get_session()), method="fetchone0", print_time_sql=False,)
         except:
-            drop_temp_elem(cursor)
+            drop_temp_elem()
             raise
-        drop_temp_elem(cursor)
+        drop_temp_elem()
         model_save = {
             "type": "LocalOutlierFactor",
             "input_relation": self.input_relation,
@@ -1700,7 +1611,6 @@ p: int, optional
             model_name=self.name,
             model_type="LocalOutlierFactor",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -1715,4 +1625,4 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name, self.cursor)
+        return vDataFrame(self.name,)

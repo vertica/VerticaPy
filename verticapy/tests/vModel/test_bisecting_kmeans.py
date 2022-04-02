@@ -13,55 +13,55 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.cluster import BisectingKMeans
-from verticapy import vDataFrame, drop, set_option, vertica_conn
+from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality", )
 
 
 @pytest.fixture(scope="module")
-def bsk_data_vd(base):
-    base.cursor.execute("DROP TABLE IF EXISTS public.bsk_data")
-    base.cursor.execute(
+def bsk_data_vd():
+    current_cursor().execute("DROP TABLE IF EXISTS public.bsk_data")
+    current_cursor().execute(
         "CREATE TABLE IF NOT EXISTS public.bsk_data(Id INT, col1 FLOAT, col2 FLOAT, col3 FLOAT, col4 FLOAT)"
     )
-    base.cursor.execute("INSERT INTO bsk_data VALUES (1, 7.2, 3.6, 6.1, 2.5)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (2, 7.7, 2.8, 6.7, 2.0)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (3, 7.7, 3.0, 6.1, 2.3)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (4, 7.9, 3.8, 6.4, 2.0)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (5, 4.4, 2.9, 1.4, 0.2)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (6, 4.6, 3.6, 1.0, 0.2)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (7, 4.7, 3.2, 1.6, 0.2)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (8, 6.5, 2.8, 4.6, 1.5)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (9, 6.8, 2.8, 4.8, 1.4)")
-    base.cursor.execute("INSERT INTO bsk_data VALUES (10, 7.0, 3.2, 4.7, 1.4)")
-    base.cursor.execute("COMMIT")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (1, 7.2, 3.6, 6.1, 2.5)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (2, 7.7, 2.8, 6.7, 2.0)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (3, 7.7, 3.0, 6.1, 2.3)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (4, 7.9, 3.8, 6.4, 2.0)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (5, 4.4, 2.9, 1.4, 0.2)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (6, 4.6, 3.6, 1.0, 0.2)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (7, 4.7, 3.2, 1.6, 0.2)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (8, 6.5, 2.8, 4.6, 1.5)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (9, 6.8, 2.8, 4.8, 1.4)")
+    current_cursor().execute("INSERT INTO bsk_data VALUES (10, 7.0, 3.2, 4.7, 1.4)")
+    current_cursor().execute("COMMIT")
 
-    bsk_data = vDataFrame(input_relation="public.bsk_data", cursor=base.cursor)
+    bsk_data = vDataFrame(input_relation="public.bsk_data", )
     yield bsk_data
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.bsk_data", cursor=base.cursor)
+        drop(name="public.bsk_data", )
 
 
 @pytest.fixture(scope="module")
-def model(base, bsk_data_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS bsk_model_test")
+def model(bsk_data_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS bsk_model_test")
 
-    base.cursor.execute(
+    current_cursor().execute(
         "SELECT BISECTING_KMEANS('bsk_model_test', 'public.bsk_data', '*', 3 USING PARAMETERS exclude_columns='id', kmeans_seed=11, id_column='id')"
     )
 
     model_class = BisectingKMeans(
-        "bsk_model_test", cursor=base.cursor, n_cluster=3, max_iter=10
+        "bsk_model_test", n_cluster=3, max_iter=10
     )
     model_class.metrics_ = model_class.get_attr("Metrics")
     model_class.cluster_centers_ = model_class.get_attr("BKTree")
@@ -84,21 +84,21 @@ class TestBisectingKMeans:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS bsk_model_test_drop")
-        model_test = BisectingKMeans("bsk_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS bsk_model_test_drop")
+        model_test = BisectingKMeans("bsk_model_test_drop", )
         model_test.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'bsk_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "bsk_model_test_drop"
+        assert current_cursor().fetchone()[0] == "bsk_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'bsk_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -150,34 +150,22 @@ class TestBisectingKMeans:
 
         assert len(bsk_data_copy["pred"].distinct()) == 3
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_iter": 200})
         assert model.get_params()["max_iter"] == 200
 
-    def test_model_from_vDF(self, base, bsk_data_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS bsk_vDF")
-        model_test = BisectingKMeans("bsk_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, bsk_data_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS bsk_vDF")
+        model_test = BisectingKMeans("bsk_vDF", )
         model_test.fit(bsk_data_vd, ["col1", "col2", "col3", "col4"])
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'bsk_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "bsk_vDF"
+        assert current_cursor().fetchone()[0] == "bsk_vDF"
         model_test.drop()
 
-    def test_init_method(self, base):
-        model_test_kmeanspp = BisectingKMeans(
-            "bsk_kmeanspp_test", cursor=base.cursor, init="kmeanspp"
-        )
+    def test_init_method(self):
+        model_test_kmeanspp = BisectingKMeans("bsk_kmeanspp_test", init="kmeanspp",)
         model_test_kmeanspp.drop()
         model_test_kmeanspp.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
@@ -187,9 +175,7 @@ class TestBisectingKMeans:
         )
         model_test_kmeanspp.drop()
 
-        model_test_pseudo = BisectingKMeans(
-            "bsk_pseudo_test", cursor=base.cursor, init="pseudo"
-        )
+        model_test_pseudo = BisectingKMeans("bsk_pseudo_test", init="pseudo")
         model_test_pseudo.drop()
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
@@ -199,9 +185,9 @@ class TestBisectingKMeans:
         )
         model_test_pseudo.drop()
 
-    def test_get_plot(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = BisectingKMeans("model_test_plot", cursor=base.cursor)
+    def test_get_plot(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = BisectingKMeans("model_test_plot", )
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 16
@@ -225,23 +211,23 @@ class TestBisectingKMeans:
         assert model.to_graphviz() == result.source.strip()
 
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction == pytest.approx(
             model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
         )
 
     def test_to_sql(self, model,):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
     def test_to_memmodel(self, model,):
@@ -252,7 +238,7 @@ class TestBisectingKMeans:
                                     [3.0, 11.0, 1993., 0.,]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame('public.bsk_data', cursor = model.cursor,)
+        vdf = vDataFrame('public.bsk_data',)
         vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
         model.predict(vdf, name = "prediction_vertica_sql",)
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")

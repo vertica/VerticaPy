@@ -106,7 +106,6 @@ steps: list
                             "The last estimator of the Pipeline must have a 'fit' method."
                         )
             self.steps += [elem]
-        self.cursor = self.steps[-1][1].cursor
 
     # ---#
     def __getitem__(self, index):
@@ -157,9 +156,7 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(
-                relation=input_relation, cursor=self.steps[0][1].cursor
-            )
+            vdf = vdf_from_relation(relation=input_relation,)
         else:
             vdf = input_relation
         X_new = [elem for elem in X]
@@ -232,7 +229,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -322,7 +319,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -365,7 +362,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf,)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):
@@ -374,27 +371,6 @@ steps: list
             X_new = step[1].get_names(inverse=True, X=X)
             X_all += X_new
         return current_vdf
-
-    # ---#
-    def set_cursor(self, cursor):
-        """
-    ---------------------------------------------------------------------------
-    Sets a new database cursor. It can be very usefull if the connection to the DB is 
-    lost.
-
-    Parameters
-    ----------
-    cursor: DBcursor
-        New cursor.
-
-    Returns
-    -------
-    model
-        self
-        """
-        for step in self.steps:
-            step[1].set_cursor(cursor)
-        return self
 
     # ---#
     def set_params(self, parameters: dict = {}):

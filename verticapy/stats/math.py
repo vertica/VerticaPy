@@ -84,6 +84,7 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2,), "int")
@@ -107,6 +108,7 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr = format_magic(expr)
     return str_sql("SOUNDEX({})".format(expr), "varchar")
 
@@ -133,6 +135,7 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
     return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2,), "int")

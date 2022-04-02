@@ -70,7 +70,6 @@ def logit_plot(
     y: str,
     input_relation: str,
     coefficients: list,
-    cursor=None,
     max_nb_points=50,
     ax=None,
     **style_kwds,
@@ -84,7 +83,6 @@ def logit_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
     param0 = {
         "marker": "o",
         "s": 50,
@@ -109,8 +107,7 @@ def logit_plot(
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -164,8 +161,7 @@ def logit_plot(
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         x0, x1, y0, y1 = [], [], [], []
         for idx, item in enumerate(all_points):
             if item[2] == 0:
@@ -253,8 +249,6 @@ def logit_plot(
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         raise ParameterError("The number of predictors is too big.")
-    if conn:
-        conn.close()
     return ax
 
 
@@ -263,7 +257,6 @@ def lof_plot(
     input_relation: str,
     columns: list,
     lof: str,
-    cursor=None,
     tablesample: float = -1,
     ax=None,
     **style_kwds,
@@ -276,7 +269,6 @@ def lof_plot(
             ("tablesample", tablesample, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
     tablesample = (
         "TABLESAMPLE({})".format(tablesample)
         if (tablesample > 0 and tablesample < 100)
@@ -306,8 +298,7 @@ def lof_plot(
         query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
             column, lof, input_relation, tablesample, column
         )
-        cursor.execute(query)
-        query_result = cursor.fetchall()
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
         column1, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -343,8 +334,7 @@ def lof_plot(
             columns[0],
             columns[1],
         )
-        cursor.execute(query)
-        query_result = cursor.fetchall()
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
         column1, column2, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -382,8 +372,7 @@ def lof_plot(
             columns[1],
             columns[2],
         )
-        cursor.execute(query)
-        query_result = cursor.fetchall()
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
         column1, column2, column3, lof = (
             [float(item[0]) for item in query_result],
             [float(item[1]) for item in query_result],
@@ -415,8 +404,6 @@ def lof_plot(
         raise Exception(
             "LocalOutlierFactor Plot is available for a maximum of 3 columns"
         )
-    if conn:
-        conn.close()
     return ax
 
 
@@ -729,7 +716,6 @@ def regression_plot(
     y: str,
     input_relation: str,
     coefficients: list,
-    cursor=None,
     max_nb_points: int = 50,
     ax=None,
     **style_kwds,
@@ -743,7 +729,6 @@ def regression_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
     param = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -754,8 +739,7 @@ def regression_plot(
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -779,8 +763,7 @@ def regression_plot(
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         x0, y0, z0 = (
             [float(item[0]) for item in all_points],
             [float(item[1]) for item in all_points],
@@ -817,8 +800,6 @@ def regression_plot(
         ax.set_zlabel(y + " = f(" + X[0] + ", " + X[1] + ")")
     else:
         raise ParameterError("The number of predictors is too big.")
-    if conn:
-        conn.close()
     return ax
 
 
@@ -827,7 +808,6 @@ def regression_tree_plot(
     X: list,
     y: str,
     input_relation: str,
-    cursor=None,
     max_nb_points: int = 10000,
     ax=None,
     **style_kwds,
@@ -840,13 +820,10 @@ def regression_tree_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
-
     query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
         X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points),
     )
-    cursor.execute(query)
-    all_points = cursor.fetchall()
+    all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
@@ -877,8 +854,6 @@ def regression_tree_plot(
     )
     ax.set_xlabel(X[0])
     ax.set_ylabel(y)
-    if conn:
-        conn.close()
     return ax
 
 
@@ -888,7 +863,6 @@ def svm_classifier_plot(
     y: str,
     input_relation: str,
     coefficients: list,
-    cursor=None,
     max_nb_points: int = 500,
     ax=None,
     **style_kwds,
@@ -902,7 +876,6 @@ def svm_classifier_plot(
             ("max_nb_points", max_nb_points, [int, float],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
     param0 = {
         "marker": "o",
         "color": gen_colors()[0],
@@ -922,8 +895,7 @@ def svm_classifier_plot(
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -964,8 +936,7 @@ def svm_classifier_plot(
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -1027,8 +998,7 @@ def svm_classifier_plot(
             y,
             int(max_nb_points / 2),
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         x0, x1, y0, y1, z0, z1 = [], [], [], [], [], []
         for idx, item in enumerate(all_points):
             if item[3] == 0:
@@ -1082,8 +1052,6 @@ def svm_classifier_plot(
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
         raise ParameterError("The number of predictors is too big.")
-    if conn:
-        conn.close()
     return ax
 
 
@@ -1094,7 +1062,6 @@ def voronoi_plot(
     input_relation: str,
     max_nb_points: int = 1000,
     plot_crosses: bool = True,
-    cursor=None,
     ax=None,
     **style_kwds,
 ):
@@ -1106,7 +1073,6 @@ def voronoi_plot(
             ("max_nb_points", max_nb_points, [int],),
         ]
     )
-    cursor, conn = check_cursor(cursor)[0:2]
     from scipy.spatial import voronoi_plot_2d, Voronoi
 
     min_x, max_x, min_y, max_y = (
@@ -1154,8 +1120,7 @@ def voronoi_plot(
             columns[1],
             int(max_nb_points),
         )
-        cursor.execute(query)
-        all_points = cursor.fetchall()
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
         x, y = (
             [float(item[0]) for item in all_points],
             [float(item[1]) for item in all_points],
@@ -1174,6 +1139,4 @@ def voronoi_plot(
                 zorder=4,
                 marker="x",
             )
-    if conn:
-        conn.close()
     return ax

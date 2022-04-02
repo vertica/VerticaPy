@@ -46,7 +46,7 @@
 # of moving data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.8.1"
+__version__ = "0.9.0-0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
@@ -79,8 +79,7 @@ verticapy.options = {
     "cache": True,
     "colors": [],
     "color_style": "default",
-    "conn": None,
-    "cursor": None,
+    "connection": {"conn": None, "section": None, "dsn": None},
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,

@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, os, verticapy
-from verticapy import vDataFrame, set_option, vertica_conn
+from verticapy import vDataFrame, set_option, vertica_conn, current_cursor
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
 from verticapy.learn.naive_bayes import *
@@ -29,38 +29,32 @@ set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon",)
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.winequality", cursor=base.cursor,
-        )
+        drop(name="public.winequality",)
 
 
 class TestModelSelection:
@@ -68,7 +62,6 @@ class TestModelSelection:
         result = best_k(
             "public.winequality",
             ["residual_sugar", "alcohol"],
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             n_cluster=(1, 5),
             init="kmeanspp",
             elbow_score_stop=0.8,
@@ -83,14 +76,12 @@ class TestModelSelection:
         )
         assert result in [3, 4]
 
-    def test_cross_validate(self, base, winequality_vd):
-        base.cursor.execute(
+    def test_cross_validate(self, winequality_vd):
+        current_cursor().execute(
             "DROP MODEL IF EXISTS model_test"
         )
         result = cross_validate(
-            LinearRegression(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            LinearRegression("model_test",),
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "quality",
@@ -101,9 +92,7 @@ class TestModelSelection:
         assert result[0]["r2"][3] == pytest.approx(0.21464568751357532, 5e-1)
         assert result[1]["r2"][3] == pytest.approx(0.207040342625429, 5e-1)
         result2 = cross_validate(
-            LogisticRegression(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            LogisticRegression("model_test",),
             "public.winequality",
             ["residual_sugar", "alcohol"],
             "good",
@@ -114,9 +103,7 @@ class TestModelSelection:
         assert result2[0]["auc"][3] == pytest.approx(0.7604040062168419, 5e-1)
         assert result2[1]["auc"][3] == pytest.approx(0.7749948214599245, 5e-1)
         result3 = cross_validate(
-            NaiveBayes(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            NaiveBayes("model_test",),
             "public.winequality",
             ["residual_sugar", "alcohol"],
             "quality",
@@ -129,21 +116,21 @@ class TestModelSelection:
         assert result3[1]["auc"][3] == pytest.approx(0.7386519406866139, 5e-1)
 
     def test_enet_search_cv(self, titanic_vd):
-        result = enet_search_cv(titanic_vd, ["age", "fare"], "survived", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"], small=True,)
+        result = enet_search_cv(titanic_vd, ["age", "fare"], "survived", small=True,)
         assert len(result["parameters"]) == 19
 
     def test_bayesian_search_cv(self, titanic_vd):
-        model = LinearRegression("LR_bs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model = LinearRegression("LR_bs_test",)
         model.drop()
-        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "survived", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "survived",)
         assert len(result["parameters"]) == 25
-        model = NaiveBayes("NB_bs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model = NaiveBayes("NB_bs_test",)
         model.drop()
-        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", cursor=titanic_vd._VERTICAPY_VARIABLES_["cursor"], lmax=4)
+        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", lmax=4)
         assert len(result["parameters"]) == 14
 
     def test_randomized_features_search_cv(self, titanic_vd):
-        model = LogisticRegression("Logit_fs_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model = LogisticRegression("Logit_fs_test",)
         model.drop()
         result = randomized_features_search_cv(model, titanic_vd, ["age", "fare", "pclass",], "survived",)
         assert len(result["features"]) == 7
@@ -152,7 +139,6 @@ class TestModelSelection:
         result = elbow(
             "public.winequality",
             ["residual_sugar", "alcohol"],
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             n_cluster=(1, 5),
             init="kmeanspp",
         )
@@ -162,7 +148,6 @@ class TestModelSelection:
         result2 = elbow(
             winequality_vd,
             ["residual_sugar", "alcohol"],
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             n_cluster=(1, 5),
             init="kmeanspp",
         )
@@ -197,9 +182,7 @@ class TestModelSelection:
 
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
-            LogisticRegression(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            LogisticRegression("model_test",),
             {"solver": ["Newton", "BFGS", "CGD"], "tol": [0.1, 0.01]},
             winequality_vd,
             ["residual_sugar", "alcohol"],
@@ -211,9 +194,7 @@ class TestModelSelection:
         assert len(result["parameters"]) == 6
 
     def test_lift_chart(self, winequality_vd):
-        model = LogisticRegression(
-            "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
+        model = LogisticRegression("model_test",)
         model.drop()
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
@@ -222,7 +203,6 @@ class TestModelSelection:
             "good",
             "prediction",
             data,
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             pos_label=1,
             nbins=30,
         )
@@ -259,9 +239,7 @@ class TestModelSelection:
         ]
 
     def test_prc_curve(self, winequality_vd):
-        model = LogisticRegression(
-            "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
+        model = LogisticRegression("model_test",)
         model.drop()
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
@@ -270,7 +248,6 @@ class TestModelSelection:
             "good",
             "prediction",
             data,
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             pos_label=1,
             nbins=30,
         )
@@ -281,9 +258,7 @@ class TestModelSelection:
 
     def test_randomized_search_cv(self, winequality_vd):
         result = randomized_search_cv(
-            LogisticRegression(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            LogisticRegression("model_test",),
             winequality_vd,
             ["residual_sugar", "alcohol"],
             "good",
@@ -296,9 +271,7 @@ class TestModelSelection:
         assert len(result["parameters"]) == 4
 
     def test_roc_curve(self, winequality_vd):
-        model = LogisticRegression(
-            "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-        )
+        model = LogisticRegression("model_test",)
         model.drop()
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
@@ -307,7 +280,6 @@ class TestModelSelection:
             "good",
             "prediction",
             data,
-            cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
             pos_label=1,
             nbins=30,
         )
@@ -318,9 +290,7 @@ class TestModelSelection:
 
     def test_validation_curve(self, winequality_vd):
         result = validation_curve(
-            LogisticRegression(
-                "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-            ),
+            LogisticRegression("model_test",),
             "tol",
             [0.1, 0.01, 0.001],
             winequality_vd,
@@ -338,9 +308,7 @@ class TestModelSelection:
     def test_learning_curve(self, winequality_vd):
         for elem in ["efficiency", "performance", "scalability"]:
             result = learning_curve(
-                LogisticRegression(
-                    "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
-                ),
+                LogisticRegression("model_test",),
                 winequality_vd,
                 ["residual_sugar", "alcohol"],
                 "good",
@@ -356,7 +324,7 @@ class TestModelSelection:
     def test_stepwise(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["boat"].fillna(method="0ifnull")
-        model = LogisticRegression("Logit_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model = LogisticRegression("Logit_stepwise_test",)
         model.drop()
         result = stepwise(model, titanic, ["age", "fare", "boat", "pclass",], "survived", "bic", "backward", 100, 3, True, "pearson", True, True,)
         assert result["importance"][-1] == pytest.approx(99.99999999999999, 1e-2)
@@ -366,7 +334,7 @@ class TestModelSelection:
         assert result["importance"][-1] == pytest.approx(0.0, 1e-2)
         assert result["importance"][-4] == pytest.approx(99.99999999999999, 1e-2)
         plt.close("all")
-        model = LinearRegression("LR_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        model = LinearRegression("LR_stepwise_test",)
         model.drop()
         assert result["importance"][-1] == pytest.approx(0.0, 1e-2)
         assert result["importance"][-4] == pytest.approx(99.99999999999999, 1e-2)

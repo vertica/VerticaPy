@@ -69,8 +69,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor. 
 alpha: float, optional
 	A float that specifies use of Laplace smoothing if the event model is 
 	categorical, multinomial, or Bernoulli.
@@ -92,7 +90,7 @@ nbtype: str, optional
 	"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0, nbtype: str = "auto"
+        self, name: str, alpha: float = 1.0, nbtype: str = "auto"
     ):
         check_types(
             [
@@ -107,9 +105,7 @@ nbtype: str, optional
         )
         self.type, self.name = "NaiveBayes", name
         self.set_params({"alpha": alpha, "nbtype": nbtype})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0],)
 
 
 # ---#
@@ -117,9 +113,9 @@ class BernoulliNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'bernoulli'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "bernoulli")
+        super().__init__(name, alpha, "bernoulli")
 
 
 # ---#
@@ -127,9 +123,9 @@ class CategoricalNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'categorical'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "categorical")
+        super().__init__(name, alpha, "categorical")
 
 
 # ---#
@@ -137,9 +133,9 @@ class GaussianNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'gaussian'"""
 
     def __init__(
-        self, name: str, cursor=None,
+        self, name: str, 
     ):
-        super().__init__(name, cursor, nbtype="gaussian")
+        super().__init__(name, nbtype="gaussian")
 
 
 # ---#
@@ -147,6 +143,6 @@ class MultinomialNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'multinomial'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "multinomial")
+        super().__init__(name, alpha, "multinomial")

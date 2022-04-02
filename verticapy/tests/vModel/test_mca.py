@@ -13,25 +13,25 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.decomposition import MCA
-from verticapy import drop, set_option, vertica_conn
+from verticapy import drop, set_option, vertica_conn, current_cursor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
+def market_vd():
     from verticapy.datasets import load_market
 
-    market = load_market(cursor=base.cursor)
+    market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market", cursor=base.cursor)
+        drop(name="public.market", )
 
 
 @pytest.fixture(scope="module")
-def model(base, market_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS mca_model_test")
-    model_class = MCA("mca_model_test", cursor=base.cursor)
+def model(market_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS mca_model_test")
+    model_class = MCA("mca_model_test", )
     model_class.fit(market_vd.cdt(),)
     yield model_class
     model_class.drop()
@@ -56,21 +56,21 @@ class TestMCA:
 
         assert expected_sql in result_sql
 
-    def test_drop(self, market_vd, base):
-        base.cursor.execute("DROP MODEL IF EXISTS mca_model_test_drop")
-        model_test = MCA("mca_model_test_drop", cursor=base.cursor)
+    def test_drop(self, market_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS mca_model_test_drop")
+        model_test = MCA("mca_model_test_drop", )
         model_test.fit(market_vd.cdt(),)
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "mca_model_test_drop"
+        assert current_cursor().fetchone()[0] == "mca_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -173,26 +173,16 @@ class TestMCA:
         assert result["Score"][1] == pytest.approx(0.0, abs=1e-6)
         assert result["Score"][2] == pytest.approx(0.0, abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({})
         assert model.get_params() == {}
 
-    def test_model_from_vDF(self, base, market_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS mca_vDF")
-        model_test = MCA("mca_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, market_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS mca_vDF")
+        model_test = MCA("mca_vDF", )
         model_test.fit(market_vd.cdt(),)
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "mca_vDF"
+        assert current_cursor().fetchone()[0] == "mca_vDF"
         model_test.drop()

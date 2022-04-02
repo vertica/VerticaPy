@@ -66,20 +66,15 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the database.
-cursor: DBcursor, optional
-    Vertica database cursor.
     """
     def __init__(
         self,
         name: str,
-        cursor=None,
     ):
         check_types([("name", name, [str], False)])
         self.type, self.name = "MCA", name
         self.set_params({})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 1, 0])
+        version(condition=[9, 1, 0])
 
     # ---#
     def plot_var(
@@ -155,7 +150,7 @@ cursor: DBcursor, optional
         contrib = [100 * elem / total for elem in contrib]
         n = len(contrib)
         variables, contribution = zip(*sorted(zip(self.X, contrib), key=lambda t: t[1], reverse=True))
-        contrib = tablesample({"row_nb": [i + 1 for i in range(n)], "contrib": contribution}).to_vdf(self.cursor)
+        contrib = tablesample({"row_nb": [i + 1 for i in range(n)], "contrib": contribution}).to_vdf()
         contrib["row_nb_2"] = contrib["row_nb"] + 0.5
         ax = contrib["row_nb"].hist(method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwds)
         ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
@@ -200,7 +195,7 @@ cursor: DBcursor, optional
         for i in range(n):
             quality += [cos2_1[i] + cos2_2[i]]
         variables, quality = zip(*sorted(zip(self.X, quality), key=lambda t: t[1], reverse=True))
-        quality = tablesample({"variables": variables, "quality": quality}).to_vdf(self.cursor)
+        quality = tablesample({"variables": variables, "quality": quality}).to_vdf()
         ax = quality["variables"].hist(method="avg", of="quality", max_cardinality=n, ax=ax, **style_kwds)
         ax.set_ylabel('Cos2 - Quality of Representation')
         ax.set_xlabel('')
@@ -218,8 +213,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 
@@ -236,7 +229,6 @@ method: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         n_components: int = 0,
         scale: bool = False,
         method: str = "lapack",
@@ -246,9 +238,7 @@ method: str, optional
         self.set_params(
             {"n_components": n_components, "scale": scale, "method": method.lower()}
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 1, 0])
+        version(condition=[9, 1, 0])
 
 
 # ---#
@@ -262,8 +252,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_components: int, optional
 	The number of components to keep in the model. If this value is not provided, 
 	all components are kept. The maximum number of components is the number of 
@@ -275,11 +263,9 @@ method: str, optional
 	"""
 
     def __init__(
-        self, name: str, cursor=None, n_components: int = 0, method: str = "lapack"
+        self, name: str, n_components: int = 0, method: str = "lapack"
     ):
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name
         self.set_params({"n_components": n_components, "method": method.lower()})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 1, 0])
+        version(condition=[9, 1, 0])

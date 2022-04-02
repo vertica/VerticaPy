@@ -237,15 +237,8 @@ tablesample
     relation_name = "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
         schema, gen_name([column]).upper()
     )
-    try:
-        vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-            "DROP MODEL IF EXISTS {}".format(name)
-        )
-        vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-            "DROP VIEW IF EXISTS {}".format(relation_name)
-        )
-    except:
-        pass
+    drop_if_exists(name, method="model")
+    drop_if_exists(relation_name, method="view")
     lag = [
         "LAG({}, 1) OVER ({}ORDER BY {}) AS lag1".format(
             column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts
@@ -278,10 +271,8 @@ tablesample
         else ts,
         vdf.__genSQL__(),
     )
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute(query)
-    model = LinearRegression(
-        name, vdf._VERTICAPY_VARIABLES_["cursor"], solver="Newton", max_iter=1000
-    )
+    executeSQL(query, print_time_sql=False,)
+    model = LinearRegression(name, solver="Newton", max_iter=1000,)
     predictors = ["lag1"] + ["delta{}".format(i) for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
@@ -289,10 +280,8 @@ tablesample
         relation_name, predictors, "delta",
     )
     coef = model.coef_
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute("DROP MODEL IF EXISTS {}".format(name))
-    vdf._VERTICAPY_VARIABLES_["cursor"].execute(
-        "DROP VIEW IF EXISTS {}".format(relation_name)
-    )
+    drop_if_exists(name, method="model")
+    drop_if_exists(relation_name, method="view")
     if regresults:
         return coef
     coef = coef.transpose()
@@ -366,16 +355,16 @@ model
          ("drop_tmp_model", drop_tmp_model, [bool,],),],
     )
     if isinstance(vdf, str):
-        vdf_tmp = vdf_from_relation(vdf, cursor=model.cursor)
+        vdf_tmp = vdf_from_relation(vdf,)
     else:
         vdf_tmp = vdf.copy()
     columns_check([ts], vdf_tmp)
     schema = schema_relation(model.name)[0]
     name = schema + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(model.cursor)
+        get_session()
     )
     param = model.get_params()
-    model_tmp = type(model)(name, model.cursor)
+    model_tmp = type(model)(name,)
     model_tmp.set_params(param)
     X, y = model.X, model.y
     print_info = verticapy.options["print_info"]
@@ -383,16 +372,12 @@ model
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
     verticapy.options["print_info"] = print_info
-    prediction_name = "prediction_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
-    eps_name = "eps_{}".format(get_session(vdf._VERTICAPY_VARIABLES_["cursor"]))
+    prediction_name = "prediction_{}".format(get_session())
+    eps_name = "eps_{}".format(get_session())
     model.predict(vdf_tmp, X=X, name=prediction_name,)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
     query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())
-    vdf.__executeSQL__(
-        query,
-        title="Computes the Cochrane Orcutt pho.",
-    )
-    pho = vdf_tmp._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchone0",)
     for elem in X + [y]:
         new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
         if prais_winsten:
@@ -452,11 +437,7 @@ float
         (", " + ", ".join(by)) if (by) else "",
         vdf.__genSQL__(),
     )
-    vdf.__executeSQL__(
-        "SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
-        title="Computes the Durbin Watson d.",
-    )
-    d = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchone0",)
     return d
 
 
@@ -492,10 +473,8 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-    )
-    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+    model = LinearRegression(name,)
     try:
         model.fit(vdf, X, eps)
         R2 = model.score("r2")
@@ -581,13 +560,11 @@ tablesample
     query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(X), vdf.__genSQL__()
     )
-    vdf_lags = vdf_from_relation(query, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    vdf_lags = vdf_from_relation(query,)
     from verticapy.learn.linear_model import LinearRegression
 
-    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-    )
-    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+    model = LinearRegression(name,)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score("r2")
@@ -653,10 +630,8 @@ tablesample
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-    )
-    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+    model = LinearRegression(name,)
     vdf_copy = vdf.copy()
     vdf_copy["VERTICAPY_TEMP_eps2"] = vdf_copy[eps] ** 2
     try:
@@ -751,10 +726,8 @@ tablesample
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
     from verticapy.learn.linear_model import LinearRegression
 
-    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-    )
-    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+    model = LinearRegression(name,)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
@@ -818,14 +791,12 @@ tablesample
     query = "(SELECT {}, POWER({}, 2) AS VERTICAPY_TEMP_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(variables), eps, vdf.__genSQL__()
     )
-    vdf_white = vdf_from_relation(query, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    vdf_white = vdf_from_relation(query,)
 
     from verticapy.learn.linear_model import LinearRegression
 
-    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-        get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-    )
-    model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+    name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+    model = LinearRegression(name,)
     try:
         model.fit(vdf_white, variables_names, "VERTICAPY_TEMP_eps2")
         R2 = model.score("r2")
@@ -1076,8 +1047,7 @@ tablesample
     query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
     )
-    vdf.__executeSQL__(query, title="Computes the Mann Kendall S.")
-    S = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchone0",)
     try:
         S = float(S)
     except:
@@ -1086,8 +1056,7 @@ tablesample
     query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
-    vdf.__executeSQL__(query, title="Computes the Mann Kendall S standard deviation.")
-    STDS = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchone0",)
     try:
         STDS = float(STDS)
     except:
@@ -1264,8 +1233,7 @@ vDataFrame
         schema = verticapy.options["temp_schema"]
 
         from verticapy.learn.linear_model import LinearRegression
-        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_poly._VERTICAPY_VARIABLES_["cursor"])),
-                                 cursor=vdf_poly._VERTICAPY_VARIABLES_["cursor"],
+        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session()),
                                  solver="bfgs",
                                  max_iter=100,
                                  tol=1e-6,)
@@ -1301,8 +1269,7 @@ vDataFrame
         schema = verticapy.options["temp_schema"]
 
         from verticapy.learn.linear_model import LinearRegression
-        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session(vdf_seasonality._VERTICAPY_VARIABLES_["cursor"])),
-                                 cursor=vdf_seasonality._VERTICAPY_VARIABLES_["cursor"],
+        model = LinearRegression(name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(schema, get_session()),
                                  solver="bfgs",
                                  max_iter=100,
                                  tol=1e-6,)
@@ -1410,10 +1377,8 @@ float
 
         from verticapy.learn.linear_model import LinearRegression
 
-        name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-            get_session(vdf._VERTICAPY_VARIABLES_["cursor"])
-        )
-        model = LinearRegression(name, cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+        name = verticapy.options["temp_schema"] + ".VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(get_session())
+        model = LinearRegression(name,)
         try:
             model.fit(vdf, X_r, y_r)
             R2 = model.score("r2")

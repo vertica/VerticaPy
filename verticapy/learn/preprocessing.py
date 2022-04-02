@@ -63,7 +63,6 @@ def Balance(
     name: str,
     input_relation: str,
     y: str,
-    cursor=None,
     method: str = "hybrid",
     ratio: float = 0.5,
 ):
@@ -80,8 +79,6 @@ input_relation: str
 	Relation to use to create the new relation.
 y: str
 	Response column.
-cursor: DBcursor, optional
-	Vertica database cursor.
 method: str, optional
 	Method to use to do the balancing.
 		hybrid : Performs over-sampling and under-sampling on different 
@@ -108,14 +105,13 @@ vDataFrame
             ("ratio", ratio, [float],),
         ]
     )
-    cursor = check_cursor(cursor)[0]
-    version(cursor=cursor, condition=[8, 1, 1])
+    version(condition=[8, 1, 1],)
     method = method.lower()
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
     )
-    executeSQL(cursor, sql, "Computing the Balanced Relation.")
-    return vDataFrame(name, cursor)
+    executeSQL(sql, "Computing the Balanced Relation.")
+    return vDataFrame(name,)
 
 
 # ---#
@@ -129,8 +125,6 @@ Parameters
 ----------
 name: str
 	Name of the the model.
-cursor: DBcursor, optional
-	Vertica database cursor.
 lowercase: bool, optional
 	Converts all the elements to lowercase before processing.
 max_df: float, optional
@@ -151,7 +145,6 @@ max_text_size: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         lowercase: bool = True,
         max_df: float = 1.0,
         min_df: float = 0.0,
@@ -171,8 +164,6 @@ max_text_size: int, optional
                 "max_text_size": max_text_size,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def deploySQL(self):
@@ -215,20 +206,19 @@ max_text_size: int, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.get_columns()
             self.input_relation = input_relation.__genSQL__()
         else:
             if not (X):
-                X = vDataFrame(input_relation, self.cursor).get_columns()
+                X = vDataFrame(input_relation,).get_columns()
             self.input_relation = input_relation
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(self.name)
         schema = str_column(schema)
         tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}_{}".format(
-            schema, get_session(self.cursor), random.randint(0, 10000000),
+            schema, get_session(), random.randint(0, 10000000),
         )
         try:
             self.drop()
@@ -236,9 +226,8 @@ max_text_size: int, optional
             pass
         sql = "CREATE TABLE {}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
         executeSQL(
-            self.cursor,
             sql.format(tmp_name, self.parameters["max_text_size"]),
-            "Computing the CountVectorizer - STEP 0.",
+            title="Computing the CountVectorizer [Step 0].",
         )
         text = (
             " || ".join(self.X)
@@ -250,20 +239,20 @@ max_text_size: int, optional
         sql = "INSERT INTO {}(text) SELECT {} FROM {}".format(
             tmp_name, text, self.input_relation
         )
-        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 1.")
+        executeSQL(sql, "Computing the CountVectorizer [Step 1].")
         sql = "CREATE TEXT INDEX {} ON {}(id, text) stemmer NONE;".format(
             self.name, tmp_name
         )
-        executeSQL(self.cursor, sql, "Computing the CountVectorizer - STEP 2.")
+        executeSQL(sql, "Computing the CountVectorizer [Step 2].")
         stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
         if self.parameters["max_features"] > 0:
             stop_words += " OR (rnk > {})".format(self.parameters["max_features"])
-        self.cursor.execute(stop_words)
-        self.stop_words_ = [item[0] for item in self.cursor.fetchall()]
-        self.cursor.execute(self.deploySQL())
-        self.vocabulary_ = [item[0] for item in self.cursor.fetchall()]
+        res = executeSQL(stop_words, print_time_sql=False, method="fetchall")
+        self.stop_words_ = [item[0] for item in res]
+        res = executeSQL(self.deploySQL(), print_time_sql=False, method="fetchall")
+        self.vocabulary_ = [item[0] for item in res]
         self.countvectorizer_table = tmp_name
         model_save = {
             "type": "CountVectorizer",
@@ -283,7 +272,6 @@ max_text_size: int, optional
             model_name=self.name,
             model_type="CountVectorizer",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -299,7 +287,7 @@ max_text_size: int, optional
  		object result of the model transformation.
 		"""
         return vdf_from_relation(
-            "({}) VERTICAPY_SUBTABLE".format(self.deploySQL()), self.name, self.cursor
+            "({}) VERTICAPY_SUBTABLE".format(self.deploySQL()), self.name,
         )
 
 
@@ -313,8 +301,6 @@ Parameters
 ----------
 name: str
 	Name of the the model.
-cursor: DBcursor, optional
-	Vertica database cursor.
 method: str, optional
 	Method to use to normalize.
 		zscore        : Normalization using the Z-Score (avg and std).
@@ -325,13 +311,11 @@ method: str, optional
 		(x - min) / (max - min)
 	"""
 
-    def __init__(self, name: str, cursor=None, method: str = "zscore"):
+    def __init__(self, name: str, method: str = "zscore"):
         check_types([("name", name, [str],)])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 0])
+        version(condition=[8, 1, 0],)
 
 
 # ---#
@@ -339,9 +323,9 @@ class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
 
     def __init__(
-        self, name: str, cursor=None,
+        self, name: str,
     ):
-        super().__init__(name, cursor, "zscore")
+        super().__init__(name, "zscore")
 
 
 # ---#
@@ -349,9 +333,9 @@ class RobustScaler(Normalizer):
     """i.e. Normalizer with param method = 'robust_zscore'"""
 
     def __init__(
-        self, name: str, cursor=None,
+        self, name: str,
     ):
-        super().__init__(name, cursor, "robust_zscore")
+        super().__init__(name, "robust_zscore")
 
 
 # ---#
@@ -359,9 +343,9 @@ class MinMaxScaler(Normalizer):
     """i.e. Normalizer with param method = 'minmax'"""
 
     def __init__(
-        self, name: str, cursor=None,
+        self, name: str,
     ):
-        super().__init__(name, cursor, "minmax")
+        super().__init__(name, "minmax")
 
 
 # ---#
@@ -374,8 +358,6 @@ Parameters
 ----------
 name: str
 	Name of the the model.
-cursor: DBcursor, optional
-	Vertica database cursor.
 extra_levels: dict, optional
 	Additional levels in each category that are not in the input relation.
 drop_first: bool, optional
@@ -404,7 +386,6 @@ null_column_name: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         extra_levels: dict = {},
         drop_first: bool = True,
         ignore_null: bool = True,
@@ -438,6 +419,4 @@ null_column_name: str, optional
                 "null_column_name": null_column_name,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 0, 0])
+        version(condition=[9, 0, 0],)
