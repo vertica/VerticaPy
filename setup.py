@@ -42,8 +42,6 @@ setuptools.setup(
                 'geopandas>=0.8.0',
                 'descartes>=1.0.0',
                 'shapely>=1.6.0',
-                'scikit-learn>=0.23.0',
-                'shap>=0.36.0',
                 'pandas>=0.23.0',],
         'plot': ['graphviz>=0.9.0', 
                  'python-highcharts>=0.4.1',],
@@ -51,8 +49,6 @@ setuptools.setup(
                 'descartes>=1.0.0',
                 'shapely>=1.6.0'],
         'ml': ['tqdm>=4.0.0',
-               'scikit-learn>=0.23.0',
-               'shap>=0.36.0',
                'pandas>=0.23.0',]
     },
     package_data = {'': ['*.csv', '*.json']},

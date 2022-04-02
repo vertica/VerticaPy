@@ -126,16 +126,6 @@ class TestPCA:
         result = model.plot_circle(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 16
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        current_cursor().execute(
-            "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
-            )
-        )
-        prediction = current_cursor().fetchone()
-        assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0])
-
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT APPLY_PCA(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(

@@ -253,24 +253,6 @@ class TestXGBR:
             "col_sample_by_node": 1.0,
         }
 
-    @pytest.mark.skip(reason="not yet available.")
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        current_cursor().execute(
-            "SELECT PREDICT_xgb_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(
-            md.predict([["Male", 0, "Cheap", "Low"]])[0]
-        )
-
-    @pytest.mark.skip(reason="not yet available.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
-
     def test_get_predicts(self, xgbr_data_vd, model):
         xgbr_data_copy = xgbr_data_vd.copy()
         model.predict(

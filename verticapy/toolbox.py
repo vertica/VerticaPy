@@ -163,10 +163,13 @@ def category_from_type(ctype: str = ""):
 
 # ---#
 def current_conn():
-    from verticapy.connect import read_auto_connect
+    from verticapy.connect import read_auto_connect, connect
 
-    if not(verticapy.options["connection"]["conn"]):
-        read_auto_connect()
+    if not(verticapy.options["connection"]["conn"]) or verticapy.options["connection"]["conn"].closed():
+        if verticapy.options["connection"]["section"] and verticapy.options["connection"]["dsn"]:
+            connect(verticapy.options["connection"]["section"], verticapy.options["connection"]["dsn"])
+        else:
+            read_auto_connect()
     return verticapy.options["connection"]["conn"]
 
 # ---#

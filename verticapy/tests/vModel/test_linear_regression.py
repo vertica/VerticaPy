@@ -161,16 +161,6 @@ class TestLinearRegression:
         plt.close("all")
         model_test.drop()
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        current_cursor().execute(
-            "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
-
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
@@ -202,11 +192,6 @@ class TestLinearRegression:
         model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()

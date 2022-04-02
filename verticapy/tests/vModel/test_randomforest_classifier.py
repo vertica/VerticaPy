@@ -205,23 +205,6 @@ class TestRFC:
         assert lift_ch["lift"][900] == pytest.approx(2.5)
         plt.close("all")
 
-    @pytest.mark.skip(
-        reason="Model Conversion for RandomForestClassifier is not yet supported."
-    )
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        current_cursor().execute(
-            "SELECT PREDICT_RF_CLASSIFIER('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(
-            md.predict([["Bus", "Male", 0, "Cheap", "Low"]])[0]
-        )
-
-        # 'predict_proba'
-
     def test_to_python(self, model, titanic_vd):
         model_test = RandomForestClassifier("rfc_python_test",)
         model_test.drop()
@@ -285,11 +268,6 @@ class TestRFC:
         assert score == pytest.approx(1.0)
         score = vdf.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
 
     def test_get_attr(self, model):
         attr = model.get_attr()

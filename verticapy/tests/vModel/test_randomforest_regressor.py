@@ -215,17 +215,6 @@ class TestRFR:
         plt.close("all")
         model_test.drop()
 
-    @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        current_cursor().execute(
-            "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(md.predict([["Male", 0, "Cheap", "Low"]])[0])
-
     def test_to_python(self, model):
         current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
@@ -257,11 +246,6 @@ class TestRFR:
         model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, rfr_data_vd, model):
         rfr_data_copy = rfr_data_vd.copy()

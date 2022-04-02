@@ -269,11 +269,6 @@ class TestDecisionTreeClassifier:
         score = vdf.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
         assert score == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
-
     def test_get_attr(self, model):
         attr = model.get_attr()
         assert attr["attr_name"] == [

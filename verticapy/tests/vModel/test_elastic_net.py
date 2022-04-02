@@ -192,11 +192,6 @@ class TestElasticNet:
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
-
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
         model.predict(

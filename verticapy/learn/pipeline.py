@@ -434,22 +434,3 @@ steps: list
             final_function = step[0]+"({})".format(final_function)
         str_representation += "\treturn {}".format(final_function)
         return str_representation
-
-
-    # ---#
-    def to_sklearn(self):
-        """
-    ---------------------------------------------------------------------------
-    Converts the Vertica Model to sklearn model.
-
-    Returns
-    -------
-    object
-        sklearn model.
-        """
-        import sklearn.pipeline as skp
-
-        steps = []
-        for step in self.steps:
-            steps += [(step[0], step[1].to_sklearn())]
-        return skp.Pipeline(steps)
