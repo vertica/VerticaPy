@@ -216,11 +216,6 @@ class TestLogisticRegression:
         score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
         assert score == pytest.approx(1.0)
 
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
-
     def test_get_attr(self, model):
         attr = model.get_attr()
         assert attr["attr_name"] == [
@@ -276,8 +271,6 @@ class TestLogisticRegression:
             "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
-            "C": 1.0,
-            "l1_ratio": None,
         }
 
     def test_prc_curve(self, model):

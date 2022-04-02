@@ -534,15 +534,15 @@ class TestvDFUtilities:
     def test_vDF_memory_usage(self, amazon_vd):
         # testing vDataFrame[].memory_usage
         result = amazon_vd["number"].memory_usage()
-        assert result == pytest.approx(1714, 5e-2)
+        assert result == pytest.approx(1690, 5e-2)
 
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
-        assert result2["value"][0] == pytest.approx(799, 5e-2)
-        assert result2["value"][1] == pytest.approx(1712, 5e-2)
-        assert result2["value"][2] == pytest.approx(1713, 5e-2)
-        assert result2["value"][3] == pytest.approx(1714, 5e-2)
-        assert result2["value"][4] == pytest.approx(6001, 5e-2)
+        assert result2["value"][0] == pytest.approx(684, 5e-2)
+        assert result2["value"][1] == pytest.approx(1688, 5e-2)
+        assert result2["value"][2] == pytest.approx(1689, 5e-2)
+        assert result2["value"][3] == pytest.approx(1690, 5e-2)
+        assert result2["value"][4] == pytest.approx(5751, 5e-2)
 
     def test_vDF_numcol(self, titanic_vd):
         result = [elem.replace('"', "") for elem in titanic_vd.numcol()]

@@ -1725,7 +1725,7 @@ tablesample
     )
     version(condition=[8, 0, 0],)
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
+    query = query.format(nbins, y_true, pos_label, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
     query_result = executeSQL(query, title="Computing the Lift Table.", method="fetchall")
     decision_boundary, positive_prediction_ratio, lift = (
         [item[0] for item in query_result],
@@ -1979,7 +1979,7 @@ tablesample
         nbins = 999999
     version(condition=[9, 1, 0],)
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
+    query = query.format(nbins, y_true, pos_label, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
     query_result = executeSQL(query, title="Computing the PRC table.", method="fetchall")
     threshold, recall, precision = (
         [0] + [item[0] for item in query_result] + [1],
@@ -2410,7 +2410,7 @@ tablesample
         nbins = 999999
     version(condition=[8, 0, 0],)
     query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
+    query = query.format(nbins, y_true, pos_label, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
     query_result = executeSQL(query, title="Computing the ROC Table.", method="fetchall")
     threshold, false_positive, true_positive = (
         [item[0] for item in query_result],

@@ -264,7 +264,6 @@ class TestLinearSVC:
             "intercept_scaling": 1.0,
             "intercept_mode": "regularized",
             "class_weight": [1, 1],
-            "penalty": "l2",
         }
 
     def test_prc_curve(self, model):
