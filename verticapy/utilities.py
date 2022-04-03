@@ -102,6 +102,18 @@ Returns
 bool
     True if the table was successfully created, False otherwise.
     """
+    check_types(
+        [
+            ("table_name", table_name, [str],),
+            ("schema", schema, [str],),
+            ("dtype", dtype, [dict],),
+            ("genSQL", genSQL, [bool],),
+            ("temporary_table", temporary_table, [bool],),
+            ("temporary_local_table", temporary_local_table, [bool],),
+        ]
+    )
+    if schema.lower() == "v_temp_schema":
+        schema = ""
     input_relation = str_column(schema) + "." + str_column(table_name) if schema else str_column(table_name)
     temp = "TEMPORARY " if temporary_table else ""
     if not(schema):
