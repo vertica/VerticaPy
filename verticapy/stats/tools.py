@@ -364,8 +364,8 @@ model
     if prais_winsten:
         vdf_tmp = vdf_tmp[X + [y, ts]].dropna()
     verticapy.options["print_info"] = print_info
-    prediction_name = gen_tmp_name(name="prediction")
-    eps_name = gen_tmp_name(name="eps")
+    prediction_name = gen_tmp_name(name="prediction")[1:-1]
+    eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name,)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
     query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())

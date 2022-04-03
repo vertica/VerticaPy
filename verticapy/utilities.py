@@ -227,22 +227,16 @@ bool
             warnings.warn(warning_message, Warning)
             result = False
     elif method == "temp":
-        sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+        sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
         all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall",)
         for elem in all_tables:
-            table = '"{}"."{}"'.format(
-                elem[0].replace('"', '""'), elem[1].replace('"', '""')
-            )
-            with warnings.catch_warnings(record=True) as w:
-                drop(table, method="table",)
-        sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%verticapy%' GROUP BY 1, 2;"
+            table = '"{}"."{}"'.format(elem[0].replace('"', '""'), elem[1].replace('"', '""'))
+            drop_if_exists(table, method="table",)
+        sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
         all_views = executeSQL(sql, print_time_sql=False, method="fetchall",)
         for elem in all_views:
-            view = '"{}"."{}"'.format(
-                elem[0].replace('"', '""'), elem[1].replace('"', '""')
-            )
-            with warnings.catch_warnings(record=True) as w:
-                drop(view, method="view",)
+            view = '"{}"."{}"'.format(elem[0].replace('"', '""'), elem[1].replace('"', '""'))
+            drop_if_exists(view, method="view",)
         result = True
     else:
         result = True
@@ -550,7 +544,7 @@ read_json : Ingests a JSON file into the Vertica database.
         schema = verticapy.options["temp_schema"]
     assert name or not(insert), ParameterError("Parameter 'name' can not be empty when parameter 'insert' is set to True.")
     if not(name):
-        tmp_name = "verticapy_df_{}".format(random.randint(10e5, 10e6))
+        tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
     path = "{}{}{}.csv".format(temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,)
@@ -894,13 +888,13 @@ read_json : Ingests a JSON file into the Vertica database.
             ]
         if (parse_n_lines > 0) and not (insert):
             f = open(path, "r")
-            f2 = open(path[0:-4] + "VERTICAPY_COPY.csv", "w")
+            f2 = open(path[0:-4] + "verticapy_copy.csv", "w")
             for i in range(parse_n_lines + int(header)):
                 line = f.readline()
                 f2.write(line)
             f.close()
             f2.close()
-            path_test = path[0:-4] + "VERTICAPY_COPY.csv"
+            path_test = path[0:-4] + "verticapy_copy.csv"
         else:
             path_test = path
         query1 = ""
@@ -910,7 +904,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local,
                 )
             if parse_n_lines > 0:
-                os.remove(path[0:-4] + "VERTICAPY_COPY.csv")
+                os.remove(path[0:-4] + "verticapy_copy.csv")
             temp = "TEMPORARY " if temporary_table else ""
             temp = "LOCAL TEMPORARY " if temporary_local_table else ""
             query1 = "CREATE {}TABLE {}({}){};".format(
@@ -1042,7 +1036,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = '"{}"."{}"'.format(schema, table_name)
         else:
             input_relation = '"{}"'.format(table_name)
-        flex_name = gen_tmp_name(name="flex",)
+        flex_name = gen_tmp_name(name="flex",)[1:-1]
         executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table.")
         executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data in the flex table.")
         executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")
