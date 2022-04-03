@@ -1024,7 +1024,7 @@ Attributes
         schema = verticapy.options["temp_schema"]
         if not (schema):
             schema = "public"
-        name = "{}.VERTICAPY_TEMP_MODEL_KDE_{}".format(schema, get_session())
+        name = gen_tmp_name(schema=schema, name="kde")
         if isinstance(xlim, (tuple, list)):
             xlim_tmp = [xlim]
         else:
@@ -1287,14 +1287,7 @@ Attributes
             schema = verticapy.options["temp_schema"]
             if not (schema):
                 schema = "public"
-            temp_information = (
-                "{}.VERTICAPY_TEMP_VIEW_{}".format(
-                    schema, get_session()
-                ),
-                "{}.VERTICAPY_TEMP_MODEL_{}".format(
-                    schema, get_session()
-                ),
-            )
+            temp_information = (gen_tmp_name(schema=schema, name="view"), gen_tmp_name(schema=schema, name="model"))
             assert bins >= 2, ParameterError(
                 "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
             )

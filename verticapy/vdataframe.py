@@ -3652,9 +3652,7 @@ vColumns : vColumn
         copy_vDataFrame._VERTICAPY_VARIABLES_[
             "main_relation"
         ] = self._VERTICAPY_VARIABLES_["main_relation"]
-        copy_vDataFrame._VERTICAPY_VARIABLES_["schema"] = self._VERTICAPY_VARIABLES_[
-            "schema"
-        ]
+        copy_vDataFrame._VERTICAPY_VARIABLES_["schema"] = self._VERTICAPY_VARIABLES_["schema"]
         copy_vDataFrame._VERTICAPY_VARIABLES_["columns"] = [
             item for item in self._VERTICAPY_VARIABLES_["columns"]
         ]
@@ -7058,72 +7056,30 @@ vColumns : vColumn
             relation = "(SELECT {} FROM {}) pacf".format(
                 ", ".join([column] + columns), table
             )
-            schema = verticapy.options["temp_schema"]
-
-            def drop_temp_elem(self, schema):
-                try:
-                    with warnings.catch_warnings(record=True) as w:
-                        drop(
-                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-                                schema,
-                                get_session(),
-                            ),
-                            method="model",
-                        )
-                        drop(
-                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
-                                schema,
-                                get_session(),
-                            ),
-                            method="model",
-                        )
-                        drop(
-                            "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                                schema,
-                                get_session(),
-                            ),
-                            method="view",
-                        )
-                except:
-                    pass
-
+            linear_names = [gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg"), gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg2"), gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg_view"),]
+            def drop_temp_elem():
+                for elem in linear_names:
+                    drop_if_exists(elem)
             try:
-                drop_temp_elem(self, schema)
-                query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
-                    schema, get_session(), relation
-                )
+                drop_temp_elem()
+                query = "CREATE VIEW {} AS SELECT * FROM {}".format(linear_names[2], relation)
                 executeSQL(query, print_time_sql=False,)
-                vdf = vDataFrame("{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(schema, get_session()),)
+                vdf = vDataFrame(linear_names[2],)
 
                 from verticapy.learn.linear_model import LinearRegression
 
                 model = LinearRegression(
-                    name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_{}".format(
-                        schema, get_session()
-                    ),
+                    name=linear_names[0],
                     solver="Newton",
                 )
                 model.fit(
-                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session()
-                    ),
+                    input_relation=linear_names[2],
                     X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
-                model = LinearRegression(
-                    name="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION2_{}".format(
-                        schema, get_session()
-                    ),
-                    solver="Newton",
-                )
-                model.fit(
-                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session()
-                    ),
-                    X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
-                    y="lag_{}_{}".format(p, gen_name([column])),
-                )
+                model = LinearRegression(name=linear_names[1], solver="Newton",)
+                model.fit(input_relation=linear_names[2], X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)], y="lag_{}_{}".format(p, gen_name([column])),)
                 model.predict(vdf, name="prediction_p")
                 vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
                 vdf.eval(
@@ -7133,9 +7089,9 @@ vColumns : vColumn
                     name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"])
-                drop_temp_elem(self, schema)
+                drop_temp_elem()
             except:
-                drop_temp_elem(self, schema)
+                drop_temp_elem()
                 raise
             return result
         else:
@@ -8536,10 +8492,9 @@ vColumns : vColumn
                 ]
             )
         if isinstance(dimensions, Iterable):
-            schema = verticapy.options["temp_schema"]
-            model_name = "_VERTICAPY_TEMPORARY_PCA_PLOT_MODEL_{}_".format(get_session())
+            model_name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="pca_plot")
             from verticapy.learn.decomposition import PCA
-            
+
             model = PCA(model_name)
             model.drop()
             try:

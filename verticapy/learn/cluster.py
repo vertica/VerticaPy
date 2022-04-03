@@ -243,18 +243,18 @@ p: int, optional
         self.key_columns = [str_column(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
+        name_main, name_dbscan_clusters = gen_tmp_name(name="main"), gen_tmp_name(name="clusters")
 
         def drop_temp_elem():
-            drop_if_exists("v_temp_schema.VERTICAPY_MAIN_{}".format(get_session()), method="table",)
-            drop_if_exists("v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS", method="table",)
+            drop_if_exists("v_temp_schema.{}".format(name_main), method="table",)
+            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table",)
 
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(get_session())
                 drop_temp_elem()
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
-                    main_table,
+                    name_main,
                     ", ".join(X + key_columns),
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
@@ -262,14 +262,14 @@ p: int, optional
                 executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
                 executeSQL("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), self.input_relation), print_time_sql=False,)
-                main_table = self.input_relation
+                name_main = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
                 for i in range(len(X))
             ]
             distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
             sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
-                index, index, distance, main_table, main_table
+                index, index, distance, name_main, name_main
             )
             sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
                 self.parameters["eps"], sql
@@ -299,28 +299,28 @@ p: int, optional
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:
-                f = open("VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "w")
+                f = open("{}.csv".format(name_dbscan_clusters), "w")
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                drop_if_exists("v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS", method="table",)
-                executeSQL("CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS", print_time_sql=False,)
+                drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table",)
+                executeSQL("CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(name_dbscan_clusters), print_time_sql=False,)
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
-                    executeSQL("COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';", method="copy", print_time_sql=False, path="./VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters), method="copy", print_time_sql=False, path="./{}.csv".format(name_dbscan_clusters))
                 else:
-                    executeSQL("COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICAPY_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';", print_time_sql=False,)
+                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False,)
                 try:
                     executeSQL("COMMIT", print_time_sql=False,)
                 except:
                     pass
-                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                os.remove("{}.csv".format(name_dbscan_clusters))
             except:
-                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                os.remove("{}.csv".format(name_dbscan_clusters))
                 raise
             self.n_cluster_ = i
             executeSQL(
-                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
-                    self.name, ", ".join(self.X + self.key_columns), main_table, index
+                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
+                    self.name, ", ".join(self.X + self.key_columns), name_main, name_dbscan_clusters, index
                 ),
                 title="Computing the DBSCAN Table [Step 2]",
             )

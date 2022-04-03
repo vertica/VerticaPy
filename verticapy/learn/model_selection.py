@@ -217,8 +217,8 @@ tablesample
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
     schema = verticapy.options["temp_schema"]
-    relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session())
-    model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session())
+    relation = gen_tmp_name(schema=schema, name="bayesian")
+    model_name = gen_tmp_name(schema=schema, name="rf")
     drop_if_exists(relation, method="table",)
     executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False,)
     if print_info:
@@ -364,14 +364,9 @@ int
     else:
         loop = L
     for i in loop:
-        drop_if_exists("{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session()), method="model",)
-        model = KMeans(
-            "{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session()),
-            i,
-            init,
-            max_iter,
-            tol,
-        )
+        model_name = gen_tmp_name(schema=schema, name="kmeans")
+        drop_if_exists(model_name, method="model",)
+        model = KMeans(model_name, i, init, max_iter, tol,)
         model.fit(input_relation, X)
         score = model.metrics_.values["value"][3]
         if score > elbow_score_stop:
@@ -747,7 +742,7 @@ tablesample
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    all_within_cluster_SS = []
+    all_within_cluster_SS, model_name = [], gen_tmp_name(schema=schema, name="kmeans")
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
@@ -760,16 +755,10 @@ tablesample
     else:
         loop = L
     for i in loop:
-        drop_if_exists("{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session()), method="model",)
+        drop_if_exists(model_name, method="model",)
         from verticapy.learn.cluster import KMeans
 
-        model = KMeans(
-            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session()),
-            i,
-            init,
-            max_iter,
-            tol,
-        )
+        model = KMeans(model_name, i, init, max_iter, tol,)
         model.fit(input_relation, X)
         all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
         model.drop()
@@ -882,9 +871,9 @@ tablesample
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = LogisticRegression("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(),),)
+        estimator = LogisticRegression(gen_tmp_name(schema=verticapy.options["temp_schema"], name="logit"),)
     else:
-        estimator = ElasticNet("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(),),)
+        estimator = ElasticNet(gen_tmp_name(schema=verticapy.options["temp_schema"], name="enet"),)
     result = bayesian_search_cv(
         estimator,
         input_relation,

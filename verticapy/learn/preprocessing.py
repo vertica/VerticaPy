@@ -217,9 +217,7 @@ max_text_size: int, optional
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(self.name)
         schema = str_column(schema)
-        tmp_name = "{}.VERTICAPY_COUNT_VECTORIZER_{}_{}".format(
-            schema, get_session(), random.randint(0, 10000000),
-        )
+        tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
         try:
             self.drop()
         except:

@@ -1514,18 +1514,15 @@ p: int, optional
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
         schema, relation = schema_relation(input_relation)
-
+        name_list = [gen_tmp_name(name="main"), gen_tmp_name(name="distance"), gen_tmp_name(name="lrd"), gen_tmp_name(name="lof")]
         def drop_temp_elem():
-            drop_if_exists("v_temp_schema.VERTICAPY_MAIN_{}".format(get_session()), method="table",)
-            drop_if_exists("v_temp_schema.VERTICAPY_DISTANCE_{}".format(get_session()), method="table",)
-            drop_if_exists("v_temp_schema.VERTICAPY_LRD_{}".format(get_session()), method="table",)
-            drop_if_exists("v_temp_schema.VERTICAPY_LOF_{}".format(get_session()), method="table",)
-
+            for elem in name_list:
+                drop_if_exists("v_temp_schema.{}".format(elem), method="table",)
         drop_temp_elem()
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(get_session())
+                main_table = name_list[0]
                 schema = "v_temp_schema"
                 drop_if_exists("v_temp_schema.{}".format(main_table), method="table",)
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
@@ -1553,47 +1550,22 @@ p: int, optional
                 schema,
                 main_table,
             )
-            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
-                sql, n_neighbors + 1
-            )
-            drop_if_exists("v_temp_schema.VERTICAPY_DISTANCE_{}".format(get_session()), method="table",)
-            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DISTANCE_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(), sql
-            )
+            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
+            drop_if_exists("v_temp_schema.{}".format(name_list[1]), method="table",)
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[1], sql)
             executeSQL(sql, "Computing the LOF [Step 0].")
-            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.VERTICAPY_DISTANCE_{} WHERE knn = {}) AS kdistance_table".format(
-                get_session(), n_neighbors + 1
-            )
-            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.VERTICAPY_DISTANCE_{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
-                n_neighbors, get_session(), kdistance
-            )
-            drop_if_exists("v_temp_schema.VERTICAPY_LRD_{}".format(get_session()), method="table",)
-            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LRD_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(), lrd
-            )
+            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(name_list[1], n_neighbors + 1)
+            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, name_list[1], kdistance)
+            drop_if_exists("v_temp_schema.{}".format(name_list[2]), method="table",)
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[2], lrd)
             executeSQL(sql, "Computing the LOF [Step 1].")
-            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.VERTICAPY_DISTANCE_{} AS n_table LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.VERTICAPY_LRD_{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
-                n_neighbors,
-                get_session(),
-                get_session(),
-                get_session(),
-            )
-            drop_if_exists("v_temp_schema.VERTICAPY_LOF_{}".format(get_session()), method="table",)
-            sql = "CREATE LOCAL TEMPORARY TABLE VERTICAPY_LOF_{} ON COMMIT PRESERVE ROWS AS {}".format(
-                get_session(), sql
-            )
+            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, name_list[1], name_list[2], name_list[2],)
+            drop_if_exists("v_temp_schema.{}".format(name_list[3]), method="table",)
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[3], sql)
             executeSQL(sql, "Computing the LOF [Step 2].")
-            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.VERTICAPY_LOF_{} AS y ON x.{} = y.node_id".format(
-                ", ".join(X + self.key_columns),
-                main_table,
-                get_session(),
-                index,
-            )
-            executeSQL(
-                "CREATE TABLE {} AS {}".format(self.name, sql),
-                "Computing the LOF [Step 3].",
-            )
-            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.VERTICAPY_LOF_{} z WHERE lof > 1e100 OR lof != lof".format(schema, get_session()), method="fetchone0", print_time_sql=False,)
+            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format( ", ".join(X + self.key_columns), main_table, name_list[3], index,)
+            executeSQL("CREATE TABLE {} AS {}".format(self.name, sql), title="Computing the LOF [Step 3].",)
+            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, name_list[3]), method="fetchone0", print_time_sql=False,)
         except:
             drop_temp_elem()
             raise

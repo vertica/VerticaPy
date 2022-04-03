@@ -487,6 +487,18 @@ def gen_name(L: list):
     )
 
 # ---#
+def gen_tmp_name(schema: str = "", name: str = ""):
+    session_user = get_session()
+    L = session_user.split("_")
+    L[0] = ''.join(filter(str.isalnum, L[0]))
+    L[1] = ''.join(filter(str.isalnum, L[1]))
+    random_int = random.randint(0, 10e9)
+    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
+    if schema:
+        name = "{}.{}".format(str_column(schema), name)
+    return name
+
+# ---#
 def get_index(x: str, col_list: list, str_check: bool = True,):
     for idx, col in enumerate(col_list):
         if (str_check and str_column(x.lower()) == str_column(col.lower())) or (x == col):

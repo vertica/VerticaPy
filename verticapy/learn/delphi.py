@@ -193,7 +193,7 @@ final_relation_: vDataFrame
                      ("save", save, [bool,],),])
         self.type, self.name = "AutoDataPrep", name
         if not(self.name):
-            self.name = "\"{}\".AutoDataPrep_{}".format(verticapy.options["temp_schema"], get_session(),)
+            self.name = gen_tmp_name(schema = verticapy.options["temp_schema"], name = "autodataprep")
         self.parameters = {"cat_method": cat_method,
                            "num_method": num_method,
                            "nbins": nbins,
@@ -718,11 +718,8 @@ model_grid_ : tablesample
                     }
                 )
         if self.parameters["preprocess_data"]:
-            name = self.name
-            if name[-1] == '"':
-                name = name[0:-1] + '_autodataprep_{}"'.format(get_session())
-            else:
-                name = name + '_autodataprep_{}'.format(get_session())
+            schema, name = schema_relation(self.name)
+            name = gen_tmp_name(schema = schema, name = "autodataprep")
             model_preprocess = AutoDataPrep(name=name, **self.parameters["preprocess_dict"],)
             input_relation = model_preprocess.fit(input_relation, X=X,)
             X = [elem for elem in model_preprocess.X_out]

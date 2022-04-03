@@ -389,8 +389,7 @@ list of tuples
                 return ctype
         except:
             pass
-    tmp_name = "_VERTICAPY_TEMPORARY_TABLE_{}".format(get_session())
-    schema = "v_temp_schema"
+    tmp_name, schema = gen_tmp_name(name="table"), "v_temp_schema"
     drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
     try:
         if schema == "v_temp_schema":
@@ -645,8 +644,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = "VERTICAPY_{}_FLEX".format(get_session())
-    flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
+    flex_name = gen_tmp_name(name="flex",)
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table to identify the data types.")
     header_names = (
         ""
@@ -700,8 +698,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = "VERTICAPY_{}_FLEX".format(get_session())
-    flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
+    flex_name = gen_tmp_name(name="flex",)
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating a flex table.")
     executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data.")
     executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")
@@ -1045,8 +1042,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = '"{}"."{}"'.format(schema, table_name)
         else:
             input_relation = '"{}"'.format(table_name)
-        flex_name = "VERTICAPY_" + str(get_session()) + "_FLEX"
-        flex_name = "".join([character for character in flex_name if (character.isalnum() or character == "_")])
+        flex_name = gen_tmp_name(name="flex",)
         executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table.")
         executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data in the flex table.")
         executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")

@@ -395,19 +395,6 @@ papprox_ma: int, optional
                 relation = "(SELECT [VerticaPy_y] - LAG([VerticaPy_y], {}) OVER (ORDER BY [VerticaPy_ts]) AS [VerticaPy_y], VerticaPy_y_copy[VerticaPy_key_columns] FROM {}) VERTICAPY_SUBTABLE".format(
                     self.parameters["s"], relation
                 )
-
-        def drop_temp_elem(self, schema):
-            try:
-                with warnings.catch_warnings(record=True) as w:
-                    drop(
-                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                            schema, get_session()
-                        ),
-                        method="view",
-                    )
-            except:
-                pass
-
         # AR(p)
         if self.parameters["p"] > 0 or self.parameters["P"] > 0:
             columns = [
@@ -431,10 +418,10 @@ papprox_ma: int, optional
             relation = "(SELECT *, {} FROM {}) VERTICAPY_SUBTABLE".format(
                 ", ".join(columns), relation
             )
-            drop_temp_elem(self, schema)
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
-                schema,
-                get_session(),
+            view_name = gen_tmp_name(schema=schema, name="linear_reg")
+            drop_if_exists(view_name, method="view",)
+            query = "CREATE VIEW {} AS SELECT * FROM {}".format(
+                view_name,
                 relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
@@ -444,16 +431,14 @@ papprox_ma: int, optional
                 executeSQL(query, print_time_sql=False,)
                 self.X += AR + X
                 model.fit(
-                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session()
-                    ),
+                    input_relation=view_name,
                     X=self.X,
                     y=self.y,
                 )
             except:
-                drop_temp_elem(self, schema)
+                drop_if_exists(view_name, method="view",)
                 raise
-            drop_temp_elem(self, schema)
+            drop_if_exists(view_name, method="view",)
             self.coef_.values["predictor"] = model.coef_.values["predictor"]
             self.coef_.values["coefficient"] = model.coef_.values["coefficient"]
             alphaq = model.coef_.values["coefficient"]
@@ -581,10 +566,9 @@ papprox_ma: int, optional
             )
             for idx, elem in enumerate(X):
                 tmp_relation = tmp_relation.replace("[X{}]".format(idx), elem)
-            drop_temp_elem(self, schema)
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
-                schema,
-                get_session(),
+            drop_if_exists(view_name, method="view",)
+            query = "CREATE VIEW {} AS SELECT * FROM {}".format(
+                view_name,
                 tmp_relation.format(self.input_relation)
                 .replace("[VerticaPy_ts]", self.ts)
                 .replace("[VerticaPy_y]", self.y)
@@ -593,16 +577,14 @@ papprox_ma: int, optional
             try:
                 executeSQL(query, print_time_sql=False,)
                 model.fit(
-                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session()
-                    ),
+                    input_relation=view_name,
                     X=ARq,
                     y=self.y,
                 )
             except:
-                drop_temp_elem(self, schema)
+                drop_if_exists(view_name, method="view",)
                 raise
-            drop_temp_elem(self, schema)
+            drop_if_exists(view_name, method="view",)
             if not (self.coef_.values["predictor"]):
                 self.coef_.values["predictor"] += ["Intercept"]
                 self.coef_.values["coefficient"] += [self.ma_avg_]
@@ -1343,40 +1325,24 @@ solver: str, optional
         )
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
-
-        def drop_temp_elem(self, schema):
-            try:
-                with warnings.catch_warnings(record=True) as w:
-                    drop(
-                        "{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                            schema, get_session()
-                        ),
-                        method="view",
-                    )
-            except:
-                pass
-
-        drop_temp_elem(self, schema)
+        view_name = gen_tmp_name(schema=schema, name="linear_reg")
+        drop_if_exists(view_name, method="view",)
         try:
-            query = "CREATE VIEW {}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{} AS SELECT * FROM {}".format(
-                schema, get_session(), relation
-            )
+            query = "CREATE VIEW {} AS SELECT * FROM {}".format(view_name, relation)
             executeSQL(query, print_time_sql=False,)
             self.coef_ = []
             for elem in X:
                 model.fit(
-                    input_relation="{}.VERTICAPY_TEMP_MODEL_LINEAR_REGRESSION_VIEW_{}".format(
-                        schema, get_session()
-                    ),
+                    input_relation=view_name,
                     X=AR,
                     y=elem,
                 )
                 self.coef_ += [model.coef_]
                 model.drop()
         except:
-            drop_temp_elem(self, schema)
+            drop_if_exists(view_name, method="view",)
             raise
-        drop_temp_elem(self, schema)
+        drop_if_exists(view_name, method="view",)
         model_save = {
             "type": "VAR",
             "input_relation": self.input_relation,

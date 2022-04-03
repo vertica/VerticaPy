@@ -2328,10 +2328,7 @@ class Supervised(vModel):
         does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
-            schema = schema_relation(self.name)[0]
-            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
-                str_column(schema), get_session()
-            )
+            relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view",)
             executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False,)
         else:
@@ -3946,8 +3943,7 @@ class Unsupervised(vModel):
                 result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
                 assert abs(result) < 0.01, ConversionError("MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation.")
             self.input_relation = input_relation.__genSQL__()
-            schema = schema_relation(self.name)[0]
-            relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(str_column(schema), get_session())
+            relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view",)
             executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False,)
             if not (X):
@@ -3977,11 +3973,10 @@ class Unsupervised(vModel):
             and not (isinstance(parameters["init_method"], str))
             and self.type in ("KMeans", "BisectingKMeans")
         ):
-            schema = schema_relation(self.name)[0]
-            name = "VERTICAPY_KMEANS_INITIAL_{}".format(get_session())
+            name_init = gen_tmp_name(schema=schema_relation(self.name)[0], name="kmeans_init")
             del parameters["init_method"]
             try:
-                drop_if_exists("{}.{}".format(schema, name,), method="table",)
+                drop_if_exists(name_init, method="table",)
             except:
                 pass
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
@@ -4006,9 +4001,9 @@ class Unsupervised(vModel):
                     line = ",".join(line)
                     query0 += ["SELECT " + line]
                 query0 = " UNION ".join(query0)
-                query0 = "CREATE TABLE {}.{} AS {}".format(schema, name, query0)
+                query0 = "CREATE TABLE {} AS {}".format(name_init, query0)
                 executeSQL(query0, print_time_sql=False,)
-                query += "initial_centers_table = '{}.{}', ".format(schema, name)
+                query += "initial_centers_table = '{}', ".format(name_init)
         elif "init_method" in parameters:
             del parameters["init_method"]
             query += "init_method = '{}', ".format(self.parameters["init"])
@@ -4024,11 +4019,11 @@ class Unsupervised(vModel):
             if isinstance(input_relation, vDataFrame):
                 drop_if_exists(relation, method="view",)
             if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
-                drop_if_exists("{}.{}".format(schema, name), method="table",)
+                drop_if_exists("{}".format(name_init), method="table",)
             raise
         if self.type == "KMeans":
             if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
-                drop_if_exists("{}.{}".format(schema, name), method="table",)
+                drop_if_exists("{}".format(name_init), method="table",)
             self.cluster_centers_ = self.get_attr("centers")
             result = self.get_attr("metrics").values["metrics"][0]
             values = {
