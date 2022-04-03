@@ -114,6 +114,7 @@ bool
     )
     if schema.lower() == "v_temp_schema":
         schema = ""
+        temporary_local_table = True
     input_relation = str_column(schema) + "." + str_column(table_name) if schema else str_column(table_name)
     temp = "TEMPORARY " if temporary_table else ""
     if not(schema):
@@ -971,7 +972,10 @@ read_json : Ingests a JSON file into the Vertica database.
                 dtype = pcsv(path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local,)
             if parse_n_lines > 0:
                 os.remove(path[0:-4] + "verticapy_copy.csv")
-            query1 = create_table(table_name, dtype, schema, temporary_table, temporary_local_table, genSQL=True,)
+            dtype_sorted = {}
+            for elem in header_names:
+                dtype_sorted[elem] = dtype[elem]
+            query1 = create_table(table_name, dtype_sorted, schema, temporary_table, temporary_local_table, genSQL=True,)
         skip = " SKIP 1" if (header) else ""
         query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
             input_relation,
