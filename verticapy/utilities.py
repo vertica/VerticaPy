@@ -644,7 +644,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = gen_tmp_name(name="flex",)
+    flex_name = gen_tmp_name(name="flex",)[1:-1]
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table to identify the data types.")
     header_names = (
         ""
@@ -698,7 +698,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = gen_tmp_name(name="flex",)
+    flex_name = gen_tmp_name(name="flex",)[1:-1]
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating a flex table.")
     executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data.")
     executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")
