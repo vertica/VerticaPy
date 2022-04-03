@@ -66,6 +66,64 @@ except:
 
 #
 # ---#
+def create_table(
+    table_name: str,
+    dtype: dict,
+    schema: str = "",
+    temporary_table: bool = False,
+    temporary_local_table: bool = True,
+    genSQL: bool = False,
+):
+    """
+---------------------------------------------------------------------------
+Creates a new table using the input columns names and data types.
+
+Parameters
+----------
+table_name: str, optional
+    The final table name.
+dtype: dict
+    Dictionary of the user types. Each key represents a column name and each
+    value represents its data type. 
+    Example: {"age": "int", "name": "varchar"}
+schema: str, optional
+    Schema name.
+temporary_table: bool, optional
+    If set to True, a temporary table will be created.
+temporary_local_table: bool, optional
+    If set to True, a temporary local table will be created. The parameter 
+    'schema' must to be empty, otherwise this parameter is ignored.
+genSQL: bool, optional
+    If set to True, the SQL code to use to create the final table will be 
+    generated but not executed.
+
+Returns
+-------
+bool
+    True if the table was successfully created, False otherwise.
+    """
+    input_relation = str_column(schema) + "." + str_column(table_name) if schema else str_column(table_name)
+    temp = "TEMPORARY " if temporary_table else ""
+    if not(schema):
+        temp = "LOCAL TEMPORARY " if temporary_local_table else ""
+    query = "CREATE {}TABLE {}({}){};".format(
+        temp,
+        input_relation,
+        ", ".join(
+            ['{} {}'.format(str_column(column), dtype[column]) for column in dtype]
+        ),
+        " ON COMMIT PRESERVE ROWS" if temp else ""
+    )
+    if genSQL:
+        return query
+    try:
+        executeSQL(query, title="Creating the new table.")
+        return True
+    except Exception as e:
+        warnings.warn(e, Warning)
+        return False
+
+# ---#
 def create_verticapy_schema():
     """
 ---------------------------------------------------------------------------
@@ -667,7 +725,6 @@ read_json : Ingests a JSON file into the Vertica database.
     drop_if_exists(flex_name, method="table")
     return dtype
 
-
 # ---#
 def pjson(path: str, ingest_local: bool = True,):
     """
@@ -702,7 +759,6 @@ read_json : Ingests a JSON file into the Vertica database.
         dtype[column_dtype[0]] = column_dtype[1]
     executeSQL("DROP TABLE " + flex_name, title="Dropping the Flex Table.")
     return dtype
-
 
 # ---#
 def read_csv(
@@ -900,21 +956,10 @@ read_json : Ingests a JSON file into the Vertica database.
         query1 = ""
         if not (insert):
             if not(dtype):
-                dtype = pcsv(
-                    path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local,
-                )
+                dtype = pcsv(path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local,)
             if parse_n_lines > 0:
                 os.remove(path[0:-4] + "verticapy_copy.csv")
-            temp = "TEMPORARY " if temporary_table else ""
-            temp = "LOCAL TEMPORARY " if temporary_local_table else ""
-            query1 = "CREATE {}TABLE {}({}){};".format(
-                temp,
-                input_relation,
-                ", ".join(
-                    ['"{}" {}'.format(column, dtype[column]) for column in header_names]
-                ),
-                " ON COMMIT PRESERVE ROWS" if temp else ""
-            )
+            query1 = create_table(table_name, dtype, schema, temporary_table, temporary_local_table, genSQL=True,)
         skip = " SKIP 1" if (header) else ""
         query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
             input_relation,

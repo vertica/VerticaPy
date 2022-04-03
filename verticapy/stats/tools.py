@@ -385,9 +385,7 @@ model
     return model_tmp
 
 # ---#
-def durbin_watson(
-    vdf: vDataFrame, eps: str, ts: str, by: list = [],
-):
+def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = [],):
     """
 ---------------------------------------------------------------------------
 Durbin Watson test (residuals autocorrelation).
@@ -434,9 +432,7 @@ float
 
 
 # ---#
-def endogtest(
-    vdf: vDataFrame, eps: str, X: list,
-):
+def endogtest(vdf: vDataFrame, eps: str, X: list,):
     """
 ---------------------------------------------------------------------------
 Endogeneity test.
@@ -501,9 +497,7 @@ tablesample
 
 
 # ---#
-def het_arch(
-    vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1,
-):
+def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1,):
     """
 ---------------------------------------------------------------------------
 Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
@@ -591,9 +585,7 @@ tablesample
 
 
 # ---#
-def het_breuschpagan(
-    vdf: vDataFrame, eps: str, X: list,
-):
+def het_breuschpagan(vdf: vDataFrame, eps: str, X: list,):
     """
 ---------------------------------------------------------------------------
 Uses the Breusch-Pagan to test a model for heteroskedasticity.
@@ -660,9 +652,7 @@ tablesample
 
 
 # ---#
-def het_goldfeldquandt(
-    vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing",
-):
+def het_goldfeldquandt(vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing",):
     """
 ---------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
@@ -744,9 +734,7 @@ tablesample
 
 
 # ---#
-def het_white(
-    vdf: vDataFrame, eps: str, X: list,
-):
+def het_white(vdf: vDataFrame, eps: str, X: list,):
     """
 ---------------------------------------------------------------------------
 White’s Lagrange Multiplier Test for heteroscedasticity.
@@ -826,7 +814,7 @@ tablesample
 
 
 # ---#
-def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
+def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05,):
     """
 ---------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
@@ -877,7 +865,7 @@ tablesample
 
 
 # ---#
-def kurtosistest(vdf: vDataFrame, column: str):
+def kurtosistest(vdf: vDataFrame, column: str,):
     """
 ---------------------------------------------------------------------------
 Test whether the kurtosis is different from the normal distribution.
@@ -917,15 +905,7 @@ tablesample
 
 
 # ---#
-def ljungbox(
-    vdf: vDataFrame,
-    column: str,
-    ts: str,
-    by: list = [],
-    p: int = 1,
-    alpha: float = 0.05,
-    box_pierce: bool = False,
-):
+def ljungbox(vdf: vDataFrame, column: str, ts: str, by: list = [], p: int = 1, alpha: float = 0.05, box_pierce: bool = False,):
     """
 ---------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
@@ -996,7 +976,7 @@ tablesample
 
 
 # ---#
-def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05):
+def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05,):
     """
 ---------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
@@ -1089,7 +1069,7 @@ tablesample
 
 
 # ---#
-def normaltest(vdf: vDataFrame, column: str):
+def normaltest(vdf: vDataFrame, column: str,):
     """
 ---------------------------------------------------------------------------
 Test whether a sample differs from a normal distribution.
@@ -1321,9 +1301,7 @@ tablesample
 
 
 # ---#
-def variance_inflation_factor(
-    vdf: vDataFrame, X: list, X_idx: int = None,
-):
+def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None,):
     """
 ---------------------------------------------------------------------------
 Computes the variance inflation factor (VIF). It can be used to detect
