@@ -30,10 +30,7 @@ def titanic_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    verticapy.utilities.create_verticapy_schema(base.cursor)
     model_class = CountVectorizer("model_test", cursor=base.cursor)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
@@ -47,6 +44,26 @@ class TestCountVectorizer:
         model_repr = CountVectorizer("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<CountVectorizer>"
+
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words",]
+        m_att = model.get_attr("lowercase")
+        assert m_att == model.parameters["lowercase"]
+        m_att = model.get_attr("max_df")
+        assert m_att == model.parameters["max_df"]
+        m_att = model.get_attr("min_df")
+        assert m_att == model.parameters["min_df"]
+        m_att = model.get_attr("max_features")
+        assert m_att == model.parameters["max_features"]
+        m_att = model.get_attr("ignore_special")
+        assert m_att == model.parameters["ignore_special"]
+        m_att = model.get_attr("max_text_size")
+        assert m_att == model.parameters["max_text_size"]
+        m_att = model.get_attr("vocabulary")
+        assert m_att == model.parameters["vocabulary"]
+        m_att = model.get_attr("stop_words")
+        assert m_att == model.parameters["stop_words"]
 
     def test_deploySQL(self, model):
         expected_sql = 'SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)'
@@ -64,7 +81,7 @@ class TestCountVectorizer:
         assert model_test.cursor.fetchone()[0] in ("model_test_drop", '"model_test_drop"')
         model_test.drop()
         model_test.cursor.execute(
-            "SELECT model_name FROM models WHERE model_name LIKE 'model_test_drop'"
+            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
         assert model_test.cursor.fetchone() is None
 

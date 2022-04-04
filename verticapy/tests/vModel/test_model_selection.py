@@ -83,7 +83,10 @@ class TestModelSelection:
         )
         assert result in [3, 4]
 
-    def test_cross_validate(self, winequality_vd):
+    def test_cross_validate(self, base, winequality_vd):
+        base.cursor.execute(
+            "DROP MODEL IF EXISTS model_test"
+        )
         result = cross_validate(
             LinearRegression(
                 "model_test", cursor=winequality_vd._VERTICAPY_VARIABLES_["cursor"],
@@ -356,15 +359,15 @@ class TestModelSelection:
         model = LogisticRegression("Logit_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         model.drop()
         result = stepwise(model, titanic, ["age", "fare", "boat", "pclass",], "survived", "bic", "backward", 100, 3, True, "pearson", True, True,)
-        assert result["importance"][-1] == pytest.approx(91.17990063924101, 1e-2)
-        assert result["importance"][-4] == pytest.approx(8.820099360758984, 1e-2)
+        assert result["importance"][-1] == pytest.approx(99.99999999999999, 1e-2)
+        assert result["importance"][-4] == pytest.approx(0.0, 1e-2)
         plt.close("all")
         result = stepwise(model, titanic, ["age", "fare", "boat", "pclass",], "survived", "aic", "forward", 100, 3, True, "spearman", True, True,)
-        assert result["importance"][-1] == pytest.approx(9.058315001826145, 1e-2)
-        assert result["importance"][-4] == pytest.approx(90.94168499817386, 1e-2)
+        assert result["importance"][-1] == pytest.approx(0.0, 1e-2)
+        assert result["importance"][-4] == pytest.approx(99.99999999999999, 1e-2)
         plt.close("all")
         model = LinearRegression("LR_stepwise_test", titanic_vd._VERTICAPY_VARIABLES_["cursor"])
         model.drop()
-        assert result["importance"][-1] == pytest.approx(9.058315001826145, 1e-2)
-        assert result["importance"][-4] == pytest.approx(90.94168499817386, 1e-2)
+        assert result["importance"][-1] == pytest.approx(0.0, 1e-2)
+        assert result["importance"][-4] == pytest.approx(99.99999999999999, 1e-2)
         plt.close("all")

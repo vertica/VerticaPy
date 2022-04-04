@@ -247,7 +247,10 @@ dict
     confparser = ConfigParser()
     confparser.optionxform = str
     if not dsn:
-        dsn = os.environ["ODBCINI"]
+        if "ODBCINI" in os.environ:
+            dsn = os.environ["ODBCINI"]
+        else:
+            raise EnvironmentError("The environment variable 'ODBCINI' does not exist. Alternatively, you can manually specify the path to a DSN configuration file with the 'dsn' variable.")
     confparser.read(dsn)
     if confparser.has_section(section):
         options = confparser.items(section)
@@ -257,19 +260,25 @@ dict
                 conn_info["host"] = elem[1]
             elif elem[0].lower() == "uid":
                 conn_info["user"] = elem[1]
-            elif elem[0].lower() == "port":
-                try:
-                    conn_info["port"] = int(elem[1])
-                except:
-                    conn_info["port"] = elem[1]
+            elif (elem[0].lower() in ("port", "connection_timeout", )) and (elem[1].isnumeric()):
+                conn_info[elem[0].lower()] = int(elem[1])
             elif elem[0].lower() == "pwd":
                 conn_info["password"] = elem[1]
+            elif elem[0].lower() == "backup_server_node":
+                backup_server_node = {}
+                exec("id_port = {}".format(elem[1]), {}, backup_server_node)
+                conn_info["backup_server_node"] = backup_server_node["id_port"]
             elif elem[0].lower() == "kerberosservicename":
                 conn_info["kerberos_service_name"] = elem[1]
             elif elem[0].lower() == "kerberoshostname":
                 conn_info["kerberos_host_name"] = elem[1]
             elif "vp_test_" in elem[0].lower():
                 conn_info[elem[0].lower()[8:]] = elem[1]
+            elif (elem[0].lower() in ("ssl", "autocommit", "use_prepared_statements", "connection_load_balance", "disable_copy_local",)):
+                if (elem[1].lower() in ("true", "t", "yes", "y")):
+                    conn_info[elem[0].lower()] = True
+                else:
+                    conn_info[elem[0].lower()] = False
             else:
                 conn_info[elem[0].lower()] = elem[1]
         return conn_info

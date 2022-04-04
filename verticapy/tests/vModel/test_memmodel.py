@@ -438,12 +438,12 @@ class Test_memModel:
         assert prediction[2][0] == pytest.approx(0.3042328)
         assert prediction[2][1] == pytest.approx(0.6957672)
         attributes = model.get_attributes()
-        assert attributes["tree"]["chi2"] == pytest.approx(38.3735130215037)
+        assert attributes["tree"]["chi2"] == pytest.approx(345.12775126385327)
         assert not(attributes["tree"]["is_leaf"])
         assert not(attributes["tree"]["split_is_numerical"])
         assert attributes["tree"]["split_predictor"] == '"sex"'
         assert attributes["tree"]["split_predictor_idx"] == 0
-        assert attributes["tree"]["children"]['female']["chi2"] == pytest.approx(23.265415918308957)
+        assert attributes["tree"]["children"]['female']["chi2"] == pytest.approx(10.472532457814179)
         model.set_attributes({"classes": [0, 1,],})
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0

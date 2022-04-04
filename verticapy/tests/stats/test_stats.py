@@ -125,12 +125,22 @@ class TestStats:
         ]
 
     def test_het_goldfeldquandt(self, amazon_vd):
-        result = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
-        result["lag_number"] = "LAG(number) OVER (ORDER BY date)"
-        result = st.het_goldfeldquandt(result, y="number", X=["lag_number"])
+        vdf = amazon_vd.groupby(["date"], ["AVG(number) AS number"])
+        vdf["lag_number"] = "LAG(number) OVER (ORDER BY date)"
+        result = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"])
         assert result["value"] == [
-            pytest.approx(0.0331426182368922),
+            pytest.approx(30.17263128858259),
+            pytest.approx(1.3988910574921388e-55),
+        ]
+        result2 = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"], alternative="decreasing")
+        assert result2["value"] == [
+            pytest.approx(30.17263128858259),
             pytest.approx(0.9999999999999999),
+        ]
+        result3 = st.het_goldfeldquandt(vdf, y="number", X=["lag_number"], alternative="two-sided")
+        assert result3["value"] == [
+            pytest.approx(30.17263128858259),
+            pytest.approx(0.0),
         ]
 
     def test_het_white(self, amazon_vd):
@@ -168,7 +178,7 @@ class TestStats:
         assert result["Serial Correlation"][-1] == True
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Ljung–Box Test Statistic"][-1] == pytest.approx(
-            40184.55076431489, 1e-2
+            33724.41181636157, 1e-2
         )
 
         # testing Box-Pierce
@@ -178,7 +188,7 @@ class TestStats:
         assert result["Serial Correlation"][-1] == True
         assert result["p_value"][-1] == pytest.approx(0.0)
         assert result["Box-Pierce Test Statistic"][-1] == pytest.approx(
-            40053.87251600001, 1e-2
+            33601.96361200001, 1e-2
         )
 
     def test_mkt(self, amazon_vd):

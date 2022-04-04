@@ -246,3 +246,7 @@ class TestvDFCombineJoinSort:
         )
         assert result4["PetalLengthCm"][0] == 6.9
         assert result4["SepalWidthCm"][0] == 2.6
+
+    @pytest.mark.skip(reason="this test will be implemented later. It should test a combination of operation like joins, imputing missing values...")
+    def test_multiple_operation(self, base):
+        pass

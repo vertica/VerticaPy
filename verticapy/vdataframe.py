@@ -48,7 +48,7 @@
 # Modules
 #
 # Standard Python Modules
-import random, time, shutil, re, decimal, warnings, pickle, datetime, math
+import random, time, shutil, re, decimal, warnings, pickle, datetime, math, os
 from collections import Iterable
 from itertools import combinations_with_replacement
 from typing import Union
@@ -114,10 +114,10 @@ usecols: list, optional
     including less columns makes the process faster. Do not hesitate to not include 
     useless columns.
 schema: str, optional
-    Relation schema. It can be to use to be less ambiguous and allow to create schema 
+    Relation schema. It can be used to be less ambiguous and allow to create schema 
     and relation name with dots '.' inside.
 empty: bool, optional
-    If set to True, the created object will be empty. It can be to use to create customized 
+    If set to True, the created object will be empty. It can be used to create customized 
     vDataFrame without going through the initialization check.
 
 Attributes
@@ -136,7 +136,6 @@ _VERTICAPY_VARIABLES_: dict
         order_by, dict        : Dictionary of all rules to sort the vDataFrame.
         saving, list          : List to use to reconstruct the vDataFrame.
         schema, str           : Schema of the input relation.
-        schema_writing, str   : Schema to use to create temporary tables when needed.
         where, list           : List of all rules to filter the vDataFrame.
 vColumns : vColumn
     Each vColumn of the vDataFrame is accessible by entering its name between brackets
@@ -248,7 +247,6 @@ vColumns : vColumn
                 self._VERTICAPY_VARIABLES_["schema"],
                 self._VERTICAPY_VARIABLES_["input_relation"],
             )
-            self._VERTICAPY_VARIABLES_["schema_writing"] = ""
 
     # ---#
     def __abs__(self):
@@ -1159,7 +1157,7 @@ vColumns : vColumn
         The SQL final relation.
         """
         # The First step is to find the Max Floor
-        all_imputations_grammar = []
+        all_imputations_grammar, force_columns_copy = [], [elem for elem in force_columns]
         if not (force_columns):
             force_columns = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in force_columns:
@@ -1255,7 +1253,7 @@ vColumns : vColumn
             table = "(SELECT *{} FROM {}) VERTICAPY_SUBTABLE".format(split, table)
         if (self._VERTICAPY_VARIABLES_["exclude_columns"]) and not (split):
             table = "(SELECT {}{} FROM {}) VERTICAPY_SUBTABLE".format(
-                ", ".join(self.get_columns()), split, table
+                ", ".join(self.get_columns() if not(force_columns_copy) else force_columns_copy), split, table
             )
         main_relation = self._VERTICAPY_VARIABLES_["main_relation"]
         all_main_relation = "(SELECT * FROM {}) VERTICAPY_SUBTABLE".format(
@@ -1404,11 +1402,10 @@ vColumns : vColumn
         cursor = self._VERTICAPY_VARIABLES_["cursor"]
         dsn = self._VERTICAPY_VARIABLES_["dsn"]
         schema = self._VERTICAPY_VARIABLES_["schema"]
-        schema_writing = self._VERTICAPY_VARIABLES_["schema_writing"]
         history = self._VERTICAPY_VARIABLES_["history"] + [history]
         saving = self._VERTICAPY_VARIABLES_["saving"]
         return vdf_from_relation(
-            table, func, cursor, dsn, schema, schema_writing, history, saving,
+            table, func, cursor, dsn, schema, history, saving,
         )
 
     #
@@ -2992,16 +2989,16 @@ vColumns : vColumn
         TS (Time Series) vColumn to use to order the data. The vColumn type must be
         date like (date, datetime, timestamp...)
     rule: str / time
-        Interval to use to slice the time. For example, '5 minutes' will create records
-        separated by '5 minutes' time interval.
+        Interval used to create the time slices. The final interpolation is divided by these 
+        intervals. For example, specifying '5 minutes' creates records separated by 
+        time intervals of '5 minutes' 
     method: dict, optional
-        Dictionary of all different methods of interpolation. The dict must be 
-        similar to the following:
+        Dictionary, with the following format, of interpolation methods:
         {"column1": "interpolation1" ..., "columnk": "interpolationk"}
-        3 types of interpolations are possible:
-            bfill  : Constant propagation of the next value (Back Propagation).
-            ffill  : Constant propagation of the first value (First Propagation).
-            linear : Linear Interpolation.
+        Interpolation methods must be one of the following:
+            bfill  : Interpolates with the final value of the time slice.
+            ffill  : Interpolates with the first value of the time slice.
+            linear : Linear interpolation.
     by: list, optional
         vColumns used in the partition.
 
@@ -3813,9 +3810,6 @@ vColumns : vColumn
         copy_vDataFrame._VERTICAPY_VARIABLES_["saving"] = [
             item for item in self._VERTICAPY_VARIABLES_["saving"]
         ]
-        copy_vDataFrame._VERTICAPY_VARIABLES_[
-            "schema_writing"
-        ] = self._VERTICAPY_VARIABLES_["schema_writing"]
         for column in self._VERTICAPY_VARIABLES_["columns"]:
             new_vColumn = vColumn(
                 column,
@@ -3878,7 +3872,7 @@ vColumns : vColumn
     ----------
     columns: list
         List of the vColumns names. The list must have two elements.
-    func: function / str, optional
+    func: function / str
         Function used to compute the contour score. It can also be a SQL
         expression.
     nbins: int, optional
@@ -5240,7 +5234,6 @@ vColumns : vColumn
                     ),
                     self._VERTICAPY_VARIABLES_["cursor"],
                     name.replace('"', "").replace("'", "''"),
-                    self._VERTICAPY_VARIABLES_["schema_writing"],
                 )
             except:
                 raise QueryError(f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work.")
@@ -7252,9 +7245,7 @@ vColumns : vColumn
             relation = "(SELECT {} FROM {}) pacf".format(
                 ", ".join([column] + columns), table
             )
-            schema = self._VERTICAPY_VARIABLES_["schema_writing"]
-            if not (schema):
-                schema = "public"
+            schema = verticapy.options["temp_schema"]
 
             def drop_temp_elem(self, schema):
                 try:
@@ -7610,18 +7601,30 @@ vColumns : vColumn
             tmp_res = vdf.pivot_table(columns = [col, response],
                                       max_cardinality = (10000, 100),
                                       show = False).to_numpy()[:,1:]
+            tmp_res = np.where(tmp_res == '', '0', tmp_res)
+            tmp_res = tmp_res.astype(float)
+            i = 0
             all_chi2 = []
             for row in tmp_res:
-                L = [int(x) if x != '' else 0 for x in row]
-                n = sum(L)
-                expected = n / len(L)
-                all_chi2 += [np.sqrt((x - expected) ** 2 / expected) for x in L]
-            chi2_list += [(col, sum(all_chi2), vdf[col].distinct(), self[col].isnum())]
+                j = 0
+                for col_in_row in row:
+                    all_chi2 += [col_in_row ** 2 / (sum(tmp_res[i]) * sum(tmp_res[:,j]))]
+                    j += 1
+                i += 1
+            from scipy.stats import t, norm, chi2
+
+            val = sum(sum(tmp_res)) * (sum(all_chi2) - 1)
+            k, r = tmp_res.shape
+            dof = (k - 1) * (r - 1)
+            pval = chi2.sf(val, dof)
+            chi2_list += [(col, val, pval, dof, vdf[col].distinct(), self[col].isnum())]
         chi2_list = sorted(chi2_list, key=lambda tup: tup[1], reverse=True)
         result = {"index": [elem[0] for elem in chi2_list], 
                   "chi2": [elem[1] for elem in chi2_list],
-                  "categories": [elem[2] for elem in chi2_list],
-                  "is_numerical": [elem[3] for elem in chi2_list],}
+                  "p_value": [elem[2] for elem in chi2_list],
+                  "dof": [elem[3] for elem in chi2_list],
+                  "categories": [elem[4] for elem in chi2_list],
+                  "is_numerical": [elem[5] for elem in chi2_list],}
         return tablesample(result)
 
     # ---#
@@ -8627,7 +8630,9 @@ vColumns : vColumn
             by = [by]
         columns_check(by, self)
         by = vdf_columns_names(by, self)
-        name = "__verticapy_random_{}__".format(random.randint(0, 10000000))
+        random_int = random.randint(0, 10000000)
+        name = "__verticapy_random_{}__".format(random_int)
+        name2 = "__verticapy_random_{}__".format(random_int + 1)
         vdf = self.copy()
         assert (0 < x < 1), ParameterError("Parameter 'x' must be between 0 and 1")
         if method == "random":
@@ -8639,9 +8644,10 @@ vColumns : vColumn
             )
             random_func = "SEEDED_RANDOM({})".format(random_seed)
             vdf.eval(name, random_func)
+            q = vdf[name].quantile(x)
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("{} < {}".format(name, x),)
+            vdf.filter("{} <= {}".format(name, q),)
             verticapy.options["print_info"] = print_info_init
             vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
         elif method in ("stratified", "systematic"):
@@ -8649,11 +8655,12 @@ vColumns : vColumn
             if method == "stratified":
                 order_by = "ORDER BY " + ", ".join(by)
             vdf.eval(name, "ROW_NUMBER() OVER({})".format(order_by))
+            vdf.eval(name2, "MIN({}) OVER (PARTITION BY CAST({} * {} AS Integer) ORDER BY {} ROWS BETWEEN UNBOUNDED PRECEDING AND 0 FOLLOWING)".format(name, name, x, name))
             print_info_init = verticapy.options["print_info"]
             verticapy.options["print_info"] = False
-            vdf.filter("MOD({}, {}) = 0".format(name, int(1 / x)))
+            vdf.filter("{} = {}".format(name, name2))
             verticapy.options["print_info"] = print_info_init
-            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name]
+            vdf._VERTICAPY_VARIABLES_["exclude_columns"] += [name, name2]
         return vdf
 
     # ---#
@@ -8748,9 +8755,7 @@ vColumns : vColumn
                 ]
             )
         if isinstance(dimensions, Iterable):
-            schema = self._VERTICAPY_VARIABLES_["schema_writing"]
-            if not (schema):
-                schema = "public"
+            schema = verticapy.options["temp_schema"]
             model_name = "_VERTICAPY_TEMPORARY_PCA_PLOT_MODEL_{}_".format(get_session(self._VERTICAPY_VARIABLES_["cursor"]))
             from verticapy.learn.decomposition import PCA
             
@@ -9088,14 +9093,10 @@ vColumns : vColumn
     vDataFrame.set_cursor : Sets a new database cursor.
     vDataFrame.set_dsn    : Sets a new database DSN.
         """
-        check_types([("schema_writing", schema_writing, [str],)])
-        self._VERTICAPY_VARIABLES_["cursor"].execute(
-            "SELECT table_schema FROM columns WHERE table_schema = '{}'".format(
-                schema_writing.replace("'", "''")
-            )
-        )
-        assert (self._VERTICAPY_VARIABLES_["cursor"].fetchone()) or (schema_writing.lower() not in ['"v_temp_schema"', "v_temp_schema", '"public"', "public"]), MissingSchema(f"The schema '{schema_writing}' doesn't exist or is not accessible.\nThe attribute of the vDataFrame 'schema_writing' did not change.")
-        self._VERTICAPY_VARIABLES_["schema_writing"] = schema_writing
+        warning_message = "'The set_schema_writing' method is deprecated and will be removed in VerticaPy 0.10.0. Use the general 'set_option' function instead."
+        from verticapy.utilities import set_option
+
+        set_option("temp_schema", schema_writing,)
         return self
 
     # ---#
@@ -9610,11 +9611,11 @@ vColumns : vColumn
         header: bool = True,
         new_header: list = [],
         order_by: Union[list, dict] = [],
-        limit: int = 0,
+        n_files: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a CSV file of the current vDataFrame relation.
+    Creates a CSV file or folder of CSV files of the current vDataFrame relation.
 
     Parameters
     ----------
@@ -9640,10 +9641,11 @@ vColumns : vColumn
         List of the vColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    limit: int, optional
-        If greater than 0, the maximum number of elements to write at the same time 
-        in the CSV file. It can be to use to minimize memory impacts. Be sure to keep
-        the same order to avoid unexpected results.
+    n_files: int, optional
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
@@ -9670,50 +9672,50 @@ vColumns : vColumn
                 ("header", header, [bool],),
                 ("new_header", new_header, [list],),
                 ("order_by", order_by, [list, dict],),
-                ("limit", limit, [int, float],),
+                ("n_files", n_files, [int, float],),
             ]
         )
-        file = open("{}{}.csv".format(path, name), "w+")
+        assert n_files >= 1, ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+        assert (n_files == 1) or order_by, ParameterError("If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed.")
+        file_name = "{}{}{}".format(path, "/" if (len(path) > 1 and path[-1] != "/") else "", name)
         columns = (
             self.get_columns()
             if not (usecols)
             else [str_column(column) for column in usecols]
         )
         assert not(new_header) or len(new_header) == len(columns), ParsingError("The header has an incorrect number of columns")
-        if new_header:
-            file.write(sep.join(new_header))
-        elif header:
-            file.write(sep.join([column.replace('"', "") for column in columns]))
         total = self.shape()[0]
-        current_nb_rows_written = 0
-        if limit <= 0:
-            limit = total
+        current_nb_rows_written, file_id = 0, 0
+        limit = int(total / n_files) + 1
         order_by = sort_str(order_by, self)
         if not (order_by):
             order_by = last_order_by(self)
+        if n_files > 1:
+        	os.makedirs(file_name)
         while current_nb_rows_written < total:
-            self._VERTICAPY_VARIABLES_["cursor"].execute(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                )
-            )
-            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            for row in result:
-                tmp_row = []
-                for item in row:
-                    if isinstance(item, str):
-                        tmp_row += [quotechar + item + quotechar]
-                    elif item == None:
-                        tmp_row += [na_rep]
-                    else:
-                        tmp_row += [str(item)]
-                file.write("\n" + sep.join(tmp_row))
-            current_nb_rows_written += limit
-        file.close()
+        	if n_files == 1:
+        		file = open(file_name + ".csv", "w+")
+        	else:
+        		file = open(file_name + "/{}.csv".format(file_id), "w+")
+	        if new_header:
+	            file.write(sep.join(new_header))
+	        elif header:
+	            file.write(sep.join([column.replace('"', "") for column in columns]))
+	        self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(", ".join(columns), self.__genSQL__(), order_by, limit, current_nb_rows_written,))
+	        result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+	        for row in result:
+	        	tmp_row = []
+	        	for item in row:
+	        		if isinstance(item, str):
+	        			tmp_row += [quotechar + item + quotechar]
+	        		elif item == None:
+	        			tmp_row += [na_rep]
+	        		else:
+	        			tmp_row += [str(item)]
+	        	file.write("\n" + sep.join(tmp_row))
+	        current_nb_rows_written += limit
+	        file_id += 1
+	        file.close()
         return self
 
     # ---#
@@ -9915,11 +9917,11 @@ vColumns : vColumn
         path: str = "",
         usecols: list = [],
         order_by: Union[list, dict] = [],
-        limit: int = 0,
+        n_files: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a JSON file of the current vDataFrame relation.
+    Creates a JSON file or folder of JSON files of the current vDataFrame relation.
 
     Parameters
     ----------
@@ -9935,10 +9937,11 @@ vColumns : vColumn
         List of the vColumns to use to sort the data using asc order or
         dictionary of all sorting methods. For example, to sort by "column1"
         ASC and "column2" DESC, write {"column1": "asc", "column2": "desc"}
-    limit: int, optional
-        If greater than 0, the maximum number of elements to write at the same time 
-        in the JSON file. It can be to use to minimize memory impacts. Be sure to keep
-        the same order to avoid unexpected results.
+    n_files: int, optional
+        Integer greater than or equal to 1, the number of CSV files to generate.
+        If n_files is greater than 1, you must also set order_by to sort the data,
+        ideally with a column with unique values (e.g. ID).
+        Greater values of n_files decrease memory usage, but increase execution time.
 
     Returns
     -------
@@ -9960,45 +9963,45 @@ vColumns : vColumn
                 ("path", path, [str],),
                 ("usecols", usecols, [list],),
                 ("order_by", order_by, [list, dict],),
-                ("limit", limit, [int, float],),
+                ("n_files", n_files, [int, float],),
             ]
         )
-        file = open("{}{}.json".format(path, name), "w+")
+        assert n_files >= 1, ParameterError("Parameter 'n_files' must be greater or equal to 1.")
+        assert (n_files == 1) or order_by, ParameterError("If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed.")
+        file_name = "{}{}{}".format(path, "/" if (len(path) > 1 and path[-1] != "/") else "", name)
         columns = (
             self.get_columns()
             if not (usecols)
             else [str_column(column) for column in usecols]
         )
         total = self.shape()[0]
-        current_nb_rows_written = 0
-        if limit <= 0:
-            limit = total
-        file.write("[\n")
+        current_nb_rows_written, file_id = 0, 0
+        limit = int(total / n_files) + 1
         order_by = sort_str(order_by, self)
         if not (order_by):
             order_by = last_order_by(self)
+        if n_files > 1:
+        	os.makedirs(file_name)
         while current_nb_rows_written < total:
-            self._VERTICAPY_VARIABLES_["cursor"].execute(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
-                    ", ".join(columns),
-                    self.__genSQL__(),
-                    order_by,
-                    limit,
-                    current_nb_rows_written,
-                )
-            )
-            result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
-            for row in result:
-                tmp_row = []
-                for i, item in enumerate(row):
-                    if isinstance(item, str):
-                        tmp_row += ['{}: "{}"'.format(str_column(columns[i]), item)]
-                    elif item != None:
-                        tmp_row += ["{}: {}".format(str_column(columns[i]), item)]
-                file.write("{" + ", ".join(tmp_row) + "},\n")
-            current_nb_rows_written += limit
-        file.write("]")
-        file.close()
+        	if n_files == 1:
+        		file = open(file_name + ".json", "w+")
+        	else:
+        		file = open(file_name + "/{}.json".format(file_id), "w+")
+        	file.write("[\n")
+        	self._VERTICAPY_VARIABLES_["cursor"].execute("SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(", ".join(columns), self.__genSQL__(), order_by, limit, current_nb_rows_written,))
+        	result = self._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        	for row in result:
+        		tmp_row = []
+        		for i, item in enumerate(row):
+        			if isinstance(item, str):
+        				tmp_row += ['{}: "{}"'.format(str_column(columns[i]), item)]
+        			elif item != None:
+        				tmp_row += ["{}: {}".format(str_column(columns[i]), item)]
+        		file.write("{" + ", ".join(tmp_row) + "},\n")
+        	current_nb_rows_written += limit
+        	file_id += 1
+        	file.write("]")
+        	file.close()
         return self
 
     # ---#
@@ -10070,6 +10073,116 @@ vColumns : vColumn
         df = pd.DataFrame(data)
         df.columns = column_names
         return df
+
+    # ---#
+    def to_parquet(
+        self,
+        directory: str,
+        compression: str = "snappy",
+        rowGroupSizeMB: int = 512,
+        fileSizeMB: int = 10000,
+        fileMode: str = "660",
+        dirMode: str = "755",
+        int96AsTimestamp: bool = True,
+        by: list = [],
+        order_by: Union[list, dict] = [],
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Exports a table, columns from a table, or query results to Parquet files.
+    You can partition data instead of or in addition to exporting the column data, 
+    which enables partition pruning and improves query performance. 
+
+    Parameters
+    ----------
+    directory: str
+        The destination directory for the output file(s). The directory must not 
+        already exist, and the current user must have write permissions on it. 
+        The destination can be one of the following file systems: 
+            HDFS File System
+            S3 Object Store
+            Google Cloud Storage (GCS) Object Store
+            Azure Blob Storage Object Store
+            Linux file system (either an NFS mount or local storage on each node)
+    compression: str, optional
+        Column compression type, one the following:        
+            Snappy (default)
+            gzip
+            Brotli
+            zstd
+            Uncompressed
+    rowGroupSizeMB: int, optional
+        The uncompressed size, in MB, of exported row groups, an integer value in the range
+        [1, fileSizeMB]. If fileSizeMB is 0, the uncompressed size is unlimited.
+        Row groups in the exported files are smaller than this value because Parquet 
+        files are compressed on write. 
+        For best performance when exporting to HDFS, set this rowGroupSizeMB to be 
+        smaller than the HDFS block size.
+    fileSizeMB: int, optional
+        The maximum file size of a single output file. This fileSizeMB is a hint/ballpark 
+        and not a hard limit. 
+        A value of 0 indicates that the size of a single output file is unlimited.  
+        This parameter affects the size of individual output files, not the total output size. 
+        For smaller values, Vertica divides the output into more files; all data is still exported.
+    fileMode: int, optional
+        HDFS only: the permission to apply to all exported files. You can specify 
+        the value in octal (such as 755) or symbolic (such as rwxr-xr-x) modes. 
+        The value must be a string even when using octal mode.
+        Valid octal values are in the range [0,1777]. For details, see HDFS Permissions in the 
+        Apache Hadoop documentation.
+        If the destination is not HDFS, this parameter has no effect.
+    dirMode: int, optional
+        HDFS only: the permission to apply to all exported directories. Values follow 
+        the same rules as those for fileMode. Additionally, you must give the Vertica HDFS user full 
+        permissions: at least rwx------ (symbolic) or 700 (octal).
+        If the destination is not HDFS, this parameter has no effect.
+    int96AsTimestamp: bool, optional
+        Boolean, specifies whether to export timestamps as int96 physical type (True) or int64 
+        physical type (False).
+    by: list, optional
+        vColumns used in the partition.
+    order_by: dict / list, optional
+        If specified as a list: the list of vColumns useed to sort the data in ascending order.
+        If specified as a dictionary: a dictionary of all sorting methods.
+        For example, to sort by "column1" ASC and "column2" DESC: {"column1": "asc", "column2": "desc"}
+
+    Returns
+    -------
+    tablesample
+        An object containing the number of rows exported. For details, 
+        see utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.to_csv : Creates a CSV file of the current vDataFrame relation.
+    vDataFrame.to_db  : Saves the current relation's vDataFrame to the Vertica database.
+    vDataFrame.to_json: Creates a JSON file of the current vDataFrame relation.
+        """
+        if isinstance(order_by, str):
+            order_by = [order_by]
+        if isinstance(by, str):
+            by = [by]
+        check_types(
+            [
+                ("directory", directory, [str,],),
+                ("compression", compression, ["snappy", "gzip", "brotli", "zstd", "uncompressed",],),
+                ("rowGroupSizeMB", rowGroupSizeMB, [int,],),
+                ("fileSizeMB", fileSizeMB, [int,],),
+                ("fileMode", fileMode, [str,],),
+                ("dirMode", dirMode, [str,],),
+                ("int96AsTimestamp", int96AsTimestamp, [bool,],),
+                ("by", by, [list,],),
+                ("order_by", order_by, [list, dict,],),
+            ]
+        )
+        assert (0 < rowGroupSizeMB), ParameterError("Parameter 'rowGroupSizeMB' must be greater than 0.")
+        assert (0 < fileSizeMB), ParameterError("Parameter 'fileSizeMB' must be greater than 0.")
+        by = vdf_columns_names(by, self)
+        partition = "PARTITION BY {}".format(", ".join(by)) if (by) else ""
+        query = "EXPORT TO PARQUET(directory = '{}', compression = '{}', rowGroupSizeMB = {}, fileSizeMB = {}, fileMode = '{}', dirMode = '{}', int96AsTimestamp = {}) OVER({}{}) AS SELECT * FROM {};".format(directory, compression, rowGroupSizeMB, fileSizeMB, fileMode, dirMode, str(int96AsTimestamp).lower(), partition, sort_str(order_by, self), self.__genSQL__(),)
+        title = "Exporting data to Parquet format."
+        result = to_tablesample(query, self._VERTICAPY_VARIABLES_["cursor"], title=title,)
+        return result
 
     # ---#
     def to_pickle(self, name: str):
@@ -10214,11 +10327,14 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = "SEEDED_RANDOM({})".format(random_seed)
+        query = "SELECT APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(random_func, test_size, self.__genSQL__(),)
+        self.__executeSQL__(query, title="Computing the seeded numbers quantile.")
+        q = self._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         train_table = "(SELECT * FROM {} WHERE {} > {}{}) x".format(
-            self.__genSQL__(), random_func, test_size, order_by
+            self.__genSQL__(), random_func, q, order_by,
         )
         return (
             vdf_from_relation(

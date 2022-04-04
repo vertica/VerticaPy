@@ -468,12 +468,15 @@ def default_model_parameters(model_type: str):
 
 
 # ---#
-def executeSQL(cursor, query: str, title: str = ""):
+def executeSQL(cursor, query: str, title: str = "", data: list = [],):
     check_types([("query", query, [str],), ("title", title, [str],)])
     if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
-    cursor.execute(query)
+    if (data):
+        cursor.executemany(query, data)
+    else:
+        cursor.execute(query)
     elapsed_time = time.time() - start_time
     if verticapy.options["time_on"]:
         print_time(elapsed_time)
@@ -498,6 +501,12 @@ def format_magic(x, return_cat: bool = False):
     else:
         return val
 
+# ---#
+def get_data_types_vdf(vdf):
+    result, columns = [], vdf.get_columns()
+    for col in columns:
+        result += [(col, vdf[col].ctype())]
+    return result
 
 # ---#
 def gen_name(L: list):
@@ -1121,10 +1130,7 @@ def schema_relation(relation):
     from verticapy import vDataFrame
 
     if isinstance(relation, vDataFrame):
-        schema = relation._VERTICAPY_VARIABLES_["schema_writing"]
-        relation = ""
-        if not (schema):
-            schema = "public"
+        schema, relation = verticapy.options["temp_schema"], ""
     else:
         quote_nb = relation.count('"')
         if quote_nb not in (0, 2, 4):
@@ -1164,7 +1170,7 @@ def sort_str(columns, vdf):
             else:
                 order_by += ["{} {}".format(column_name, columns[elem].upper())]
     else:
-        order_by = [elem for elem in columns]
+        order_by = [str_column(elem) for elem in columns]
     return " ORDER BY {}".format(", ".join(order_by))
 
 

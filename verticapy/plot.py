@@ -1531,11 +1531,13 @@ def contour_plot(
         X, Y, Z = [], [], []
         while i < n:
             x_tmp, y_tmp, z_tmp = [], [], []
-            j = 0
+            j, last_non_null_value = 0, 0
             while y_start == y_new and i < n and j < nbins:
+                if (dataset[i][2] != None):
+                    last_non_null_value = float(dataset[i][2])
                 x_tmp += [float(dataset[i][0])]
                 y_tmp += [float(dataset[i][1])]
-                z_tmp += [float(dataset[i][2])]
+                z_tmp += [float(dataset[i][2] if (dataset[i][2] != None) else last_non_null_value)]
                 y_new = dataset[i][1]
                 j += 1
                 i += 1

@@ -31,10 +31,7 @@ def commodities_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, commodities_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    create_verticapy_schema(base.cursor)
     model_class = VAR("var_model_test", cursor=base.cursor, p=1,)
     model_class.drop()
     model_class.fit("public.commodities", ["gold", "oil"], "date",)
@@ -75,10 +72,10 @@ class TestVAR:
         m_att = model.get_attr()
 
         assert m_att["attr_name"] == [
-            "coef",
+            "coefficients",
         ]
 
-        m_att_details = model.get_attr(attr_name="coef")[0]
+        m_att_details = model.get_attr(attr_name="coefficients")[0]
 
         assert m_att_details["predictor"] == [
             "Intercept",
@@ -131,7 +128,7 @@ class TestVAR:
             "aic",
             "bic",
         ]
-        assert reg_rep["gold"][0] == pytest.approx(-2.99008735340607, abs=1e-6)
+        assert reg_rep["gold"][0] == pytest.approx(-2.98658192995962, abs=1e-6)
         assert reg_rep["gold"][1] == pytest.approx(3826.50124332351, abs=1e-6)
         assert reg_rep["gold"][2] == pytest.approx(845.6287404527, abs=1e-6)
         assert reg_rep["gold"][3] == pytest.approx(1440.72275115243, abs=1e-6)
@@ -139,8 +136,8 @@ class TestVAR:
         assert reg_rep["gold"][5] == pytest.approx(1719.8848555010334, abs=1e-6)
         assert reg_rep["gold"][6] == pytest.approx(0.995527309986537, abs=1e-6)
         assert reg_rep["gold"][7] == pytest.approx(0.9955056504707334, abs=1e-6)
-        assert reg_rep["gold"][8] == pytest.approx(6204.468754838458, abs=1e-6)
-        assert reg_rep["gold"][9] == pytest.approx(6216.502558192058, abs=1e-6)
+        assert reg_rep["gold"][8] == pytest.approx(6189.568871325677, abs=1e-6)
+        assert reg_rep["gold"][9] == pytest.approx(6201.595312725785, abs=1e-6)
 
     def test_score(self, model):
         # method = "max"
@@ -158,11 +155,11 @@ class TestVAR:
         # method = "r2a"
         assert model.score(method="r2a")["r2a"][0] == pytest.approx(0.9955056504707334, abs=1e-6)
         # method = "var"
-        assert model.score(method="var")["var"][0] == pytest.approx(0.995523377125575, abs=1e-6)
+        assert model.score(method="var")["var"][0] == pytest.approx(0.995527309986537, abs=1e-6)
         # method = "aic"
-        assert model.score(method="aic")["aic"][0] == pytest.approx(6203.4675509857425, abs=1e-6)
+        assert model.score(method="aic")["aic"][0] == pytest.approx(6189.568871325677, abs=1e-6)
         # method = "bic"
-        assert model.score(method="bic")["bic"][0] == pytest.approx(6215.5013543393425, abs=1e-6)
+        assert model.score(method="bic")["bic"][0] == pytest.approx(6201.595312725785, abs=1e-6)
 
     def test_set_cursor(self, model):
         cur = vertica_conn(

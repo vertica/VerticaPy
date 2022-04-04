@@ -402,7 +402,6 @@ Attributes
                     ),
                     self.parent._VERTICAPY_VARIABLES_["cursor"],
                     "apply_test_feature",
-                    self.parent._VERTICAPY_VARIABLES_["schema_writing"],
                 )
             except:
                 ctype = get_data_types(
@@ -1035,7 +1034,7 @@ Attributes
             return ax
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
-        schema = self.parent._VERTICAPY_VARIABLES_["schema_writing"]
+        schema = verticapy.options["temp_schema"]
         if not (schema):
             schema = "public"
         name = "{}.VERTICAPY_TEMP_MODEL_KDE_{}".format(
@@ -1307,7 +1306,7 @@ Attributes
         )
         method = method.lower()
         if self.isnum() and method == "smart":
-            schema = self.parent._VERTICAPY_VARIABLES_["schema_writing"]
+            schema = verticapy.options["temp_schema"]
             if not (schema):
                 schema = "public"
             temp_information = (
@@ -1407,10 +1406,10 @@ Attributes
         elif self.isnum() and method == "same_freq":
             assert bins >= 2, ParameterError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
             count = self.count()
-            nb = int(float(count / int(bins - 1)))
+            nb = int(float(count / int(bins)))
             assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
             total, query, nth_elems = nb, [], []
-            while total < count:
+            while total < int(float(count / int(bins))) * int(bins):
                 nth_elems += [str(total)]
                 total += nb
             where = "WHERE _verticapy_row_nb_ IN ({})".format(

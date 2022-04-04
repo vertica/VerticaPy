@@ -385,7 +385,7 @@ Main Class for Vertica Model
 		"""
         if self.type == "AutoML":
             return self.best_model_.get_attr(attr_name)
-        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor"):
+        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor", "NearestCentroid", "CountVectorizer",):
             name = self.tree_name if self.type in ("KernelDensity") else self.name
             version(cursor=self.cursor, condition=[8, 1, 1])
             result = to_tablesample(
@@ -396,7 +396,7 @@ Main Class for Vertica Model
                 title="Getting Model Attributes.",
             )
             return result
-        elif self.type in ("DBSCAN"):
+        elif self.type in ("DBSCAN",):
             if attr_name == "n_cluster":
                 return self.n_cluster_
             elif attr_name == "n_noise":
@@ -410,8 +410,80 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
-        elif self.type in ("LocalOutlierFactor"):
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("CountVectorizer",):
+            if attr_name == "lowercase":
+                return self.parameters["lowercase"]
+            elif attr_name == "max_df":
+                return self.parameters["max_df"]
+            elif attr_name == "min_df":
+                return self.parameters["min_df"]
+            elif attr_name == "max_features":
+                return self.parameters["max_features"]
+            elif attr_name == "ignore_special":
+                return self.parameters["ignore_special"]
+            elif attr_name == "max_text_size":
+                return self.parameters["max_text_size"]
+            elif attr_name == "vocabulary":
+                return self.parameters["vocabulary"]
+            elif attr_name == "stop_words":
+                return self.parameters["stop_words"]
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("NearestCentroid",):
+            if attr_name == "p":
+                return self.parameters["p"]
+            elif attr_name == "centroids":
+                return self.centroids_
+            elif attr_name == "classes":
+                return self.classes_
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["centroids", "classes", "p",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("KNeighborsClassifier",):
+            if attr_name == "p":
+                return self.parameters["p"]
+            elif attr_name == "n_neighbors":
+                return self.parameters["n_neighbors"]
+            elif attr_name == "classes":
+                return self.classes_
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["n_neighbors", "p", "classes",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("KNeighborsRegressor",):
+            if attr_name == "p":
+                return self.parameters["p"]
+            elif attr_name == "n_neighbors":
+                return self.parameters["n_neighbors"]
+            elif not (attr_name):
+                result = tablesample(
+                    values={
+                        "attr_name": ["n_neighbors", "p",],
+                    },
+                )
+                return result
+            else:
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("LocalOutlierFactor",):
             if attr_name == "n_errors":
                 return self.n_errors_
             elif not (attr_name):
@@ -420,9 +492,9 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
-        elif self.type in ("SARIMAX"):
-            if attr_name == "coef":
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("SARIMAX",):
+            if attr_name == "coefficients":
                 return self.coef_
             elif attr_name == "ma_avg":
                 return self.ma_avg_
@@ -430,27 +502,27 @@ Main Class for Vertica Model
                 return self.ma_piq_
             elif not (attr_name):
                 result = tablesample(
-                    values={"attr_name": ["coef", "ma_avg", "ma_piq"]},
+                    values={"attr_name": ["coefficients", "ma_avg", "ma_piq",]},
                 )
                 return result
             else:
-                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
-        elif self.type in ("VAR"):
-            if attr_name == "coef":
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("VAR",):
+            if attr_name == "coefficients":
                 return self.coef_
             elif not (attr_name):
-                result = tablesample(values={"attr_name": ["coef"]},)
+                result = tablesample(values={"attr_name": ["coefficients",]},)
                 return result
             else:
-                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
-        elif self.type in ("KernelDensity"):
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+        elif self.type in ("KernelDensity",):
             if attr_name == "map":
                 return self.map_
             elif not (attr_name):
                 result = tablesample(values={"attr_name": ["map"]},)
                 return result
             else:
-                raise ParameterError("Attribute '' doesn't exist.".format(attr_name))
+                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
         else:
             raise FunctionError(
                 "Method 'get_attr' for '{}' doesn't exist.".format(self.type)
@@ -2538,9 +2610,9 @@ Main Class for Vertica Model
         """
         if not(return_str):
             func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
-            _locals = locals()
-            exec(func, globals(), _locals)
-            return _locals[name]
+            all_vars = {}
+            exec(func, {}, all_vars)
+            return all_vars[name]
         func = "def {}(X):\n\timport numpy as np\n\t".format(name)
         if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC",):
             result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(self.coef_["coefficient"][0], self.coef_["coefficient"][1:])
@@ -2864,7 +2936,7 @@ class Supervised(vModel):
         does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
-            schema, relation = schema_relation(self.name)
+            schema = schema_relation(self.name)[0]
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
                 str_column(schema), get_session(self.cursor)
             )
@@ -4561,7 +4633,7 @@ class Unsupervised(vModel):
                 result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
                 assert abs(result) < 0.01, ConversionError("MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation.")
             self.input_relation = input_relation.__genSQL__()
-            schema, relation = schema_relation(self.name)
+            schema = schema_relation(self.name)[0]
             relation = "{}._VERTICAPY_TEMPORARY_VIEW_{}".format(
                 str_column(schema), get_session(self.cursor)
             )
@@ -4919,7 +4991,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def inverse_transform(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [],
+        self, vdf: Union[str, vDataFrame], X: list = [],
     ):
         """
     ---------------------------------------------------------------------------
@@ -4927,7 +4999,7 @@ class Preprocessing(Unsupervised):
 
     Parameters
     ----------
-    vdf: str/vDataFrame, optional
+    vdf: str/vDataFrame
         input vDataFrame. You can also specify a customized relation, 
         but you must enclose it with an alias. For example "(SELECT 1) x" is 
         correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.

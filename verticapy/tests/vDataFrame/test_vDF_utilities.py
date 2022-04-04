@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, os, warnings
+import pytest, os, warnings, shutil
 from math import ceil, floor
 from verticapy import vDataFrame, get_session, drop
 from verticapy import set_option, read_shp
@@ -170,6 +170,14 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_{}.csv".format(session_id))
         file.close()
+        # TODO - test with multiple CSV files.
+
+    def test_vDF_to_parquet(self, titanic_vd):
+        session_id = get_session(titanic_vd._VERTICAPY_VARIABLES_["cursor"])
+        name = "parquet_test_{}".format(session_id)
+        result = titanic_vd.to_parquet(name)
+        assert result["Rows Exported"][0] == 1234
+        #shutil.rmtree(name) # trying to erase the folder
 
     def test_vDF_to_db(self, titanic_vd):
         try:
@@ -328,6 +336,7 @@ class TestvDFUtilities:
             raise
         os.remove("verticapy_test_{}.json".format(session_id))
         file.close()
+        # TODO - test with multiple JSON files.
 
     def test_vDF_to_list(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_list()
@@ -417,11 +426,6 @@ class TestvDFUtilities:
         cursor = titanic_vd._VERTICAPY_VARIABLES_["cursor"]
         result.set_cursor(cursor)
         assert isinstance(result._VERTICAPY_VARIABLES_["cursor"], type(cursor))
-
-    def test_vDF_set_schema_writing(self, titanic_vd):
-        result = titanic_vd.copy()
-        result.set_schema_writing("test")
-        assert result._VERTICAPY_VARIABLES_["schema_writing"] == "test"
 
     def test_vDF_catcol(self, titanic_vd):
         result = [
@@ -591,7 +595,7 @@ class TestvDFUtilities:
 
         # testing vDataFrame.memory_usage
         result2 = amazon_vd.memory_usage()
-        assert result2["value"][0] == pytest.approx(862, 5e-2)
+        assert result2["value"][0] == pytest.approx(799, 5e-2)
         assert result2["value"][1] == pytest.approx(1712, 5e-2)
         assert result2["value"][2] == pytest.approx(1713, 5e-2)
         assert result2["value"][3] == pytest.approx(1714, 5e-2)

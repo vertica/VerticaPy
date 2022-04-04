@@ -31,10 +31,7 @@ def titanic_vd(base):
 
 @pytest.fixture(scope="module")
 def model(base, titanic_vd):
-    try:
-        create_verticapy_schema(base.cursor)
-    except:
-        pass
+    create_verticapy_schema(base.cursor)
     model_class = KNeighborsRegressor("knn_model_test", cursor=base.cursor)
     model_class.drop()
     model_class.fit(
@@ -50,6 +47,14 @@ class TestKNeighborsRegressor:
         model_repr = KNeighborsRegressor("model_repr", model.cursor)
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsRegressor>"
+
+    def test_get_attr(self, model):
+        m_att = model.get_attr()
+        assert m_att["attr_name"] == ["n_neighbors", "p",]
+        m_att = model.get_attr("n_neighbors")
+        assert m_att == model.parameters["n_neighbors"]
+        m_att = model.get_attr("p")
+        assert m_att == model.parameters["p"]
 
     def test_contour(self, base, titanic_vd):
         model_test = KNeighborsRegressor("model_contour", cursor=base.cursor)
