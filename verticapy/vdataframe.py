@@ -7396,6 +7396,7 @@ vColumns : vColumn
         h: tuple = (None, None),
         show: bool = True,
         with_numbers: bool = True,
+        fill_none: float = 0.0,
         ax=None,
         **style_kwds,
     ):
@@ -7430,6 +7431,8 @@ vColumns : vColumn
         If set to True, the result will be drawn using Matplotlib.
     with_numbers: bool, optional
         If set to True, no number will be displayed in the final drawing.
+    fill_none: float, optional
+        The empty values of the pivot table will be filled by this number.
     ax: Matplotlib axes object, optional
         The axes to plot on.
     **style_kwds
@@ -7457,6 +7460,7 @@ vColumns : vColumn
                 ("h", h, [list],),
                 ("show", show, [bool],),
                 ("with_numbers", with_numbers, [bool],),
+                ("fill_none", fill_none, [float],),
             ]
         )
         columns_check(columns, self, [1, 2])
@@ -7475,6 +7479,7 @@ vColumns : vColumn
             max_cardinality,
             show,
             with_numbers,
+            fill_none,
             ax=ax,
             **style_kwds,
         )

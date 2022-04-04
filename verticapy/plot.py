@@ -2765,6 +2765,7 @@ def pivot_table(
     max_cardinality: tuple = (20, 20),
     show: bool = True,
     with_numbers: bool = True,
+    fill_none: float = 0.0,
     ax=None,
     return_ax: bool = False,
     extent: list = [],
@@ -2996,7 +2997,7 @@ def pivot_table(
     except:
         pass
     all_columns = [
-        ["" for item in all_column0_categories] for item in all_column1_categories
+        [fill_none for item in all_column0_categories] for item in all_column1_categories
     ]
     for item in query_result:
         j, i = (
