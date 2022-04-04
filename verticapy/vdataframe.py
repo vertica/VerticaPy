@@ -1874,7 +1874,7 @@ vColumns : vColumn
                     try:
                         if fun[0:6] == "exact_":
                             expr = "PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}{})".format(float(fun[6:-1]) / 100, column, cast)
-                        elif:
+                        else:
                             expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(column, cast, float(fun[0:-1]) / 100)
                     except:
                         raise FunctionError("The aggregation '{}' doesn't exist. If you want to compute the percentile x of the element please write 'x%' with x > 0. Example: 50% for the median.".format(fun))
