@@ -1058,7 +1058,7 @@ xlim: list, optional
                 values = []
                 m = min(r + 100, len(y))
                 for i in range(r, m):
-                    values += ["SELECT " + str(x[i] + (y[i]))[1:-1]]
+                    values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
                 query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )

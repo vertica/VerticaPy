@@ -868,7 +868,7 @@ class TestvDFFeatureEngineering:
         # method = "substr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="[^]+", method="substr", occurrence=2, name="name2"
+            column="name", pattern="[^,]+", method="substr", occurrence=2, name="name2"
         )
         titanic_copy.sort(["name2"])
 
