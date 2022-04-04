@@ -2054,9 +2054,9 @@ def nested_pie(
         h = (h,) * n
     if isinstance(max_cardinality, (int, float, type(None))):
         if max_cardinality == None:
-            max_cardinality = (6) * n
+            max_cardinality = (6,) * n
         else:
-            max_cardinality = (max_cardinality) * n
+            max_cardinality = (max_cardinality,) * n
     vdf_tmp = vdf[columns]
     for idx, column in enumerate(columns):
         vdf_tmp[column].discretize(h=h[idx])
