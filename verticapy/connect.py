@@ -109,7 +109,7 @@ list
 
 
 # ---#
-def change_auto_connection(name: str,):
+def change_auto_connection(name: str):
     """
 ---------------------------------------------------------------------------
 Changes the current auto connection.
@@ -150,7 +150,7 @@ Close the Database connection.
             pass
 
 # ---#
-def connect(section: str, dsn: str = "",):
+def connect(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
 Connect to the Database.
@@ -174,7 +174,7 @@ dsn: str, optional
             pass
 
 # ---#
-def delete_connection(name: str,):
+def delete_connection(name: str):
     """
 ---------------------------------------------------------------------------
 Deletes the connection from the connection file.
@@ -189,7 +189,7 @@ Returns
 bool
     True if the connection was deleted, False otherwise.
     """
-    check_types([("name", name, [str],)])
+    check_types([("name", name, [str])])
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
@@ -208,14 +208,14 @@ bool
         f.close()
         return True
     else:
-        warnings.warn("The connection {} does not exist.".format(name,), Warning)
+        warnings.warn("The connection {} does not exist.".format(name), Warning)
         return False
 
 # ---#
 def new_connection(conn_info: dict, name: 
                    str = "vertica_connection", 
                    auto: bool = True,
-                   overwrite: bool = True,):
+                   overwrite: bool = True):
     """
 ---------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
@@ -238,7 +238,7 @@ auto: bool, optional
 overwrite: bool, optional
     If set to True and the connection already exists, it will be overwritten.
 	"""
-    check_types([("conn_info", conn_info, [dict],)])
+    check_types([("conn_info", conn_info, [dict])])
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
@@ -276,7 +276,7 @@ Automatically creates a connection using the auto-connection.
 
 
 # ---#
-def read_dsn(section: str, dsn: str = "",):
+def read_dsn(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
 Reads the DSN information from the VERTICAPY_CONNECTIONS environment variable 
@@ -295,7 +295,7 @@ Returns
 dict
 	dictionary with all the credentials.
 	"""
-    check_types([("dsn", dsn, [str],), ("section", section, [str],)])
+    check_types([("dsn", dsn, [str]), ("section", section, [str])])
     confparser = ConfigParser()
     confparser.optionxform = str
     if not dsn:
@@ -326,7 +326,7 @@ dict
                 conn_info["kerberos_host_name"] = elem[1]
             elif "vp_test_" in elem[0].lower():
                 conn_info[elem[0].lower()[8:]] = elem[1]
-            elif (elem[0].lower() in ("ssl", "autocommit", "use_prepared_statements", "connection_load_balance", "disable_copy_local",)):
+            elif (elem[0].lower() in ("ssl", "autocommit", "use_prepared_statements", "connection_load_balance", "disable_copy_local")):
                 if (elem[1].lower() in ("true", "t", "yes", "y")):
                     conn_info[elem[0].lower()] = True
                 else:
@@ -339,7 +339,7 @@ dict
 
 
 # ---#
-def vertica_conn(section: str, dsn: str = "",):
+def vertica_conn(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
@@ -357,6 +357,6 @@ Returns
 conn
 	Database connection
 	"""
-    check_types([("dsn", dsn, [str],)])
+    check_types([("dsn", dsn, [str])])
     conn = vertica_python.connect(**read_dsn(section, dsn))
     return conn

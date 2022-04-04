@@ -217,13 +217,13 @@ tablesample
 
     check_types(
         [
-            ("ts", ts, [str],),
-            ("column", column, [str],),
-            ("p", p, [int, float],),
-            ("by", by, [list],),
-            ("with_trend", with_trend, [bool],),
-            ("regresults", regresults, [bool],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("ts", ts, [str]),
+            ("column", column, [str]),
+            ("p", p, [int, float]),
+            ("by", by, [list]),
+            ("with_trend", with_trend, [bool]),
+            ("regresults", regresults, [bool]),
+            ("vdf", vdf, [vDataFrame]),
         ],
     )
     columns_check([ts, column] + by, vdf)
@@ -266,8 +266,8 @@ tablesample
         else ts,
         vdf.__genSQL__(),
     )
-    executeSQL(query, print_time_sql=False,)
-    model = LinearRegression(name, solver="Newton", max_iter=1000,)
+    executeSQL(query, print_time_sql=False)
+    model = LinearRegression(name, solver="Newton", max_iter=1000)
     predictors = ["lag1"] + ["delta{}".format(i) for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
@@ -345,18 +345,18 @@ model
      - r2_          : R2
     """
     check_types(
-        [("vdf", vdf, [vDataFrame, str,],),
-         ("ts", ts, [vDataFrame, str,],),
-         ("drop_tmp_model", drop_tmp_model, [bool,],),],
+        [("vdf", vdf, [vDataFrame, str]),
+         ("ts", ts, [vDataFrame, str]),
+         ("drop_tmp_model", drop_tmp_model, [bool])],
     )
     if isinstance(vdf, str):
-        vdf_tmp = vdf_from_relation(vdf,)
+        vdf_tmp = vdf_from_relation(vdf)
     else:
         vdf_tmp = vdf.copy()
     columns_check([ts], vdf_tmp)
     name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
     param = model.get_params()
-    model_tmp = type(model)(name,)
+    model_tmp = type(model)(name)
     model_tmp.set_params(param)
     X, y = model.X, model.y
     print_info = verticapy.options["print_info"]
@@ -366,10 +366,10 @@ model
     verticapy.options["print_info"] = print_info
     prediction_name = gen_tmp_name(name="prediction")[1:-1]
     eps_name = gen_tmp_name(name="eps")[1:-1]
-    model.predict(vdf_tmp, X=X, name=prediction_name,)
+    model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
     query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())
-    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchone0",)
+    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchone0")
     for elem in X + [y]:
         new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
         if prais_winsten:
@@ -385,7 +385,7 @@ model
     return model_tmp
 
 # ---#
-def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = [],):
+def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
     """
 ---------------------------------------------------------------------------
 Durbin Watson test (residuals autocorrelation).
@@ -409,10 +409,10 @@ float
     """
     check_types(
         [
-            ("ts", ts, [str],),
-            ("eps", eps, [str],),
-            ("by", by, [list],),
-            ("vdf", vdf, [vDataFrame, str,],),
+            ("ts", ts, [str]),
+            ("eps", eps, [str]),
+            ("by", by, [list]),
+            ("vdf", vdf, [vDataFrame, str]),
         ],
     )
     columns_check([eps] + [ts] + by, vdf)
@@ -427,12 +427,12 @@ float
         (", " + ", ".join(by)) if (by) else "",
         vdf.__genSQL__(),
     )
-    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchone0",)
+    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchone0")
     return d
 
 
 # ---#
-def endogtest(vdf: vDataFrame, eps: str, X: list,):
+def endogtest(vdf: vDataFrame, eps: str, X: list):
     """
 ---------------------------------------------------------------------------
 Endogeneity test.
@@ -453,7 +453,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -462,7 +462,7 @@ tablesample
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    model = LinearRegression(name,)
+    model = LinearRegression(name)
     try:
         model.fit(vdf, X, eps)
         R2 = model.score("r2")
@@ -497,7 +497,7 @@ tablesample
 
 
 # ---#
-def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1,):
+def het_arch(vdf: vDataFrame, eps: str, ts: str, by: list = [], p: int = 1):
     """
 ---------------------------------------------------------------------------
 Engle’s Test for Autoregressive Conditional Heteroscedasticity (ARCH).
@@ -524,10 +524,10 @@ tablesample
     """
     check_types(
         [
-            ("eps", eps, [str],),
-            ("ts", ts, [str],),
-            ("p", p, [int, float],),
-            ("vdf", vdf, [vDataFrame, str,],),
+            ("eps", eps, [str]),
+            ("ts", ts, [str]),
+            ("p", p, [int, float]),
+            ("vdf", vdf, [vDataFrame, str]),
         ],
     )
     columns_check([eps, ts] + by, vdf)
@@ -546,11 +546,11 @@ tablesample
     query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(X), vdf.__genSQL__()
     )
-    vdf_lags = vdf_from_relation(query,)
+    vdf_lags = vdf_from_relation(query)
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    model = LinearRegression(name,)
+    model = LinearRegression(name)
     try:
         model.fit(vdf_lags, X_names[1:], X_names[0])
         R2 = model.score("r2")
@@ -585,7 +585,7 @@ tablesample
 
 
 # ---#
-def het_breuschpagan(vdf: vDataFrame, eps: str, X: list,):
+def het_breuschpagan(vdf: vDataFrame, eps: str, X: list):
     """
 ---------------------------------------------------------------------------
 Uses the Breusch-Pagan to test a model for heteroskedasticity.
@@ -606,7 +606,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -615,7 +615,7 @@ tablesample
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    model = LinearRegression(name,)
+    model = LinearRegression(name)
     vdf_copy = vdf.copy()
     vdf_copy["v_eps2"] = vdf_copy[eps] ** 2
     try:
@@ -652,7 +652,7 @@ tablesample
 
 
 # ---#
-def het_goldfeldquandt(vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing",):
+def het_goldfeldquandt(vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing"):
     """
 ---------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
@@ -692,12 +692,12 @@ tablesample
 
     check_types(
         [
-            ("y", y, [str],),
-            ("X", X, [list],),
-            ("idx", idx, [int, float],),
-            ("split", split, [int, float],),
-            ("vdf", vdf, [vDataFrame, str,],),
-            ("alternative", alternative, ["increasing", "decreasing", "two-sided",],),
+            ("y", y, [str]),
+            ("X", X, [list]),
+            ("idx", idx, [int, float]),
+            ("split", split, [int, float]),
+            ("vdf", vdf, [vDataFrame, str]),
+            ("alternative", alternative, ["increasing", "decreasing", "two-sided"]),
         ],
     )
     columns_check([y] + X, vdf)
@@ -709,7 +709,7 @@ tablesample
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    model = LinearRegression(name,)
+    model = LinearRegression(name)
     try:
         mse0, mse1 = model_fit([vdf_0_half, vdf_1_half], X, y, model)
     except:
@@ -721,20 +721,20 @@ tablesample
             raise
     n, m, k = vdf_0_half.shape()[0], vdf_1_half.shape()[0], len(X)
     F = mse1 / mse0
-    if alternative.lower() in ["increasing",]:
+    if alternative.lower() in ["increasing"]:
         f_pvalue = f.sf(F, n - k, m - k)
-    elif alternative.lower() in ["decreasing",]:
+    elif alternative.lower() in ["decreasing"]:
         f_pvalue = f.sf(1. / F, m - k, n - k)
-    elif alternative.lower() in ["two-sided",]:
+    elif alternative.lower() in ["two-sided"]:
         fpval_sm = f.cdf(F, m - k, n - k)
         fpval_la = f.sf(F, m - k, n - k)
         f_pvalue = 2 * min(fpval_sm, fpval_la)
-    result = tablesample({"index": ["F Value", "f_p_value",], "value": [F, f_pvalue],})
+    result = tablesample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue],})
     return result
 
 
 # ---#
-def het_white(vdf: vDataFrame, eps: str, X: list,):
+def het_white(vdf: vDataFrame, eps: str, X: list):
     """
 ---------------------------------------------------------------------------
 White’s Lagrange Multiplier Test for heteroscedasticity.
@@ -755,7 +755,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str],), ("X", X, [list],), ("vdf", vdf, [vDataFrame, str,],),],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -771,12 +771,12 @@ tablesample
     query = "(SELECT {}, POWER({}, 2) AS v_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(variables), eps, vdf.__genSQL__()
     )
-    vdf_white = vdf_from_relation(query,)
+    vdf_white = vdf_from_relation(query)
 
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    model = LinearRegression(name,)
+    model = LinearRegression(name)
     try:
         model.fit(vdf_white, variables_names, "v_eps2")
         R2 = model.score("r2")
@@ -814,7 +814,7 @@ tablesample
 
 
 # ---#
-def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05,):
+def jarque_bera(vdf: vDataFrame, column: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
 Jarque-Bera test (Distribution Normality).
@@ -836,9 +836,9 @@ tablesample
     """
     check_types(
         [
-            ("column", column, [str],),
-            ("alpha", alpha, [int, float],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("column", column, [str]),
+            ("alpha", alpha, [int, float]),
+            ("vdf", vdf, [vDataFrame]),
         ],
     )
     columns_check([column], vdf)
@@ -865,7 +865,7 @@ tablesample
 
 
 # ---#
-def kurtosistest(vdf: vDataFrame, column: str,):
+def kurtosistest(vdf: vDataFrame, column: str):
     """
 ---------------------------------------------------------------------------
 Test whether the kurtosis is different from the normal distribution.
@@ -883,7 +883,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
+    check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
@@ -900,12 +900,12 @@ tablesample
     B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
     pvalue = 2 * norm.sf(abs(Z2))
-    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z2, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue],})
     return result
 
 
 # ---#
-def ljungbox(vdf: vDataFrame, column: str, ts: str, by: list = [], p: int = 1, alpha: float = 0.05, box_pierce: bool = False,):
+def ljungbox(vdf: vDataFrame, column: str, ts: str, by: list = [], p: int = 1, alpha: float = 0.05, box_pierce: bool = False):
     """
 ---------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
@@ -937,13 +937,13 @@ tablesample
     """
     check_types(
         [
-            ("ts", ts, [str],),
-            ("column", column, [str],),
-            ("by", by, [list],),
-            ("p", p, [int, float],),
-            ("alpha", alpha, [int, float],),
-            ("box_pierce", box_pierce, [bool],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("ts", ts, [str]),
+            ("column", column, [str]),
+            ("by", by, [list]),
+            ("p", p, [int, float]),
+            ("alpha", alpha, [int, float]),
+            ("box_pierce", box_pierce, [bool]),
+            ("vdf", vdf, [vDataFrame]),
         ],
     )
     columns_check([column] + [ts] + by, vdf)
@@ -976,7 +976,7 @@ tablesample
 
 
 # ---#
-def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05,):
+def mkt(vdf: vDataFrame, column: str, ts: str, alpha: float = 0.05):
     """
 ---------------------------------------------------------------------------
 Mann Kendall test (Time Series trend).
@@ -1006,10 +1006,10 @@ tablesample
     """
     check_types(
         [
-            ("ts", ts, [str],),
-            ("column", column, [str],),
-            ("alpha", alpha, [int, float],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("ts", ts, [str]),
+            ("column", column, [str]),
+            ("alpha", alpha, [int, float]),
+            ("vdf", vdf, [vDataFrame]),
         ],
     )
     columns_check([column, ts], vdf)
@@ -1019,7 +1019,7 @@ tablesample
     query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
     )
-    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchone0",)
+    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchone0")
     try:
         S = float(S)
     except:
@@ -1028,7 +1028,7 @@ tablesample
     query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
-    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchone0",)
+    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchone0")
     try:
         STDS = float(STDS)
     except:
@@ -1069,7 +1069,7 @@ tablesample
 
 
 # ---#
-def normaltest(vdf: vDataFrame, column: str,):
+def normaltest(vdf: vDataFrame, column: str):
     """
 ---------------------------------------------------------------------------
 Test whether a sample differs from a normal distribution.
@@ -1090,7 +1090,7 @@ tablesample
     Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
-    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue],})
     return result
 
 
@@ -1152,16 +1152,16 @@ vDataFrame
         by = [by]
     check_types(
         [
-            ("ts", ts, [str],),
-            ("column", column, [str],),
-            ("by", by, [list],),
-            ("rule", rule, [str, datetime.timedelta,],),
-            ("vdf", vdf, [vDataFrame,],),
-            ("period", period, [int,],),
-            ("mult", mult, [bool,],),
-            ("two_sided", two_sided, [bool,],),
-            ("polynomial_order", polynomial_order, [int,],),
-            ("estimate_seasonality", estimate_seasonality, [bool,],),
+            ("ts", ts, [str]),
+            ("column", column, [str]),
+            ("by", by, [list]),
+            ("rule", rule, [str, datetime.timedelta]),
+            ("vdf", vdf, [vDataFrame]),
+            ("period", period, [int]),
+            ("mult", mult, [bool]),
+            ("two_sided", two_sided, [bool]),
+            ("polynomial_order", polynomial_order, [int]),
+            ("estimate_seasonality", estimate_seasonality, [bool]),
         ],
     )
     assert period > 0 or polynomial_order > 0, ParameterError("Parameters 'polynomial_order' and 'period' can not be both null.")
@@ -1208,7 +1208,7 @@ vDataFrame
         model = LinearRegression(name=name,
                                  solver="bfgs",
                                  max_iter=100,
-                                 tol=1e-6,)
+                                 tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
         coefficients = model.coef_["coefficient"]
@@ -1237,14 +1237,14 @@ vDataFrame
         vdf_seasonality = vdf_tmp.copy()
         vdf_seasonality["t_cos"] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         vdf_seasonality["t_sin"] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
-        X = ["t_cos", "t_sin",]
+        X = ["t_cos", "t_sin"]
         name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
 
         from verticapy.learn.linear_model import LinearRegression
         model = LinearRegression(name=name,
                                  solver="bfgs",
                                  max_iter=100,
-                                 tol=1e-6,)
+                                 tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)
         coefficients = model.coef_["coefficient"]
@@ -1281,7 +1281,7 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("column", column, [str],), ("vdf", vdf, [vDataFrame,],),],)
+    check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
@@ -1296,12 +1296,12 @@ tablesample
     alpha2 = 2 / (W2 - 1)
     Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
     pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample({"index": ["Statistic", "p_value",], "value": [Z1, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue],})
     return result
 
 
 # ---#
-def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None,):
+def variance_inflation_factor(vdf: vDataFrame, X: list, X_idx: int = None):
     """
 ---------------------------------------------------------------------------
 Computes the variance inflation factor (VIF). It can be used to detect
@@ -1324,9 +1324,9 @@ float
     """
     check_types(
         [
-            ("X_idx", X_idx, [int],),
-            ("X", X, [list],),
-            ("vdf", vdf, [vDataFrame, str,],),
+            ("X_idx", X_idx, [int]),
+            ("X", X, [list]),
+            ("vdf", vdf, [vDataFrame, str]),
         ],
     )
     columns_check(X, vdf)
@@ -1348,7 +1348,7 @@ float
         from verticapy.learn.linear_model import LinearRegression
 
         name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-        model = LinearRegression(name,)
+        model = LinearRegression(name)
         try:
             model.fit(vdf, X_r, y_r)
             R2 = model.score("r2")

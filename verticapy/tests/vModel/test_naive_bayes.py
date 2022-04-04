@@ -81,7 +81,7 @@ class TestNB:
         model_test = GaussianNB("model_test")
         assert model_test.parameters["nbtype"] == "gaussian"
         model_test.drop()
-        model_test.fit(winequality_vd, ["residual_sugar", "alcohol",], "quality")
+        model_test.fit(winequality_vd, ["residual_sugar", "alcohol"], "quality")
         model_test.drop()
         model_test = MultinomialNB("model_test")
         assert model_test.parameters["nbtype"] == "multinomial"
@@ -127,7 +127,7 @@ class TestNB:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -196,7 +196,7 @@ class TestNB:
         model_class.drop()
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = NaiveBayes("rfc_sql_test",)
+        model_test = NaiveBayes("rfc_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex", "pclass"], "survived")
         current_cursor().execute(
@@ -208,7 +208,7 @@ class TestNB:
         assert prediction[0] == pytest.approx(prediction[1], 1e-3)
         model_test.drop()
 
-    def test_to_memmodel(self, titanic_vd,):
+    def test_to_memmodel(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["has_children"] = "parch > 0"
         model_class = NaiveBayes("nb_model_test_to_memmodel", )

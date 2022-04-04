@@ -26,7 +26,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def market_vd():
     market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market",)
+        drop(name="public.market")
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 
 class TestvDFDescriptiveStat:

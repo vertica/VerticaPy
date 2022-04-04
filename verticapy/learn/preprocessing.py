@@ -98,20 +98,20 @@ vDataFrame
 	"""
     check_types(
         [
-            ("name", name, [str],),
-            ("input_relation", input_relation, [str],),
-            ("y", y, [str],),
-            ("method", method, ["hybrid", "over", "under"],),
-            ("ratio", ratio, [float],),
+            ("name", name, [str]),
+            ("input_relation", input_relation, [str]),
+            ("y", y, [str]),
+            ("method", method, ["hybrid", "over", "under"]),
+            ("ratio", ratio, [float]),
         ]
     )
-    version(condition=[8, 1, 1],)
+    version(condition=[8, 1, 1])
     method = method.lower()
     sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
     )
     executeSQL(sql, "Computing the Balanced Relation.")
-    return vDataFrame(name,)
+    return vDataFrame(name)
 
 
 # ---#
@@ -152,7 +152,7 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "CountVectorizer", name
         self.set_params(
             {
@@ -204,7 +204,7 @@ max_text_size: int, optional
         if isinstance(X, str):
             X = [X]
         check_types(
-            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+            [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
         if isinstance(input_relation, vDataFrame):
             if not (X):
@@ -212,7 +212,7 @@ max_text_size: int, optional
             self.input_relation = input_relation.__genSQL__()
         else:
             if not (X):
-                X = vDataFrame(input_relation,).get_columns()
+                X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
         self.X = [str_column(elem) for elem in X]
         schema, relation = schema_relation(self.name)
@@ -310,10 +310,10 @@ method: str, optional
 	"""
 
     def __init__(self, name: str, method: str = "zscore"):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
-        version(condition=[8, 1, 0],)
+        version(condition=[8, 1, 0])
 
 
 # ---#
@@ -393,17 +393,17 @@ null_column_name: str, optional
     ):
         check_types(
             [
-                ("name", name, [str],),
-                ("extra_levels", extra_levels, [dict],),
-                ("drop_first", drop_first, [bool],),
-                ("ignore_null", ignore_null, [bool],),
-                ("separator", separator, [str],),
+                ("name", name, [str]),
+                ("extra_levels", extra_levels, [dict]),
+                ("drop_first", drop_first, [bool]),
+                ("ignore_null", ignore_null, [bool]),
+                ("separator", separator, [str]),
                 (
                     "column_naming",
                     column_naming,
                     ["indices", "values", "values_relaxed"],
                 ),
-                ("null_column_name", null_column_name, [str],),
+                ("null_column_name", null_column_name, [str]),
             ]
         )
         self.type, self.name = "OneHotEncoder", name
@@ -417,4 +417,4 @@ null_column_name: str, optional
                 "null_column_name": null_column_name,
             }
         )
-        version(condition=[9, 0, 0],)
+        version(condition=[9, 0, 0])

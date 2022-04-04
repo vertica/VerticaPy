@@ -103,8 +103,8 @@ name: str
     ax
         Matplotlib axes object
         """
-        check_types([("dimensions", dimensions, [tuple],),
-                     ("method", method, ["auto", "cos2", "contrib"],),])
+        check_types([("dimensions", dimensions, [tuple]),
+                     ("method", method, ["auto", "cos2", "contrib"])])
         x = self.components_["PC{}".format(dimensions[0])]
         y = self.components_["PC{}".format(dimensions[1])]
         n = len(self.cos2_["PC{}".format(dimensions[0])])
@@ -120,7 +120,7 @@ name: str
 
                 style_kwds["cmap"] = gen_cmap(color=[gen_colors()[0], gen_colors()[1], gen_colors()[2]])
         explained_variance = self.explained_variance_["explained_variance"]
-        return plot_var(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, method, ax, **style_kwds,)
+        return plot_var(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, method, ax, **style_kwds)
 
     # ---#
     def plot_contrib(
@@ -155,12 +155,12 @@ name: str
         ax = contrib["row_nb"].hist(method="avg", of="contrib", max_cardinality=1, h=1, ax=ax, **style_kwds)
         ax = contrib["contrib"].plot(ts="row_nb_2", ax=ax, color="black")
         ax.set_xlim(1, n + 1)
-        ax.set_xticks([i + 1.5 for i in range(n)],)
-        ax.set_xticklabels(variables,)
+        ax.set_xticks([i + 1.5 for i in range(n)])
+        ax.set_xticklabels(variables)
         ax.set_ylabel('Cos2 - Quality of Representation')
         ax.set_xlabel('')
         ax.set_title('Contribution of variables to Dim {}'.format(dimension))
-        ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c='r', linestyle='--',)
+        ax.plot([1, n + 1], [1 / n * 100, 1 / n * 100], c='r', linestyle='--')
         for i in range(n):
             ax.text(i + 1.5, contribution[i] + 1, "{}%".format(round(contribution[i], 1)))
         return ax

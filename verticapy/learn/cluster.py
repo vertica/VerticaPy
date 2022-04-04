@@ -122,7 +122,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
             {
@@ -184,7 +184,7 @@ p: int, optional
     def __init__(
         self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
 
@@ -224,10 +224,10 @@ p: int, optional
             X = [X]
         check_types(
             [
-                ("input_relation", input_relation, [str, vDataFrame],),
-                ("X", X, [list],),
-                ("key_columns", key_columns, [list],),
-                ("index", index, [str],),
+                ("input_relation", input_relation, [str, vDataFrame]),
+                ("X", X, [list]),
+                ("key_columns", key_columns, [list]),
+                ("index", index, [str]),
             ]
         )
         does_model_exist(name=self.name, raise_error=True)
@@ -237,7 +237,7 @@ p: int, optional
             input_relation = input_relation.__genSQL__()
         else:
             if not (X):
-                X = vDataFrame(input_relation,).numcol()
+                X = vDataFrame(input_relation).numcol()
         X = [str_column(column) for column in X]
         self.X = X
         self.key_columns = [str_column(column) for column in key_columns]
@@ -246,8 +246,8 @@ p: int, optional
         name_main, name_dbscan_clusters = gen_tmp_name(name="main"), gen_tmp_name(name="clusters")
 
         def drop_temp_elem():
-            drop_if_exists("v_temp_schema.{}".format(name_main), method="table",)
-            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table",)
+            drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
 
         try:
             if not (index):
@@ -261,7 +261,7 @@ p: int, optional
                 )
                 executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
-                executeSQL("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), self.input_relation), print_time_sql=False,)
+                executeSQL("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), self.input_relation), print_time_sql=False)
                 name_main = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
@@ -277,7 +277,7 @@ p: int, optional
             sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
                 sql, self.parameters["min_samples"], self.parameters["eps"]
             )
-            graph = executeSQL(sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall",)
+            graph = executeSQL(sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall")
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
             )
@@ -303,14 +303,14 @@ p: int, optional
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table",)
-                executeSQL("CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(name_dbscan_clusters), print_time_sql=False,)
+                drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+                executeSQL("CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(name_dbscan_clusters), print_time_sql=False)
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
                     executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters), method="copy", print_time_sql=False, path="./{}.csv".format(name_dbscan_clusters))
                 else:
-                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False,)
+                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False)
                 try:
-                    executeSQL("COMMIT", print_time_sql=False,)
+                    executeSQL("COMMIT", print_time_sql=False)
                 except:
                     pass
                 os.remove("{}.csv".format(name_dbscan_clusters))
@@ -324,7 +324,7 @@ p: int, optional
                 ),
                 title="Computing the DBSCAN Table [Step 2]",
             )
-            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchone0", print_time_sql=False,)
+            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchone0", print_time_sql=False)
         except:
             drop_temp_elem()
             raise
@@ -358,7 +358,7 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name,)
+        return vDataFrame(self.name)
 
 # ---#
 class KMeans(Clustering):
@@ -398,7 +398,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
             {
@@ -440,7 +440,7 @@ tol: float, optional
             query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
                 self.name
             )
-            clusters = executeSQL(query, print_time_sql=False, method="fetchall",)
+            clusters = executeSQL(query, print_time_sql=False, method="fetchall")
             return voronoi_plot(
                 clusters=clusters,
                 columns=self.X,

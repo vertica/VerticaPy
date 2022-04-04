@@ -76,9 +76,9 @@ def all_comb(X: list):
 def arange(start: float, stop: float, step: float):
     check_types(
         [
-            ("start", start, [int, float],),
-            ("stop", stop, [int, float],),
-            ("step", step, [int, float],),
+            ("start", start, [int, float]),
+            ("stop", stop, [int, float]),
+            ("step", step, [int, float]),
         ]
     )
     if step < 0:
@@ -113,7 +113,7 @@ def category_from_model_type(model_type: str):
         return ("regressor", "")
     elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
         return ("unsupervised", "clustering")
-    elif model_type in ["PCA", "SVD", "MCA",]:
+    elif model_type in ["PCA", "SVD", "MCA"]:
         return ("unsupervised", "decomposition")
     elif model_type in ["Normalizer", "OneHotEncoder"]:
         return ("unsupervised", "preprocessing")
@@ -125,7 +125,7 @@ def category_from_model_type(model_type: str):
 
 # ---#
 def category_from_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str],)])
+    check_types([("ctype", ctype, [str])])
     ctype = ctype.lower()
     if ctype != "":
         if (
@@ -177,7 +177,7 @@ def current_cursor():
     return current_conn().cursor()
 
 # ---#
-def check_types(types_list: list = [],):
+def check_types(types_list: list = []):
     for elem in types_list:
         list_check = False
         for sub_elem in elem[2]:
@@ -276,7 +276,7 @@ def data_to_columns(data: list, n: int):
 
 # ---#
 def default_model_parameters(model_type: str):
-    if model_type in ("LogisticRegression"):
+    if model_type == "LogisticRegression":
         return {
             "penalty": "L2",
             "tol": 1e-4,
@@ -285,7 +285,7 @@ def default_model_parameters(model_type: str):
             "solver": "CGD",
             "l1_ratio": 0.5,
         }
-    elif model_type in ("KernelDensity"):
+    elif model_type == "KernelDensity":
         return {
             "bandwidth": 1,
             "kernel": "gaussian",
@@ -296,7 +296,7 @@ def default_model_parameters(model_type: str):
             "nbins": 5,
             "xlim": [],
         }
-    elif model_type in ("LinearRegression"):
+    elif model_type == "LinearRegression":
         return {
             "penalty": "None",
             "tol": 1e-4,
@@ -305,7 +305,7 @@ def default_model_parameters(model_type: str):
             "solver": "Newton",
             "l1_ratio": 0.5,
         }
-    elif model_type in ("SARIMAX"):
+    elif model_type == "SARIMAX":
         return {
             "penalty": "None",
             "tol": 1e-4,
@@ -323,7 +323,7 @@ def default_model_parameters(model_type: str):
             "max_pik": 100,
             "papprox_ma": 200,
         }
-    elif model_type in ("VAR"):
+    elif model_type == "VAR":
         return {
             "penalty": "None",
             "tol": 1e-4,
@@ -360,11 +360,11 @@ def default_model_parameters(model_type: str):
         }
     elif model_type in ("SVD"):
         return {"n_components": 0, "method": "lapack"}
-    elif model_type in ("PCA",):
+    elif model_type in ("PCA"):
         return {"n_components": 0, "scale": False, "method": "lapack"}
-    elif model_type in ("MCA",):
+    elif model_type in ("MCA"):
         return {}
-    elif model_type in ("OneHotEncoder"):
+    elif model_type == "OneHotEncoder":
         return {
             "extra_levels": {},
             "drop_first": True,
@@ -375,7 +375,7 @@ def default_model_parameters(model_type: str):
         }
     elif model_type in ("Normalizer"):
         return {"method": "zscore"}
-    elif model_type in ("LinearSVR"):
+    elif model_type == "LinearSVR":
         return {
             "C": 1.0,
             "tol": 1e-4,
@@ -385,7 +385,7 @@ def default_model_parameters(model_type: str):
             "acceptable_error_margin": 0.1,
             "max_iter": 100,
         }
-    elif model_type in ("LinearSVC"):
+    elif model_type == "LinearSVC":
         return {
             "C": 1.0,
             "tol": 1e-4,
@@ -395,12 +395,12 @@ def default_model_parameters(model_type: str):
             "class_weight": [1, 1],
             "max_iter": 100,
         }
-    elif model_type in ("NaiveBayes"):
+    elif model_type == "NaiveBayes":
         return {
             "alpha": 1.0,
             "nbtype": "auto",
         }
-    elif model_type in ("KMeans"):
+    elif model_type == "KMeans":
         return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
     elif model_type in ("BisectingKMeans"):
         return {
@@ -418,17 +418,17 @@ def default_model_parameters(model_type: str):
             "n_neighbors": 5,
             "p": 2,
         }
-    elif model_type in ("NearestCentroid"):
+    elif model_type == "NearestCentroid":
         return {
             "p": 2,
         }
-    elif model_type in ("DBSCAN"):
+    elif model_type == "DBSCAN":
         return {"eps": 0.5, "min_samples": 5, "p": 2}
 
 
 # ---#
-def executeSQL(query: str, title: str = "", data: list = [], method: str = "cursor", path: str = "", print_time_sql: bool = True,):
-    check_types([("query", query, [str],), ("title", title, [str],), ("method", method, ["cursor", "fetchone", "fetchall", "fetchone0", "copy",])])
+def executeSQL(query: str, title: str = "", data: list = [], method: str = "cursor", path: str = "", print_time_sql: bool = True):
+    check_types([("query", query, [str]), ("title", title, [str]), ("method", method, ["cursor", "fetchone", "fetchall", "fetchone0", "copy"])])
     cursor = current_cursor()
     if verticapy.options["query_on"] and print_time_sql:
         print_query(query, title)
@@ -499,7 +499,7 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     return name
 
 # ---#
-def get_index(x: str, col_list: list, str_check: bool = True,):
+def get_index(x: str, col_list: list, str_check: bool = True):
     for idx, col in enumerate(col_list):
         if (str_check and str_column(x.lower()) == str_column(col.lower())) or (x == col):
             return idx
@@ -542,14 +542,14 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 
 
 # ---#
-def get_session(add_username: bool = True,):
+def get_session(add_username: bool = True):
     query = "SELECT CURRENT_SESSION();"
-    result = executeSQL(query, method="fetchone0", print_time_sql=False,)
+    result = executeSQL(query, method="fetchone0", print_time_sql=False)
     result = result.split(":")[1]
     result = int(result, base=16)
     if add_username:
         query = "SELECT USERNAME();"
-        result = "{}_{}".format(executeSQL(query, method="fetchone0", print_time_sql=False,), result)
+        result = "{}_{}".format(executeSQL(query, method="fetchone0", print_time_sql=False), result)
     return result
 
 # ---#
@@ -605,7 +605,7 @@ def insert_verticapy_schema(
     category: str = "VERTICAPY_MODELS",
 ):
     sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
-    result = executeSQL(sql, method="fetchone", print_time_sql=False,)
+    result = executeSQL(sql, method="fetchone", print_time_sql=False)
     if not (result):
         warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
         warnings.warn(warning_message, Warning)
@@ -617,21 +617,21 @@ def insert_verticapy_schema(
             sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 model_name.lower()
             )
-            result = executeSQL(sql, method="fetchone", print_time_sql=False,)
+            result = executeSQL(sql, method="fetchone", print_time_sql=False)
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
                 sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size) VALUES ('{}', '{}', '{}', '{}', {});".format(
                     model_name, category, model_type, create_time, size
                 )
-                executeSQL(sql, print_time_sql=False,)
-                executeSQL("COMMIT;", print_time_sql=False,)
+                executeSQL(sql, print_time_sql=False)
+                executeSQL("COMMIT;", print_time_sql=False)
                 for elem in model_save:
                     sql = "INSERT INTO verticapy.attr(model_name, attr_name, value) VALUES ('{}', '{}', '{}');".format(
                         model_name, elem, str(model_save[elem]).replace("'", "''")
                     )
-                    executeSQL(sql, print_time_sql=False,)
-                    executeSQL("COMMIT;", print_time_sql=False,)
+                    executeSQL(sql, print_time_sql=False)
+                    executeSQL("COMMIT;", print_time_sql=False)
         except Exception as e:
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
@@ -744,13 +744,13 @@ def tree_attributes_list(tree, X: list, model_type: str, return_probability: boo
         tree.values["right_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["right_child_id"]]
         tree.values["node_id"][idx] = idx
         tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
-        if model_type in ("XGBoostClassifier",) and isinstance(tree["log_odds"][idx], str):
+        if model_type == "XGBoostClassifier" and isinstance(tree["log_odds"][idx], str):
             val, all_val = tree["log_odds"][idx].split(","), {}
             for elem in val:
                 all_val[elem.split(":")[0]] = float(elem.split(":")[1])
             tree.values["log_odds"][idx] = all_val
     tree_list = [tree["left_child_id"], tree["right_child_id"], tree["split_predictor"], tree["split_value"], tree["prediction"], tree["is_categorical_split"]]
-    if model_type in ("XGBoostClassifier",):
+    if model_type == "XGBoostClassifier":
         tree_list += [tree["log_odds"]]
     if return_probability:
         tree_list += [tree["probability/variance"]]
@@ -762,7 +762,7 @@ def nb_var_info(model):
     # It is used to translate NB to Python
     from verticapy.utilities import vdf_from_relation
 
-    vdf = vdf_from_relation(model.input_relation,)
+    vdf = vdf_from_relation(model.input_relation)
     var_info = {}
     gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
     for idx, elem in enumerate(model.X):
@@ -772,7 +772,7 @@ def nb_var_info(model):
             for c in model.classes_:
                 var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))["probability"][bernoulli_incr]
             bernoulli_incr += 1
-        elif vdf[elem].category() in ("int",):
+        elif vdf[elem].category() == "int":
             var_info[elem]["type"] = "multinomial"
             for c in model.classes_:
                 multinomial = model.get_attr("multinomial.{}".format(c))
@@ -1284,7 +1284,7 @@ def color_dict(d: dict, idx: int = 0):
 def vdf_columns_names(columns: list, vdf):
     from verticapy import vDataFrame
 
-    check_types([("columns", columns, [list],), ("vdf", vdf, [vDataFrame],),],)
+    check_types([("columns", columns, [list]), ("vdf", vdf, [vDataFrame])])
     vdf_columns = vdf.get_columns()
     columns_names = []
     for column in columns:
@@ -1334,9 +1334,7 @@ def vertica_param_dict(model):
     for param in model.parameters:
         if model.type in ("LinearSVC", "LinearSVR") and param == "C":
             parameters[param] = model.parameters[param]
-        elif model.type in ("LinearRegression", "LogisticRegression") and param in (
-            "C"
-        ):
+        elif model.type in ("LinearRegression", "LogisticRegression") and param == "C":
             parameters["lambda"] = model.parameters[param]
         elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
             if param == "init":
@@ -1395,12 +1393,12 @@ def xgb_prior(model):
     v = version()
     v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
     if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
-        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False,)
+        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False)
     elif not(v):
         prior_ = []
         for elem in model.classes_:
-            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchone0", print_time_sql=False,)
-            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition),), method="fetchone0", print_time_sql=False,)
+            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchone0", print_time_sql=False)
+            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False)
             logodds = np.log(avg / (1 - avg))
             prior_ += [logodds]
     else:
@@ -1408,21 +1406,21 @@ def xgb_prior(model):
     return prior_
 
 # ---#
-def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16,):
+def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16):
     columns_tmp = columns.copy()
     if not(columns_tmp):
         columns_tmp = vdf.get_columns()
         remove_cols = []
         for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+            if vdf[col].category() not in ("float", "int", "text") or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
                 remove_cols += [col]
     else:
         remove_cols = []
         columns_tmp = vdf_columns_names(columns_tmp, vdf)
         for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text",) or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+            if vdf[col].category() not in ("float", "int", "text") or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
                 remove_cols += [col]
-                if vdf[col].category() not in ("float", "int", "text",):
+                if vdf[col].category() not in ("float", "int", "text"):
                     warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(col, vdf[col].category())
                 else:
                     warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(col, max_cardinality)
@@ -1436,7 +1434,7 @@ def flat_dict(d: dict) -> str:
     res = []
     for elem in d:
         q = '"' if isinstance(d[elem], str) else ''
-        res += ["{}={}{}{}".format(elem, q, d[elem], q,)]
+        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
     res = ", ".join(res)
     if res:
         res = ", {}".format(res)
@@ -1466,7 +1464,7 @@ class str_sql:
         val = format_magic(x)
         op = (
             "||"
-            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            if self.category() == "text" and isinstance(x, (str, str_sql))
             else "+"
         )
         return str_sql("({}) {} ({})".format(self.alias, op, val), self.category())
@@ -1476,7 +1474,7 @@ class str_sql:
         val = format_magic(x)
         op = (
             "||"
-            if self.category() in ("text",) and isinstance(x, (str, str_sql))
+            if self.category() == "text" and isinstance(x, (str, str_sql))
             else "+"
         )
         return str_sql("({}) {} ({})".format(val, op, self.alias), self.category())
@@ -1595,14 +1593,14 @@ class str_sql:
 
     # ---#
     def __mul__(self, x):
-        if self.category() in ("text",) and isinstance(x, (int)):
+        if self.category() == "text" and isinstance(x, (int)):
             return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
         val = format_magic(x)
         return str_sql("({}) * ({})".format(self.alias, val), self.category())
 
     # ---#
     def __rmul__(self, x):
-        if self.category() in ("text",) and isinstance(x, (int)):
+        if self.category() == "text" and isinstance(x, (int)):
             return str_sql("REPEAT({}, {})".format(self.alias, x), self.category())
         val = format_magic(x)
         return str_sql("({}) * ({})".format(val, self.alias), self.category())

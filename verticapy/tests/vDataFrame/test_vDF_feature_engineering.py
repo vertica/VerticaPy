@@ -26,7 +26,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def iris_vd():
     iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris",)
+        drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def smart_meters_vd():
     smart_meters = load_smart_meters()
     yield smart_meters
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.smart_meters",)
+        drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +56,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 class TestvDFFeatureEngineering:
@@ -868,7 +868,7 @@ class TestvDFFeatureEngineering:
         # method = "substr"
         titanic_copy = titanic_vd.copy()
         titanic_copy.regexp(
-            column="name", pattern="[^,]+", method="substr", occurrence=2, name="name2"
+            column="name", pattern="[^]+", method="substr", occurrence=2, name="name2"
         )
         titanic_copy.sort(["name2"])
 

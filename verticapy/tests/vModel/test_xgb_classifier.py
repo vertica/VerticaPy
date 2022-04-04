@@ -145,7 +145,7 @@ class TestXGBC:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -196,7 +196,7 @@ class TestXGBC:
         plt.close("all")
 
     def test_to_python(self, model, titanic_vd):
-        model_test = XGBoostClassifier("rfc_python_test",)
+        model_test = XGBoostClassifier("rfc_python_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
         current_cursor().execute(
@@ -211,7 +211,7 @@ class TestXGBC:
         assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = XGBoostClassifier("xgb_sql_test",)
+        model_test = XGBoostClassifier("xgb_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         current_cursor().execute(
@@ -223,25 +223,25 @@ class TestXGBC:
         assert prediction[0] == pytest.approx(prediction[1])
         model_test.drop()
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([["Male", 0, "Cheap", "Low",],
-                              ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python()([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict([["Male", 0, "Cheap", "Low"],
+                              ["Female", 3, "Expensive", "Hig"]])
+        res_py = model.to_python()([["Male", 0, "Cheap", "Low"],
+                                    ["Female", 3, "Expensive", "Hig"]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low",],
-                                                       ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low"],
+                                    ["Female", 3, "Expensive", "Hig"]])
+        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low"],
+                                                       ["Female", 3, "Expensive", "Hig"]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[0][2] == res_py[0][2]
         assert res[1][0] == res_py[1][0]
         assert res[1][1] == res_py[1][1]
         assert res[1][2] == res_py[1][2]
-        vdf = vDataFrame("public.xgbc_data",)
+        vdf = vDataFrame("public.xgbc_data")
         vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
         vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[0]
         vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[1]
@@ -484,7 +484,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "fare"]
         y = "survived"
-        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5,)
+        model = XGBoostClassifier("verticapy_xgb_binaryclassifier_test", max_ntree = 10, max_depth = 5)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()
@@ -514,7 +514,7 @@ class TestXGBC:
         path = "verticapy_test_xgbr.json"
         X = ["survived", "age", "fare"]
         y = "pclass"
-        model = XGBoostClassifier("verticapy_xgb_multiclass_classifier_test", max_ntree = 10, max_depth = 5,)
+        model = XGBoostClassifier("verticapy_xgb_multiclass_classifier_test", max_ntree = 10, max_depth = 5)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()

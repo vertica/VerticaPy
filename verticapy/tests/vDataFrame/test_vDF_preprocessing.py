@@ -71,9 +71,9 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
         assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
-        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False,)
+        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False)
         assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
-        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"],)
+        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"])
         assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
 
     def test_vDF_decode(self, titanic_vd):

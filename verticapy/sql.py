@@ -166,21 +166,21 @@ def sql(line, cell="", local_ns=None):
             )
             if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                 file_name = file_name[1:-1]
-            executeSQL(query, method="copy", path=file_name, print_time_sql=False,)
+            executeSQL(query, method="copy", path=file_name, print_time_sql=False)
         elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
-            executeSQL(query, print_time_sql=False,)
+            executeSQL(query, print_time_sql=False)
             if verticapy.options["print_info"]:
                 print(query_type)
         else:
             error = ""
             try:
                 if options["vdf"]:
-                    result = vdf_from_relation("({}) x".format(query),)
+                    result = vdf_from_relation("({}) x".format(query))
                 else:
-                    result = readSQL(query, limit=options["limit"],)
+                    result = readSQL(query, limit=options["limit"])
             except:
                 try:
-                    final_result = executeSQL(query, method="fetchone", print_time_sql=False,)
+                    final_result = executeSQL(query, method="fetchone", print_time_sql=False)
                     if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
                     elif verticapy.options["print_info"]:

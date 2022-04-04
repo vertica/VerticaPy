@@ -35,7 +35,7 @@ def model(titanic_vd):
     model_class = NearestCentroid("nc_model_test", )
     model_class.drop()
     model_class.fit(
-        "public.titanic", ["age", "fare",], "survived"
+        "public.titanic", ["age", "fare"], "survived"
     )
     yield model_class
     model_class.drop()
@@ -44,13 +44,13 @@ def model(titanic_vd):
 class TestNearestCentroid:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = NearestCentroid("model_repr",)
+        model_repr = NearestCentroid("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<NearestCentroid>"
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
-        assert m_att["attr_name"] == ["centroids", "classes", "p",]
+        assert m_att["attr_name"] == ["centroids", "classes", "p"]
         m_att = model.get_attr("centroids")
         assert m_att == model.centroids_
         m_att = model.get_attr("p")
@@ -64,7 +64,7 @@ class TestNearestCentroid:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -110,31 +110,31 @@ class TestNearestCentroid:
 
         assert result_sql == expected_sql
 
-    def test_to_memmodel(self, titanic_vd, model,):
+    def test_to_memmodel(self, titanic_vd, model):
         titanic = titanic_vd.copy()
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[11., 1993.,],
-                              [1., 1999.,]])
-        res_py = model.to_python()([[11., 1993.,],
-                                    [1., 1999.,]])
+        res = mmodel.predict([[11., 1993.],
+                              [1., 1999.]])
+        res_py = model.to_python()([[11., 1993.],
+                                    [1., 1999.]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[11., 1993.,],
-                                    [1., 1999.,]])
-        res_py = model.to_python(return_proba = True)([[11., 1993.,],
-                                                       [1., 1999.,]])
+        res = mmodel.predict_proba([[11., 1993.],
+                                    [1., 1999.]])
+        res_py = model.to_python(return_proba = True)([[11., 1993.],
+                                                       [1., 1999.]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]
         assert res[1][1] == res_py[1][1]
-        titanic["prediction_sql"] = mmodel.predict_sql(["age", "fare",])
-        titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare",])[0]
-        titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare",])[1]
+        titanic["prediction_sql"] = mmodel.predict_sql(["age", "fare"])
+        titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
+        titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         titanic = model.predict(titanic, name = "prediction_vertica_sql", cutoff = 0.5)
         titanic = model.predict(titanic, name = "prediction_proba_vertica_sql_0", pos_label = model.classes_[0])
         titanic = model.predict(titanic, name = "prediction_proba_vertica_sql_1", pos_label = model.classes_[1])
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
-        print(titanic[["prediction_sql", "prediction_vertica_sql",]])
+        print(titanic[["prediction_sql", "prediction_vertica_sql"]])
         print(titanic.current_relation())
         assert score == pytest.approx(1.0)
         score = titanic.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
@@ -145,7 +145,7 @@ class TestNearestCentroid:
     def test_drop(self):
         model_test = NearestCentroid("model_test_drop", )
         model_test.drop()
-        model_test.fit("public.titanic", ["age",], "survived")
+        model_test.fit("public.titanic", ["age"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
@@ -164,7 +164,7 @@ class TestNearestCentroid:
         titanic_copy = titanic_vd.copy()
         titanic_copy = model.predict(
             titanic_copy,
-            X=["age", "fare",],
+            X=["age", "fare"],
             name="predicted_quality",
             inplace=False,
         )
@@ -211,9 +211,9 @@ class TestNearestCentroid:
 
     def test_to_python(self, model):
         assert 0 == pytest.approx(
-            model.to_python(return_str=False,)([[5.006, 3.418,]])[0]
+            model.to_python(return_str=False)([[5.006, 3.418]])[0]
         )
-        assert model.to_python(return_str=False, return_distance_clusters=True,)([[5.006, 3.418,]])[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
+        assert model.to_python(return_str=False, return_distance_clusters=True)([[5.006, 3.418]])[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
 
     def test_to_sql(self, model):
         current_cursor().execute(

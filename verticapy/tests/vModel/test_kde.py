@@ -35,7 +35,7 @@ def model(titanic_vd):
     model_class = KernelDensity("KernelDensity_model_test", )
     model_class.drop()
     model_class.fit(
-        "public.titanic", ["age", "fare",],
+        "public.titanic", ["age", "fare"],
     )
     yield model_class
     model_class.drop()
@@ -44,14 +44,14 @@ def model(titanic_vd):
 class TestKernelDensity:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = KernelDensity("model_repr",)
+        model_repr = KernelDensity("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<KernelDensity>"
 
     def test_drop(self):
         model_test = KernelDensity("model_test_drop", )
         model_test.drop()
-        model_test.fit("public.titanic", ["age", "fare",],)
+        model_test.fit("public.titanic", ["age", "fare"])
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
@@ -88,9 +88,9 @@ class TestKernelDensity:
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
-        model_test = KernelDensity("model_test_plot_kde_plot",)
+        model_test = KernelDensity("model_test_plot_kde_plot")
         model_test.drop()
-        model_test.fit("public.titanic", ["age",],)
+        model_test.fit("public.titanic", ["age"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
         model_test.drop()
@@ -103,7 +103,7 @@ class TestKernelDensity:
     def test_model_from_vDF(self, titanic_vd):
         model_test = KernelDensity("KernelDensity_from_vDF_tmp", )
         model_test.drop()
-        model_test.fit(titanic_vd, ["age", "fare",],)
+        model_test.fit(titanic_vd, ["age", "fare"])
         titanic_copy = model_test.predict(titanic_vd.copy(), name = "kde")
 
         assert titanic_copy["kde"].mean() == pytest.approx(

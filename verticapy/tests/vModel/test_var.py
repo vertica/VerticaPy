@@ -32,9 +32,9 @@ def commodities_vd():
 @pytest.fixture(scope="module")
 def model(commodities_vd):
     create_verticapy_schema()
-    model_class = VAR("var_model_test", p=1,)
+    model_class = VAR("var_model_test", p=1)
     model_class.drop()
-    model_class.fit("public.commodities", ["gold", "oil"], "date",)
+    model_class.fit("public.commodities", ["gold", "oil"], "date")
     yield model_class
     model_class.drop()
 
@@ -42,7 +42,7 @@ def model(commodities_vd):
 class TestVAR:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = VAR("var_repr",)
+        model_repr = VAR("var_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<VAR>"
 
@@ -55,7 +55,7 @@ class TestVAR:
     def test_drop(self):
         model_test = VAR("var_model_test_drop", )
         model_test.drop()
-        model_test.fit("public.commodities", ["gold", "oil"], "date",)
+        model_test.fit("public.commodities", ["gold", "oil"], "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('var_model_test_drop', '\"var_model_test_drop\"')"
@@ -97,8 +97,8 @@ class TestVAR:
     def test_get_params(self, model):
         assert model.get_params() == {'max_iter': 1000, 'p': 1, 'solver': 'Newton', 'tol': 0.0001}
 
-    def test_get_plot(self, model,):
-        result = model.plot(color="r", nlead=10, dynamic=True, nlast=20, X_idx="gold",)
+    def test_get_plot(self, model):
+        result = model.plot(color="r", nlead=10, dynamic=True, nlast=20, X_idx="gold")
         assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
@@ -167,9 +167,9 @@ class TestVAR:
         assert model.get_params()["p"] == 2
 
     def test_model_from_vDF(self, commodities_vd):
-        model_class = VAR("var_model_test_vdf", p=1,)
+        model_class = VAR("var_model_test_vdf", p=1)
         model_class.drop()
-        model_class.fit(commodities_vd, ["gold", "oil",], "date",)
+        model_class.fit(commodities_vd, ["gold", "oil"], "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('var_model_test_vdf', '\"var_model_test_vdf\"')"

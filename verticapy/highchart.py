@@ -109,7 +109,7 @@ def hchart_from_vdf(
             z = "COUNT(*)"
         if kind == "hist":
             kind = "column"
-        check_types([("y", y, [str, list],)])
+        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
@@ -148,7 +148,7 @@ def hchart_from_vdf(
                 ) + " AS {}".format(x)
             else:
                 query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(x, y, vdf.__genSQL__(), max_cardinality)
-                result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+                result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
                 result = [elem[0] for elem in result]
                 result = [
                     "NULL" if elem == None else "'{}'".format(elem) for elem in result
@@ -181,7 +181,7 @@ def hchart_from_vdf(
         else:
             if not (z):
                 z = "COUNT(*)"
-            check_types([("y", y, [str, list],)])
+            check_types([("y", y, [str, list])])
             if isinstance(x, Iterable) and not (isinstance(x, str)):
                 x = x[0]
             columns_check([x], vdf)
@@ -226,7 +226,7 @@ def hchart_from_vdf(
             limit,
         )
     elif kind in ("area", "area_ts", "line", "spline"):
-        check_types([("y", y, [str, list],)])
+        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         if isinstance(y, Iterable) and not (isinstance(y, str)) and kind == "area_ts":
@@ -255,8 +255,8 @@ def hchart_from_vdf(
                 limit,
             )
         else:
-            check_types([("y", y, [str, list],)])
-            check_types([("z", z, [str, list],)])
+            check_types([("y", y, [str, list])])
+            check_types([("z", z, [str, list])])
             if isinstance(y, str):
                 columns_check([y], vdf)
                 y = vdf_columns_names([y], vdf)[0]
@@ -295,7 +295,7 @@ def hchart_from_vdf(
                 x,
             )
     elif kind in ("scatter", "bubble"):
-        check_types([("y", y, [str, list],)])
+        check_types([("y", y, [str, list])])
         if isinstance(y, str):
             columns_check([y], vdf)
             y = vdf_columns_names([y], vdf)[0]
@@ -310,7 +310,7 @@ def hchart_from_vdf(
                 x, cast, y, vdf.__genSQL__(), x, y, limit
             )
         elif not (c) and (z):
-            check_types([("z", z, [str, list],)])
+            check_types([("z", z, [str, list])])
             try:
                 z = (
                     vdf_columns_names([z], vdf)[0]
@@ -324,7 +324,7 @@ def hchart_from_vdf(
             )
         else:
             if z:
-                check_types([("z", z, [str, list],)])
+                check_types([("z", z, [str, list])])
                 try:
                     z = (
                         vdf_columns_names([z], vdf)[0]
@@ -333,7 +333,7 @@ def hchart_from_vdf(
                     )
                 except:
                     pass
-            check_types([("c", c, [str, list],)])
+            check_types([("c", c, [str, list])])
             try:
                 c = (
                     vdf_columns_names([c], vdf)[0]
@@ -370,7 +370,7 @@ def hchart_from_vdf(
                 c_copy,
             )
     elif kind == "area_range":
-        check_types([("y", y, [str, list],)])
+        check_types([("y", y, [str, list])])
         if isinstance(x, Iterable) and not (isinstance(x, str)):
             x = x[0]
         columns_check([x], vdf)
@@ -388,7 +388,7 @@ def hchart_from_vdf(
     elif kind == "spider":
         if not (y):
             y = "COUNT(*)"
-        check_types([("y", y, [str, list],)])
+        check_types([("y", y, [str, list])])
         if isinstance(y, str):
             y = [y]
         if isinstance(x, Iterable) and not (isinstance(x, str)):
@@ -405,7 +405,7 @@ def hchart_from_vdf(
             else:
                 if len(y) == 1:
                     query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(x, y[0], vdf.__genSQL__(), max_cardinality)
-                    result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+                    result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
                     result = [elem[0] for elem in result]
                     result = [
                         "NULL" if elem == None else "'{}'".format(elem)
@@ -444,7 +444,7 @@ def hchart_from_vdf(
                     x, y, 1 - alpha, y, y, y, alpha, y, vdf.__genSQL__()
                 )
             else:
-                check_types([("y", y, [list],)])
+                check_types([("y", y, [list])])
                 query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
                     x, ", ".join(y), vdf.__genSQL__()
                 )
@@ -532,7 +532,7 @@ def hchart_from_vdf(
             query=query, options=options, width=width, height=height
         )
     elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman"):
-        check_types([("x", x, [list],)])
+        check_types([("x", x, [list])])
         x = vdf_columns_names(x, vdf)
         data = vdf.corr(method=kind, show=False, columns=x)
         narrow_data = get_narrow_tablesample(data, use_number_as_category=True)
@@ -589,9 +589,9 @@ def hchartSQL(
     options: dict = {},
 ):
     aggregate, stock = False, False
-    data = executeSQL("SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query), method="fetchall", print_time_sql=False,)
+    data = executeSQL("SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query), method="fetchall", print_time_sql=False)
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query),)
+    vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:
@@ -687,7 +687,7 @@ def bar(
         chart_type = "hist"
     if chart_type == "stacked_bar":
         chart_type = "bar"
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -838,8 +838,8 @@ def boxplot(
 
 
 # ---#
-def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400,):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400):
+    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highstock(width=width, height=height)
@@ -900,7 +900,7 @@ def drilldown_chart(
     height: int = 400,
     chart_type: str = "column",
 ):
-    data = executeSQL(query[0], title="Selecting the categories and their respective aggregations to draw the first part of the drilldown.", method="fetchall",)
+    data = executeSQL(query[0], title="Selecting the categories and their respective aggregations to draw the first part of the drilldown.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     chart = Highchart(width=width, height=height)
     default_options = {
@@ -942,7 +942,7 @@ def drilldown_chart(
         key = str(elem[0])
         data_final += [{"name": key, "y": val, "drilldown": key}]
     chart.add_data_set(data_final, chart_type, colorByPoint=True)
-    data = executeSQL(query[1], title="Selecting the categories and their respective aggregations to draw the second part of the drilldown.", method="fetchall",)
+    data = executeSQL(query[1], title="Selecting the categories and their respective aggregations to draw the second part of the drilldown.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     all_categories = list(set([elem[0] for elem in data]))
@@ -1001,7 +1001,7 @@ def heatmap(
     ]
     chart.set_dict_options(default_options)
     if query:
-        data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+        data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
         names = [desc[0] for desc in current_cursor().description]
         n = len(names)
         columns = data_to_columns(data, n)
@@ -1067,11 +1067,11 @@ def line(
     is_multi = True if ("multi" in chart_type) else False
     if chart_type in ("area_ts", "area_range", "multi_area"):
         chart_type = "area"
-    if chart_type in ("multi_line"):
+    if chart_type == "multi_line":
         chart_type = "line"
-    if chart_type in ("multi_spline"):
+    if chart_type == "multi_spline":
         chart_type = "spline"
-    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall",)
+    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     if stock:
@@ -1229,8 +1229,8 @@ def line(
 
 
 # ---#
-def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400,):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
+    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1309,7 +1309,7 @@ def pie(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1396,7 +1396,7 @@ def scatter(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall",)
+    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1590,8 +1590,8 @@ def scatter(
 
 
 # ---#
-def spider(query: str, options: dict = {}, width: int = 600, height: int = 400,):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall",)
+def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
+    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)

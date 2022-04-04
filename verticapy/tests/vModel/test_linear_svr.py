@@ -52,7 +52,7 @@ class TestLinearSVR:
         model_test.drop()
         model_test.fit(
             winequality_vd,
-            ["citric_acid", "residual_sugar",],
+            ["citric_acid", "residual_sugar"],
             "quality",
         )
         result = model_test.contour()

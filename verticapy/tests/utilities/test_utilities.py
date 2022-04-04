@@ -26,7 +26,7 @@ def cities_vd():
     cities = load_cities()
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities",)
+        drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def world_vd():
     cities = load_world()
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world",)
+        drop(name="public.world")
 
 
 class TestUtilities:
@@ -100,7 +100,7 @@ class TestUtilities:
         # table
         current_cursor().execute("DROP TABLE IF EXISTS public.verticapy_table_test")
         current_cursor().execute("CREATE TABLE verticapy_table_test AS SELECT 1;")
-        drop("verticapy_table_test",)
+        drop("verticapy_table_test")
         current_cursor().execute(
             "SELECT table_name FROM columns WHERE table_name = 'verticapy_table_test' GROUP BY 1;"
         )
@@ -109,7 +109,7 @@ class TestUtilities:
         # view
         current_cursor().execute("DROP VIEW IF EXISTS public.verticapy_view_test")
         current_cursor().execute("CREATE VIEW verticapy_view_test AS SELECT 1;")
-        drop("verticapy_view_test",)
+        drop("verticapy_view_test")
         current_cursor().execute(
             "SELECT table_name FROM view_columns WHERE table_name = 'verticapy_view_test' GROUP BY 1;"
         )
@@ -117,13 +117,13 @@ class TestUtilities:
         assert result == []
         # text index
         current_cursor().execute("CREATE TEXT INDEX drop_index ON drop_data (id, transportation);")
-        drop("drop_index",)
+        drop("drop_index")
         with pytest.raises(vertica_python.errors.MissingRelation):
             current_cursor().execute("SELECT * FROM drop_index;")
         # model
         current_cursor().execute("DROP MODEL IF EXISTS public.verticapy_model_test")
         current_cursor().execute("SELECT NAIVE_BAYES('public.verticapy_model_test', 'public.drop_data', 'transportation', 'gender, cost');")
-        drop("verticapy_model_test",)
+        drop("verticapy_model_test")
         current_cursor().execute("SELECT model_name FROM models WHERE model_name = 'verticapy_model_test' GROUP BY 1;")
         result = current_cursor().fetchall()
         assert result == []
@@ -131,9 +131,9 @@ class TestUtilities:
         with warnings.catch_warnings(record=True) as w:
             drop("verticapy", method="schema")
         create_verticapy_schema()
-        model = KNeighborsClassifier("verticapy_model_test",)
-        model.fit("public.drop_data", ["gender", "cost",], "transportation")
-        drop("verticapy_model_test",)
+        model = KNeighborsClassifier("verticapy_model_test")
+        model.fit("public.drop_data", ["gender", "cost"], "transportation")
+        drop("verticapy_model_test")
         current_cursor().execute("SELECT model_name FROM verticapy.models WHERE model_name = 'verticapy_model_test' GROUP BY 1;")
         result = current_cursor().fetchall()
         assert result == []
@@ -142,40 +142,40 @@ class TestUtilities:
         world_copy = world_vd.copy()
         world_copy["id"] = "ROW_NUMBER() OVER (ORDER BY pop_est)"
         result = create_index(world_copy, "id", "geometry", "world_polygons", True)
-        drop("world_polygons",)
+        drop("world_polygons")
         with pytest.raises(vertica_python.errors.QueryError):
-            describe_index("world_polygons", True,)
+            describe_index("world_polygons", True)
         drop()
 
     def test_readSQL(self):
-        result = readSQL('SELECT 1 AS "verticapy test *+""";',)
+        result = readSQL('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
     def test_get_data_types(self):
-        result = get_data_types("SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3",)
+        result = get_data_types("SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3")
         assert result == [
             ["col1", "Integer"],
             ["col2", "Varchar(3)"],
             ["col3", "Interval"],
         ]
 
-    def test_insert_into(self,):
+    def test_insert_into(self):
         from verticapy.datasets import load_iris
         # using copy
         iris = load_iris()
         result = insert_into("public.iris", iris.get_columns(), iris.to_list())
         with warnings.catch_warnings(record=True) as w:
-            drop(name="public.iris",)
+            drop(name="public.iris")
         assert result == 150
         # using multiple inserts
         iris = load_iris()
         # generating the SQL code
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True,)
+        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True)
         assert len(result) == 150
         for elem in result:
             assert elem[0:23] == "INSERT INTO public.iris"
         # executing multiple inserts
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False,)
+        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False)
         with warnings.catch_warnings(record=True) as w:
             drop(name="public.iris")
         assert result == 150
@@ -183,12 +183,12 @@ class TestUtilities:
     def test_pandas_to_vertica(self, titanic_vd):
         df = titanic_vd.to_pandas()
         with warnings.catch_warnings(record=True) as w:
-            drop("titanic_pandas",)
-        vdf = pandas_to_vertica(df=df, name="titanic_pandas",)
+            drop("titanic_pandas")
+        vdf = pandas_to_vertica(df=df, name="titanic_pandas")
         assert vdf.shape() == (1234, 14)
         with warnings.catch_warnings(record=True) as w:
-            drop("titanic_pandas",)
-        vdf = pandas_to_vertica(df=df,)
+            drop("titanic_pandas")
+        vdf = pandas_to_vertica(df=df)
         assert vdf.shape() == (1234, 14)
 
         import pandas as pd
@@ -197,17 +197,17 @@ class TestUtilities:
         vdf = pandas_to_vertica(df)
         assert vdf.shape() == (4, 2)
         with warnings.catch_warnings(record=True) as w:
-            drop("test_df",)
-        pandas_to_vertica(df, name= "test_df", schema="public",)
-        pandas_to_vertica(df, name= "test_df", schema="public", insert=True,)
-        vdf = pandas_to_vertica(df, name= "test_df", schema="public", insert=True,)
+            drop("test_df")
+        pandas_to_vertica(df, name= "test_df", schema="public")
+        pandas_to_vertica(df, name= "test_df", schema="public", insert=True)
+        vdf = pandas_to_vertica(df, name= "test_df", schema="public", insert=True)
         assert vdf.shape() == (12, 2)
         with warnings.catch_warnings(record=True) as w:
-            drop("test_df",)
+            drop("test_df")
 
 
     def test_pcsv(self):
-        result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv",)
+        result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
         assert result == {
             "age": "Numeric(6,3)",
             "boat": "Varchar(100)",
@@ -250,7 +250,7 @@ class TestUtilities:
 
     def test_read_json(self):
         with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test",)
+            drop("public.titanic_verticapy_test")
         result = read_json(
             os.path.dirname(verticapy.__file__)
             + "/tests/utilities/titanic-passengers.json",
@@ -259,9 +259,9 @@ class TestUtilities:
         )
         assert result.shape() == (891, 15)
         with warnings.catch_warnings(record=True) as w:
-            drop("titanic_verticapy_test",)
+            drop("titanic_verticapy_test")
         with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test",)
+            drop("v_temp_schema.titanic_verticapy_test")
         result = read_json(
             os.path.dirname(verticapy.__file__)
             + "/tests/utilities/titanic-passengers.json",
@@ -269,12 +269,12 @@ class TestUtilities:
         )
         assert result.shape() == (891, 15)
         with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test",)
+            drop("v_temp_schema.titanic_verticapy_test")
 
     def test_read_csv(self):
         # with schema
         with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test",)
+            drop("public.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
@@ -283,7 +283,7 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         # temporary table
         with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test",)
+            drop("public.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
@@ -293,7 +293,7 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         # parse_n_lines
         with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test",)
+            drop("public.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
@@ -309,19 +309,19 @@ class TestUtilities:
             insert=True,
         )
         assert result.shape() == (2468, 14)
-        drop("public.titanic_verticapy_test",)
+        drop("public.titanic_verticapy_test")
         # temporary local table
         with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test",)
+            drop("v_temp_schema.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
         )
         assert result.shape() == (1234, 14)
-        drop("v_temp_schema.titanic_verticapy_test",)
+        drop("v_temp_schema.titanic_verticapy_test")
         # with header names
         with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test",)
+            drop("v_temp_schema.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
@@ -329,10 +329,10 @@ class TestUtilities:
         )
         assert result.shape() == (1234, 14)
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
-        drop("v_temp_schema.titanic_verticapy_test",)
+        drop("v_temp_schema.titanic_verticapy_test")
         # with dtypes
         with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test",)
+            drop("v_temp_schema.titanic_verticapy_test")
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
             table_name="titanic_verticapy_test",
@@ -352,7 +352,7 @@ class TestUtilities:
                     "home.dest": "varchar"},
         )
         assert result.shape() == (1234, 14)
-        drop("v_temp_schema.titanic_verticapy_test",)
+        drop("v_temp_schema.titanic_verticapy_test")
         # genSQL
         result = read_csv(
             os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
@@ -365,9 +365,9 @@ class TestUtilities:
 
     def test_read_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test",)
+            drop(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
-        vdf = read_shp("/home/dbadmin/cities_test.shp",)
+        vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
         try:
             os.remove("/home/dbadmin/cities_test.shp")
@@ -376,7 +376,7 @@ class TestUtilities:
         except:
             pass
         with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test",)
+            drop(name="public.cities_test")
 
     def test_tablesample(self):
         result = tablesample(
@@ -406,7 +406,7 @@ class TestUtilities:
         
 
     def test_to_tablesample(self):
-        result = to_tablesample('SELECT 1 AS "verticapy test *+""";',)
+        result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
     def test_vdf_from_relation(self):

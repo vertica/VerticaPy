@@ -53,7 +53,7 @@ class TestLasso:
         model_test.drop()
         model_test.fit(
             winequality_vd,
-            ["residual_sugar", "alcohol",],
+            ["residual_sugar", "alcohol"],
             "quality",
         )
         with warnings.catch_warnings(record=True) as w:

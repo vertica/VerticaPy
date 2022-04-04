@@ -35,7 +35,7 @@ def model(titanic_vd):
     model_class = DBSCAN("DBSCAN_model_test", )
     model_class.drop()
     model_class.fit(
-        "public.titanic", ["age", "fare",],
+        "public.titanic", ["age", "fare"],
     )
     yield model_class
     model_class.drop()
@@ -44,14 +44,14 @@ def model(titanic_vd):
 class TestDBSCAN:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = DBSCAN("model_repr",)
+        model_repr = DBSCAN("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<DBSCAN>"
 
     def test_drop(self):
         model_test = DBSCAN("model_test_drop", )
         model_test.drop()
-        model_test.fit("public.titanic", ["age", "fare",], "survived")
+        model_test.fit("public.titanic", ["age", "fare"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
@@ -88,9 +88,9 @@ class TestDBSCAN:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, titanic_vd):
-        model_test = DBSCAN("dbscan_from_vDF",)
+        model_test = DBSCAN("dbscan_from_vDF")
         model_test.drop()
-        model_test.fit(titanic_vd, ["age", "fare",], "survived")
+        model_test.fit(titanic_vd, ["age", "fare"], "survived")
         assert model_test.predict()["dbscan_cluster"].min() == pytest.approx(
             -1, abs=1e-6
         )

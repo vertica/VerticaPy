@@ -59,7 +59,7 @@ from verticapy.toolbox import *
 
 #
 # ---#
-def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = [],):
+def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = []):
     """
 ---------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only

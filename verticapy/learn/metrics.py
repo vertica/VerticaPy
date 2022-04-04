@@ -99,10 +99,10 @@ tuple of floats
     """
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("k", k, [int],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("k", k, [int]),
         ]
     )
     query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
@@ -152,13 +152,13 @@ tablesample
     """
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("k", k, [int],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("k", k, [int]),
         ]
     )
-    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     n, avg = executeSQL(query, title="Computing n and the average of y.", method="fetchone")[0:2]
     query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
         y_score, avg, y_true, y_score, y_true, avg, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
@@ -186,7 +186,7 @@ tablesample
 
 
 # ---#
-def explained_variance(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def explained_variance(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the Explained Variance.
@@ -210,9 +210,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
@@ -222,7 +222,7 @@ float
 
 
 # ---#
-def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the Max Error.
@@ -246,12 +246,12 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     result = executeSQL(query, title="Computing the Max Error.", method="fetchone0")
     try:
         result = float(result)
@@ -261,7 +261,7 @@ float
 
 
 # ---#
-def mean_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def mean_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Absolute Error.
@@ -285,12 +285,12 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     return executeSQL(query, title="Computing the Mean Absolute Error.", method="fetchone0")
 
 
@@ -326,13 +326,13 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("root", root, [bool],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("root", root, [bool]),
         ]
     )
-    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     result = executeSQL(query, title="Computing the MSE.", method="fetchone0")
     if root:
         result = math.sqrt(result)
@@ -340,7 +340,7 @@ float
 
 
 # ---#
-def mean_squared_log_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def mean_squared_log_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the Mean Squared Log Error.
@@ -364,17 +364,17 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     return executeSQL(query, title="Computing the Mean Squared Log Error.", method="fetchone0")
 
 
 # ---#
-def median_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def median_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the Median Absolute Error.
@@ -398,17 +398,17 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     return executeSQL(query, title="Computing the Median Absolute Error.", method="fetchone0")
 
 
 # ---#
-def quantile_error(q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame],):
+def quantile_error(q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
     """
 ---------------------------------------------------------------------------
 Computes the input Quantile of the Error.
@@ -434,13 +434,13 @@ float
     """
     check_types(
         [
-            ("q", q, [int, float],),
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("q", q, [int, float]),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, q, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, q, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     return executeSQL(query, title="Computing the Quantile Error.", method="fetchone0")
 
 
@@ -479,17 +479,17 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("k", k, [int],),
-            ("adj", adj, [bool],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("k", k, [int]),
+            ("adj", adj, [bool]),
         ]
     )
-    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
-    result = executeSQL(query, title="Computing the R2 Score.", method="fetchone0",)
+    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
+    result = executeSQL(query, title="Computing the R2 Score.", method="fetchone0")
     if adj and k > 0:
-        query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score,)
+        query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score)
         n = executeSQL(query, title="Computing the table number of elements.", method="fetchone0")
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
     return result
@@ -528,16 +528,16 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("k", k, [int],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("k", k, [int]),
         ]
     )
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(y_true, y_score, y_true, y_true, y_score)
     query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(y_true, y_score, y_true, y_score)
-    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
-    r2 = r2_score(y_true, y_score, input_relation,)
+    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
+    r2 = r2_score(y_true, y_score, input_relation)
     values = {
         "index": [
             "explained_variance",
@@ -612,9 +612,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     if pos_label != None:
@@ -679,12 +679,12 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    return roc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True,)
+    return roc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True)
 
 
 # ---#
@@ -730,11 +730,11 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [list],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("labels", labels, [list],),
-            ("cutoff", cutoff, [int, float, list],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [list]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("labels", labels, [list]),
+            ("cutoff", cutoff, [int, float, list]),
         ]
     )
     if estimator:
@@ -784,7 +784,7 @@ tablesample
                 y_score[1],
                 "DECODE({}, '{}', 1, 0)".format(y_true, elem),
             )
-            matrix = confusion_matrix(y_true, y_p, input_relation, pos_label,)
+            matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
         if non_pos_label in matrix.values and pos_label in matrix.values:
             non_pos_label_, pos_label_ = non_pos_label, pos_label
         elif 0 in matrix.values and 1 in matrix.values:
@@ -824,7 +824,7 @@ tablesample
             y_p = "DECODE({}, '{}', 1, 0)".format(y_p, elem)
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
-                current_cutoff = roc_curve(y_t, y_p, input_relation, best_threshold=True, nbins=10000,)
+                current_cutoff = roc_curve(y_t, y_p, input_relation, best_threshold=True, nbins=10000)
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
                     current_cutoff = cutoff[0]
@@ -885,15 +885,15 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    version(condition=[8, 0, 0],)
+    version(condition=[8, 0, 0])
     query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(y_true)
-    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(pos_label, y_score, pos_label, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
-    result = to_tablesample(query, title="Computing Confusion matrix.",)
+    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(pos_label, y_score, pos_label, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__())
+    result = to_tablesample(query, title="Computing Confusion matrix.")
     if pos_label in [1, "1"]:
         labels = [0, 1]
     else:
@@ -943,12 +943,12 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label,)
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -993,12 +993,12 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label,)
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
@@ -1049,9 +1049,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1100,13 +1100,13 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
-    query = query.format(y_true, pos_label, y_score, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,)
+    query = query.format(y_true, pos_label, y_score, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
     return executeSQL(query, title="Computing the Log Loss.", method="fetchone0")
 
 
@@ -1143,9 +1143,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1195,9 +1195,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1249,10 +1249,10 @@ tablesample
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("labels", labels, [list],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("labels", labels, [list]),
         ]
     )
     version(condition=[8, 0, 0])
@@ -1265,8 +1265,8 @@ tablesample
     query += ") AS obs, DECODE({}".format(y_score)
     for idx, item in enumerate(labels):
         query += ", '{}', {}".format(item, idx)
-    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(),)
-    result = to_tablesample(query, title="Computing Confusion Matrix.",)
+    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation if isinstance(input_relation, str) else input_relation.__genSQL__())
+    result = to_tablesample(query, title="Computing Confusion Matrix.")
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -1312,9 +1312,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1369,13 +1369,13 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("nbins", nbins, [int],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("nbins", nbins, [int]),
         ]
     )
-    return prc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True,)
+    return prc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True)
 
 
 # ---#
@@ -1411,9 +1411,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1461,9 +1461,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
@@ -1511,9 +1511,9 @@ float
 	"""
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
         ]
     )
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)

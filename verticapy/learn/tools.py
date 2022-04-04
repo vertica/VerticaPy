@@ -81,18 +81,18 @@ int
     1 if the model exists and is native.
     2 if the model exists and is not native.
     """
-    check_types([("name", name, [str],)])
+    check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
-    result = executeSQL("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1", method="fetchone", print_time_sql=False,)
+    result = executeSQL("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1", method="fetchone", print_time_sql=False)
     if result:
-        result = executeSQL("SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(str_column(name)), method="fetchone", print_time_sql=False,)
+        result = executeSQL("SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(str_column(name)), method="fetchone", print_time_sql=False)
         if result:
             model_type = result[0]
             result = 2
     if not(result):
-        result = executeSQL("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema), method="fetchone", print_time_sql=False,)
+        result = executeSQL("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema), method="fetchone", print_time_sql=False)
         if result:
             model_type = result[0]
             result = 1
@@ -105,7 +105,7 @@ int
     return result
 
 # ---#
-def load_model(name: str, input_relation: str = "", test_relation: str = "",):
+def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
 ---------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
@@ -127,15 +127,15 @@ Returns
 model
     The model.
     """
-    check_types([("name", name, [str],), 
-                 ("test_relation", test_relation, [str],),
-                 ("input_relation", input_relation, [str],),])
-    does_exist = does_model_exist(name=name, raise_error=False,)
+    check_types([("name", name, [str]), 
+                 ("test_relation", test_relation, [str]),
+                 ("input_relation", input_relation, [str])])
+    does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
     assert does_exist, NameError("The model '{}' doesn't exist.".format(name))
     if does_exist == 2:
-        result = executeSQL("SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(str_column(name.lower())), method="fetchall", print_time_sql=False,)
+        result = executeSQL("SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(str_column(name.lower())), method="fetchall", print_time_sql=False)
         model_save = {}
         for elem in result:
             ldic = {}
@@ -164,12 +164,12 @@ model
         elif model_save["type"] == "KNeighborsClassifier":
             from verticapy.learn.neighbors import KNeighborsClassifier
 
-            model = KNeighborsClassifier(name, model_save["n_neighbors"], model_save["p"],)
+            model = KNeighborsClassifier(name, model_save["n_neighbors"], model_save["p"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsRegressor":
             from verticapy.learn.neighbors import KNeighborsRegressor
 
-            model = KNeighborsRegressor(name, model_save["n_neighbors"], model_save["p"],)
+            model = KNeighborsRegressor(name, model_save["n_neighbors"], model_save["p"])
         elif model_save["type"] == "KernelDensity":
             from verticapy.learn.neighbors import KernelDensity
 
@@ -280,14 +280,14 @@ model
             elif model_save["type"] not in ("CountVectorizer", "VAR"):
                 model.key_columns = model_save["key_columns"]
     else:
-        model_type = does_model_exist(name=name, raise_error=False, return_model_type=True,)
+        model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
         if model_type.lower() == "kmeans":
-            info = executeSQL("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')", method="fetchone0", print_time_sql=False,).replace("\n", " ")
+            info = executeSQL("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')", method="fetchone0", print_time_sql=False).replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
 
-            model = Normalizer(name,)
+            model = Normalizer(name)
             model.param_ = model.get_attr("details")
             model.X = [
                 '"' + item + '"' for item in model.param_.values["column_name"]
@@ -300,7 +300,7 @@ model
                 model.parameters["method"] = "robust_zscore"
             return model
         else:
-            info = executeSQL("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')", method="fetchone0", print_time_sql=False,).replace("\n", " ")
+            info = executeSQL("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')", method="fetchone0", print_time_sql=False).replace("\n", " ")
         if "SELECT " in info:
             info = info.split("SELECT ")[1].split("(")
         else:
@@ -538,13 +538,13 @@ model
         elif model_type == "svd":
             from verticapy.learn.decomposition import SVD
 
-            model = SVD(name,)
+            model = SVD(name)
             model.singular_values_ = model.get_attr("right_singular_vectors")
             model.explained_variance_ = model.get_attr("singular_values")
         elif model_type == "one_hot_encoder_fit":
             from verticapy.learn.preprocessing import OneHotEncoder
 
-            model = OneHotEncoder(name,)
+            model = OneHotEncoder(name)
             try:
                 model.param_ = to_tablesample(
                     query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
@@ -577,15 +577,15 @@ model
             model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
-                classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(model.y, model.input_relation, model.y), method="fetchall", print_time_sql=False,)
+                classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(model.y, model.input_relation, model.y), method="fetchall", print_time_sql=False)
                 model.classes_ = [item[0] for item in classes]
             except:
                 model.classes_ = [0, 1]
         elif model_type in ("svm_classifier", "logistic_reg"):
             model.classes_ = [0, 1]
-        if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
+        if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg"):
             model.coef_ = model.get_attr("details")
-        if model_type in ("xgb_classifier", "xgb_regressor",):
+        if model_type in ("xgb_classifier", "xgb_regressor"):
             v = version()
             v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
             if v:
@@ -624,10 +624,10 @@ Returns
 model
     The model.
     """
-    check_types([("Phi", Phi, [list,],),
-    			 ("gamma", gamma, [int, float,],),
-    			 ("q", q, [int, float,],),
-    			 ("tol", tol, [int, float,],),])
+    check_types([("Phi", Phi, [list]),
+    			 ("gamma", gamma, [int, float]),
+    			 ("q", q, [int, float]),
+    			 ("tol", tol, [int, float])])
     Phi = np.array(Phi)
     p,k = Phi.shape
     R = eye(k)

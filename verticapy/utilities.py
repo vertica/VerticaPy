@@ -104,12 +104,12 @@ bool
     """
     check_types(
         [
-            ("table_name", table_name, [str],),
-            ("schema", schema, [str],),
-            ("dtype", dtype, [dict],),
-            ("genSQL", genSQL, [bool],),
-            ("temporary_table", temporary_table, [bool],),
-            ("temporary_local_table", temporary_local_table, [bool],),
+            ("table_name", table_name, [str]),
+            ("schema", schema, [str]),
+            ("dtype", dtype, [dict]),
+            ("genSQL", genSQL, [bool]),
+            ("temporary_table", temporary_table, [bool]),
+            ("temporary_local_table", temporary_local_table, [bool]),
         ]
     )
     if schema.lower() == "v_temp_schema":
@@ -151,7 +151,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
 
 
 # ---#
-def drop(name: str = "", raise_error: bool = False, method: str = "auto",):
+def drop(name: str = "", raise_error: bool = False, method: str = "auto"):
     """
 ---------------------------------------------------------------------------
 Drops the input relation. This can be a model, view, table, text index,
@@ -184,12 +184,12 @@ bool
         method = method.lower()
     check_types(
         [
-            ("name", name, [str],),
-            ("raise_error", raise_error, [bool],),
+            ("name", name, [str]),
+            ("raise_error", raise_error, [bool]),
             (
                 "method",
                 method,
-                ["table", "view", "model", "geo", "text", "auto", "schema",],
+                ["table", "view", "model", "geo", "text", "auto", "schema"],
             ),
         ]
     )
@@ -200,17 +200,17 @@ bool
     if method == "auto":
         fail, end_conditions = False, False
         query = f"SELECT * FROM columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
-        result = executeSQL(query, print_time_sql=False, method="fetchone",)
+        result = executeSQL(query, print_time_sql=False, method="fetchone")
         if not (result):
             query = f"SELECT * FROM view_columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
-            result = executeSQL(query, print_time_sql=False, method="fetchone",)
+            result = executeSQL(query, print_time_sql=False, method="fetchone")
         elif not (end_conditions):
             method = "table"
             end_conditions = True
         if not (result):
             try:
                 query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(str_column(name).lower())
-                result = executeSQL(query, print_time_sql=False, method="fetchone",)
+                result = executeSQL(query, print_time_sql=False, method="fetchone")
             except:
                 result = []
         elif not (end_conditions):
@@ -218,13 +218,13 @@ bool
             end_conditions = True
         if not (result):
             query = f"SELECT * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
-            result = executeSQL(query, print_time_sql=False, method="fetchone",)
+            result = executeSQL(query, print_time_sql=False, method="fetchone")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
         if not (result):
             query = f"SELECT * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN ('{schema}.{relation}', '{relation}', '\"{schema}\".\"{relation}\"', '\"{relation}\"', '{schema}.\"{relation}\"', '\"{schema}\".{relation}')"
-            result = executeSQL(query, print_time_sql=False, method="fetchone",)
+            result = executeSQL(query, print_time_sql=False, method="fetchone")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
@@ -248,30 +248,30 @@ bool
     if method == "model":
         try:
             query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(str_column(name).lower())
-            result = executeSQL(query, print_time_sql=False, method="fetchone",)
+            result = executeSQL(query, print_time_sql=False, method="fetchone")
         except:
             result = []
         if result:
             model_type = result[0]
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
-                drop(name, method="table",)
-            elif model_type in ("CountVectorizer"):
-                drop(name, method="text",)
+                drop(name, method="table")
+            elif model_type == "CountVectorizer":
+                drop(name, method="text")
                 query = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(str_column(name).lower())
-                res = executeSQL(query, print_time_sql=False, method="fetchone0",)
-                drop(res, method="table",)
-            elif model_type in ("KernelDensity",):
-                drop(name.replace('"', "") + "_KernelDensity_Map", method="table",)
-                drop("{}_KernelDensity_Tree".format(name.replace('"', "")), method="model",)
+                res = executeSQL(query, print_time_sql=False, method="fetchone0")
+                drop(res, method="table")
+            elif model_type == "KernelDensity":
+                drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
+                drop("{}_KernelDensity_Tree".format(name.replace('"', "")), method="model")
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
-            executeSQL(sql, title="Deleting vModel.",)
+            executeSQL(sql, title="Deleting vModel.")
             executeSQL("COMMIT;", title="Commit.")
             sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
                 str_column(name).lower()
             )
-            executeSQL(sql, title="Deleting vModel attributes.",)
+            executeSQL(sql, title="Deleting vModel attributes.")
             executeSQL("COMMIT;", title="Commit.")
         else:
             query = f"DROP MODEL {name};"
@@ -287,7 +287,7 @@ bool
         query = f"DROP SCHEMA {name} CASCADE;"
     if query:
         try:
-            executeSQL(query, title="Deleting the relation.",)
+            executeSQL(query, title="Deleting the relation.")
             result = True
         except:
             if raise_error:
@@ -299,22 +299,22 @@ bool
             result = False
     elif method == "temp":
         sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
-        all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall",)
+        all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_tables:
             table = '"{}"."{}"'.format(elem[0].replace('"', '""'), elem[1].replace('"', '""'))
-            drop_if_exists(table, method="table",)
+            drop_if_exists(table, method="table")
         sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
-        all_views = executeSQL(sql, print_time_sql=False, method="fetchall",)
+        all_views = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_views:
             view = '"{}"."{}"'.format(elem[0].replace('"', '""'), elem[1].replace('"', '""'))
-            drop_if_exists(view, method="view",)
+            drop_if_exists(view, method="view")
         result = True
     else:
         result = True
     return result
 
 # ---#
-def drop_if_exists(name: str = "", method: str = "auto",):
+def drop_if_exists(name: str = "", method: str = "auto"):
     """
 ---------------------------------------------------------------------------
 Drops the input relation if it exists. This can be a model, view, table, 
@@ -344,13 +344,13 @@ bool
     """
     try:
         with warnings.catch_warnings(record=True) as w:
-            result = drop(name, method=method,)
+            result = drop(name, method=method)
     except:
         result = False
     return result
 
 # ---#
-def readSQL(query: str, time_on: bool = False, limit: int = 100,):
+def readSQL(query: str, time_on: bool = False, limit: int = 100):
     """
 	---------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
@@ -371,23 +371,23 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100,):
 	"""
     check_types(
         [
-            ("query", query, [str],),
-            ("time_on", time_on, [bool],),
-            ("limit", limit, [int, float],),
+            ("query", query, [str]),
+            ("time_on", time_on, [bool]),
+            ("limit", limit, [int, float]),
         ]
     )
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    count = executeSQL("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query), method="fetchone0")
+    count = executeSQL("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query), method="fetchone0", print_time_sql=False)
     query_on_init = verticapy.options["query_on"]
     time_on_init = verticapy.options["time_on"]
     try:
         verticapy.options["time_on"] = time_on
         verticapy.options["query_on"] = False
         try:
-            result = to_tablesample("{} LIMIT {}".format(query, limit),)
+            result = to_tablesample("{} LIMIT {}".format(query, limit))
         except:
-            result = to_tablesample(query,)
+            result = to_tablesample(query)
     except:
         verticapy.options["time_on"] = time_on_init
         verticapy.options["query_on"] = query_on_init
@@ -396,7 +396,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100,):
     verticapy.options["query_on"] = query_on_init
     result.count = count
     if verticapy.options["percent_bar"]:
-        vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query),)
+        vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
@@ -405,7 +405,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100,):
 
 
 # ---#
-def get_data_types(expr: str, column_name: str = "",):
+def get_data_types(expr: str, column_name: str = ""):
     """
 ---------------------------------------------------------------------------
 Returns customized relation columns and the respective data types.
@@ -428,7 +428,7 @@ list of tuples
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
         try:
             if column_name:
-                executeSQL(expr, print_time_sql=False,)
+                executeSQL(expr, print_time_sql=False)
                 description = current_cursor().description[0]
                 return type_code_dtype(
                     type_code=description[1],
@@ -437,7 +437,7 @@ list of tuples
                     scale=description[5],
                 )
             else:
-                executeSQL(expr, print_time_sql=False,)
+                executeSQL(expr, print_time_sql=False)
                 description, ctype = current_cursor().description, []
                 for elem in description:
                     ctype += [
@@ -458,9 +458,9 @@ list of tuples
     drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
     try:
         if schema == "v_temp_schema":
-            executeSQL("CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(tmp_name, expr), print_time_sql=False,)
+            executeSQL("CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(tmp_name, expr), print_time_sql=False)
         else:
-            executeSQL("CREATE TEMPORARY TABLE {}.{} ON COMMIT PRESERVE ROWS AS {}".format(schema, tmp_name, expr), print_time_sql=False,)
+            executeSQL("CREATE TEMPORARY TABLE {}.{} ON COMMIT PRESERVE ROWS AS {}".format(schema, tmp_name, expr), print_time_sql=False)
     except:
         drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
         raise
@@ -482,7 +482,7 @@ def insert_into(table_name: str,
                 column_names: list, 
                 data: list,
                 copy: bool = True,
-                genSQL: bool = False,):
+                genSQL: bool = False):
     """
 ---------------------------------------------------------------------------
 Inserts the dataset into an existing Vertica table.
@@ -603,12 +603,12 @@ read_json : Ingests a JSON file into the Vertica database.
     """
     check_types(
         [
-            ("name", name, [str,],),
-            ("schema", schema, [str,],),
-            ("parse_n_lines", parse_n_lines, [int,],),
-            ("dtype", dtype, [dict,],),
-            ("temp_path", temp_path, [str,],),
-            ("insert", insert, [bool,],),
+            ("name", name, [str]),
+            ("schema", schema, [str]),
+            ("parse_n_lines", parse_n_lines, [int]),
+            ("dtype", dtype, [dict]),
+            ("temp_path", temp_path, [str]),
+            ("insert", insert, [bool]),
         ]
     )
     if not(schema):
@@ -618,7 +618,7 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    path = "{}{}{}.csv".format(temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name,)
+    path = "{}{}{}.csv".format(temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name)
     try:
         # Adding the quotes to STR pandas columns in order to simplify the ingestion.
         # Not putting them can lead to wrong data ingestion.
@@ -636,7 +636,7 @@ read_json : Ingests a JSON file into the Vertica database.
             clear = False
         import csv
 
-        tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\027',)
+        tmp_df.to_csv(path, index=False, quoting=csv.QUOTE_NONE, quotechar='', escapechar='\027')
         if (insert):
             input_relation = "{}.{}".format(str_column(schema), str_column(name))
             query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
@@ -647,11 +647,11 @@ read_json : Ingests a JSON file into the Vertica database.
             executeSQL(query, title="Inserting the pandas.DataFrame.")
             from verticapy import vDataFrame
 
-            vdf = vDataFrame(name, schema=schema,)
+            vdf = vDataFrame(name, schema=schema)
         elif (tmp_name):
-            vdf = read_csv(path, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines, escape='\\',)
+            vdf = read_csv(path, table_name=tmp_name, dtype=dtype, temporary_local_table=True, parse_n_lines=parse_n_lines, escape='\\')
         else:
-            vdf = read_csv(path, table_name=name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines, escape='\\',)
+            vdf = read_csv(path, table_name=name, dtype=dtype, schema=schema, temporary_local_table=False, parse_n_lines=parse_n_lines, escape='\\')
         os.remove(path)
     except:
         os.remove(path)
@@ -709,7 +709,7 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = gen_tmp_name(name="flex",)[1:-1]
+    flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table to identify the data types.")
     header_names = (
         ""
@@ -718,7 +718,7 @@ read_json : Ingests a JSON file into the Vertica database.
     )
     executeSQL("COPY {} FROM{} '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(flex_name, " LOCAL" if ingest_local else "", path, sep, header, header_names, quotechar, escape, na_rep), title="Parsing the data.")
     executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Guessing flex tables keys.")
-    result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name), title="Guessing the data types.", method="fetchall",)
+    result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name), title="Guessing the data types.", method="fetchall")
     dtype = {}
     for column_dtype in result:
         try:
@@ -731,7 +731,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 flex_name,
                 column_dtype[0],
             )
-            executeSQL(query, print_time_sql=False,)
+            executeSQL(query, print_time_sql=False)
             dtype[column_dtype[0]] = column_dtype[1]
         except:
             dtype[column_dtype[0]] = "Varchar(100)"
@@ -739,7 +739,7 @@ read_json : Ingests a JSON file into the Vertica database.
     return dtype
 
 # ---#
-def pjson(path: str, ingest_local: bool = True,):
+def pjson(path: str, ingest_local: bool = True):
     """
 ---------------------------------------------------------------------------
 Parses a JSON file using flex tables. It will identify the columns and their
@@ -762,11 +762,11 @@ See Also
 read_csv  : Ingests a CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
 	"""
-    flex_name = gen_tmp_name(name="flex",)[1:-1]
+    flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating a flex table.")
-    executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data.")
+    executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''")), title="Ingesting the data.")
     executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")
-    result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name), title="Guessing data types.", method="fetchall",)
+    result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name), title="Guessing data types.", method="fetchall")
     dtype = {}
     for column_dtype in result:
         dtype[column_dtype[0]] = column_dtype[1]
@@ -855,22 +855,22 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     check_types(
         [
-            ("path", path, [str],),
-            ("schema", schema, [str],),
-            ("table_name", table_name, [str],),
-            ("sep", sep, [str],),
-            ("header", header, [bool],),
-            ("header_names", header_names, [list],),
-            ("na_rep", na_rep, [str],),
-            ("dtype", dtype, [dict],),
-            ("quotechar", quotechar, [str],),
-            ("escape", escape, [str],),
-            ("genSQL", genSQL, [bool],),
-            ("parse_n_lines", parse_n_lines, [int, float],),
-            ("insert", insert, [bool],),
-            ("temporary_table", temporary_table, [bool],),
-            ("temporary_local_table", temporary_local_table, [bool],),
-            ("ingest_local", ingest_local, [bool],),
+            ("path", path, [str]),
+            ("schema", schema, [str]),
+            ("table_name", table_name, [str]),
+            ("sep", sep, [str]),
+            ("header", header, [bool]),
+            ("header_names", header_names, [list]),
+            ("na_rep", na_rep, [str]),
+            ("dtype", dtype, [dict]),
+            ("quotechar", quotechar, [str]),
+            ("escape", escape, [str]),
+            ("genSQL", genSQL, [bool]),
+            ("parse_n_lines", parse_n_lines, [int, float]),
+            ("insert", insert, [bool]),
+            ("temporary_table", temporary_table, [bool]),
+            ("temporary_local_table", temporary_local_table, [bool]),
+            ("ingest_local", ingest_local, [bool]),
         ]
     )
     if (schema):
@@ -902,7 +902,7 @@ read_json : Ingests a JSON file into the Vertica database.
     query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
     )
-    result = executeSQL(query, title="Looking if the relation exists.", method="fetchall",)
+    result = executeSQL(query, title="Looking if the relation exists.", method="fetchall")
     if (result != []) and not (insert):
         raise NameError(
             'The table "{}"."{}" already exists !'.format(schema, table_name)
@@ -969,13 +969,13 @@ read_json : Ingests a JSON file into the Vertica database.
         query1 = ""
         if not (insert):
             if not(dtype):
-                dtype = pcsv(path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local,)
+                dtype = pcsv(path_test, sep, header, header_names, na_rep, quotechar, escape, ingest_local=ingest_local)
             if parse_n_lines > 0:
                 os.remove(path[0:-4] + "verticapy_copy.csv")
             dtype_sorted = {}
             for elem in header_names:
                 dtype_sorted[elem] = dtype[elem]
-            query1 = create_table(table_name, dtype_sorted, schema, temporary_table, temporary_local_table, genSQL=True,)
+            query1 = create_table(table_name, dtype_sorted, schema, temporary_table, temporary_local_table, genSQL=True)
         skip = " SKIP 1" if (header) else ""
         query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
             input_relation,
@@ -999,7 +999,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 )
             from verticapy import vDataFrame
 
-            return vDataFrame(table_name, schema=schema,)
+            return vDataFrame(table_name, schema=schema)
 
 
 # ---#
@@ -1059,14 +1059,14 @@ read_csv : Ingests a CSV file into the Vertica database.
 	"""
     check_types(
         [
-            ("schema", schema, [str],),
-            ("table_name", table_name, [str],),
-            ("usecols", usecols, [list],),
-            ("new_name", new_name, [dict],),
-            ("insert", insert, [bool],),
-            ("temporary_table", temporary_table, [bool],),
-            ("temporary_local_table", temporary_local_table, [bool],),
-            ("ingest_local", ingest_local, [bool],)
+            ("schema", schema, [str]),
+            ("table_name", table_name, [str]),
+            ("usecols", usecols, [list]),
+            ("new_name", new_name, [dict]),
+            ("insert", insert, [bool]),
+            ("temporary_table", temporary_table, [bool]),
+            ("temporary_local_table", temporary_local_table, [bool]),
+            ("ingest_local", ingest_local, [bool])
         ]
     )
     if (schema):
@@ -1083,7 +1083,7 @@ read_csv : Ingests a CSV file into the Vertica database.
     if not (table_name):
         table_name = path.split("/")[-1].split(".json")[0]
     query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(table_name.replace("'", "''"), schema.replace("'", "''"))
-    column_name = executeSQL(query, title="Looking if the relation exists.", method="fetchall",)
+    column_name = executeSQL(query, title="Looking if the relation exists.", method="fetchall")
     if (column_name != []) and not (insert):
         raise NameError(
             'The table "{}"."{}" already exists !'.format(schema, table_name)
@@ -1097,15 +1097,15 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = '"{}"."{}"'.format(schema, table_name)
         else:
             input_relation = '"{}"'.format(table_name)
-        flex_name = gen_tmp_name(name="flex",)[1:-1]
+        flex_name = gen_tmp_name(name="flex")[1:-1]
         executeSQL("CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(flex_name), title="Creating flex table.")
-        executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''"),), title="Ingesting the data in the flex table.")
+        executeSQL("COPY {} FROM{} '{}' PARSER FJSONPARSER();".format(flex_name, " LOCAL" if ingest_local else "", path.replace("'", "''")), title="Ingesting the data in the flex table.")
         executeSQL("SELECT compute_flextable_keys('{}');".format(flex_name), title="Computing flex table keys.")
-        result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),title="Guessing data types.", method="fetchall",)
+        result = executeSQL("SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),title="Guessing data types.", method="fetchall")
         dtype = {}
         for column_dtype in result:
             try:
-                executeSQL('SELECT "{}"::{} FROM {} LIMIT 1000'.format(column_dtype[0], column_dtype[1], flex_name), print_time_sql=False,)
+                executeSQL('SELECT "{}"::{} FROM {} LIMIT 1000'.format(column_dtype[0], column_dtype[1], flex_name), print_time_sql=False)
                 dtype[column_dtype[0]] = column_dtype[1]
             except:
                 dtype[column_dtype[0]] = "Varchar(100)"
@@ -1157,7 +1157,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         executeSQL("DROP TABLE {}".format(flex_name), title="Dropping the Flex Table.")
         from verticapy import vDataFrame
 
-        return vDataFrame(table_name, schema=schema,)
+        return vDataFrame(table_name, schema=schema)
 
 
 # ---#
@@ -1185,9 +1185,9 @@ vDataFrame
     """
     check_types(
         [
-            ("path", path, [str],),
-            ("schema", schema, [str],),
-            ("table_name", table_name, [str],),
+            ("path", path, [str]),
+            ("schema", schema, [str]),
+            ("table_name", table_name, [str]),
         ]
     )
     file = path.split("/")[-1]
@@ -1195,7 +1195,7 @@ vDataFrame
     if file_extension != "shp":
         raise ExtensionError("The file extension is incorrect !")
     query = f"SELECT STV_ShpCreateTable(USING PARAMETERS file='{path}') OVER() AS create_shp_table;"
-    result = executeSQL(query, title="Getting SHP definition.", method="fetchall",)
+    result = executeSQL(query, title="Getting SHP definition.", method="fetchall")
     if not (table_name):
         table_name = file[:-4]
     result[0] = [f'CREATE TABLE "{schema}"."{table_name}"(']
@@ -1207,11 +1207,11 @@ vDataFrame
     print(f'The table "{schema}"."{table_name}" has been successfully created.')
     from verticapy import vDataFrame
 
-    return vDataFrame(table_name, schema=schema,)
+    return vDataFrame(table_name, schema=schema)
 
 
 # ---#
-def set_option(option: str, value: Union[bool, int, str] = None,):
+def set_option(option: str, value: Union[bool, int, str] = None):
     """
     ---------------------------------------------------------------------------
     Sets VerticaPy options.
@@ -1290,7 +1290,7 @@ def set_option(option: str, value: Union[bool, int, str] = None,):
         if isinstance(value, list):
             verticapy.options["colors"] = [str(elem) for elem in value]
     elif option == "color_style":
-        check_types([("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default",])])
+        check_types([("value", value, ["rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", "magenta", "orange", "vintage", "vivid", "berries", "refreshing", "summer", "tropical", "india", "default"])])
         if isinstance(value, str):
             verticapy.options["color_style"] = value
     elif option == "max_columns":
@@ -1329,7 +1329,7 @@ def set_option(option: str, value: Union[bool, int, str] = None,):
         check_types([("value", value, [str])])
         if isinstance(value, str):
             query = "SELECT table_schema FROM columns WHERE table_schema = '{}' LIMIT 1;".format(value.replace("'", "''"))
-            res = executeSQL(query, title="Checking if the schema exists.", method="fetchone",)
+            res = executeSQL(query, title="Checking if the schema exists.", method="fetchone")
             if res:
                 verticapy.options["temp_schema"] = str(value)
             else:
@@ -1387,11 +1387,11 @@ The tablesample attributes are the same than the parameters.
     ):
         check_types(
             [
-                ("values", values, [dict],),
-                ("dtype", dtype, [dict],),
-                ("count", count, [int],),
-                ("offset", offset, [int],),
-                ("percent", percent, [dict],),
+                ("values", values, [dict]),
+                ("dtype", dtype, [dict]),
+                ("count", count, [int]),
+                ("offset", offset, [int]),
+                ("percent", percent, [dict]),
             ]
         )
         self.values = values
@@ -1557,7 +1557,7 @@ The tablesample attributes are the same than the parameters.
         values = {}
         for item in columns:
             values[item[0]] = item[1 : len(item)]
-        return tablesample(values, self.dtype, self.count, self.offset, self.percent,)
+        return tablesample(values, self.dtype, self.count, self.offset, self.percent)
 
     # ---#
     def to_list(self):
@@ -1669,7 +1669,7 @@ The tablesample attributes are the same than the parameters.
         return sql
 
     # ---#
-    def to_vdf(self,):
+    def to_vdf(self):
         """
 	---------------------------------------------------------------------------
 	Converts the tablesample to a vDataFrame.
@@ -1685,11 +1685,11 @@ The tablesample attributes are the same than the parameters.
 	tablesample.to_sql    : Generates the SQL query associated to the tablesample.
 		"""
         relation = "({}) sql_relation".format(self.to_sql())
-        return vdf_from_relation(relation,)
+        return vdf_from_relation(relation)
 
 
 # ---#
-def to_tablesample(query: str, title: str = "",):
+def to_tablesample(query: str, title: str = ""):
     """
 	---------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
@@ -1710,7 +1710,7 @@ def to_tablesample(query: str, title: str = "",):
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str],)])
+    check_types([("query", query, [str])])
     if verticapy.options["query_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -1777,11 +1777,11 @@ vDataFrame
 	"""
     check_types(
         [
-            ("relation", relation, [str],),
-            ("name", name, [str],),
-            ("schema", schema, [str],),
-            ("history", history, [list],),
-            ("saving", saving, [list],),
+            ("relation", relation, [str]),
+            ("name", name, [str]),
+            ("schema", schema, [str]),
+            ("history", history, [list]),
+            ("saving", saving, [list]),
         ]
     )
     if vdf:
@@ -1798,7 +1798,7 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
-    dtypes = get_data_types("SELECT * FROM {} LIMIT 0".format(relation),)
+    dtypes = get_data_types("SELECT * FROM {} LIMIT 0".format(relation))
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
     for column, ctype in dtypes:
         if '"' in column:
@@ -1825,7 +1825,7 @@ vDataFrame
 
 
 # ---#
-def version(condition: list = [],):
+def version(condition: list = []):
     """
 ---------------------------------------------------------------------------
 Returns the Vertica Version.
@@ -1842,11 +1842,11 @@ list
     List containing the version information.
     [MAJOR, MINOR, PATCH, POST]
     """
-    check_types([("condition", condition, [list],),])
+    check_types([("condition", condition, [list])])
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not(verticapy.options["vertica_version"]):
-        version = executeSQL("SELECT version();", title="Getting the version.", method="fetchone0",).split("Vertica Analytic Database v")[1]
+        version = executeSQL("SELECT version();", title="Getting the version.", method="fetchone0").split("Vertica Analytic Database v")[1]
         version = version.split(".")
         result = []
         try:
@@ -1941,7 +1941,7 @@ VERTICAPY Interactive Help (FAQ).
     elif response == 1:
         message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic()\n```"
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation",)\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation")\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"

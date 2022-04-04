@@ -344,7 +344,7 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
-        classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(self.y, self.input_relation, self.y, self.y), method="fetchall", print_time_sql=False,)
+        classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(self.y, self.input_relation, self.y, self.y), method="fetchall", print_time_sql=False)
         self.classes_ = [item[0] for item in classes]
         model_save = {
             "type": "KNeighborsClassifier",
@@ -391,14 +391,14 @@ p: int, optional
         if not (isinstance(labels, Iterable)) or isinstance(labels, str):
             labels = [labels]
         check_types(
-            [("cutoff", cutoff, [int, float, list],), ("labels", labels, [list],),]
+            [("cutoff", cutoff, [int, float, list]), ("labels", labels, [list])]
         )
         if not (labels):
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def cutoff_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
+    def cutoff_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the ROC curve of a classification model.
@@ -455,7 +455,7 @@ p: int, optional
         An object containing the result. For more information, see
         utilities.tablesample.
         """
-        check_types([("cutoff", cutoff, [int, float],)])
+        check_types([("cutoff", cutoff, [int, float])])
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -467,7 +467,7 @@ p: int, optional
             )
             y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
             y_true = "DECODE({}, '{}', 1, 0)".format(self.y, pos_label)
-            result = confusion_matrix(y_true, y_score, input_relation,)
+            result = confusion_matrix(y_true, y_score, input_relation)
             if pos_label == 1:
                 return result
             else:
@@ -487,7 +487,7 @@ p: int, optional
             )
 
     # ---#
-    def lift_chart(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
+    def lift_chart(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -525,7 +525,7 @@ p: int, optional
         )
 
     # ---#
-    def prc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
+    def prc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -606,17 +606,17 @@ p: int, optional
             X = [X]
         check_types(
             [
-                ("cutoff", cutoff, [int, float],),
-                ("all_classes", all_classes, [bool],),
-                ("name", name, [str],),
-                ("cutoff", cutoff, [int, float],),
-                ("X", X, [list],),
-                ("inplace", inplace, [bool],),
-                ("vdf", vdf, [str, vDataFrame],),
+                ("cutoff", cutoff, [int, float]),
+                ("all_classes", all_classes, [bool]),
+                ("name", name, [str]),
+                ("cutoff", cutoff, [int, float]),
+                ("X", X, [list]),
+                ("inplace", inplace, [bool]),
+                ("vdf", vdf, [str, vDataFrame]),
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf,)
+            vdf = vdf_from_relation(relation=vdf)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -682,12 +682,12 @@ p: int, optional
                 )
         sql = "({}) VERTICAPY_SUBTABLE".format(sql)
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf,)
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql,)
+            return vdf_from_relation(name="Neighbors", relation=sql)
 
     # ---#
-    def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,):
+    def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -764,7 +764,7 @@ p: int, optional
     float
         score
         """
-        check_types([("cutoff", cutoff, [int, float],), ("method", method, [str],)])
+        check_types([("cutoff", cutoff, [int, float]), ("method", method, [str])])
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
         input_relation = "(SELECT * FROM {} WHERE predict_neighbors = '{}') final_centroids_relation".format(
@@ -788,35 +788,35 @@ p: int, optional
                     pos_label=None,
                 )
             else:
-                return accuracy_score(y_true, y_score, input_relation, pos_label=pos_label,)
+                return accuracy_score(y_true, y_score, input_relation, pos_label=pos_label)
         elif method == "auc":
-            return auc(y_true, y_proba, input_relation,)
+            return auc(y_true, y_proba, input_relation)
         elif method == "prc_auc":
-            return prc_auc(y_true, y_proba, input_relation,)
+            return prc_auc(y_true, y_proba, input_relation)
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 y_true, y_proba, input_relation, best_threshold=True
             )
         elif method in ("recall", "tpr"):
-            return recall_score(y_true, y_score, input_relation,)
+            return recall_score(y_true, y_score, input_relation)
         elif method in ("precision", "ppv"):
-            return precision_score(y_true, y_score, input_relation,)
+            return precision_score(y_true, y_score, input_relation)
         elif method in ("specificity", "tnr"):
-            return specificity_score(y_true, y_score, input_relation,)
+            return specificity_score(y_true, y_score, input_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(y_true, y_score, input_relation,)
+            return precision_score(y_true, y_score, input_relation)
         elif method in ("log_loss", "logloss"):
-            return log_loss(y_true, y_proba, input_relation,)
+            return log_loss(y_true, y_proba, input_relation)
         elif method == "f1":
-            return f1_score(y_true, y_score, input_relation,)
+            return f1_score(y_true, y_score, input_relation)
         elif method == "mcc":
-            return matthews_corrcoef(y_true, y_score, input_relation,)
+            return matthews_corrcoef(y_true, y_score, input_relation)
         elif method in ("bm", "informedness"):
-            return informedness(y_true, y_score, input_relation,)
+            return informedness(y_true, y_score, input_relation)
         elif method in ("mk", "markedness"):
-            return markedness(y_true, y_score, input_relation,)
+            return markedness(y_true, y_score, input_relation)
         elif method in ("csi", "critical_success_index"):
-            return critical_success_index(y_true, y_score, input_relation,)
+            return critical_success_index(y_true, y_score, input_relation)
         else:
             raise ParameterError(
                 "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
@@ -924,7 +924,7 @@ xlim: list, optional
         if isinstance(X, str):
             X = [X]
         check_types(
-            [("input_relation", input_relation, [str, vDataFrame],), ("X", X, [list],)]
+            [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
         does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
@@ -934,9 +934,9 @@ xlim: list, optional
             input_relation = input_relation.__genSQL__()
         else:
             try:
-                vdf = vDataFrame(input_relation,)
+                vdf = vDataFrame(input_relation)
             except:
-                vdf = vdf_from_relation(input_relation,)
+                vdf = vdf_from_relation(input_relation)
             if not (X):
                 X = vdf.numcol()
         columns_check(X, vdf)
@@ -1052,18 +1052,18 @@ xlim: list, optional
             query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
                 self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
-            executeSQL(query, print_time_sql=False,)
+            executeSQL(query, print_time_sql=False)
             r, idx = 0, 0
             while r < len(y):
                 values = []
                 m = min(r + 100, len(y))
                 for i in range(r, m):
-                    values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
+                    values += ["SELECT " + str(x[i] + (y[i]))[1:-1]]
                 query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )
                 executeSQL(query, "Computing the KDE [Step {}].".format(idx))
-                executeSQL("COMMIT;", print_time_sql=False,)
+                executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
@@ -1129,8 +1129,8 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map,)
-                result = executeSQL(query, method="fetchall", print_time_sql=False,)
+                query = "SELECT {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map)
+                result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y = [elem[0] for elem in result], [elem[1] for elem in result]
             else:
                 x, y = [elem[0] for elem in self.verticapy_x], self.verticapy_y
@@ -1146,13 +1146,13 @@ xlim: list, optional
                 "color": gen_colors()[0],
             }
             ax.plot(
-                x, y, **updated_dict(param, style_kwds,),
+                x, y, **updated_dict(param, style_kwds),
             )
             ax.fill_between(
-                x, y, facecolor=updated_dict(param, style_kwds,)["color"], alpha=0.7,
+                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7,
             )
             ax.set_xlim(min(x), max(x))
-            ax.set_ylim(bottom=0,)
+            ax.set_ylim(bottom=0)
             ax.set_ylabel("density")
             return ax
         elif len(self.X) == 2:
@@ -1161,7 +1161,7 @@ xlim: list, optional
                 query = "SELECT {}, {}, KDE FROM {} ORDER BY 1, 2".format(
                     self.X[0], self.X[1], self.map,
                 )
-                result = executeSQL(query, method="fetchall", print_time_sql=False,)
+                result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y, z = (
                     [elem[0] for elem in result],
                     [elem[1] for elem in result],
@@ -1186,7 +1186,7 @@ xlim: list, optional
             }
             extent = [min(x), max(x), min(y), max(y)]
             extent = [float(elem) for elem in extent]
-            im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds,))
+            im = ax.imshow(result, extent=extent, **updated_dict(param, style_kwds))
             fig.colorbar(im, ax=ax)
             ax.set_ylabel(self.X[1])
             ax.set_xlabel(self.X[0])
@@ -1391,14 +1391,14 @@ p: int, optional
             X = [X]
         check_types(
             [
-                ("name", name, [str],),
-                ("X", X, [list],),
+                ("name", name, [str]),
+                ("X", X, [list]),
                 ("vdf", vdf, [str, vDataFrame]),
-                ("inplace", inplace, [bool],),
+                ("inplace", inplace, [bool]),
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(vdf,)
+            vdf = vdf_from_relation(vdf)
         X = [str_column(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1420,9 +1420,9 @@ p: int, optional
             ),
         )
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf,)
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql,)
+            return vdf_from_relation(name="Neighbors", relation=sql)
 
 
 # ---#
@@ -1508,7 +1508,7 @@ p: int, optional
         else:
             self.input_relation = input_relation
             if not (X):
-                X = vDataFrame(input_relation,).numcol()
+                X = vDataFrame(input_relation).numcol()
         X = [str_column(column) for column in X]
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
@@ -1517,21 +1517,21 @@ p: int, optional
         name_list = [gen_tmp_name(name="main"), gen_tmp_name(name="distance"), gen_tmp_name(name="lrd"), gen_tmp_name(name="lof")]
         def drop_temp_elem():
             for elem in name_list:
-                drop_if_exists("v_temp_schema.{}".format(elem), method="table",)
+                drop_if_exists("v_temp_schema.{}".format(elem), method="table")
         drop_temp_elem()
         try:
             if not (index):
                 index = "id"
                 main_table = name_list[0]
                 schema = "v_temp_schema"
-                drop_if_exists("v_temp_schema.{}".format(main_table), method="table",)
+                drop_if_exists("v_temp_schema.{}".format(main_table), method="table")
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                executeSQL(sql, print_time_sql=False,)
+                executeSQL(sql, print_time_sql=False)
             else:
                 main_table = self.input_relation
             sql = [
@@ -1551,21 +1551,21 @@ p: int, optional
                 main_table,
             )
             sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
-            drop_if_exists("v_temp_schema.{}".format(name_list[1]), method="table",)
+            drop_if_exists("v_temp_schema.{}".format(name_list[1]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[1], sql)
             executeSQL(sql, "Computing the LOF [Step 0].")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(name_list[1], n_neighbors + 1)
             lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, name_list[1], kdistance)
-            drop_if_exists("v_temp_schema.{}".format(name_list[2]), method="table",)
+            drop_if_exists("v_temp_schema.{}".format(name_list[2]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[2], lrd)
             executeSQL(sql, "Computing the LOF [Step 1].")
-            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, name_list[1], name_list[2], name_list[2],)
-            drop_if_exists("v_temp_schema.{}".format(name_list[3]), method="table",)
+            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, name_list[1], name_list[2], name_list[2])
+            drop_if_exists("v_temp_schema.{}".format(name_list[3]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[3], sql)
             executeSQL(sql, "Computing the LOF [Step 2].")
-            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format( ", ".join(X + self.key_columns), main_table, name_list[3], index,)
-            executeSQL("CREATE TABLE {} AS {}".format(self.name, sql), title="Computing the LOF [Step 3].",)
-            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, name_list[3]), method="fetchone0", print_time_sql=False,)
+            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format( ", ".join(X + self.key_columns), main_table, name_list[3], index)
+            executeSQL("CREATE TABLE {} AS {}".format(self.name, sql), title="Computing the LOF [Step 3].")
+            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, name_list[3]), method="fetchone0", print_time_sql=False)
         except:
             drop_temp_elem()
             raise
@@ -1597,4 +1597,4 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name,)
+        return vDataFrame(self.name)

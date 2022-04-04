@@ -26,7 +26,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def cities_vd():
     cities = load_cities()
     yield cities
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities",)
+        drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +56,7 @@ def world_vd():
     world = load_world()
     yield world
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world",)
+        drop(name="public.world")
 
 
 class TestvDFUtilities:
@@ -171,7 +171,7 @@ class TestvDFUtilities:
         #shutil.rmtree(name) # trying to erase the folder
 
     def test_vDF_to_db(self, titanic_vd):
-        drop_if_exists("verticapy_titanic_tmp",)
+        drop_if_exists("verticapy_titanic_tmp")
         # testing relation_type = view
         try:
             titanic_vd.copy().to_db(
@@ -226,10 +226,10 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp",)
+                drop("verticapy_titanic_tmp")
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp",)
+            drop("verticapy_titanic_tmp")
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(
@@ -239,7 +239,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp",)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
@@ -248,10 +248,10 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp",)
+                drop("verticapy_titanic_tmp")
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp",)
+            drop("verticapy_titanic_tmp")
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(
@@ -261,7 +261,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame("v_temp_schema.verticapy_titanic_tmp",)
+            titanic_tmp = vDataFrame("v_temp_schema.verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
@@ -270,10 +270,10 @@ class TestvDFUtilities:
             assert result[0] == "verticapy_titanic_tmp"
         except:
             with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp",)
+                drop("verticapy_titanic_tmp")
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp",)
+            drop("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session()
@@ -330,9 +330,9 @@ class TestvDFUtilities:
 
     def test_vDF_to_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test",)
+            drop(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
-        vdf = read_shp("/home/dbadmin/cities_test.shp",)
+        vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
         try:
             os.remove("/home/dbadmin/cities_test.shp")
@@ -341,7 +341,7 @@ class TestvDFUtilities:
         except:
             pass
         with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test",)
+            drop(name="public.cities_test")
 
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()

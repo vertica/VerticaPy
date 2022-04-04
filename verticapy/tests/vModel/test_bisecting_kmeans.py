@@ -165,7 +165,7 @@ class TestBisectingKMeans:
         model_test.drop()
 
     def test_init_method(self):
-        model_test_kmeanspp = BisectingKMeans("bsk_kmeanspp_test", init="kmeanspp",)
+        model_test_kmeanspp = BisectingKMeans("bsk_kmeanspp_test", init="kmeanspp")
         model_test_kmeanspp.drop()
         model_test_kmeanspp.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
@@ -221,7 +221,7 @@ class TestBisectingKMeans:
             model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])
         )
 
-    def test_to_sql(self, model,):
+    def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT APPLY_BISECTING_KMEANS(5.006, 3.418, 1.464, 0.244 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([5.006, 3.418, 1.464, 0.244])
@@ -230,16 +230,16 @@ class TestBisectingKMeans:
         prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244,],
-                              [3.0, 11.0, 1993., 0.,]])
-        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244,],
-                                    [3.0, 11.0, 1993., 0.,]])
+        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244],
+                              [3.0, 11.0, 1993., 0.]])
+        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244],
+                                    [3.0, 11.0, 1993., 0.]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame('public.bsk_data',)
+        vdf = vDataFrame('public.bsk_data')
         vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
-        model.predict(vdf, name = "prediction_vertica_sql",)
+        model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)

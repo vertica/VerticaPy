@@ -149,11 +149,11 @@ class TestPipeline:
             [
                 (
                     "NormalizerWine",
-                    StandardScaler("logstd_model_test",),
+                    StandardScaler("logstd_model_test"),
                 ),
                 (
                     "LogisticRegressionWine",
-                    LogisticRegression("logreg_model_test",),
+                    LogisticRegression("logreg_model_test"),
                 ),
             ]
         )
@@ -204,18 +204,18 @@ class TestPipeline:
             [
                 (
                     "NormalizerWine",
-                    StandardScaler("logstd_model_test",),
+                    StandardScaler("logstd_model_test"),
                 ),
                 (
                     "NormalizerWine",
-                    MinMaxScaler("logmm_model_test",),
+                    MinMaxScaler("logmm_model_test"),
                 ),
             ]
         )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"])
         winequality_copy = winequality_vd.copy()
-        winequality_copy = model_class.transform(winequality_copy, X=["alcohol"],)
+        winequality_copy = model_class.transform(winequality_copy, X=["alcohol"])
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             0.361130555239542, abs=1e-6
         )
@@ -227,11 +227,11 @@ class TestPipeline:
             [
                 (
                     "NormalizerWine",
-                    StandardScaler("logstd_model_test",),
+                    StandardScaler("logstd_model_test"),
                 ),
                 (
                     "NormalizerWine",
-                    MinMaxScaler("logmm_model_test",),
+                    MinMaxScaler("logmm_model_test"),
                 ),
             ]
         )

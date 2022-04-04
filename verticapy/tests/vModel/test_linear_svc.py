@@ -95,7 +95,7 @@ class TestLinearSVC:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -168,27 +168,27 @@ class TestLinearSVC:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0,]])[0])
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0]])[0])
         current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
                 model.name
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0,]])[0][1])
+        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0]])[0][1])
 
     def test_to_memmodel(self, model, titanic_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0,],
-                              [11.0, 1.0,]])
-        res_py = model.to_python()([[3.0, 11.0,],
-                                   [11.0, 1.0,]])
+        res = mmodel.predict([[3.0, 11.0],
+                              [11.0, 1.0]])
+        res_py = model.to_python()([[3.0, 11.0],
+                                   [11.0, 1.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[3.0, 11.0,],
-                                    [11.0, 1.0,]])
-        res_py = model.to_python(return_proba = True)([[3.0, 11.0,],
-                                                       [11.0, 1.0,]])
+        res = mmodel.predict_proba([[3.0, 11.0],
+                                    [11.0, 1.0]])
+        res_py = model.to_python(return_proba = True)([[3.0, 11.0],
+                                                       [11.0, 1.0]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]

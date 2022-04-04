@@ -26,7 +26,7 @@ def iris_vd():
     iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris",)
+        drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def market_vd():
     market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market",)
+        drop(name="public.market")
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 
 class TestvDFCombineJoinSort:
@@ -201,7 +201,7 @@ class TestvDFCombineJoinSort:
             expr2=["Name AS Name2"],
         )
         assert table_join.shape() == (194, 2)
-        drop("v_temp_schema.not_dried",)
+        drop("v_temp_schema.not_dried")
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(

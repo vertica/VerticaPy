@@ -25,7 +25,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -35,7 +35,7 @@ def airline_vd():
     airline = load_airline_passengers()
     yield airline
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.airline_passengers",)
+        drop(name="public.airline_passengers")
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 
 class TestStats:
@@ -66,13 +66,13 @@ class TestStats:
         assert result["value"][1] == pytest.approx(0.683205052234998, 1e-2)
         assert result["value"][-1] == False
 
-    def test_cochrane_orcutt(self, airline_vd,):
+    def test_cochrane_orcutt(self, airline_vd):
         airline_copy = airline_vd.copy()
         airline_copy["passengers_bias"] = airline_copy["passengers"] ** 2 - 50 * st.random()
 
         from verticapy.learn.linear_model import LinearRegression
-        drop_if_exists("lin_cochrane_orcutt_model_test", method="model",)
-        model = LinearRegression("lin_cochrane_orcutt_model_test",)
+        drop_if_exists("lin_cochrane_orcutt_model_test", method="model")
+        model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(
             airline_copy, ["passengers_bias"], "passengers"
         )
@@ -196,7 +196,7 @@ class TestStats:
         assert result["value"][5] == "increasing"
 
     def test_seasonal_decompose(self, airline_vd):
-        result = st.seasonal_decompose(airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1,)
+        result = st.seasonal_decompose(airline_vd, "Passengers", "date", period=12, mult=True, polynomial_order=-1)
         assert result["passengers_trend"].avg() == pytest.approx(266.398518668831)
         assert result["passengers_seasonal"].avg() == pytest.approx(1.0)
         assert result["passengers_epsilon"].avg() == pytest.approx(1.05417531440333)

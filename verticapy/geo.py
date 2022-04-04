@@ -107,13 +107,13 @@ tablesample
     """
     check_types(
         [
-            ("vdf", vdf, [vDataFrame],),
-            ("gid", gid, [str],),
-            ("index", index, [str],),
-            ("g", g, [str],),
-            ("overwrite", overwrite, [bool],),
-            ("max_mem_mb", max_mem_mb, [int],),
-            ("skip_nonindexable_polygons", skip_nonindexable_polygons, [bool],),
+            ("vdf", vdf, [vDataFrame]),
+            ("gid", gid, [str]),
+            ("index", index, [str]),
+            ("g", g, [str]),
+            ("overwrite", overwrite, [bool]),
+            ("max_mem_mb", max_mem_mb, [int]),
+            ("skip_nonindexable_polygons", skip_nonindexable_polygons, [bool]),
         ]
     )
     columns_check([gid, g], vdf)
@@ -128,7 +128,7 @@ tablesample
         skip_nonindexable_polygons,
         vdf.__genSQL__(),
     )
-    return to_tablesample(query,)
+    return to_tablesample(query)
 
 # ---#
 def coordinate_converter(vdf: vDataFrame,
@@ -136,7 +136,7 @@ def coordinate_converter(vdf: vDataFrame,
                          y: str,
                          x0: float = 0.0, 
                          earth_radius: float = 6371,
-                         reverse: bool = False,):
+                         reverse: bool = False):
     """
 ---------------------------------------------------------------------------
 Converts between geographic coordinates (latitude and longitude) and 
@@ -166,12 +166,12 @@ vDataFrame
     """
     check_types(
         [
-            ("vdf", vdf, [vDataFrame],),
-            ("x", x, [str],),
-            ("y", y, [str],),
-            ("x0", x0, [int, float],),
-            ("earth_radius", earth_radius, [int, float],),
-            ("reverse", reverse, [bool],),
+            ("vdf", vdf, [vDataFrame]),
+            ("x", x, [str]),
+            ("y", y, [str]),
+            ("x0", x0, [int, float]),
+            ("earth_radius", earth_radius, [int, float]),
+            ("reverse", reverse, [bool]),
         ]
     )
     columns_check([x, y], vdf)
@@ -186,7 +186,7 @@ vDataFrame
 
 
 # ---#
-def describe_index(name: str = "", list_polygons: bool = False,):
+def describe_index(name: str = "", list_polygons: bool = False):
     """
 ---------------------------------------------------------------------------
 Retrieves information about an index that contains a set of polygons. If 
@@ -208,21 +208,21 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("name", name, [str],), ("list_polygons", list_polygons, [bool],),]
+        [("name", name, [str]), ("list_polygons", list_polygons, [bool])]
     )
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:
         query = f"SELECT STV_Describe_Index (USING PARAMETERS index='{name}', list_polygons={list_polygons}) OVER ()"
     if list_polygons:
-        result = vdf_from_relation(f"({query}) x",)
+        result = vdf_from_relation(f"({query}) x")
     else:
-        result = to_tablesample(query,)
+        result = to_tablesample(query)
     return result
 
 
 # ---#
-def intersect(vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = "",):
+def intersect(vdf: vDataFrame, index: str, gid: str, g: str = "", x: str = "", y: str = ""):
     """
 ---------------------------------------------------------------------------
 Spatially intersects a point or points with a set of polygons.
@@ -251,12 +251,12 @@ vDataFrame
     """
     check_types(
         [
-            ("vdf", vdf, [vDataFrame],),
-            ("gid", gid, [str],),
-            ("g", g, [str],),
-            ("x", x, [str],),
-            ("y", y, [str],),
-            ("index", index, [str],),
+            ("vdf", vdf, [vDataFrame]),
+            ("gid", gid, [str]),
+            ("g", g, [str]),
+            ("x", x, [str]),
+            ("y", y, [str]),
+            ("index", index, [str]),
         ]
     )
     table = vdf.__genSQL__()
@@ -271,11 +271,11 @@ vDataFrame
         query = f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS index='{index}') OVER (PARTITION BEST) AS (point_id, polygon_gid) FROM {table}) x"
     else:
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
-    return vdf_from_relation(query,)
+    return vdf_from_relation(query)
 
 
 # ---#
-def rename_index(source: str, dest: str, overwrite: bool = False,):
+def rename_index(source: str, dest: str, overwrite: bool = False):
     """
 ---------------------------------------------------------------------------
 Renames a spatial index.
@@ -297,9 +297,9 @@ bool
     """
     check_types(
         [
-            ("source", source, [str],),
-            ("dest", dest, [str],),
-            ("overwrite", overwrite, [bool],),
+            ("source", source, [str]),
+            ("dest", dest, [str]),
+            ("overwrite", overwrite, [bool]),
         ]
     )
     query = f"SELECT STV_Rename_Index (USING PARAMETERS source = '{source}', dest = '{dest}', overwrite = {overwrite}) OVER ();"
@@ -335,18 +335,18 @@ vDataFrame
     """
     check_types(
         [
-            ("p", p, [str],),
-            ("nbins", nbins, [int],),
+            ("p", p, [str]),
+            ("nbins", nbins, [int]),
         ]
     )
     sql = "SELECT MIN(ST_X(point)), MAX(ST_X(point)), MIN(ST_Y(point)), MAX(ST_Y(point)) FROM (SELECT STV_PolygonPoint(geom) OVER() FROM (SELECT ST_GeomFromText('{}') AS geom) x) y".format(p)
-    min_x, max_x, min_y, max_y = executeSQL(sql, title="Computing min & max: x & y.", method="fetchone",)
+    min_x, max_x, min_y, max_y = executeSQL(sql, title="Computing min & max: x & y.", method="fetchone")
     delta_x, delta_y =  (max_x - min_x) / nbins, (max_y - min_y) / nbins
     vdf = gen_meshgrid({"x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
-                               "y": {"type": float, "range": [min_y, max_y], "nbins": nbins}},)
+                               "y": {"type": float, "range": [min_y, max_y], "nbins": nbins}})
     vdf["gid"] = "ROW_NUMBER() OVER (ORDER BY x, y)"
     vdf["geom"] = "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' || x + {} || ' ' || y || ', ' || x + {} || ' ' || y + {} || ', ' || x || ' ' || y + {} || ', ' || x || ' ' || y || '))')".format(delta_x, delta_x, delta_y, delta_y)
     vdf["gid"].apply("ROW_NUMBER() OVER (ORDER BY {})")
-    vdf.filter("ST_Intersects(geom, ST_GeomFromText('{}'))".format(p), print_info=False,)
+    vdf.filter("ST_Intersects(geom, ST_GeomFromText('{}'))".format(p), print_info=False)
     return vdf[["gid", "geom"]]
 

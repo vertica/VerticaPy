@@ -194,7 +194,7 @@ class TestNormalizer:
         assert prediction == pytest.approx(prediction2)
         model3.drop()
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         # Zscore
         current_cursor().execute(
             "SELECT APPLY_NORMALIZE(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(

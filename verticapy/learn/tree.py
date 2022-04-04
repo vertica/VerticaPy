@@ -98,7 +98,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -112,7 +112,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        version(condition=[8, 1, 1],)
+        version(condition=[8, 1, 1])
 
 
 # ---#
@@ -158,7 +158,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {
@@ -172,7 +172,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        version(condition=[9, 0, 1],)
+        version(condition=[9, 0, 1])
 
 
 # ---#
@@ -188,8 +188,8 @@ name: str
 	Name of the the model. The model will be stored in the DB.
 	"""
 
-    def __init__(self, name: str,):
-        check_types([("name", name, [str],)])
+    def __init__(self, name: str):
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -203,7 +203,7 @@ name: str
                 "nbins": 1000,
             }
         )
-        version(condition=[8, 1, 1],)
+        version(condition=[8, 1, 1])
 
 
 # ---#
@@ -219,8 +219,8 @@ name: str
 	Name of the the model. The model will be stored in the DB.
 	"""
 
-    def __init__(self, name: str,):
-        check_types([("name", name, [str],)])
+    def __init__(self, name: str):
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {
@@ -234,4 +234,4 @@ name: str
                 "nbins": 1000,
             }
         )
-        version(condition=[9, 0, 1],)
+        version(condition=[9, 0, 1])

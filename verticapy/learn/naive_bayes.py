@@ -94,8 +94,8 @@ nbtype: str, optional
     ):
         check_types(
             [
-                ("name", name, [str],),
-                ("alpha", alpha, [int, float],),
+                ("name", name, [str]),
+                ("alpha", alpha, [int, float]),
                 (
                     "nbtype",
                     nbtype,
@@ -105,7 +105,7 @@ nbtype: str, optional
         )
         self.type, self.name = "NaiveBayes", name
         self.set_params({"alpha": alpha, "nbtype": nbtype})
-        version(condition=[8, 0, 0],)
+        version(condition=[8, 0, 0])
 
 
 # ---#

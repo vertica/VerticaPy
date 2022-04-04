@@ -59,7 +59,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # ---#
-def gen_dataset(features_ranges: dict, nrows: int = 1000,):
+def gen_dataset(features_ranges: dict, nrows: int = 1000):
     """
 ---------------------------------------------------------------------------
 Generates a dataset using the input parameters.
@@ -91,9 +91,9 @@ Returns
 vDataFrame
     Generated dataset.
     """    
-    check_types([("features_ranges", features_ranges, [dict],), 
-                 ("nrows", nrows, [int],),])
-    version(condition=[9, 3, 0],)
+    check_types([("features_ranges", features_ranges, [dict]), 
+                 ("nrows", nrows, [int])])
+    version(condition=[9, 3, 0])
     sql = []
     for param in features_ranges:
         if features_ranges[param]["type"] == str:
@@ -126,11 +126,11 @@ vDataFrame
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
     sql = "(SELECT " + ", ".join(sql) + f"FROM (SELECT tm FROM (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
-    return vdf_from_relation(sql,)
+    return vdf_from_relation(sql)
 
 
 # ---#
-def gen_meshgrid(features_ranges: dict,):
+def gen_meshgrid(features_ranges: dict):
     """
 ---------------------------------------------------------------------------
 Generates a dataset using regular steps.
@@ -163,7 +163,7 @@ Returns
 vDataFrame
     generated dataset.
     """    
-    check_types([("features_ranges", features_ranges, [dict],),])
+    check_types([("features_ranges", features_ranges, [dict])])
     sql = []
     for idx, param in enumerate(features_ranges):
         if "nbins" in features_ranges[param]:
@@ -206,17 +206,17 @@ vDataFrame
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
     sql = "(SELECT * FROM {}) x".format(" CROSS JOIN ".join(sql))
-    return vdf_from_relation(sql,)
+    return vdf_from_relation(sql)
 
 
 # ---#
-def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset_name: str,):
+def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset_name: str):
     """
     General Function to ingest a dataset
     """
-    check_types([("schema", schema, [str],), ("name", name, [str],)])
+    check_types([("schema", schema, [str]), ("name", name, [str])])
     try:
-        vdf = vDataFrame(name, schema=schema,)
+        vdf = vDataFrame(name, schema=schema)
     except:
         name = str_column(name)
         if not(schema):
@@ -241,7 +241,7 @@ def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset
             else:
                 executeSQL(query.format("LOCAL '{}'".format(path)), title="Ingesting the file.")
             executeSQL("COMMIT;", title="Commit.")
-            vdf = vDataFrame(name, schema=schema,)
+            vdf = vDataFrame(name, schema=schema)
         except:
             executeSQL("DROP TABLE {}.{}".format(str_column(schema), str_column(name)), title="The ingestion failed. The table is dropped.")
             raise
@@ -251,7 +251,7 @@ def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset
 #
 #
 # ---#
-def load_airline_passengers(schema: str = "public", name: str = "airline_passengers",):
+def load_airline_passengers(schema: str = "public", name: str = "airline_passengers"):
     """
 ---------------------------------------------------------------------------
 Ingests the airline passengers dataset into the Vertica database. This dataset
@@ -282,7 +282,7 @@ vDataFrame
 
 
 # ---#
-def load_amazon(schema: str = "public", name: str = "amazon",):
+def load_amazon(schema: str = "public", name: str = "amazon"):
     """
 ---------------------------------------------------------------------------
 Ingests the amazon dataset into the Vertica database. This dataset is ideal
@@ -312,7 +312,7 @@ vDataFrame
 
 
 # ---#
-def load_cities(schema: str = "public", name: str = "cities",):
+def load_cities(schema: str = "public", name: str = "cities"):
     """
 ---------------------------------------------------------------------------
 Ingests the Cities dataset into the Vertica database. This dataset is ideal
@@ -342,7 +342,7 @@ vDataFrame
 
 
 # ---#
-def load_commodities(schema: str = "public", name: str = "commodities",):
+def load_commodities(schema: str = "public", name: str = "commodities"):
     """
 ---------------------------------------------------------------------------
 Ingests the commodities dataset into the Vertica database. This dataset is
@@ -373,7 +373,7 @@ vDataFrame
 
 
 # ---#
-def load_gapminder(schema: str = "public", name: str = "gapminder",):
+def load_gapminder(schema: str = "public", name: str = "gapminder"):
     """
 ---------------------------------------------------------------------------
 Ingests the gapminder dataset into the Vertica database. This dataset is ideal
@@ -403,7 +403,7 @@ vDataFrame
 
 
 # ---#
-def load_iris(schema: str = "public", name: str = "iris",):
+def load_iris(schema: str = "public", name: str = "iris"):
     """
 ---------------------------------------------------------------------------
 Ingests the iris dataset into the Vertica database. This dataset is ideal for
@@ -433,7 +433,7 @@ vDataFrame
 
 
 # ---#
-def load_market(schema: str = "public", name: str = "market",):
+def load_market(schema: str = "public", name: str = "market"):
     """
 ---------------------------------------------------------------------------
 Ingests the market dataset into the Vertica database. This dataset is ideal
@@ -463,7 +463,7 @@ vDataFrame
 
 
 # ---#
-def load_pop_growth(schema: str = "public", name: str = "pop_growth",):
+def load_pop_growth(schema: str = "public", name: str = "pop_growth"):
     """
 ---------------------------------------------------------------------------
 Ingests the population growth dataset into the Vertica database. This dataset
@@ -494,7 +494,7 @@ vDataFrame
 
 
 # ---#
-def load_smart_meters(schema: str = "public", name: str = "smart_meters",):
+def load_smart_meters(schema: str = "public", name: str = "smart_meters"):
     """
 ---------------------------------------------------------------------------
 Ingests the smart meters dataset into the Vertica database. This dataset is ideal
@@ -524,7 +524,7 @@ vDataFrame
 
 
 # ---#
-def load_titanic(schema: str = "public", name: str = "titanic",):
+def load_titanic(schema: str = "public", name: str = "titanic"):
     """
 ---------------------------------------------------------------------------
 Ingests the titanic dataset into the Vertica database. This dataset is ideal 
@@ -554,7 +554,7 @@ vDataFrame
 
 
 # ---#
-def load_winequality(schema: str = "public", name: str = "winequality",):
+def load_winequality(schema: str = "public", name: str = "winequality"):
     """
 ---------------------------------------------------------------------------
 Ingests the winequality dataset into the Vertica database. This dataset is ideal
@@ -584,7 +584,7 @@ vDataFrame
 
 
 # ---#
-def load_world(schema: str = "public", name: str = "world",):
+def load_world(schema: str = "public", name: str = "world"):
     """
 ---------------------------------------------------------------------------
 Ingests the World dataset into the Vertica database. This dataset is ideal for

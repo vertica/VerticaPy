@@ -93,7 +93,7 @@ l1_ratio: float, optional
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -141,7 +141,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "CGD",
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -188,7 +188,7 @@ solver: str, optional
         solver: str = "Newton",
     ):
         check_types(
-            [("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),]
+            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"])]
         )
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -202,7 +202,7 @@ solver: str, optional
         for elem in ["l1_ratio", "C"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        version(condition=[8, 0, 0],)
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -249,7 +249,7 @@ l1_ratio: float, optional
         solver: str = "Newton",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LogisticRegression", name
         self.set_params(
             {
@@ -265,13 +265,13 @@ l1_ratio: float, optional
             for elem in ["l1_ratio", "C"]:
                 if elem in self.parameters:
                     del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
+            check_types([("solver", solver.lower(), ["bfgs", "newton"])])
         elif penalty.lower() in ("l1", "l2"):
-            for elem in ["l1_ratio",]:
+            for elem in ["l1_ratio"]:
             	if elem in self.parameters:
                 	del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
-        version(condition=[8, 0, 0],)
+            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"])])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -307,7 +307,7 @@ solver: str, optional
         solver: str = "Newton",
     ):
         check_types(
-            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)]
+            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"]))]
         )
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -322,4 +322,4 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        version(condition=[8, 0, 0],)
+        version(condition=[8, 0, 0])

@@ -27,7 +27,7 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+        drop(name="public.winequality")
 
 @pytest.fixture(scope="module")
 def titanic_vd():
@@ -36,7 +36,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 @pytest.fixture(scope="module")
 def xgbr_data_vd():
@@ -115,11 +115,11 @@ class TestXGBR:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) in (37, 34,)
+        assert len(result.get_default_bbox_extra_artists()) in (37, 34)
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -166,7 +166,7 @@ class TestXGBR:
         prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
         res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
                               ['Female', 1, 'Expensive', 'Low']])
@@ -174,7 +174,7 @@ class TestXGBR:
                                     ['Female', 1, 'Expensive', 'Low']])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame("public.xgbr_data",)
+        vdf = vDataFrame("public.xgbr_data")
         vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
         model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
@@ -400,7 +400,7 @@ class TestXGBR:
         model_test = XGBoostRegressor("model_test_plot", )
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
-        assert len(result.get_default_bbox_extra_artists()) in (9, 12,)
+        assert len(result.get_default_bbox_extra_artists()) in (9, 12)
         plt.close("all")
         model_test.drop()
 
@@ -416,7 +416,7 @@ class TestXGBR:
         path = "verticapy_test_xgbr.json"
         X = ["pclass", "age", "survived"]
         y = "fare"
-        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5,)
+        model = XGBoostRegressor("verticapy_xgb_regressor_test", max_ntree = 10, max_depth = 5)
         model.drop()
         model.fit(titanic, X, y)
         X_test = titanic[X].to_numpy()

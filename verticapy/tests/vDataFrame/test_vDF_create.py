@@ -24,17 +24,17 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 class TestvDFCreate:
     def test_creating_vDF_using_input_relation(self, titanic_vd):
-        tvdf = vDataFrame(input_relation="public.titanic",)
+        tvdf = vDataFrame(input_relation="public.titanic")
 
         assert tvdf["pclass"].count() == 1234
 
     def test_creating_vDF_using_input_relation_schema(self, titanic_vd):
-        tvdf = vDataFrame(input_relation="titanic", schema="public",)
+        tvdf = vDataFrame(input_relation="titanic", schema="public")
 
         assert tvdf["pclass"].count() == 1234
 

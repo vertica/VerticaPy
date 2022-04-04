@@ -34,7 +34,7 @@ def model(amazon_vd):
     create_verticapy_schema()
     model_class = SARIMAX("sarimax_model_test", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
     model_class.drop()
-    model_class.fit("public.amazon", "number", "date",)
+    model_class.fit("public.amazon", "number", "date")
     yield model_class
     model_class.drop()
 
@@ -42,7 +42,7 @@ def model(amazon_vd):
 class TestSARIMAX:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = SARIMAX("sarimax_repr",)
+        model_repr = SARIMAX("sarimax_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<SARIMAX>"
 
@@ -52,7 +52,7 @@ class TestSARIMAX:
     def test_drop(self):
         model_test = SARIMAX("sarimax_model_test_drop", )
         model_test.drop()
-        model_test.fit("public.amazon", "number", "date",)
+        model_test.fit("public.amazon", "number", "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_drop', '\"sarimax_model_test_drop\"')"
@@ -106,8 +106,8 @@ class TestSARIMAX:
                                       'solver': 'Newton',
                                       'tol': 0.0001}
 
-    def test_get_plot(self, model,):
-        result = model.plot(color="r", nlead=10, nlast=10, dynamic=True,)
+    def test_get_plot(self, model):
+        result = model.plot(color="r", nlead=10, nlast=10, dynamic=True)
         assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
@@ -178,7 +178,7 @@ class TestSARIMAX:
     def test_model_from_vDF(self, amazon_vd):
         model_class = SARIMAX("sarimax_model_test_vdf", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
         model_class.drop()
-        model_class.fit(amazon_vd, "number", "date",)
+        model_class.fit(amazon_vd, "number", "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_vdf', '\"sarimax_model_test_vdf\"')"

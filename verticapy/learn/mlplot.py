@@ -76,11 +76,11 @@ def logit_plot(
 ):
     check_types(
         [
-            ("X", X, [list],),
-            ("y", y, [str],),
-            ("input_relation", input_relation, [str],),
-            ("coefficients", coefficients, [list],),
-            ("max_nb_points", max_nb_points, [int, float],),
+            ("X", X, [list]),
+            ("y", y, [str]),
+            ("input_relation", input_relation, [str]),
+            ("coefficients", coefficients, [list]),
+            ("max_nb_points", max_nb_points, [int, float]),
         ]
     )
     param0 = {
@@ -107,7 +107,7 @@ def logit_plot(
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -161,7 +161,7 @@ def logit_plot(
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, x1, y0, y1 = [], [], [], []
         for idx, item in enumerate(all_points):
             if item[2] == 0:
@@ -263,10 +263,10 @@ def lof_plot(
 ):
     check_types(
         [
-            ("input_relation", input_relation, [str],),
-            ("columns", columns, [list],),
-            ("lof", lof, [str],),
-            ("tablesample", tablesample, [int, float],),
+            ("input_relation", input_relation, [str]),
+            ("columns", columns, [list]),
+            ("lof", lof, [str]),
+            ("tablesample", tablesample, [int, float]),
         ]
     )
     tablesample = (
@@ -298,7 +298,7 @@ def lof_plot(
         query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
             column, lof, input_relation, tablesample, column
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -334,7 +334,7 @@ def lof_plot(
             columns[0],
             columns[1],
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, column2, lof = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -372,7 +372,7 @@ def lof_plot(
             columns[1],
             columns[2],
         )
-        query_result = executeSQL(query, method="fetchall", print_time_sql=False,)
+        query_result = executeSQL(query, method="fetchall", print_time_sql=False)
         column1, column2, column3, lof = (
             [float(item[0]) for item in query_result],
             [float(item[1]) for item in query_result],
@@ -417,9 +417,9 @@ def plot_importance(
 ):
     check_types(
         [
-            ("coeff_importances", coeff_importances, [dict],),
-            ("coeff_sign", coeff_sign, [dict],),
-            ("print_legend", print_legend, [bool],),
+            ("coeff_importances", coeff_importances, [dict]),
+            ("coeff_sign", coeff_sign, [dict]),
+            ("print_legend", print_legend, [bool]),
         ]
     )
     coefficients, importances, signs = [], [], []
@@ -449,7 +449,7 @@ def plot_importance(
     if print_legend:
         orange = mpatches.Patch(color=minus, label="sign -")
         blue = mpatches.Patch(color=plus, label="sign +")
-        ax.legend(handles=[blue, orange,], loc="center left", bbox_to_anchor=[1, 0.5])
+        ax.legend(handles=[blue, orange], loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.set_ylabel("Features")
@@ -502,35 +502,35 @@ def plot_stepwise_ml(x: list, y: list, z: list = [], w: list = [], var: list = [
         verticalalignment_init, verticalalignment_final = "top", "bottom"
         horizontalalignment = "left"
     param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
-    ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds,),)
-    ax.scatter([x_new[0], x_new[-1]], [y_new[0], y_new[-1]], c=c1, **updated_dict(param, style_kwds,),)
-    ax.text(x_new[0] + delta_ini, y_new[0], "Initial Variables: {}".format("["+", ".join(var0)+"]"), rotation = rot_ini, verticalalignment=verticalalignment_init,)
+    ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds))
+    ax.scatter([x_new[0], x_new[-1]], [y_new[0], y_new[-1]], c=c1, **updated_dict(param, style_kwds))
+    ax.text(x_new[0] + delta_ini, y_new[0], "Initial Variables: {}".format("["+", ".join(var0)+"]"), rotation = rot_ini, verticalalignment=verticalalignment_init)
     for idx in range(1, len(x_new)):
         dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
         ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc='k', ec='k', alpha=0.2)
         ax.text((x_new[idx] + x_new[idx - 1]) / 2, (y_new[idx] + y_new[idx - 1]) / 2, sign + " " + z_new[idx], rotation = rot_ini)
     if direction == "backward":
         ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
-    ax.text(x_new[-1] + delta_final, y_new[-1], "Final Variables: {}".format("["+", ".join(var1)+"]"), rotation = rot_final, verticalalignment=verticalalignment_final, horizontalalignment=horizontalalignment,)
+    ax.text(x_new[-1] + delta_final, y_new[-1], "Final Variables: {}".format("["+", ".join(var1)+"]"), rotation = rot_final, verticalalignment=verticalalignment_final, horizontalalignment=horizontalalignment)
     ax.set_xticks(x_new)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     return ax
 
 # ---#
-def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: tuple = (True, True,), plt_text=True, ax=None, **style_kwds):
+def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: tuple = (True, True), plt_text=True, ax=None, **style_kwds):
     if s:
         s = [min(250 + 5000 * elem, 1200) if elem != 0 else 1000 for elem in s]
     if z and s:
         data = [(x[i], y[i], s[i], z[i]) for i in range(len(x))]
-        data.sort(key=lambda tup: str(tup[3]),)
+        data.sort(key=lambda tup: str(tup[3]))
         x = [elem[0] for elem in data]
         y = [elem[1] for elem in data]
         s = [elem[2] for elem in data]
         z = [elem[3] for elem in data]
     elif z:
         data = [(x[i], y[i], z[i]) for i in range(len(x))]
-        data.sort(key=lambda tup: str(tup[2]),)
+        data.sort(key=lambda tup: str(tup[2]))
         x = [elem[0] for elem in data]
         y = [elem[1] for elem in data]
         z = [elem[2] for elem in data]
@@ -568,7 +568,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                 i = j
                 idx += 1
         ax.legend(
-            [Line2D([0], [0], marker="o", color="black", markerfacecolor=color, markersize=8,) for color in tmp_colors],
+            [Line2D([0], [0], marker="o", color="black", markerfacecolor=color, markersize=8) for color in tmp_colors],
             all_categories,
             bbox_to_anchor=[1, 0.5],
             loc="center left",
@@ -586,7 +586,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
             size = s
         else:
             size = 300
-        ax.scatter(x, y, s=size, **updated_dict(param, style_kwds, 0),)
+        ax.scatter(x, y, s=size, **updated_dict(param, style_kwds, 0))
     if reverse[0]:
         ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
     if reverse[1]:
@@ -607,7 +607,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[0],
                            fc=gen_colors()[0],
-                           alpha=0.3),)
+                           alpha=0.3))
         plt.text(max(x) + delta_x if reverse[0] else min(x) - delta_x, 
                  min(y) - delta_y if reverse[1] else max(y) + delta_y, 
                  "Efficient", size=15, rotation=30.,
@@ -615,7 +615,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[1],
                            fc=gen_colors()[1],
-                           alpha=0.3),)
+                           alpha=0.3))
         plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
                  max(y) + delta_y if reverse[1] else min(y) - delta_y, 
                  "Performant", size=15, rotation=-130.,
@@ -623,7 +623,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[2],
                            fc=gen_colors()[2],
-                           alpha=0.3),)
+                           alpha=0.3))
         plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
                  min(y) - delta_y if reverse[1] else max(y) + delta_y, 
                  "Performant & Efficient", size=15, rotation=-30.,
@@ -631,10 +631,10 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                  bbox=dict(boxstyle="round",
                            ec=gen_colors()[3],
                            fc=gen_colors()[3],
-                           alpha=0.3),)
+                           alpha=0.3))
     else:
-        ax.set_xlabel(x_label,)
-        ax.set_ylabel(y_label,)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
     return ax
 
 # ---#
@@ -661,8 +661,8 @@ def plot_pca_circle(x: list,
         ax.text(x[i], y[i], variable_names[i])
     ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle='--', color="black")
     ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle='--', color="black")
-    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))),)
-    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))),)
+    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
+    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     ax.set_xlim(-1.1, 1.1)
@@ -693,17 +693,17 @@ def plot_var(x: list,
     delta_y = (max(y) - min(y)) * 0.04
     delta_x = (max(x) - min(x)) * 0.04
     for i in range(n):
-        ax.text(x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center",)
+        ax.text(x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center")
     param = {"marker": "^", "s": 100, "edgecolors": "black",}
     if "c" not in style_kwds:
         param["color"] = colors[0]
-    img = ax.scatter(x, y, **updated_dict(param, style_kwds, 0),)
+    img = ax.scatter(x, y, **updated_dict(param, style_kwds, 0))
     ax.plot([min(x) - 5 * delta_x, max(x) + 5 * delta_x], [0.0, 0.0], linestyle='--', color="black")
     ax.plot([0.0, 0.0], [min(y) - 5 * delta_y, max(y) + 5 * delta_y], linestyle='--', color="black")
     ax.set_xlim(min(x) - 5 * delta_x, max(x) + 5 * delta_x)
     ax.set_ylim(min(y) - 5 * delta_y, max(y) + 5 * delta_y)
-    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))),)
-    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))),)
+    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
+    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     if "c" in style_kwds:
@@ -722,11 +722,11 @@ def regression_plot(
 ):
     check_types(
         [
-            ("X", X, [list],),
-            ("y", y, [str],),
-            ("input_relation", input_relation, [str],),
-            ("coefficients", coefficients, [list],),
-            ("max_nb_points", max_nb_points, [int, float],),
+            ("X", X, [list]),
+            ("y", y, [str]),
+            ("input_relation", input_relation, [str]),
+            ("coefficients", coefficients, [list]),
+            ("max_nb_points", max_nb_points, [int, float]),
         ]
     )
     param = {
@@ -739,7 +739,7 @@ def regression_plot(
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -763,7 +763,7 @@ def regression_plot(
         query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, y0, z0 = (
             [float(item[0]) for item in all_points],
             [float(item[1]) for item in all_points],
@@ -814,16 +814,16 @@ def regression_tree_plot(
 ):
     check_types(
         [
-            ("X", X, [list],),
-            ("y", y, [str],),
-            ("input_relation", input_relation, [str],),
-            ("max_nb_points", max_nb_points, [int, float],),
+            ("X", X, [list]),
+            ("y", y, [str]),
+            ("input_relation", input_relation, [str]),
+            ("max_nb_points", max_nb_points, [int, float]),
         ]
     )
     query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
         X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points),
     )
-    all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+    all_points = executeSQL(query, method="fetchall", print_time_sql=False)
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
@@ -850,7 +850,7 @@ def regression_tree_plot(
         "edgecolors": "black",
     }
     ax.scatter(
-        x0, y0, **updated_dict(param, style_kwds,),
+        x0, y0, **updated_dict(param, style_kwds),
     )
     ax.set_xlabel(X[0])
     ax.set_ylabel(y)
@@ -869,11 +869,11 @@ def svm_classifier_plot(
 ):
     check_types(
         [
-            ("X", X, [list],),
-            ("y", y, [str],),
-            ("input_relation", input_relation, [str],),
-            ("coefficients", coefficients, [list],),
-            ("max_nb_points", max_nb_points, [int, float],),
+            ("X", X, [list]),
+            ("y", y, [str]),
+            ("input_relation", input_relation, [str]),
+            ("coefficients", coefficients, [list]),
+            ("max_nb_points", max_nb_points, [int, float]),
         ]
     )
     param0 = {
@@ -895,7 +895,7 @@ def svm_classifier_plot(
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -914,10 +914,10 @@ def svm_classifier_plot(
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
         all_scatter = [
-            ax.scatter(x0, [0 for item in x0], **updated_dict(param1, style_kwds, 1),)
+            ax.scatter(x0, [0 for item in x0], **updated_dict(param1, style_kwds, 1))
         ]
         all_scatter += [
-            ax.scatter(x1, [0 for item in x1], **updated_dict(param0, style_kwds, 0),)
+            ax.scatter(x1, [0 for item in x1], **updated_dict(param0, style_kwds, 0))
         ]
         ax.set_xlabel(X[0])
         ax.legend(
@@ -936,7 +936,7 @@ def svm_classifier_plot(
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -960,8 +960,8 @@ def svm_classifier_plot(
             ],
         )
         ax.plot(x_svm, y_svm, alpha=1, color="black")
-        all_scatter = [ax.scatter(x0, y0, **updated_dict(param1, style_kwds, 1),)]
-        all_scatter += [ax.scatter(x1, y1, **updated_dict(param0, style_kwds, 0),)]
+        all_scatter = [ax.scatter(x0, y0, **updated_dict(param1, style_kwds, 1))]
+        all_scatter += [ax.scatter(x1, y1, **updated_dict(param0, style_kwds, 0))]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.legend(
@@ -998,7 +998,7 @@ def svm_classifier_plot(
             y,
             int(max_nb_points / 2),
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x0, x1, y0, y1, z0, z1 = [], [], [], [], [], []
         for idx, item in enumerate(all_points):
             if item[3] == 0:
@@ -1033,8 +1033,8 @@ def svm_classifier_plot(
             X_svm, Y_svm, Z_svm, rstride=1, cstride=1, alpha=0.5, color="gray"
         )
         param0["alpha"] = 0.8
-        all_scatter = [ax.scatter(x0, y0, z0, **updated_dict(param1, style_kwds, 1),)]
-        all_scatter += [ax.scatter(x1, y1, z1, **updated_dict(param0, style_kwds, 0),)]
+        all_scatter = [ax.scatter(x0, y0, z0, **updated_dict(param1, style_kwds, 1))]
+        all_scatter += [ax.scatter(x1, y1, z1, **updated_dict(param0, style_kwds, 0))]
         ax.set_xlabel(X[0])
         ax.set_ylabel(X[1])
         ax.set_zlabel(X[2])
@@ -1067,10 +1067,10 @@ def voronoi_plot(
 ):
     check_types(
         [
-            ("clusters", clusters, [list],),
-            ("columns", columns, [list],),
-            ("input_relation", input_relation, [str],),
-            ("max_nb_points", max_nb_points, [int],),
+            ("clusters", clusters, [list]),
+            ("columns", columns, [list]),
+            ("input_relation", input_relation, [str]),
+            ("max_nb_points", max_nb_points, [int]),
         ]
     )
     from scipy.spatial import voronoi_plot_2d, Voronoi
@@ -1090,7 +1090,7 @@ def voronoi_plot(
     v = Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
     voronoi_plot_2d(
-        v, ax=ax, **updated_dict(param, style_kwds,),
+        v, ax=ax, **updated_dict(param, style_kwds),
     )
     if not (ax):
         ax = plt
@@ -1120,7 +1120,7 @@ def voronoi_plot(
             columns[1],
             int(max_nb_points),
         )
-        all_points = executeSQL(query, method="fetchall", print_time_sql=False,)
+        all_points = executeSQL(query, method="fetchall", print_time_sql=False)
         x, y = (
             [float(item[0]) for item in all_points],
             [float(item[1]) for item in all_points],

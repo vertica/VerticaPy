@@ -87,13 +87,13 @@ str_sql
     version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2,), "int")
+    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2), "int")
 
 
 levenshtein = edit_distance
 
 # ---#
-def soundex(expr,):
+def soundex(expr):
     """
 ---------------------------------------------------------------------------
 Returns Soundex encoding of a varchar strings as a four -character string.
@@ -138,7 +138,7 @@ str_sql
     version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2,), "int")
+    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2), "int")
 
 
 # Regular Expressions

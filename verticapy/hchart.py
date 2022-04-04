@@ -84,7 +84,7 @@ def hchart(line, cell):
     while len(query) > 0 and (query[0] in (";", " ")):
         query = query[1:]
     start_time = time.time()
-    chart = hchartSQL(query, options["type"],)
+    chart = hchartSQL(query, options["type"])
     elapsed_time = time.time() - start_time
     display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
     return chart

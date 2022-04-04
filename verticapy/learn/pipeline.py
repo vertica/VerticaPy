@@ -75,7 +75,7 @@ steps: list
     def __init__(
         self, steps: list,
     ):
-        check_types([("steps", steps, [list],)])
+        check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):
@@ -156,7 +156,7 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(relation=input_relation,)
+            vdf = vdf_from_relation(relation=input_relation)
         else:
             vdf = input_relation
         X_new = [elem for elem in X]
@@ -229,7 +229,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf,)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -319,7 +319,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf,)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -362,7 +362,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf,)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):
@@ -394,7 +394,7 @@ steps: list
                   name: str = "predict", 
                   return_proba: bool = False, 
                   return_distance_clusters: bool = False, 
-                  return_str: bool = False,):
+                  return_str: bool = False):
         """
     ---------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using built-in
@@ -420,7 +420,7 @@ steps: list
         Python function
         """
         if not(return_str):
-            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
+            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True)
             _locals = locals()
             exec(func, globals(), _locals)
             return _locals[name]

@@ -65,7 +65,7 @@ from verticapy.learn.vmodel import *
 # ---#
 class XGBoost_to_json:
     # Class to export Vertica XGBoost to the Python XGBoost JSON format.
-    def to_json(self, path: str = "",):
+    def to_json(self, path: str = ""):
         """
         ---------------------------------------------------------------------------
         Creates a Python XGBoost JSON file that can be imported into the Python
@@ -213,7 +213,7 @@ class XGBoost_to_json:
                                                 "num_feature": str(len(model.X))},
                         "objective": {"name": objective,
                                       param: param_val}}
-            res = {"learner": xgboost_learner(model,),
+            res = {"learner": xgboost_learner(model),
                    "version": [1,4,2]}
             res = str(res)
             res = res.replace("'", '"').replace("True", "true").replace("False", "false").replace("++++", "\\\"")
@@ -278,7 +278,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(condition=[8, 1, 1],)
+        version(condition=[8, 1, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -346,7 +346,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        version(condition=[9, 0, 1],)
+        version(condition=[9, 0, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -423,7 +423,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(condition=[10, 1, 0],)
+        version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostClassifier", name
         params = {"max_ntree": max_ntree,
@@ -503,7 +503,7 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
-        version(condition=[10, 1, 0],)
+        version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostRegressor", name
         params = {"max_ntree": max_ntree,

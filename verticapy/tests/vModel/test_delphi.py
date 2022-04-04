@@ -28,7 +28,7 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+        drop(name="public.amazon")
 
 @pytest.fixture(scope="module")
 def titanic_vd():
@@ -37,7 +37,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
@@ -47,7 +47,7 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+        drop(name="public.winequality")
 
 class TestDelphi:
 
@@ -87,7 +87,7 @@ class TestDelphi:
     def test_AutoClustering(self, titanic_vd):
         model = AutoClustering("AutoML_test_cluster", )
         model.drop()
-        model.fit(titanic_vd,)
+        model.fit(titanic_vd)
         assert model.model_.parameters["n_cluster"] < 100
         model.drop()
 

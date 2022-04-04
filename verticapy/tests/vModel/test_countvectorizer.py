@@ -47,7 +47,7 @@ class TestCountVectorizer:
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
-        assert m_att["attr_name"] == ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words",]
+        assert m_att["attr_name"] == ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words"]
         m_att = model.get_attr("lowercase")
         assert m_att == model.parameters["lowercase"]
         m_att = model.get_attr("max_df")
@@ -71,8 +71,8 @@ class TestCountVectorizer:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, titanic_vd,):
-        model_test = CountVectorizer("model_test_drop",)
+    def test_drop(self, titanic_vd):
+        model_test = CountVectorizer("model_test_drop")
         model_test.drop()
         model_test.fit(titanic_vd, ["name"])
         current_cursor().execute(
@@ -86,7 +86,7 @@ class TestCountVectorizer:
         assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
-        assert sorted(model.vocabulary_)[0:3] == ['a', 'aaron', 'abbing',]
+        assert sorted(model.vocabulary_)[0:3] == ['a', 'aaron', 'abbing']
         assert model.stop_words_ == []
 
     def test_get_params(self, model):

@@ -120,7 +120,7 @@ papprox_ma: int, optional
         max_pik: int = 100,
         papprox_ma: int = 200,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "SARIMAX", name
         self.set_params(
             {
@@ -154,7 +154,7 @@ papprox_ma: int, optional
             ), ParameterError(
                 "In case of seasonality (s > 0), at least one of the parameters P, D or Q must be strictly greater than 0."
             )
-        version(condition=[8, 0, 0],)
+        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):
@@ -339,10 +339,10 @@ papprox_ma: int, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str, vDataFrame],),
-                ("y", y, [str],),
-                ("test_relation", test_relation, [str, vDataFrame],),
-                ("ts", ts, [str],),
+                ("input_relation", input_relation, [str, vDataFrame]),
+                ("y", y, [str]),
+                ("test_relation", test_relation, [str, vDataFrame]),
+                ("ts", ts, [str]),
             ]
         )
         # Initialization
@@ -381,7 +381,7 @@ papprox_ma: int, optional
             and not (self.exogenous)
         ):
             query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
-            self.ma_avg_ = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            self.ma_avg_ = executeSQL(query, method="fetchone0", print_time_sql=False)
             self.deploy_predict_ = str(self.ma_avg_)
 
         # I(d)
@@ -419,7 +419,7 @@ papprox_ma: int, optional
                 ", ".join(columns), relation
             )
             view_name = gen_tmp_name(schema=schema, name="linear_reg")
-            drop_if_exists(view_name, method="view",)
+            drop_if_exists(view_name, method="view")
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(
                 view_name,
                 relation.format(self.input_relation)
@@ -428,7 +428,7 @@ papprox_ma: int, optional
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                executeSQL(query, print_time_sql=False,)
+                executeSQL(query, print_time_sql=False)
                 self.X += AR + X
                 model.fit(
                     input_relation=view_name,
@@ -436,9 +436,9 @@ papprox_ma: int, optional
                     y=self.y,
                 )
             except:
-                drop_if_exists(view_name, method="view",)
+                drop_if_exists(view_name, method="view")
                 raise
-            drop_if_exists(view_name, method="view",)
+            drop_if_exists(view_name, method="view")
             self.coef_.values["predictor"] = model.coef_.values["predictor"]
             self.coef_.values["coefficient"] = model.coef_.values["coefficient"]
             alphaq = model.coef_.values["coefficient"]
@@ -543,7 +543,7 @@ papprox_ma: int, optional
             query = "SELECT COUNT(*), AVG({}) FROM {}".format(
                 self.y, transform_relation.format(self.input_relation)
             )
-            result = executeSQL(query, method="fetchone", print_time_sql=False,)
+            result = executeSQL(query, method="fetchone", print_time_sql=False)
             self.ma_avg_ = result[1]
             n = result[0]
             n = max(
@@ -566,7 +566,7 @@ papprox_ma: int, optional
             )
             for idx, elem in enumerate(X):
                 tmp_relation = tmp_relation.replace("[X{}]".format(idx), elem)
-            drop_if_exists(view_name, method="view",)
+            drop_if_exists(view_name, method="view")
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(
                 view_name,
                 tmp_relation.format(self.input_relation)
@@ -575,16 +575,16 @@ papprox_ma: int, optional
                 .replace("[VerticaPy_key_columns]", ", " + ", ".join([self.ts] + X)),
             )
             try:
-                executeSQL(query, print_time_sql=False,)
+                executeSQL(query, print_time_sql=False)
                 model.fit(
                     input_relation=view_name,
                     X=ARq,
                     y=self.y,
                 )
             except:
-                drop_if_exists(view_name, method="view",)
+                drop_if_exists(view_name, method="view")
                 raise
-            drop_if_exists(view_name, method="view",)
+            drop_if_exists(view_name, method="view")
             if not (self.coef_.values["predictor"]):
                 self.coef_.values["predictor"] += ["Intercept"]
                 self.coef_.values["coefficient"] += [self.ma_avg_]
@@ -762,16 +762,16 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation,)
+            vdf = vdf_from_relation(relation=self.input_relation)
         check_types(
             [
-                ("limit", limit, [int, float],),
-                ("nlead", nlead, [int, float],),
-                ("dynamic", dynamic, [bool],),
-                ("observed", observed, [bool],),
-                ("one_step", one_step, [bool],),
-                ("confidence", confidence, [bool],),
-                ("vdf", vdf, [vDataFrame],),
+                ("limit", limit, [int, float]),
+                ("nlead", nlead, [int, float]),
+                ("dynamic", dynamic, [bool]),
+                ("observed", observed, [bool]),
+                ("one_step", one_step, [bool]),
+                ("confidence", confidence, [bool]),
+                ("vdf", vdf, [vDataFrame]),
             ],
         )
         delta_limit, limit = (
@@ -1008,12 +1008,12 @@ papprox_ma: int, optional
         """
         check_types(
             [
-                ("name", name, [str],),
-                ("y", y, [str],),
-                ("ts", ts, [str],),
-                ("X", X, [list],),
-                ("nlead", nlead, [int, float],),
-                ("vdf", vdf, [vDataFrame],),
+                ("name", name, [str]),
+                ("y", y, [str]),
+                ("ts", ts, [str]),
+                ("X", X, [list]),
+                ("nlead", nlead, [int, float]),
+                ("vdf", vdf, [vDataFrame]),
             ],
         )
         if not (y):
@@ -1052,11 +1052,11 @@ papprox_ma: int, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            deltat = executeSQL(query, method="fetchone0", print_time_sql=False)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            next_t = executeSQL(query, method="fetchone0", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1081,7 +1081,7 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            prediction = executeSQL(query, method="fetchone0", print_time_sql=False)
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {} AS {} {}".format(
                 next_t,
@@ -1099,7 +1099,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "SARIMAX",)
+        result = vdf_from_relation(final_relation, "SARIMAX")
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1140,7 +1140,7 @@ solver: str, optional
         max_iter: int = 1000,
         solver: str = "Newton",
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "VAR", name
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
@@ -1148,7 +1148,7 @@ solver: str, optional
         self.set_params(
             {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
         )
-        version(condition=[8, 0, 0],)
+        version(condition=[8, 0, 0])
 
     # ---#
     def deploySQL(self):
@@ -1202,7 +1202,7 @@ solver: str, optional
     ax
         Matplotlib axes object
         """
-        check_types([("X_idx", X_idx, [int, float, str],), ("show", show, [bool],),],)
+        check_types([("X_idx", X_idx, [int, float, str]), ("show", show, [bool])])
         if isinstance(X_idx, str):
             X_idx = str_column(X_idx).lower()
             for idx, elem in enumerate(self.X):
@@ -1222,7 +1222,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vdf_from_relation(relation=self.input_relation,)
+            vdf_from_relation(relation=self.input_relation)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1279,10 +1279,10 @@ solver: str, optional
         """
         check_types(
             [
-                ("input_relation", input_relation, [str, vDataFrame],),
-                ("X", X, [list],),
-                ("ts", ts, [str],),
-                ("test_relation", test_relation, [str, vDataFrame],),
+                ("input_relation", input_relation, [str, vDataFrame]),
+                ("X", X, [list]),
+                ("ts", ts, [str]),
+                ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
         # Initialization
@@ -1326,10 +1326,10 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         view_name = gen_tmp_name(schema=schema, name="linear_reg")
-        drop_if_exists(view_name, method="view",)
+        drop_if_exists(view_name, method="view")
         try:
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(view_name, relation)
-            executeSQL(query, print_time_sql=False,)
+            executeSQL(query, print_time_sql=False)
             self.coef_ = []
             for elem in X:
                 model.fit(
@@ -1340,9 +1340,9 @@ solver: str, optional
                 self.coef_ += [model.coef_]
                 model.drop()
         except:
-            drop_if_exists(view_name, method="view",)
+            drop_if_exists(view_name, method="view")
             raise
-        drop_if_exists(view_name, method="view",)
+        drop_if_exists(view_name, method="view")
         model_save = {
             "type": "VAR",
             "input_relation": self.input_relation,
@@ -1462,17 +1462,17 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation,)
+            vdf = vdf_from_relation(relation=self.input_relation)
         check_types(
             [
-                ("limit", limit, [int, float],),
-                ("nlead", nlead, [int, float],),
-                ("X_idx", X_idx, [int, float, str],),
-                ("dynamic", dynamic, [bool],),
-                ("observed", observed, [bool],),
-                ("one_step", one_step, [bool],),
-                ("confidence", confidence, [bool],),
-                ("vdf", vdf, [vDataFrame],),
+                ("limit", limit, [int, float]),
+                ("nlead", nlead, [int, float]),
+                ("X_idx", X_idx, [int, float, str]),
+                ("dynamic", dynamic, [bool]),
+                ("observed", observed, [bool]),
+                ("one_step", one_step, [bool]),
+                ("confidence", confidence, [bool]),
+                ("vdf", vdf, [vDataFrame]),
             ],
         )
         delta_limit, limit = (
@@ -1708,11 +1708,11 @@ solver: str, optional
         """
         check_types(
             [
-                ("name", name, [list],),
-                ("ts", ts, [str],),
-                ("nlead", nlead, [int, float],),
-                ("X", X, [list],),
-                ("vdf", vdf, [vDataFrame],),
+                ("name", name, [list]),
+                ("ts", ts, [str]),
+                ("nlead", nlead, [int, float]),
+                ("X", X, [list]),
+                ("vdf", vdf, [vDataFrame]),
             ],
         )
         if not (ts):
@@ -1738,11 +1738,11 @@ solver: str, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            deltat = executeSQL(query, method="fetchone0", print_time_sql=False)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchone0", print_time_sql=False,)
+            next_t = executeSQL(query, method="fetchone0", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1763,7 +1763,7 @@ solver: str, optional
             query = "SELECT {} FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
             )
-            prediction = executeSQL(query, method="fetchone", print_time_sql=False,)
+            prediction = executeSQL(query, method="fetchone", print_time_sql=False)
             for idx, elem in enumerate(X):
                 prediction[idx] = "{} AS {}".format(prediction[idx], elem)
             columns_tmp = vdf.get_columns(exclude_columns=[ts] + X)
@@ -1782,7 +1782,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "VAR",)
+        result = vdf_from_relation(final_relation, "VAR")
         if nlead > 0:
             for elem in X:
                 result[elem].apply(

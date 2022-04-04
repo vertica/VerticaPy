@@ -153,7 +153,7 @@ class TestRFC:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -206,7 +206,7 @@ class TestRFC:
         plt.close("all")
 
     def test_to_python(self, model, titanic_vd):
-        model_test = RandomForestClassifier("rfc_python_test",)
+        model_test = RandomForestClassifier("rfc_python_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
         current_cursor().execute(
@@ -221,7 +221,7 @@ class TestRFC:
         assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = RandomForestClassifier("rfc_sql_test",)
+        model_test = RandomForestClassifier("rfc_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
         current_cursor().execute(
@@ -233,25 +233,25 @@ class TestRFC:
         assert prediction[0] == pytest.approx(prediction[1])
         model_test.drop()
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([["Male", 0, "Cheap", "Low",],
-                              ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python()([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict([["Male", 0, "Cheap", "Low"],
+                              ["Female", 3, "Expensive", "Hig"]])
+        res_py = model.to_python()([["Male", 0, "Cheap", "Low"],
+                                    ["Female", 3, "Expensive", "Hig"]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low",],
-                                                       ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low"],
+                                    ["Female", 3, "Expensive", "Hig"]])
+        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low"],
+                                                       ["Female", 3, "Expensive", "Hig"]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[0][2] == res_py[0][2]
         assert res[1][0] == res_py[1][0]
         assert res[1][1] == res_py[1][1]
         assert res[1][2] == res_py[1][2]
-        vdf = vDataFrame("public.rfc_data",)
+        vdf = vDataFrame("public.rfc_data")
         vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
         vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[0]
         vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[1]

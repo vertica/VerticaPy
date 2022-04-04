@@ -32,7 +32,7 @@ def market_vd():
 def model(market_vd):
     current_cursor().execute("DROP MODEL IF EXISTS mca_model_test")
     model_class = MCA("mca_model_test", )
-    model_class.fit(market_vd.cdt(),)
+    model_class.fit(market_vd.cdt())
     yield model_class
     model_class.drop()
 
@@ -59,7 +59,7 @@ class TestMCA:
     def test_drop(self, market_vd):
         current_cursor().execute("DROP MODEL IF EXISTS mca_model_test_drop")
         model_test = MCA("mca_model_test_drop", )
-        model_test.fit(market_vd.cdt(),)
+        model_test.fit(market_vd.cdt())
 
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_model_test_drop'"
@@ -180,7 +180,7 @@ class TestMCA:
     def test_model_from_vDF(self, market_vd):
         current_cursor().execute("DROP MODEL IF EXISTS mca_vDF")
         model_test = MCA("mca_vDF", )
-        model_test.fit(market_vd.cdt(),)
+        model_test.fit(market_vd.cdt())
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_vDF'"
         )

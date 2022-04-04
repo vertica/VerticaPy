@@ -116,7 +116,7 @@ class TestRFR:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -233,7 +233,7 @@ class TestRFR:
         prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
         res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
                               ['Female', 1, 'Expensive', 'Low']])
@@ -241,7 +241,7 @@ class TestRFR:
                                     ['Female', 1, 'Expensive', 'Low']])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame("public.rfr_data",)
+        vdf = vDataFrame("public.rfr_data")
         vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
         model.predict(vdf, name = "prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")

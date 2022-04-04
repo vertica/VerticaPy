@@ -35,7 +35,7 @@ def model(titanic_vd):
     model_class = KNeighborsClassifier("knn_model_test", )
     model_class.drop()
     model_class.fit(
-        "public.titanic", ["age", "fare",], "survived"
+        "public.titanic", ["age", "fare"], "survived"
     )
     yield model_class
     model_class.drop()
@@ -44,13 +44,13 @@ def model(titanic_vd):
 class TestKNeighborsClassifier:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = KNeighborsClassifier("model_repr",)
+        model_repr = KNeighborsClassifier("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<KNeighborsClassifier>"
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
-        assert m_att["attr_name"] == ["n_neighbors", "p", "classes",]
+        assert m_att["attr_name"] == ["n_neighbors", "p", "classes"]
         m_att = model.get_attr("n_neighbors")
         assert m_att == model.parameters["n_neighbors"]
         m_att = model.get_attr("p")
@@ -63,7 +63,7 @@ class TestKNeighborsClassifier:
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -123,7 +123,7 @@ class TestKNeighborsClassifier:
     def test_drop(self):
         model_test = KNeighborsClassifier("model_test_drop", )
         model_test.drop()
-        model_test.fit("public.titanic", ["age",], "survived")
+        model_test.fit("public.titanic", ["age"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
@@ -142,7 +142,7 @@ class TestKNeighborsClassifier:
         titanic_copy = titanic_vd.copy()
         titanic_copy = model.predict(
             titanic_copy,
-            X=["age", "fare",],
+            X=["age", "fare"],
             name="predicted_quality",
             inplace=False,
         )
