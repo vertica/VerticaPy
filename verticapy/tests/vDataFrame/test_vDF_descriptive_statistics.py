@@ -778,6 +778,18 @@ class TestvDFDescriptiveStat:
         assert titanic_vd["age"].quantile(x=0.5) == pytest.approx(28.0)
         assert titanic_vd["fare"].quantile(x=0.1) == pytest.approx(7.5892)
 
+        # testing exact vDataFrame.quantile
+        result = titanic_vd.quantile(q=[0.22, 0.9], columns=["age", "fare"], exact=True)
+
+        assert result["exact_22.0%"][0] == pytest.approx(20.0)
+        assert result["exact_90.0%"][0] == pytest.approx(50.0)
+        assert result["exact_22.0%"][1] == pytest.approx(7.8958)
+        assert result["exact_90.0%"][1] == pytest.approx(79.13)
+
+        # testing exact vDataFrame[].quantile
+        assert titanic_vd["age"].quantile(x=0.5, exact=True) == pytest.approx(28.0)
+        assert titanic_vd["fare"].quantile(x=0.1, exact=True) == pytest.approx(7.5892)
+
     def test_vDF_score(self, titanic_vd):
         from verticapy.learn.linear_model import LogisticRegression
 

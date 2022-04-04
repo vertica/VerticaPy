@@ -1635,8 +1635,10 @@ vColumns : vColumn
             mode           : most occurent element
             percent        : percent of non-missing elements
             q%             : approximate q quantile 
-                             (ex: 50% for the approximate median)
+                             (ex: 50% for the approximate median) 
             exact_q%       : q quantile (ex: exact_50% for the median)
+                             Use the 'q%' (approximate quantile) 
+                             aggregation to get better performances.
             prod           : product
             range          : difference between the max and the min
             sem            : standard error of the mean
@@ -7633,7 +7635,8 @@ vColumns : vColumn
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
     exact: bool, optional
-        If set to True, the exact quantile is returned.
+        If set to True, the exact quantile is returned. By using this parameter,
+        the function's performance can drastically decrease.
 
     Returns
     -------

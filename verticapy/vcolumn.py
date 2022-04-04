@@ -3250,7 +3250,8 @@ Attributes
  		A float between 0 and 1 that represents the quantile.
         For example: 0.25 represents Q1.
     exact: bool, optional
-        If set to True, the exact quantile is returned.
+        If set to True, the exact quantile is returned. By using this parameter,
+        the function's performance can drastically decrease.
 
  	Returns
  	-------

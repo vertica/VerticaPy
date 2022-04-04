@@ -2051,7 +2051,7 @@ def nested_pie(
         colors, n = gen_colors(), len(columns)
     m, k = len(colors), 0
     if isinstance(h, (int, float, type(None))):
-        h = (h) * n
+        h = (h,) * n
     if isinstance(max_cardinality, (int, float, type(None))):
         if max_cardinality == None:
             max_cardinality = (6) * n

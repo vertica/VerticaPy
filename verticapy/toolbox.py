@@ -1187,8 +1187,10 @@ def str_function(key: str, method: str = ""):
     elif key == "top1_percent":
         key = "top_percent"
     elif "%" == key[-1]:
-        if float(key[0:-1]) == int(float(key[0:-1])):
-            key = "{}%".format(int(float(key[0:-1])))
+        start = 6 if key[0:6] == "exact_" else 0
+        if float(key[start:-1]) == int(float(key[start:-1])):
+            key = "{}%".format(int(float(key[start:-1])))
+        if start == 6: key = "exact_" + key
     elif key == "row":
         key = "row_number"
     elif key == "first":
