@@ -5919,19 +5919,19 @@ vColumns : vColumn
         from verticapy.plot import pivot_table
 
         min_max = self.agg(func=["min", "max"], columns=columns).transpose()
-
         ax = pivot_table(
-            self,
-            columns,
-            method,
-            of,
-            h,
-            (0, 0),
-            True,
-            False,
-            ax,
-            True,
-            min_max[columns[0]] + min_max[columns[1]],
+            vdf=self,
+            columns=columns,
+            method=method,
+            of=of,
+            h=h,
+            max_cardinality=(0, 0),
+            show=True,
+            with_numbers=False,
+            fill_none=0.0,
+            ax=ax,
+            return_ax=True,
+            extent=min_max[columns[0]] + min_max[columns[1]],
             **style_kwds,
         )
         return ax
