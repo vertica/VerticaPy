@@ -288,6 +288,7 @@ class TestXGBC:
             "accepted_row_count",
             "call_string",
             "details",
+            "initial_prediction",
         ]
         assert attr["attr_fields"] == [
             "tree_count",

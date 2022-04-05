@@ -199,6 +199,7 @@ class TestXGBR:
             "accepted_row_count",
             "call_string",
             "details",
+            "initial_prediction",
         ]
         assert m_att["attr_fields"] == [
             "tree_count",
