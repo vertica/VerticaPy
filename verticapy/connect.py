@@ -99,11 +99,9 @@ list
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
-    try:
-        confparser.read(path)
+    confparser.read(path)
+    if confparser.has_section("VERTICAPY_AUTO_CONNECTION"):
         confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
-    except:
-        pass
     all_connections = confparser.sections()
     return all_connections
 
@@ -143,11 +141,8 @@ def close_connection():
 ---------------------------------------------------------------------------
 Close the Database connection.
     """
-    if verticapy.options["connection"]["conn"]:
-        try:
-            verticapy.options["connection"]["conn"].close()
-        except:
-            pass
+    if verticapy.options["connection"]["conn"] and not(verticapy.options["connection"]["conn"].closed()):
+        verticapy.options["connection"]["conn"].close()
 
 # ---#
 def connect(section: str, dsn: str = ""):
@@ -167,11 +162,8 @@ dsn: str, optional
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
-    if prev_conn:
-        try:
-            prev_conn.close()
-        except:
-            pass
+    if prev_conn and not(prev_conn.closed()):
+        prev_conn.close()
 
 # ---#
 def delete_connection(name: str):
@@ -193,10 +185,7 @@ bool
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
-    try:
-        confparser.read(path)
-    except:
-        pass
+    confparser.read(path)
     if confparser.has_section(name):
         confparser.remove_section(name)
         if confparser.has_section("VERTICAPY_AUTO_CONNECTION"):
@@ -242,10 +231,7 @@ overwrite: bool, optional
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
-    try:
-        confparser.read(path)
-    except:
-        pass
+    confparser.read(path)
     if confparser.has_section(name):
         if not(overwrite):
             raise ParserError("The section '{}' already exists. You can overwrite it by setting the parameter 'overwrite' to True.".format(name))
