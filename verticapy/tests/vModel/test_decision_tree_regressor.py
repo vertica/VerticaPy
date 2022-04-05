@@ -180,7 +180,7 @@ class TestDecisionTreeRegressor:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_regressor('public.tr_model_test', 'public.tr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_regressor('public.tr_model_test', 'public.tr_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):

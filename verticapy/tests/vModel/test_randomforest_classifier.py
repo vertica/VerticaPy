@@ -95,7 +95,7 @@ def model(rfc_data_vd):
     model_class.input_relation = "public.rfc_data"
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
-    model_class.y = '"TransPortation"'
+    model_class.y = 'TransPortation'
     current_cursor().execute(
         "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
             model_class.y, model_class.input_relation, model_class.y
@@ -110,7 +110,7 @@ def model(rfc_data_vd):
 
 class TestRFC:
     def test_repr(self, model):
-        assert "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);" in model.__repr__()
+        assert "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);" in model.__repr__()
         model_repr = RandomForestClassifier("RF_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestClassifier>"
@@ -301,7 +301,7 @@ class TestRFC:
         assert model.get_attr("tree_count")["tree_count"][0] == 3
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):
