@@ -296,8 +296,9 @@ class TestXGBC:
             "accepted_row_count",
             "call_string",
             "predictor, type",
+            "response_label, value",
         ]
-        assert attr["#_of_rows"] == [1, 1, 1, 1, 4]
+        assert attr["#_of_rows"] == [1, 1, 1, 1, 4, 3]
 
         details = model.get_attr("details")
         assert details["predictor"] == ["gender", "owned cars", "cost", "income"]
