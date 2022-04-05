@@ -199,6 +199,7 @@ class TestXGBR:
             "accepted_row_count",
             "call_string",
             "details",
+            "initial_prediction",
         ]
         assert m_att["attr_fields"] == [
             "tree_count",
@@ -206,8 +207,9 @@ class TestXGBR:
             "accepted_row_count",
             "call_string",
             "predictor, type",
+            "initial_prediction",
         ]
-        assert m_att["#_of_rows"] == [1, 1, 1, 1, 4]
+        assert m_att["#_of_rows"] == [1, 1, 1, 1, 4, 1]
 
         m_att_details = model.get_attr(attr_name="details")
 

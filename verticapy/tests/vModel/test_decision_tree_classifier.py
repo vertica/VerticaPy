@@ -324,7 +324,7 @@ class TestDecisionTreeClassifier:
         assert model.get_attr("tree_count")["tree_count"][0] == 1
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_classifier('public.decision_tc_model_test', 'public.dtc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_classifier('public.decision_tc_model_test', 'public.dtc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):
