@@ -269,9 +269,7 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
-        with warnings.catch_warnings(record=True) as w:
-            drop(self.name)
-            drop(self.name)
+        drop_if_exists(self.name, method="model")
 
     # ---#
     def features_importance(
