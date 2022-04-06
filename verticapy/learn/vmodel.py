@@ -269,7 +269,10 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
-        drop_if_exists(self.name, method="model")
+        if self.type == "AutoDataPrep":
+            drop_if_exists(self.name, method="table")
+        else:
+            drop_if_exists(self.name, method="model")
 
     # ---#
     def features_importance(
