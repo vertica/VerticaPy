@@ -687,9 +687,7 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
-        try:
-            self.parameters
-        except:
+        if not(hasattr(self, "parameters")):
             self.parameters = {}
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
@@ -3959,10 +3957,7 @@ class Unsupervised(vModel):
         ):
             name_init = gen_tmp_name(schema=schema_relation(self.name)[0], name="kmeans_init")
             del parameters["init_method"]
-            try:
-                drop_if_exists(name_init, method="table")
-            except:
-                pass
+            drop_if_exists(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
                     "'init' must be a list of 'n_cluster' = {} points".format(

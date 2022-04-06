@@ -159,11 +159,11 @@ dsn: str, optional
     VERTICAPY_CONNECTIONS environment variable will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
+    if prev_conn and not(prev_conn.closed()):
+        prev_conn.close()
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
-    if prev_conn and not(prev_conn.closed()):
-        prev_conn.close()
 
 # ---#
 def delete_connection(name: str):

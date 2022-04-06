@@ -309,10 +309,7 @@ p: int, optional
                     executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters), method="copy", print_time_sql=False, path="./{}.csv".format(name_dbscan_clusters))
                 else:
                     executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False)
-                try:
-                    executeSQL("COMMIT", print_time_sql=False)
-                except:
-                    pass
+                executeSQL("COMMIT;", print_time_sql=False)
                 os.remove("{}.csv".format(name_dbscan_clusters))
             except:
                 os.remove("{}.csv".format(name_dbscan_clusters))
