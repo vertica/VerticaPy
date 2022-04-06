@@ -401,7 +401,7 @@ Computes the K-Fold cross validation of an estimator.
 Parameters
 ----------
 estimator: object
-	Vertica estimator with a fit.
+	Vertica estimator with a fit method.
 input_relation: str/vDataFrame
 	Relation to use to train the model.
 X: list
