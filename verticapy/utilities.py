@@ -788,7 +788,7 @@ def read_csv(
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
-    gen_table_name: bool = True,
+    gen_tmp_table_name: bool = True,
     ingest_local: bool = True
 ):
     """
@@ -840,10 +840,10 @@ temporary_table: bool, optional
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
     must be empty, otherwise this parameter is ignored.
-gen_table_name: bool, optional
-    This parameter is used only when 'temporary_local_table' is set to True 
-    and if 'table_name' is unspecified. In that case, the temporary local table 
-    name is generated.
+gen_tmp_table_name: bool, optional
+    This parameter is used only when parameter 'temporary_local_table' is set to 
+    True and if parameters 'table_name' and 'schema' are unspecified. In that case, 
+    the temporary local table name is generated.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -873,7 +873,7 @@ read_json : Ingests a JSON file into the Vertica database.
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_table_name", gen_table_name, [bool]),
+            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
             ("ingest_local", ingest_local, [bool])
         ]
     )
@@ -886,10 +886,7 @@ read_json : Ingests a JSON file into the Vertica database.
     if header_names and dtype:
         warning_message = "Parameters 'header_names' and 'dtype' are both defined. Only 'dtype' will be used."
         warnings.warn(warning_message, Warning)
-    if (not(temporary_local_table) or (table_name)) and (gen_table_name):
-        warning_message = "Parameter 'gen_table_name' is set to True whereas a table name is defined or the final chosen table's type is not a local temporary table. This parameter is ignored."
-        warnings.warn(warning_message, Warning)
-    elif gen_table_name and temporary_local_table and not(table_name):
+    if gen_tmp_table_name and temporary_local_table and not(table_name):
         table_name = gen_tmp_name(name=path.split("/")[-1].split(".csv")[0])
     assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     path, sep, header_names, na_rep, quotechar, escape = (
@@ -1021,7 +1018,7 @@ def read_json(
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
-    gen_table_name: bool = True,
+    gen_tmp_table_name: bool = True,
     ingest_local: bool = True
 ):
     """
@@ -1053,12 +1050,12 @@ insert: bool, optional
 temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
-    If set to True, a temporary local table will be created and the parameter
-    'schema' is ignored.
-gen_table_name: bool, optional
-    This parameter is used only when 'temporary_local_table' is set to True 
-    and if 'table_name' is unspecified. In that case, the temporary local table 
-    name is generated.
+    If set to True, a temporary local table will be created. The parameter 'schema'
+    must be empty, otherwise this parameter is ignored.
+gen_tmp_table_name: bool, optional
+    This parameter is used only when parameter 'temporary_local_table' is set to 
+    True and if parameters 'table_name' and 'schema' are unspecified. In that case, 
+    the temporary local table name is generated.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -1080,7 +1077,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
-            ("gen_table_name", gen_table_name, [bool]),
+            ("gen_tmp_table_name", gen_tmp_table_name, [bool]),
             ("ingest_local", ingest_local, [bool])
         ]
     )
@@ -1095,10 +1092,7 @@ read_csv : Ingests a CSV file into the Vertica database.
     file_extension = file[-4 : len(file)]
     if file_extension != "json":
         raise ExtensionError("The file extension is incorrect !")
-    if (not(temporary_local_table) or (table_name)) and (gen_table_name):
-        warning_message = "Parameter 'gen_table_name' is set to True whereas a table name is defined or the final chosen table's type is not a local temporary table. This parameter is ignored."
-        warnings.warn(warning_message, Warning)
-    elif gen_table_name and temporary_local_table and not(table_name):
+    if gen_tmp_table_name and temporary_local_table and not(table_name):
         table_name = gen_tmp_name(name=path.split("/")[-1].split(".json")[0])
     if not (table_name): table_name = path.split("/")[-1].split(".json")[0]
     query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(table_name.replace("'", "''"), schema.replace("'", "''"))

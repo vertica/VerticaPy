@@ -249,119 +249,65 @@ class TestUtilities:
         }
 
     def test_read_json(self):
-        with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test")
-        result = read_json(
-            os.path.dirname(verticapy.__file__)
-            + "/tests/utilities/titanic-passengers.json",
-            table_name="titanic_verticapy_test",
-            schema="public",
-        )
+        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/titanic-passengers.json"
+        result = read_json(path, table_name="titanic_verticapy_test_json", schema="public")
         assert result.shape() == (891, 15)
-        with warnings.catch_warnings(record=True) as w:
-            drop("titanic_verticapy_test")
-        with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test")
-        result = read_json(
-            os.path.dirname(verticapy.__file__)
-            + "/tests/utilities/titanic-passengers.json",
-            table_name="titanic_verticapy_test",
-        )
+        drop("public.titanic_verticapy_test_json", method="table")
+        result = read_json(path, table_name="titanic_verticapy_test_json")
         assert result.shape() == (891, 15)
-        with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test")
+        drop("public.titanic_verticapy_test_json", method="table")
 
     def test_read_csv(self):
+        path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
         # with schema
-        with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test")
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            schema="public"
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public")
         assert result.shape() == (1234, 14)
+        drop("public.titanic_verticapy_test_csv", method="table")
         # temporary table
-        with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test")
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            schema="public",
-            temporary_table=True,
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", temporary_table=True)
         assert result.shape() == (1234, 14)
+        drop("public.titanic_verticapy_test_csv", method="table")
         # parse_n_lines
-        with warnings.catch_warnings(record=True) as w:
-            drop("public.titanic_verticapy_test")
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            schema="public",
-            parse_n_lines=100,
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", parse_n_lines=100)
         assert result.shape() == (1234, 14)
         # insert
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            schema="public",
-            insert=True,
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", insert=True)
         assert result.shape() == (2468, 14)
-        drop("public.titanic_verticapy_test")
+        drop("public.titanic_verticapy_test_csv", method="table")
         # temporary local table
-        with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test")
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv")
         assert result.shape() == (1234, 14)
-        drop("v_temp_schema.titanic_verticapy_test")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with header names
-        with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test")
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            header_names=["ucol{}".format(i) for i in range(14)],
-        )
+        result = read_csv(path, table_name="titanic_verticapy_test_csv", header_names=["ucol{}".format(i) for i in range(14)])
         assert result.shape() == (1234, 14)
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
-        drop("v_temp_schema.titanic_verticapy_test")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with dtypes
-        with warnings.catch_warnings(record=True) as w:
-            drop("v_temp_schema.titanic_verticapy_test")
         result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            table_name="titanic_verticapy_test",
-            dtype= {"pclass": "int",
-                    "survived": "bool",
-                    "name": "varchar",
-                    "sex": "varchar",
-                    "age": "float",
-                    "sibsp": "int",
-                    "parch": "int",
-                    "ticket": "varchar",
-                    "fare": "float",
-                    "cabin": "varchar",
-                    "embarked": "varchar",
-                    "boat": "varchar",
-                    "body": "varchar", 
-                    "home.dest": "varchar"},
+            path,
+            table_name="titanic_verticapy_test_csv",
+            dtype={"pclass": "int",
+                   "survived": "bool",
+                   "name": "varchar",
+                   "sex": "varchar",
+                   "age": "float",
+                   "sibsp": "int",
+                   "parch": "int",
+                   "ticket": "varchar",
+                   "fare": "float",
+                   "cabin": "varchar",
+                   "embarked": "varchar",
+                   "boat": "varchar",
+                   "body": "varchar", 
+                   "home.dest": "varchar"}
         )
         assert result.shape() == (1234, 14)
-        drop("v_temp_schema.titanic_verticapy_test")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
-        result = read_csv(
-            os.path.dirname(verticapy.__file__) + "/data/titanic.csv",
-            schema="public",
-            table_name="titanic_verticapy_test",
-            genSQL=True,
-        )
-        assert result[0][0:46] == 'CREATE TABLE "public"."titanic_verticapy_test"'
-        assert result[1][0:38] == 'COPY "public"."titanic_verticapy_test"'
+        result = read_csv(path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True)
+        assert result[0][0:46] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
+        assert result[1][0:38] == 'COPY "public"."titanic_verticapy_test_csv"'
 
     def test_read_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
