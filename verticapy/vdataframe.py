@@ -9528,13 +9528,13 @@ vColumns : vColumn
             from shapely import wkt
         except:
             raise ImportError(
-                "The geopandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install geopandas' in your terminal to install the module."
+                "The geopandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install geopandas' in your terminal to install the module."
             )
         try:
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
+                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
             )
         columns = self.get_columns(exclude_columns=[geometry])
         columns = ", ".join(columns)
@@ -9704,7 +9704,7 @@ vColumns : vColumn
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
+                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
             )
         query = "SELECT * FROM {}{}".format(self.__genSQL__(), last_order_by(self))
         data = executeSQL(query, title="Getting the vDataFrame values.", method="fetchall")

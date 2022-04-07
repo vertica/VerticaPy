@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -62,6 +62,105 @@ from verticapy import vDataFrame
 from verticapy.learn.model_selection import *
 from verticapy.utilities import *
 from verticapy.toolbox import *
+
+#
+# Function used to simplify the code
+#
+# ---#
+def compute_metric_query(
+    metric: str,
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
+    title: str = "",
+    fetchone0: bool = True
+):
+    """
+---------------------------------------------------------------------------
+Function used to simplify the code. It fills, computes and returns the score
+of the input query.
+
+Parameters
+----------
+metric: str
+    Input metric to fill.
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str/vDataFrame
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+title: str, optional
+    Query's title.
+fetchone0: bool, optional
+    If set to True, one element is returned otherwise a tuple.
+
+Returns
+-------
+float or tuple of floats
+    score(s)
+    """
+    check_types(
+        [
+            ("metric", metric, [str]),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("title", title, [str]),
+            ("fetchone0", fetchone0, [bool])
+        ]
+    )
+    query = "SELECT {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        metric.format(y_true, y_score), input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
+    )
+    return executeSQL(query, title=title, method="fetchone0" if fetchone0 else "fetchone")
+
+# ---#
+def compute_tn_fn_fp_tp(
+    y_true: str,
+    y_score: str,
+    input_relation: Union[str, vDataFrame],
+    pos_label: (int, float, str) = 1,
+):
+    """
+---------------------------------------------------------------------------
+Function used to simplify the code.
+Computes the Confusion Matrix for the input 'pos_label' class and returns
+all its values: (True Negatives, False Negatives, False Positives, 
+True Positives).
+
+Parameters
+----------
+y_true: str
+    Response column.
+y_score: str
+    Prediction.
+input_relation: str/vDataFrame
+    Relation to use to do the scoring. The relation can be a view or a table
+    or even a customized relation. For example, you could write:
+    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
+    relation.
+pos_label: int/float/str, optional
+    To compute the Confusion Matrix, one of the response column classes must 
+    be the positive one. The parameter 'pos_label' represents this class.
+
+Returns
+-------
+tuple
+    tn, fn, fp, tp
+    """
+    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
+    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
+    tn, fn, fp, tp = (
+        matrix.values[non_pos_label][0],
+        matrix.values[non_pos_label][1],
+        matrix.values[pos_label][0],
+        matrix.values[pos_label][1],
+    )
+    return tn, fn, fp, tp
 
 #
 # Regression
@@ -97,22 +196,12 @@ Returns
 tuple of floats
     (AIC, BIC)
     """
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-        ]
-    )
-    query = "SELECT SUM(POWER({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
-    )
-    rss, n = executeSQL(query, title="Computing the RSS Score.", method="fetchone")
+    check_types([("k", k, [int])])
+    rss, n =  compute_metric_query("SUM(POWER({} - {}, 2)), COUNT(*)", y_true, y_score, input_relation, "Computing the RSS Score.", False)
     if rss > 0:
         result = (
             n * math.log(rss / n) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
-            n * math.log(rss / n) + (k + 1) * math.log(n),
+            n * math.log(rss / n) + (k + 1) * math.log(n)
         )
     else:
         result = -float("inf"), -float("inf")
@@ -244,21 +333,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT MAX(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    result = executeSQL(query, title="Computing the Max Error.", method="fetchone0")
-    try:
-        result = float(result)
-    except:
-        pass
-    return result
-
+    return compute_metric_query("MAX(ABS({} - {}))::FLOAT", y_true, y_score, input_relation, "Computing the Max Error.")
 
 # ---#
 def mean_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -283,16 +358,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT AVG(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    return executeSQL(query, title="Computing the Mean Absolute Error.", method="fetchone0")
-
+    return compute_metric_query("AVG(ABS({} - {}))", y_true, y_score, input_relation, "Computing the Mean Absolute Error.")
 
 # ---#
 def mean_squared_error(
@@ -324,20 +390,10 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("root", root, [bool]),
-        ]
-    )
-    query = "SELECT MSE({}, {}) OVER () FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    result = executeSQL(query, title="Computing the MSE.", method="fetchone0")
-    if root:
-        result = math.sqrt(result)
-    return result
-
+    check_types([("root", root, [bool])])
+    metric = "MSE({}, {}) OVER ()"
+    if root: metric = "SQRT({})".format(metric)
+    return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the MSE.")
 
 # ---#
 def mean_squared_log_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -362,16 +418,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT AVG(POW(LOG({} + 1) - LOG({} + 1), 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    return executeSQL(query, title="Computing the Mean Squared Log Error.", method="fetchone0")
-
+    return compute_metric_query("AVG(POW(LOG({} + 1) - LOG({} + 1), 2))", y_true, y_score, input_relation, "Computing the Mean Squared Log Error.")
 
 # ---#
 def median_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -396,16 +443,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT APPROXIMATE_MEDIAN(ABS({} - {})) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    return executeSQL(query, title="Computing the Median Absolute Error.", method="fetchone0")
-
+    return compute_metric_query("APPROXIMATE_MEDIAN(ABS({} - {}))", y_true, y_score, input_relation, "Computing the Median Absolute Error.")
 
 # ---#
 def quantile_error(q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -432,17 +470,9 @@ Returns
 float
     score
     """
-    check_types(
-        [
-            ("q", q, [int, float]),
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, q, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    return executeSQL(query, title="Computing the Quantile Error.", method="fetchone0")
-
+    check_types([("q", q, [int, float])])
+    metric = "APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {})".format("{}", "{}", q)
+    return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the Quantile Error.")
 
 # ---#
 def r2_score(
@@ -477,17 +507,8 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
-            ("adj", adj, [bool]),
-        ]
-    )
-    query = "SELECT RSQUARED({}, {}) OVER() FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    result = executeSQL(query, title="Computing the R2 Score.", method="fetchone0")
+    check_types([("k", k, [int]), ("adj", adj, [bool])])
+    result = compute_metric_query("RSQUARED({}, {}) OVER()", y_true, y_score, input_relation, "Computing the R2 Score.")
     if adj and k > 0:
         query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score)
         n = executeSQL(query, title="Computing the table number of elements.", method="fetchone0")
@@ -618,26 +639,14 @@ float
         ]
     )
     if pos_label != None:
-        matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-        non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-        tn, fn, fp, tp = (
-            matrix.values[non_pos_label][0],
-            matrix.values[non_pos_label][1],
-            matrix.values[pos_label][0],
-            matrix.values[pos_label][1],
-        )
+        tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
         acc = (tp + tn) / (tp + tn + fn + fp)
         return acc
     else:
         try:
-            query = "SELECT AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
-            query = query.format(y_true, y_score, input_relation, y_true, y_score)
-            return executeSQL(query, title="Computing the Accuracy Score.", method="fetchone0")
+            return compute_metric_query("AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
         except:
-            query = "SELECT AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END) AS accuracy FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
-            query = query.format(y_true, y_score, input_relation, y_true, y_score)
-            return executeSQL(query, title="Computing the Accuracy Score.", method="fetchone0")
-
+            return compute_metric_query("AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
 
 # ---#
 def auc(
@@ -677,13 +686,6 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
     return roc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True)
 
 
@@ -941,21 +943,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
     return csi
 
@@ -991,21 +979,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
     f1 = (
@@ -1047,21 +1021,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tpr = tp / (tp + fn) if (tp + fn != 0) else 0
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
     return tpr + tnr - 1
@@ -1098,17 +1058,8 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) else - LOG(1 - {}::float + 1e-90) END) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;"
-    query = query.format(y_true, pos_label, y_score, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    return executeSQL(query, title="Computing the Log Loss.", method="fetchone0")
-
+    metric = "AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) ELSE - LOG(1 - {}::float + 1e-90) END)".format("{}", pos_label, y_score, "{}")
+    return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the Log Loss.")
 
 # ---#
 def markedness(
@@ -1141,21 +1092,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     ppv = tp / (tp + fp) if (tp + fp != 0) else 0
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
     return ppv + npv - 1
@@ -1193,21 +1130,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     mcc = (
         (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
         if (tp + fp != 0) and (tp + fn != 0) and (tn + fp != 0) and (tn + fn != 0)
@@ -1252,7 +1175,7 @@ tablesample
             ("y_true", y_true, [str]),
             ("y_score", y_score, [str]),
             ("input_relation", input_relation, [str, vDataFrame]),
-            ("labels", labels, [list]),
+            ("labels", labels, [list])
         ]
     )
     version(condition=[8, 0, 0])
@@ -1310,21 +1233,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
     return npv
 
@@ -1367,14 +1276,6 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-            ("nbins", nbins, [int]),
-        ]
-    )
     return prc_curve(y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True)
 
 
@@ -1409,21 +1310,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
     return precision
 
@@ -1459,21 +1346,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     return recall
 
@@ -1509,20 +1382,6 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
-    tn, fn, fp, tp = (
-        matrix.values[non_pos_label][0],
-        matrix.values[non_pos_label][1],
-        matrix.values[pos_label][0],
-        matrix.values[pos_label][1],
-    )
+    tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
     return tnr

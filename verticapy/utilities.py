@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -76,7 +76,7 @@ def create_table(
 ):
     """
 ---------------------------------------------------------------------------
-Creates a new table using the input columns names and data types.
+Creates a new table using the input columns' names and data types.
 
 Parameters
 ----------
@@ -92,9 +92,9 @@ temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 
-    'schema' must to be empty, otherwise this parameter is ignored.
+    'schema' must be empty, otherwise this parameter is ignored.
 genSQL: bool, optional
-    If set to True, the SQL code to use to create the final table will be 
+    If set to True, the SQL code for creating the final table will be 
     generated but not executed.
 
 Returns
@@ -317,9 +317,9 @@ bool
 def drop_if_exists(name: str = "", method: str = "auto"):
     """
 ---------------------------------------------------------------------------
-Drops the input relation if it exists. This can be a model, view, table, 
-text index, schema, or geo index. This function will raise no error or
-warning.
+Drops the input relation if it exists. This relation can be a model, view, 
+table, text index, schema, or geo index. This function will raise no error 
+or warning.
 
 Parameters
 ----------
@@ -823,7 +823,7 @@ quotechar: str, optional
 escape: str, optional
 	Separator between each record.
 genSQL: bool, optional
-	If set to True, the SQL code to use to create the final table will be 
+	If set to True, the SQL code for creating the final table will be 
 	generated but not executed. It is a good way to change the final
 	relation types or to customize the data ingestion.
 parse_n_lines: int, optional
@@ -840,7 +840,7 @@ temporary_table: bool, optional
     If set to True, a temporary table will be created.
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
-    must to be empty, otherwise this parameter is ignored.
+    must be empty, otherwise this parameter is ignored.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -1617,7 +1617,7 @@ The tablesample attributes are the same than the parameters.
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module seems to not be installed in your environment.\nTo be able to use this method, you'll have to install it."
+                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it."
             )
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
