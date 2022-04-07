@@ -1138,7 +1138,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                 )
             temp = "TEMPORARY " if temporary_table else ""
             temp = "LOCAL TEMPORARY " if temporary_local_table else ""
-            executeSQL("CREATE {}TABLE {} AS SELECT {} FROM {}".format(temp, input_relation, ", ".join(cols), flex_name), title="Creating table.")
+            executeSQL("CREATE {}TABLE {}{} AS SELECT {} FROM {}".format(temp, input_relation, " ON COMMIT PRESERVE ROWS" if temp else "", ", ".join(cols), flex_name), title="Creating table.")
             if not(temporary_local_table):
                 print("The table {} has been successfully created.".format(input_relation))
         else:
