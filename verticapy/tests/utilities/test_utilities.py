@@ -309,7 +309,7 @@ class TestUtilities:
         # genSQL
         result = read_csv(path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True)
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
-        assert result[1][0:44] == 'COPY "public"."titanic_verticapy_test_csv"'
+        assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
         # TODO
         # test the param gen_tmp_table_name
 

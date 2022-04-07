@@ -77,13 +77,12 @@ def compute_metric_query(
 ):
     """
 ---------------------------------------------------------------------------
-Function used to simplify the code. It fills, computes and returns the score
-of the input query.
+A helper function that uses a specified metric to generate and score a query.
 
 Parameters
 ----------
 metric: str
-    Input metric to fill.
+    The metric to use in the query.
 y_true: str
     Response column.
 y_score: str
