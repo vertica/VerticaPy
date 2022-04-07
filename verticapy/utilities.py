@@ -841,9 +841,9 @@ temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
     must be empty, otherwise this parameter is ignored.
 gen_tmp_table_name: bool, optional
-    This parameter is used only when parameter 'temporary_local_table' is set to 
-    True and if parameters 'table_name' and 'schema' are unspecified. In that case, 
-    the temporary local table name is generated.
+    Sets the name of the temporary table. This parameter is only used when the 
+    parameter 'temporary_local_table' is set to True and if the parameters 
+    "table_name" and "schema" are unspecified.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -999,10 +999,8 @@ read_json : Ingests a JSON file into the Vertica database.
             if query1:
                 executeSQL(query1, "Creating the table.")
             executeSQL(query2.format("{}'{}'".format("LOCAL " if ingest_local else "", path)), "Ingesting the data.")
-            if query1 and not(temporary_local_table):
-                print(
-                    "The table {} has been successfully created.".format(input_relation)
-                )
+            if query1 and not(temporary_local_table) and verticapy.options["print_info"]:
+                print("The table {} has been successfully created.".format(input_relation))
             from verticapy import vDataFrame
 
             return vDataFrame(table_name, schema=schema)
@@ -1053,9 +1051,9 @@ temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
     must be empty, otherwise this parameter is ignored.
 gen_tmp_table_name: bool, optional
-    This parameter is used only when parameter 'temporary_local_table' is set to 
-    True and if parameters 'table_name' and 'schema' are unspecified. In that case, 
-    the temporary local table name is generated.
+    Sets the name of the temporary table. This parameter is only used when the 
+    parameter 'temporary_local_table' is set to True and if the parameters 
+    "table_name" and "schema" are unspecified.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -1139,7 +1137,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             temp = "TEMPORARY " if temporary_table else ""
             temp = "LOCAL TEMPORARY " if temporary_local_table else ""
             executeSQL("CREATE {}TABLE {}{} AS SELECT {} FROM {}".format(temp, input_relation, " ON COMMIT PRESERVE ROWS" if temp else "", ", ".join(cols), flex_name), title="Creating table.")
-            if not(temporary_local_table):
+            if not(temporary_local_table) and verticapy.options["print_info"]:
                 print("The table {} has been successfully created.".format(input_relation))
         else:
             column_name_dtype = {}

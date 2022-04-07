@@ -89,14 +89,17 @@ y_true: str
 y_score: str
     Prediction.
 input_relation: str/vDataFrame
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
+title: str, optional
     Relation to use to do the scoring. The relation can be a view or a table
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
-title: str, optional
-    Query's title.
+Title of the query.
 fetchone0: bool, optional
-    If set to True, one element is returned otherwise a tuple.
+    If set to True, this function returns one element. Otherwise, this 
+    function returns a tuple.
 
 Returns
 -------
@@ -127,10 +130,9 @@ def compute_tn_fn_fp_tp(
 ):
     """
 ---------------------------------------------------------------------------
-Function used to simplify the code.
-Computes the Confusion Matrix for the input 'pos_label' class and returns
-all its values: (True Negatives, False Negatives, False Positives, 
-True Positives).
+A helper function that computes the confusion matrix for the specified 
+'pos_label' class and returns its values as a tuple of the following: 
+true negatives, false negatives, false positives, and true positives.
 
 Parameters
 ----------
@@ -139,10 +141,9 @@ y_true: str
 y_score: str
     Prediction.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the Confusion Matrix, one of the response column classes must 
     be the positive one. The parameter 'pos_label' represents this class.
@@ -184,10 +185,9 @@ y_true: str
 y_score: str
     Prediction.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 k: int, optional
     Number of predictors.
 
@@ -226,10 +226,9 @@ y_true: str
 y_score: str
     Prediction.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 k: int, optional
     Number of predictors.
 
@@ -287,10 +286,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 
 Returns
 -------
@@ -323,10 +321,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 
 Returns
 -------
@@ -348,10 +345,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 
 Returns
 -------
@@ -378,10 +374,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 root: bool, optional
     If set to True, returns the RMSE (Root Mean Squared Error)
 
@@ -408,10 +403,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 
 Returns
 -------
@@ -433,10 +427,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 
 Returns
 -------
@@ -460,11 +453,10 @@ y_true: str
 y_score: str
     Prediction.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
-
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
+    
 Returns
 -------
 float
@@ -493,10 +485,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 k: int, optional
     Number of predictors. Only used to compute the R2 adjusted.
 adj: bool, optional
@@ -534,10 +525,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 k: int, optional
     Number of predictors. Used to compute the adjusted R2.
 
@@ -618,10 +608,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	Label to use to identify the positive class. If pos_label is NULL then the
 	global accuracy will be computed.
@@ -667,10 +656,9 @@ y_true: str
 y_score: str
 	Prediction Probability.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the ROC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -711,10 +699,9 @@ y_true: str, optional
 y_score: list, optional
 	List containing the probability and the prediction.
 input_relation: str/vDataFrame, optional
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
@@ -870,10 +857,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the one dimension Confusion Matrix, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents 
@@ -930,10 +916,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the CSI, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -966,10 +951,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the F1 Score, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1008,10 +992,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the informedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1045,10 +1028,9 @@ y_true: str
 y_score: str
 	Prediction Probability.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the log loss, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1079,10 +1061,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the markedness, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1116,10 +1097,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the Matthews Correlation Coefficient, one of the response column 
 	class must be the positive one. The parameter 'pos_label' represents this 
@@ -1157,10 +1137,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 labels: list
 	List of the response column categories.
 
@@ -1220,10 +1199,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the Negative Predictive Score, one of the response column class 
 	must be the positive one. The parameter 'pos_label' represents this class.
@@ -1257,10 +1235,9 @@ y_true: str
 y_score: str
 	Prediction probability.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the PRC AUC, one of the response column classes must be the 
 	positive one. The parameter 'pos_label' represents this class.
@@ -1297,10 +1274,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the Precision Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
@@ -1333,10 +1309,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the Recall Score, one of the response column classes must be 
 	the positive one. The parameter 'pos_label' represents this class.
@@ -1369,10 +1344,9 @@ y_true: str
 y_score: str
 	Prediction.
 input_relation: str/vDataFrame
-	Relation to use to do the scoring. The relation can be a view or a table
-	or even a customized relation. For example, you could write:
-	"(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-	relation.
+	Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
 	To compute the Specificity Score, one of the response column classes must 
 	be the positive one. The parameter 'pos_label' represents this class.

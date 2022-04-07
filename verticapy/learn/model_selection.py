@@ -1683,10 +1683,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -1931,10 +1930,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -2354,10 +2352,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.

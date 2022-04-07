@@ -256,6 +256,8 @@ class TestUtilities:
         result = read_json(path, table_name="titanic_verticapy_test_json")
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
+        # TODO
+        # test the param gen_tmp_table_name
 
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
@@ -306,8 +308,10 @@ class TestUtilities:
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
         result = read_csv(path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True)
-        assert result[0][0:46] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
-        assert result[1][0:38] == 'COPY "public"."titanic_verticapy_test_csv"'
+        assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
+        assert result[1][0:44] == 'COPY "public"."titanic_verticapy_test_csv"'
+        # TODO
+        # test the param gen_tmp_table_name
 
     def test_read_shp(self, cities_vd):
         with warnings.catch_warnings(record=True) as w:
