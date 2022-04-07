@@ -231,7 +231,7 @@ bool
         if not (result):
             try:
                 query = f'SELECT * FROM "{schema}"."{relation}" LIMIT 0;'
-                executeSQL(query, print_time_sql=False, )
+                executeSQL(query, print_time_sql=False)
                 method = "text"
             except:
                 fail = True
@@ -239,9 +239,7 @@ bool
             method = "geo"
             end_conditions = True
         if fail:
-            warning_message = "No relation / index / view / model named '{}' was detected.".format(
-                name
-            )
+            warning_message = "No relation / index / view / model named '{}' was detected.".format(name)
             warnings.warn(warning_message, Warning)
             return False
     query = ""
@@ -770,7 +768,7 @@ read_json : Ingests a JSON file into the Vertica database.
     dtype = {}
     for column_dtype in result:
         dtype[column_dtype[0]] = column_dtype[1]
-    executeSQL("DROP TABLE " + flex_name, title="Dropping the Flex Table.")
+    drop(name=flex_name, method="table")
     return dtype
 
 # ---#
@@ -790,7 +788,8 @@ def read_csv(
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
-    ingest_local: bool = True,
+    gen_table_name: bool = True,
+    ingest_local: bool = True
 ):
     """
 ---------------------------------------------------------------------------
@@ -841,6 +840,10 @@ temporary_table: bool, optional
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created. The parameter 'schema'
     must be empty, otherwise this parameter is ignored.
+gen_table_name: bool, optional
+    This parameter is used only when 'temporary_local_table' is set to True 
+    and if 'table_name' is unspecified. In that case, the temporary local table 
+    name is generated.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -870,7 +873,8 @@ read_json : Ingests a JSON file into the Vertica database.
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
-            ("ingest_local", ingest_local, [bool]),
+            ("gen_table_name", gen_table_name, [bool]),
+            ("ingest_local", ingest_local, [bool])
         ]
     )
     if (schema):
@@ -882,6 +886,11 @@ read_json : Ingests a JSON file into the Vertica database.
     if header_names and dtype:
         warning_message = "Parameters 'header_names' and 'dtype' are both defined. Only 'dtype' will be used."
         warnings.warn(warning_message, Warning)
+    if (not(temporary_local_table) or (table_name)) and (gen_table_name):
+        warning_message = "Parameter 'gen_table_name' is set to True whereas a table name is defined or the final chosen table's type is not a local temporary table. This parameter is ignored."
+        warnings.warn(warning_message, Warning)
+    elif gen_table_name and temporary_local_table and not(table_name):
+        table_name = gen_tmp_name(name=path.split("/")[-1].split(".csv")[0])
     assert not(temporary_table) or not(temporary_local_table), ParameterError("Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True.")
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
@@ -895,7 +904,7 @@ read_json : Ingests a JSON file into the Vertica database.
     file_extension = file[-3 : len(file)]
     if file_extension != "csv":
         raise ExtensionError("The file extension is incorrect !")
-    table_name = table_name if (table_name) else path.split("/")[-1].split(".csv")[0]
+    if not(table_name): table_name = path.split("/")[-1].split(".csv")[0]
     if table_name == "*":
         assert dtype, ParameterError("Parameter 'dtype' must include the types of all columns in the table when ingesting multiple files.")
         table_name = path.split("/")[-2]
@@ -1011,8 +1020,9 @@ def read_json(
     new_name: dict = {},
     insert: bool = False,
     temporary_table: bool = False,
-    temporary_local_table: bool = False,
-    ingest_local: bool = True,
+    temporary_local_table: bool = True,
+    gen_table_name: bool = True,
+    ingest_local: bool = True
 ):
     """
 ---------------------------------------------------------------------------
@@ -1045,6 +1055,10 @@ temporary_table: bool, optional
 temporary_local_table: bool, optional
     If set to True, a temporary local table will be created and the parameter
     'schema' is ignored.
+gen_table_name: bool, optional
+    This parameter is used only when 'temporary_local_table' is set to True 
+    and if 'table_name' is unspecified. In that case, the temporary local table 
+    name is generated.
 ingest_local: bool, optional
     If set to True, the file will be ingested from the local machine.
 
@@ -1066,6 +1080,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
+            ("gen_table_name", gen_table_name, [bool]),
             ("ingest_local", ingest_local, [bool])
         ]
     )
@@ -1080,8 +1095,12 @@ read_csv : Ingests a CSV file into the Vertica database.
     file_extension = file[-4 : len(file)]
     if file_extension != "json":
         raise ExtensionError("The file extension is incorrect !")
-    if not (table_name):
-        table_name = path.split("/")[-1].split(".json")[0]
+    if (not(temporary_local_table) or (table_name)) and (gen_table_name):
+        warning_message = "Parameter 'gen_table_name' is set to True whereas a table name is defined or the final chosen table's type is not a local temporary table. This parameter is ignored."
+        warnings.warn(warning_message, Warning)
+    elif gen_table_name and temporary_local_table and not(table_name):
+        table_name = gen_tmp_name(name=path.split("/")[-1].split(".json")[0])
+    if not (table_name): table_name = path.split("/")[-1].split(".json")[0]
     query = "SELECT column_name, data_type FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(table_name.replace("'", "''"), schema.replace("'", "''"))
     column_name = executeSQL(query, title="Looking if the relation exists.", method="fetchall")
     if (column_name != []) and not (insert):
@@ -1154,7 +1173,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                     ]
                 )
             executeSQL("INSERT INTO {} SELECT {} FROM {}".format(input_relation, ", ".join(final_transformation), flex_name), title="Inserting data into table.")
-        executeSQL("DROP TABLE {}".format(flex_name), title="Dropping the Flex Table.")
+        drop(name=flex_name, method="table")
         from verticapy import vDataFrame
 
         return vDataFrame(table_name, schema=schema)

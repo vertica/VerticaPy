@@ -391,9 +391,9 @@ float
 	score
 	"""
     check_types([("root", root, [bool])])
-    metric = "MSE({}, {}) OVER ()"
-    if root: metric = "SQRT({})".format(metric)
-    return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the MSE.")
+    result = compute_metric_query("MSE({}, {}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.")
+    if root: return math.sqrt(result)
+    return result
 
 # ---#
 def mean_squared_log_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
