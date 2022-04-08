@@ -115,8 +115,9 @@ float or tuple of floats
             ("fetchfirstelem", fetchfirstelem, [bool])
         ]
     )
-    query = "SELECT {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        metric.format(y_true, y_score), input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
+    relation = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    query = "SELECT {0} FROM {1} WHERE {2} IS NOT NULL AND {3} IS NOT NULL;".format(
+        metric.format(y_true, y_score), relation, y_true, y_score
     )
     return executeSQL(query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow")
 
@@ -196,7 +197,7 @@ tuple of floats
     (AIC, BIC)
     """
     check_types([("k", k, [int])])
-    rss, n =  compute_metric_query("SUM(POWER({} - {}, 2)), COUNT(*)", y_true, y_score, input_relation, "Computing the RSS Score.", False)
+    rss, n =  compute_metric_query("SUM(POWER({0} - {1}, 2)), COUNT(*)", y_true, y_score, input_relation, "Computing the RSS Score.", False)
     if rss > 0:
         result = (
             n * math.log(rss / n) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
@@ -294,18 +295,7 @@ Returns
 float
 	score
 	"""
-    check_types(
-        [
-            ("y_true", y_true, [str]),
-            ("y_score", y_score, [str]),
-            ("input_relation", input_relation, [str, vDataFrame]),
-        ]
-    )
-    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_score, y_true, y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
-    )
-    return executeSQL(query, title="Computing the Explained Variance.", method="fetchfirstelem")
-
+    return compute_metric_query("1 - VARIANCE({1} - {0}) / VARIANCE({0})", y_true, y_score, input_relation, "Computing the Explained Variance.")
 
 # ---#
 def max_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -329,7 +319,7 @@ Returns
 float
 	score
 	"""
-    return compute_metric_query("MAX(ABS({} - {}))::FLOAT", y_true, y_score, input_relation, "Computing the Max Error.")
+    return compute_metric_query("MAX(ABS({0} - {1}))::FLOAT", y_true, y_score, input_relation, "Computing the Max Error.")
 
 # ---#
 def mean_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -353,7 +343,7 @@ Returns
 float
 	score
 	"""
-    return compute_metric_query("AVG(ABS({} - {}))", y_true, y_score, input_relation, "Computing the Mean Absolute Error.")
+    return compute_metric_query("AVG(ABS({0} - {1}))", y_true, y_score, input_relation, "Computing the Mean Absolute Error.")
 
 # ---#
 def mean_squared_error(
@@ -385,7 +375,7 @@ float
 	score
 	"""
     check_types([("root", root, [bool])])
-    result = compute_metric_query("MSE({}, {}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.")
+    result = compute_metric_query("MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE.")
     if root: return math.sqrt(result)
     return result
 
@@ -411,7 +401,7 @@ Returns
 float
 	score
 	"""
-    return compute_metric_query("AVG(POW(LOG({} + 1) - LOG({} + 1), 2))", y_true, y_score, input_relation, "Computing the Mean Squared Log Error.")
+    return compute_metric_query("AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))", y_true, y_score, input_relation, "Computing the Mean Squared Log Error.")
 
 # ---#
 def median_absolute_error(y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -435,7 +425,7 @@ Returns
 float
 	score
 	"""
-    return compute_metric_query("APPROXIMATE_MEDIAN(ABS({} - {}))", y_true, y_score, input_relation, "Computing the Median Absolute Error.")
+    return compute_metric_query("APPROXIMATE_MEDIAN(ABS({0} - {1}))", y_true, y_score, input_relation, "Computing the Median Absolute Error.")
 
 # ---#
 def quantile_error(q: float, y_true: str, y_score: str, input_relation: Union[str, vDataFrame]):
@@ -462,7 +452,7 @@ float
     score
     """
     check_types([("q", q, [int, float])])
-    metric = "APPROXIMATE_PERCENTILE(ABS({} - {}) USING PARAMETERS percentile = {})".format("{}", "{}", q)
+    metric = "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})".format("{0}", "{1}", q)
     return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the Quantile Error.")
 
 # ---#
@@ -498,7 +488,7 @@ float
 	score
 	"""
     check_types([("k", k, [int]), ("adj", adj, [bool])])
-    result = compute_metric_query("RSQUARED({}, {}) OVER()", y_true, y_score, input_relation, "Computing the R2 Score.")
+    result = compute_metric_query("RSQUARED({0}, {1}) OVER()", y_true, y_score, input_relation, "Computing the R2 Score.")
     if adj and k > 0:
         query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score)
         n = executeSQL(query, title="Computing the table number of elements.", method="fetchfirstelem")
@@ -541,12 +531,20 @@ tablesample
             ("y_true", y_true, [str]),
             ("y_score", y_score, [str]),
             ("input_relation", input_relation, [str, vDataFrame]),
-            ("k", k, [int]),
+            ("k", k, [int])
         ]
     )
-    query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}), MAX(ABS({} - {})), ".format(y_true, y_score, y_true, y_true, y_score)
-    query += "APPROXIMATE_MEDIAN(ABS({} - {})), AVG(ABS({} - {})), ".format(y_true, y_score, y_true, y_score)
-    query += "AVG(POW({} - {}, 2)), COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, y_score, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
+    relation = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    query = """SELECT 
+                    1 - VARIANCE({0} - {1}) / VARIANCE({0}), 
+                    MAX(ABS({0} - {1})),
+                    APPROXIMATE_MEDIAN(ABS({0} - {1})), 
+                    AVG(ABS({0} - {1})),
+                    AVG(POW({0} - {1}, 2)), 
+                    COUNT(*) 
+                FROM {2} 
+                WHERE {0} IS NOT NULL 
+                  AND {1} IS NOT NULL;""".format(y_true, y_score, relation)
     r2 = r2_score(y_true, y_score, input_relation)
     values = {
         "index": [
@@ -559,7 +557,7 @@ tablesample
             "r2",
             "r2_adj",
             "aic",
-            "bic",
+            "bic"
         ]
     }
     result = executeSQL(query, title="Computing the Regression Report.", method="fetchrow")
@@ -567,7 +565,7 @@ tablesample
     if result[4] > 0:
         aic, bic = (
             n * math.log(result[4]) + 2 * (k + 1) + (2 * (k + 1) ** 2 + 2 * (k + 1)) / (n - k - 2),
-            n * math.log(result[4]) + (k + 1) * math.log(n),
+            n * math.log(result[4]) + (k + 1) * math.log(n)
         )
     else:
         aic, bic = -np.inf, -np.inf
@@ -581,7 +579,7 @@ tablesample
         r2,
         1 - ((1 - r2) * (n - 1) / (n - k - 1)),
         aic,
-        bic,
+        bic
     ]
     return tablesample(values)
 
@@ -632,9 +630,9 @@ float
         return acc
     else:
         try:
-            return compute_metric_query("AVG(CASE WHEN {} = {} THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
+            return compute_metric_query("AVG(CASE WHEN {0} = {1} THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
         except:
-            return compute_metric_query("AVG(CASE WHEN {}::varchar = {}::varchar THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
+            return compute_metric_query("AVG(CASE WHEN {0}::varchar = {1}::varchar THEN 1 ELSE 0 END)", y_true, y_score, input_relation, "Computing the Accuracy Score.")
 
 # ---#
 def auc(
@@ -878,8 +876,14 @@ tablesample
         ]
     )
     version(condition=[8, 0, 0])
-    query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() FROM (SELECT DECODE({}".format(y_true)
-    query += ", '{}', 1, NULL, NULL, 0) AS obs, DECODE({}, '{}', 1, NULL, NULL, 0) AS response FROM {}) VERTICAPY_SUBTABLE;".format(pos_label, y_score, pos_label, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__())
+    relation = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    query = """SELECT 
+                    CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() 
+                FROM 
+                    (SELECT 
+                        DECODE({0}, '{1}', 1, NULL, NULL, 0) AS obs, 
+                        DECODE({2}, '{3}', 1, NULL, NULL, 0) AS response 
+                     FROM {}) VERTICAPY_SUBTABLE;""".format(y_true, pos_label, y_score, pos_label, relation)
     result = to_tablesample(query, title="Computing Confusion matrix.")
     if pos_label in [1, "1"]:
         labels = [0, 1]
@@ -1039,7 +1043,7 @@ Returns
 float
 	score
 	"""
-    metric = "AVG(CASE WHEN {} = '{}' THEN - LOG({}::float + 1e-90) ELSE - LOG(1 - {}::float + 1e-90) END)".format("{}", pos_label, y_score, "{}")
+    metric = "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90) ELSE - LOG(1 - {3}::float + 1e-90) END)".format("{0}", pos_label, "{1}", "{1}")
     return compute_metric_query(metric, y_true, y_score, input_relation, "Computing the Log Loss.")
 
 # ---#
