@@ -1287,7 +1287,8 @@ Attributes
             schema = verticapy.options["temp_schema"]
             if not (schema):
                 schema = "public"
-            temp_information = (gen_tmp_name(schema=schema, name="view"), gen_tmp_name(schema=schema, name="model"))
+            tmp_view_name  = gen_tmp_name(schema=schema, name="view")
+            tmp_model_name = gen_tmp_name(schema=schema, name="model")
             assert bins >= 2, ParameterError(
                 "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
             )
@@ -1296,37 +1297,25 @@ Attributes
             )
             columns_check([response], self.parent)
             response = vdf_columns_names([response], self.parent)[0]
-
-            def drop_temp_elem(self, temp_information):
-                with warnings.catch_warnings(record=True) as w:
-                    try:
-                        drop(temp_information[1], method="model")
-                    except:
-                        pass
-                    try:
-                        drop(temp_information[0], method="view")
-                    except:
-                        pass
-
-            drop_temp_elem(self, temp_information)
-            self.parent.to_db(temp_information[0])
+            drop_if_exists(tmp_view_name, method="view")
+            self.parent.to_db(tmp_view_name)
             from verticapy.learn.ensemble import (
                 RandomForestClassifier,
                 RandomForestRegressor,
             )
-
+            drop_if_exists(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
-                model = RandomForestRegressor(temp_information[1])
+                model = RandomForestRegressor(tmp_model_name)
             else:
-                model = RandomForestClassifier(temp_information[1])
+                model = RandomForestClassifier(tmp_model_name)
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
-                model.fit(temp_information[0], [self.alias], response)
+                model.fit(tmp_view_name, [self.alias], response)
                 query = [
                     "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
-                        temp_information[1], i
+                        tmp_model_name, i
                     )
                     for i in range(parameters["n_estimators"])
                 ]
@@ -1336,9 +1325,11 @@ Attributes
                 result = executeSQL(query=query, title="Computing the optimized histogram bins using Random Forest.", method="fetchall")
                 result = [elem[0] for elem in result]
             except:
-                drop_temp_elem(self, temp_information)
+                drop_if_exists(tmp_view_name, method="view")
+                drop_if_exists(tmp_model_name, method="model")
                 raise
-            drop_temp_elem(self, temp_information)
+            drop(tmp_view_name, method="view")
+            drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
             assert k >= 2, ParameterError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")

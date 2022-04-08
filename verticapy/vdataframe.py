@@ -7052,33 +7052,29 @@ vColumns : vColumn
                 )
                 for i in range(1, p + 1)
             ]
-            relation = "(SELECT {} FROM {}) pacf".format(
-                ", ".join([column] + columns), table
-            )
-            linear_names = [gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg"), gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg2"), gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg_view")]
-            def drop_temp_elem():
-                for elem in linear_names:
-                    drop_if_exists(elem)
+            relation = "(SELECT {} FROM {}) pacf".format(", ".join([column] + columns), table)
+            tmp_view_name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg_view")
+            tmp_lr0_name  = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg0")
+            tmp_lr1_name  = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg1")
             try:
-                drop_temp_elem()
-                query = "CREATE VIEW {} AS SELECT * FROM {}".format(linear_names[2], relation)
+                drop_if_exists(tmp_view_name, method="view")
+                query = "CREATE VIEW {} AS SELECT * FROM {}".format(tmp_view_name, relation)
                 executeSQL(query, print_time_sql=False)
-                vdf = vDataFrame(linear_names[2])
+                vdf = vDataFrame(tmp_view_name)
 
                 from verticapy.learn.linear_model import LinearRegression
 
-                model = LinearRegression(
-                    name=linear_names[0],
-                    solver="Newton",
-                )
+                drop_if_exists(tmp_lr0_name, method="model")
+                model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
-                    input_relation=linear_names[2],
+                    input_relation=tmp_view_name,
                     X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)],
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
-                model = LinearRegression(name=linear_names[1], solver="Newton")
-                model.fit(input_relation=linear_names[2], X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)], y="lag_{}_{}".format(p, gen_name([column])))
+                drop_if_exists(tmp_lr1_name, method="model")
+                model = LinearRegression(name=tmp_lr1_name, solver="Newton")
+                model.fit(input_relation=tmp_view_name, X=["lag_{}_{}".format(i, gen_name([column])) for i in range(1, p)], y="lag_{}_{}".format(p, gen_name([column])))
                 model.predict(vdf, name="prediction_p")
                 vdf.eval(expr="{} - prediction_0".format(column), name="eps_0")
                 vdf.eval(
@@ -7088,9 +7084,13 @@ vColumns : vColumn
                     name="eps_p",
                 )
                 result = vdf.corr(["eps_0", "eps_p"])
-                drop_temp_elem()
+                drop(tmp_view_name, method="view")
+                drop(tmp_lr0_name, method="model")
+                drop(tmp_lr1_name, method="model")
             except:
-                drop_temp_elem()
+                drop_if_exists(tmp_view_name, method="view")
+                drop_if_exists(tmp_lr0_name, method="model")
+                drop_if_exists(tmp_lr1_name, method="model")
                 raise
             return result
         else:

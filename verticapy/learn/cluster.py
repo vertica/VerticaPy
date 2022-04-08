@@ -244,15 +244,10 @@ p: int, optional
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
         name_main, name_dbscan_clusters = gen_tmp_name(name="main"), gen_tmp_name(name="clusters")
-
-        def drop_temp_elem():
-            drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
-            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
-
         try:
             if not (index):
                 index = "id"
-                drop_temp_elem()
+                drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     name_main,
                     ", ".join(X + key_columns),
@@ -323,9 +318,11 @@ p: int, optional
             )
             self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchfirstelem", print_time_sql=False)
         except:
-            drop_temp_elem()
+            drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
             raise
-        drop_temp_elem()
+        drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+        drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
