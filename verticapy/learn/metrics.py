@@ -154,7 +154,7 @@ tuple
     tn, fn, fp, tp
     """
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
-    non_pos_label = 0 if (pos_label == 1) else "Non-{}".format(pos_label)
+    non_pos_label = 0 if (pos_label == 1) else "Non-{0}".format(pos_label)
     tn, fn, fp, tp = (
         matrix.values[non_pos_label][0],
         matrix.values[non_pos_label][1],
@@ -246,11 +246,21 @@ tablesample
             ("k", k, [int]),
         ]
     )
-    query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
+    relation = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    query = """SELECT 
+                  COUNT(*), 
+                  AVG({0}) 
+               FROM {2} 
+               WHERE {0} IS NOT NULL 
+                 AND {1} IS NOT NULL;""".format(y_true, y_score, relation)
     n, avg = executeSQL(query, title="Computing n and the average of y.", method="fetchrow")[0:2]
-    query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
-        y_score, avg, y_true, y_score, y_true, avg, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
-    )
+    query = """SELECT 
+                  SUM(POWER({0} - {2}, 2)), 
+                  SUM(POWER({1} - {0}, 2)), 
+                  SUM(POWER({1} - {2}, 2)) 
+                FROM {3} 
+                WHERE {0} IS NOT NULL 
+                  AND {1} IS NOT NULL;""".format(y_score, y_true, avg, relation)
     SSR, SSE, SST = executeSQL(query, title="Computing SSR, SSE, SST.", method="fetchrow")[0:3]
     dfr, dfe, dft = k, n - 1 - k, n - 1
     MSR, MSE = SSR / dfr, SSE / dfe
@@ -259,7 +269,6 @@ tablesample
     else:
         F = MSR / MSE
     from scipy.stats import f
-
     pvalue = f.sf(F, k, n)
     return tablesample(
         {
@@ -268,7 +277,7 @@ tablesample
             "SS": [SSR, SSE, SST],
             "MS": [MSR, MSE, ""],
             "F": [F, "", ""],
-            "p_value": [pvalue, "", ""],
+            "p_value": [pvalue, "", ""]
         }
     )
 
@@ -490,7 +499,7 @@ float
     check_types([("k", k, [int]), ("adj", adj, [bool])])
     result = compute_metric_query("RSQUARED({0}, {1}) OVER()", y_true, y_score, input_relation, "Computing the R2 Score.")
     if adj and k > 0:
-        query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score)
+        query = "SELECT COUNT(*) FROM {0} WHERE {1} IS NOT NULL AND {2} IS NOT NULL;".format(input_relation, y_true, y_score)
         n = executeSQL(query, title="Computing the table number of elements.", method="fetchfirstelem")
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
     return result
@@ -747,7 +756,7 @@ tablesample
     }
     for idx, elem in enumerate(labels):
         pos_label = elem
-        non_pos_label = 0 if (elem == 1) else "Non-{}".format(elem)
+        non_pos_label = 0 if (elem == 1) else "Non-{0}".format(elem)
         if estimator:
             if not (cutoff):
                 current_cutoff = estimator.score(
@@ -768,7 +777,7 @@ tablesample
             y_s, y_p, y_t = (
                 y_score[0].format(elem),
                 y_score[1],
-                "DECODE({}, '{}', 1, 0)".format(y_true, elem),
+                "DECODE({0}, '{1}', 1, 0)".format(y_true, elem),
             )
             matrix = confusion_matrix(y_true, y_p, input_relation, pos_label)
         if non_pos_label in matrix.values and pos_label in matrix.values:
@@ -807,7 +816,7 @@ tablesample
         else:
             auc_score = auc(y_t, y_s, input_relation, 1)
             prc_auc_score = prc_auc(y_t, y_s, input_relation, 1)
-            y_p = "DECODE({}, '{}', 1, 0)".format(y_p, elem)
+            y_p = "DECODE({0}, '{1}', 1, 0)".format(y_p, elem)
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
                 current_cutoff = roc_curve(y_t, y_p, input_relation, best_threshold=True, nbins=10000)
@@ -883,12 +892,12 @@ tablesample
                     (SELECT 
                         DECODE({0}, '{1}', 1, NULL, NULL, 0) AS obs, 
                         DECODE({2}, '{3}', 1, NULL, NULL, 0) AS response 
-                     FROM {}) VERTICAPY_SUBTABLE;""".format(y_true, pos_label, y_score, pos_label, relation)
+                     FROM {4}) VERTICAPY_SUBTABLE;""".format(y_true, pos_label, y_score, pos_label, relation)
     result = to_tablesample(query, title="Computing Confusion matrix.")
     if pos_label in [1, "1"]:
         labels = [0, 1]
     else:
-        labels = ["Non-{}".format(pos_label), pos_label]
+        labels = ["Non-{0}".format(pos_label), pos_label]
     del result.values["comment"]
     result = result.transpose()
     result.values["actual_class"] = labels
@@ -1162,15 +1171,16 @@ tablesample
     )
     version(condition=[8, 0, 0])
     num_classes = str(len(labels))
-    query = "SELECT CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {}) OVER() FROM (SELECT DECODE({}".format(
-        num_classes, y_true
-    )
+    query = """SELECT 
+                  CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {0}) OVER() 
+               FROM (SELECT DECODE({1}""".format(num_classes, y_true)
     for idx, item in enumerate(labels):
-        query += ", '{}', {}".format(item, idx)
-    query += ") AS obs, DECODE({}".format(y_score)
+        query += ", '{0}', {1}".format(item, idx)
+    query += ") AS obs, DECODE({0}".format(y_score)
     for idx, item in enumerate(labels):
-        query += ", '{}', {}".format(item, idx)
-    query += ") AS response FROM {}) VERTICAPY_SUBTABLE;".format(input_relation if isinstance(input_relation, str) else input_relation.__genSQL__())
+        query += ", '{0}', {1}".format(item, idx)
+    relation = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
+    query += ") AS response FROM {0}) VERTICAPY_SUBTABLE;".format(relation)
     result = to_tablesample(query, title="Computing Confusion Matrix.")
     del result.values["comment"]
     result = result.transpose()
