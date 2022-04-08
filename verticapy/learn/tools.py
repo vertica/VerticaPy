@@ -85,14 +85,14 @@ int
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
-    result = executeSQL("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1", method="fetchone", print_time_sql=False)
+    result = executeSQL("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1", method="fetchrow", print_time_sql=False)
     if result:
-        result = executeSQL("SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(str_column(name)), method="fetchone", print_time_sql=False)
+        result = executeSQL("SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(str_column(name)), method="fetchrow", print_time_sql=False)
         if result:
             model_type = result[0]
             result = 2
     if not(result):
-        result = executeSQL("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema), method="fetchone", print_time_sql=False)
+        result = executeSQL("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema), method="fetchrow", print_time_sql=False)
         if result:
             model_type = result[0]
             result = 1
@@ -282,7 +282,7 @@ model
     else:
         model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
         if model_type.lower() == "kmeans":
-            info = executeSQL("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')", method="fetchone0", print_time_sql=False).replace("\n", " ")
+            info = executeSQL("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')", method="fetchfirstelem", print_time_sql=False).replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
@@ -300,7 +300,7 @@ model
                 model.parameters["method"] = "robust_zscore"
             return model
         else:
-            info = executeSQL("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')", method="fetchone0", print_time_sql=False).replace("\n", " ")
+            info = executeSQL("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')", method="fetchfirstelem", print_time_sql=False).replace("\n", " ")
         if "SELECT " in info:
             info = info.split("SELECT ")[1].split("(")
         else:

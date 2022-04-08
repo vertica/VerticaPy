@@ -314,7 +314,7 @@ final_relation_: vDataFrame
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
                 vdf_tmp["verticapy_time_delta"] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
-                rule = executeSQL("SELECT verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(vdf_tmp.__genSQL__()), method="fetchone0", print_time_sql=False)
+                rule = executeSQL("SELECT verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(vdf_tmp.__genSQL__()), method="fetchfirstelem", print_time_sql=False)
                 rule = datetime.timedelta(seconds = rule)
             method = {}
             X_tmp = []

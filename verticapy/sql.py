@@ -180,7 +180,7 @@ def sql(line, cell="", local_ns=None):
                     result = readSQL(query, limit=options["limit"])
             except:
                 try:
-                    final_result = executeSQL(query, method="fetchone", print_time_sql=False)
+                    final_result = executeSQL(query, method="fetchrow", print_time_sql=False)
                     if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
                     elif verticapy.options["print_info"]:

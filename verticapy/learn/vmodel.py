@@ -108,13 +108,13 @@ Main Class for Vertica Model
                             name
                         ),
                         title="Summarizing the model.",
-                        method="fetchone0",
+                        method="fetchfirstelem",
                     )
                 except:
                     res = executeSQL(
                         "SELECT SUMMARIZE_MODEL('{}')".format(name),
                         title="Summarizing the model.",
-                        method="fetchone0",
+                        method="fetchfirstelem",
                     )
                 return res
             elif self.type == "AutoML":
@@ -658,7 +658,7 @@ Main Class for Vertica Model
         elif self.type == "LocalOutlierFactor":
             query = "SELECT COUNT(*) FROM {}".format(self.name)
             tablesample = 100 * min(
-                float(max_nb_points / executeSQL(query, method="fetchone0", print_time_sql=False)), 1
+                float(max_nb_points / executeSQL(query, method="fetchfirstelem", print_time_sql=False)), 1
             )
             return lof_plot(
                 self.name, self.X, "lof_score", 100, ax=ax, **style_kwds,

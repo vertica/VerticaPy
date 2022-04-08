@@ -2580,7 +2580,7 @@ tablesample
     does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
-    avg = executeSQL(f"SELECT AVG({y}) FROM {table}", method="fetchone0", print_time_sql=False)
+    avg = executeSQL(f"SELECT AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False)
     k = 0 if criterion == "aic" else 1
     if x_order == "random":
         random.shuffle(X)

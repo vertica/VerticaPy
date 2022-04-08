@@ -73,7 +73,7 @@ def compute_metric_query(
     y_score: str,
     input_relation: Union[str, vDataFrame],
     title: str = "",
-    fetchone0: bool = True
+    fetchfirstelem: bool = True
 ):
     """
 ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ title: str, optional
     or even a customized relation. For example, you could write:
     "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
 Title of the query.
-fetchone0: bool, optional
+fetchfirstelem: bool, optional
     If set to True, this function returns one element. Otherwise, this 
     function returns a tuple.
 
@@ -112,13 +112,13 @@ float or tuple of floats
             ("y_score", y_score, [str]),
             ("input_relation", input_relation, [str, vDataFrame]),
             ("title", title, [str]),
-            ("fetchone0", fetchone0, [bool])
+            ("fetchfirstelem", fetchfirstelem, [bool])
         ]
     )
     query = "SELECT {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
         metric.format(y_true, y_score), input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    return executeSQL(query, title=title, method="fetchone0" if fetchone0 else "fetchone")
+    return executeSQL(query, title=title, method="fetchfirstelem" if fetchfirstelem else "fetchrow")
 
 # ---#
 def compute_tn_fn_fp_tp(
@@ -246,11 +246,11 @@ tablesample
         ]
     )
     query = "SELECT COUNT(*), AVG({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score)
-    n, avg = executeSQL(query, title="Computing n and the average of y.", method="fetchone")[0:2]
+    n, avg = executeSQL(query, title="Computing n and the average of y.", method="fetchrow")[0:2]
     query = "SELECT SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)), SUM(POWER({} - {}, 2)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
         y_score, avg, y_true, y_score, y_true, avg, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    SSR, SSE, SST = executeSQL(query, title="Computing SSR, SSE, SST.", method="fetchone")[0:3]
+    SSR, SSE, SST = executeSQL(query, title="Computing SSR, SSE, SST.", method="fetchrow")[0:3]
     dfr, dfe, dft = k, n - 1 - k, n - 1
     MSR, MSE = SSR / dfr, SSE / dfe
     if MSE == 0:
@@ -304,7 +304,7 @@ float
     query = "SELECT 1 - VARIANCE({} - {}) / VARIANCE({}) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
         y_score, y_true, y_true, input_relation if isinstance(input_relation, str) else input_relation.__genSQL__(), y_true, y_score,
     )
-    return executeSQL(query, title="Computing the Explained Variance.", method="fetchone0")
+    return executeSQL(query, title="Computing the Explained Variance.", method="fetchfirstelem")
 
 
 # ---#
@@ -501,7 +501,7 @@ float
     result = compute_metric_query("RSQUARED({}, {}) OVER()", y_true, y_score, input_relation, "Computing the R2 Score.")
     if adj and k > 0:
         query = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(input_relation, y_true, y_score)
-        n = executeSQL(query, title="Computing the table number of elements.", method="fetchone0")
+        n = executeSQL(query, title="Computing the table number of elements.", method="fetchfirstelem")
         result = 1 - ((1 - result) * (n - 1) / (n - k - 1))
     return result
 
@@ -562,7 +562,7 @@ tablesample
             "bic",
         ]
     }
-    result = executeSQL(query, title="Computing the Regression Report.", method="fetchone")
+    result = executeSQL(query, title="Computing the Regression Report.", method="fetchrow")
     n = result[5]
     if result[4] > 0:
         aic, bic = (

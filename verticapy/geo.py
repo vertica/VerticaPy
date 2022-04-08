@@ -340,7 +340,7 @@ vDataFrame
         ]
     )
     sql = "SELECT MIN(ST_X(point)), MAX(ST_X(point)), MIN(ST_Y(point)), MAX(ST_Y(point)) FROM (SELECT STV_PolygonPoint(geom) OVER() FROM (SELECT ST_GeomFromText('{}') AS geom) x) y".format(p)
-    min_x, max_x, min_y, max_y = executeSQL(sql, title="Computing min & max: x & y.", method="fetchone")
+    min_x, max_x, min_y, max_y = executeSQL(sql, title="Computing min & max: x & y.", method="fetchrow")
     delta_x, delta_y =  (max_x - min_x) / nbins, (max_y - min_y) / nbins
     vdf = gen_meshgrid({"x": {"type": float, "range": [min_x, max_x], "nbins": nbins},
                                "y": {"type": float, "range": [min_y, max_y], "nbins": nbins}})

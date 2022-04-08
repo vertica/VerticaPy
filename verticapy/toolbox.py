@@ -428,7 +428,7 @@ def default_model_parameters(model_type: str):
 
 # ---#
 def executeSQL(query: str, title: str = "", data: list = [], method: str = "cursor", path: str = "", print_time_sql: bool = True):
-    check_types([("query", query, [str]), ("title", title, [str]), ("method", method, ["cursor", "fetchone", "fetchall", "fetchone0", "copy"])])
+    check_types([("query", query, [str]), ("title", title, [str]), ("method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"])])
     cursor = current_cursor()
     if verticapy.options["query_on"] and print_time_sql:
         print_query(query, title)
@@ -443,9 +443,9 @@ def executeSQL(query: str, title: str = "", data: list = [], method: str = "curs
     elapsed_time = time.time() - start_time
     if verticapy.options["time_on"] and print_time_sql:
         print_time(elapsed_time)
-    if method == "fetchone":
+    if method == "fetchrow":
         return cursor.fetchone()
-    elif method == "fetchone0":
+    elif method == "fetchfirstelem":
         return cursor.fetchone()[0]
     elif method == "fetchall":
         return cursor.fetchall()
@@ -544,12 +544,12 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 # ---#
 def get_session(add_username: bool = True):
     query = "SELECT CURRENT_SESSION();"
-    result = executeSQL(query, method="fetchone0", print_time_sql=False)
+    result = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
     result = result.split(":")[1]
     result = int(result, base=16)
     if add_username:
         query = "SELECT USERNAME();"
-        result = "{}_{}".format(executeSQL(query, method="fetchone0", print_time_sql=False), result)
+        result = "{}_{}".format(executeSQL(query, method="fetchfirstelem", print_time_sql=False), result)
     return result
 
 # ---#
@@ -605,7 +605,7 @@ def insert_verticapy_schema(
     category: str = "VERTICAPY_MODELS",
 ):
     sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
-    result = executeSQL(sql, method="fetchone", print_time_sql=False)
+    result = executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):
         warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
         warnings.warn(warning_message, Warning)
@@ -617,7 +617,7 @@ def insert_verticapy_schema(
             sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 model_name.lower()
             )
-            result = executeSQL(sql, method="fetchone", print_time_sql=False)
+            result = executeSQL(sql, method="fetchrow", print_time_sql=False)
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
@@ -1395,12 +1395,12 @@ def xgb_prior(model):
     v = version()
     v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
     if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
-        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False)
+        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchfirstelem", print_time_sql=False)
     elif not(v):
         prior_ = []
         for elem in model.classes_:
-            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchone0", print_time_sql=False)
-            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition)), method="fetchone0", print_time_sql=False)
+            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchfirstelem", print_time_sql=False)
+            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition)), method="fetchfirstelem", print_time_sql=False)
             logodds = np.log(avg / (1 - avg))
             prior_ += [logodds]
     else:

@@ -321,7 +321,7 @@ p: int, optional
                 ),
                 title="Computing the DBSCAN Table [Step 2]",
             )
-            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchone0", print_time_sql=False)
+            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchfirstelem", print_time_sql=False)
         except:
             drop_temp_elem()
             raise

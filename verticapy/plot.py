@@ -968,7 +968,7 @@ def boxplot(
                             by, str(category).replace("'", "''")
                         )
                     )
-                    query_result += [executeSQL(query=tmp_query, title="Computing all the descriptive statistics for each category to draw the box plot, one at a time", method="fetchone")]
+                    query_result += [executeSQL(query=tmp_query, title="Computing all the descriptive statistics for each category to draw the box plot, one at a time", method="fetchrow")]
             cat_priority = [item[-1] for item in query_result]
             result = [[float(item[i]) for i in range(0, 5)] for item in query_result]
             result.reverse()
@@ -1669,7 +1669,7 @@ def compute_plot_variables(
             query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
                 vdf.alias, vdf.alias
             )
-            query_result = executeSQL(query=query, title="Computing the histogram interval", method="fetchone")
+            query_result = executeSQL(query=query, title="Computing the histogram interval", method="fetchrow")
             h = float(query_result[0]) / bins
         min_date = vdf.min()
         converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)

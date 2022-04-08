@@ -169,7 +169,7 @@ Attributes
                 last_order_by(self.parent),
                 index,
             )
-            return executeSQL(query=query, title="Getting the vColumn element.", method="fetchone0")
+            return executeSQL(query=query, title="Getting the vColumn element.", method="fetchfirstelem")
         else:
             return getattr(self, index)
 
@@ -1678,7 +1678,7 @@ Attributes
             query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
                 alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
             )
-            p_alpha, p_1_alpha = executeSQL(query=query, title="Computing the quantiles of {}.".format(self.alias), method="fetchone")
+            p_alpha, p_1_alpha = executeSQL(query=query, title="Computing the quantiles of {}.".format(self.alias), method="fetchrow")
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
         elif method == "null":
@@ -3030,7 +3030,7 @@ Attributes
             query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
                 self.alias, self.alias, self.alias, self.alias, self.alias, table
             )
-            result = executeSQL(query, title="Different aggregations to compute the optimal h.", method="fetchone")
+            result = executeSQL(query, title="Different aggregations to compute the optimal h.", method="fetchrow")
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
@@ -3581,7 +3581,7 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        store_usage = executeSQL("SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(convert_special_type(self.category(), False, self.alias), self.parent.__genSQL__()), title="Computing the Store Usage of the vColumn {}.".format(self.alias), method="fetchone0")
+        store_usage = executeSQL("SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(convert_special_type(self.category(), False, self.alias), self.parent.__genSQL__()), title="Computing the Store Usage of the vColumn {}.".format(self.alias), method="fetchfirstelem")
         self.parent.__update_catalog__(
             {"index": ["store_usage"], self.alias: [store_usage]}
         )

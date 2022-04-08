@@ -996,7 +996,7 @@ xlim: list, optional
                         )
                         L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
                     query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
-                    result = executeSQL(query, title="Computing the KDE", method="fetchone")
+                    result = executeSQL(query, title="Computing the KDE", method="fetchrow")
                     return [elem for elem in result]
                 else:
                     return 0
@@ -1524,7 +1524,6 @@ p: int, optional
                 index = "id"
                 main_table = name_list[0]
                 schema = "v_temp_schema"
-                drop_if_exists("v_temp_schema.{}".format(main_table), method="table")
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     main_table,
                     ", ".join(X + key_columns),
@@ -1551,21 +1550,18 @@ p: int, optional
                 main_table,
             )
             sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
-            drop_if_exists("v_temp_schema.{}".format(name_list[1]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[1], sql)
             executeSQL(sql, "Computing the LOF [Step 0].")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(name_list[1], n_neighbors + 1)
             lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, name_list[1], kdistance)
-            drop_if_exists("v_temp_schema.{}".format(name_list[2]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[2], lrd)
             executeSQL(sql, "Computing the LOF [Step 1].")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, name_list[1], name_list[2], name_list[2])
-            drop_if_exists("v_temp_schema.{}".format(name_list[3]), method="table")
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(name_list[3], sql)
             executeSQL(sql, "Computing the LOF [Step 2].")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format( ", ".join(X + self.key_columns), main_table, name_list[3], index)
             executeSQL("CREATE TABLE {} AS {}".format(self.name, sql), title="Computing the LOF [Step 3].")
-            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, name_list[3]), method="fetchone0", print_time_sql=False)
+            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, name_list[3]), method="fetchfirstelem", print_time_sql=False)
         except:
             drop_temp_elem()
             raise

@@ -200,17 +200,17 @@ bool
     if method == "auto":
         fail, end_conditions = False, False
         query = f"SELECT * FROM columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
-        result = executeSQL(query, print_time_sql=False, method="fetchone")
+        result = executeSQL(query, print_time_sql=False, method="fetchrow")
         if not (result):
             query = f"SELECT * FROM view_columns WHERE table_schema = '{schema}' AND table_name = '{relation}'"
-            result = executeSQL(query, print_time_sql=False, method="fetchone")
+            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "table"
             end_conditions = True
         if not (result):
             try:
                 query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(str_column(name).lower())
-                result = executeSQL(query, print_time_sql=False, method="fetchone")
+                result = executeSQL(query, print_time_sql=False, method="fetchrow")
             except:
                 result = []
         elif not (end_conditions):
@@ -218,13 +218,13 @@ bool
             end_conditions = True
         if not (result):
             query = f"SELECT * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
-            result = executeSQL(query, print_time_sql=False, method="fetchone")
+            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
         if not (result):
             query = f"SELECT * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN ('{schema}.{relation}', '{relation}', '\"{schema}\".\"{relation}\"', '\"{relation}\"', '{schema}.\"{relation}\"', '\"{schema}\".{relation}')"
-            result = executeSQL(query, print_time_sql=False, method="fetchone")
+            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
@@ -246,7 +246,7 @@ bool
     if method == "model":
         try:
             query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(str_column(name).lower())
-            result = executeSQL(query, print_time_sql=False, method="fetchone")
+            result = executeSQL(query, print_time_sql=False, method="fetchrow")
         except:
             result = []
         if result:
@@ -256,7 +256,7 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 query = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(str_column(name).lower())
-                res = executeSQL(query, print_time_sql=False, method="fetchone0")
+                res = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
                 drop(res, method="table")
             elif model_type == "KernelDensity":
                 drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
@@ -376,7 +376,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     )
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
-    count = executeSQL("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query), method="fetchone0", print_time_sql=False)
+    count = executeSQL("SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query), method="fetchfirstelem", print_time_sql=False)
     query_on_init = verticapy.options["query_on"]
     time_on_init = verticapy.options["time_on"]
     try:
@@ -1340,7 +1340,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [str])])
         if isinstance(value, str):
             query = "SELECT table_schema FROM columns WHERE table_schema = '{}' LIMIT 1;".format(value.replace("'", "''"))
-            res = executeSQL(query, title="Checking if the schema exists.", method="fetchone")
+            res = executeSQL(query, title="Checking if the schema exists.", method="fetchrow")
             if res:
                 verticapy.options["temp_schema"] = str(value)
             else:
@@ -1857,7 +1857,7 @@ list
     if condition:
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not(verticapy.options["vertica_version"]):
-        version = executeSQL("SELECT version();", title="Getting the version.", method="fetchone0").split("Vertica Analytic Database v")[1]
+        version = executeSQL("SELECT version();", title="Getting the version.", method="fetchfirstelem").split("Vertica Analytic Database v")[1]
         version = version.split(".")
         result = []
         try:

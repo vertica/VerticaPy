@@ -369,7 +369,7 @@ model
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
     query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())
-    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchone0")
+    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem")
     for elem in X + [y]:
         new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
         if prais_winsten:
@@ -427,7 +427,7 @@ float
         (", " + ", ".join(by)) if (by) else "",
         vdf.__genSQL__(),
     )
-    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchone0")
+    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchfirstelem")
     return d
 
 
@@ -1019,7 +1019,7 @@ tablesample
     query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
     )
-    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchone0")
+    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchfirstelem")
     try:
         S = float(S)
     except:
@@ -1028,7 +1028,7 @@ tablesample
     query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
-    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchone0")
+    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchfirstelem")
     try:
         STDS = float(STDS)
     except:

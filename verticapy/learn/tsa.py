@@ -381,7 +381,7 @@ papprox_ma: int, optional
             and not (self.exogenous)
         ):
             query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
-            self.ma_avg_ = executeSQL(query, method="fetchone0", print_time_sql=False)
+            self.ma_avg_ = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             self.deploy_predict_ = str(self.ma_avg_)
 
         # I(d)
@@ -543,7 +543,7 @@ papprox_ma: int, optional
             query = "SELECT COUNT(*), AVG({}) FROM {}".format(
                 self.y, transform_relation.format(self.input_relation)
             )
-            result = executeSQL(query, method="fetchone", print_time_sql=False)
+            result = executeSQL(query, method="fetchrow", print_time_sql=False)
             self.ma_avg_ = result[1]
             n = result[0]
             n = max(
@@ -1052,11 +1052,11 @@ papprox_ma: int, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchone0", print_time_sql=False)
+            deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchone0", print_time_sql=False)
+            next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1081,7 +1081,7 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(query, method="fetchone0", print_time_sql=False)
+            prediction = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {} AS {} {}".format(
                 next_t,
@@ -1738,11 +1738,11 @@ solver: str, optional
             query = "SELECT ({} - LAG({}, 1) OVER (ORDER BY {}))::VARCHAR FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ts, ts, ts, relation, ts
             )
-            deltat = executeSQL(query, method="fetchone0", print_time_sql=False)
+            deltat = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             query = "SELECT (MAX({}) + '{}'::interval)::VARCHAR FROM {}".format(
                 ts, deltat, relation
             )
-            next_t = executeSQL(query, method="fetchone0", print_time_sql=False)
+            next_t = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
             if i == 0:
                 first_t = next_t
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {}".format(
@@ -1763,7 +1763,7 @@ solver: str, optional
             query = "SELECT {} FROM {} ORDER BY {} DESC LIMIT 1".format(
                 ", ".join(self.deploySQL()), transform_relation.format(relation_tmp), ts
             )
-            prediction = executeSQL(query, method="fetchone", print_time_sql=False)
+            prediction = executeSQL(query, method="fetchrow", print_time_sql=False)
             for idx, elem in enumerate(X):
                 prediction[idx] = "{} AS {}".format(prediction[idx], elem)
             columns_tmp = vdf.get_columns(exclude_columns=[ts] + X)

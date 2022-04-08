@@ -275,7 +275,7 @@ vColumns : vColumn
             query = "SELECT {} FROM {}{} OFFSET {} LIMIT 1".format(
                 ", ".join(columns), self.__genSQL__(), last_order_by(self), index
             )
-            return executeSQL(query=query, title="Getting the vDataFrame element.", method="fetchone")
+            return executeSQL(query=query, title="Getting the vDataFrame element.", method="fetchrow")
         elif isinstance(index, (str, str_sql)):
             is_sql = False
             if isinstance(index, vColumn):
@@ -486,7 +486,7 @@ vColumns : vColumn
                 sql = "SELECT COUNT(*) AS n, APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
                     columns[0], columns[1], self.__genSQL__(), columns[0], columns[1]
                 )
-                n, k, r = executeSQL(sql, title="Computing the columns cardinalities.", method="fetchone")
+                n, k, r = executeSQL(sql, title="Computing the columns cardinalities.", method="fetchrow")
                 chi2 = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / ((ni * nj) / {})) AS chi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}".format(
                     n,
                     n,
@@ -499,7 +499,7 @@ vColumns : vColumn
                     columns[1],
                     columns[1],
                 )
-                result = executeSQL(chi2, title="Computing the CramerV correlation between {} and {} (Chi2 Statistic).".format(columns[0], columns[1]), method="fetchone0")
+                result = executeSQL(chi2, title="Computing the CramerV correlation between {} and {} (Chi2 Statistic).".format(columns[0], columns[1]), method="fetchfirstelem")
                 if min(k - 1, r - 1) == 0:
                     result = float("nan")
                 else:
@@ -576,7 +576,7 @@ vColumns : vColumn
                     columns[0], columns[1]
                 )
             try:
-                result = executeSQL(query=query, title=title, method="fetchone0")
+                result = executeSQL(query=query, title=title, method="fetchfirstelem")
             except:
                 result = float("nan")
             self.__update_catalog__(
@@ -746,9 +746,9 @@ vColumns : vColumn
                     else:
                         table = self.__genSQL__()
                     if nb_precomputed == nb_loop:
-                        result = executeSQL("SELECT {}".format(", ".join(all_list)), print_time_sql=False, method="fetchone")
+                        result = executeSQL("SELECT {}".format(", ".join(all_list)), print_time_sql=False, method="fetchrow")
                     else:
-                        result = executeSQL(query="SELECT {} FROM {}".format(", ".join(all_list), table), title=title_query, method="fetchone")
+                        result = executeSQL(query="SELECT {} FROM {}".format(", ".join(all_list), table), title=title_query, method="fetchrow")
                 except:
                     n = len(columns)
                     result = []
@@ -970,9 +970,9 @@ vColumns : vColumn
                 else:
                     table = self.__genSQL__()
                 if nb_precomputed == len(cols):
-                    result = executeSQL("SELECT {}".format(", ".join(all_list)), method="fetchone", print_time_sql=False)
+                    result = executeSQL("SELECT {}".format(", ".join(all_list)), method="fetchrow", print_time_sql=False)
                 else:
-                    result = executeSQL(query="SELECT {} FROM {} LIMIT 1".format(", ".join(all_list), table), title="Computing the Correlation Vector ({})".format(method), method="fetchone")
+                    result = executeSQL(query="SELECT {} FROM {} LIMIT 1".format(", ".join(all_list), table), title="Computing the Correlation Vector ({})".format(method), method="fetchrow")
                 vector = [elem for elem in result]
             except:
                 fail = 1
@@ -1925,9 +1925,9 @@ vColumns : vColumn
         values = {"index": func}
         try:
             if nb_precomputed == len(func) * len(columns):
-                res = executeSQL("SELECT {}".format(", ".join([str(item) for sublist in agg for item in sublist])), print_time_sql=False, method="fetchone")
+                res = executeSQL("SELECT {}".format(", ".join([str(item) for sublist in agg for item in sublist])), print_time_sql=False, method="fetchrow")
             else:
-                res = executeSQL("SELECT {} FROM {} LIMIT 1".format(", ".join([str(item) for sublist in agg for item in sublist]), self.__genSQL__()), title="Computing the different aggregations.", method="fetchone")
+                res = executeSQL("SELECT {} FROM {} LIMIT 1".format(", ".join([str(item) for sublist in agg for item in sublist]), self.__genSQL__()), title="Computing the different aggregations.", method="fetchrow")
             result = [item for item in res]
             try:
                 result = [float(item) for item in result]
@@ -1988,7 +1988,7 @@ vColumns : vColumn
                                 query = "SELECT {} FROM {}".format(
                                     agg_fun, self.__genSQL__()
                                 )
-                                result = executeSQL(query, title="Computing the different aggregations one vColumn & one agg at a time.", method="fetchone0")
+                                result = executeSQL(query, title="Computing the different aggregations one vColumn & one agg at a time.", method="fetchfirstelem")
                             else:
                                 result = pre_comp
                             values[columns[i]] += [result]
@@ -3412,7 +3412,7 @@ vColumns : vColumn
         columns = []
         for column in self.get_columns():
             if (self[column].category() == "int") and not (self[column].isbool()):
-                is_cat = executeSQL("SELECT (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(column, max_cardinality, self.__genSQL__()), title="Looking at columns with low cardinality.", method="fetchone0")
+                is_cat = executeSQL("SELECT (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(column, max_cardinality, self.__genSQL__()), title="Looking at columns with low cardinality.", method="fetchfirstelem")
             elif self[column].category() == "float":
                 is_cat = False
             else:
@@ -3947,7 +3947,7 @@ vColumns : vColumn
         if (method == "kendall" and kendall_type == "b") or (method != "kendall"):
             val = self.corr(columns=[column1, column2], method=method)
         sql = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(self.__genSQL__(), column1, column2)
-        n = executeSQL(sql, title="Computing the number of elements.", method="fetchone0")
+        n = executeSQL(sql, title="Computing the number of elements.", method="fetchfirstelem")
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
             pvalue = 2 * t.sf(abs(x), n - 2)
@@ -3999,26 +3999,26 @@ vColumns : vColumn
                 ", ".join([column1, column2]),
                 self.__genSQL__(),
             )
-            nc, nd = executeSQL("SELECT {}::float, {}::float FROM {};".format(n_c, n_d, table), title="Computing nc and nd.", method="fetchone")
+            nc, nd = executeSQL("SELECT {}::float, {}::float FROM {};".format(n_c, n_d, table), title="Computing nc and nd.", method="fetchrow")
             if kendall_type == "a":
                 val = (nc - nd) / (n * (n - 1) / 2)
                 Z = 3 * (nc - nd) / math.sqrt(n * (n - 1) * (2 * n + 5) / 2)
             elif kendall_type in ("b", "c"):
-                vt, v1_0, v2_0 = executeSQL("SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(column1, self.__genSQL__()), title="Computing vti.", method="fetchone")
-                vu, v1_1, v2_1 = executeSQL("SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(column2, self.__genSQL__()), title="Computing vui.", method="fetchone")
+                vt, v1_0, v2_0 = executeSQL("SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(column1, self.__genSQL__()), title="Computing vti.", method="fetchrow")
+                vu, v1_1, v2_1 = executeSQL("SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(column2, self.__genSQL__()), title="Computing vui.", method="fetchrow")
                 v0 = n * (n - 1) * (2 * n + 5)
                 v1 = v1_0 * v1_1 / (2 * n * (n - 1))
                 v2 = v2_0 * v2_1 / (9 * n * (n - 1) * (n - 2))
                 Z = (nc - nd) / math.sqrt((v0 - vt - vu) / 18 + v1 + v2)
                 if kendall_type == "c":
                     sql = "SELECT APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(column1, column2, self.__genSQL__(), column1, column2)
-                    k, r = executeSQL(sql, title="Computing the columns categories in the pivot table.", method="fetchone")
+                    k, r = executeSQL(sql, title="Computing the columns categories in the pivot table.", method="fetchrow")
                     m = min(k, r)
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
             pvalue = 2 * norm.sf(abs(Z))
         elif method == "cramer":
             sql = "SELECT APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(column1, column2, self.__genSQL__(), column1, column2)
-            k, r = executeSQL(sql, title="Computing the columns categories in the pivot table.", method="fetchone")
+            k, r = executeSQL(sql, title="Computing the columns categories in the pivot table.", method="fetchrow")
             x = val * val * n * min(k, r)
             pvalue = chi2.sf(x, (k - 1) * (r - 1))
         return (val, pvalue)
@@ -4986,7 +4986,7 @@ vColumns : vColumn
         query = "(SELECT *, ROW_NUMBER() OVER (PARTITION BY {}) AS duplicated_index FROM {}) duplicated_index_table WHERE duplicated_index > 1".format(
             ", ".join(columns), self.__genSQL__()
         )
-        total = executeSQL(query="SELECT COUNT(*) FROM {}".format(query), title="Computing the number of duplicates.", method="fetchone0")
+        total = executeSQL(query="SELECT COUNT(*) FROM {}".format(query), title="Computing the number of duplicates.", method="fetchfirstelem")
         if count:
             return total
         result = to_tablesample(
@@ -4994,7 +4994,7 @@ vColumns : vColumn
                 ", ".join(columns), query, ", ".join(columns), limit
             ),
         )
-        result.count = executeSQL(query="SELECT COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(", ".join(columns), query, ", ".join(columns)), title="Computing the number of distinct duplicates.", method="fetchone0")
+        result.count = executeSQL(query="SELECT COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(", ".join(columns), query, ", ".join(columns)), title="Computing the number of distinct duplicates.", method="fetchfirstelem")
         return result
 
     # ---#
@@ -5362,7 +5362,7 @@ vColumns : vColumn
             new_count = self.shape()[0]
             self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
             try:
-                new_count = executeSQL("SELECT COUNT(*) FROM {}".format(self.__genSQL__()), title="Computing the new number of elements.", method="fetchone0")
+                new_count = executeSQL("SELECT COUNT(*) FROM {}".format(self.__genSQL__()), title="Computing the new number of elements.", method="fetchfirstelem")
                 count -= new_count
             except:
                 del self._VERTICAPY_VARIABLES_["where"][-1]
@@ -5425,7 +5425,7 @@ vColumns : vColumn
         query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
-        first_date = executeSQL(query, title="Getting the vDataFrame first values.", method="fetchone0")
+        first_date = executeSQL(query, title="Getting the vDataFrame first values.", method="fetchfirstelem")
         self.filter("{} <= '{}'".format(ts, first_date))
         return self
 
@@ -6471,7 +6471,7 @@ vColumns : vColumn
         query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
-        last_date = executeSQL(query, title="Getting the vDataFrame last values.", method="fetchone0")
+        last_date = executeSQL(query, title="Getting the vDataFrame last values.", method="fetchfirstelem")
         self.filter("{} >= '{}'".format(ts, last_date))
         return self
 
@@ -7998,9 +7998,9 @@ vColumns : vColumn
                     ]
         try:
             if nb_precomputed == n * n:
-                result = executeSQL("SELECT {}".format(", ".join(all_list)), print_time_sql=False, method="fetchone")
+                result = executeSQL("SELECT {}".format(", ".join(all_list)), print_time_sql=False, method="fetchrow")
             else:
-                result = executeSQL(query="SELECT {} FROM {}".format(", ".join(all_list), self.__genSQL__()), title="Computing the {} Matrix.".format(method.upper()), method="fetchone")
+                result = executeSQL(query="SELECT {} FROM {}".format(", ".join(all_list), self.__genSQL__()), title="Computing the {} Matrix.".format(method.upper()), method="fetchrow")
             if n == 1:
                 return result[0]
         except:
@@ -8008,7 +8008,7 @@ vColumns : vColumn
             result = []
             for i in range(0, n):
                 for j in range(0, n):
-                    result += [executeSQL(query="SELECT {}({}{}, {}{}) FROM {}".format(method.upper(),columns[i], cast_i, columns[j], cast_j, self.__genSQL__()), title="Computing the {} aggregation, one at a time.".format(method.upper()), method="fetchone0")]
+                    result += [executeSQL(query="SELECT {}({}{}, {}{}) FROM {}".format(method.upper(),columns[i], cast_i, columns[j], cast_j, self.__genSQL__()), title="Computing the {} aggregation, one at a time.".format(method.upper()), method="fetchfirstelem")]
         matrix = [[1 for i in range(0, n + 1)] for i in range(0, n + 1)]
         matrix[0] = [""] + columns
         for i in range(0, n + 1):
@@ -9005,7 +9005,7 @@ vColumns : vColumn
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
         query = "SELECT COUNT(*) FROM {} LIMIT 1".format(self.__genSQL__())
-        self._VERTICAPY_VARIABLES_["count"] = executeSQL(query, title="Computing the total number of elements (COUNT(*))", method="fetchone0")
+        self._VERTICAPY_VARIABLES_["count"] = executeSQL(query, title="Computing the total number of elements (COUNT(*))", method="fetchfirstelem")
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
     # ---#
@@ -9965,7 +9965,7 @@ vColumns : vColumn
         )
         random_func = "SEEDED_RANDOM({})".format(random_seed)
         query = "SELECT APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(random_func, test_size, self.__genSQL__())
-        q = executeSQL(query, title="Computing the seeded numbers quantile.", method="fetchone0")
+        q = executeSQL(query, title="Computing the seeded numbers quantile.", method="fetchfirstelem")
         test_table = "(SELECT * FROM {} WHERE {} < {}{}) x".format(
             self.__genSQL__(), random_func, q, order_by,
         )
