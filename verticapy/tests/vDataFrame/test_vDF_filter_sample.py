@@ -22,39 +22,33 @@ set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
-def smart_meters_vd(base):
+def smart_meters_vd():
     from verticapy.datasets import load_smart_meters
 
-    smart_meters = load_smart_meters(cursor=base.cursor)
+    smart_meters = load_smart_meters()
     yield smart_meters
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.smart_meters", cursor=base.cursor,
-        )
+        drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+        drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon")
 
 
 class TestvDFFilterSample:
@@ -92,7 +86,7 @@ class TestvDFFilterSample:
         assert result2["pclass"][1] == 1
 
     def test_vDF_at_time(self, smart_meters_vd):
-        result = smart_meters_vd.copy().at_time(ts="time", time="12:00",)
+        result = smart_meters_vd.copy().at_time(ts="time", time="12:00")
         assert result.shape() == (140, 3)
 
     def test_vDF_balance(self, titanic_vd):
@@ -131,7 +125,7 @@ class TestvDFFilterSample:
         assert result.shape() == (99, 14)
 
     def test_vDF_first(self, smart_meters_vd):
-        result = smart_meters_vd.copy().first(ts="time", offset="6 months",)
+        result = smart_meters_vd.copy().first(ts="time", offset="6 months")
         assert result.shape() == (3427, 3)
 
     def test_vDF_isin(self, amazon_vd):
@@ -146,7 +140,7 @@ class TestvDFFilterSample:
         ).shape() == (478, 3)
 
     def test_vDF_last(self, smart_meters_vd):
-        result = smart_meters_vd.copy().last(ts="time", offset="1 year",)
+        result = smart_meters_vd.copy().last(ts="time", offset="1 year")
         assert result.shape() == (7018, 3)
 
     def test_vDF_drop(self, titanic_vd):
@@ -159,12 +153,12 @@ class TestvDFFilterSample:
         assert result.shape() == (1234, 13)
 
     def test_vDF_drop_duplicates(self, titanic_vd):
-        result = titanic_vd.copy().drop_duplicates(columns=["age", "fare", "pclass"],)
+        result = titanic_vd.copy().drop_duplicates(columns=["age", "fare", "pclass"])
         assert result.shape() == (942, 14)
 
     def test_vDF_drop_outliers(self, titanic_vd):
         # testing with threshold
-        result1 = titanic_vd.copy()["age"].drop_outliers(threshold=3.0,)
+        result1 = titanic_vd.copy()["age"].drop_outliers(threshold=3.0)
         assert result1.shape() == (994, 14)
 
         # testing without threshold
@@ -186,7 +180,7 @@ class TestvDFFilterSample:
         result = titanic_vd.copy().sample(x=0.33, method="random")
         assert result.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
         result2 = titanic_vd.copy().sample(
-            x=0.33, method="stratified", by=["age", "pclass",]
+            x=0.33, method="stratified", by=["age", "pclass"]
         )
         assert result2.shape()[0] == pytest.approx(1234 * 0.33, 0.12)
         result3 = titanic_vd.copy().sample(x=0.33, method="systematic")
@@ -196,7 +190,7 @@ class TestvDFFilterSample:
         result = titanic_vd.copy().sample(n=200, method="random")
         assert result.shape()[0] == pytest.approx(200, 0.12)
         result2 = titanic_vd.copy().sample(
-            n=200, method="stratified", by=["age", "pclass",]
+            n=200, method="stratified", by=["age", "pclass"]
         )
         assert result2.shape()[0] == pytest.approx(200, 0.12)
         result3 = titanic_vd.copy().sample(n=200, method="systematic")

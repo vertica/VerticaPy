@@ -18,33 +18,33 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", )
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
+def iris_vd():
     from verticapy.datasets import load_iris
 
-    iris = load_iris(cursor=base.cursor)
+    iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris", )
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
+def market_vd():
     from verticapy.datasets import load_market
 
-    market = load_market(cursor=base.cursor)
+    market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market", cursor=base.cursor)
+        drop(name="public.market", )
 
 
 class TestvDFPreprocessing:
@@ -55,8 +55,8 @@ class TestvDFPreprocessing:
         assert train.shape() == (pytest.approx(827), 14)
         assert test.shape() == (pytest.approx(407), 14)
 
-    def test_vDF_add_duplicates(self, base):
-        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf(cursor=base.cursor)
+    def test_vDF_add_duplicates(self):
+        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf()
         result = names.add_duplicates("weight").groupby("name", "COUNT(*) AS cnt").sort("cnt")
         assert result[0] == ['Badr', 1]
         assert result[1] == ['Waqas', 2]
@@ -71,9 +71,9 @@ class TestvDFPreprocessing:
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
         assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
-        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False,)
+        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False)
         assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
-        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"],)
+        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"])
         assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
 
     def test_vDF_decode(self, titanic_vd):

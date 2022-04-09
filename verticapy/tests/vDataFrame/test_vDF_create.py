@@ -18,43 +18,30 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic")
 
 
 class TestvDFCreate:
-    def test_creating_vDF_using_input_relation(self, base, titanic_vd):
-        tvdf = vDataFrame(input_relation="public.titanic", cursor=base.cursor)
+    def test_creating_vDF_using_input_relation(self, titanic_vd):
+        tvdf = vDataFrame(input_relation="public.titanic")
 
         assert tvdf["pclass"].count() == 1234
 
-    def test_creating_vDF_using_input_relation_schema(self, base, titanic_vd):
-        tvdf = vDataFrame(input_relation="titanic", schema="public", cursor=base.cursor)
+    def test_creating_vDF_using_input_relation_schema(self, titanic_vd):
+        tvdf = vDataFrame(input_relation="titanic", schema="public")
 
         assert tvdf["pclass"].count() == 1234
 
-    def test_creating_vDF_using_input_relation_vcolumns(self, base, titanic_vd):
+    def test_creating_vDF_using_input_relation_vcolumns(self, titanic_vd):
         tvdf = vDataFrame(
             input_relation="public.titanic",
             usecols=["age", "survived"],
-            cursor=base.cursor,
-        )
-
-        assert tvdf["survived"].count() == 1234
-
-    def test_creating_vDF_using_input_relation_dsn(self):
-        os.environ["ODBCINI"] = (
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
-        )
-        tvdf = vDataFrame(
-            input_relation="public.titanic",
-            usecols=["age", "survived"],
-            dsn="vp_test_config",
         )
 
         assert tvdf["survived"].count() == 1234

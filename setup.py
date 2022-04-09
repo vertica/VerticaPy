@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name = 'verticapy',  
-    version = '0.8.1',
+    version = '0.9.0-beta',
     author = "Badr Ouali",
     author_email = "badr.ouali@vertica.com",
     url = "https://github.com/vertica/VerticaPy",
@@ -42,8 +42,6 @@ setuptools.setup(
                 'geopandas>=0.8.0',
                 'descartes>=1.0.0',
                 'shapely>=1.6.0',
-                'scikit-learn>=0.23.0',
-                'shap>=0.36.0',
                 'pandas>=0.23.0',],
         'plot': ['graphviz>=0.9.0', 
                  'python-highcharts>=0.4.1',],
@@ -51,8 +49,6 @@ setuptools.setup(
                 'descartes>=1.0.0',
                 'shapely>=1.6.0'],
         'ml': ['tqdm>=4.0.0',
-               'scikit-learn>=0.23.0',
-               'shap>=0.36.0',
                'pandas>=0.23.0',]
     },
     package_data = {'': ['*.csv', '*.json']},

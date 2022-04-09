@@ -13,25 +13,25 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.decomposition import SVD
-from verticapy import drop, set_option, vertica_conn
+from verticapy import drop, set_option, vertica_conn, current_cursor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", )
 
 
 @pytest.fixture(scope="module")
-def model(base, winequality_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS SVD_model_test")
-    model_class = SVD("SVD_model_test", cursor=base.cursor)
+def model(winequality_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS SVD_model_test")
+    model_class = SVD("SVD_model_test", )
     model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
@@ -72,21 +72,21 @@ class TestSVD:
         result = model.plot_circle(dimensions=(2, 3))
         assert len(result.get_default_bbox_extra_artists()) == 16
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS SVD_model_test_drop")
-        model_test = SVD("SVD_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS SVD_model_test_drop")
+        model_test = SVD("SVD_model_test_drop", )
         model_test.fit("public.winequality", ["alcohol", "quality"])
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'SVD_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "SVD_model_test_drop"
+        assert current_cursor().fetchone()[0] == "SVD_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'SVD_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -116,53 +116,43 @@ class TestSVD:
     def test_get_params(self, model):
         assert model.get_params() == {"method": "lapack", "n_components": 0}
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()
-        assert prediction == pytest.approx(md.transform([[3.0, 11.0, 93.0]])[0])
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
                 model.name
             )
         )
-        prediction = [float(elem) for elem in model.cursor.fetchone()]
-        model.cursor.execute(
+        prediction = [float(elem) for elem in current_cursor().fetchone()]
+        current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
                 ", ".join(model.to_sql())
             )
         )
-        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
 
     def test_to_memmodel(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT APPLY_SVD(citric_acid, residual_sugar, alcohol USING PARAMETERS model_name = '{}', match_by_pos=True) FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
                 model.name
             )
         )
-        prediction = [float(elem) for elem in model.cursor.fetchone()]
-        model.cursor.execute(
+        prediction = [float(elem) for elem in current_cursor().fetchone()]
+        current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
                 ", ".join(model.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
             )
         )
-        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
         prediction3 = model.to_memmodel().transform([[3.0, 11.0, 93.0]])
         assert prediction == pytest.approx(list(prediction3[0]))
@@ -198,16 +188,6 @@ class TestSVD:
             winequality_vd["alcohol"].mean(), abs=1e-6
         )
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_svd_score(self, model):
         result = model.score()
         assert result["Score"][0] == pytest.approx(0.0, abs=1e-6)
@@ -218,12 +198,12 @@ class TestSVD:
         model.set_params({"n_components": 3})
         assert model.get_params()["n_components"] == 3
 
-    def test_model_from_vDF(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS SVD_vDF")
-        model_test = SVD("SVD_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS SVD_vDF")
+        model_test = SVD("SVD_vDF", )
         model_test.fit(winequality_vd, ["alcohol", "quality"])
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'SVD_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "SVD_vDF"
+        assert current_cursor().fetchone()[0] == "SVD_vDF"
         model_test.drop()

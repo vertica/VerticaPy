@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -65,8 +65,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -93,7 +91,6 @@ nbins: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
@@ -101,7 +98,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -115,9 +112,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 1])
+        version(condition=[8, 1, 1])
 
 
 # ---#
@@ -130,8 +125,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 max_features: str/int, optional
 	The number of randomly chosen features from which to pick the best feature 
 	to split on a given tree node. It can be an integer or one of the two following
@@ -158,7 +151,6 @@ nbins: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         max_features: Union[int, str] = "auto",
         max_leaf_nodes: int = 1e9,
         max_depth: int = 100,
@@ -166,7 +158,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {
@@ -180,9 +172,7 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 0, 1])
+        version(condition=[9, 0, 1])
 
 
 # ---#
@@ -196,12 +186,10 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor. 
 	"""
 
-    def __init__(self, name: str, cursor=None):
-        check_types([("name", name, [str],)])
+    def __init__(self, name: str):
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
             {
@@ -215,9 +203,7 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 1])
+        version(condition=[8, 1, 1])
 
 
 # ---#
@@ -231,12 +217,10 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor. 
 	"""
 
-    def __init__(self, name: str, cursor=None):
-        check_types([("name", name, [str],)])
+    def __init__(self, name: str):
+        check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
             {
@@ -250,6 +234,4 @@ cursor: DBcursor, optional
                 "nbins": 1000,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 0, 1])
+        version(condition=[9, 0, 1])

@@ -13,28 +13,28 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.tsa import SARIMAX
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema
+from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon", cursor=base.cursor)
+        drop(name="public.amazon", )
 
 
 @pytest.fixture(scope="module")
-def model(base, amazon_vd):
-    create_verticapy_schema(base.cursor)
-    model_class = SARIMAX("sarimax_model_test", cursor=base.cursor, p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
+def model(amazon_vd):
+    create_verticapy_schema()
+    model_class = SARIMAX("sarimax_model_test", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
     model_class.drop()
-    model_class.fit("public.amazon", "number", "date",)
+    model_class.fit("public.amazon", "number", "date")
     yield model_class
     model_class.drop()
 
@@ -42,28 +42,28 @@ def model(base, amazon_vd):
 class TestSARIMAX:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = SARIMAX("sarimax_repr", cursor=model.cursor)
+        model_repr = SARIMAX("sarimax_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<SARIMAX>"
 
     def test_deploySQL(self, model):
         assert 'VerticaPy_y_copy' in model.deploySQL()
 
-    def test_drop(self, base):
-        model_test = SARIMAX("sarimax_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        model_test = SARIMAX("sarimax_model_test_drop", )
         model_test.drop()
-        model_test.fit("public.amazon", "number", "date",)
+        model_test.fit("public.amazon", "number", "date")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_drop', '\"sarimax_model_test_drop\"')"
         )
-        assert base.cursor.fetchone()[0] in ("sarimax_model_test_drop", '"sarimax_model_test_drop"')
+        assert current_cursor().fetchone()[0] in ("sarimax_model_test_drop", '"sarimax_model_test_drop"')
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_drop', '\"sarimax_model_test_drop\"')"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -106,8 +106,8 @@ class TestSARIMAX:
                                       'solver': 'Newton',
                                       'tol': 0.0001}
 
-    def test_get_plot(self, model,):
-        result = model.plot(color="r", nlead=10, nlast=10, dynamic=True,)
+    def test_get_plot(self, model):
+        result = model.plot(color="r", nlead=10, nlast=10, dynamic=True)
         assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
@@ -170,29 +170,19 @@ class TestSARIMAX:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(98538.0219389409, abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"p": 2})
 
         assert model.get_params()["p"] == 2
 
-    def test_model_from_vDF(self, base, amazon_vd):
-        model_class = SARIMAX("sarimax_model_test_vdf", cursor=base.cursor, p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
+    def test_model_from_vDF(self, amazon_vd):
+        model_class = SARIMAX("sarimax_model_test_vdf", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
         model_class.drop()
-        model_class.fit(amazon_vd, "number", "date",)
+        model_class.fit(amazon_vd, "number", "date")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_vdf', '\"sarimax_model_test_vdf\"')"
         )
-        assert base.cursor.fetchone()[0] in ("sarimax_model_test_vdf", '"sarimax_model_test_vdf"')
+        assert current_cursor().fetchone()[0] in ("sarimax_model_test_vdf", '"sarimax_model_test_vdf"')
 
         model_class.drop()

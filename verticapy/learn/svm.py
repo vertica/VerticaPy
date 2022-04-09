@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -71,8 +71,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	to use to control accuracy.
 C: float, optional
@@ -101,7 +99,6 @@ max_iter: int, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-4,
         C: float = 1.0,
         fit_intercept: bool = True,
@@ -110,7 +107,7 @@ max_iter: int, optional
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearSVC", name
         self.set_params(
             {
@@ -123,9 +120,7 @@ max_iter: int, optional
                 "max_iter": max_iter,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 0])
+        version(condition=[8, 1, 0])
 
 
 # ---#
@@ -140,8 +135,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	To use to control accuracy.
 C: float, optional
@@ -188,7 +181,6 @@ test_relation: str
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-4,
         C: float = 1.0,
         fit_intercept: bool = True,
@@ -197,7 +189,7 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearSVR", name
         self.set_params(
             {
@@ -210,6 +202,4 @@ test_relation: str
                 "max_iter": max_iter,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 1, 1])
+        version(condition=[8, 1, 1])

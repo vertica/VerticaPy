@@ -17,32 +17,29 @@ from verticapy.connect import *
 
 class TestConnect:
     def test_auto_connection(self, base):
-        # test for read_dsn / new_auto_connection / available_auto_connection /
-        #          read_auto_connect / change_auto_connection.
+        # test for read_dsn / new_connection / available_connections /
+        #          read_auto_connect / change_auto_connection / delete_connection.
         # read_dsn
-        d = read_dsn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        )
-        assert int(d["port"]) == 5433
+        d = read_dsn("vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
+        assert int(d["port"]) > 0
         # new_auto_connection
-        new_auto_connection(d, "VerticaDSN_test")
-        # available_auto_connection
-        result = available_auto_connection()
-        assert "VerticaDSN_test" in result
+        new_connection(d, "vp_test_config")
+        # available_connections
+        result = available_connections()
+        assert "vp_test_config" in result
         # change_auto_connection
-        change_auto_connection("VerticaDSN_test")
+        change_auto_connection("vp_test_config")
         # read_auto_connect
-        cur = read_auto_connect().cursor()
+        read_auto_connect()
+        cur = verticapy.options["connection"]["conn"].cursor()
         cur.execute("SELECT 1;")
         result2 = cur.fetchone()
         assert result2 == [1]
+        # delete_connection
+        assert delete_connection("vp_test_config")
 
     def test_vertica_conn(self, base):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
+        cur = vertica_conn("vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf").cursor()
         cur.execute("SELECT 1;")
         result = cur.fetchone()
         assert result == [1]

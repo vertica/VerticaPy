@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 ##
 #  _____  _____ _      ___  ___  ___  _____ _____ _____
@@ -57,11 +57,11 @@
 #
 # ---#
 from IPython.core.magic import needs_local_scope
+from verticapy import executeSQL
 
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
     import verticapy
-    from verticapy.toolbox import optimized_conn
     from verticapy.utilities import readSQL
     from verticapy.utilities import vdf_from_relation
     from IPython.core.display import HTML, display
@@ -72,7 +72,6 @@ def sql(line, cell="", local_ns=None):
 
     version = vertica_python.__version__.split(".")
     version = [int(elem) for elem in version]
-    conn, cursor = optimized_conn()
     queries = line if (not (cell) and (line)) else cell
     options = {"limit": 100, "vdf": False}
     queries = queries.replace("\t", " ")
@@ -167,23 +166,21 @@ def sql(line, cell="", local_ns=None):
             )
             if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                 file_name = file_name[1:-1]
-            with open(file_name, "r") as fs:
-                cursor.copy(query, fs)
+            executeSQL(query, method="copy", path=file_name, print_time_sql=False)
         elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
-            cursor.execute(query)
+            executeSQL(query, print_time_sql=False)
             if verticapy.options["print_info"]:
                 print(query_type)
         else:
             error = ""
             try:
                 if options["vdf"]:
-                    result = vdf_from_relation("({}) x".format(query), cursor=cursor)
+                    result = vdf_from_relation("({}) x".format(query))
                 else:
-                    result = readSQL(query, cursor=cursor, limit=options["limit"],)
+                    result = readSQL(query, limit=options["limit"])
             except:
                 try:
-                    cursor.execute(query)
-                    final_result = cursor.fetchone()
+                    final_result = executeSQL(query, method="fetchrow", print_time_sql=False)
                     if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
                     elif verticapy.options["print_info"]:

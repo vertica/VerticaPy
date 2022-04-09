@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -84,7 +84,7 @@ class vAuto(vModel):
         for elem in self.parameters:
             if elem not in parameters:
                 parameters[elem] = self.parameters[elem]
-        self.__init__(self.name, self.cursor, **parameters)
+        self.__init__(self.name, **parameters)
 
 
 class AutoDataPrep(vAuto):
@@ -98,8 +98,6 @@ Parameters
 name: str, optional
     Name of the model in which to store the output relation in the
     Vertica database.
-cursor: DBcursor, optional
-    Vertica database cursor.
 cat_method: str, optional
     Method for encoding categorical features. This can be set to 'label' for
     label encoding and 'ooe' for One-Hot Encoding.
@@ -166,7 +164,6 @@ final_relation_: vDataFrame
     # ---#
     def __init__(self,
                  name: str = "",
-                 cursor=None,
                  cat_method: str = "ooe",
                  num_method: str = "none",
                  nbins: int = 20,
@@ -179,24 +176,24 @@ final_relation_: vDataFrame
                  apply_pca: bool = False,
                  rule: Union[str, datetime.timedelta] = "auto",
                  identify_ts: bool = True,
-                 save: bool = True,):
-        check_types([("name", name, [str],), 
-                     ("cat_method", cat_method, ["label", "ooe"],),
-                     ("num_method", num_method, ["same_freq", "same_width", "none",],),
-                     ("nbins", nbins, [int, float,],),
-                     ("outliers_threshold", outliers_threshold, [int, float,],),
-                     ("na_method", na_method, ["auto", "drop",],),
-                     ("cat_topk", cat_topk, [int, float,],),
-                     ("rule", rule, [str, datetime.timedelta,],),
-                     ("normalize", normalize, [bool,],),
-                     ("id_method", id_method, ["none", "drop",],),
-                     ("apply_pca", apply_pca, [bool,],),
-                     ("normalize_min_cat", normalize_min_cat, [int, float,],),
-                     ("identify_ts", identify_ts, [bool,],),
-                     ("save", save, [bool,],),])
+                 save: bool = True):
+        check_types([("name", name, [str]), 
+                     ("cat_method", cat_method, ["label", "ooe"]),
+                     ("num_method", num_method, ["same_freq", "same_width", "none"]),
+                     ("nbins", nbins, [int, float]),
+                     ("outliers_threshold", outliers_threshold, [int, float]),
+                     ("na_method", na_method, ["auto", "drop"]),
+                     ("cat_topk", cat_topk, [int, float]),
+                     ("rule", rule, [str, datetime.timedelta]),
+                     ("normalize", normalize, [bool]),
+                     ("id_method", id_method, ["none", "drop"]),
+                     ("apply_pca", apply_pca, [bool]),
+                     ("normalize_min_cat", normalize_min_cat, [int, float]),
+                     ("identify_ts", identify_ts, [bool]),
+                     ("save", save, [bool])])
         self.type, self.name = "AutoDataPrep", name
         if not(self.name):
-            self.name = "\"{}\".AutoDataPrep_{}".format(verticapy.options["temp_schema"], get_session(cursor),)
+            self.name = gen_tmp_name(schema = verticapy.options["temp_schema"], name = "autodataprep")
         self.parameters = {"cat_method": cat_method,
                            "num_method": num_method,
                            "nbins": nbins,
@@ -210,8 +207,6 @@ final_relation_: vDataFrame
                            "id_method": id_method,
                            "identify_ts": identify_ts,
                            "save": save,}
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -246,7 +241,7 @@ final_relation_: vDataFrame
         verticapy.options["print_info"] = False
         assert not(by) or (ts), ParameterError("Parameter 'by' must be empty if 'ts' is not defined.")
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+            vdf = vdf_from_relation(input_relation)
         else:
             vdf = input_relation.copy()
         if not(X):
@@ -281,24 +276,24 @@ final_relation_: vDataFrame
                     if vdf[elem].isnum():
                         if (self.parameters["outliers_threshold"]) and self.parameters["outliers_threshold"] > 0:
                             vdf[elem].fill_outliers(method = "null", threshold = self.parameters["outliers_threshold"])
-                        if self.parameters["num_method"] in ("none",) and (self.parameters["normalize"]) and (self.parameters["normalize_min_cat"] < 2 or (vdf[elem].nunique() > self.parameters["normalize_min_cat"])):
+                        if self.parameters["num_method"] == "none" and (self.parameters["normalize"]) and (self.parameters["normalize_min_cat"] < 2 or (vdf[elem].nunique() > self.parameters["normalize_min_cat"])):
                             vdf[elem].normalize(method = "zscore")
                         if self.parameters["na_method"] == "auto":
                             vdf[elem].fillna(method = "mean")
                         else:
                             vdf[elem].dropna()
-                    if vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq",):
-                        vdf[elem].discretize(method = self.parameters["num_method"], bins = self.parameters["nbins"],)
+                    if vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq"):
+                        vdf[elem].discretize(method = self.parameters["num_method"], bins = self.parameters["nbins"])
                     elif vdf[elem].nunique() > self.parameters["cat_topk"] and not(vdf[elem].isnum()):
                         if self.parameters["na_method"] == "auto":
                             vdf[elem].fillna("NULL")
                         else:
                             vdf[elem].dropna()
-                        vdf[elem].discretize(method = "topk", k = self.parameters["cat_topk"],)
-                    if (self.parameters["cat_method"] == 'ooe' and not(vdf[elem].isnum())) or (vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq",)):
+                        vdf[elem].discretize(method = "topk", k = self.parameters["cat_topk"])
+                    if (self.parameters["cat_method"] == 'ooe' and not(vdf[elem].isnum())) or (vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq")):
                         vdf[elem].get_dummies(drop_first=False)
                         columns_to_drop += [elem]
-                    elif (self.parameters["cat_method"] == 'label' and not(vdf[elem].isnum())) or (vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq",)):
+                    elif (self.parameters["cat_method"] == 'label' and not(vdf[elem].isnum())) or (vdf[elem].isnum() and not(ts) and self.parameters["num_method"] in ("same_width", "same_freq")):
                         vdf[elem].label_encode()
                 elif not(ts):
                     vdf[elem.replace('"', '') + "_year"] = f"YEAR({elem})"
@@ -319,8 +314,8 @@ final_relation_: vDataFrame
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
                 vdf_tmp["verticapy_time_delta"] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
-                self.cursor.execute("SELECT verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(vdf_tmp.__genSQL__()))
-                rule = datetime.timedelta(seconds = self.cursor.fetchone()[0])
+                rule = executeSQL("SELECT verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(vdf_tmp.__genSQL__()), method="fetchfirstelem", print_time_sql=False)
+                rule = datetime.timedelta(seconds = rule)
             method = {}
             X_tmp = []
             for elem in X:
@@ -329,21 +324,21 @@ final_relation_: vDataFrame
                         method[elem] = "linear"
                     else:
                         method[elem] = "ffill"
-            vdf = vdf.asfreq(ts=ts, rule=rule, method=method, by=by,)
+            vdf = vdf.asfreq(ts=ts, rule=rule, method=method, by=by)
             vdf.dropna()
         self.X_in = [elem for elem in X]
         self.X_out = vdf.get_columns(exclude_columns = by + [ts] + X_diff if ts else by + X_diff)
         self.by = by
         self.ts = ts
         if self.parameters["apply_pca"] and not(ts):
-            model_pca = PCA(self.name + "_pca", cursor=self.cursor)
+            model_pca = PCA(self.name + "_pca")
             model_pca.drop()
             model_pca.fit(vdf, self.X_out)
             vdf = model_pca.transform()
             self.X_out = vdf.get_columns(exclude_columns = by + [ts] + X_diff if ts else by + X_diff)
         self.sql_ = vdf.__genSQL__()
         if self.parameters["save"]:
-            vdf.to_db(name = self.name, relation_type = "table", inplace=True,)
+            vdf.to_db(name = self.name, relation_type = "table", inplace=True)
         self.final_relation_ = vdf
         verticapy.options["print_info"] = current_print_info
         return self.final_relation_
@@ -358,8 +353,6 @@ Parameters
 ----------
 name: str
     Name of the model.
-cursor: DBcursor, optional
-    Vertica database cursor.
 n_cluster: int, optional
     Number of clusters. If empty, an optimal number of clusters will be
     determined using multiple k-means models.
@@ -392,22 +385,21 @@ model_: object
     # ---#
     def __init__(self,
                  name: str,
-                 cursor=None,
                  n_cluster: int = None,
                  init: str = "kmeanspp",
                  max_iter: int = 300,
                  tol: float = 1e-4,
                  preprocess_data: bool = True,
                  preprocess_dict: dict = {"identify_ts": False, "normalize_min_cat": 0, "outliers_threshold": 3.0, "na_method": "drop",},
-                 print_info: bool = True,):
-        check_types([("name", name, [str],),
-                     ("n_cluster", n_cluster, [int],),
-                     ("init", init, [str, list],),
-                     ("max_iter", max_iter, [int],),
-                     ("tol", tol, [float],),
-                     ("preprocess_data", preprocess_data, [bool,]),
-                     ("preprocess_dict", preprocess_dict, [dict,]),
-                     ("print_info", print_info, [bool,]),])
+                 print_info: bool = True):
+        check_types([("name", name, [str]),
+                     ("n_cluster", n_cluster, [int]),
+                     ("init", init, [str, list]),
+                     ("max_iter", max_iter, [int]),
+                     ("tol", tol, [float]),
+                     ("preprocess_data", preprocess_data, [bool]),
+                     ("preprocess_dict", preprocess_dict, [dict]),
+                     ("print_info", print_info, [bool])])
         self.type, self.name = "AutoClustering", name
         self.parameters = {"n_cluster": n_cluster,
                            "init": init,
@@ -416,8 +408,6 @@ model_: object
                            "print_info": print_info,
                            "preprocess_data": preprocess_data,
                            "preprocess_dict": preprocess_dict,}
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -444,8 +434,8 @@ model_: object
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
-            model_preprocess = AutoDataPrep(cursor=self.cursor, **self.parameters["preprocess_dict"],)
-            input_relation = model_preprocess.fit(input_relation, X=X,)
+            model_preprocess = AutoDataPrep(**self.parameters["preprocess_dict"])
+            input_relation = model_preprocess.fit(input_relation, X=X)
             X = [elem for elem in model_preprocess.X_out]
             self.preprocess_ = model_preprocess
         else:
@@ -455,13 +445,12 @@ model_: object
                 print(f"\033[1m\033[4mFinding a suitable number of clusters\033[0m\033[0m\n")
             self.parameters["n_cluster"] = best_k(input_relation=input_relation,
                                                   X=X,
-                                                  cursor=self.cursor,
                                                   n_cluster=(1, 100),
                                                   init=self.parameters["init"],
                                                   max_iter=self.parameters["max_iter"],
                                                   tol=self.parameters["tol"],
                                                   elbow_score_stop=0.9,
-                                                  tqdm=self.parameters["print_info"],)
+                                                  tqdm=self.parameters["print_info"])
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mBuilding the Final Model\033[0m\033[0m\n")
         if verticapy.options["tqdm"] and self.parameters["print_info"]:
@@ -471,8 +460,8 @@ model_: object
         else:
             loop = range(1)
         for i in loop:
-            self.model_ = KMeans(self.name, cursor=self.cursor, n_cluster=self.parameters["n_cluster"], init=self.parameters["init"], max_iter=self.parameters["max_iter"], tol=self.parameters["tol"],)
-            self.model_.fit(input_relation, X=X,)
+            self.model_ = KMeans(self.name, n_cluster=self.parameters["n_cluster"], init=self.parameters["init"], max_iter=self.parameters["max_iter"], tol=self.parameters["tol"])
+            self.model_.fit(input_relation, X=X)
         return self.model_
 
 class AutoML(vAuto):
@@ -484,10 +473,8 @@ Parameters
 ----------
 name: str
     Name of the model.
-cursor: DBcursor, optional
-    Vertica database cursor.
 estimator: list / 'native' / 'all' / 'fast' / object
-    List of Vertica estimators with a fit method and a database cursor.
+    List of Vertica estimators with a fit method.
     Alternatively, you can specify 'native' for all native Vertica models,
     'all' for all VerticaPy models and 'fast' for quick modeling.
 estimator_type: str, optional
@@ -576,7 +563,6 @@ model_grid_ : tablesample
     # ---#
     def __init__(self,
                  name: str,
-                 cursor=None,
                  estimator: Union[list, str] = "fast",
                  estimator_type: str = "auto",
                  metric: str = "auto",
@@ -593,24 +579,24 @@ model_grid_ : tablesample
                  stepwise_x_order: str = "pearson",
                  preprocess_data: bool = True,
                  preprocess_dict: dict = {"identify_ts": False,},
-                 print_info: bool = True,):
-        check_types([("name", name, [str],), 
-                     ("estimator_type", estimator_type, [str],),
-                     ("metric", metric, [str],),
-                     ("cv", cv, [int],),
-                     ("pos_label", pos_label, [int, float, str],),
-                     ("cutoff", cutoff, [int, float],),
-                     ("nbins", nbins, [int],),
-                     ("optimized_grid", optimized_grid, [int],),
-                     ("print_info", print_info, [bool],),
-                     ("stepwise", stepwise, [bool],),
-                     ("stepwise_criterion", stepwise_criterion, ["aic", "bic",]),
-                     ("stepwise_direction", stepwise_direction, ["forward", "backward",]),
-                     ("stepwise_max_steps", stepwise_max_steps, [int, float,]),
-                     ("stepwise_x_order", stepwise_x_order, ["pearson", "spearman", "random", "none",]),
-                     ("preprocess_data", preprocess_data, [bool,]),
-                     ("preprocess_dict", preprocess_dict, [dict,]),])
-        assert optimized_grid in [0, 1, 2,], ParameterError("Optimized Grid must be an integer between 0 and 2.")
+                 print_info: bool = True):
+        check_types([("name", name, [str]), 
+                     ("estimator_type", estimator_type, [str]),
+                     ("metric", metric, [str]),
+                     ("cv", cv, [int]),
+                     ("pos_label", pos_label, [int, float, str]),
+                     ("cutoff", cutoff, [int, float]),
+                     ("nbins", nbins, [int]),
+                     ("optimized_grid", optimized_grid, [int]),
+                     ("print_info", print_info, [bool]),
+                     ("stepwise", stepwise, [bool]),
+                     ("stepwise_criterion", stepwise_criterion, ["aic", "bic"]),
+                     ("stepwise_direction", stepwise_direction, ["forward", "backward"]),
+                     ("stepwise_max_steps", stepwise_max_steps, [int, float]),
+                     ("stepwise_x_order", stepwise_x_order, ["pearson", "spearman", "random", "none"]),
+                     ("preprocess_data", preprocess_data, [bool]),
+                     ("preprocess_dict", preprocess_dict, [dict])])
+        assert optimized_grid in [0, 1, 2], ParameterError("Optimized Grid must be an integer between 0 and 2.")
         self.type, self.name = "AutoML", name
         self.parameters = {"estimator": estimator,
                            "estimator_type": estimator_type,
@@ -629,8 +615,6 @@ model_grid_ : tablesample
                            "stepwise_x_order": stepwise_x_order,
                            "preprocess_data": preprocess_data,
                            "preprocess_dict": preprocess_dict,}
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -662,49 +646,49 @@ model_grid_ : tablesample
             else:
                 exclude_columns = [y]
             if not(isinstance(input_relation, vDataFrame)):
-                X = vdf_from_relation(input_relation, cursor=self.cursor).get_columns(exclude_columns = exclude_columns)
+                X = vdf_from_relation(input_relation).get_columns(exclude_columns = exclude_columns)
             else:
                 X = input_relation.get_columns(exclude_columns = exclude_columns)
         if isinstance(self.parameters["estimator"], str):
-            v = version(self.cursor)
+            v = version()
             self.parameters["estimator"] = self.parameters["estimator"].lower()
-            check_types([("estimator", self.parameters["estimator"], ["native", "all", "fast",],),])
+            check_types([("estimator", self.parameters["estimator"], ["native", "all", "fast"])])
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not(isinstance(input_relation, vDataFrame)):
-                vdf = vdf_from_relation(input_relation, cursor=self.cursor)
+                vdf = vdf_from_relation(input_relation)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (self.parameters["estimator_type"].lower() == "auto" and sorted(vdf[y].distinct()) == [0, 1]):
                 self.parameters["estimator_type"] = "binary"
-                self.parameters["estimator"] = [LogisticRegression(self.name, cursor=self.cursor), NaiveBayes(self.name, cursor=self.cursor)]
+                self.parameters["estimator"] = [LogisticRegression(self.name), NaiveBayes(self.name)]
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [XGBoostClassifier(self.name)]
                     if v[0] >= 9:
-                        self.parameters["estimator"] += [LinearSVC(self.name, cursor=self.cursor), RandomForestClassifier(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [LinearSVC(self.name), RandomForestClassifier(self.name)]
                 if estimator_method == "all":
-                    self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor)]
+                    self.parameters["estimator"] += [KNeighborsClassifier(self.name), NearestCentroid(self.name)]
             elif self.parameters["estimator_type"].lower() == "regressor" or (self.parameters["estimator_type"].lower() == "auto" and vdf[y].isnum()):
                 self.parameters["estimator_type"] = "regressor"
-                self.parameters["estimator"] = [LinearRegression(self.name, cursor=self.cursor), ElasticNet(self.name, cursor=self.cursor), Ridge(self.name, cursor=self.cursor), Lasso(self.name, cursor=self.cursor),]
+                self.parameters["estimator"] = [LinearRegression(self.name), ElasticNet(self.name), Ridge(self.name), Lasso(self.name)]
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [XGBoostRegressor(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [XGBoostRegressor(self.name)]
                     if v[0] >= 9:
-                        self.parameters["estimator"] += [LinearSVR(self.name, cursor=self.cursor), RandomForestRegressor(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [LinearSVR(self.name), RandomForestRegressor(self.name)]
                 if estimator_method == "all":
-                    self.parameters["estimator"] += [KNeighborsRegressor(self.name, cursor=self.cursor),]
-            elif self.parameters["estimator_type"].lower() in ("multi", "auto",):
+                    self.parameters["estimator"] += [KNeighborsRegressor(self.name)]
+            elif self.parameters["estimator_type"].lower() in ("multi", "auto"):
                 self.parameters["estimator_type"] = "multi"
-                self.parameters["estimator"] = [NaiveBayes(self.name, cursor=self.cursor)]
+                self.parameters["estimator"] = [NaiveBayes(self.name)]
                 if estimator_method in ("native", "all"):
                     if v[0] >= 10 and v[1] >= 1:
-                        self.parameters["estimator"] += [XGBoostClassifier(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [XGBoostClassifier(self.name)]
                     if v[0] >= 9:
-                        self.parameters["estimator"] += [RandomForestClassifier(self.name, cursor=self.cursor),]
+                        self.parameters["estimator"] += [RandomForestClassifier(self.name)]
                 if estimator_method == "all":
-                    self.parameters["estimator"] += [KNeighborsClassifier(self.name, cursor=self.cursor), NearestCentroid(self.name, cursor=self.cursor),]
+                    self.parameters["estimator"] += [KNeighborsClassifier(self.name), NearestCentroid(self.name)]
             else:
                 raise ParameterError(f"Parameter 'estimator_type' must be in auto|binary|multi|regressor. Found {estimator_type}.")
         elif isinstance(self.parameters["estimator"], (RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier, NaiveBayes, LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression, KNeighborsRegressor, KNeighborsClassifier, NearestCentroid, LinearSVC, LinearSVR)):
@@ -716,7 +700,7 @@ model_grid_ : tablesample
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
             cat = category_from_model_type(elem.type)
-            assert self.parameters["estimator_type"] in ("binary", "multi") and cat[0] == "classifier" or self.parameters["estimator_type"] in ("regressor",) and cat[0] == "regressor", ParameterError("Incorrect list for parameter 'estimator'. Expected type '{}', found type '{}'.".format(self.parameters["estimator_type"], cat[0]))
+            assert self.parameters["estimator_type"] in ("binary", "multi") and cat[0] == "classifier" or self.parameters["estimator_type"] == "regressor" and cat[0] == "regressor", ParameterError("Incorrect list for parameter 'estimator'. Expected type '{}', found type '{}'.".format(self.parameters["estimator_type"], cat[0]))
         if self.parameters["estimator_type"] == "regressor" and self.parameters["metric"] == "auto":
             self.parameters["metric"] = "rmse"
         elif self.parameters["metric"] == "auto":
@@ -734,13 +718,10 @@ model_grid_ : tablesample
                     }
                 )
         if self.parameters["preprocess_data"]:
-            name = self.name
-            if name[-1] == '"':
-                name = name[0:-1] + '_autodataprep_{}"'.format(get_session(self.cursor))
-            else:
-                name = name + '_autodataprep_{}'.format(get_session(self.cursor))
-            model_preprocess = AutoDataPrep(name=name, cursor=self.cursor, **self.parameters["preprocess_dict"],)
-            input_relation = model_preprocess.fit(input_relation, X=X,)
+            schema, name = schema_relation(self.name)
+            name = gen_tmp_name(schema = schema, name = "autodataprep")
+            model_preprocess = AutoDataPrep(name=name, **self.parameters["preprocess_dict"])
+            input_relation = model_preprocess.fit(input_relation, X=X)
             X = [elem for elem in model_preprocess.X_out]
             self.preprocess_ = model_preprocess
         else:
@@ -798,11 +779,11 @@ model_grid_ : tablesample
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mFinal Model\033[0m\033[0m\n")
             print(f"{result['model_type'][0]}; Best_Parameters: {result['parameters'][0]}; \033[91mBest_Test_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;\n\n")
-        best_model = result["model_class"][0](self.name, self.cursor)
+        best_model = result["model_class"][0](self.name)
         best_model.set_params(result["parameters"][0])
         self.stepwise_ = None
         if self.parameters["stepwise"]:
-            self.stepwise_ = stepwise(best_model, input_relation, X, y, criterion=self.parameters["stepwise_criterion"], direction=self.parameters["stepwise_direction"], max_steps=self.parameters["stepwise_max_steps"],  x_order=self.parameters["stepwise_x_order"], print_info=self.parameters["print_info"], drop_final_estimator=False, show=False, criterion_threshold=2,)
+            self.stepwise_ = stepwise(best_model, input_relation, X, y, criterion=self.parameters["stepwise_criterion"], direction=self.parameters["stepwise_direction"], max_steps=self.parameters["stepwise_max_steps"],  x_order=self.parameters["stepwise_x_order"], print_info=self.parameters["print_info"], drop_final_estimator=False, show=False, criterion_threshold=2)
         else:
             best_model.fit(input_relation, X, y)
         self.best_model_ = best_model
@@ -810,7 +791,7 @@ model_grid_ : tablesample
         self.parameters["reverse"] = not(reverse)
         if self.preprocess_ != None:
             self.preprocess_.drop()
-            self.preprocess_.final_relation_ = vdf_from_relation(self.preprocess_.sql_, cursor=self.cursor)
+            self.preprocess_.final_relation_ = vdf_from_relation(self.preprocess_.sql_)
         return self.model_grid_
 
     # ---#
@@ -841,6 +822,6 @@ model_grid_ : tablesample
         Matplotlib axes object
         """
         if mltype == "champion":
-            return plot_bubble_ml(self.model_grid_["avg_time"], self.model_grid_["avg_score"], self.model_grid_["score_std"], self.model_grid_["model_type"], x_label="time", y_label="score", title= "Model Type", ax=ax, reverse=(True, self.parameters["reverse"],), **style_kwds,)
+            return plot_bubble_ml(self.model_grid_["avg_time"], self.model_grid_["avg_score"], self.model_grid_["score_std"], self.model_grid_["model_type"], x_label="time", y_label="score", title= "Model Type", ax=ax, reverse=(True, self.parameters["reverse"]), **style_kwds)
         else:
-            return plot_stepwise_ml([len(elem) for elem in self.stepwise_["features"]], self.stepwise_[self.parameters["stepwise_criterion"]], self.stepwise_["variable"], self.stepwise_["change"], [self.stepwise_["features"][0], self.stepwise_.best_list_], x_label="n_features", y_label=self.parameters["stepwise_criterion"], direction=self.parameters["stepwise_direction"], ax=ax, **style_kwds,)
+            return plot_stepwise_ml([len(elem) for elem in self.stepwise_["features"]], self.stepwise_[self.parameters["stepwise_criterion"]], self.stepwise_["variable"], self.stepwise_["change"], [self.stepwise_["features"][0], self.stepwise_.best_list_], x_label="n_features", y_label=self.parameters["stepwise_criterion"], direction=self.parameters["stepwise_direction"], ax=ax, **style_kwds)

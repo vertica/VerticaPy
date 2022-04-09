@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -67,8 +67,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -89,14 +87,13 @@ l1_ratio: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -108,9 +105,7 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -124,8 +119,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -143,13 +136,12 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
             {
@@ -163,9 +155,7 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -179,8 +169,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 max_iter: int, optional
@@ -195,13 +183,12 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         max_iter: int = 100,
         solver: str = "Newton",
     ):
         check_types(
-            [("name", name, [str],), ("solver", solver.lower(), ["newton", "bfgs"],),]
+            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"])]
         )
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -215,9 +202,7 @@ solver: str, optional
         for elem in ["l1_ratio", "C"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -231,8 +216,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 penalty: str, optional
 	Determines the method of regularization.
 		None : No Regularization
@@ -259,7 +242,6 @@ l1_ratio: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         penalty: str = "None",
         tol: float = 1e-6,
         C: int = 1,
@@ -267,7 +249,7 @@ l1_ratio: float, optional
         solver: str = "Newton",
         l1_ratio: float = 0.5,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "LogisticRegression", name
         self.set_params(
             {
@@ -283,15 +265,13 @@ l1_ratio: float, optional
             for elem in ["l1_ratio", "C"]:
                 if elem in self.parameters:
                     del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton"],)])
+            check_types([("solver", solver.lower(), ["bfgs", "newton"])])
         elif penalty.lower() in ("l1", "l2"):
-            for elem in ["l1_ratio",]:
+            for elem in ["l1_ratio"]:
             	if elem in self.parameters:
                 	del self.parameters[elem]
-            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"],)])
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+            check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"])])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -305,8 +285,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor.
 tol: float, optional
 	Determines whether the algorithm has reached the specified accuracy result.
 C: float, optional
@@ -323,14 +301,13 @@ solver: str, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         tol: float = 1e-6,
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "Newton",
     ):
         check_types(
-            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"],),)]
+            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"]))]
         )
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -345,6 +322,4 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])

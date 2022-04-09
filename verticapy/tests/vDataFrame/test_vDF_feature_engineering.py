@@ -20,45 +20,43 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
+def amazon_vd():
     from verticapy.datasets import load_amazon
 
-    amazon = load_amazon(cursor=base.cursor)
+    amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+        drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
+def iris_vd():
     from verticapy.datasets import load_iris
 
-    iris = load_iris(cursor=base.cursor)
+    iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+        drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
-def smart_meters_vd(base):
+def smart_meters_vd():
     from verticapy.datasets import load_smart_meters
 
-    smart_meters = load_smart_meters(cursor=base.cursor)
+    smart_meters = load_smart_meters()
     yield smart_meters
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.smart_meters", cursor=base.cursor)
+        drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic")
 
 
 class TestvDFFeatureEngineering:

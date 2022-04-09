@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -59,9 +59,7 @@ from verticapy.toolbox import *
 
 #
 # ---#
-def import_lib_udf(
-    udf_list: list, library_name: str, include_dependencies: list = [], cursor=None
-):
+def import_lib_udf(udf_list: list, library_name: str, include_dependencies: list = []):
     """
 ---------------------------------------------------------------------------
 Install a library of Python functions in Vertica. This function will work only
@@ -85,12 +83,9 @@ library_name: str
 include_dependencies: list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
-cursor: DBcursor, optional
-	Vertica database cursor.
 	"""
-    cursor, conn = check_cursor(cursor)[0:2]
     directory = os.path.dirname(verticapy.__file__)
-    session_name = get_session(cursor)
+    session_name = get_session()
     file_name = f"{library_name}_{session_name}.py"
     try:
         os.remove(directory + "/" + file_name)
@@ -103,9 +98,8 @@ cursor: DBcursor, optional
     f.write(udx_str)
     f.close()
     try:
-        for query in sql:
-            print(query)
-            cursor.execute(query)
+        for idx, query in enumerate(sql):
+            executeSQL(query, title="UDF installation. [step {}]".format(idx))
         os.remove(directory + "/" + file_name)
         return True
     except Exception as e:

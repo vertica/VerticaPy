@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -69,8 +69,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-	Vertica database cursor. 
 alpha: float, optional
 	A float that specifies use of Laplace smoothing if the event model is 
 	categorical, multinomial, or Bernoulli.
@@ -92,12 +90,12 @@ nbtype: str, optional
 	"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0, nbtype: str = "auto"
+        self, name: str, alpha: float = 1.0, nbtype: str = "auto"
     ):
         check_types(
             [
-                ("name", name, [str],),
-                ("alpha", alpha, [int, float],),
+                ("name", name, [str]),
+                ("alpha", alpha, [int, float]),
                 (
                     "nbtype",
                     nbtype,
@@ -107,9 +105,7 @@ nbtype: str, optional
         )
         self.type, self.name = "NaiveBayes", name
         self.set_params({"alpha": alpha, "nbtype": nbtype})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -117,9 +113,9 @@ class BernoulliNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'bernoulli'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "bernoulli")
+        super().__init__(name, alpha, "bernoulli")
 
 
 # ---#
@@ -127,9 +123,9 @@ class CategoricalNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'categorical'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "categorical")
+        super().__init__(name, alpha, "categorical")
 
 
 # ---#
@@ -137,9 +133,9 @@ class GaussianNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'gaussian'"""
 
     def __init__(
-        self, name: str, cursor=None,
+        self, name: str, 
     ):
-        super().__init__(name, cursor, nbtype="gaussian")
+        super().__init__(name, nbtype="gaussian")
 
 
 # ---#
@@ -147,6 +143,6 @@ class MultinomialNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'multinomial'"""
 
     def __init__(
-        self, name: str, cursor=None, alpha: float = 1.0,
+        self, name: str, alpha: float = 1.0,
     ):
-        super().__init__(name, cursor, alpha, "multinomial")
+        super().__init__(name, alpha, "multinomial")

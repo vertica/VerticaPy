@@ -36,17 +36,17 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.8.1"
+__version__ = "0.9.0-beta"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
@@ -79,8 +79,7 @@ verticapy.options = {
     "cache": True,
     "colors": [],
     "color_style": "default",
-    "conn": None,
-    "cursor": None,
+    "connection": {"conn": None, "section": None, "dsn": None},
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,

@@ -13,29 +13,29 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.neighbors import KernelDensity
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema
+from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", )
 
 
 @pytest.fixture(scope="module")
-def model(base, titanic_vd):
-    create_verticapy_schema(base.cursor)
-    model_class = KernelDensity("KernelDensity_model_test", cursor=base.cursor)
+def model(titanic_vd):
+    create_verticapy_schema()
+    model_class = KernelDensity("KernelDensity_model_test", )
     model_class.drop()
     model_class.fit(
-        "public.titanic", ["age", "fare",],
+        "public.titanic", ["age", "fare"],
     )
     yield model_class
     model_class.drop()
@@ -44,24 +44,24 @@ def model(base, titanic_vd):
 class TestKernelDensity:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = KernelDensity("model_repr", model.cursor)
+        model_repr = KernelDensity("model_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<KernelDensity>"
 
-    def test_drop(self, base):
-        model_test = KernelDensity("model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        model_test = KernelDensity("model_test_drop", )
         model_test.drop()
-        model_test.fit("public.titanic", ["age", "fare",],)
-        base.cursor.execute(
+        model_test.fit("public.titanic", ["age", "fare"])
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert base.cursor.fetchone()[0] in ('model_test_drop', '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in ('model_test_drop', '"model_test_drop"')
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
         assert model.get_params() == {'bandwidth': 1,
@@ -88,32 +88,22 @@ class TestKernelDensity:
         result = model.plot()
         assert len(result.get_default_bbox_extra_artists()) == 8
         plt.close("all")
-        model_test = KernelDensity("model_test_plot_kde_plot", cursor=model.cursor)
+        model_test = KernelDensity("model_test_plot_kde_plot")
         model_test.drop()
-        model_test.fit("public.titanic", ["age",],)
+        model_test.fit("public.titanic", ["age"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
         model_test.drop()
-
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
 
         assert model.get_params()["p"] == 1
 
-    def test_model_from_vDF(self, base, titanic_vd):
-        model_test = KernelDensity("KernelDensity_from_vDF_tmp", cursor=base.cursor)
+    def test_model_from_vDF(self, titanic_vd):
+        model_test = KernelDensity("KernelDensity_from_vDF_tmp", )
         model_test.drop()
-        model_test.fit(titanic_vd, ["age", "fare",],)
+        model_test.fit(titanic_vd, ["age", "fare"])
         titanic_copy = model_test.predict(titanic_vd.copy(), name = "kde")
 
         assert titanic_copy["kde"].mean() == pytest.approx(

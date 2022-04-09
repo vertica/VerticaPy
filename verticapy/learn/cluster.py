@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -76,8 +76,6 @@ Parameters
 ----------
 name: str
     Name of the the model. The model will be stored in the DB.
-cursor: DBcursor, optional
-    Vertica database cursor.
 n_cluster: int, optional
     Number of clusters
 bisection_iterations: int, optional
@@ -115,7 +113,6 @@ tol: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         n_cluster: int = 8,
         bisection_iterations: int = 1,
         split_method: str = "sum_squares",
@@ -125,7 +122,7 @@ tol: float, optional
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "BisectingKMeans", name
         self.set_params(
             {
@@ -139,9 +136,7 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[9, 3, 1])
+        version(condition=[9, 3, 1])
 
     # ---#
     def get_tree(self):
@@ -178,8 +173,6 @@ Parameters
 name: str
 	Name of the the model. This is not a built-in model, so this name will be used
     to build the final table.
-cursor: DBcursor, optional
-	Vertica database cursor.
 eps: float, optional
 	The radius of a neighborhood with respect to some point.
 min_samples: int, optional
@@ -189,13 +182,11 @@ p: int, optional
 	"""
 
     def __init__(
-        self, name: str, cursor=None, eps: float = 0.5, min_samples: int = 5, p: int = 2
+        self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
 
     # ---#
     def fit(
@@ -233,67 +224,47 @@ p: int, optional
             X = [X]
         check_types(
             [
-                ("input_relation", input_relation, [str, vDataFrame],),
-                ("X", X, [list],),
-                ("key_columns", key_columns, [list],),
-                ("index", index, [str],),
+                ("input_relation", input_relation, [str, vDataFrame]),
+                ("X", X, [list]),
+                ("key_columns", key_columns, [list]),
+                ("index", index, [str]),
             ]
         )
-        self.cursor = check_cursor(self.cursor, input_relation, True)[0]
-        does_model_exist(name=self.name, cursor=self.cursor, raise_error=True)
+        does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
             input_relation = input_relation.__genSQL__()
         else:
             if not (X):
-                X = vDataFrame(input_relation, self.cursor).numcol()
+                X = vDataFrame(input_relation).numcol()
         X = [str_column(column) for column in X]
         self.X = X
         self.key_columns = [str_column(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
-        cursor = self.cursor
-
-        def drop_temp_elem(cursor):
-            try:
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_MAIN_{}".format(
-                        get_session(cursor)
-                    )
-                )
-                cursor.execute(
-                    "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS"
-                )
-            except:
-                pass
-
+        name_main, name_dbscan_clusters = gen_tmp_name(name="main"), gen_tmp_name(name="clusters")
         try:
             if not (index):
                 index = "id"
-                main_table = "VERTICAPY_MAIN_{}".format(get_session(self.cursor))
-                drop_temp_elem(cursor)
+                drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
-                    main_table,
+                    name_main,
                     ", ".join(X + key_columns),
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 0.")
+                executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
-                cursor.execute(
-                    "SELECT {} FROM {} LIMIT 10".format(
-                        ", ".join(X + key_columns + [index]), self.input_relation
-                    )
-                )
-                main_table = self.input_relation
+                executeSQL("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), self.input_relation), print_time_sql=False)
+                name_main = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
                 for i in range(len(X))
             ]
             distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
             sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
-                index, index, distance, main_table, main_table
+                index, index, distance, name_main, name_main
             )
             sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
                 self.parameters["eps"], sql
@@ -301,8 +272,7 @@ p: int, optional
             sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
                 sql, self.parameters["min_samples"], self.parameters["eps"]
             )
-            executeSQL(cursor, sql, "Computing the DBSCAN Table - STEP 1.")
-            graph = cursor.fetchall()
+            graph = executeSQL(sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall")
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
             )
@@ -324,53 +294,35 @@ p: int, optional
                         clusters[node] = clusters[node_neighbor]
                 del graph[0]
             try:
-                f = open("VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "w")
+                f = open("{}.csv".format(name_dbscan_clusters), "w")
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                try:
-                    cursor.execute(
-                        "DROP TABLE IF EXISTS v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS"
-                    )
-                except:
-                    pass
-                cursor.execute(
-                    "CREATE LOCAL TEMPORARY TABLE VERTICAPY_DBSCAN_CLUSTERS(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
-                )
-                if isinstance(cursor, vertica_python.vertica.cursor.Cursor):
-                    with open("./VERTICAPY_DBSCAN_CLUSTERS_ID.csv", "r") as fs:
-                        cursor.copy(
-                            "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';",
-                            fs,
-                        )
+                drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+                executeSQL("CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(name_dbscan_clusters), print_time_sql=False)
+                if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
+                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters), method="copy", print_time_sql=False, path="./{}.csv".format(name_dbscan_clusters))
                 else:
-                    cursor.execute(
-                        "COPY v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS(node_id, cluster) FROM LOCAL './VERTICAPY_DBSCAN_CLUSTERS_ID.csv' DELIMITER ',' ESCAPE AS '\\';"
-                    )
-                try:
-                    cursor.execute("COMMIT")
-                except:
-                    pass
-                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False)
+                executeSQL("COMMIT;", print_time_sql=False)
+                os.remove("{}.csv".format(name_dbscan_clusters))
             except:
-                os.remove("VERTICAPY_DBSCAN_CLUSTERS_ID.csv")
+                os.remove("{}.csv".format(name_dbscan_clusters))
                 raise
             self.n_cluster_ = i
             executeSQL(
-                cursor,
-                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.VERTICAPY_DBSCAN_CLUSTERS AS y ON x.{} = y.node_id".format(
-                    self.name, ", ".join(self.X + self.key_columns), main_table, index
+                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
+                    self.name, ", ".join(self.X + self.key_columns), name_main, name_dbscan_clusters, index
                 ),
-                "Computing the DBSCAN Table - STEP 2.",
+                title="Computing the DBSCAN Table [Step 2]",
             )
-            cursor.execute(
-                "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name)
-            )
-            self.n_noise_ = cursor.fetchone()[0]
+            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchfirstelem", print_time_sql=False)
         except:
-            drop_temp_elem(cursor)
+            drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
             raise
-        drop_temp_elem(cursor)
+        drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+        drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
@@ -386,7 +338,6 @@ p: int, optional
             model_name=self.name,
             model_type="DBSCAN",
             model_save=model_save,
-            cursor=self.cursor,
         )
         return self
 
@@ -401,7 +352,7 @@ p: int, optional
 	vDataFrame
  		the vDataFrame including the prediction.
 		"""
-        return vDataFrame(self.name, self.cursor)
+        return vDataFrame(self.name)
 
 # ---#
 class KMeans(Clustering):
@@ -418,8 +369,6 @@ Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the database.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_cluster: int, optional
 	Number of clusters
 init: str/list, optional
@@ -438,13 +387,12 @@ tol: float, optional
     def __init__(
         self,
         name: str,
-        cursor=None,
         n_cluster: int = 8,
         init: str = "kmeanspp",
         max_iter: int = 300,
         tol: float = 1e-4,
     ):
-        check_types([("name", name, [str],)])
+        check_types([("name", name, [str])])
         self.type, self.name = "KMeans", name
         self.set_params(
             {
@@ -454,9 +402,7 @@ tol: float, optional
                 "tol": tol,
             }
         )
-        cursor = check_cursor(cursor)[0]
-        self.cursor = cursor
-        version(cursor=cursor, condition=[8, 0, 0])
+        version(condition=[8, 0, 0])
 
     # ---#
     def plot_voronoi(
@@ -488,13 +434,11 @@ tol: float, optional
             query = "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'centers')".format(
                 self.name
             )
-            self.cursor.execute(query)
-            clusters = self.cursor.fetchall()
+            clusters = executeSQL(query, print_time_sql=False, method="fetchall")
             return voronoi_plot(
                 clusters=clusters,
                 columns=self.X,
                 input_relation=self.input_relation,
-                cursor=self.cursor,
                 plot_crosses=plot_crosses,
                 ax=ax,
                 max_nb_points=max_nb_points,

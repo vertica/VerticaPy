@@ -19,19 +19,16 @@ from verticapy.sql import *
 set_option("print_info", False)
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic")
 
 class TestSQL:
-    def test_sql(self, base, titanic_vd):
-        d = read_dsn("vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",)
-        new_auto_connection(d, "VerticaDSN_test")
-        change_auto_connection("VerticaDSN_test")
+    def test_sql(self, titanic_vd):
         result = sql("-limit 30", "SELECT * FROM titanic;")
         assert len(result["age"]) == 30
         result = sql("-vdf True", "SELECT * FROM titanic;")

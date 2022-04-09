@@ -13,28 +13,28 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.tsa import VAR
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema
+from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def commodities_vd(base):
+def commodities_vd():
     from verticapy.datasets import load_commodities
 
-    commodities = load_commodities(cursor=base.cursor)
+    commodities = load_commodities()
     yield commodities
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.commodities", cursor=base.cursor)
+        drop(name="public.commodities", )
 
 
 @pytest.fixture(scope="module")
-def model(base, commodities_vd):
-    create_verticapy_schema(base.cursor)
-    model_class = VAR("var_model_test", cursor=base.cursor, p=1,)
+def model(commodities_vd):
+    create_verticapy_schema()
+    model_class = VAR("var_model_test", p=1)
     model_class.drop()
-    model_class.fit("public.commodities", ["gold", "oil"], "date",)
+    model_class.fit("public.commodities", ["gold", "oil"], "date")
     yield model_class
     model_class.drop()
 
@@ -42,7 +42,7 @@ def model(base, commodities_vd):
 class TestVAR:
     def test_repr(self, model):
         assert "Additional Info" in model.__repr__()
-        model_repr = VAR("var_repr", cursor=model.cursor)
+        model_repr = VAR("var_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<VAR>"
 
@@ -52,21 +52,21 @@ class TestVAR:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        model_test = VAR("var_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        model_test = VAR("var_model_test_drop", )
         model_test.drop()
-        model_test.fit("public.commodities", ["gold", "oil"], "date",)
+        model_test.fit("public.commodities", ["gold", "oil"], "date")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('var_model_test_drop', '\"var_model_test_drop\"')"
         )
-        assert base.cursor.fetchone()[0] in ("var_model_test_drop", '"var_model_test_drop"')
+        assert current_cursor().fetchone()[0] in ("var_model_test_drop", '"var_model_test_drop"')
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('var_model_test_drop', '\"var_model_test_drop\"')"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -97,8 +97,8 @@ class TestVAR:
     def test_get_params(self, model):
         assert model.get_params() == {'max_iter': 1000, 'p': 1, 'solver': 'Newton', 'tol': 0.0001}
 
-    def test_get_plot(self, model,):
-        result = model.plot(color="r", nlead=10, dynamic=True, nlast=20, X_idx="gold",)
+    def test_get_plot(self, model):
+        result = model.plot(color="r", nlead=10, dynamic=True, nlast=20, X_idx="gold")
         assert len(result.get_default_bbox_extra_artists()) == 18
         plt.close("all")
 
@@ -161,29 +161,19 @@ class TestVAR:
         # method = "bic"
         assert model.score(method="bic")["bic"][0] == pytest.approx(6201.595312725785, abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"p": 2})
 
         assert model.get_params()["p"] == 2
 
-    def test_model_from_vDF(self, base, commodities_vd):
-        model_class = VAR("var_model_test_vdf", cursor=base.cursor, p=1,)
+    def test_model_from_vDF(self, commodities_vd):
+        model_class = VAR("var_model_test_vdf", p=1)
         model_class.drop()
-        model_class.fit(commodities_vd, ["gold", "oil",], "date",)
+        model_class.fit(commodities_vd, ["gold", "oil"], "date")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('var_model_test_vdf', '\"var_model_test_vdf\"')"
         )
-        assert base.cursor.fetchone()[0] in ("var_model_test_vdf", '"var_model_test_vdf"')
+        assert current_cursor().fetchone()[0] in ("var_model_test_vdf", '"var_model_test_vdf"')
 
         model_class.drop()

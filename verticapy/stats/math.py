@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -84,15 +84,16 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2,), "int")
+    return str_sql("EDIT_DISTANCE({}, {})".format(expr1, expr2), "int")
 
 
 levenshtein = edit_distance
 
 # ---#
-def soundex(expr,):
+def soundex(expr):
     """
 ---------------------------------------------------------------------------
 Returns Soundex encoding of a varchar strings as a four -character string.
@@ -107,6 +108,7 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr = format_magic(expr)
     return str_sql("SOUNDEX({})".format(expr), "varchar")
 
@@ -133,9 +135,10 @@ Returns
 str_sql
     SQL expression.
     """
+    version(condition=[10, 1, 0])
     expr1 = format_magic(expr1)
     expr2 = format_magic(expr2)
-    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2,), "int")
+    return str_sql("SOUNDEX_MATCHES({}, {})".format(expr1, expr2), "int")
 
 
 # Regular Expressions

@@ -13,36 +13,36 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.linear_model import LogisticRegression
-from verticapy import drop, set_option, vertica_conn
+from verticapy import drop, set_option, vertica_conn, current_cursor
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
+def titanic_vd():
     from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+    titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+        drop(name="public.titanic", )
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
+def winequality_vd():
     from verticapy.datasets import load_winequality
 
-    winequality = load_winequality(cursor=base.cursor)
+    winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+        drop(name="public.winequality", )
 
 
 @pytest.fixture(scope="module")
-def model(base, titanic_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS logreg_model_test")
-    model_class = LogisticRegression("logreg_model_test", cursor=base.cursor)
+def model(titanic_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS logreg_model_test")
+    model_class = LogisticRegression("logreg_model_test", )
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
@@ -90,12 +90,12 @@ class TestLogisticRegression:
         assert conf_mat2[1][0] == 602
         assert conf_mat2[1][1] == 391
 
-    def test_contour(self, base, titanic_vd):
-        model_test = LogisticRegression("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = LogisticRegression("model_contour", )
         model_test.drop()
         model_test.fit(
             titanic_vd,
-            ["age", "fare",],
+            ["age", "fare"],
             "survived",
         )
         result = model_test.contour()
@@ -108,21 +108,21 @@ class TestLogisticRegression:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS logreg_model_test_drop")
-        model_test = LogisticRegression("logreg_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS logreg_model_test_drop")
+        model_test = LogisticRegression("logreg_model_test_drop", )
         model_test.fit("public.titanic", ["age", "fare"], "survived")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "logreg_model_test_drop"
+        assert current_cursor().fetchone()[0] == "logreg_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'logreg_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         f_imp = model.features_importance()
@@ -145,10 +145,10 @@ class TestLogisticRegression:
         assert lift_ch["lift"][900] == pytest.approx(1.0)
         plt.close("all")
 
-    def test_get_plot(self, base, winequality_vd):
+    def test_get_plot(self, winequality_vd):
         # 1D
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LogisticRegression("model_test_plot", cursor=base.cursor)
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = LogisticRegression("model_test_plot", )
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 11
@@ -161,60 +161,43 @@ class TestLogisticRegression:
         plt.close("all")
         model_test.drop()
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_LOGISTIC_REG(11.0, 1993. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
-        model.cursor.execute(
-            "SELECT PREDICT_LOGISTIC_REG(11.0, 1993. USING PARAMETERS model_name = '{}', match_by_pos=True, type='probability')".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict_proba([[11.0, 1993.0]])[0][1])
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0,]])[0])
-        model.cursor.execute(
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0]])[0])
+        current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0,]])[0][1])
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0]])[0][1])
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_LOGISTIC_REG(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
                 model.name, model.to_sql([3.0, 11.0])
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
     def test_to_memmodel(self, model, titanic_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0,],
-                              [11.0, 1.0,]])
-        res_py = model.to_python()([[3.0, 11.0,],
-                                   [11.0, 1.0,]])
+        res = mmodel.predict([[3.0, 11.0],
+                              [11.0, 1.0]])
+        res_py = model.to_python()([[3.0, 11.0],
+                                   [11.0, 1.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[3.0, 11.0,],
-                                    [11.0, 1.0,]])
-        res_py = model.to_python(return_proba = True)([[3.0, 11.0,],
-                                                       [11.0, 1.0,]])
+        res = mmodel.predict_proba([[3.0, 11.0],
+                                    [11.0, 1.0]])
+        res_py = model.to_python(return_proba = True)([[3.0, 11.0],
+                                                       [11.0, 1.0]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]
@@ -232,11 +215,6 @@ class TestLogisticRegression:
         assert score == pytest.approx(1.0)
         score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.4617437138350809)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -293,8 +271,6 @@ class TestLogisticRegression:
             "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
-            "C": 1.0,
-            "l1_ratio": None,
         }
 
     def test_prc_curve(self, model):
@@ -414,29 +390,19 @@ class TestLogisticRegression:
             0.399234693877551
         )
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
 
         assert model.get_params()["max_iter"] == 1000
 
-    def test_model_from_vDF(self, base, titanic_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS logreg_from_vDF")
-        model_test = LogisticRegression("logreg_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, titanic_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS logreg_from_vDF")
+        model_test = LogisticRegression("logreg_from_vDF", )
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'logreg_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "logreg_from_vDF"
+        assert current_cursor().fetchone()[0] == "logreg_from_vDF"
 
         model_test.drop()

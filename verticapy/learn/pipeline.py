@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -75,7 +75,7 @@ steps: list
     def __init__(
         self, steps: list,
     ):
-        check_types([("steps", steps, [list],)])
+        check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):
@@ -106,7 +106,6 @@ steps: list
                             "The last estimator of the Pipeline must have a 'fit' method."
                         )
             self.steps += [elem]
-        self.cursor = self.steps[-1][1].cursor
 
     # ---#
     def __getitem__(self, index):
@@ -157,9 +156,7 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(
-                relation=input_relation, cursor=self.steps[0][1].cursor
-            )
+            vdf = vdf_from_relation(relation=input_relation)
         else:
             vdf = input_relation
         X_new = [elem for elem in X]
@@ -232,7 +229,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -322,7 +319,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -365,7 +362,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vdf_from_relation(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):
@@ -374,27 +371,6 @@ steps: list
             X_new = step[1].get_names(inverse=True, X=X)
             X_all += X_new
         return current_vdf
-
-    # ---#
-    def set_cursor(self, cursor):
-        """
-    ---------------------------------------------------------------------------
-    Sets a new database cursor. It can be very usefull if the connection to the DB is 
-    lost.
-
-    Parameters
-    ----------
-    cursor: DBcursor
-        New cursor.
-
-    Returns
-    -------
-    model
-        self
-        """
-        for step in self.steps:
-            step[1].set_cursor(cursor)
-        return self
 
     # ---#
     def set_params(self, parameters: dict = {}):
@@ -418,7 +394,7 @@ steps: list
                   name: str = "predict", 
                   return_proba: bool = False, 
                   return_distance_clusters: bool = False, 
-                  return_str: bool = False,):
+                  return_str: bool = False):
         """
     ---------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using built-in
@@ -444,7 +420,7 @@ steps: list
         Python function
         """
         if not(return_str):
-            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
+            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True)
             _locals = locals()
             exec(func, globals(), _locals)
             return _locals[name]
@@ -458,22 +434,3 @@ steps: list
             final_function = step[0]+"({})".format(final_function)
         str_representation += "\treturn {}".format(final_function)
         return str_representation
-
-
-    # ---#
-    def to_sklearn(self):
-        """
-    ---------------------------------------------------------------------------
-    Converts the Vertica Model to sklearn model.
-
-    Returns
-    -------
-    object
-        sklearn model.
-        """
-        import sklearn.pipeline as skp
-
-        steps = []
-        for step in self.steps:
-            steps += [(step[0], step[1].to_sklearn())]
-        return skp.Pipeline(steps)
