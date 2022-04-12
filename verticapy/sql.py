@@ -70,11 +70,13 @@ import re, time
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
     queries = line if (not (cell) and (line)) else cell
-    options = {}
     queries = queries.replace("\t", " ").replace("\n", " ")
     queries = re.sub(" +", " ", queries)
 
-    if (cell) and (line):
+    has_option = (queries[0] == "-") or ((cell) and (line))
+    options = {}
+
+    if has_option:
 
         all_options_dict = get_magic_options(line)
 
@@ -88,6 +90,12 @@ def sql(line, cell="", local_ns=None):
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
                 )
+
+    if "i" in options:
+        f = open(options["i"], "r")
+        queries = f.read().replace("\t", " ").replace("\n", " ")
+        queries = re.sub(" +", " ", queries)
+        f.close()
 
     n, i, all_split = len(queries), 0, []
 

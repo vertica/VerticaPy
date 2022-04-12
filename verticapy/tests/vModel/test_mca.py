@@ -48,13 +48,13 @@ class TestMCA:
         assert model_repr.__repr__() == "<MCA>"
 
     def test_deploySQL(self, model):
-        expected_sql = 'APPLY_PCA("Name_Apples", "Name_Apricots",'
+        expected_sql = 'APPLY_PCA("Form_Boiled", "Form_Canned",'
         result_sql = model.deploySQL()
 
         assert expected_sql in result_sql
 
     def test_deployInverseSQL(self, model):
-        expected_sql = 'APPLY_INVERSE_PCA("Name_Apples", "Name_Apricots",'
+        expected_sql = 'APPLY_INVERSE_PCA("Form_Boiled", "Form_Canned",'
         result_sql = model.deployInverseSQL()
 
         assert expected_sql in result_sql
