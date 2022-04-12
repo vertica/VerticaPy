@@ -38,6 +38,7 @@ def amazon_vd():
     yield amazon
     drop(name="public.amazon")
 
+
 @pytest.fixture(scope="module")
 def commodities_vd():
     from verticapy.datasets import load_commodities
@@ -65,6 +66,7 @@ def world_vd():
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.world")
 
+
 @pytest.fixture(scope="module")
 def pop_growth_vd():
     from verticapy.datasets import load_pop_growth
@@ -73,6 +75,7 @@ def pop_growth_vd():
     yield pop_growth
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.pop_growth")
+
 
 @pytest.fixture(scope="module")
 def gapminder_vd():
@@ -85,41 +88,93 @@ def gapminder_vd():
 
 
 class TestvDFPlot:
-
     def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
         import matplotlib.animation as animation
 
-        result = pop_growth_vd.animated("year", ["city", "population"], "continent", 1970, 1980, "bar", return_html=False)
+        result = pop_growth_vd.animated(
+            "year",
+            ["city", "population"],
+            "continent",
+            1970,
+            1980,
+            "bar",
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated("year", ["city", "population"], "continent", 1970, 1980, "pie", return_html=False)
+        result = pop_growth_vd.animated(
+            "year",
+            ["city", "population"],
+            "continent",
+            1970,
+            1980,
+            "pie",
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated("year", ["city", "population"], "", 1970, 1980, "bar", return_html=False)
+        result = pop_growth_vd.animated(
+            "year", ["city", "population"], "", 1970, 1980, "bar", return_html=False
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = pop_growth_vd.animated("year", ["city", "population"], "", 1970, 1980, "pie", return_html=False)
+        result = pop_growth_vd.animated(
+            "year", ["city", "population"], "", 1970, 1980, "pie", return_html=False
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = amazon_vd.animated("date", "number", kind="ts", by="state", return_html=False)
+        result = amazon_vd.animated(
+            "date", "number", kind="ts", by="state", return_html=False
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = commodities_vd.animated("date", kind="ts", color = ["r", "g", "b"])
+        result = commodities_vd.animated("date", kind="ts", color=["r", "g", "b"])
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "country", "pop"], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        result = gapminder_vd.animated(
+            "year",
+            ["lifeExp", "gdpPercap", "country", "pop"],
+            "continent",
+            kind="bubble",
+            limit_labels=10,
+            limit_over=100,
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "country"], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        result = gapminder_vd.animated(
+            "year",
+            ["lifeExp", "gdpPercap", "country"],
+            "continent",
+            kind="bubble",
+            limit_labels=10,
+            limit_over=100,
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap", "pop"], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        result = gapminder_vd.animated(
+            "year",
+            ["lifeExp", "gdpPercap", "pop"],
+            "continent",
+            kind="bubble",
+            limit_labels=10,
+            limit_over=100,
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-        result = gapminder_vd.animated("year", ["lifeExp", "gdpPercap"], "continent", kind="bubble", limit_labels=10, limit_over=100, return_html=False)
+        result = gapminder_vd.animated(
+            "year",
+            ["lifeExp", "gdpPercap"],
+            "continent",
+            kind="bubble",
+            limit_labels=10,
+            limit_over=100,
+            return_html=False,
+        )
         assert isinstance(result, animation.FuncAnimation)
         plt.close("all")
-
 
     def test_vDF_stacked_area(self, amazon_vd):
         assert (
@@ -205,7 +260,9 @@ class TestvDFPlot:
         )
         plt.close("all")
         # pyramid
-        result5 = titanic_vd.bar(columns=["pclass", "survived"], hist_type="pyramid", color="b")
+        result5 = titanic_vd.bar(
+            columns=["pclass", "survived"], hist_type="pyramid", color="b"
+        )
         assert result5.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             0.09805510534846029
         )
@@ -214,7 +271,10 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_boxplot(self, titanic_vd):
         # testing vDataFrame[].boxplot
         result = titanic_vd["age"].boxplot(color="b")
@@ -244,16 +304,27 @@ class TestvDFPlot:
         ] == pytest.approx(512.3292)
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info > (3, 6), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info > (3, 6),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_bubble(self, iris_vd, titanic_vd):
         # testing vDataFrame.bubble - img
-        result = titanic_vd.bubble(columns=["fare", "age"], size_bubble_col="pclass", color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10])
+        result = titanic_vd.bubble(
+            columns=["fare", "age"],
+            size_bubble_col="pclass",
+            color="b",
+            img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png",
+            bbox=[0, 10, 0, 10],
+        )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
         plt.close("all")
         # testing vDataFrame.bubble
         result = iris_vd.bubble(
-            columns=["PetalLengthCm", "SepalLengthCm"], size_bubble_col="PetalWidthCm", color="b",
+            columns=["PetalLengthCm", "SepalLengthCm"],
+            size_bubble_col="PetalWidthCm",
+            color="b",
         )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 6.9
@@ -281,16 +352,23 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_density(self, iris_vd):
         # testing vDataFrame[].density
         create_verticapy_schema()
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
-            result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20, color="b")
+            result = iris_vd["PetalLengthCm"].density(
+                kernel=kernel, nbins=20, color="b"
+            )
             assert max(result.get_default_bbox_extra_artists()[1].get_data()[1]) < 0.25
             plt.close("all")
         for kernel in ["gaussian", "logistic", "sigmoid", "silverman"]:
-            result = iris_vd["PetalLengthCm"].density(kernel=kernel, nbins=20, by="Species", color="b")
+            result = iris_vd["PetalLengthCm"].density(
+                kernel=kernel, nbins=20, by="Species", color="b"
+            )
             assert len(result.get_default_bbox_extra_artists()) < 20
             plt.close("all")
         # testing vDataFrame.density
@@ -302,6 +380,7 @@ class TestvDFPlot:
     def test_vDF_contour(self, titanic_vd):
         def func(a, b):
             return a + b + 1
+
         result = titanic_vd.contour(["parch", "sibsp"], func)
         assert len(result.get_default_bbox_extra_artists()) == 32
         plt.close("all")
@@ -320,7 +399,10 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_heatmap(self, iris_vd):
         result = iris_vd.heatmap(
             ["PetalLengthCm", "SepalLengthCm"],
@@ -331,11 +413,20 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[-2].get_size() == (5, 4)
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_hexbin(self, titanic_vd):
-        result = titanic_vd.hexbin(columns=["fare", "age"], img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10])
+        result = titanic_vd.hexbin(
+            columns=["fare", "age"],
+            img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png",
+            bbox=[0, 10, 0, 10],
+        )
         result = result.get_default_bbox_extra_artists()[0]
-        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(512.3292)
+        assert max([elem[0] for elem in result.get_offsets()]) == pytest.approx(
+            512.3292
+        )
         plt.close("all")
         result = titanic_vd.hexbin(columns=["age", "fare"], method="avg", of="survived")
         result = result.get_default_bbox_extra_artists()[0]
@@ -352,103 +443,123 @@ class TestvDFPlot:
         from highcharts.highstock.highstock import Highstock
 
         # boxplot
-        result = titanic_vd.hchart(kind = "boxplot")
+        result = titanic_vd.hchart(kind="boxplot")
         assert isinstance(result, Highchart)
         # kendall
-        result = titanic_vd.hchart(kind = "kendall")
+        result = titanic_vd.hchart(kind="kendall")
         assert isinstance(result, Highchart)
         # cramer
-        result = titanic_vd.hchart(kind = "cramer")
+        result = titanic_vd.hchart(kind="cramer")
         assert isinstance(result, Highchart)
         # pearson
-        result = titanic_vd.hchart(kind = "pearson")
+        result = titanic_vd.hchart(kind="pearson")
         assert isinstance(result, Highchart)
         # spearman
-        result = titanic_vd.hchart(kind = "spearman")
+        result = titanic_vd.hchart(kind="spearman")
         assert isinstance(result, Highchart)
         # biserial
-        result = titanic_vd.hchart(kind = "biserial")
+        result = titanic_vd.hchart(kind="biserial")
         assert isinstance(result, Highchart)
         # area
-        result = amazon_vd.hchart(x="date", y="number", kind = "area")
+        result = amazon_vd.hchart(x="date", y="number", kind="area")
         assert isinstance(result, Highchart)
-        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "area")
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind="area")
         assert isinstance(result, Highchart)
         # line
-        result = amazon_vd.hchart(x="date", y="number", kind = "line")
+        result = amazon_vd.hchart(x="date", y="number", kind="line")
         assert isinstance(result, Highchart)
-        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "line")
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind="line")
         assert isinstance(result, Highchart)
         # spline
-        result = amazon_vd.hchart(x="date", y="number", kind = "spline")
+        result = amazon_vd.hchart(x="date", y="number", kind="spline")
         assert isinstance(result, Highchart)
-        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "spline")
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind="spline")
         assert isinstance(result, Highchart)
         # area_range
-        result = amazon_vd.hchart(x="date", 
-                                  y=["MIN(number)", "AVG(number)", "MAX(number)"], 
-                                  kind = "area_range")
+        result = amazon_vd.hchart(
+            x="date", y=["MIN(number)", "AVG(number)", "MAX(number)"], kind="area_range"
+        )
         assert isinstance(result, Highchart)
         # area_ts
-        result = amazon_vd.hchart(x="date", y="number", kind = "area_ts")
+        result = amazon_vd.hchart(x="date", y="number", kind="area_ts")
         assert isinstance(result, Highchart)
-        result = amazon_vd.hchart(x="date", y="number", z="state", kind = "area_ts")
+        result = amazon_vd.hchart(x="date", y="number", z="state", kind="area_ts")
         assert isinstance(result, Highchart)
         # bar1D
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "bar")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="bar")
         assert isinstance(result, Highchart)
         # hist1D
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "hist")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="hist")
         assert isinstance(result, Highchart)
         # donut
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "donut")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="donut")
         assert isinstance(result, Highchart)
         # donut3d
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "donut3d")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="donut3d")
         assert isinstance(result, Highchart)
         # pie
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="pie")
         assert isinstance(result, Highchart)
         # pie_half
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie_half")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="pie_half")
         assert isinstance(result, Highchart)
         # pie3d
-        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind = "pie3d")
+        result = titanic_vd.hchart(x="pclass", y="COUNT(*) AS cnt", kind="pie3d")
         assert isinstance(result, Highchart)
         # bar2D / hist2D or drilldown
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "bar")
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar"
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "hist")
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist"
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "stacked_hist")
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="stacked_hist"
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "stacked_bar")
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="stacked_bar"
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "bar", drilldown=True)
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="bar", drilldown=True
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "hist", drilldown=True)
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="hist", drilldown=True
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="pclass", y="survived", z="COUNT(*) AS cnt", kind = "pie", drilldown=True)
+        result = titanic_vd.hchart(
+            x="pclass", y="survived", z="COUNT(*) AS cnt", kind="pie", drilldown=True
+        )
         assert isinstance(result, Highchart)
         # bubble or scatter
-        result = titanic_vd.hchart(x="age", y="fare", kind = "scatter")
+        result = titanic_vd.hchart(x="age", y="fare", kind="scatter")
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind = "scatter")
+        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind="scatter")
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="age", y="fare", z="parch", c="survived", kind = "scatter")
+        result = titanic_vd.hchart(
+            x="age", y="fare", z="parch", c="survived", kind="scatter"
+        )
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind = "bubble")
+        result = titanic_vd.hchart(x="age", y="fare", c="survived", kind="bubble")
         assert isinstance(result, Highchart)
-        result = titanic_vd.hchart(x="age", y="fare", z="parch", c="survived", kind = "bubble")
+        result = titanic_vd.hchart(
+            x="age", y="fare", z="parch", c="survived", kind="bubble"
+        )
         assert isinstance(result, Highchart)
         # negative_bar
-        result = titanic_vd.hchart(x="survived", y="age", z="COUNT(*) AS cnt", kind = "donut3d")
+        result = titanic_vd.hchart(
+            x="survived", y="age", z="COUNT(*) AS cnt", kind="donut3d"
+        )
         assert isinstance(result, Highchart)
         # spider
-        result = titanic_vd.hchart(x="pclass",  kind = "spider")
+        result = titanic_vd.hchart(x="pclass", kind="spider")
         assert isinstance(result, Highchart)
         # candlestick
-        result = amazon_vd.hchart(x="date", y="number", kind = "candlestick")
+        result = amazon_vd.hchart(x="date", y="number", kind="candlestick")
         assert isinstance(result, Highstock)
 
     def test_vDF_hist(self, titanic_vd):
@@ -502,10 +613,15 @@ class TestvDFPlot:
         ].get_height() == pytest.approx(0.4327390599675851)
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_pie(self, titanic_vd):
         # testing vDataFrame[].pie
-        result = titanic_vd["pclass"].pie(method="avg", of="survived", colors=["b", "r"])
+        result = titanic_vd["pclass"].pie(
+            method="avg", of="survived", colors=["b", "r"]
+        )
         assert int(result.get_default_bbox_extra_artists()[6].get_text()) == 3
         assert float(
             result.get_default_bbox_extra_artists()[7].get_text()
@@ -516,7 +632,9 @@ class TestvDFPlot:
         assert result.get_default_bbox_extra_artists()[9].get_text() == "11.3%"
         plt.close("all")
         # testing vDataFrame[].pie - donut
-        result = titanic_vd["sex"].pie(method="sum", of="survived", pie_type="donut", colors=["b", "r"])
+        result = titanic_vd["sex"].pie(
+            method="sum", of="survived", pie_type="donut", colors=["b", "r"]
+        )
         assert result.get_default_bbox_extra_artists()[6].get_text() == "female"
         assert int(
             result.get_default_bbox_extra_artists()[7].get_text()
@@ -593,10 +711,18 @@ class TestvDFPlot:
         )
         plt.close("all")
 
-    @pytest.mark.skipif(sys.version_info >= (3, 7), reason="this test is incompatible with newer versions of matplotlib")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 7),
+        reason="this test is incompatible with newer versions of matplotlib",
+    )
     def test_vDF_scatter(self, iris_vd, titanic_vd):
         # testing vDataFrame.scatter
-        result = titanic_vd.scatter(columns=["fare", "age"], color="b", img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png", bbox=[0, 10, 0, 10])
+        result = titanic_vd.scatter(
+            columns=["fare", "age"],
+            color="b",
+            img=os.path.dirname(verticapy.__file__) + "/tests/vDataFrame/img_test.png",
+            bbox=[0, 10, 0, 10],
+        )
         result = result.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result.get_offsets().data]) == 512.3292
         plt.close("all")
@@ -622,7 +748,9 @@ class TestvDFPlot:
         assert max([elem[1] for elem in result3.get_offsets().data]) <= 7.9
         plt.close("all")
         result4 = iris_vd.scatter(
-            columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"], catcol="Species", color="b",
+            columns=["PetalLengthCm", "SepalLengthCm", "SepalWidthCm"],
+            catcol="Species",
+            color="b",
         )
         result4 = result4.get_default_bbox_extra_artists()[0]
         assert max([elem[0] for elem in result3.get_offsets().data]) <= 6.9

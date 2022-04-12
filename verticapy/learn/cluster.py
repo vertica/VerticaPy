@@ -181,9 +181,7 @@ p: int, optional
 	The p of the p-distance (distance metric used during the model computation).
 	"""
 
-    def __init__(
-        self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2
-    ):
+    def __init__(self, name: str, eps: float = 0.5, min_samples: int = 5, p: int = 2):
         check_types([("name", name, [str])])
         self.type, self.name = "DBSCAN", name
         self.set_params({"eps": eps, "min_samples": min_samples, "p": p})
@@ -243,7 +241,10 @@ p: int, optional
         self.key_columns = [str_column(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
-        name_main, name_dbscan_clusters = gen_tmp_name(name="main"), gen_tmp_name(name="clusters")
+        name_main, name_dbscan_clusters = (
+            gen_tmp_name(name="main"),
+            gen_tmp_name(name="clusters"),
+        )
         try:
             if not (index):
                 index = "id"
@@ -256,7 +257,12 @@ p: int, optional
                 )
                 executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
-                executeSQL("SELECT {} FROM {} LIMIT 10".format(", ".join(X + key_columns + [index]), self.input_relation), print_time_sql=False)
+                executeSQL(
+                    "SELECT {} FROM {} LIMIT 10".format(
+                        ", ".join(X + key_columns + [index]), self.input_relation
+                    ),
+                    print_time_sql=False,
+                )
                 name_main = self.input_relation
             sql = [
                 "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
@@ -272,7 +278,9 @@ p: int, optional
             sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
                 sql, self.parameters["min_samples"], self.parameters["eps"]
             )
-            graph = executeSQL(sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall")
+            graph = executeSQL(
+                sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall"
+            )
             main_nodes = list(
                 dict.fromkeys([elem[0] for elem in graph] + [elem[1] for elem in graph])
             )
@@ -298,12 +306,31 @@ p: int, optional
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
-                executeSQL("CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(name_dbscan_clusters), print_time_sql=False)
+                drop_if_exists(
+                    "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
+                )
+                executeSQL(
+                    "CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(
+                        name_dbscan_clusters
+                    ),
+                    print_time_sql=False,
+                )
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
-                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters), method="copy", print_time_sql=False, path="./{}.csv".format(name_dbscan_clusters))
+                    executeSQL(
+                        "COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(
+                            name_dbscan_clusters
+                        ),
+                        method="copy",
+                        print_time_sql=False,
+                        path="./{}.csv".format(name_dbscan_clusters),
+                    )
                 else:
-                    executeSQL("COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(name_dbscan_clusters, name_dbscan_clusters), print_time_sql=False)
+                    executeSQL(
+                        "COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(
+                            name_dbscan_clusters, name_dbscan_clusters
+                        ),
+                        print_time_sql=False,
+                    )
                 executeSQL("COMMIT;", print_time_sql=False)
                 os.remove("{}.csv".format(name_dbscan_clusters))
             except:
@@ -312,14 +339,24 @@ p: int, optional
             self.n_cluster_ = i
             executeSQL(
                 "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
-                    self.name, ", ".join(self.X + self.key_columns), name_main, name_dbscan_clusters, index
+                    self.name,
+                    ", ".join(self.X + self.key_columns),
+                    name_main,
+                    name_dbscan_clusters,
+                    index,
                 ),
                 title="Computing the DBSCAN Table [Step 2]",
             )
-            self.n_noise_ = executeSQL("SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name), method="fetchfirstelem", print_time_sql=False)
+            self.n_noise_ = executeSQL(
+                "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
         except:
             drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
-            drop_if_exists("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+            drop_if_exists(
+                "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
+            )
             raise
         drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
         drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
@@ -335,9 +372,7 @@ p: int, optional
             "n_noise": self.n_noise_,
         }
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="DBSCAN",
-            model_save=model_save,
+            model_name=self.name, model_type="DBSCAN", model_save=model_save,
         )
         return self
 
@@ -353,6 +388,7 @@ p: int, optional
  		the vDataFrame including the prediction.
 		"""
         return vDataFrame(self.name)
+
 
 # ---#
 class KMeans(Clustering):

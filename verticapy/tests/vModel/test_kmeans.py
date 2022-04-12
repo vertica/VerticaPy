@@ -26,7 +26,7 @@ def iris_vd():
     iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", )
+        drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +36,7 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
@@ -72,7 +72,7 @@ class TestKMeans:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS kmeans_model_test_drop")
-        model_test = KMeans("kmeans_model_test_drop", )
+        model_test = KMeans("kmeans_model_test_drop",)
         model_test.fit("public.iris", ["SepalLengthCm", "SepalWidthCm"])
 
         current_cursor().execute(
@@ -161,7 +161,7 @@ class TestKMeans:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = KMeans("model_test_plot", )
+        model_test = KMeans("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot(color="b")
         assert len(result.get_default_bbox_extra_artists()) == 16
@@ -179,7 +179,9 @@ class TestKMeans:
             model.to_python(return_str=False)([[5.006, 3.418, 1.464, 0.244]])[0]
         )
         assert 0.0 == pytest.approx(
-            model.to_python(return_str=False, return_distance_clusters=True)([[5.006, 3.418, 1.464, 0.244]])[0][0]
+            model.to_python(return_str=False, return_distance_clusters=True)(
+                [[5.006, 3.418, 1.464, 0.244]]
+            )[0][0]
         )
 
     def test_to_sql(self, model):
@@ -193,21 +195,23 @@ class TestKMeans:
 
     def test_to_memmodel(self, model, iris_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244],
-                              [3.0, 11.0, 1993., 0.]])
-        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244],
-                                    [3.0, 11.0, 1993., 0.]])
+        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244], [3.0, 11.0, 1993.0, 0.0]])
+        res_py = model.to_python()(
+            [[5.006, 3.418, 1.464, 0.244], [3.0, 11.0, 1993.0, 0.0]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         vdf = iris_vd.copy()
-        vdf["prediction_sql"] = mmodel.predict_sql(["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
 
     def test_get_voronoi_plot(self, iris_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = KMeans("model_test_plot", )
+        model_test = KMeans("model_test_plot",)
         model_test.fit(iris_vd, ["SepalLengthCm", "SepalWidthCm"])
         result = model_test.plot_voronoi(color="b")
         assert len(result.gca().get_default_bbox_extra_artists()) == 21

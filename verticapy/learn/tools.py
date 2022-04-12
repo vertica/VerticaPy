@@ -60,7 +60,9 @@ from typing import Union
 
 #
 # ---#
-def does_model_exist(name: str, raise_error: bool = False, return_model_type: bool = False):
+def does_model_exist(
+    name: str, raise_error: bool = False, return_model_type: bool = False
+):
     """
 ---------------------------------------------------------------------------
 Checks if the model already exists.
@@ -85,14 +87,30 @@ int
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
-    result = executeSQL("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1", method="fetchrow", print_time_sql=False)
+    result = executeSQL(
+        "SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1",
+        method="fetchrow",
+        print_time_sql=False,
+    )
     if result:
-        result = executeSQL("SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(str_column(name)), method="fetchrow", print_time_sql=False)
+        result = executeSQL(
+            "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
+                str_column(name)
+            ),
+            method="fetchrow",
+            print_time_sql=False,
+        )
         if result:
             model_type = result[0]
             result = 2
-    if not(result):
-        result = executeSQL("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema), method="fetchrow", print_time_sql=False)
+    if not (result):
+        result = executeSQL(
+            "SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(
+                model_name, schema
+            ),
+            method="fetchrow",
+            print_time_sql=False,
+        )
         if result:
             model_type = result[0]
             result = 1
@@ -103,6 +121,7 @@ int
     if return_model_type:
         return model_type
     return result
+
 
 # ---#
 def load_model(name: str, input_relation: str = "", test_relation: str = ""):
@@ -127,15 +146,25 @@ Returns
 model
     The model.
     """
-    check_types([("name", name, [str]), 
-                 ("test_relation", test_relation, [str]),
-                 ("input_relation", input_relation, [str])])
+    check_types(
+        [
+            ("name", name, [str]),
+            ("test_relation", test_relation, [str]),
+            ("input_relation", input_relation, [str]),
+        ]
+    )
     does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
     assert does_exist, NameError("The model '{}' doesn't exist.".format(name))
     if does_exist == 2:
-        result = executeSQL("SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(str_column(name.lower())), method="fetchall", print_time_sql=False)
+        result = executeSQL(
+            "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
+                str_column(name.lower())
+            ),
+            method="fetchall",
+            print_time_sql=False,
+        )
         model_save = {}
         for elem in result:
             ldic = {}
@@ -164,12 +193,16 @@ model
         elif model_save["type"] == "KNeighborsClassifier":
             from verticapy.learn.neighbors import KNeighborsClassifier
 
-            model = KNeighborsClassifier(name, model_save["n_neighbors"], model_save["p"])
+            model = KNeighborsClassifier(
+                name, model_save["n_neighbors"], model_save["p"]
+            )
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsRegressor":
             from verticapy.learn.neighbors import KNeighborsRegressor
 
-            model = KNeighborsRegressor(name, model_save["n_neighbors"], model_save["p"])
+            model = KNeighborsRegressor(
+                name, model_save["n_neighbors"], model_save["p"]
+            )
         elif model_save["type"] == "KernelDensity":
             from verticapy.learn.neighbors import KernelDensity
 
@@ -190,18 +223,13 @@ model
         elif model_save["type"] == "LocalOutlierFactor":
             from verticapy.learn.neighbors import LocalOutlierFactor
 
-            model = LocalOutlierFactor(
-                name, model_save["n_neighbors"], model_save["p"]
-            )
+            model = LocalOutlierFactor(name, model_save["n_neighbors"], model_save["p"])
             model.n_errors_ = model_save["n_errors"]
         elif model_save["type"] == "DBSCAN":
             from verticapy.learn.cluster import DBSCAN
 
             model = DBSCAN(
-                name,
-                model_save["eps"],
-                model_save["min_samples"],
-                model_save["p"],
+                name, model_save["eps"], model_save["min_samples"], model_save["p"],
             )
             model.n_cluster_ = model_save["n_cluster"]
             model.n_noise_ = model_save["n_noise"]
@@ -264,7 +292,7 @@ model
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
-            if not(input_relation):
+            if not (input_relation):
                 model.input_relation = model_save["input_relation"]
             else:
                 model.input_relation = input_relation
@@ -280,18 +308,24 @@ model
             elif model_save["type"] not in ("CountVectorizer", "VAR"):
                 model.key_columns = model_save["key_columns"]
     else:
-        model_type = does_model_exist(name=name, raise_error=False, return_model_type=True)
+        model_type = does_model_exist(
+            name=name, raise_error=False, return_model_type=True
+        )
         if model_type.lower() == "kmeans":
-            info = executeSQL("SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '" + name + "')", method="fetchfirstelem", print_time_sql=False).replace("\n", " ")
+            info = executeSQL(
+                "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
+                + name
+                + "')",
+                method="fetchfirstelem",
+                print_time_sql=False,
+            ).replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
 
             model = Normalizer(name)
             model.param_ = model.get_attr("details")
-            model.X = [
-                '"' + item + '"' for item in model.param_.values["column_name"]
-            ]
+            model.X = ['"' + item + '"' for item in model.param_.values["column_name"]]
             if "avg" in model.param_.values:
                 model.parameters["method"] = "zscore"
             elif "max" in model.param_.values:
@@ -300,14 +334,23 @@ model
                 model.parameters["method"] = "robust_zscore"
             return model
         else:
-            info = executeSQL("SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '" + name + "', attr_name = 'call_string')", method="fetchfirstelem", print_time_sql=False).replace("\n", " ")
+            info = executeSQL(
+                "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
+                + name
+                + "', attr_name = 'call_string')",
+                method="fetchfirstelem",
+                print_time_sql=False,
+            ).replace("\n", " ")
         if "SELECT " in info:
             info = info.split("SELECT ")[1].split("(")
         else:
             info = info.split("(")
         model_type = info[0].lower()
         info = info[1].split(")")[0].replace(" ", "").split("USINGPARAMETERS")
-        if model_type == "svm_classifier" and "class_weights='none'" not in " ".join(info).lower():
+        if (
+            model_type == "svm_classifier"
+            and "class_weights='none'" not in " ".join(info).lower()
+        ):
             parameters = "".join(info[1].split("class_weights=")[1].split("'"))
             parameters = parameters[3 : len(parameters)].split(",")
             del parameters[0]
@@ -412,6 +455,7 @@ model
                 Ridge,
                 ElasticNet,
             )
+
             if parameters_dict["regularization"] == "none":
                 model = LinearRegression(
                     name,
@@ -502,12 +546,18 @@ model
                 ]
             }
             values["value"] = [
-                float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]),
+                float(
+                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                ),
                 float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 float(
-                    result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]
+                    result.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                        "\n"
+                    )[0]
                 ),
-                float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0])
+                float(
+                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                )
                 / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 result.split("Converged: ")[1].split("\n")[0] == "True",
             ]
@@ -556,7 +606,7 @@ model
                     model.param_ = model.get_attr("integer_categories")
                 except:
                     model.param_ = model.get_attr("varchar_categories")
-        if not(input_relation):
+        if not (input_relation):
             model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
         else:
             model.input_relation = input_relation
@@ -577,29 +627,46 @@ model
             model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
-                classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(model.y, model.input_relation, model.y), method="fetchall", print_time_sql=False)
+                classes = executeSQL(
+                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                        model.y, model.input_relation, model.y
+                    ),
+                    method="fetchall",
+                    print_time_sql=False,
+                )
                 model.classes_ = [item[0] for item in classes]
             except:
                 model.classes_ = [0, 1]
         elif model_type in ("svm_classifier", "logistic_reg"):
             model.classes_ = [0, 1]
-        if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg"):
+        if model_type in (
+            "svm_classifier",
+            "svm_regressor",
+            "logistic_reg",
+            "linear_reg",
+        ):
             model.coef_ = model.get_attr("details")
         if model_type in ("xgb_classifier", "xgb_regressor"):
             v = version()
-            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
-                model.set_params({"col_sample_by_tree": float(parameters_dict["col_sample_by_tree"]),
-                                  "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),})
+                model.set_params(
+                    {
+                        "col_sample_by_tree": float(
+                            parameters_dict["col_sample_by_tree"]
+                        ),
+                        "col_sample_by_node": float(
+                            parameters_dict["col_sample_by_node"]
+                        ),
+                    }
+                )
     return model
+
 
 # ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-def matrix_rotation(Phi: list, 
-					gamma: float = 1.0, 
-					q: int = 20, 
-					tol: float = 1e-6):
+def matrix_rotation(Phi: list, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
     """
 ---------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
@@ -624,19 +691,30 @@ Returns
 model
     The model.
     """
-    check_types([("Phi", Phi, [list]),
-    			 ("gamma", gamma, [int, float]),
-    			 ("q", q, [int, float]),
-    			 ("tol", tol, [int, float])])
+    check_types(
+        [
+            ("Phi", Phi, [list]),
+            ("gamma", gamma, [int, float]),
+            ("q", q, [int, float]),
+            ("tol", tol, [int, float]),
+        ]
+    )
     Phi = np.array(Phi)
-    p,k = Phi.shape
+    p, k = Phi.shape
     R = eye(k)
-    d=0
+    d = 0
     for i in range(q):
         d_old = d
         Lambda = dot(Phi, R)
-        u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
-        R = dot(u,vh)
+        u, s, vh = svd(
+            dot(
+                Phi.T,
+                asarray(Lambda) ** 3
+                - (gamma / p) * dot(Lambda, diag(diag(dot(Lambda.T, Lambda)))),
+            )
+        )
+        R = dot(u, vh)
         d = sum(s)
-        if d_old!=0 and d/d_old < 1 + tol: break
+        if d_old != 0 and d / d_old < 1 + tol:
+            break
     return dot(Phi, R)

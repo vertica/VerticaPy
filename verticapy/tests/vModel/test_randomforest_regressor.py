@@ -26,7 +26,8 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
+
 
 @pytest.fixture(scope="module")
 def titanic_vd():
@@ -35,7 +36,8 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
+
 
 @pytest.fixture(scope="module")
 def rfr_data_vd():
@@ -43,15 +45,21 @@ def rfr_data_vd():
     current_cursor().execute(
         'CREATE TABLE IF NOT EXISTS public.rfr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
     )
-    current_cursor().execute("INSERT INTO rfr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')")
-    current_cursor().execute("INSERT INTO rfr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')")
+    current_cursor().execute(
+        "INSERT INTO rfr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')"
+    )
+    current_cursor().execute(
+        "INSERT INTO rfr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')"
+    )
     current_cursor().execute(
         "INSERT INTO rfr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
     )
     current_cursor().execute(
         "INSERT INTO rfr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
     )
-    current_cursor().execute("INSERT INTO rfr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')")
+    current_cursor().execute(
+        "INSERT INTO rfr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')"
+    )
     current_cursor().execute(
         "INSERT INTO rfr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
     )
@@ -69,10 +77,10 @@ def rfr_data_vd():
     )
     current_cursor().execute("COMMIT")
 
-    rfr_data = vDataFrame(input_relation="public.rfr_data", )
+    rfr_data = vDataFrame(input_relation="public.rfr_data",)
     yield rfr_data
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.rfr_data", )
+        drop(name="public.rfr_data",)
 
 
 @pytest.fixture(scope="module")
@@ -112,26 +120,24 @@ class TestRFR:
         assert model_repr.__repr__() == "<RandomForestRegressor>"
 
     def test_contour(self, titanic_vd):
-        model_test = RandomForestRegressor("model_contour", )
+        model_test = RandomForestRegressor("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare"],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'rfr_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_RF_REGRESSOR("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'rfr_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS rfr_model_test_drop")
-        model_test = RandomForestRegressor("rfr_model_test_drop", )
+        model_test = RandomForestRegressor("rfr_model_test_drop",)
         model_test.fit(
             "public.rfr_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -208,7 +214,7 @@ class TestRFR:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = RandomForestRegressor("model_test_plot", )
+        model_test = RandomForestRegressor("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -222,7 +228,9 @@ class TestRFR:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([['Male', 0, 'Cheap', 'Low']])[0])
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+        )
 
     def test_to_sql(self, model):
         current_cursor().execute(
@@ -235,15 +243,19 @@ class TestRFR:
 
     def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
-                              ['Female', 1, 'Expensive', 'Low']])
-        res_py = model.to_python()([['Male', 0, 'Cheap', 'Low'],
-                                    ['Female', 1, 'Expensive', 'Low']])
+        res = mmodel.predict(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
+        res_py = model.to_python()(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         vdf = vDataFrame("public.rfr_data")
-        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
 
@@ -335,7 +347,7 @@ class TestRFR:
 
     def test_model_from_vDF(self, rfr_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS rfr_from_vDF")
-        model_test = RandomForestRegressor("rfr_from_vDF", )
+        model_test = RandomForestRegressor("rfr_from_vDF",)
         model_test.fit(rfr_data_vd, ["gender"], "transportation")
 
         current_cursor().execute(
@@ -346,17 +358,19 @@ class TestRFR:
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_1 = model.to_graphviz(tree_id = 1,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_1 = model.to_graphviz(
+            tree_id=1,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled",},
+            arrow_style={"color": "blue",},
+            leaf_style={"shape": "circle", "style": "filled",},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
-        assert '0 -> 1' in gvz_tree_1
-        
+        assert "0 -> 1" in gvz_tree_1
+
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
 

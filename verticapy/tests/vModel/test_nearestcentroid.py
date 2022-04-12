@@ -13,7 +13,13 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.neighbors import NearestCentroid
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
+from verticapy import (
+    drop,
+    set_option,
+    vertica_conn,
+    create_verticapy_schema,
+    current_cursor,
+)
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,17 +32,15 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     create_verticapy_schema()
-    model_class = NearestCentroid("nc_model_test", )
+    model_class = NearestCentroid("nc_model_test",)
     model_class.drop()
-    model_class.fit(
-        "public.titanic", ["age", "fare"], "survived"
-    )
+    model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
 
@@ -60,12 +64,10 @@ class TestNearestCentroid:
 
     # TODO
     def test_contour(self, titanic_vd):
-        model_test = NearestCentroid("model_contour", )
+        model_test = NearestCentroid("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare"],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 40
@@ -75,10 +77,14 @@ class TestNearestCentroid:
         lift_ch = model.lift_chart(nbins=1000)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
-        assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(0.0895140664961637)
+        assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(
+            0.0895140664961637
+        )
         assert lift_ch["lift"][300] == pytest.approx(1.89693638787615)
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
-        assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(0.979539641943734)
+        assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(
+            0.979539641943734
+        )
         assert lift_ch["lift"][900] == pytest.approx(0.998589031091053)
         plt.close("all")
 
@@ -113,16 +119,12 @@ class TestNearestCentroid:
     def test_to_memmodel(self, titanic_vd, model):
         titanic = titanic_vd.copy()
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[11., 1993.],
-                              [1., 1999.]])
-        res_py = model.to_python()([[11., 1993.],
-                                    [1., 1999.]])
+        res = mmodel.predict([[11.0, 1993.0], [1.0, 1999.0]])
+        res_py = model.to_python()([[11.0, 1993.0], [1.0, 1999.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[11., 1993.],
-                                    [1., 1999.]])
-        res_py = model.to_python(return_proba = True)([[11., 1993.],
-                                                       [1., 1999.]])
+        res = mmodel.predict_proba([[11.0, 1993.0], [1.0, 1999.0]])
+        res_py = model.to_python(return_proba=True)([[11.0, 1993.0], [1.0, 1999.0]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]
@@ -130,26 +132,37 @@ class TestNearestCentroid:
         titanic["prediction_sql"] = mmodel.predict_sql(["age", "fare"])
         titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
-        titanic = model.predict(titanic, name = "prediction_vertica_sql", cutoff = 0.5)
-        titanic = model.predict(titanic, name = "prediction_proba_vertica_sql_0", pos_label = model.classes_[0])
-        titanic = model.predict(titanic, name = "prediction_proba_vertica_sql_1", pos_label = model.classes_[1])
+        titanic = model.predict(titanic, name="prediction_vertica_sql", cutoff=0.5)
+        titanic = model.predict(
+            titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
+        )
+        titanic = model.predict(
+            titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
+        )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         print(titanic[["prediction_sql", "prediction_vertica_sql"]])
         print(titanic.current_relation())
         assert score == pytest.approx(1.0)
-        score = titanic.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = titanic.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = titanic.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = titanic.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
 
     def test_drop(self):
-        model_test = NearestCentroid("model_test_drop", )
+        model_test = NearestCentroid("model_test_drop",)
         model_test.drop()
         model_test.fit("public.titanic", ["age"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert current_cursor().fetchone()[0] in ('model_test_drop', '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in (
+            "model_test_drop",
+            '"model_test_drop"',
+        )
 
         model_test.drop()
         current_cursor().execute(
@@ -158,15 +171,12 @@ class TestNearestCentroid:
         assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
-        assert model.get_params() == {'p': 2}
+        assert model.get_params() == {"p": 2}
 
     def test_get_predicts(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
         titanic_copy = model.predict(
-            titanic_copy,
-            X=["age", "fare"],
-            name="predicted_quality",
-            inplace=False,
+            titanic_copy, X=["age", "fare"], name="predicted_quality", inplace=False,
         )
 
         assert titanic_copy["predicted_quality"].mean() == pytest.approx(
@@ -190,8 +200,12 @@ class TestNearestCentroid:
         assert cls_rep1["cutoff"][0] == pytest.approx(0.352)
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(0.607429718875502)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(0.39558232931726905)
+        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(
+            0.607429718875502
+        )
+        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(
+            0.39558232931726905
+        )
         assert model.score(method="best_cutoff") == pytest.approx(0.352)
         assert model.score(method="bm") == pytest.approx(0.282259939548942)
         assert model.score(method="csi") == pytest.approx(0.3902877697841727)
@@ -213,20 +227,20 @@ class TestNearestCentroid:
         assert 0 == pytest.approx(
             model.to_python(return_str=False)([[5.006, 3.418]])[0]
         )
-        assert model.to_python(return_str=False, return_distance_clusters=True)([[5.006, 3.418]])[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
+        assert model.to_python(return_str=False, return_distance_clusters=True)(
+            [[5.006, 3.418]]
+        )[0][0] in (pytest.approx(32.519389961314424), pytest.approx(45.6436412237776))
 
     def test_to_sql(self, model):
-        current_cursor().execute(
-            "SELECT {}::int".format(
-                model.to_sql([3.0, 11.0])
-            )
-        )
+        current_cursor().execute("SELECT {}::int".format(model.to_sql([3.0, 11.0])))
         prediction = current_cursor().fetchone()
         assert prediction[0] == 0
 
     def test_model_from_vDF(self, titanic_vd):
-        model_test = NearestCentroid("nc_from_vDF", )
+        model_test = NearestCentroid("nc_from_vDF",)
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.6078234704112337)
+        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(
+            0.6078234704112337
+        )
         model_test.drop()

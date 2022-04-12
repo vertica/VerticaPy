@@ -381,7 +381,9 @@ papprox_ma: int, optional
             and not (self.exogenous)
         ):
             query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
-            self.ma_avg_ = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            self.ma_avg_ = executeSQL(
+                query, method="fetchfirstelem", print_time_sql=False
+            )
             self.deploy_predict_ = str(self.ma_avg_)
 
         # I(d)
@@ -431,9 +433,7 @@ papprox_ma: int, optional
                 executeSQL(query, print_time_sql=False)
                 self.X += AR + X
                 model.fit(
-                    input_relation=view_name,
-                    X=self.X,
-                    y=self.y,
+                    input_relation=view_name, X=self.X, y=self.y,
                 )
             except:
                 drop_if_exists(view_name, method="view")
@@ -577,9 +577,7 @@ papprox_ma: int, optional
             try:
                 executeSQL(query, print_time_sql=False)
                 model.fit(
-                    input_relation=view_name,
-                    X=ARq,
-                    y=self.y,
+                    input_relation=view_name, X=ARq, y=self.y,
                 )
             except:
                 drop_if_exists(view_name, method="view")
@@ -698,9 +696,7 @@ papprox_ma: int, optional
             "papprox_ma": self.parameters["papprox_ma"],
         }
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="SARIMAX",
-            model_save=model_save,
+            model_name=self.name, model_type="SARIMAX", model_save=model_save,
         )
         return self
 
@@ -1081,7 +1077,9 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            prediction = executeSQL(
+                query, method="fetchfirstelem", print_time_sql=False
+            )
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {} AS {} {}".format(
                 next_t,
@@ -1333,9 +1331,7 @@ solver: str, optional
             self.coef_ = []
             for elem in X:
                 model.fit(
-                    input_relation=view_name,
-                    X=AR,
-                    y=elem,
+                    input_relation=view_name, X=AR, y=elem,
                 )
                 self.coef_ += [model.coef_]
                 model.drop()
@@ -1359,9 +1355,7 @@ solver: str, optional
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="VAR",
-            model_save=model_save,
+            model_name=self.name, model_type="VAR", model_save=model_save,
         )
         return self
 

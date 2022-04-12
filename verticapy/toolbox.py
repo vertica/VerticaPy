@@ -72,6 +72,7 @@ def all_comb(X: list):
             all_configuration += combinations_list
     return all_configuration
 
+
 # ---#
 def arange(start: float, stop: float, step: float):
     check_types(
@@ -161,20 +162,32 @@ def category_from_type(ctype: str = ""):
     else:
         return "undefined"
 
+
 # ---#
 def current_conn():
     from verticapy.connect import read_auto_connect, connect
 
-    if not(verticapy.options["connection"]["conn"]) or verticapy.options["connection"]["conn"].closed():
-        if verticapy.options["connection"]["section"] and verticapy.options["connection"]["dsn"]:
-            connect(verticapy.options["connection"]["section"], verticapy.options["connection"]["dsn"])
+    if (
+        not (verticapy.options["connection"]["conn"])
+        or verticapy.options["connection"]["conn"].closed()
+    ):
+        if (
+            verticapy.options["connection"]["section"]
+            and verticapy.options["connection"]["dsn"]
+        ):
+            connect(
+                verticapy.options["connection"]["section"],
+                verticapy.options["connection"]["dsn"],
+            )
         else:
             read_auto_connect()
     return verticapy.options["connection"]["conn"]
 
+
 # ---#
 def current_cursor():
     return current_conn().cursor()
+
 
 # ---#
 def check_types(types_list: list = []):
@@ -189,7 +202,9 @@ def check_types(types_list: list = []):
                     elem[0], str, type(elem[1])
                 )
                 warnings.warn(warning_message, Warning)
-            if (elem[1] != None) and (elem[1].lower() not in elem[2] and elem[1] not in elem[2]):
+            if (elem[1] != None) and (
+                elem[1].lower() not in elem[2] and elem[1] not in elem[2]
+            ):
                 warning_message = "Parameter '{}' must be in [{}], found '{}'".format(
                     elem[0], "|".join(elem[2]), elem[1]
                 )
@@ -427,15 +442,32 @@ def default_model_parameters(model_type: str):
 
 
 # ---#
-def executeSQL(query: str, title: str = "", data: list = [], method: str = "cursor", path: str = "", print_time_sql: bool = True):
-    check_types([("query", query, [str]), ("title", title, [str]), ("method", method, ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"])])
+def executeSQL(
+    query: str,
+    title: str = "",
+    data: list = [],
+    method: str = "cursor",
+    path: str = "",
+    print_time_sql: bool = True,
+):
+    check_types(
+        [
+            ("query", query, [str]),
+            ("title", title, [str]),
+            (
+                "method",
+                method,
+                ["cursor", "fetchrow", "fetchall", "fetchfirstelem", "copy"],
+            ),
+        ]
+    )
     cursor = current_cursor()
     if verticapy.options["query_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
-    if (data):
+    if data:
         cursor.executemany(query, data)
-    elif (method == "copy"):
+    elif method == "copy":
         with open(path, "r") as fs:
             cursor.copy(query, fs)
     else:
@@ -470,12 +502,14 @@ def format_magic(x, return_cat: bool = False):
     else:
         return val
 
+
 # ---#
 def get_data_types_vdf(vdf):
     result, columns = [], vdf.get_columns()
     for col in columns:
         result += [(col, vdf[col].ctype())]
     return result
+
 
 # ---#
 def gen_name(L: list):
@@ -486,24 +520,29 @@ def gen_name(L: list):
         ]
     )
 
+
 # ---#
 def gen_tmp_name(schema: str = "", name: str = ""):
     session_user = get_session()
     L = session_user.split("_")
-    L[0] = ''.join(filter(str.isalnum, L[0]))
-    L[1] = ''.join(filter(str.isalnum, L[1]))
+    L[0] = "".join(filter(str.isalnum, L[0]))
+    L[1] = "".join(filter(str.isalnum, L[1]))
     random_int = random.randint(0, 10e9)
     name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
     if schema:
         name = "{}.{}".format(str_column(schema), name)
     return name
 
+
 # ---#
 def get_index(x: str, col_list: list, str_check: bool = True):
     for idx, col in enumerate(col_list):
-        if (str_check and str_column(x.lower()) == str_column(col.lower())) or (x == col):
+        if (str_check and str_column(x.lower()) == str_column(col.lower())) or (
+            x == col
+        ):
             return idx
     return None
+
 
 # ---#
 def get_narrow_tablesample(t, use_number_as_category: bool = False):
@@ -549,8 +588,11 @@ def get_session(add_username: bool = True):
     result = int(result, base=16)
     if add_username:
         query = "SELECT USERNAME();"
-        result = "{}_{}".format(executeSQL(query, method="fetchfirstelem", print_time_sql=False), result)
+        result = "{}_{}".format(
+            executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
+        )
     return result
+
 
 # ---#
 def indentSQL(query: str):
@@ -637,6 +679,7 @@ def insert_verticapy_schema(
             warnings.warn(warning_message, Warning)
             raise
 
+
 # ---#
 def reverse_score(metric: str):
     if metric in [
@@ -667,6 +710,7 @@ def isnotebook():
             return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
+
 
 # ---#
 def last_order_by(vdf):
@@ -716,6 +760,7 @@ def nearest_column(columns: list, column: str):
                 result = (elem, d)
     return result
 
+
 # ---#
 def ooe_details_transform(L: list):
     # Allows to split the One Hot Encoder Array by features categories
@@ -731,17 +776,27 @@ def ooe_details_transform(L: list):
     cat += [tmp_cat]
     return X, cat
 
+
 # ---#
-def tree_attributes_list(tree, X: list, model_type: str, return_probability: bool = False):
+def tree_attributes_list(
+    tree, X: list, model_type: str, return_probability: bool = False
+):
     # Returns trees list of attributes.
     def map_idx(x):
         for idx, elem in enumerate(X):
             if str_column(x).lower() == str_column(elem).lower():
                 return idx
+
     tree_list = []
     for idx in range(len(tree["tree_id"])):
-        tree.values["left_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["left_child_id"]]
-        tree.values["right_child_id"] = [idx if elem == tree.values["node_id"][idx] else elem for elem in tree.values["right_child_id"]]
+        tree.values["left_child_id"] = [
+            idx if elem == tree.values["node_id"][idx] else elem
+            for elem in tree.values["left_child_id"]
+        ]
+        tree.values["right_child_id"] = [
+            idx if elem == tree.values["node_id"][idx] else elem
+            for elem in tree.values["right_child_id"]
+        ]
         tree.values["node_id"][idx] = idx
         tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
         if model_type == "XGBoostClassifier" and isinstance(tree["log_odds"][idx], str):
@@ -749,12 +804,20 @@ def tree_attributes_list(tree, X: list, model_type: str, return_probability: boo
             for elem in val:
                 all_val[elem.split(":")[0]] = float(elem.split(":")[1])
             tree.values["log_odds"][idx] = all_val
-    tree_list = [tree["left_child_id"], tree["right_child_id"], tree["split_predictor"], tree["split_value"], tree["prediction"], tree["is_categorical_split"]]
+    tree_list = [
+        tree["left_child_id"],
+        tree["right_child_id"],
+        tree["split_predictor"],
+        tree["split_value"],
+        tree["prediction"],
+        tree["is_categorical_split"],
+    ]
     if model_type == "XGBoostClassifier":
         tree_list += [tree["log_odds"]]
     if return_probability:
         tree_list += [tree["probability/variance"]]
     return tree_list
+
 
 # ---#
 def nb_var_info(model):
@@ -770,7 +833,9 @@ def nb_var_info(model):
         if vdf[elem].isbool():
             var_info[elem]["type"] = "bernoulli"
             for c in model.classes_:
-                var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))["probability"][bernoulli_incr]
+                var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))[
+                    "probability"
+                ][bernoulli_incr]
             bernoulli_incr += 1
         elif vdf[elem].category() == "int":
             var_info[elem]["type"] = "multinomial"
@@ -782,7 +847,10 @@ def nb_var_info(model):
             var_info[elem]["type"] = "gaussian"
             for c in model.classes_:
                 gaussian = model.get_attr("gaussian.{}".format(c))
-                var_info[elem][c] = {"mu": gaussian["mu"][gaussian_incr], "sigma_sq": gaussian["sigma_sq"][gaussian_incr]}
+                var_info[elem][c] = {
+                    "mu": gaussian["mu"][gaussian_incr],
+                    "sigma_sq": gaussian["sigma_sq"][gaussian_incr],
+                }
             gaussian_incr += 1
         else:
             var_info[elem]["type"] = "categorical"
@@ -808,6 +876,7 @@ def nb_var_info(model):
     for elem in var_info_simplified:
         del elem["rank"]
     return var_info_simplified
+
 
 # ---#
 def order_discretized_classes(categories):
@@ -1190,7 +1259,8 @@ def str_function(key: str, method: str = ""):
         start = 6 if key[0:6] == "exact_" else 0
         if float(key[start:-1]) == int(float(key[start:-1])):
             key = "{}%".format(int(float(key[start:-1])))
-        if start == 6: key = "exact_" + key
+        if start == 6:
+            key = "exact_" + key
     elif key == "row":
         key = "row_number"
     elif key == "first":
@@ -1355,9 +1425,7 @@ def vertica_param_dict(model):
                     ", ".join([str(item) for item in model.parameters[param]])
                 )
             else:
-                parameters["class_weights"] = "'{}'".format(
-                    model.parameters[param]
-                )
+                parameters["class_weights"] = "'{}'".format(model.parameters[param])
         elif isinstance(model.parameters[param], (str, dict)):
             parameters[vertica_param_name(param)] = "'{}'".format(
                 model.parameters[param]
@@ -1386,61 +1454,95 @@ def str_category(expr):
             category = ""
     return category
 
+
 # ---#
 def xgb_prior(model):
     # Computing XGB prior probabilities
     from verticapy.utilities import version
 
-    condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + ["{} IS NOT NULL".format(model.y)]
+    condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + [
+        "{} IS NOT NULL".format(model.y)
+    ]
     v = version()
-    v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
-    if model.type == "XGBoostRegressor" or (len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0):
-        prior_ = executeSQL("SELECT AVG({}) FROM {} WHERE {}".format(model.y, model.input_relation, " AND ".join(condition)), method="fetchfirstelem", print_time_sql=False)
-    elif not(v):
+    v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+    if model.type == "XGBoostRegressor" or (
+        len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0
+    ):
+        prior_ = executeSQL(
+            "SELECT AVG({}) FROM {} WHERE {}".format(
+                model.y, model.input_relation, " AND ".join(condition)
+            ),
+            method="fetchfirstelem",
+            print_time_sql=False,
+        )
+    elif not (v):
         prior_ = []
         for elem in model.classes_:
-            avg = executeSQL("SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(model.input_relation, " AND ".join(condition), model.y, elem), method="fetchfirstelem", print_time_sql=False)
-            avg /= executeSQL("SELECT COUNT(*) FROM {} WHERE {}".format(model.input_relation, " AND ".join(condition)), method="fetchfirstelem", print_time_sql=False)
+            avg = executeSQL(
+                "SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
+                    model.input_relation, " AND ".join(condition), model.y, elem
+                ),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
+            avg /= executeSQL(
+                "SELECT COUNT(*) FROM {} WHERE {}".format(
+                    model.input_relation, " AND ".join(condition)
+                ),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
             logodds = np.log(avg / (1 - avg))
             prior_ += [logodds]
     else:
         prior_ = [0.0 for elem in model.classes_]
     return prior_
 
+
 # ---#
 def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16):
     columns_tmp = columns.copy()
-    if not(columns_tmp):
+    if not (columns_tmp):
         columns_tmp = vdf.get_columns()
         remove_cols = []
         for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text") or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+            if vdf[col].category() not in ("float", "int", "text") or (
+                vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality
+            ):
                 remove_cols += [col]
     else:
         remove_cols = []
         columns_tmp = vdf_columns_names(columns_tmp, vdf)
         for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text") or (vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality):
+            if vdf[col].category() not in ("float", "int", "text") or (
+                vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality
+            ):
                 remove_cols += [col]
                 if vdf[col].category() not in ("float", "int", "text"):
-                    warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(col, vdf[col].category())
+                    warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(
+                        col, vdf[col].category()
+                    )
                 else:
-                    warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(col, max_cardinality)
+                    warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(
+                        col, max_cardinality
+                    )
                 warnings.warn(warning_message, Warning)
     for col in remove_cols:
         columns_tmp.remove(col)
     return columns_tmp
 
+
 def flat_dict(d: dict) -> str:
     # converts dictionary to string with a specific format
     res = []
     for elem in d:
-        q = '"' if isinstance(d[elem], str) else ''
+        q = '"' if isinstance(d[elem], str) else ""
         res += ["{}={}{}{}".format(elem, q, d[elem], q)]
     res = ", ".join(res)
     if res:
         res = ", {}".format(res)
     return res
+
 
 # ---#
 class str_sql:
@@ -1465,9 +1567,7 @@ class str_sql:
     def __add__(self, x):
         val = format_magic(x)
         op = (
-            "||"
-            if self.category() == "text" and isinstance(x, (str, str_sql))
-            else "+"
+            "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
         return str_sql("({}) {} ({})".format(self.alias, op, val), self.category())
 
@@ -1475,9 +1575,7 @@ class str_sql:
     def __radd__(self, x):
         val = format_magic(x)
         op = (
-            "||"
-            if self.category() == "text" and isinstance(x, (str, str_sql))
-            else "+"
+            "||" if self.category() == "text" and isinstance(x, (str, str_sql)) else "+"
         )
         return str_sql("({}) {} ({})".format(val, op, self.alias), self.category())
 

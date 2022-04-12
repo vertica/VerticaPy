@@ -89,9 +89,7 @@ nbtype: str, optional
      - gaussian    : Casts the variables to float.
 	"""
 
-    def __init__(
-        self, name: str, alpha: float = 1.0, nbtype: str = "auto"
-    ):
+    def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
         check_types(
             [
                 ("name", name, [str]),
@@ -133,7 +131,7 @@ class GaussianNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'gaussian'"""
 
     def __init__(
-        self, name: str, 
+        self, name: str,
     ):
         super().__init__(name, nbtype="gaussian")
 

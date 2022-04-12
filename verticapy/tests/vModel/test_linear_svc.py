@@ -26,7 +26,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
@@ -36,13 +36,13 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     current_cursor().execute("DROP MODEL IF EXISTS lsvc_model_test")
-    model_class = LinearSVC("lsvc_model_test", )
+    model_class = LinearSVC("lsvc_model_test",)
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
@@ -91,12 +91,10 @@ class TestLinearSVC:
         assert conf_mat2[1][1] == 391
 
     def test_contour(self, titanic_vd):
-        model_test = LinearSVC("model_contour", )
+        model_test = LinearSVC("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare"],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -110,7 +108,7 @@ class TestLinearSVC:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS lsvc_model_test_drop")
-        model_test = LinearSVC("lsvc_model_test_drop", )
+        model_test = LinearSVC("lsvc_model_test_drop",)
         model_test.fit("public.titanic", ["age", "fare"], "survived")
 
         current_cursor().execute(
@@ -144,7 +142,7 @@ class TestLinearSVC:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LinearSVC("model_test_plot", )
+        model_test = LinearSVC("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 11
@@ -155,7 +153,9 @@ class TestLinearSVC:
         assert len(result.get_default_bbox_extra_artists()) == 11
         plt.close("all")
         model_test.drop()
-        model_test.fit(winequality_vd, ["alcohol", "residual_sugar", "fixed_acidity"], "good")
+        model_test.fit(
+            winequality_vd, ["alcohol", "residual_sugar", "fixed_acidity"], "good"
+        )
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 5
         plt.close("all")
@@ -168,27 +168,27 @@ class TestLinearSVC:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0]])[0])
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0]])[0]
+        )
         current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
                 model.name
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0]])[0][1])
+        assert prediction == pytest.approx(
+            model.to_python(return_proba=True, return_str=False)([[3.0, 11.0]])[0][1]
+        )
 
     def test_to_memmodel(self, model, titanic_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0],
-                              [11.0, 1.0]])
-        res_py = model.to_python()([[3.0, 11.0],
-                                   [11.0, 1.0]])
+        res = mmodel.predict([[3.0, 11.0], [11.0, 1.0]])
+        res_py = model.to_python()([[3.0, 11.0], [11.0, 1.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[3.0, 11.0],
-                                    [11.0, 1.0]])
-        res_py = model.to_python(return_proba = True)([[3.0, 11.0],
-                                                       [11.0, 1.0]])
+        res = mmodel.predict_proba([[3.0, 11.0], [11.0, 1.0]])
+        res_py = model.to_python(return_proba=True)([[3.0, 11.0], [11.0, 1.0]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]
@@ -197,14 +197,20 @@ class TestLinearSVC:
         vdf["prediction_sql"] = mmodel.predict_sql(["age", "fare"])
         vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
-        model.predict(vdf, name = "prediction_vertica_sql", cutoff = 0.5)
-        model.predict(vdf, name = "prediction_proba_vertica_sql_1")
-        vdf["prediction_proba_vertica_sql_0"] = 1 - vdf["prediction_proba_vertica_sql_1"]
+        model.predict(vdf, name="prediction_vertica_sql", cutoff=0.5)
+        model.predict(vdf, name="prediction_proba_vertica_sql_1")
+        vdf["prediction_proba_vertica_sql_0"] = (
+            1 - vdf["prediction_proba_vertica_sql_1"]
+        )
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
 
     def test_to_sql(self, model):
@@ -381,7 +387,7 @@ class TestLinearSVC:
 
     def test_model_from_vDF(self, titanic_vd):
         current_cursor().execute("DROP MODEL IF EXISTS lsvc_from_vDF")
-        model_test = LinearSVC("lsvc_from_vDF", )
+        model_test = LinearSVC("lsvc_from_vDF",)
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
         current_cursor().execute(

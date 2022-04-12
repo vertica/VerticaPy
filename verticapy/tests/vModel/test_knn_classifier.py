@@ -13,7 +13,13 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.neighbors import KNeighborsClassifier
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
+from verticapy import (
+    drop,
+    set_option,
+    vertica_conn,
+    create_verticapy_schema,
+    current_cursor,
+)
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,17 +32,15 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     create_verticapy_schema()
-    model_class = KNeighborsClassifier("knn_model_test", )
+    model_class = KNeighborsClassifier("knn_model_test",)
     model_class.drop()
-    model_class.fit(
-        "public.titanic", ["age", "fare"], "survived"
-    )
+    model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
 
@@ -59,12 +63,10 @@ class TestKNeighborsClassifier:
         assert m_att == model.classes_
 
     def test_contour(self, titanic_vd):
-        model_test = KNeighborsClassifier("model_contour", )
+        model_test = KNeighborsClassifier("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare"],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -74,7 +76,9 @@ class TestKNeighborsClassifier:
         lift_ch = model.lift_chart(nbins=1000)
 
         assert lift_ch["decision_boundary"][300] == pytest.approx(0.3)
-        assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(0.353846153846154)
+        assert lift_ch["positive_prediction_ratio"][300] == pytest.approx(
+            0.353846153846154
+        )
         assert lift_ch["lift"][300] == pytest.approx(1.81819061441703)
         assert lift_ch["decision_boundary"][900] == pytest.approx(0.9)
         assert lift_ch["positive_prediction_ratio"][900] == pytest.approx(1.0)
@@ -121,13 +125,16 @@ class TestKNeighborsClassifier:
         assert result_sql == expected_sql
 
     def test_drop(self):
-        model_test = KNeighborsClassifier("model_test_drop", )
+        model_test = KNeighborsClassifier("model_test_drop",)
         model_test.drop()
         model_test.fit("public.titanic", ["age"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert current_cursor().fetchone()[0] in ('model_test_drop', '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in (
+            "model_test_drop",
+            '"model_test_drop"',
+        )
 
         model_test.drop()
         current_cursor().execute(
@@ -136,15 +143,12 @@ class TestKNeighborsClassifier:
         assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
-        assert model.get_params() == {'n_neighbors': 5, 'p': 2}
+        assert model.get_params() == {"n_neighbors": 5, "p": 2}
 
     def test_get_predicts(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
         titanic_copy = model.predict(
-            titanic_copy,
-            X=["age", "fare"],
-            name="predicted_quality",
-            inplace=False,
+            titanic_copy, X=["age", "fare"], name="predicted_quality", inplace=False,
         )
 
         assert titanic_copy["predicted_quality"].mean() == pytest.approx(
@@ -168,8 +172,12 @@ class TestKNeighborsClassifier:
         assert cls_rep1["cutoff"][0] == pytest.approx(0.6)
 
     def test_score(self, model):
-        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(0.5691554467564259)
-        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(0.4773561811505508)
+        assert model.score(cutoff=0.9, method="accuracy") == pytest.approx(
+            0.5691554467564259
+        )
+        assert model.score(cutoff=0.1, method="accuracy") == pytest.approx(
+            0.4773561811505508
+        )
         assert model.score(method="best_cutoff") == pytest.approx(0.6)
         assert model.score(method="bm") == pytest.approx(0.0)
         assert model.score(method="csi") == pytest.approx(0.4773561811505508)
@@ -188,8 +196,10 @@ class TestKNeighborsClassifier:
         assert model.get_params()["p"] == 1
 
     def test_model_from_vDF(self, titanic_vd):
-        model_test = KNeighborsClassifier("knn_from_vDF", )
+        model_test = KNeighborsClassifier("knn_from_vDF",)
         model_test.drop()
         model_test.fit(titanic_vd, ["age"], "survived")
-        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(0.5890710382513661)
+        assert model_test.score(cutoff=0.9, method="accuracy") == pytest.approx(
+            0.5890710382513661
+        )
         model_test.drop()

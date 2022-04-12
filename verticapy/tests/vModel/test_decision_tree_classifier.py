@@ -57,10 +57,11 @@ def dtc_data_vd():
     )
     current_cursor().execute("COMMIT")
 
-    dtc_data = vDataFrame(input_relation="public.dtc_data", )
+    dtc_data = vDataFrame(input_relation="public.dtc_data",)
     yield dtc_data
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.dtc_data", )
+        drop(name="public.dtc_data",)
+
 
 @pytest.fixture(scope="module")
 def titanic_vd():
@@ -69,7 +70,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
@@ -108,7 +109,9 @@ def model(dtc_data_vd):
 
 class TestDecisionTreeClassifier:
     def test_repr(self, model):
-        assert "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
+        assert (
+            "SELECT rf_classifier('public.decision_tc_model_test'," in model.__repr__()
+        )
         model_repr = DecisionTreeClassifier("RF_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestClassifier>"
@@ -147,28 +150,24 @@ class TestDecisionTreeClassifier:
         assert conf_mat2["Train"] == [0, 0, 3]
 
     def test_contour(self, titanic_vd):
-        model_test = DecisionTreeClassifier("model_contour", )
+        model_test = DecisionTreeClassifier("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare"],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_CLASSIFIER(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'decision_tc_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_RF_CLASSIFIER("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'decision_tc_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS decision_tc_model_test_drop")
-        model_test = DecisionTreeClassifier(
-            "decision_tc_model_test_drop", 
-        )
+        model_test = DecisionTreeClassifier("decision_tc_model_test_drop",)
         model_test.fit(
             "public.dtc_data",
             ["Gender", '"owned cars"', "cost", "income"],
@@ -213,12 +212,18 @@ class TestDecisionTreeClassifier:
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == model_test.to_python(return_str=False)([[30.0, 45.0, 'male']])[0]
+        assert (
+            prediction
+            == model_test.to_python(return_str=False)([[30.0, 45.0, "male"]])[0]
+        )
         current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
+        assert (
+            prediction
+            == model_test.to_python(return_str=False)([[30.0, 145.0, "female"]])[0]
+        )
 
     def test_to_sql(self, model, titanic_vd):
         model_test = DecisionTreeClassifier("rfc_sql_test")
@@ -235,16 +240,20 @@ class TestDecisionTreeClassifier:
 
     def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([["Male", 0, "Cheap", "Low"],
-                              ["Female", 3, "Expensive", "Hig"]])
-        res_py = model.to_python()([["Male", 0, "Cheap", "Low"],
-                                    ["Female", 3, "Expensive", "Hig"]])
+        res = mmodel.predict(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
+        res_py = model.to_python()(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low"],
-                                    ["Female", 3, "Expensive", "Hig"]])
-        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low"],
-                                                       ["Female", 3, "Expensive", "Hig"]])
+        res = mmodel.predict_proba(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
+        res_py = model.to_python(return_proba=True)(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[0][2] == res_py[0][2]
@@ -252,21 +261,41 @@ class TestDecisionTreeClassifier:
         assert res[1][1] == res_py[1][1]
         assert res[1][2] == res_py[1][2]
         vdf = vDataFrame("public.dtc_data")
-        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
-        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[0]
-        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[1]
-        vdf["prediction_proba_sql_2"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[2]
-        model.predict(vdf, name = "prediction_vertica_sql")
-        model.predict(vdf, name = "prediction_proba_vertica_sql_0", pos_label = model.classes_[0])
-        model.predict(vdf, name = "prediction_proba_vertica_sql_1", pos_label = model.classes_[1])
-        model.predict(vdf, name = "prediction_proba_vertica_sql_2", pos_label = model.classes_[2])
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )
+        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[0]
+        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[1]
+        vdf["prediction_proba_sql_2"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[2]
+        model.predict(vdf, name="prediction_vertica_sql")
+        model.predict(
+            vdf, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
+        )
+        model.predict(
+            vdf, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
+        )
+        model.predict(
+            vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
+        )
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+        )
         assert score == pytest.approx(1.0)
 
     def test_get_attr(self, model):
@@ -445,7 +474,7 @@ class TestDecisionTreeClassifier:
 
     def test_model_from_vDF(self, dtc_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS tc_from_vDF")
-        model_test = DecisionTreeClassifier("tc_from_vDF", )
+        model_test = DecisionTreeClassifier("tc_from_vDF",)
         model_test.fit(
             dtc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
         )
@@ -458,16 +487,18 @@ class TestDecisionTreeClassifier:
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_0 = model.to_graphviz(tree_id = 0,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_0 = model.to_graphviz(
+            tree_id=0,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled",},
+            arrow_style={"color": "blue",},
+            leaf_style={"shape": "circle", "style": "filled",},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
-        assert '0 -> 1' in gvz_tree_0
+        assert "0 -> 1" in gvz_tree_0
 
     def test_get_tree(self, model):
         tree_1 = model.get_tree()

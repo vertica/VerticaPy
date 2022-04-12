@@ -25,7 +25,7 @@ def winequality_vd():
 
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality", )
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
@@ -46,10 +46,10 @@ def bsk_data_vd():
     current_cursor().execute("INSERT INTO bsk_data VALUES (10, 7.0, 3.2, 4.7, 1.4)")
     current_cursor().execute("COMMIT")
 
-    bsk_data = vDataFrame(input_relation="public.bsk_data", )
+    bsk_data = vDataFrame(input_relation="public.bsk_data",)
     yield bsk_data
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.bsk_data", )
+        drop(name="public.bsk_data",)
 
 
 @pytest.fixture(scope="module")
@@ -60,9 +60,7 @@ def model(bsk_data_vd):
         "SELECT BISECTING_KMEANS('bsk_model_test', 'public.bsk_data', '*', 3 USING PARAMETERS exclude_columns='id', kmeans_seed=11, id_column='id')"
     )
 
-    model_class = BisectingKMeans(
-        "bsk_model_test", n_cluster=3, max_iter=10
-    )
+    model_class = BisectingKMeans("bsk_model_test", n_cluster=3, max_iter=10)
     model_class.metrics_ = model_class.get_attr("Metrics")
     model_class.cluster_centers_ = model_class.get_attr("BKTree")
     model_class.X = ["col1", "col2", "col3", "col4"]
@@ -86,7 +84,7 @@ class TestBisectingKMeans:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS bsk_model_test_drop")
-        model_test = BisectingKMeans("bsk_model_test_drop", )
+        model_test = BisectingKMeans("bsk_model_test_drop",)
         model_test.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
         current_cursor().execute(
@@ -156,7 +154,7 @@ class TestBisectingKMeans:
 
     def test_model_from_vDF(self, bsk_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS bsk_vDF")
-        model_test = BisectingKMeans("bsk_vDF", )
+        model_test = BisectingKMeans("bsk_vDF",)
         model_test.fit(bsk_data_vd, ["col1", "col2", "col3", "col4"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'bsk_vDF'"
@@ -187,7 +185,7 @@ class TestBisectingKMeans:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = BisectingKMeans("model_test_plot", )
+        model_test = BisectingKMeans("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 16
@@ -195,16 +193,18 @@ class TestBisectingKMeans:
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_0 = model.to_graphviz(tree_id = 0,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_0 = model.to_graphviz(
+            tree_id=0,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled",},
+            arrow_style={"color": "blue",},
+            leaf_style={"shape": "circle", "style": "filled",},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
-        assert '0 -> 1' in gvz_tree_0
+        assert "0 -> 1" in gvz_tree_0
 
     def test_plot_tree(self, model):
         result = model.plot_tree()
@@ -232,14 +232,14 @@ class TestBisectingKMeans:
 
     def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244],
-                              [3.0, 11.0, 1993., 0.]])
-        res_py = model.to_python()([[5.006, 3.418, 1.464, 0.244],
-                                    [3.0, 11.0, 1993., 0.]])
+        res = mmodel.predict([[5.006, 3.418, 1.464, 0.244], [3.0, 11.0, 1993.0, 0.0]])
+        res_py = model.to_python()(
+            [[5.006, 3.418, 1.464, 0.244], [3.0, 11.0, 1993.0, 0.0]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame('public.bsk_data')
+        vdf = vDataFrame("public.bsk_data")
         vdf["prediction_sql"] = mmodel.predict_sql(["col1", "col2", "col3", "col4"])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)

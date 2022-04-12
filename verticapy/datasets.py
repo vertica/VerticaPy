@@ -90,9 +90,8 @@ Returns
 -------
 vDataFrame
     Generated dataset.
-    """    
-    check_types([("features_ranges", features_ranges, [dict]), 
-                 ("nrows", nrows, [int])])
+    """
+    check_types([("features_ranges", features_ranges, [dict]), ("nrows", nrows, [int])])
     version(condition=[9, 3, 0])
     sql = []
     for param in features_ranges:
@@ -103,29 +102,37 @@ vDataFrame
             else:
                 n = len(val)
                 val = ", ".join(["'" + str(elem) + "'" for elem in val])
-                sql += [f"(ARRAY[{val}])[RANDOMINT({n})] AS \"{param}\""]
+                sql += [f'(ARRAY[{val}])[RANDOMINT({n})] AS "{param}"']
         elif features_ranges[param]["type"] == float:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
-            sql += [f"({lower} + RANDOM() * ({upper} - {lower}))::FLOAT AS \"{param}\""]
+            sql += [f'({lower} + RANDOM() * ({upper} - {lower}))::FLOAT AS "{param}"']
         elif features_ranges[param]["type"] == int:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
-            sql += [f"({lower} + RANDOM() * ({upper} - {lower}))::INT AS \"{param}\""]
+            sql += [f'({lower} + RANDOM() * ({upper} - {lower}))::INT AS "{param}"']
         elif features_ranges[param]["type"] == datetime.date:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
-            sql += [f"('{start_date}'::DATE + RANDOMINT({number_of_days})) AS \"{param}\""]
+            sql += [
+                f"('{start_date}'::DATE + RANDOMINT({number_of_days})) AS \"{param}\""
+            ]
         elif features_ranges[param]["type"] == datetime.datetime:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
-            sql += [f"('{start_date}'::TIMESTAMP + {number_of_days} * RANDOM()) AS \"{param}\""]
+            sql += [
+                f"('{start_date}'::TIMESTAMP + {number_of_days} * RANDOM()) AS \"{param}\""
+            ]
         elif features_ranges[param]["type"] == bool:
-            sql += [f"RANDOMINT(2)::BOOL AS \"{param}\""]
+            sql += [f'RANDOMINT(2)::BOOL AS "{param}"']
         else:
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
-    sql = "(SELECT " + ", ".join(sql) + f"FROM (SELECT tm FROM (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
+    sql = (
+        "(SELECT "
+        + ", ".join(sql)
+        + f"FROM (SELECT tm FROM (SELECT '03-11-1993'::TIMESTAMP + INTERVAL '1 second' AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{nrows} seconds' AS t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
+    )
     return vdf_from_relation(sql)
 
 
@@ -162,7 +169,7 @@ Returns
 -------
 vDataFrame
     generated dataset.
-    """    
+    """
     check_types([("features_ranges", features_ranges, [dict])])
     sql = []
     for idx, param in enumerate(features_ranges):
@@ -174,34 +181,46 @@ vDataFrame
             val = features_ranges[param]["values"]
             if isinstance(val, str):
                 val = [val]
-            val = " UNION ALL ".join([f"(SELECT '{elem}' AS \"{param}\")" for elem in val])
+            val = " UNION ALL ".join(
+                [f"(SELECT '{elem}' AS \"{param}\")" for elem in val]
+            )
             sql += [f"({val}) x{idx}"]
         elif features_ranges[param]["type"] == float:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
             ts_table = f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM (SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{bins} days' AS t) x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
             h = (upper - lower) / bins
-            sql += [f"(SELECT ({lower} + {h} * tm)::FLOAT AS \"{param}\" FROM {ts_table}) x{idx}"]
+            sql += [
+                f'(SELECT ({lower} + {h} * tm)::FLOAT AS "{param}" FROM {ts_table}) x{idx}'
+            ]
         elif features_ranges[param]["type"] == int:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
             ts_table = f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM (SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{bins} days' AS t) x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
             h = (upper - lower) / bins
-            sql += [f"(SELECT ({lower} + {h} * tm)::INT AS \"{param}\" FROM {ts_table}) x{idx}"]
+            sql += [
+                f'(SELECT ({lower} + {h} * tm)::INT AS "{param}" FROM {ts_table}) x{idx}'
+            ]
         elif features_ranges[param]["type"] == datetime.date:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             ts_table = f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM (SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{bins} days' AS t) x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
             h = number_of_days / bins
-            sql += [f"(SELECT ('{start_date}'::DATE + {h} * tm)::DATE AS \"{param}\" FROM {ts_table}) x{idx}"]
+            sql += [
+                f"(SELECT ('{start_date}'::DATE + {h} * tm)::DATE AS \"{param}\" FROM {ts_table}) x{idx}"
+            ]
         elif features_ranges[param]["type"] == datetime.datetime:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
             ts_table = f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM (SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT '03-11-1993'::TIMESTAMP + INTERVAL '{bins} days' AS t) x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
             h = number_of_days / bins
-            sql += [f"(SELECT ('{start_date}'::DATE + {h} * tm)::TIMESTAMP AS \"{param}\" FROM {ts_table}) x{idx}"]
+            sql += [
+                f"(SELECT ('{start_date}'::DATE + {h} * tm)::TIMESTAMP AS \"{param}\" FROM {ts_table}) x{idx}"
+            ]
         elif features_ranges[param]["type"] == bool:
-            sql += [f"((SELECT False AS \"{param}\") UNION ALL (SELECT True AS \"{param}\")) x{idx}"]
+            sql += [
+                f'((SELECT False AS "{param}") UNION ALL (SELECT True AS "{param}")) x{idx}'
+            ]
         else:
             ptype = features_ranges[param]["type"]
             raise ParameterError(f"Parameter {param}: Type {ptype} is not supported.")
@@ -210,7 +229,9 @@ vDataFrame
 
 
 # ---#
-def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset_name: str):
+def load_dataset(
+    schema: str, name: str, str_create: str, str_copy: str, dataset_name: str
+):
     """
     General Function to ingest a dataset
     """
@@ -219,13 +240,20 @@ def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset
         vdf = vDataFrame(name, schema=schema)
     except:
         name = str_column(name)
-        if not(schema):
+        if not (schema):
             schema = "v_temp_schema"
             temp = "LOCAL TEMPORARY "
         else:
             schema = str_column(schema)
             temp = ""
-        query = "CREATE {}TABLE {}({}){};".format(temp, str_column(schema) + "." + str_column(name) if schema != 'v_temp_schema' else str_column(name), str_create, " ON COMMIT PRESERVE ROWS" if temp else "")
+        query = "CREATE {}TABLE {}({}){};".format(
+            temp,
+            str_column(schema) + "." + str_column(name)
+            if schema != "v_temp_schema"
+            else str_column(name),
+            str_create,
+            " ON COMMIT PRESERVE ROWS" if temp else "",
+        )
         executeSQL(query, title="Creating the {} table.".format(dataset_name))
         try:
             path = os.path.dirname(verticapy.__file__) + "/data/{}.csv".format(
@@ -237,13 +265,23 @@ def load_dataset(schema: str, name: str, str_create: str, str_copy: str, dataset
             import vertica_python
 
             if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
-                executeSQL(query.format("STDIN"), title="Ingesting the data.", method="copy", path=path)
+                executeSQL(
+                    query.format("STDIN"),
+                    title="Ingesting the data.",
+                    method="copy",
+                    path=path,
+                )
             else:
-                executeSQL(query.format("LOCAL '{}'".format(path)), title="Ingesting the file.")
+                executeSQL(
+                    query.format("LOCAL '{}'".format(path)), title="Ingesting the file."
+                )
             executeSQL("COMMIT;", title="Commit.")
             vdf = vDataFrame(name, schema=schema)
         except:
-            executeSQL("DROP TABLE {}.{}".format(str_column(schema), str_column(name)), title="The ingestion failed. The table is dropped.")
+            executeSQL(
+                "DROP TABLE {}.{}".format(str_column(schema), str_column(name)),
+                title="The ingestion failed. The table is dropped.",
+            )
             raise
     return vdf
 

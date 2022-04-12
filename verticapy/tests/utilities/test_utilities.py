@@ -116,15 +116,21 @@ class TestUtilities:
         result = current_cursor().fetchall()
         assert result == []
         # text index
-        current_cursor().execute("CREATE TEXT INDEX drop_index ON drop_data (id, transportation);")
+        current_cursor().execute(
+            "CREATE TEXT INDEX drop_index ON drop_data (id, transportation);"
+        )
         drop("drop_index")
         with pytest.raises(vertica_python.errors.MissingRelation):
             current_cursor().execute("SELECT * FROM drop_index;")
         # model
         current_cursor().execute("DROP MODEL IF EXISTS public.verticapy_model_test")
-        current_cursor().execute("SELECT NAIVE_BAYES('public.verticapy_model_test', 'public.drop_data', 'transportation', 'gender, cost');")
+        current_cursor().execute(
+            "SELECT NAIVE_BAYES('public.verticapy_model_test', 'public.drop_data', 'transportation', 'gender, cost');"
+        )
         drop("verticapy_model_test")
-        current_cursor().execute("SELECT model_name FROM models WHERE model_name = 'verticapy_model_test' GROUP BY 1;")
+        current_cursor().execute(
+            "SELECT model_name FROM models WHERE model_name = 'verticapy_model_test' GROUP BY 1;"
+        )
         result = current_cursor().fetchall()
         assert result == []
         # verticapy model
@@ -134,7 +140,9 @@ class TestUtilities:
         model = KNeighborsClassifier("verticapy_model_test")
         model.fit("public.drop_data", ["gender", "cost"], "transportation")
         drop("verticapy_model_test")
-        current_cursor().execute("SELECT model_name FROM verticapy.models WHERE model_name = 'verticapy_model_test' GROUP BY 1;")
+        current_cursor().execute(
+            "SELECT model_name FROM verticapy.models WHERE model_name = 'verticapy_model_test' GROUP BY 1;"
+        )
         result = current_cursor().fetchall()
         assert result == []
         drop("verticapy", method="schema")
@@ -152,7 +160,9 @@ class TestUtilities:
         assert result['verticapy test *+"'] == [1]
 
     def test_get_data_types(self):
-        result = get_data_types("SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3")
+        result = get_data_types(
+            "SELECT 1 AS col1, 'abc' AS col2, '5 minutes'::interval AS col3"
+        )
         assert result == [
             ["col1", "Integer"],
             ["col2", "Varchar(3)"],
@@ -161,6 +171,7 @@ class TestUtilities:
 
     def test_insert_into(self):
         from verticapy.datasets import load_iris
+
         # using copy
         iris = load_iris()
         result = insert_into("public.iris", iris.get_columns(), iris.to_list())
@@ -170,12 +181,16 @@ class TestUtilities:
         # using multiple inserts
         iris = load_iris()
         # generating the SQL code
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True)
+        result = insert_into(
+            "public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True
+        )
         assert len(result) == 150
         for elem in result:
             assert elem[0:23] == "INSERT INTO public.iris"
         # executing multiple inserts
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list(), copy=False)
+        result = insert_into(
+            "public.iris", iris.get_columns(), iris.to_list(), copy=False
+        )
         with warnings.catch_warnings(record=True) as w:
             drop(name="public.iris")
         assert result == 150
@@ -192,19 +207,19 @@ class TestUtilities:
         assert vdf.shape() == (1234, 14)
 
         import pandas as pd
-        d = {'col1': [1, 2, 3, 4], 'col2': ["red", "gre\"en", "b\lue", "p\i\"\"nk"]}
+
+        d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         df = pd.DataFrame(data=d)
         vdf = pandas_to_vertica(df)
         assert vdf.shape() == (4, 2)
         with warnings.catch_warnings(record=True) as w:
             drop("test_df")
-        pandas_to_vertica(df, name= "test_df", schema="public")
-        pandas_to_vertica(df, name= "test_df", schema="public", insert=True)
-        vdf = pandas_to_vertica(df, name= "test_df", schema="public", insert=True)
+        pandas_to_vertica(df, name="test_df", schema="public")
+        pandas_to_vertica(df, name="test_df", schema="public", insert=True)
+        vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
         assert vdf.shape() == (12, 2)
         with warnings.catch_warnings(record=True) as w:
             drop("test_df")
-
 
     def test_pcsv(self):
         result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
@@ -249,8 +264,13 @@ class TestUtilities:
         }
 
     def test_read_json(self):
-        path = os.path.dirname(verticapy.__file__) + "/tests/utilities/titanic-passengers.json"
-        result = read_json(path, table_name="titanic_verticapy_test_json", schema="public")
+        path = (
+            os.path.dirname(verticapy.__file__)
+            + "/tests/utilities/titanic-passengers.json"
+        )
+        result = read_json(
+            path, table_name="titanic_verticapy_test_json", schema="public"
+        )
         assert result.shape() == (891, 15)
         drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(path, table_name="titanic_verticapy_test_json")
@@ -262,18 +282,32 @@ class TestUtilities:
     def test_read_csv(self):
         path = os.path.dirname(verticapy.__file__) + "/data/titanic.csv"
         # with schema
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public")
+        result = read_csv(
+            path, table_name="titanic_verticapy_test_csv", schema="public"
+        )
         assert result.shape() == (1234, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
         # temporary table
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", temporary_table=True)
+        result = read_csv(
+            path,
+            table_name="titanic_verticapy_test_csv",
+            schema="public",
+            temporary_table=True,
+        )
         assert result.shape() == (1234, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
         # parse_n_lines
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", parse_n_lines=100)
+        result = read_csv(
+            path,
+            table_name="titanic_verticapy_test_csv",
+            schema="public",
+            parse_n_lines=100,
+        )
         assert result.shape() == (1234, 14)
         # insert
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", schema="public", insert=True)
+        result = read_csv(
+            path, table_name="titanic_verticapy_test_csv", schema="public", insert=True
+        )
         assert result.shape() == (2468, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
         # temporary local table
@@ -281,7 +315,11 @@ class TestUtilities:
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with header names
-        result = read_csv(path, table_name="titanic_verticapy_test_csv", header_names=["ucol{}".format(i) for i in range(14)])
+        result = read_csv(
+            path,
+            table_name="titanic_verticapy_test_csv",
+            header_names=["ucol{}".format(i) for i in range(14)],
+        )
         assert result.shape() == (1234, 14)
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
@@ -289,25 +327,29 @@ class TestUtilities:
         result = read_csv(
             path,
             table_name="titanic_verticapy_test_csv",
-            dtype={"pclass": "int",
-                   "survived": "bool",
-                   "name": "varchar",
-                   "sex": "varchar",
-                   "age": "float",
-                   "sibsp": "int",
-                   "parch": "int",
-                   "ticket": "varchar",
-                   "fare": "float",
-                   "cabin": "varchar",
-                   "embarked": "varchar",
-                   "boat": "varchar",
-                   "body": "varchar", 
-                   "home.dest": "varchar"}
+            dtype={
+                "pclass": "int",
+                "survived": "bool",
+                "name": "varchar",
+                "sex": "varchar",
+                "age": "float",
+                "sibsp": "int",
+                "parch": "int",
+                "ticket": "varchar",
+                "fare": "float",
+                "cabin": "varchar",
+                "embarked": "varchar",
+                "boat": "varchar",
+                "body": "varchar",
+                "home.dest": "varchar",
+            },
         )
         assert result.shape() == (1234, 14)
         drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
-        result = read_csv(path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True)
+        result = read_csv(
+            path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True
+        )
         assert result[0][0:50] == 'CREATE TABLE "public"."titanic_verticapy_test_csv"'
         assert result[1][0:42] == 'COPY "public"."titanic_verticapy_test_csv"'
         # TODO
@@ -353,16 +395,13 @@ class TestUtilities:
         )
         result7 = result.to_vdf()["price"].mean()
         assert result7 == 2.0
-        
 
     def test_to_tablesample(self):
         result = to_tablesample('SELECT 1 AS "verticapy test *+""";')
         assert result['verticapy test *+"'] == [1]
 
     def test_vdf_from_relation(self):
-        result = vdf_from_relation(
-            '(SELECT 1 AS "verticapy test *+") x',
-        )
+        result = vdf_from_relation('(SELECT 1 AS "verticapy test *+") x',)
         assert result["verticapy test *+"].avg() == 1.0
 
     @pytest.mark.skip(reason="this test will be implemented later")

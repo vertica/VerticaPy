@@ -181,11 +181,7 @@ solver: str, optional
 	"""
 
     def __init__(
-        self,
-        name: str,
-        tol: float = 1e-6,
-        max_iter: int = 100,
-        solver: str = "Newton",
+        self, name: str, tol: float = 1e-6, max_iter: int = 100, solver: str = "Newton",
     ):
         check_types(
             [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"])]
@@ -268,8 +264,8 @@ l1_ratio: float, optional
             check_types([("solver", solver.lower(), ["bfgs", "newton"])])
         elif penalty.lower() in ("l1", "l2"):
             for elem in ["l1_ratio"]:
-            	if elem in self.parameters:
-                	del self.parameters[elem]
+                if elem in self.parameters:
+                    del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"])])
         version(condition=[8, 0, 0])
 

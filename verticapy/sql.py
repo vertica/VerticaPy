@@ -59,6 +59,7 @@
 from IPython.core.magic import needs_local_scope
 from verticapy import executeSQL
 
+
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
     import verticapy
@@ -167,7 +168,9 @@ def sql(line, cell="", local_ns=None):
             if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                 file_name = file_name[1:-1]
             executeSQL(query, method="copy", path=file_name, print_time_sql=False)
-        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
+        elif (i < n - 1) or (
+            (i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))
+        ):
             executeSQL(query, print_time_sql=False)
             if verticapy.options["print_info"]:
                 print(query_type)
@@ -180,7 +183,9 @@ def sql(line, cell="", local_ns=None):
                     result = readSQL(query, limit=options["limit"])
             except:
                 try:
-                    final_result = executeSQL(query, method="fetchrow", print_time_sql=False)
+                    final_result = executeSQL(
+                        query, method="fetchrow", print_time_sql=False
+                    )
                     if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
                     elif verticapy.options["print_info"]:
@@ -191,7 +196,9 @@ def sql(line, cell="", local_ns=None):
                 raise QueryError(error)
     elapsed_time = time.time() - start_time
     if verticapy.options["print_info"]:
-        display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
+        display(
+            HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3)))
+        )
     return result
 
 

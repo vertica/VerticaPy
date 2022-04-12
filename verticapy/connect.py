@@ -76,13 +76,14 @@ Returns
 string
         the full path to the auto-connection file.
         """
-    if 'VERTICAPY_CONNECTIONS' in os.environ:
-        return os.environ['VERTICAPY_CONNECTIONS']
+    if "VERTICAPY_CONNECTIONS" in os.environ:
+        return os.environ["VERTICAPY_CONNECTIONS"]
     # path = os.path.join(os.path.dirname(verticapy.__file__), "connections.verticapy")
-    path = os.path.join(os.path.expanduser('~'), '.vertica')
-    os.makedirs(path, 0o700, exist_ok = True) 
-    path = os.path.join(path, 'connections.verticapy') 
+    path = os.path.join(os.path.expanduser("~"), ".vertica")
+    os.makedirs(path, 0o700, exist_ok=True)
+    path = os.path.join(path, "connections.verticapy")
     return path
+
 
 #
 # ---#
@@ -135,14 +136,18 @@ name: str
             )
         )
 
+
 # ---#
 def close_connection():
     """
 ---------------------------------------------------------------------------
 Close the Database connection.
     """
-    if verticapy.options["connection"]["conn"] and not(verticapy.options["connection"]["conn"].closed()):
+    if verticapy.options["connection"]["conn"] and not (
+        verticapy.options["connection"]["conn"].closed()
+    ):
         verticapy.options["connection"]["conn"].close()
+
 
 # ---#
 def connect(section: str, dsn: str = ""):
@@ -159,11 +164,12 @@ dsn: str, optional
     VERTICAPY_CONNECTIONS environment variable will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
-    if prev_conn and not(prev_conn.closed()):
+    if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
+
 
 # ---#
 def delete_connection(name: str):
@@ -200,11 +206,14 @@ bool
         warnings.warn("The connection {} does not exist.".format(name), Warning)
         return False
 
+
 # ---#
-def new_connection(conn_info: dict, name: 
-                   str = "vertica_connection", 
-                   auto: bool = True,
-                   overwrite: bool = True):
+def new_connection(
+    conn_info: dict,
+    name: str = "vertica_connection",
+    auto: bool = True,
+    overwrite: bool = True,
+):
     """
 ---------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
@@ -233,8 +242,12 @@ overwrite: bool, optional
     confparser.optionxform = str
     confparser.read(path)
     if confparser.has_section(name):
-        if not(overwrite):
-            raise ParserError("The section '{}' already exists. You can overwrite it by setting the parameter 'overwrite' to True.".format(name))
+        if not (overwrite):
+            raise ParserError(
+                "The section '{}' already exists. You can overwrite it by setting the parameter 'overwrite' to True.".format(
+                    name
+                )
+            )
         confparser.remove_section(name)
     confparser.add_section(name)
     for elem in conn_info:
@@ -288,7 +301,9 @@ dict
         if "VERTICAPY_CONNECTIONS" in os.environ:
             dsn = os.environ["VERTICAPY_CONNECTIONS"]
         else:
-            raise EnvironmentError("The environment variable 'VERTICAPY_CONNECTIONS' does not exist. Alternatively, you can manually specify the path to a DSN configuration file with the 'dsn' variable.")
+            raise EnvironmentError(
+                "The environment variable 'VERTICAPY_CONNECTIONS' does not exist. Alternatively, you can manually specify the path to a DSN configuration file with the 'dsn' variable."
+            )
     confparser.read(dsn)
     if confparser.has_section(section):
         options = confparser.items(section)
@@ -298,7 +313,9 @@ dict
                 conn_info["host"] = elem[1]
             elif elem[0].lower() == "uid":
                 conn_info["user"] = elem[1]
-            elif (elem[0].lower() in ("port", "connection_timeout", )) and (elem[1].isnumeric()):
+            elif (elem[0].lower() in ("port", "connection_timeout",)) and (
+                elem[1].isnumeric()
+            ):
                 conn_info[elem[0].lower()] = int(elem[1])
             elif elem[0].lower() == "pwd":
                 conn_info["password"] = elem[1]
@@ -312,8 +329,14 @@ dict
                 conn_info["kerberos_host_name"] = elem[1]
             elif "vp_test_" in elem[0].lower():
                 conn_info[elem[0].lower()[8:]] = elem[1]
-            elif (elem[0].lower() in ("ssl", "autocommit", "use_prepared_statements", "connection_load_balance", "disable_copy_local")):
-                if (elem[1].lower() in ("true", "t", "yes", "y")):
+            elif elem[0].lower() in (
+                "ssl",
+                "autocommit",
+                "use_prepared_statements",
+                "connection_load_balance",
+                "disable_copy_local",
+            ):
+                if elem[1].lower() in ("true", "t", "yes", "y"):
                     conn_info[elem[0].lower()] = True
                 else:
                     conn_info[elem[0].lower()] = False

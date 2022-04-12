@@ -25,13 +25,13 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     verticapy.utilities.create_verticapy_schema()
-    model_class = CountVectorizer("model_test", )
+    model_class = CountVectorizer("model_test",)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
     yield model_class
@@ -47,7 +47,16 @@ class TestCountVectorizer:
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
-        assert m_att["attr_name"] == ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words"]
+        assert m_att["attr_name"] == [
+            "lowercase",
+            "max_df",
+            "min_df",
+            "max_features",
+            "ignore_special",
+            "max_text_size",
+            "vocabulary",
+            "stop_words",
+        ]
         m_att = model.get_attr("lowercase")
         assert m_att == model.parameters["lowercase"]
         m_att = model.get_attr("max_df")
@@ -66,7 +75,7 @@ class TestCountVectorizer:
         assert m_att == model.parameters["stop_words"]
 
     def test_deploySQL(self, model):
-        expected_sql = 'SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)'
+        expected_sql = "SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)"
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -78,7 +87,10 @@ class TestCountVectorizer:
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert current_cursor().fetchone()[0] in ("model_test_drop", '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in (
+            "model_test_drop",
+            '"model_test_drop"',
+        )
         model_test.drop()
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
@@ -86,16 +98,18 @@ class TestCountVectorizer:
         assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
-        assert sorted(model.vocabulary_)[0:3] == ['a', 'aaron', 'abbing']
+        assert sorted(model.vocabulary_)[0:3] == ["a", "aaron", "abbing"]
         assert model.stop_words_ == []
 
     def test_get_params(self, model):
-        assert model.get_params() == {'ignore_special': True,
-                                      'lowercase': True,
-                                      'max_df': 1.0,
-                                      'max_features': -1,
-                                      'max_text_size': 2000,
-                                      'min_df': 0.0}
+        assert model.get_params() == {
+            "ignore_special": True,
+            "lowercase": True,
+            "max_df": 1.0,
+            "max_features": -1,
+            "max_text_size": 2000,
+            "min_df": 0.0,
+        }
 
     def test_get_transform(self, model):
         result = model.transform().sort(["rnk"])
@@ -112,7 +126,7 @@ class TestCountVectorizer:
         assert model.get_params()["lowercase"] == True
 
     def test_model_from_vDF(self, titanic_vd):
-        model_class = CountVectorizer("model_test_vdf", )
+        model_class = CountVectorizer("model_test_vdf",)
         model_class.drop()
         model_class.fit(titanic_vd, ["name"])
         assert model_class.transform().shape() == (1841, 4)

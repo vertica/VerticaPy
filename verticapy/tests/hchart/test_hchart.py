@@ -18,6 +18,7 @@ from verticapy.hchart import *
 
 set_option("print_info", False)
 
+
 @pytest.fixture(scope="module")
 def titanic_vd():
     from verticapy.datasets import load_titanic
@@ -27,6 +28,7 @@ def titanic_vd():
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.titanic")
 
+
 @pytest.fixture(scope="module")
 def amazon_vd():
     from verticapy.datasets import load_amazon
@@ -35,6 +37,7 @@ def amazon_vd():
     yield amazon
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.titanic")
+
 
 class Test_hchart:
     def test_hchart(self, titanic_vd, amazon_vd):
@@ -47,7 +50,9 @@ class Test_hchart:
         assert isinstance(result, Highchart)
         result = hchart("-type scatter", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type scatter", "SELECT age, fare, parch, pclass FROM titanic;")
+        result = hchart(
+            "-type scatter", "SELECT age, fare, parch, pclass FROM titanic;"
+        )
         assert isinstance(result, Highchart)
         result = hchart("-type bubble", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
@@ -57,9 +62,14 @@ class Test_hchart:
         assert isinstance(result, Highchart)
         result = hchart("-type auto", "SELECT age, fare, parch, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;")
+        result = hchart(
+            "-type auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;"
+        )
         assert isinstance(result, Highchart)
-        result = hchart("-type auto", "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;")
+        result = hchart(
+            "-type auto",
+            "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
+        )
         assert isinstance(result, Highchart)
         result = hchart("-type auto", "SELECT date, number FROM amazon;")
         assert isinstance(result, Highstock)
@@ -67,5 +77,3 @@ class Test_hchart:
         assert isinstance(result, Highstock)
         result = hchart("-type line", "SELECT date, number, state FROM amazon;")
         assert isinstance(result, Highstock)
-
-

@@ -29,18 +29,15 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     model_class = Pipeline(
         [
-            ("NormalizerWine", StandardScaler("std_model_test", )),
-            (
-                "LinearRegressionWine",
-                LinearRegression("linreg_model_test", ),
-            ),
+            ("NormalizerWine", StandardScaler("std_model_test",)),
+            ("LinearRegressionWine", LinearRegression("linreg_model_test",),),
         ]
     )
     model_class.drop()
@@ -59,14 +56,8 @@ class TestPipeline:
     def test_drop(self, winequality_vd):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("std_model_test_drop", ),
-                ),
-                (
-                    "LinearRegressionWine",
-                    LinearRegression("linreg_model_test_drop", ),
-                ),
+                ("NormalizerWine", StandardScaler("std_model_test_drop",),),
+                ("LinearRegressionWine", LinearRegression("linreg_model_test_drop",),),
             ]
         )
         model_class.drop()
@@ -147,14 +138,8 @@ class TestPipeline:
 
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test"),
-                ),
-                (
-                    "LogisticRegressionWine",
-                    LogisticRegression("logreg_model_test"),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("LogisticRegressionWine", LogisticRegression("logreg_model_test"),),
             ]
         )
         model_class.drop()
@@ -202,14 +187,8 @@ class TestPipeline:
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test"),
-                ),
-                (
-                    "NormalizerWine",
-                    MinMaxScaler("logmm_model_test"),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
@@ -225,14 +204,8 @@ class TestPipeline:
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test"),
-                ),
-                (
-                    "NormalizerWine",
-                    MinMaxScaler("logmm_model_test"),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
@@ -250,14 +223,8 @@ class TestPipeline:
     def test_model_from_vDF(self, winequality_vd):
         model_test = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("std_model_test_vdf", ),
-                ),
-                (
-                    "LinearRegressionWine",
-                    LinearRegression("linreg_model_test_vdf", ),
-                ),
+                ("NormalizerWine", StandardScaler("std_model_test_vdf",),),
+                ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf",),),
             ]
         )
         model_test.drop()

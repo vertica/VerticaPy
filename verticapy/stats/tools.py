@@ -231,7 +231,9 @@ tablesample
     column = vdf_columns_names([column], vdf)[0]
     by = vdf_columns_names(by, vdf)
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
-    relation_name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg_view")
+    relation_name = gen_tmp_name(
+        schema=verticapy.options["temp_schema"], name="linear_reg_view"
+    )
     drop_if_exists(name, method="model")
     drop_if_exists(relation_name, method="view")
     lag = [
@@ -311,9 +313,14 @@ tablesample
     )
     return result
 
+
 # ---#
 def cochrane_orcutt(
-    model, vdf: Union[vDataFrame, str], ts: str, prais_winsten: bool = False, drop_tmp_model: bool = True,
+    model,
+    vdf: Union[vDataFrame, str],
+    ts: str,
+    prais_winsten: bool = False,
+    drop_tmp_model: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -345,9 +352,11 @@ model
      - r2_          : R2
     """
     check_types(
-        [("vdf", vdf, [vDataFrame, str]),
-         ("ts", ts, [vDataFrame, str]),
-         ("drop_tmp_model", drop_tmp_model, [bool])],
+        [
+            ("vdf", vdf, [vDataFrame, str]),
+            ("ts", ts, [vDataFrame, str]),
+            ("drop_tmp_model", drop_tmp_model, [bool]),
+        ],
     )
     if isinstance(vdf, str):
         vdf_tmp = vdf_from_relation(vdf)
@@ -368,12 +377,18 @@ model
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
-    query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__())
-    pho = executeSQL(query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem")
+    query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(
+        eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__()
+    )
+    pho = executeSQL(
+        query, title="Computing the Cochrane Orcutt pho.", method="fetchfirstelem"
+    )
     for elem in X + [y]:
         new_val = "{} - {} * LAG({}) OVER (ORDER BY {})".format(elem, pho, elem, ts)
         if prais_winsten:
-            new_val = "COALESCE({}, {} * {})".format(new_val, elem, (1 - pho ** 2) ** (0.5))
+            new_val = "COALESCE({}, {} * {})".format(
+                new_val, elem, (1 - pho ** 2) ** (0.5)
+            )
         vdf_tmp[elem] = new_val
     model_tmp.drop()
     model_tmp.fit(vdf_tmp, X, y)
@@ -383,6 +398,7 @@ model
     if drop_tmp_model:
         model_tmp.drop()
     return model_tmp
+
 
 # ---#
 def durbin_watson(vdf: vDataFrame, eps: str, ts: str, by: list = []):
@@ -427,7 +443,11 @@ float
         (", " + ", ".join(by)) if (by) else "",
         vdf.__genSQL__(),
     )
-    d = executeSQL("SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query), title="Computing the Durbin Watson d.", method="fetchfirstelem")
+    d = executeSQL(
+        "SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
+        title="Computing the Durbin Watson d.",
+        method="fetchfirstelem",
+    )
     return d
 
 
@@ -652,7 +672,14 @@ tablesample
 
 
 # ---#
-def het_goldfeldquandt(vdf: vDataFrame, y: str, X: list, idx: int = 0, split: float = 0.5, alternative: str = "increasing"):
+def het_goldfeldquandt(
+    vdf: vDataFrame,
+    y: str,
+    X: list,
+    idx: int = 0,
+    split: float = 0.5,
+    alternative: str = "increasing",
+):
     """
 ---------------------------------------------------------------------------
 Goldfeld-Quandt homoscedasticity test.
@@ -686,7 +713,7 @@ tablesample
         for vdf_tmp in input_relation:
             model.drop()
             model.fit(vdf_tmp, X, y)
-            mse += [model.score(method = "mse")]
+            mse += [model.score(method="mse")]
             model.drop()
         return mse
 
@@ -724,7 +751,7 @@ tablesample
     if alternative.lower() in ["increasing"]:
         f_pvalue = f.sf(F, n - k, m - k)
     elif alternative.lower() in ["decreasing"]:
-        f_pvalue = f.sf(1. / F, m - k, n - k)
+        f_pvalue = f.sf(1.0 / F, m - k, n - k)
     elif alternative.lower() in ["two-sided"]:
         fpval_sm = f.cdf(F, m - k, n - k)
         fpval_la = f.sf(F, m - k, n - k)
@@ -905,7 +932,15 @@ tablesample
 
 
 # ---#
-def ljungbox(vdf: vDataFrame, column: str, ts: str, by: list = [], p: int = 1, alpha: float = 0.05, box_pierce: bool = False):
+def ljungbox(
+    vdf: vDataFrame,
+    column: str,
+    ts: str,
+    by: list = [],
+    p: int = 1,
+    alpha: float = 0.05,
+    box_pierce: bool = False,
+):
     """
 ---------------------------------------------------------------------------
 Ljung–Box test (whether any of a group of autocorrelations of a time series 
@@ -1019,7 +1054,9 @@ tablesample
     query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
     )
-    S = executeSQL(query, title="Computing the Mann Kendall S.", method="fetchfirstelem")
+    S = executeSQL(
+        query, title="Computing the Mann Kendall S.", method="fetchfirstelem"
+    )
     try:
         S = float(S)
     except:
@@ -1028,7 +1065,11 @@ tablesample
     query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
-    STDS = executeSQL(query, title="Computing the Mann Kendall S standard deviation.", method="fetchfirstelem")
+    STDS = executeSQL(
+        query,
+        title="Computing the Mann Kendall S standard deviation.",
+        method="fetchfirstelem",
+    )
     try:
         STDS = float(STDS)
     except:
@@ -1164,7 +1205,9 @@ vDataFrame
             ("estimate_seasonality", estimate_seasonality, [bool]),
         ],
     )
-    assert period > 0 or polynomial_order > 0, ParameterError("Parameters 'polynomial_order' and 'period' can not be both null.")
+    assert period > 0 or polynomial_order > 0, ParameterError(
+        "Parameters 'polynomial_order' and 'period' can not be both null."
+    )
     columns_check([column, ts] + by, vdf)
     ts, column, by = (
         vdf_columns_names([ts], vdf)[0],
@@ -1180,7 +1223,12 @@ vDataFrame
         "{}_seasonal".format(column[1:-1]),
         "{}_epsilon".format(column[1:-1]),
     )
-    by, by_tmp = "" if not (by) else "PARTITION BY " + ", ".join(vdf_columns_names(by, self)) + " ", by
+    by, by_tmp = (
+        ""
+        if not (by)
+        else "PARTITION BY " + ", ".join(vdf_columns_names(by, self)) + " ",
+        by,
+    )
     if polynomial_order <= 0:
         if two_sided:
             if period == 1:
@@ -1205,14 +1253,17 @@ vDataFrame
         name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
 
         from verticapy.learn.linear_model import LinearRegression
-        model = LinearRegression(name=name,
-                                 solver="bfgs",
-                                 max_iter=100,
-                                 tol=1e-6)
+
+        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_poly, X, column)
         coefficients = model.coef_["coefficient"]
-        coefficients = [str(coefficients[0])] + [f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})" if i != 1 else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})" for i in range(1, polynomial_order + 1)]
+        coefficients = [str(coefficients[0])] + [
+            f"{coefficients[i]} * POWER(ROW_NUMBER() OVER({by}ORDER BY {ts}), {i})"
+            if i != 1
+            else f"{coefficients[1]} * ROW_NUMBER() OVER({by}ORDER BY {ts})"
+            for i in range(1, polynomial_order + 1)
+        ]
         vdf_tmp[trend_name] = " + ".join(coefficients)
         model.drop()
     if mult:
@@ -1220,7 +1271,9 @@ vDataFrame
     else:
         vdf_tmp[seasonal_name] = vdf_tmp[column] - vdf_tmp[trend_name]
     if period <= 0:
-        acf = vdf_tmp.acf(column=seasonal_name, ts=ts, p=23, acf_type="heatmap", show=False)
+        acf = vdf_tmp.acf(
+            column=seasonal_name, ts=ts, p=23, acf_type="heatmap", show=False
+        )
         period = int(acf["index"][1].split("_")[1])
         if period == 1:
             period = int(acf["index"][2].split("_")[1])
@@ -1235,20 +1288,24 @@ vDataFrame
         ] = f"AVG({seasonal_name}) OVER (PARTITION BY row_number_id) - AVG({seasonal_name}) OVER ()"
     if estimate_seasonality:
         vdf_seasonality = vdf_tmp.copy()
-        vdf_seasonality["t_cos"] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
-        vdf_seasonality["t_sin"] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        vdf_seasonality[
+            "t_cos"
+        ] = f"COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        vdf_seasonality[
+            "t_sin"
+        ] = f"SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         X = ["t_cos", "t_sin"]
         name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
 
         from verticapy.learn.linear_model import LinearRegression
-        model = LinearRegression(name=name,
-                                 solver="bfgs",
-                                 max_iter=100,
-                                 tol=1e-6)
+
+        model = LinearRegression(name=name, solver="bfgs", max_iter=100, tol=1e-6)
         model.drop()
         model.fit(vdf_seasonality, X, seasonal_name)
         coefficients = model.coef_["coefficient"]
-        vdf_tmp[seasonal_name] = f"{coefficients[0]} + {coefficients[1]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {coefficients[2]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
+        vdf_tmp[
+            seasonal_name
+        ] = f"{coefficients[0]} + {coefficients[1]} * COS(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period}) + {coefficients[2]} * SIN(2 * PI() * ROW_NUMBER() OVER ({by}ORDER BY {ts}) / {period})"
         model.drop()
     if mult:
         vdf_tmp[
@@ -1323,11 +1380,7 @@ float
     VIF.
     """
     check_types(
-        [
-            ("X_idx", X_idx, [int]),
-            ("X", X, [list]),
-            ("vdf", vdf, [vDataFrame, str]),
-        ],
+        [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),],
     )
     columns_check(X, vdf)
     X = vdf_columns_names(X, vdf)

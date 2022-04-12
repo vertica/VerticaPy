@@ -18,25 +18,42 @@ import datetime
 
 set_option("print_info", False)
 
+
 class TestDatasets:
     def test_gen_dataset(self):
-        result = gen_dataset(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas"]},
-                                                "age": {"type": int, "range": [20, 40]},
-                                                "distance": {"type": float, "range": [1000, 4000]},
-                                                "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
-                                                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},})
-        assert result["name"].mode() == 'Badr'
+        result = gen_dataset(
+            features_ranges={
+                "name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas"]},
+                "age": {"type": int, "range": [20, 40]},
+                "distance": {"type": float, "range": [1000, 4000]},
+                "date": {"type": datetime.date, "range": ["1993-11-03", 365]},
+                "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365]},
+            }
+        )
+        assert result["name"].mode() == "Badr"
         assert result["date"].max() < datetime.date(1995, 11, 2)
         assert result["datetime"].max() < datetime.datetime(1995, 11, 2)
         assert result["distance"].max() < 4001
         assert result["age"].max() < 41
 
     def test_gen_meshgrid(self):
-        result = gen_meshgrid(features_ranges = {"name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas"]},
-                                                 "age": {"type": int, "range": [20, 40], "nbins": 10,},
-                                                 "distance": {"type": float, "range": [1000, 4000], "nbins": 10,},
-                                                 "date": {"type": datetime.date, "range": ["1993-11-03", 365], "nbins": 10,},
-                                                 "datetime": {"type": datetime.datetime, "range": ["1993-11-03", 365], "nbins": 10,},})
+        result = gen_meshgrid(
+            features_ranges={
+                "name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas"]},
+                "age": {"type": int, "range": [20, 40], "nbins": 10,},
+                "distance": {"type": float, "range": [1000, 4000], "nbins": 10,},
+                "date": {
+                    "type": datetime.date,
+                    "range": ["1993-11-03", 365],
+                    "nbins": 10,
+                },
+                "datetime": {
+                    "type": datetime.datetime,
+                    "range": ["1993-11-03", 365],
+                    "nbins": 10,
+                },
+            }
+        )
         assert result.shape() == (58564, 5)
         assert result["date"].max() == datetime.date(1994, 11, 3)
         assert result["datetime"].max() == datetime.datetime(1994, 11, 3, 0, 0)
