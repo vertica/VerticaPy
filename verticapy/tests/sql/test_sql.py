@@ -31,14 +31,12 @@ def titanic_vd():
 
 class TestSQL:
     def test_sql(self, titanic_vd):
-        result = sql("-limit 30", "SELECT * FROM titanic;")
-        assert len(result["age"]) == 30
-        result = sql("-vdf True", "SELECT * FROM titanic;")
+        result = sql("", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
         result = sql(
-            "-vdf True",
+            "",
             "DROP MODEL IF EXISTS model_test; SELECT LINEAR_REG('model_test', 'public.titanic', 'survived', 'age, fare'); SELECT PREDICT_LINEAR_REG(3.0, 4.0 USING PARAMETERS model_name='model_test', match_by_pos=True) AS predict;",
         )
         assert result["predict"][0] == pytest.approx(0.395335892040411)
-        result = sql("-limit 30", "DROP MODEL IF EXISTS model_test; SELECT 1 AS col;;")
+        result = sql("", "DROP MODEL IF EXISTS model_test; SELECT 1 AS col;;")
         assert result["col"][0] == 1

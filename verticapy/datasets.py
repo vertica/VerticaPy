@@ -527,7 +527,8 @@ vDataFrame
             "PetalLengthCm": "Numeric(5,2)",
             "PetalWidthCm": "Numeric(5,2)",
             "Species": "Varchar(30)",
-        }[
+        },
+        [
             "Id FILLER Integer",
             "SepalLengthCm",
             "SepalWidthCm",
