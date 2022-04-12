@@ -299,7 +299,7 @@ def load_dataset(
             path = os.path.dirname(verticapy.__file__)
             path += f"/data/{dataset_name}.csv"
             if not (copy_cols):
-                copy_cols = [col for col in dtype]
+                copy_cols = [str_column(col) for col in dtype]
             copy_cols = ", ".join(copy_cols)
             query = (
                 "COPY {0}.{1}({2}) FROM {3} DELIMITER ',' NULL '' "
