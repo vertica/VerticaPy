@@ -9811,8 +9811,9 @@ vColumns : vColumn
             db_filter = " AND ".join(["({})".format(elem) for elem in db_filter])
         db_filter = " WHERE {}".format(db_filter) if (db_filter) else ""
         if relation_type == "insert":
-            query = "INSERT INTO {} SELECT {}{} FROM {}{}{}".format(
+            query = "INSERT INTO {}{} SELECT {}{} FROM {}{}{}".format(
                 name,
+                " ({})".format(usecols) if not(nb_split) and usecols != "*" else "",
                 usecols,
                 nb_split,
                 self.__genSQL__(),
