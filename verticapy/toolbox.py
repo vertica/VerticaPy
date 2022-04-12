@@ -581,6 +581,26 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 
 
 # ---#
+def get_magic_options(line: str):
+
+    line = re.sub(" +", " ", line)
+    all_options_tmp = line.split(" ")
+    all_options = []
+
+    for elem in all_options_tmp:
+        if elem != "":
+            all_options += [elem]
+
+    n, i, all_options_dict = len(all_options), 0, {}
+
+    while i < n:
+        all_options_dict[all_options[i]] = all_options[i + 1]
+        i += 2
+
+    return all_options_dict
+
+
+# ---#
 def get_session(add_username: bool = True):
     query = "SELECT CURRENT_SESSION();"
     result = executeSQL(query, method="fetchfirstelem", print_time_sql=False)

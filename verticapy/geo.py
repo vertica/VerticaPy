@@ -415,7 +415,7 @@ vDataFrame
         "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' "
         f"|| x + {delta_x} || ' ' || y || ', ' || x + {delta_x} "
         f"|| ' ' || y + {delta_y} || ', ' || x || ' ' || y +"
-        f" {delta_y} || ', ' || x || ' ' || y || '))'"
+        f" {delta_y} || ', ' || x || ' ' || y || '))')"
     )
     vdf["gid"].apply("ROW_NUMBER() OVER (ORDER BY {})")
     vdf.filter(f"ST_Intersects(geom, ST_GeomFromText('{p}'))", print_info=False)

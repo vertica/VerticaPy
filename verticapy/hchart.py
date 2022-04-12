@@ -46,47 +46,47 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 # ---#
+from verticapy import get_magic_options
+from verticapy.highchart import hchartSQL
+from IPython.core.display import HTML, display
+import time
+import re
+
+
 def hchart(line, cell):
-    from verticapy.highchart import hchartSQL
-    from IPython.core.display import HTML, display
-    import time
-    import re
 
     options = {"type": "auto"}
     query = cell
-    if line == "":
-        option = "auto"
-    else:
-        line = re.sub(" +", " ", line)
-        all_options_tmp = line.split(" ")
-        all_options = []
-        for elem in all_options_tmp:
-            if elem != "":
-                all_options += [elem]
-        n, i, all_options_dict = len(all_options), 0, {}
-        while i < n:
-            all_options_dict[all_options[i]] = all_options[i + 1]
-            i += 2
+
+    if line:
+
+        all_options_dict = get_magic_options(line)
+
         for option in all_options_dict:
+
             if option.lower() == "-type":
                 options["type"] = all_options_dict[option]
+
             else:
                 print(
-                    "\u26A0 Warning : option '{}' doesn't exist, it was skipped.".format(
-                        option
-                    )
+                    f"\u26A0 Warning : option '{option}'"
+                    " doesn't exist, it was skipped."
                 )
-    query = query.replace("\t", " ")
-    query = query.replace("\n", " ")
+
+    query = query.replace("\t", " ").replace("\n", " ")
     query = re.sub(" +", " ", query)
+
     while len(query) > 0 and (query[-1] in (";", " ")):
         query = query[0:-1]
+
     while len(query) > 0 and (query[0] in (";", " ")):
         query = query[1:]
+
     start_time = time.time()
     chart = hchartSQL(query, options["type"])
     elapsed_time = time.time() - start_time
-    display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
+    display(HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3))))
+
     return chart
 
 
