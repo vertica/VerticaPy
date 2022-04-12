@@ -9813,7 +9813,7 @@ vColumns : vColumn
         if relation_type == "insert":
             query = "INSERT INTO {}{} SELECT {}{} FROM {}{}{}".format(
                 name,
-                " ({})".format(usecols) if not(nb_split) and usecols != "*" else "",
+                " ({})".format(usecols) if not (nb_split) and usecols != "*" else "",
                 usecols,
                 nb_split,
                 self.__genSQL__(),

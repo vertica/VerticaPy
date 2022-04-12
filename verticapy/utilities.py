@@ -557,8 +557,10 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
         executeSQL(
             sql,
-            title=(f"Insert new lines in the {table_name} table. The batch insert is "
-                    "converted into a COPY statement by using prepared statements."),
+            title=(
+                f"Insert new lines in the {table_name} table. The batch insert is "
+                "converted into a COPY statement by using prepared statements."
+            ),
             data=list(map(tuple, data)),
         )
         executeSQL("COMMIT;", title="Commit.")
