@@ -381,7 +381,9 @@ papprox_ma: int, optional
             and not (self.exogenous)
         ):
             query = "SELECT AVG({}) FROM {}".format(self.y, self.input_relation)
-            self.ma_avg_ = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            self.ma_avg_ = executeSQL(
+                query, method="fetchfirstelem", print_time_sql=False
+            )
             self.deploy_predict_ = str(self.ma_avg_)
 
         # I(d)
@@ -431,9 +433,7 @@ papprox_ma: int, optional
                 executeSQL(query, print_time_sql=False)
                 self.X += AR + X
                 model.fit(
-                    input_relation=view_name,
-                    X=self.X,
-                    y=self.y,
+                    input_relation=view_name, X=self.X, y=self.y,
                 )
             except:
                 drop_if_exists(view_name, method="view")
@@ -577,9 +577,7 @@ papprox_ma: int, optional
             try:
                 executeSQL(query, print_time_sql=False)
                 model.fit(
-                    input_relation=view_name,
-                    X=ARq,
-                    y=self.y,
+                    input_relation=view_name, X=ARq, y=self.y,
                 )
             except:
                 drop_if_exists(view_name, method="view")
@@ -698,9 +696,7 @@ papprox_ma: int, optional
             "papprox_ma": self.parameters["papprox_ma"],
         }
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="SARIMAX",
-            model_save=model_save,
+            model_name=self.name, model_type="SARIMAX", model_save=model_save,
         )
         return self
 
@@ -719,7 +715,7 @@ papprox_ma: int, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds,
+        **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -915,7 +911,7 @@ papprox_ma: int, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2),
+                **updated_dict(param3, style_kwds, 2)
             )
         if one_step:
             if confidence:
@@ -942,14 +938,14 @@ papprox_ma: int, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1),
+                **updated_dict(param2, style_kwds, 1)
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0),
+                **updated_dict(param1, style_kwds, 0)
             )
         ax.set_title(
             "SARIMAX({},{},{})({},{},{})_{}".format(
@@ -1081,7 +1077,9 @@ papprox_ma: int, optional
                 transform_relation.format(relation_tmp),
                 ts,
             )
-            prediction = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+            prediction = executeSQL(
+                query, method="fetchfirstelem", print_time_sql=False
+            )
             columns_tmp = vdf.get_columns(exclude_columns=[ts, y])
             new_line = "SELECT '{}'::TIMESTAMP AS {}, {} AS {} {}".format(
                 next_t,
@@ -1145,9 +1143,7 @@ solver: str, optional
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
-        self.set_params(
-            {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
-        )
+        self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
         version(condition=[8, 0, 0])
 
     # ---#
@@ -1179,7 +1175,7 @@ solver: str, optional
 
     # ---#
     def features_importance(
-        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds,
+        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -1242,7 +1238,7 @@ solver: str, optional
             coeff_importances[elem] = 100 * coeff_importances[elem] / total
         if show:
             plot_importance(
-                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds,
+                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds
             )
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
@@ -1333,9 +1329,7 @@ solver: str, optional
             self.coef_ = []
             for elem in X:
                 model.fit(
-                    input_relation=view_name,
-                    X=AR,
-                    y=elem,
+                    input_relation=view_name, X=AR, y=elem,
                 )
                 self.coef_ += [model.coef_]
                 model.drop()
@@ -1359,9 +1353,7 @@ solver: str, optional
         for idx, elem in enumerate(self.coef_):
             model_save["coef_{}".format(idx)] = elem.values
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="VAR",
-            model_save=model_save,
+            model_name=self.name, model_type="VAR", model_save=model_save,
         )
         return self
 
@@ -1418,7 +1410,7 @@ solver: str, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds,
+        **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -1628,7 +1620,7 @@ solver: str, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2),
+                **updated_dict(param3, style_kwds, 2)
             )
         if one_step:
             if confidence:
@@ -1655,14 +1647,14 @@ solver: str, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1),
+                **updated_dict(param2, style_kwds, 1)
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0),
+                **updated_dict(param1, style_kwds, 0)
             )
         ax.set_title("VAR({}) [{}]".format(self.parameters["p"], y))
         ax.set_xlabel(ts)

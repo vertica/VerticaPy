@@ -72,9 +72,7 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
-    def __init__(
-        self, steps: list,
-    ):
+    def __init__(self, steps: list):
         check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
@@ -196,7 +194,7 @@ steps: list
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
+        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator"
     ):
         """
     ---------------------------------------------------------------------------
@@ -390,11 +388,13 @@ steps: list
                     step[1].set_params(parameters[param])
 
     # ---#
-    def to_python(self, 
-                  name: str = "predict", 
-                  return_proba: bool = False, 
-                  return_distance_clusters: bool = False, 
-                  return_str: bool = False):
+    def to_python(
+        self,
+        name: str = "predict",
+        return_proba: bool = False,
+        return_distance_clusters: bool = False,
+        return_str: bool = False,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the Python code needed to deploy the pipeline without using built-in
@@ -419,18 +419,31 @@ steps: list
     str / func
         Python function
         """
-        if not(return_str):
-            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True)
+        if not (return_str):
+            func = self.to_python(
+                name=name,
+                return_proba=return_proba,
+                return_distance_clusters=return_distance_clusters,
+                return_str=True,
+            )
             _locals = locals()
             exec(func, globals(), _locals)
             return _locals[name]
         str_representation = "def {}(X):\n".format(name)
         final_function = "X"
         for idx, step in enumerate(self.steps):
-            str_representation += "\t" + step[1].to_python(name=step[0],
-                                                           return_proba=return_proba,
-                                                           return_distance_clusters=return_distance_clusters,
-                                                           return_str=True).replace("\n", "\n\t") + "\n"
-            final_function = step[0]+"({})".format(final_function)
+            str_representation += (
+                "\t"
+                + step[1]
+                .to_python(
+                    name=step[0],
+                    return_proba=return_proba,
+                    return_distance_clusters=return_distance_clusters,
+                    return_str=True,
+                )
+                .replace("\n", "\n\t")
+                + "\n"
+            )
+            final_function = step[0] + "({})".format(final_function)
         str_representation += "\treturn {}".format(final_function)
         return str_representation

@@ -57,54 +57,48 @@
 #
 # ---#
 from IPython.core.magic import needs_local_scope
-from verticapy import executeSQL
+from IPython.core.display import HTML, display
+
+import verticapy
+from verticapy.errors import QueryError
+from verticapy import executeSQL, vdf_from_relation, get_magic_options
+
+
+import re, time
+
 
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
-    import verticapy
-    from verticapy.utilities import readSQL
-    from verticapy.utilities import vdf_from_relation
-    from IPython.core.display import HTML, display
-    import time
-    import re
-    import vertica_python
-    from verticapy.errors import QueryError
-
-    version = vertica_python.__version__.split(".")
-    version = [int(elem) for elem in version]
     queries = line if (not (cell) and (line)) else cell
-    options = {"limit": 100, "vdf": False}
-    queries = queries.replace("\t", " ")
-    queries = queries.replace("\n", " ")
+    options = {}
+    queries = queries.replace("\t", " ").replace("\n", " ")
     queries = re.sub(" +", " ", queries)
+
     if (cell) and (line):
-        line = re.sub(" +", " ", line)
-        all_options_tmp = line.split(" ")
-        all_options = []
-        for elem in all_options_tmp:
-            if elem != "":
-                all_options += [elem]
-        n, i, all_options_dict = len(all_options), 0, {}
-        while i < n:
-            all_options_dict[all_options[i]] = all_options[i + 1]
-            i += 2
+
+        all_options_dict = get_magic_options(line)
+
         for option in all_options_dict:
-            if option.lower() == "-limit":
-                options["limit"] = int(all_options_dict[option])
-            elif option.lower() == "-vdf":
-                options["vdf"] = bool(all_options_dict[option])
+
+            if option.lower() == "-i":
+                options["i"] = all_options_dict[option]
+
             elif verticapy.options["print_info"]:
                 print(
-                    "\u26A0 Warning : The option '{}' doesn't exist, it was skipped.".format(
-                        option
-                    )
+                    f"\u26A0 Warning : The option '{option}' doesn't "
+                    "exist, it was skipped."
                 )
+
     n, i, all_split = len(queries), 0, []
+
     while i < n and queries[n - i - 1] in (";", " ", "\n"):
         i += 1
+
     queries = queries[: n - i]
     i, n = 0, n - i
+
     while i < n:
+
         if queries[i] == '"':
             i += 1
             while i < n and queries[i] != '"':
@@ -116,49 +110,54 @@ def sql(line, cell="", local_ns=None):
         elif queries[i] == ";":
             all_split += [i]
         i += 1
+
     all_split = [0] + all_split + [n]
     m = len(all_split)
-    start_time = time.time()
     queries = [queries[all_split[i] : all_split[i + 1]] for i in range(m - 1)]
     n = len(queries)
+
     for i in range(n):
+
         query = queries[i]
         while len(query) > 0 and (query[-1] in (";", " ")):
             query = query[0:-1]
         while len(query) > 0 and (query[0] in (";", " ")):
             query = query[1:]
         queries[i] = query
+
     queries_tmp, i = [], 0
+
     while i < n:
+
         query = queries[i]
         if (i < n - 1) and (queries[i + 1].lower() == "end"):
             query += "; {}".format(queries[i + 1])
             i += 1
         queries_tmp += [query]
         i += 1
+
     queries, n = queries_tmp, len(queries_tmp)
-    result = None
+    result, start_time = None, time.time()
+
     for i in range(n):
+
         query = queries[i]
-        query_type = (
-            query.split(" ")[0].upper()
-            if (query.split(" ")[0])
-            else query.split(" ")[1].upper()
-        )
+
+        if query.split(" ")[0]:
+            query_type = query.split(" ")[0].upper()
+        else:
+            query_type = query.split(" ")[1].upper()
+
         if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
             query_type = "undefined"
-        if (
-            (query_type == "COPY")
-            and ("from local" in query.lower())
-            and (version[0] == 0)
-            and (version[1] < 11)
-        ):
+
+        if (query_type == "COPY") and ("from local" in query.lower()):
+
             query = re.split("from local", query, flags=re.IGNORECASE)
-            file_name = (
-                query[1].split(" ")[0]
-                if (query[1].split(" ")[0])
-                else query[1].split(" ")[1]
-            )
+            if query[1].split(" ")[0]:
+                file_name = query[1].split(" ")[0]
+            else:
+                file_name = query[1].split(" ")[1]
             query = (
                 "".join(query[0])
                 + "FROM"
@@ -166,32 +165,42 @@ def sql(line, cell="", local_ns=None):
             )
             if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
                 file_name = file_name[1:-1]
+
             executeSQL(query, method="copy", path=file_name, print_time_sql=False)
-        elif (i < n - 1) or ((i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))):
+
+        elif (i < n - 1) or (
+            (i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))
+        ):
+
             executeSQL(query, print_time_sql=False)
             if verticapy.options["print_info"]:
                 print(query_type)
+
         else:
+
             error = ""
             try:
-                if options["vdf"]:
-                    result = vdf_from_relation("({}) x".format(query))
-                else:
-                    result = readSQL(query, limit=options["limit"])
+                result = vdf_from_relation("({}) x".format(query))
             except:
                 try:
-                    final_result = executeSQL(query, method="fetchrow", print_time_sql=False)
+                    final_result = executeSQL(
+                        query, method="fetchfirstelem", print_time_sql=False
+                    )
                     if final_result and verticapy.options["print_info"]:
                         print(final_result[0])
                     elif verticapy.options["print_info"]:
                         print(query_type)
                 except Exception as e:
                     error = e
+
             if error:
                 raise QueryError(error)
-    elapsed_time = time.time() - start_time
+
+    elapsed_time = round(time.time() - start_time, 3)
+
     if verticapy.options["print_info"]:
-        display(HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3))))
+        display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+
     return result
 
 

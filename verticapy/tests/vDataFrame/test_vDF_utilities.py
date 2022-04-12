@@ -13,7 +13,15 @@
 
 import pytest, os, warnings, shutil
 from math import ceil, floor
-from verticapy import vDataFrame, get_session, drop, drop_if_exists, set_option, read_shp, current_cursor
+from verticapy import (
+    vDataFrame,
+    get_session,
+    drop,
+    drop_if_exists,
+    set_option,
+    read_shp,
+    current_cursor,
+)
 import verticapy.stats as st
 
 set_option("print_info", False)
@@ -168,7 +176,7 @@ class TestvDFUtilities:
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
-        #shutil.rmtree(name) # trying to erase the folder
+        # shutil.rmtree(name) # trying to erase the folder
 
     def test_vDF_to_db(self, titanic_vd):
         drop_if_exists("verticapy_titanic_tmp")
@@ -181,9 +189,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame(
-                "verticapy_titanic_tmp",
-            )
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
@@ -195,15 +201,11 @@ class TestvDFUtilities:
         except:
             with warnings.catch_warnings(record=True) as w:
                 drop(
-                    "verticapy_titanic_tmp",
-                    method="view",
+                    "verticapy_titanic_tmp", method="view",
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop(
-                "verticapy_titanic_tmp",
-                method="view",
-            )
+            drop("verticapy_titanic_tmp", method="view")
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(
@@ -213,9 +215,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame(
-                "verticapy_titanic_tmp",
-            )
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
@@ -243,7 +243,9 @@ class TestvDFUtilities:
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            current_cursor().execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            current_cursor().execute(
+                "SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
@@ -265,7 +267,9 @@ class TestvDFUtilities:
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
-            current_cursor().execute("SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'")
+            current_cursor().execute(
+                "SELECT table_name FROM columns WHERE table_name = 'verticapy_titanic_tmp'"
+            )
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:

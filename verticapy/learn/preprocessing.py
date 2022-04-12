@@ -60,11 +60,7 @@ from verticapy.learn.vmodel import *
 
 # ---#
 def Balance(
-    name: str,
-    input_relation: str,
-    y: str,
-    method: str = "hybrid",
-    ratio: float = 0.5,
+    name: str, input_relation: str, y: str, method: str = "hybrid", ratio: float = 0.5,
 ):
     """
 ---------------------------------------------------------------------------
@@ -267,9 +263,7 @@ max_text_size: int, optional
             "stop_words": self.stop_words_,
         }
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="CountVectorizer",
-            model_save=model_save,
+            model_name=self.name, model_type="CountVectorizer", model_save=model_save,
         )
         return self
 
@@ -320,9 +314,7 @@ method: str, optional
 class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "zscore")
 
 
@@ -330,9 +322,7 @@ class StandardScaler(Normalizer):
 class RobustScaler(Normalizer):
     """i.e. Normalizer with param method = 'robust_zscore'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
 
 
@@ -340,9 +330,7 @@ class RobustScaler(Normalizer):
 class MinMaxScaler(Normalizer):
     """i.e. Normalizer with param method = 'minmax'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "minmax")
 
 

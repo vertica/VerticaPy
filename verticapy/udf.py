@@ -157,7 +157,8 @@ udx_str, sql
         include_dependencies = [include_dependencies]
     if not (isinstance(include_dependencies, (list))):
         raise ValueError(
-            f"The parameter include_dependencies type must be <list>. Found {type(include_dependencies)}."
+            "The parameter include_dependencies type must be <list>. "
+            f"Found {type(include_dependencies)}."
         )
     if not (isinstance(library_name, str)):
         raise ValueError(
@@ -183,7 +184,8 @@ udx_str, sql
         for dep_file_path in include_dependencies:
             if not (isinstance(dep_file_path, str)):
                 raise ValueError(
-                    f"The parameter include_dependencies type must be <list> of <str>. Found {type(dep_file_path)} inside."
+                    "The parameter include_dependencies type must be <list> of <str>. "
+                    f"Found {type(dep_file_path)} inside."
                 )
             f = open(dep_file_path)
             file_str = f.read()
@@ -258,7 +260,8 @@ def create_udf(
     for idx, dtype in enumerate(arg_types):
         if not (isinstance(dtype, type)):
             raise ValueError(
-                f"Each element of arg_types parameter must be a <type>. Found {type(dtype)} at index {idx}."
+                "Each element of arg_types parameter must be a <type>. "
+                f"Found {type(dtype)} at index {idx}."
             )
     if isinstance(return_type, dict):
         if len(return_type) == 0:
@@ -267,6 +270,7 @@ def create_udf(
             )
         elif len(return_type) == 1:
             return_type = [return_type[dtype] for dtype in return_type][0]
+
     # Main Function
     if isinstance(return_type, dict):
         is_udtf, process_function, ftype = True, "processPartition", "TransformFunction"
@@ -274,9 +278,12 @@ def create_udf(
         is_udtf, process_function, ftype = False, "processBlock", "ScalarFunction"
     else:
         raise ValueError(
-            f"return_type must be the dictionary of the returned types in case of Transform Function and only a type in case of Scalar Function. Can not be of type {type(return_type)}."
+            "return_type must be the dictionary of the returned types in case of "
+            "Transform Function and only a type in case of Scalar Function. Can not"
+            f" be of type {type(return_type)}."
         )
     udx_str = f"class verticapy_{new_name}(vertica_sdk.{ftype}):\n\n"
+
     # setup - For Optional parameters
     udx_str += "\tdef setup(self, server_interface, col_types):\n"
     if parameters:
@@ -357,7 +364,10 @@ def create_udf(
 
     udx_str += "\n"
     transform = "TRANSFORM " if is_udtf else ""
-    sql = f"CREATE OR REPLACE {transform}FUNCTION {new_name} AS NAME 'verticapy_{new_name}_factory' LIBRARY {library_name};"
+    sql = (
+        f"CREATE OR REPLACE {transform}FUNCTION {new_name} AS NAME"
+        f"'verticapy_{new_name}_factory' LIBRARY {library_name};"
+    )
 
     return udx_str, sql
 
@@ -434,4 +444,7 @@ def get_set_add_function(ftype, func: str = "get"):
     elif ftype == (datetime.datetime, datetime.tzinfo):
         return f"{func}TimestampTz"
     else:
-        raise "The input type is not managed by get_set_add_function. Check the Vertica Python SDK for more information."
+        raise (
+            "The input type is not managed by get_set_add_function. "
+            "Check the Vertica Python SDK for more information."
+        )

@@ -12,7 +12,12 @@
 # limitations under the License.
 
 import pytest, warnings, sys, os, verticapy
-from verticapy.learn.preprocessing import Normalizer, StandardScaler, RobustScaler, MinMaxScaler
+from verticapy.learn.preprocessing import (
+    Normalizer,
+    StandardScaler,
+    RobustScaler,
+    MinMaxScaler,
+)
 from verticapy import drop, set_option, vertica_conn, current_cursor
 
 set_option("print_info", False)
@@ -25,13 +30,13 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     current_cursor().execute("DROP MODEL IF EXISTS norm_model_test")
-    model_class = Normalizer("norm_model_test", )
+    model_class = Normalizer("norm_model_test",)
     model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
@@ -66,7 +71,7 @@ class TestNormalizer:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS norm_model_test_drop")
-        model_test = Normalizer("norm_model_test_drop", )
+        model_test = Normalizer("norm_model_test_drop",)
         model_test.fit("public.winequality", ["alcohol", "quality"])
 
         current_cursor().execute(
@@ -116,7 +121,9 @@ class TestNormalizer:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0])
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+        )
         # Minmax
         model2 = Normalizer("norm_model_test2", method="minmax")
         model2.drop()
@@ -127,7 +134,9 @@ class TestNormalizer:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model2.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0])
+        assert prediction == pytest.approx(
+            model2.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+        )
         model2.drop()
         # Robust Zscore
         model3 = Normalizer("norm_model_test2", method="robust_zscore")
@@ -139,7 +148,9 @@ class TestNormalizer:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model3.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0])
+        assert prediction == pytest.approx(
+            model3.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0][0]
+        )
         model3.drop()
 
     def test_to_sql(self, model):
@@ -204,12 +215,16 @@ class TestNormalizer:
         prediction = [float(elem) for elem in current_cursor().fetchone()]
         current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                ", ".join(model.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+                ", ".join(
+                    model.to_memmodel().transform_sql(
+                        ["citric_acid", "residual_sugar", "alcohol"]
+                    )
+                )
             )
         )
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
-        prediction3 = model.to_memmodel().transform([[3.0, 11.0, 93.]])
+        prediction3 = model.to_memmodel().transform([[3.0, 11.0, 93.0]])
         assert prediction[0] == pytest.approx(prediction3[0][0])
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
@@ -225,12 +240,16 @@ class TestNormalizer:
         prediction = [float(elem) for elem in current_cursor().fetchone()]
         current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                ", ".join(model2.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+                ", ".join(
+                    model2.to_memmodel().transform_sql(
+                        ["citric_acid", "residual_sugar", "alcohol"]
+                    )
+                )
             )
         )
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
-        prediction3 = model2.to_memmodel().transform([[3.0, 11.0, 93.]])
+        prediction3 = model2.to_memmodel().transform([[3.0, 11.0, 93.0]])
         assert prediction[0] == pytest.approx(prediction3[0][0])
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
@@ -247,12 +266,16 @@ class TestNormalizer:
         prediction = [float(elem) for elem in current_cursor().fetchone()]
         current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                ", ".join(model3.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+                ", ".join(
+                    model3.to_memmodel().transform_sql(
+                        ["citric_acid", "residual_sugar", "alcohol"]
+                    )
+                )
             )
         )
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
-        prediction3 = model3.to_memmodel().transform([[3.0, 11.0, 93.]])
+        prediction3 = model3.to_memmodel().transform([[3.0, 11.0, 93.0]])
         assert prediction[0] == pytest.approx(prediction3[0][0])
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
@@ -315,7 +338,7 @@ class TestNormalizer:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS norm_vDF")
-        model_test = Normalizer("norm_vDF", )
+        model_test = Normalizer("norm_vDF",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'norm_vDF'"

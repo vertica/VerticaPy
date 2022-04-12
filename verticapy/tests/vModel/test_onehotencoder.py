@@ -25,7 +25,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +52,7 @@ class TestOneHotEncoder:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS ohe_model_test_drop")
-        model_test = OneHotEncoder("ohe_model_test_drop", )
+        model_test = OneHotEncoder("ohe_model_test_drop",)
         model_test.fit("public.titanic", ["pclass", "embarked"])
 
         current_cursor().execute(
@@ -129,12 +129,19 @@ class TestOneHotEncoder:
         prediction = [float(elem) for elem in current_cursor().fetchone()]
         current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                ", ".join([", ".join(elem) for elem in model.to_memmodel().transform_sql(["pclass", "sex", "embarked"])])
+                ", ".join(
+                    [
+                        ", ".join(elem)
+                        for elem in model.to_memmodel().transform_sql(
+                            ["pclass", "sex", "embarked"]
+                        )
+                    ]
+                )
             )
         )
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
-        prediction3 = model.to_memmodel().transform([[1, 'female', 'S']])
+        prediction3 = model.to_memmodel().transform([[1, "female", "S"]])
         assert prediction[0] == pytest.approx(prediction3[0][0])
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
@@ -151,7 +158,7 @@ class TestOneHotEncoder:
             )
         )
         prediction = [int(elem) for elem in current_cursor().fetchone()]
-        prediction2 = model.to_python(return_str=False)([[1, 'female', 'S']])[0]
+        prediction2 = model.to_python(return_str=False)([[1, "female", "S"]])[0]
         assert len(prediction) == len(prediction2)
         assert prediction[0] == prediction2[0]
         assert prediction[1] == prediction2[1]

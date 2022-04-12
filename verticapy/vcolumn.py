@@ -134,7 +134,9 @@ Attributes
     # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
-            assert index.step in (1, None), ValueError("vColumn doesn't allow slicing having steps different than 1.")
+            assert index.step in (1, None), ValueError(
+                "vColumn doesn't allow slicing having steps different than 1."
+            )
             index_stop = index.stop
             index_start = index.start
             if not (isinstance(index_start, int)):
@@ -169,7 +171,11 @@ Attributes
                 last_order_by(self.parent),
                 index,
             )
-            return executeSQL(query=query, title="Getting the vColumn element.", method="fetchfirstelem")
+            return executeSQL(
+                query=query,
+                title="Getting the vColumn element.",
+                method="fetchfirstelem",
+            )
         else:
             return getattr(self, index)
 
@@ -279,8 +285,12 @@ Attributes
 		"""
         check_types([("name", name, [str])])
         name = str_column(name.replace('"', "_"))
-        assert name.replace('"', ""), EmptyParameter("The parameter 'name' must not be empty")
-        assert not(column_check_ambiguous(name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue.")
+        assert name.replace('"', ""), EmptyParameter(
+            "The parameter 'name' must not be empty"
+        )
+        assert not (column_check_ambiguous(name, self.parent.get_columns())), NameError(
+            f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
+        )
         new_vColumn = vColumn(
             name,
             parent=self.parent,
@@ -378,9 +388,7 @@ Attributes
 		"""
         if isinstance(func, str_sql):
             func = str(func)
-        check_types(
-            [("func", func, [str]), ("copy_name", copy_name, [str])]
-        )
+        check_types([("func", func, [str]), ("copy_name", copy_name, [str])])
         try:
             try:
                 ctype = get_data_types(
@@ -409,7 +417,9 @@ Attributes
                             re.compile("\\b{}\\b".format(column.replace('"', ""))), func
                         )
                     ):
-                        max_floor = max(len(self.parent[column].transformations), max_floor)
+                        max_floor = max(
+                            len(self.parent[column].transformations), max_floor
+                        )
                 except:
                     pass
             max_floor -= len(self.transformations)
@@ -757,10 +767,10 @@ Attributes
  	--------
  	vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
 		"""
-        check_types(
-            [("lower", lower, [float, int]), ("upper", upper, [float, int])]
+        check_types([("lower", lower, [float, int]), ("upper", upper, [float, int])])
+        assert (lower != None) or (upper != None), ParameterError(
+            "At least 'lower' or 'upper' must have a numerical value"
         )
-        assert (lower != None) or (upper != None), ParameterError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             "WHEN {} < {} THEN {} ".format("{}", lower, lower)
             if (isinstance(lower, (float, int)))
@@ -793,11 +803,13 @@ Attributes
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
-    def cut(self, 
-            breaks: list, 
-            labels: list = [], 
-            include_lowest: bool = True,
-            right: bool = True):
+    def cut(
+        self,
+        breaks: list,
+        labels: list = [],
+        include_lowest: bool = True,
+        right: bool = True,
+    ):
         """
     ---------------------------------------------------------------------------
     Discretizes the vColumn using the input list. 
@@ -823,13 +835,23 @@ Attributes
     --------
     vDataFrame[].apply : Applies a function to the input vColumn.
         """
-        check_types([("breaks", breaks, [list]),
-                     ("labels", labels, [list]),
-                     ("include_lowest", include_lowest, [bool]),
-                     ("right", right, [bool])])
-        assert self.isnum() or self.isdate(), TypeError("cut only works on numerical / date-like vColumns.")
-        assert len(breaks) >= 2, ParameterError("Length of parameter 'breaks' must be greater or equal to 2.")
-        assert len(breaks) == len(labels) + 1 or not(labels), ParameterError("Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty.")
+        check_types(
+            [
+                ("breaks", breaks, [list]),
+                ("labels", labels, [list]),
+                ("include_lowest", include_lowest, [bool]),
+                ("right", right, [bool]),
+            ]
+        )
+        assert self.isnum() or self.isdate(), TypeError(
+            "cut only works on numerical / date-like vColumns."
+        )
+        assert len(breaks) >= 2, ParameterError(
+            "Length of parameter 'breaks' must be greater or equal to 2."
+        )
+        assert len(breaks) == len(labels) + 1 or not (labels), ParameterError(
+            "Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty."
+        )
         conditions, column = [], self.alias
         for idx in range(len(breaks) - 1):
             first_elem, second_elem = breaks[idx], breaks[idx + 1]
@@ -845,7 +867,9 @@ Attributes
                 label = labels[idx]
             else:
                 label = f"{close_l}{first_elem};{second_elem}{close_r}"
-            conditions += [f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"]
+            conditions += [
+                f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"
+            ]
         expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
         self.apply(func=expr)
 
@@ -1021,6 +1045,7 @@ Attributes
             return ax
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
+
         schema = verticapy.options["temp_schema"]
         if not (schema):
             schema = "public"
@@ -1039,7 +1064,7 @@ Attributes
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
-                ax=ax, **style_kwds,
+                ax=ax, **style_kwds
             )
             model.drop()
             return result
@@ -1049,7 +1074,7 @@ Attributes
 
     # ---#
     def describe(
-        self, method: str = "auto", max_cardinality: int = 6, numcol: str = "",
+        self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
     ):
         """
 	---------------------------------------------------------------------------
@@ -1091,7 +1116,9 @@ Attributes
         )
 
         method = method.lower()
-        assert (method != "cat_stats") or (numcol), ParameterError("The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'")
+        assert (method != "cat_stats") or (numcol), ParameterError(
+            "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
+        )
         distinct_count, is_numeric, is_date = (
             self.nunique(),
             self.isnum(),
@@ -1103,7 +1130,9 @@ Attributes
             result = result.values[self.alias]
         elif (method == "cat_stats") and (numcol != ""):
             numcol = vdf_columns_names([numcol], self.parent)[0]
-            assert self.parent[numcol].category() in ("float", "int"), TypeError("The column 'numcol' must be numerical")
+            assert self.parent[numcol].category() in ("float", "int"), TypeError(
+                "The column 'numcol' must be numerical"
+            )
             cast = "::int" if (self.parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
@@ -1167,7 +1196,11 @@ Attributes
             query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
                 self.parent.__genSQL__(), query
             )
-            query_result = executeSQL(query=query, title="Computing the descriptive statistics of {}.".format(self.alias), method="fetchall")
+            query_result = executeSQL(
+                query=query,
+                title="Computing the descriptive statistics of {}.".format(self.alias),
+                method="fetchall",
+            )
             result = [distinct_count, self.count()] + [item[1] for item in query_result]
             index = ["unique", "count"] + [item[0] for item in query_result]
         else:
@@ -1287,7 +1320,7 @@ Attributes
             schema = verticapy.options["temp_schema"]
             if not (schema):
                 schema = "public"
-            tmp_view_name  = gen_tmp_name(schema=schema, name="view")
+            tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
             assert bins >= 2, ParameterError(
                 "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
@@ -1303,6 +1336,7 @@ Attributes
                 RandomForestClassifier,
                 RandomForestRegressor,
             )
+
             drop_if_exists(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
                 model = RandomForestRegressor(tmp_model_name)
@@ -1322,7 +1356,11 @@ Attributes
                 query = "SELECT split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
                     " UNION ALL ".join(query), bins - 1
                 )
-                result = executeSQL(query=query, title="Computing the optimized histogram bins using Random Forest.", method="fetchall")
+                result = executeSQL(
+                    query=query,
+                    title="Computing the optimized histogram bins using Random Forest.",
+                    method="fetchall",
+                )
                 result = [elem[0] for elem in result]
             except:
                 drop_if_exists(tmp_view_name, method="view")
@@ -1332,7 +1370,9 @@ Attributes
             drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            assert k >= 2, ParameterError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
+            assert k >= 2, ParameterError(
+                "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
+            )
             distinct = self.topk(k).values["index"]
             trans = (
                 "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
@@ -1350,10 +1390,14 @@ Attributes
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            assert bins >= 2, ParameterError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
+            assert bins >= 2, ParameterError(
+                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
+            )
             count = self.count()
             nb = int(float(count / int(bins)))
-            assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
+            assert nb != 0, Exception(
+                "Not enough values to compute the Equal Frequency discretization"
+            )
             total, query, nth_elems = nb, [], []
             while total < int(float(count / int(bins))) * int(bins):
                 nth_elems += [str(total)]
@@ -1369,7 +1413,11 @@ Attributes
                 self.alias,
                 where,
             )
-            result = executeSQL(query=query, title="Computing the equal frequency histogram bins.", method="fetchall")
+            result = executeSQL(
+                query=query,
+                title="Computing the equal frequency histogram bins.",
+                method="fetchall",
+            )
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
             if not (h) or h <= 0:
@@ -1463,7 +1511,11 @@ Attributes
                 self.parent.__genSQL__(),
                 self.alias,
             )
-        query_result = executeSQL(query=query, title="Computing the distinct categories of {}.".format(self.alias), method="fetchall")
+        query_result = executeSQL(
+            query=query,
+            title="Computing the distinct categories of {}.".format(self.alias),
+            method="fetchall",
+        )
         return [item for sublist in query_result for item in sublist]
 
     # ---#
@@ -1521,7 +1573,12 @@ Attributes
                 column for column in self.parent._VERTICAPY_VARIABLES_["columns"]
             ]
             force_columns.remove(self.alias)
-            executeSQL("SELECT * FROM {} LIMIT 10".format(self.parent.__genSQL__(force_columns=force_columns)), print_time_sql=False)
+            executeSQL(
+                "SELECT * FROM {} LIMIT 10".format(
+                    self.parent.__genSQL__(force_columns=force_columns)
+                ),
+                print_time_sql=False,
+            )
             self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
             delattr(self.parent, self.alias)
         except:
@@ -1534,7 +1591,7 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05,
+        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
     ):
         """
 	---------------------------------------------------------------------------
@@ -1575,7 +1632,7 @@ Attributes
             self.parent.filter(
                 "ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
-                ),
+                )
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1584,7 +1641,7 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha)
             )
         return self.parent
 
@@ -1669,7 +1726,11 @@ Attributes
             query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
                 alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
             )
-            p_alpha, p_1_alpha = executeSQL(query=query, title="Computing the quantiles of {}.".format(self.alias), method="fetchrow")
+            p_alpha, p_1_alpha = executeSQL(
+                query=query,
+                title="Computing the quantiles of {}.".format(self.alias),
+                method="fetchrow",
+            )
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
         elif method == "null":
@@ -1688,7 +1749,16 @@ Attributes
                 self.alias,
                 p_1_alpha,
             )
-            mean_alpha, mean_1_alpha = [item[0] for item in executeSQL(query=query, title="Computing the average of the {}'s lower and upper outliers.".format(self.alias), method="fetchall")]
+            mean_alpha, mean_1_alpha = [
+                item[0]
+                for item in executeSQL(
+                    query=query,
+                    title="Computing the average of the {}'s lower and upper outliers.".format(
+                        self.alias
+                    ),
+                    method="fetchall",
+                )
+            ]
             if mean_alpha == None:
                 mean_alpha = "NULL"
             if mean_1_alpha == None:
@@ -1806,7 +1876,11 @@ Attributes
                     query = "SELECT {}, {}({}) FROM {} GROUP BY {};".format(
                         by[0], fun, self.alias, self.parent.__genSQL__(), by[0]
                     )
-                    result = executeSQL(query, title="Computing the different aggregations.", method="fetchall")
+                    result = executeSQL(
+                        query,
+                        title="Computing the different aggregations.",
+                        method="fetchall",
+                    )
                     for idx, elem in enumerate(result):
                         result[idx][0] = (
                             "NULL"
@@ -1821,7 +1895,12 @@ Attributes
                             ["{}, {}".format(elem[0], elem[1]) for elem in result]
                         ),
                     )
-                    executeSQL("SELECT {} FROM {} LIMIT 1".format(new_column.format(self.alias), self.parent.__genSQL__()), print_time_sql=False)
+                    executeSQL(
+                        "SELECT {} FROM {} LIMIT 1".format(
+                            new_column.format(self.alias), self.parent.__genSQL__()
+                        ),
+                        print_time_sql=False,
+                    )
                 except:
                     new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
                         "{}", fun, "{}", ", ".join(by)
@@ -1831,7 +1910,9 @@ Attributes
                     "{}", fun, "{}", ", ".join(by)
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
-            assert order_by, ParameterError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data")
+            assert order_by, ParameterError(
+                "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
+            )
             desc = "" if (method in ("ffill", "pad")) else " DESC"
             partition_by = (
                 "PARTITION BY {}".format(
@@ -1900,9 +1981,7 @@ Attributes
         return self.parent
 
     # ---#
-    def geo_plot(
-        self, *args, **kwargs,
-    ):
+    def geo_plot(self, *args, **kwargs):
         """
     ---------------------------------------------------------------------------
     Draws the Geospatial object.
@@ -2008,7 +2087,9 @@ Attributes
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
-                assert not(column_check_ambiguous(name, columns)), NameError(f"A vColumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vColumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.")
+                assert not (column_check_ambiguous(name, columns)), NameError(
+                    f"A vColumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vColumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue."
+                )
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2168,9 +2249,7 @@ Attributes
     vDataFrame[].head : Returns the head of the vColumn.
     vDataFrame[].tail : Returns the tail of the vColumn.
         """
-        check_types(
-            [("limit", limit, [int, float]), ("offset", offset, [int, float])]
-        )
+        check_types([("limit", limit, [int, float]), ("offset", offset, [int, float])])
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = "Reads {}.".format(self.alias)
@@ -2228,9 +2307,7 @@ Attributes
         return self.category() == "date"
 
     # ---#
-    def isin(
-        self, val: list, *args,
-    ):
+    def isin(self, val: list, *args):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vColumn and it returns the new 
@@ -2277,9 +2354,7 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
-    def iv_woe(
-        self, y: str, bins: int = 10,
-    ):
+    def iv_woe(self, y: str, bins: int = 10):
         """
     ---------------------------------------------------------------------------
     Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
@@ -2469,18 +2544,16 @@ Attributes
         check_types([("response", response, [str])])
         columns_check([response], self.parent)
         response = vdf_columns_names([response], self.parent)[0]
-        assert self.parent[response].isnum(), TypeError("The response column must be numerical to use a mean encoding")
+        assert self.parent[response].isnum(), TypeError(
+            "The response column must be numerical to use a mean encoding"
+        )
         max_floor = len(self.parent[response].transformations) - len(
             self.transformations
         )
         for k in range(max_floor):
             self.transformations += [("{}", self.ctype(), self.category())]
         self.transformations += [
-            (
-                "AVG({}) OVER (PARTITION BY {})".format(response, "{}"),
-                "int",
-                "float",
-            )
+            ("AVG({}) OVER (PARTITION BY {})".format(response, "{}"), "int", "float")
         ]
         self.parent.__update_catalog__(erase=True, columns=[self.alias])
         self.parent.__add_to_history__(
@@ -2584,8 +2657,14 @@ Attributes
                     return pre_comp
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
-        result = executeSQL("SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n), title="Computing the mode.", method="fetchall")
-        top = None if not(result) else result[0][0]
+        result = executeSQL(
+            "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
+                self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n
+            ),
+            title="Computing the mode.",
+            method="fetchall",
+        )
+        top = None if not (result) else result[0][0]
         if not (dropna):
             n = "" if (n == 1) else str(int(n))
             if isinstance(top, decimal.Decimal):
@@ -2708,7 +2787,17 @@ Attributes
                         return self
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
-                        result = executeSQL("SELECT {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(by[0], self.alias, self.alias, self.parent.__genSQL__(), by[0]), title="Computing the different categories to normalize.", method="fetchall")
+                        result = executeSQL(
+                            "SELECT {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
+                                by[0],
+                                self.alias,
+                                self.alias,
+                                self.parent.__genSQL__(),
+                                by[0],
+                            ),
+                            title="Computing the different categories to normalize.",
+                            method="fetchall",
+                        )
                         for i in range(len(result)):
                             if result[i][2] == None:
                                 pass
@@ -2744,7 +2833,12 @@ Attributes
                                 ]
                             ),
                         )
-                        executeSQL("SELECT {}, {} FROM {} LIMIT 1".format(avg, stddev, self.parent.__genSQL__()), print_time_sql=False)
+                        executeSQL(
+                            "SELECT {}, {} FROM {} LIMIT 1".format(
+                                avg, stddev, self.parent.__genSQL__()
+                            ),
+                            print_time_sql=False,
+                        )
                     except:
                         avg, stddev = (
                             "AVG({}) OVER (PARTITION BY {})".format(
@@ -2813,7 +2907,19 @@ Attributes
                         return self
                 elif n == 1:
                     try:
-                        result = executeSQL("SELECT {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(by[0], self.alias, self.alias, self.parent.__genSQL__(), by[0]), title="Computing the different categories {} to normalize.".format(by[0]), method="fetchall")
+                        result = executeSQL(
+                            "SELECT {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
+                                by[0],
+                                self.alias,
+                                self.alias,
+                                self.parent.__genSQL__(),
+                                by[0],
+                            ),
+                            title="Computing the different categories {} to normalize.".format(
+                                by[0]
+                            ),
+                            method="fetchall",
+                        )
                         cmin = "DECODE({}, {}, NULL)".format(
                             by[0],
                             ", ".join(
@@ -2844,7 +2950,12 @@ Attributes
                                 ]
                             ),
                         )
-                        executeSQL("SELECT {}, {} FROM {} LIMIT 1".format(cmax, cmin, self.parent.__genSQL__()), print_time_sql=False)
+                        executeSQL(
+                            "SELECT {}, {} FROM {} LIMIT 1".format(
+                                cmax, cmin, self.parent.__genSQL__()
+                            ),
+                            print_time_sql=False,
+                        )
                     except:
                         cmax, cmin = (
                             "MAX({}) OVER (PARTITION BY {})".format(
@@ -2997,7 +3108,9 @@ Attributes
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
-        assert self.isnum() or self.isdate(), ParameterError("numh is only available on type numeric|date")
+        assert self.isnum() or self.isdate(), ParameterError(
+            "numh is only available on type numeric|date"
+        )
         if self.isnum():
             result = (
                 self.parent.describe(
@@ -3021,7 +3134,11 @@ Attributes
             query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
                 self.alias, self.alias, self.alias, self.alias, self.alias, table
             )
-            result = executeSQL(query, title="Different aggregations to compute the optimal h.", method="fetchrow")
+            result = executeSQL(
+                query,
+                title="Different aggregations to compute the optimal h.",
+                method="fetchrow",
+            )
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
@@ -3255,7 +3372,9 @@ Attributes
 		"""
         check_types([("x", x, [int, float], ("exact", exact, [bool]))])
         prefix = "exact_" if exact else ""
-        return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][0]
+        return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][
+            0
+        ]
 
     # ---#
     def range_plot(
@@ -3355,7 +3474,11 @@ Attributes
         check_types([("new_name", new_name, [str])])
         old_name = str_column(self.alias)
         new_name = new_name.replace('"', "")
-        assert not(column_check_ambiguous(new_name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.")
+        assert not (
+            column_check_ambiguous(new_name, self.parent.get_columns())
+        ), NameError(
+            f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue."
+        )
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
@@ -3572,7 +3695,14 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        store_usage = executeSQL("SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(convert_special_type(self.category(), False, self.alias), self.parent.__genSQL__()), title="Computing the Store Usage of the vColumn {}.".format(self.alias), method="fetchfirstelem")
+        store_usage = executeSQL(
+            "SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
+                convert_special_type(self.category(), False, self.alias),
+                self.parent.__genSQL__(),
+            ),
+            title="Computing the Store Usage of the vColumn {}.".format(self.alias),
+            method="fetchfirstelem",
+        )
         self.parent.__update_catalog__(
             {"index": ["store_usage"], self.alias: [store_usage]}
         )
@@ -3844,7 +3974,13 @@ Attributes
             self.alias,
             topk,
         )
-        result = executeSQL(query, title="Computing the top{} categories of {}.".format(k if k > 0 else "", self.alias), method="fetchall")
+        result = executeSQL(
+            query,
+            title="Computing the top{} categories of {}.".format(
+                k if k > 0 else "", self.alias
+            ),
+            method="fetchall",
+        )
         values = {
             "index": [item[0] for item in result],
             "count": [int(item[1]) for item in result],

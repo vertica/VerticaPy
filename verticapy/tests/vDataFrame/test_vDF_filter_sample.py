@@ -91,23 +91,19 @@ class TestvDFFilterSample:
 
     def test_vDF_balance(self, titanic_vd):
         # hybrid
-        result = titanic_vd.balance(
-            "embarked", method="hybrid"
-        )["embarked"].topk()
+        result = titanic_vd.balance("embarked", method="hybrid")["embarked"].topk()
         assert 30 < result["percent"][0] < 40
         assert 30 < result["percent"][1] < 40
         assert 30 < result["percent"][2] < 40
         # under
-        result = titanic_vd.balance(
-            "embarked", method="under", x = 0.5
-        )["embarked"].topk()
+        result = titanic_vd.balance("embarked", method="under", x=0.5)[
+            "embarked"
+        ].topk()
         assert 35 < result["percent"][0] < 55
         assert 35 < result["percent"][1] < 55
         assert 15 < result["percent"][2] < 30
         # over
-        result = titanic_vd.balance(
-            "embarked", method="over", x = 0.5
-        )["embarked"].topk()
+        result = titanic_vd.balance("embarked", method="over", x=0.5)["embarked"].topk()
         assert 40 < result["percent"][0] < 55
         assert 15 < result["percent"][1] < 35
         assert 15 < result["percent"][2] < 35

@@ -13,7 +13,13 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.tsa import SARIMAX
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
+from verticapy import (
+    drop,
+    set_option,
+    vertica_conn,
+    create_verticapy_schema,
+    current_cursor,
+)
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,13 +32,15 @@ def amazon_vd():
     amazon = load_amazon()
     yield amazon
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon", )
+        drop(name="public.amazon",)
 
 
 @pytest.fixture(scope="module")
 def model(amazon_vd):
     create_verticapy_schema()
-    model_class = SARIMAX("sarimax_model_test", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
+    model_class = SARIMAX(
+        "sarimax_model_test", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20
+    )
     model_class.drop()
     model_class.fit("public.amazon", "number", "date")
     yield model_class
@@ -47,17 +55,20 @@ class TestSARIMAX:
         assert model_repr.__repr__() == "<SARIMAX>"
 
     def test_deploySQL(self, model):
-        assert 'VerticaPy_y_copy' in model.deploySQL()
+        assert "VerticaPy_y_copy" in model.deploySQL()
 
     def test_drop(self):
-        model_test = SARIMAX("sarimax_model_test_drop", )
+        model_test = SARIMAX("sarimax_model_test_drop",)
         model_test.drop()
         model_test.fit("public.amazon", "number", "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_drop', '\"sarimax_model_test_drop\"')"
         )
-        assert current_cursor().fetchone()[0] in ("sarimax_model_test_drop", '"sarimax_model_test_drop"')
+        assert current_cursor().fetchone()[0] in (
+            "sarimax_model_test_drop",
+            '"sarimax_model_test_drop"',
+        )
 
         model_test.drop()
         current_cursor().execute(
@@ -83,28 +94,45 @@ class TestSARIMAX:
             "ma1",
             "ma12",
         ]
-        assert m_att_details["coefficient"][0] == pytest.approx(-0.0206811318986692, abs=1e-6)
-        assert m_att_details["coefficient"][1] == pytest.approx(-0.472445862105583, abs=1e-6)
-        assert m_att_details["coefficient"][2] == pytest.approx(-0.283486934349855, abs=1e-6)
-        assert m_att_details["coefficient"][3] == pytest.approx(-0.289912044494682, abs=1e-6)
-        assert m_att_details["coefficient"][4] == pytest.approx(-0.5845016482145707, abs=1e-6)
+        assert m_att_details["coefficient"][0] == pytest.approx(
+            -0.0206811318986692, abs=1e-6
+        )
+        assert m_att_details["coefficient"][1] == pytest.approx(
+            -0.472445862105583, abs=1e-6
+        )
+        assert m_att_details["coefficient"][2] == pytest.approx(
+            -0.283486934349855, abs=1e-6
+        )
+        assert m_att_details["coefficient"][3] == pytest.approx(
+            -0.289912044494682, abs=1e-6
+        )
+        assert m_att_details["coefficient"][4] == pytest.approx(
+            -0.5845016482145707, abs=1e-6
+        )
 
-        assert model.get_attr(attr_name="ma_avg") == pytest.approx(-0.271509332267827, abs=1e-6)
-        assert model.get_attr(attr_name="ma_piq")["coefficient"][0:2] == [pytest.approx(-1, abs=1e-6), pytest.approx(0.289912044494682, abs=1e-6)]
+        assert model.get_attr(attr_name="ma_avg") == pytest.approx(
+            -0.271509332267827, abs=1e-6
+        )
+        assert model.get_attr(attr_name="ma_piq")["coefficient"][0:2] == [
+            pytest.approx(-1, abs=1e-6),
+            pytest.approx(0.289912044494682, abs=1e-6),
+        ]
 
     def test_get_params(self, model):
-        assert model.get_params() == {'D': 1,
-                                      'P': 1,
-                                      'Q': 1,
-                                      'd': 1,
-                                      'max_iter': 1000,
-                                      'max_pik': 20,
-                                      'p': 1,
-                                      'papprox_ma': 200,
-                                      'q': 1,
-                                      's': 12,
-                                      'solver': 'Newton',
-                                      'tol': 0.0001}
+        assert model.get_params() == {
+            "D": 1,
+            "P": 1,
+            "Q": 1,
+            "d": 1,
+            "max_iter": 1000,
+            "max_pik": 20,
+            "p": 1,
+            "papprox_ma": 200,
+            "q": 1,
+            "s": 12,
+            "solver": "Newton",
+            "tol": 0.0001,
+        }
 
     def test_get_plot(self, model):
         result = model.plot(color="r", nlead=10, nlast=10, dynamic=True)
@@ -112,15 +140,9 @@ class TestSARIMAX:
         plt.close("all")
 
     def test_get_predicts(self, amazon_vd, model):
-        result = model.predict(
-            amazon_vd,
-            name="predict",
-            nlead=10,
-        )
+        result = model.predict(amazon_vd, name="predict", nlead=10,)
 
-        assert result["predict"].avg() == pytest.approx(
-            140.036629403195, abs=1e-6
-        )
+        assert result["predict"].avg() == pytest.approx(140.036629403195, abs=1e-6)
 
     def test_regression_report(self, model):
         reg_rep = model.regression_report()
@@ -176,13 +198,18 @@ class TestSARIMAX:
         assert model.get_params()["p"] == 2
 
     def test_model_from_vDF(self, amazon_vd):
-        model_class = SARIMAX("sarimax_model_test_vdf", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20)
+        model_class = SARIMAX(
+            "sarimax_model_test_vdf", p=1, d=1, q=1, s=12, P=1, D=1, Q=1, max_pik=20
+        )
         model_class.drop()
         model_class.fit(amazon_vd, "number", "date")
 
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('sarimax_model_test_vdf', '\"sarimax_model_test_vdf\"')"
         )
-        assert current_cursor().fetchone()[0] in ("sarimax_model_test_vdf", '"sarimax_model_test_vdf"')
+        assert current_cursor().fetchone()[0] in (
+            "sarimax_model_test_vdf",
+            '"sarimax_model_test_vdf"',
+        )
 
         model_class.drop()

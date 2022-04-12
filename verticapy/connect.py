@@ -76,13 +76,13 @@ Returns
 string
         the full path to the auto-connection file.
         """
-    if 'VERTICAPY_CONNECTIONS' in os.environ:
-        return os.environ['VERTICAPY_CONNECTIONS']
-    # path = os.path.join(os.path.dirname(verticapy.__file__), "connections.verticapy")
-    path = os.path.join(os.path.expanduser('~'), '.vertica')
-    os.makedirs(path, 0o700, exist_ok = True) 
-    path = os.path.join(path, 'connections.verticapy') 
+    if "VERTICAPY_CONNECTIONS" in os.environ:
+        return os.environ["VERTICAPY_CONNECTIONS"]
+    path = os.path.join(os.path.expanduser("~"), ".vertica")
+    os.makedirs(path, 0o700, exist_ok=True)
+    path = os.path.join(path, "connections.verticapy")
     return path
+
 
 #
 # ---#
@@ -121,19 +121,25 @@ name: str
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
+
     if confparser.has_section(name):
+
         confparser.remove_section("VERTICAPY_AUTO_CONNECTION")
         confparser.add_section("VERTICAPY_AUTO_CONNECTION")
         confparser.set("VERTICAPY_AUTO_CONNECTION", "name", name)
         f = open(path, "w+")
         confparser.write(f)
         f.close()
+
     else:
+
         raise NameError(
-            "The input name is incorrect. The connection '{}' has never been created.\nUse the new_connection function to create a new connection.".format(
-                name
-            )
+            "The input name is incorrect. The connection "
+            f"'{name}' has never been created.\nUse the "
+            "new_connection function to create a new "
+            "connection."
         )
+
 
 # ---#
 def close_connection():
@@ -141,8 +147,11 @@ def close_connection():
 ---------------------------------------------------------------------------
 Close the Database connection.
     """
-    if verticapy.options["connection"]["conn"] and not(verticapy.options["connection"]["conn"].closed()):
+    if verticapy.options["connection"]["conn"] and not (
+        verticapy.options["connection"]["conn"].closed()
+    ):
         verticapy.options["connection"]["conn"].close()
+
 
 # ---#
 def connect(section: str, dsn: str = ""):
@@ -159,11 +168,12 @@ dsn: str, optional
     VERTICAPY_CONNECTIONS environment variable will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
-    if prev_conn and not(prev_conn.closed()):
+    if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
+
 
 # ---#
 def delete_connection(name: str):
@@ -186,7 +196,9 @@ bool
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
+
     if confparser.has_section(name):
+
         confparser.remove_section(name)
         if confparser.has_section("VERTICAPY_AUTO_CONNECTION"):
             name_auto = confparser.get("VERTICAPY_AUTO_CONNECTION", "name")
@@ -196,15 +208,20 @@ bool
         confparser.write(f)
         f.close()
         return True
+
     else:
-        warnings.warn("The connection {} does not exist.".format(name), Warning)
+
+        warnings.warn(f"The connection {name} does not exist.", Warning)
         return False
 
+
 # ---#
-def new_connection(conn_info: dict, name: 
-                   str = "vertica_connection", 
-                   auto: bool = True,
-                   overwrite: bool = True):
+def new_connection(
+    conn_info: dict,
+    name: str = "vertica_connection",
+    auto: bool = True,
+    overwrite: bool = True,
+):
     """
 ---------------------------------------------------------------------------
 Saves the new connection in the VerticaPy connection file.
@@ -225,17 +242,25 @@ name: str, optional
 auto: bool, optional
     If set to True, the connection will become the new auto-connection.
 overwrite: bool, optional
-    If set to True and the connection already exists, it will be overwritten.
+    If set to True and the connection already exists, it will be 
+    overwritten.
 	"""
     check_types([("conn_info", conn_info, [dict])])
     path = get_connection_file()
     confparser = ConfigParser()
     confparser.optionxform = str
     confparser.read(path)
+
     if confparser.has_section(name):
-        if not(overwrite):
-            raise ParserError("The section '{}' already exists. You can overwrite it by setting the parameter 'overwrite' to True.".format(name))
+
+        if not (overwrite):
+            raise ParserError(
+                f"The section '{name}' already exists. You "
+                "can overwrite it by setting the parameter "
+                "'overwrite' to True."
+            )
         confparser.remove_section(name)
+
     confparser.add_section(name)
     for elem in conn_info:
         confparser.set(name, elem, str(conn_info[elem]))
@@ -244,6 +269,7 @@ overwrite: bool, optional
     f.close()
     if auto:
         change_auto_connection(name)
+
     connect(name, path)
 
 
@@ -265,8 +291,8 @@ Automatically creates a connection using the auto-connection.
 def read_dsn(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
-Reads the DSN information from the VERTICAPY_CONNECTIONS environment variable 
-or the input file.
+Reads the DSN information from the VERTICAPY_CONNECTIONS environment 
+variable or the input file.
 
 Parameters
 ----------
@@ -284,44 +310,74 @@ dict
     check_types([("dsn", dsn, [str]), ("section", section, [str])])
     confparser = ConfigParser()
     confparser.optionxform = str
+
     if not dsn:
         if "VERTICAPY_CONNECTIONS" in os.environ:
             dsn = os.environ["VERTICAPY_CONNECTIONS"]
         else:
-            raise EnvironmentError("The environment variable 'VERTICAPY_CONNECTIONS' does not exist. Alternatively, you can manually specify the path to a DSN configuration file with the 'dsn' variable.")
+            raise EnvironmentError(
+                "The environment variable 'VERTICAPY_CONNECTIONS'"
+                " does not exist. Alternatively, you can manually"
+                "specify the path to a DSN configuration file with"
+                "the 'dsn' variable."
+            )
+
     confparser.read(dsn)
+
     if confparser.has_section(section):
+
         options = confparser.items(section)
         conn_info = {"port": 5433, "user": "dbadmin"}
-        for elem in options:
-            if elem[0].lower() in ("servername", "server"):
-                conn_info["host"] = elem[1]
-            elif elem[0].lower() == "uid":
-                conn_info["user"] = elem[1]
-            elif (elem[0].lower() in ("port", "connection_timeout", )) and (elem[1].isnumeric()):
-                conn_info[elem[0].lower()] = int(elem[1])
-            elif elem[0].lower() == "pwd":
-                conn_info["password"] = elem[1]
-            elif elem[0].lower() == "backup_server_node":
+
+        for option_name, option_val in options:
+
+            option_name = option_name.lower()
+            if option_name in ("servername", "server"):
+                conn_info["host"] = option_val
+
+            elif option_name == "uid":
+                conn_info["user"] = option_val
+
+            elif (option_name in ("port", "connection_timeout")) and (
+                option_val.isnumeric()
+            ):
+                conn_info[option_name] = int(option_val)
+
+            elif option_name == "pwd":
+                conn_info["password"] = option_val
+
+            elif option_name == "backup_server_node":
                 backup_server_node = {}
-                exec("id_port = {}".format(elem[1]), {}, backup_server_node)
+                exec(f"id_port = {option_val}", {}, backup_server_node)
                 conn_info["backup_server_node"] = backup_server_node["id_port"]
-            elif elem[0].lower() == "kerberosservicename":
-                conn_info["kerberos_service_name"] = elem[1]
-            elif elem[0].lower() == "kerberoshostname":
-                conn_info["kerberos_host_name"] = elem[1]
-            elif "vp_test_" in elem[0].lower():
-                conn_info[elem[0].lower()[8:]] = elem[1]
-            elif (elem[0].lower() in ("ssl", "autocommit", "use_prepared_statements", "connection_load_balance", "disable_copy_local")):
-                if (elem[1].lower() in ("true", "t", "yes", "y")):
-                    conn_info[elem[0].lower()] = True
-                else:
-                    conn_info[elem[0].lower()] = False
+
+            elif option_name == "kerberosservicename":
+                conn_info["kerberos_service_name"] = option_val
+
+            elif option_name == "kerberoshostname":
+                conn_info["kerberos_host_name"] = option_val
+
+            elif "vp_test_" in option_name:
+                conn_info[option_name[8:]] = option_val
+
+            elif option_name in (
+                "ssl",
+                "autocommit",
+                "use_prepared_statements",
+                "connection_load_balance",
+                "disable_copy_local",
+            ):
+                option_val = option_val.lower()
+                conn_info[option_name] = option_val in ("true", "t", "yes", "y")
+
             else:
-                conn_info[elem[0].lower()] = elem[1]
+                conn_info[option_name] = option_val
+
         return conn_info
+
     else:
-        raise NameError("The DSN Section '{}' doesn't exist.".format(section))
+
+        raise NameError(f"The DSN Section '{section}' doesn't exist.")
 
 
 # ---#

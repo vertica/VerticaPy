@@ -108,23 +108,26 @@ class TestvDFCorrelation:
         assert result4["confidence"][6] == pytest.approx(0.05273251493184901, 1e-2)
 
     def test_vDF_chaid(self, titanic_vd):
-        result = titanic_vd.chaid("survived",
-                                  ["age", "fare", "sex"])
+        result = titanic_vd.chaid("survived", ["age", "fare", "sex"])
         tree = result.attributes_["tree"]
         assert tree["chi2"] == pytest.approx(345.12775126385327)
         assert tree["children"]["female"]["chi2"] == pytest.approx(10.472532457814179)
-        assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(3.479525088868805)
-        assert tree["children"]["female"]["children"][127.6]["children"][19.0]["prediction"][0] == pytest.approx(0.325581395348837)
-        assert tree["children"]["female"]["children"][127.6]["children"][38.0]["prediction"][1] == pytest.approx(0.720496894409938)
-        assert not(tree["split_is_numerical"])
+        assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(
+            3.479525088868805
+        )
+        assert tree["children"]["female"]["children"][127.6]["children"][19.0][
+            "prediction"
+        ][0] == pytest.approx(0.325581395348837)
+        assert tree["children"]["female"]["children"][127.6]["children"][38.0][
+            "prediction"
+        ][1] == pytest.approx(0.720496894409938)
+        assert not (tree["split_is_numerical"])
         assert tree["split_predictor"] == '"sex"'
         assert tree["split_predictor_idx"] == 2
-        pred = result.predict([[3., 11., 'male'],
-                               [11., 1., 'female']])
+        pred = result.predict([[3.0, 11.0, "male"], [11.0, 1.0, "female"]])
         assert pred[0] == 0
         assert pred[1] == 1
-        pred = result.predict_proba([[3., 11., 'male'],
-                                     [11., 1., 'female']])
+        pred = result.predict_proba([[3.0, 11.0, "male"], [11.0, 1.0, "female"]])
         assert pred[0][0] == pytest.approx(0.75968992)
         assert pred[0][1] == pytest.approx(0.24031008)
         assert pred[1][0] == pytest.approx(0.3255814)
@@ -169,7 +172,7 @@ class TestvDFCorrelation:
             ["survived"], ["AVG(age) AS age", "AVG(fare) AS fare"]
         )
         result2 = titanic_vd_gb.corr(
-            columns=["survived", "age", "fare"],  method="spearman",
+            columns=["survived", "age", "fare"], method="spearman",
         )
         plt.close("all")
         assert result2["survived"][0] == 1.0
@@ -353,9 +356,7 @@ class TestvDFCorrelation:
 
     def test_vDF_pacf(self, amazon_vd):
         # testing vDataFrame.pacf
-        result = amazon_vd.pacf(
-            column="number", ts="date", by=["state"], p=5,
-        )
+        result = amazon_vd.pacf(column="number", ts="date", by=["state"], p=5,)
         plt.close("all")
         assert result["value"][0] == 1.0
         assert result["value"][1] == pytest.approx(0.672667529541858, 1e-2)
@@ -366,9 +367,7 @@ class TestvDFCorrelation:
 
     def test_vDF_regr(self, titanic_vd):
         # testing vDataFrame.regr (method = 'alpha')
-        result1 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="alpha",
-        )
+        result1 = titanic_vd.regr(columns=["survived", "age", "fare"], method="alpha",)
         plt.close("all")
         assert result1["survived"][0] == 0.0
         assert result1["survived"][1] == pytest.approx(0.435280333103508, 1e-2)
@@ -381,9 +380,7 @@ class TestvDFCorrelation:
         assert result1["fare"][2] == 0.0
 
         # testing vDataFrame.regr (method = 'beta')
-        result2 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="beta"
-        )
+        result2 = titanic_vd.regr(columns=["survived", "age", "fare"], method="beta")
         plt.close("all")
         assert result2["survived"][0] == 1.0
         assert result2["survived"][1] == pytest.approx(-0.00142952871080426, 1e-2)
@@ -396,9 +393,7 @@ class TestvDFCorrelation:
         assert result2["fare"][2] == 1.0
 
         # testing vDataFrame.regr (method = 'r2')
-        result3 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="r2",
-        )
+        result3 = titanic_vd.regr(columns=["survived", "age", "fare"], method="r2",)
         plt.close("all")
         assert result3["survived"][0] == 1.0
         assert result3["survived"][1] == pytest.approx(0.00178460779712559, 1e-2)

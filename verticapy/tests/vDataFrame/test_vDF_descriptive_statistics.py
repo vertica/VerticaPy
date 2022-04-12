@@ -741,12 +741,15 @@ class TestvDFDescriptiveStat:
             0.450501738
         )
         assert market_vd["Price"].numh(method="sturges") == pytest.approx(0.984707376)
-        assert amazon_vd["date"].numh(method="auto") == pytest.approx(44705828.571428575)
+        assert amazon_vd["date"].numh(method="auto") == pytest.approx(
+            44705828.571428575
+        )
         assert amazon_vd["date"].numh(method="freedman_diaconis") == pytest.approx(
             33903959.714834176
         )
-        assert amazon_vd["date"].numh(method="sturges") == pytest.approx(44705828.571428575)
-
+        assert amazon_vd["date"].numh(method="sturges") == pytest.approx(
+            44705828.571428575
+        )
 
     def test_vDF_prod(self, market_vd):
         # testing vDataFrame.prod
@@ -780,20 +783,20 @@ class TestvDFDescriptiveStat:
 
         # testing exact vDataFrame.quantile -- DOES NOT WORK ON GITHUB without any reason
         # the syntax is working and it can be executed easily anywhere.
-        #ERROR, Message: Syntax error at or near "FROM", Sqlstate: 42601, Position: 59, Routine: 
-        #base_yyerror, File: /data/jenkins/workspace/RE-ReleaseBuilds/RE-Jackhammer_2/server/vertica
-        #/Parser/scan.l, Line: 1051, Error Code: 4856, SQL: 
+        # ERROR, Message: Syntax error at or near "FROM", Sqlstate: 42601, Position: 59, Routine:
+        # base_yyerror, File: /data/jenkins/workspace/RE-ReleaseBuilds/RE-Jackhammer_2/server/vertica
+        # /Parser/scan.l, Line: 1051, Error Code: 4856, SQL:
         #'SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "age") FROM "public"."titanic"'
-        #result = titanic_vd.quantile(q=[0.22, 0.9], columns=["age", "fare"], exact=True)
+        # result = titanic_vd.quantile(q=[0.22, 0.9], columns=["age", "fare"], exact=True)
 
-        #assert result["exact_22.0%"][0] == pytest.approx(20.0)
-        #assert result["exact_90.0%"][0] == pytest.approx(50.0)
-        #assert result["exact_22.0%"][1] == pytest.approx(7.8958)
-        #assert result["exact_90.0%"][1] == pytest.approx(79.13)
+        # assert result["exact_22.0%"][0] == pytest.approx(20.0)
+        # assert result["exact_90.0%"][0] == pytest.approx(50.0)
+        # assert result["exact_22.0%"][1] == pytest.approx(7.8958)
+        # assert result["exact_90.0%"][1] == pytest.approx(79.13)
 
         # testing exact vDataFrame[].quantile
-        #assert titanic_vd["age"].quantile(x=0.5, exact=True) == pytest.approx(28.0)
-        #assert titanic_vd["fare"].quantile(x=0.1, exact=True) == pytest.approx(7.5892)
+        # assert titanic_vd["age"].quantile(x=0.5, exact=True) == pytest.approx(28.0)
+        # assert titanic_vd["fare"].quantile(x=0.1, exact=True) == pytest.approx(7.5892)
 
     def test_vDF_score(self, titanic_vd):
         from verticapy.learn.linear_model import LogisticRegression

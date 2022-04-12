@@ -192,7 +192,11 @@ Main Class for Vertica Model
 
     # ---#
     def contour(
-        self, nbins: int = 100, pos_label: Union[int, float, str] = None, ax=None, **style_kwds,
+        self,
+        nbins: int = 100,
+        pos_label: Union[int, float, str] = None,
+        ax=None,
+        **style_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -216,19 +220,56 @@ Main Class for Vertica Model
     ax
         Matplotlib axes object
         """
-        if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier"):
-            if not(pos_label):
+        if self.type in (
+            "RandomForestClassifier",
+            "XGBoostClassifier",
+            "NaiveBayes",
+            "NearestCentroid",
+            "KNeighborsClassifier",
+        ):
+            if not (pos_label):
                 pos_label = sorted(self.classes_)[-1]
-            if self.type in ("RandomForestClassifier", "XGBoostClassifier", "NaiveBayes", "NearestCentroid"):
-                return vdf_from_relation(self.input_relation).contour(self.X, self.deploySQL(X = self.X, pos_label=pos_label), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds)
+            if self.type in (
+                "RandomForestClassifier",
+                "XGBoostClassifier",
+                "NaiveBayes",
+                "NearestCentroid",
+            ):
+                return vdf_from_relation(self.input_relation).contour(
+                    self.X,
+                    self.deploySQL(X=self.X, pos_label=pos_label),
+                    cbar_title=self.y,
+                    nbins=nbins,
+                    ax=ax,
+                    **style_kwds,
+                )
             else:
-                return vdf_from_relation(self.input_relation).contour(self.X, self, pos_label=pos_label, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds)
+                return vdf_from_relation(self.input_relation).contour(
+                    self.X,
+                    self,
+                    pos_label=pos_label,
+                    cbar_title=self.y,
+                    nbins=nbins,
+                    ax=ax,
+                    **style_kwds,
+                )
         elif self.type == "KNeighborsRegressor":
-            return vdf_from_relation(self.input_relation).contour(self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds)
+            return vdf_from_relation(self.input_relation).contour(
+                self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
+            )
         elif self.type in ("KMeans", "BisectingKMeans"):
-            return vdf_from_relation(self.input_relation).contour(self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds)
+            return vdf_from_relation(self.input_relation).contour(
+                self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds
+            )
         else:
-            return vdf_from_relation(self.input_relation).contour(self.X, self.deploySQL(X = self.X), cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds)
+            return vdf_from_relation(self.input_relation).contour(
+                self.X,
+                self.deploySQL(X=self.X),
+                cbar_title=self.y,
+                nbins=nbins,
+                ax=ax,
+                **style_kwds,
+            )
 
     # ---#
     def deploySQL(self, X: list = []):
@@ -276,7 +317,7 @@ Main Class for Vertica Model
 
     # ---#
     def features_importance(
-        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds,
+        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
     ):
         """
 		---------------------------------------------------------------------------
@@ -304,8 +345,12 @@ Main Class for Vertica Model
                 coeff_importances = {}
                 for idx in range(len(self.stepwise_["importance"])):
                     if self.stepwise_["variable"][idx] != None:
-                        coeff_importances[self.stepwise_["variable"][idx]] = self.stepwise_["importance"][idx]
-                return plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds)
+                        coeff_importances[
+                            self.stepwise_["variable"][idx]
+                        ] = self.stepwise_["importance"][idx]
+                return plot_importance(
+                    coeff_importances, print_legend=False, ax=ax, **style_kwds
+                )
             return self.best_model_.features_importance(ax, tree_id, show, **style_kwds)
         if self.type in (
             "RandomForestClassifier",
@@ -317,7 +362,7 @@ Main Class for Vertica Model
             version(condition=[9, 1, 1])
             tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}'{})) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
-                name, tree_id,
+                name, tree_id
             )
             print_legend = False
         elif self.type in (
@@ -342,7 +387,9 @@ Main Class for Vertica Model
             raise FunctionError(
                 "Method 'features_importance' for '{}' doesn't exist.".format(self.type)
             )
-        result = executeSQL(query, title="Computing Features Importance.", method="fetchall")
+        result = executeSQL(
+            query, title="Computing Features Importance.", method="fetchall"
+        )
         coeff_importances, coeff_sign = {}, {}
         for elem in result:
             coeff_importances[elem[0]] = elem[1]
@@ -378,7 +425,16 @@ Main Class for Vertica Model
 		"""
         if self.type == "AutoML":
             return self.best_model_.get_attr(attr_name)
-        if self.type not in ("DBSCAN", "LocalOutlierFactor", "VAR", "SARIMAX", "KNeighborsClassifier", "KNeighborsRegressor", "NearestCentroid", "CountVectorizer"):
+        if self.type not in (
+            "DBSCAN",
+            "LocalOutlierFactor",
+            "VAR",
+            "SARIMAX",
+            "KNeighborsClassifier",
+            "KNeighborsRegressor",
+            "NearestCentroid",
+            "CountVectorizer",
+        ):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[8, 1, 1])
             result = to_tablesample(
@@ -423,7 +479,16 @@ Main Class for Vertica Model
             elif not (attr_name):
                 result = tablesample(
                     values={
-                        "attr_name": ["lowercase", "max_df", "min_df", "max_features", "ignore_special", "max_text_size", "vocabulary", "stop_words"],
+                        "attr_name": [
+                            "lowercase",
+                            "max_df",
+                            "min_df",
+                            "max_features",
+                            "ignore_special",
+                            "max_text_size",
+                            "vocabulary",
+                            "stop_words",
+                        ],
                     },
                 )
                 return result
@@ -438,9 +503,7 @@ Main Class for Vertica Model
                 return self.classes_
             elif not (attr_name):
                 result = tablesample(
-                    values={
-                        "attr_name": ["centroids", "classes", "p"],
-                    },
+                    values={"attr_name": ["centroids", "classes", "p"],},
                 )
                 return result
             else:
@@ -454,9 +517,7 @@ Main Class for Vertica Model
                 return self.classes_
             elif not (attr_name):
                 result = tablesample(
-                    values={
-                        "attr_name": ["n_neighbors", "p", "classes"],
-                    },
+                    values={"attr_name": ["n_neighbors", "p", "classes"],},
                 )
                 return result
             else:
@@ -467,11 +528,7 @@ Main Class for Vertica Model
             elif attr_name == "n_neighbors":
                 return self.parameters["n_neighbors"]
             elif not (attr_name):
-                result = tablesample(
-                    values={
-                        "attr_name": ["n_neighbors", "p"],
-                    },
-                )
+                result = tablesample(values={"attr_name": ["n_neighbors", "p"],},)
                 return result
             else:
                 raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
@@ -580,9 +637,7 @@ Main Class for Vertica Model
         return self.parameters
 
     # ---#
-    def plot(
-        self, max_nb_points: int = 100, ax=None, **style_kwds,
-    ):
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model.
@@ -658,11 +713,13 @@ Main Class for Vertica Model
         elif self.type == "LocalOutlierFactor":
             query = "SELECT COUNT(*) FROM {}".format(self.name)
             tablesample = 100 * min(
-                float(max_nb_points / executeSQL(query, method="fetchfirstelem", print_time_sql=False)), 1
+                float(
+                    max_nb_points
+                    / executeSQL(query, method="fetchfirstelem", print_time_sql=False)
+                ),
+                1,
             )
-            return lof_plot(
-                self.name, self.X, "lof_score", 100, ax=ax, **style_kwds,
-            )
+            return lof_plot(self.name, self.X, "lof_score", 100, ax=ax, **style_kwds)
         elif self.type in ("RandomForestRegressor", "XGBoostRegressor"):
             return regression_tree_plot(
                 self.X + [self.deploySQL()],
@@ -688,7 +745,7 @@ Main Class for Vertica Model
 	parameters: dict, optional
 		New parameters.
 		"""
-        if not(hasattr(self, "parameters")):
+        if not (hasattr(self, "parameters")):
             self.parameters = {}
         model_parameters = {}
         default_parameters = default_model_parameters(self.type)
@@ -1207,28 +1264,56 @@ Main Class for Vertica Model
             else:
                 model_parameters["sample"] = self.parameters["sample"]
             v = version()
-            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
                 if "col_sample_by_tree" in parameters:
-                    check_types([("col_sample_by_tree", parameters["col_sample_by_tree"], [int, float])])
+                    check_types(
+                        [
+                            (
+                                "col_sample_by_tree",
+                                parameters["col_sample_by_tree"],
+                                [int, float],
+                            )
+                        ]
+                    )
                     assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
                         "Incorrect parameter 'col_sample_by_tree'.\nThe parameter 'col_sample_by_tree' must be between 0.0 and 1.0."
                     )
-                    model_parameters["col_sample_by_tree"] = parameters["col_sample_by_tree"]
+                    model_parameters["col_sample_by_tree"] = parameters[
+                        "col_sample_by_tree"
+                    ]
                 elif "col_sample_by_tree" not in self.parameters:
-                    model_parameters["col_sample_by_tree"] = default_parameters["col_sample_by_tree"]
+                    model_parameters["col_sample_by_tree"] = default_parameters[
+                        "col_sample_by_tree"
+                    ]
                 else:
-                    model_parameters["col_sample_by_tree"] = self.parameters["col_sample_by_tree"]
+                    model_parameters["col_sample_by_tree"] = self.parameters[
+                        "col_sample_by_tree"
+                    ]
                 if "col_sample_by_node" in parameters:
-                    check_types([("col_sample_by_node", parameters["col_sample_by_node"], [int, float])])
+                    check_types(
+                        [
+                            (
+                                "col_sample_by_node",
+                                parameters["col_sample_by_node"],
+                                [int, float],
+                            )
+                        ]
+                    )
                     assert 0 < parameters["col_sample_by_node"] <= 1, ParameterError(
                         "Incorrect parameter 'col_sample_by_node'.\nThe parameter 'col_sample_by_node' must be between 0.0 and 1.0."
                     )
-                    model_parameters["col_sample_by_node"] = parameters["col_sample_by_node"]
+                    model_parameters["col_sample_by_node"] = parameters[
+                        "col_sample_by_node"
+                    ]
                 elif "col_sample_by_tree" not in self.parameters:
-                    model_parameters["col_sample_by_node"] = default_parameters["col_sample_by_node"]
+                    model_parameters["col_sample_by_node"] = default_parameters[
+                        "col_sample_by_node"
+                    ]
                 else:
-                    model_parameters["col_sample_by_node"] = self.parameters["col_sample_by_node"]
+                    model_parameters["col_sample_by_node"] = self.parameters[
+                        "col_sample_by_node"
+                    ]
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int])])
                 assert 1 <= parameters["max_depth"] <= 20, ParameterError(
@@ -1413,9 +1498,7 @@ Main Class for Vertica Model
                     "min_divisible_cluster_size"
                 ]
             if "distance_method" in parameters:
-                check_types(
-                    [("distance_method", parameters["distance_method"], [str])]
-                )
+                check_types([("distance_method", parameters["distance_method"], [str])])
                 assert str(parameters["distance_method"]).lower() in [
                     "euclidean"
                 ], ParameterError(
@@ -1559,7 +1642,9 @@ Main Class for Vertica Model
             if self.type in ("PCA", "SVD"):
                 if "method" in parameters:
                     check_types([("method", parameters["method"], [str])])
-                    assert str(parameters["method"]).lower() in ["lapack"], ParameterError(
+                    assert str(parameters["method"]).lower() in [
+                        "lapack"
+                    ], ParameterError(
                         "Incorrect parameter 'method'.\nThe decomposition method must be in (lapack), found '{}'.".format(
                             parameters["method"]
                         )
@@ -1578,7 +1663,9 @@ Main Class for Vertica Model
                     )
                     model_parameters["n_components"] = parameters["n_components"]
                 elif "n_components" not in self.parameters:
-                    model_parameters["n_components"] = default_parameters["n_components"]
+                    model_parameters["n_components"] = default_parameters[
+                        "n_components"
+                    ]
                 else:
                     model_parameters["n_components"] = self.parameters["n_components"]
         elif self.type == "OneHotEncoder":
@@ -1780,7 +1867,12 @@ Main Class for Vertica Model
                 model_parameters["max_features"] = default_parameters["max_features"]
             else:
                 model_parameters["max_features"] = self.parameters["max_features"]
-        from verticapy.learn.linear_model import Lasso, Ridge, LinearRegression, LogisticRegression
+        from verticapy.learn.linear_model import (
+            Lasso,
+            Ridge,
+            LinearRegression,
+            LogisticRegression,
+        )
         from verticapy.learn.tree import (
             DecisionTreeClassifier,
             DecisionTreeRegressor,
@@ -1849,26 +1941,37 @@ Main Class for Vertica Model
             "LinearSVC",
             "LinearSVR",
         ):
-            attributes = {"coefficients": self.coef_["coefficient"][1:],
-                          "intercept": self.coef_["coefficient"][0]}
+            attributes = {
+                "coefficients": self.coef_["coefficient"][1:],
+                "intercept": self.coef_["coefficient"][0],
+            }
         elif self.type == "BisectingKMeans":
-            attributes = {"clusters": self.cluster_centers_.to_numpy()[:,1:len(self.X)+1],
-                          "left_child": self.cluster_centers_["left_child"],
-                          "right_child": self.cluster_centers_["right_child"],
-                          "cluster_size": self.cluster_centers_["cluster_size"],
-                          "cluster_score": [self.cluster_centers_["withinss"][i] / self.cluster_centers_["totWithinss"][i] for i in range(len(self.cluster_centers_["withinss"]))],
-                          "p": 2,}
+            attributes = {
+                "clusters": self.cluster_centers_.to_numpy()[:, 1 : len(self.X) + 1],
+                "left_child": self.cluster_centers_["left_child"],
+                "right_child": self.cluster_centers_["right_child"],
+                "cluster_size": self.cluster_centers_["cluster_size"],
+                "cluster_score": [
+                    self.cluster_centers_["withinss"][i]
+                    / self.cluster_centers_["totWithinss"][i]
+                    for i in range(len(self.cluster_centers_["withinss"]))
+                ],
+                "p": 2,
+            }
         elif self.type == "KMeans":
-            attributes = {"clusters": self.cluster_centers_.to_numpy(),
-                          "p": 2,}
+            attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
         elif self.type == "NearestCentroid":
-            attributes = {"clusters": self.centroids_.to_numpy()[:,0:-1],
-                          "p": self.parameters["p"],
-                          "classes": self.classes_,}
+            attributes = {
+                "clusters": self.centroids_.to_numpy()[:, 0:-1],
+                "p": self.parameters["p"],
+                "classes": self.classes_,
+            }
         elif self.type == "NaiveBayes":
-            attributes = {"attributes": nb_var_info(self),
-                          "prior": self.get_attr("prior")["probability"],
-                          "classes": self.classes_,}
+            attributes = {
+                "attributes": nb_var_info(self),
+                "prior": self.get_attr("prior")["probability"],
+                "classes": self.classes_,
+            }
         elif self.type == "OneHotEncoder":
             cat = list(ooe_details_transform([l[0:2] for l in self.param_.to_list()]))
             cat_list_idx = []
@@ -1879,18 +1982,28 @@ Main Class for Vertica Model
             categories = []
             for i in cat_list_idx:
                 categories += [cat[1][i]]
-            attributes = {"categories": categories,
-                          "drop_first": self.parameters["drop_first"],
-                          "column_naming": self.parameters["column_naming"],}
+            attributes = {
+                "categories": categories,
+                "drop_first": self.parameters["drop_first"],
+                "column_naming": self.parameters["column_naming"],
+            }
         elif self.type == "PCA":
-            attributes = {"principal_components": self.get_attr("principal_components").to_numpy(),
-                          "mean": self.get_attr("columns")["mean"],}
+            attributes = {
+                "principal_components": self.get_attr(
+                    "principal_components"
+                ).to_numpy(),
+                "mean": self.get_attr("columns")["mean"],
+            }
         elif self.type == "SVD":
-            attributes = {"vectors": self.get_attr("right_singular_vectors").to_numpy(),
-                          "values": self.get_attr("singular_values")["value"],}
+            attributes = {
+                "vectors": self.get_attr("right_singular_vectors").to_numpy(),
+                "values": self.get_attr("singular_values")["value"],
+            }
         elif self.type == "Normalizer":
-            attributes = {"values": self.get_attr("details").to_numpy()[:,1:].astype(float),
-                          "method": self.parameters["method"],}
+            attributes = {
+                "values": self.get_attr("details").to_numpy()[:, 1:].astype(float),
+                "method": self.parameters["method"],
+            }
         elif self.type in (
             "XGBoostClassifier",
             "XGBoostRegressor",
@@ -1902,24 +2015,39 @@ Main Class for Vertica Model
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
             trees = []
-            tree_type = "BinaryTreeRegressor" if self.type in ("XGBoostRegressor", "RandomForestRegressor") else "BinaryTreeClassifier"
-            return_prob_rf = (self.type == "RandomForestClassifier")
+            tree_type = (
+                "BinaryTreeRegressor"
+                if self.type in ("XGBoostRegressor", "RandomForestRegressor")
+                else "BinaryTreeClassifier"
+            )
+            return_prob_rf = self.type == "RandomForestClassifier"
             for i in range(n):
-                if ("return_tree" in kwds and kwds["return_tree"] == i) or ("return_tree" not in kwds):
+                if ("return_tree" in kwds and kwds["return_tree"] == i) or (
+                    "return_tree" not in kwds
+                ):
                     tree = self.get_tree(i)
                     tree = tree_attributes_list(tree, self.X, self.type, return_prob_rf)
-                    tree_attributes = {"children_left": tree[0],
-                                       "children_right": tree[1],
-                                       "feature": tree[2],
-                                       "threshold": tree[3],
-                                       "value": tree[4],}
+                    tree_attributes = {
+                        "children_left": tree[0],
+                        "children_right": tree[1],
+                        "feature": tree[2],
+                        "threshold": tree[3],
+                        "value": tree[4],
+                    }
                     for idx in range(len(tree[5])):
-                        if not(tree[5][idx]) and isinstance(tree_attributes["threshold"][idx], str):
-                            tree_attributes["threshold"][idx] = float(tree_attributes["threshold"][idx])
+                        if not (tree[5][idx]) and isinstance(
+                            tree_attributes["threshold"][idx], str
+                        ):
+                            tree_attributes["threshold"][idx] = float(
+                                tree_attributes["threshold"][idx]
+                            )
                     if tree_type == "BinaryTreeClassifier":
                         tree_attributes["classes"] = self.classes_
                     else:
-                        tree_attributes["value"] = [float(val) if isinstance(val, str) else val for val in tree_attributes["value"]]
+                        tree_attributes["value"] = [
+                            float(val) if isinstance(val, str) else val
+                            for val in tree_attributes["value"]
+                        ]
                     if self.type == "XGBoostClassifier":
                         tree_attributes["value"] = tree[6]
                         for idx in range(len(tree[6])):
@@ -1933,16 +2061,18 @@ Main Class for Vertica Model
                             if tree_attributes["value"][idx] != None:
                                 prob = [0.0 for i in range(len(self.classes_))]
                                 for idx2, c in enumerate(self.classes_):
-                                    if c == tree_attributes["value"][idx]:
+                                    if str(c) == str(tree_attributes["value"][idx]):
                                         prob[idx2] = tree[6][idx]
                                         break
-                                other_proba = (1 - tree[6][idx]) / (len(self.classes_) - 1)
+                                other_proba = (1 - tree[6][idx]) / (
+                                    len(self.classes_) - 1
+                                )
                                 for idx2, p in enumerate(prob):
                                     if p == 0.0:
                                         prob[idx2] = other_proba
                                 tree_attributes["value"][idx] = prob
-                    model = memModel(model_type = tree_type, attributes = tree_attributes)
-                    if ("return_tree" in kwds and kwds["return_tree"] == i):
+                    model = memModel(model_type=tree_type, attributes=tree_attributes)
+                    if "return_tree" in kwds and kwds["return_tree"] == i:
                         return model
                     trees += [model]
             attributes = {"trees": trees}
@@ -1950,16 +2080,27 @@ Main Class for Vertica Model
                 attributes["learning_rate"] = self.parameters["learning_rate"]
                 if self.type == "XGBoostRegressor":
                     attributes["mean"] = self.prior_
-                elif not(isinstance(self.prior_, list)):
-                    attributes["logodds"] = [np.log((1 - self.prior_) / self.prior_), np.log(self.prior_ / (1 - self.prior_))]
+                elif not (isinstance(self.prior_, list)):
+                    attributes["logodds"] = [
+                        np.log((1 - self.prior_) / self.prior_),
+                        np.log(self.prior_ / (1 - self.prior_)),
+                    ]
                 else:
                     attributes["logodds"] = self.prior_.copy()
         else:
-            raise ModelError("Model type '{}' can not be converted to memModel.".format(self.type))
-        return memModel(model_type = self.type, attributes = attributes)
+            raise ModelError(
+                "Model type '{}' can not be converted to memModel.".format(self.type)
+            )
+        return memModel(model_type=self.type, attributes=attributes)
 
     # ---#
-    def to_python(self, name: str = "predict", return_proba: bool = False, return_distance_clusters: bool = False, return_str: bool = False):
+    def to_python(
+        self,
+        name: str = "predict",
+        return_proba: bool = False,
+        return_distance_clusters: bool = False,
+        return_str: bool = False,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the Python code needed to deploy the model without using built-in
@@ -1984,21 +2125,36 @@ Main Class for Vertica Model
     str / func
         Python function
         """
-        if not(return_str):
-            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True)
+        if not (return_str):
+            func = self.to_python(
+                name=name,
+                return_proba=return_proba,
+                return_distance_clusters=return_distance_clusters,
+                return_str=True,
+            )
             all_vars = {}
             exec(func, {}, all_vars)
             return all_vars[name]
         func = "def {}(X):\n\timport numpy as np\n\t".format(name)
-        if self.type in ("LinearRegression", "LinearSVR", "LogisticRegression", "LinearSVC"):
-            result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(self.coef_["coefficient"][0], self.coef_["coefficient"][1:])
+        if self.type in (
+            "LinearRegression",
+            "LinearSVR",
+            "LogisticRegression",
+            "LinearSVC",
+        ):
+            result = "{} + np.sum(np.array({}) * np.array(X), axis=1)".format(
+                self.coef_["coefficient"][0], self.coef_["coefficient"][1:]
+            )
             if self.type in ("LogisticRegression", "LinearSVC"):
                 func += f"result = 1 / (1 + np.exp(- ({result})))"
             else:
                 func += "result =  " + result
             if return_proba and self.type in ("LogisticRegression", "LinearSVC"):
                 func += "\n\treturn np.column_stack((1 - result, result))"
-            elif not(return_proba) and self.type in ("LogisticRegression", "LinearSVC"):
+            elif not (return_proba) and self.type in (
+                "LogisticRegression",
+                "LinearSVC",
+            ):
                 func += "\n\treturn np.where(result > 0.5, 1, 0)"
             else:
                 func += "\n\treturn result"
@@ -2020,11 +2176,17 @@ Main Class for Vertica Model
             func += "\t\t\telse:\n"
             func += "\t\t\t\treturn predict_tree(right_child, left_child, row, right_node, centroids)\n"
             func += "\tdef predict_tree_final(row):\n"
-            func += "\t\treturn predict_tree(right_child, left_child, row, 0, centroids)\n"
+            func += (
+                "\t\treturn predict_tree(right_child, left_child, row, 0, centroids)\n"
+            )
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
         elif self.type in ("NearestCentroid", "KMeans"):
-            centroids = self.centroids_.to_list() if self.type == "NearestCentroid" else self.cluster_centers_.to_list()
+            centroids = (
+                self.centroids_.to_list()
+                if self.type == "NearestCentroid"
+                else self.cluster_centers_.to_list()
+            )
             if self.type == "NearestCentroid":
                 for center in centroids:
                     del center[-1]
@@ -2033,16 +2195,27 @@ Main Class for Vertica Model
                 func += "\tclasses = np.array({})\n".format(self.classes_)
             func += "\tresult = []\n"
             func += "\tfor centroid in centroids:\n"
-            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(self.parameters["p"] if self.type == "NearestCentroid" else 2, self.parameters["p"] if self.type == "NearestCentroid" else 2)
+            func += "\t\tresult += [np.sum((np.array(centroid) - X) ** {}, axis=1) ** (1 / {})]\n".format(
+                self.parameters["p"] if self.type == "NearestCentroid" else 2,
+                self.parameters["p"] if self.type == "NearestCentroid" else 2,
+            )
             func += "\tresult = np.column_stack(result)\n"
-            if self.type == "NearestCentroid" and return_proba and not(return_distance_clusters):
+            if (
+                self.type == "NearestCentroid"
+                and return_proba
+                and not (return_distance_clusters)
+            ):
                 func += "\tresult = 1 / (result + 1e-99) / np.sum(1 / (result + 1e-99), axis=1)[:,None]\n"
-            elif not(return_distance_clusters):
+            elif not (return_distance_clusters):
                 func += "\tresult = np.argmin(result, axis=1)\n"
-                if self.type == "NearestCentroid" and self.classes_ != [i for i in range(len(self.classes_))]:
+                if self.type == "NearestCentroid" and self.classes_ != [
+                    i for i in range(len(self.classes_))
+                ]:
                     func += "\tclass_is_str = isinstance(classes[0], str)\n"
                     func += "\tfor idx, c in enumerate(classes):\n"
-                    func += "\t\ttmp_idx = str(idx) if class_is_str and idx > 0 else idx\n"
+                    func += (
+                        "\t\ttmp_idx = str(idx) if class_is_str and idx > 0 else idx\n"
+                    )
                     func += "\t\tresult = np.where(result == tmp_idx, c, result)\n"
             func += "\treturn result\n"
             return func
@@ -2137,7 +2310,7 @@ Main Class for Vertica Model
             category_level = []
             for p in predictors:
                 pos = positions[p]
-                category_level += [details["category_level"][pos[0]:pos[-1] + 1]]
+                category_level += [details["category_level"][pos[0] : pos[-1] + 1]]
             if self.parameters["drop_first"]:
                 category_level = [elem[1:] for elem in category_level]
             func += "category_level = {}\n\t".format(category_level)
@@ -2152,7 +2325,12 @@ Main Class for Vertica Model
             func += "\treturn result\n"
             func += "\treturn np.apply_along_axis(ooe_row, 1, X)\n"
             return func
-        elif self.type in ("RandomForestClassifier", "RandomForestRegressor", "XGBoostRegressor", "XGBoostClassifier"):
+        elif self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "XGBoostRegressor",
+            "XGBoostClassifier",
+        ):
             result = []
             if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
                 n = self.parameters["n_estimators"]
@@ -2160,11 +2338,15 @@ Main Class for Vertica Model
                 n = self.get_attr("tree_count")["tree_count"][0]
             func += "n = {}\n".format(n)
             if self.type in ("XGBoostClassifier", "RandomForestClassifier"):
-                func += "\tclasses = np.array({})\n".format([str(elem) for elem in self.classes_])
+                func += "\tclasses = np.array({})\n".format(
+                    [str(elem) for elem in self.classes_]
+                )
             func += "\ttree_list = []\n"
             for i in range(n):
                 tree = self.get_tree(i)
-                func += "\ttree_list += [{}]\n".format(tree_attributes_list(tree, self.X, self.type))
+                func += "\ttree_list += [{}]\n".format(
+                    tree_attributes_list(tree, self.X, self.type)
+                )
             func += "\tdef predict_tree(tree, node_id, X):\n"
             func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
             if self.type in ("RandomForestRegressor", "XGBoostRegressor"):
@@ -2188,16 +2370,23 @@ Main Class for Vertica Model
             if self.type in ("XGBoostRegressor", "XGBoostClassifier"):
                 if self.type == "XGBoostRegressor":
                     avg = self.prior_
-                    func += "\t\treturn {} + {} * np.sum(result)\n".format(avg, self.parameters["learning_rate"])
+                    func += "\t\treturn {} + {} * np.sum(result)\n".format(
+                        avg, self.parameters["learning_rate"]
+                    )
                 else:
-                    if not(isinstance(self.prior_, list)):
-                        func += "\t\tlogodds = np.array([{}, {}])\n".format(np.log((1 - self.prior_) / self.prior_), np.log(self.prior_ / (1 - self.prior_)))
+                    if not (isinstance(self.prior_, list)):
+                        func += "\t\tlogodds = np.array([{}, {}])\n".format(
+                            np.log((1 - self.prior_) / self.prior_),
+                            np.log(self.prior_ / (1 - self.prior_)),
+                        )
                     else:
                         func += "\t\tlogodds = np.array({})\n".format(self.prior_)
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
-                    func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - (logodds[idx] + {} * all_classes_score[elem])))\n".format(self.parameters["learning_rate"])
+                    func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - (logodds[idx] + {} * all_classes_score[elem])))\n".format(
+                        self.parameters["learning_rate"]
+                    )
                     func += "\t\tresult = [all_classes_score[elem] for elem in all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
                 func += "\t\treturn np.mean(result)\n"
@@ -2219,7 +2408,11 @@ Main Class for Vertica Model
             func += "\treturn np.apply_along_axis(predict_tree_final, 1, X)\n"
             return func
         else:
-            raise ModelError("Function to_python not yet available for model type '{}'.".format(self.type))
+            raise ModelError(
+                "Function to_python not yet available for model type '{}'.".format(
+                    self.type
+                )
+            )
 
     # ---#
     def to_sql(self, X: list = [], return_proba: bool = False):
@@ -2313,7 +2506,12 @@ class Supervised(vModel):
             self.input_relation = input_relation.__genSQL__()
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
-            executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False)
+            executeSQL(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                ),
+                print_time_sql=False,
+            )
         else:
             self.input_relation = input_relation
             relation = input_relation
@@ -2354,13 +2552,13 @@ class Supervised(vModel):
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0],
+                verticapy.options["random_state"], X[0]
             )
         if self.type == "BisectingKMeans" and isinstance(
             verticapy.options["random_state"], int
         ):
             query += ", kmeans_seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0],
+                verticapy.options["random_state"], X[0]
             )
         query += ")"
         try:
@@ -2381,7 +2579,13 @@ class Supervised(vModel):
             self.coef_ = self.get_attr("details")
         elif self.type in ("RandomForestClassifier", "NaiveBayes", "XGBoostClassifier"):
             if not (isinstance(input_relation, vDataFrame)):
-                classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(self.y, input_relation, self.y), method="fetchall", print_time_sql=False)
+                classes = executeSQL(
+                    "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
+                        self.y, input_relation, self.y
+                    ),
+                    method="fetchall",
+                    print_time_sql=False,
+                )
                 self.classes_ = [item[0] for item in classes]
             else:
                 self.classes_ = input_relation[self.y].distinct()
@@ -2394,15 +2598,17 @@ class Supervised(vModel):
 class Tree:
 
     # ---#
-    def to_graphviz(self, 
-                    tree_id: int = 0,
-                    classes_color: list = [],
-                    round_pred: int = 2,
-                    percent: bool = False,
-                    vertical: bool = True,
-                    node_style: dict = {},
-                    arrow_style: dict = {},
-                    leaf_style: dict = {}):
+    def to_graphviz(
+        self,
+        tree_id: int = 0,
+        classes_color: list = [],
+        round_pred: int = 2,
+        percent: bool = False,
+        vertical: bool = True,
+        node_style: dict = {},
+        arrow_style: dict = {},
+        leaf_style: dict = {},
+    ):
         """
         ---------------------------------------------------------------------------
         Returns the code for a Graphviz tree.
@@ -2434,14 +2640,16 @@ class Tree:
         str
             Graphviz code.
         """
-        return self.to_memmodel(return_tree = tree_id).to_graphviz(feature_names = self.X,
-                                                                   classes_color = classes_color,
-                                                                   round_pred = round_pred,
-                                                                   percent = percent,
-                                                                   vertical = vertical,
-                                                                   node_style = node_style,
-                                                                   arrow_style = arrow_style,
-                                                                   leaf_style = leaf_style)
+        return self.to_memmodel(return_tree=tree_id).to_graphviz(
+            feature_names=self.X,
+            classes_color=classes_color,
+            round_pred=round_pred,
+            percent=percent,
+            vertical=vertical,
+            node_style=node_style,
+            arrow_style=arrow_style,
+            leaf_style=leaf_style,
+        )
 
     # ---#
     def get_tree(self, tree_id: int = 0):
@@ -2470,16 +2678,18 @@ class Tree:
         return result
 
     # ---#
-    def plot_tree(self,
-                  pic_path: str = "",
-                  tree_id: int = 0,
-                  classes_color: list = [],
-                  round_pred: int = 2,
-                  percent: bool = False,
-                  vertical: bool = True,
-                  node_style: dict = {},
-                  arrow_style: dict = {},
-                  leaf_style: dict = {}):
+    def plot_tree(
+        self,
+        pic_path: str = "",
+        tree_id: int = 0,
+        classes_color: list = [],
+        round_pred: int = 2,
+        percent: bool = False,
+        vertical: bool = True,
+        node_style: dict = {},
+        arrow_style: dict = {},
+        leaf_style: dict = {},
+    ):
         """
         ---------------------------------------------------------------------------
         Draws the input tree. Requires the graphviz module.
@@ -2513,15 +2723,17 @@ class Tree:
         graphviz.Source
             graphviz object.
         """
-        return self.to_memmodel(return_tree = tree_id).plot_tree(feature_names = self.X,
-                                                                 classes_color = classes_color,
-                                                                 round_pred = round_pred,
-                                                                 percent = percent,
-                                                                 vertical = vertical,
-                                                                 node_style = node_style,
-                                                                 arrow_style = arrow_style,
-                                                                 leaf_style = leaf_style,
-                                                                 pic_path = pic_path)
+        return self.to_memmodel(return_tree=tree_id).plot_tree(
+            feature_names=self.X,
+            classes_color=classes_color,
+            round_pred=round_pred,
+            percent=percent,
+            vertical=vertical,
+            node_style=node_style,
+            arrow_style=arrow_style,
+            leaf_style=leaf_style,
+            pic_path=pic_path,
+        )
 
 
 # ---#
@@ -2580,9 +2792,7 @@ class BinaryClassifier(Classifier):
 		utilities.tablesample.
 		"""
         check_types([("cutoff", cutoff, [int, float])])
-        return confusion_matrix(
-            self.y, self.deploySQL(cutoff), self.test_relation,
-        )
+        return confusion_matrix(self.y, self.deploySQL(cutoff), self.test_relation,)
 
     # ---#
     def deploySQL(self, cutoff: float = -1, X: list = []):
@@ -2615,9 +2825,7 @@ class BinaryClassifier(Classifier):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def lift_chart(
-        self, ax=None, nbins: int = 1000, **style_kwds,
-    ):
+    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2647,9 +2855,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def prc_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2736,9 +2942,7 @@ class BinaryClassifier(Classifier):
             return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
-    def cutoff_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the model Cutoff curve.
@@ -2769,9 +2973,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def roc_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -2801,10 +3003,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def score(self, 
-              method: str = "accuracy", 
-              cutoff: float = 0.5,
-              nbins: int = 10000):
+    def score(self, method: str = "accuracy", cutoff: float = 0.5, nbins: int = 10000):
         """
 	---------------------------------------------------------------------------
 	Computes the model score.
@@ -2844,19 +3043,29 @@ class BinaryClassifier(Classifier):
 	float
 		score
 		"""
-        check_types([("cutoff", cutoff, [int, float]), 
-                     ("method", method, [str]),
-                     ("nbins", nbins, [int])])
+        check_types(
+            [
+                ("cutoff", cutoff, [int, float]),
+                ("method", method, [str]),
+                ("nbins", nbins, [int]),
+            ]
+        )
         if method in ("accuracy", "acc"):
-            return accuracy_score(self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1)
+            return accuracy_score(
+                self.y, self.deploySQL(cutoff), self.test_relation, pos_label=1
+            )
         elif method == "aic":
             return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[0]
         elif method == "bic":
             return aic_bic(self.y, self.deploySQL(), self.test_relation, len(self.X))[1]
         elif method == "prc_auc":
-            return prc_curve(self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins)
+            return prc_curve(
+                self.y, self.deploySQL(), self.test_relation, auc_prc=True, nbins=nbins
+            )
         elif method == "auc":
-            return roc_curve(self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins)
+            return roc_curve(
+                self.y, self.deploySQL(), self.test_relation, auc_roc=True, nbins=nbins
+            )
         elif method in ("best_cutoff", "best_threshold"):
             return roc_curve(
                 self.y,
@@ -2866,42 +3075,26 @@ class BinaryClassifier(Classifier):
                 nbins=nbins,
             )
         elif method in ("recall", "tpr"):
-            return recall_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return recall_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("precision", "ppv"):
-            return precision_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("specificity", "tnr"):
-            return specificity_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("log_loss", "logloss"):
             return log_loss(self.y, self.deploySQL(), self.test_relation)
         elif method == "f1":
-            return f1_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return f1_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method == "mcc":
-            return matthews_corrcoef(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return matthews_corrcoef(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("bm", "informedness"):
-            return informedness(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return informedness(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("mk", "markedness"):
-            return markedness(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return markedness(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
-                self.y, self.deploySQL(cutoff), self.test_relation,
+                self.y, self.deploySQL(cutoff), self.test_relation
             )
         else:
             raise ParameterError(
@@ -2946,7 +3139,9 @@ class MulticlassClassifier(Classifier):
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
+    def confusion_matrix(
+        self, pos_label: Union[int, float, str] = None, cutoff: float = -1
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes the model confusion matrix.
@@ -2980,7 +3175,9 @@ class MulticlassClassifier(Classifier):
                 pos_label=pos_label,
             )
         else:
-            return multilabel_confusion_matrix(self.y, self.deploySQL(), self.test_relation, self.classes_)
+            return multilabel_confusion_matrix(
+                self.y, self.deploySQL(), self.test_relation, self.classes_
+            )
 
     # ---#
     def cutoff_curve(
@@ -3023,7 +3220,9 @@ class MulticlassClassifier(Classifier):
                 "'pos_label' must be one of the response column classes"
             )
         if self.type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False)]
+            deploySQL_str = self.deploySQL(allSQL=True)[
+                get_index(pos_label, self.classes_, False)
+            ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return roc_curve(
@@ -3096,7 +3295,9 @@ class MulticlassClassifier(Classifier):
         else:
             if pos_label in self.classes_:
                 if self.type == "NearestCentroid":
-                    sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)[get_index(pos_label, self.classes_, False)]
+                    sql = self.to_memmodel().predict_proba_sql(
+                        self.X if not (X) else X
+                    )[get_index(pos_label, self.classes_, False)]
                 else:
                     sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
                         fun, ", ".join(self.X if not (X) else X), self.name, pos_label
@@ -3165,7 +3366,9 @@ class MulticlassClassifier(Classifier):
                 "'pos_label' must be one of the response column classes"
             )
         if self.type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False)]
+            deploySQL_str = self.deploySQL(allSQL=True)[
+                get_index(pos_label, self.classes_, False)
+            ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return lift_chart(
@@ -3219,7 +3422,9 @@ class MulticlassClassifier(Classifier):
                 "'pos_label' must be one of the response column classes"
             )
         if self.type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False)]
+            deploySQL_str = self.deploySQL(allSQL=True)[
+                get_index(pos_label, self.classes_, False)
+            ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return prc_curve(
@@ -3341,7 +3546,9 @@ class MulticlassClassifier(Classifier):
                 "'pos_label' must be one of the response column classes"
             )
         if self.type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False)]
+            deploySQL_str = self.deploySQL(allSQL=True)[
+                get_index(pos_label, self.classes_, False)
+            ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         return roc_curve(
@@ -3404,9 +3611,13 @@ class MulticlassClassifier(Classifier):
 	float
 		score
 		"""
-        check_types([("cutoff", cutoff, [int, float]), 
-                     ("method", method, [str]),
-                     ("nbins", nbins, [int])])
+        check_types(
+            [
+                ("cutoff", cutoff, [int, float]),
+                ("method", method, [str]),
+                ("nbins", nbins, [int]),
+            ]
+        )
         pos_label = (
             self.classes_[1]
             if (pos_label == None and len(self.classes_) == 2)
@@ -3419,15 +3630,14 @@ class MulticlassClassifier(Classifier):
         elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
             cutoff = self.score("best_cutoff", pos_label, 0.5)
         if self.type == "NearestCentroid":
-            deploySQL_str = self.deploySQL(allSQL=True)[get_index(pos_label, self.classes_, False)]
+            deploySQL_str = self.deploySQL(allSQL=True)[
+                get_index(pos_label, self.classes_, False)
+            ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
-                pos_label,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation, pos_label
             )
         elif method == "auc":
             return auc(
@@ -3467,27 +3677,19 @@ class MulticlassClassifier(Classifier):
             )
         elif method in ("recall", "tpr"):
             return recall_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("precision", "ppv"):
             return precision_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("specificity", "tnr"):
             return specificity_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("negative_predictive_value", "npv"):
             return precision_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("log_loss", "logloss"):
             return log_loss(
@@ -3497,33 +3699,23 @@ class MulticlassClassifier(Classifier):
             )
         elif method == "f1":
             return f1_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method == "mcc":
             return matthews_corrcoef(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("bm", "informedness"):
             return informedness(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("mk", "markedness"):
             return markedness(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         else:
             raise ParameterError(
@@ -3536,7 +3728,11 @@ class Regressor(Supervised):
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        inplace: bool = True,
     ):
         """
 	---------------------------------------------------------------------------
@@ -3564,11 +3760,7 @@ class Regressor(Supervised):
         if isinstance(X, str):
             X = [X]
         check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-            ],
+            [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
@@ -3668,18 +3860,14 @@ class Regressor(Supervised):
         else:
             test_relation = self.test_relation
         if method == "metrics":
-            return regression_report(
-                self.y, prediction, test_relation, len(self.X)
-            )
+            return regression_report(self.y, prediction, test_relation, len(self.X))
         elif method == "anova":
-            return anova_table(
-                self.y, prediction, test_relation, len(self.X),
-            )
+            return anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
             vdf = vdf_from_relation(
                 "(SELECT {} FROM ".format(self.y)
                 + self.input_relation
-                + ") VERTICAPY_SUBTABLE",
+                + ") VERTICAPY_SUBTABLE"
             )
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
@@ -3687,9 +3875,7 @@ class Regressor(Supervised):
             jb = vdf[self.y].agg(["jb"])[self.y][0]
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
-            anova_T = anova_table(
-                self.y, prediction, test_relation, len(self.X),
-            )
+            anova_T = anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
             return tablesample(
@@ -3805,19 +3991,16 @@ class Regressor(Supervised):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        aic_bic(
-                            y,
-                            self.deploySQL()[idx],
-                            relation,
-                            len(self.X),
-                        )[0]
+                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X),)[0]
                     ]
             else:
                 return aic_bic(self.y, prediction, test_relation, len(self.X))[0]
         elif method == "bic":
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [aic_bic(y, self.deploySQL()[idx], relation, len(self.X))[1]]
+                    result.values[y] = [
+                        aic_bic(y, self.deploySQL()[idx], relation, len(self.X))[1]
+                    ]
             else:
                 return aic_bic(self.y, prediction, test_relation, len(self.X))[1]
         elif method in ("r2", "rsquared"):
@@ -3833,51 +4016,51 @@ class Regressor(Supervised):
                         )
                     ]
             else:
-                return r2_score(
-                    self.y, prediction, test_relation, len(self.X), adj
-                )
+                return r2_score(self.y, prediction, test_relation, len(self.X), adj)
         elif method in ("mae", "mean_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
                     result.values[y] = [
-                        mean_absolute_error(
-                            y, self.deploySQL()[idx], relation,
-                        )
+                        mean_absolute_error(y, self.deploySQL()[idx], relation,)
                     ]
             else:
-                return mean_absolute_error(
-                    self.y, prediction, test_relation,
-                )
+                return mean_absolute_error(self.y, prediction, test_relation,)
         elif method in ("mse", "mean_squared_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [mean_squared_error(y, self.deploySQL()[idx], relation, root)]
+                    result.values[y] = [
+                        mean_squared_error(y, self.deploySQL()[idx], relation, root)
+                    ]
             else:
                 return mean_squared_error(self.y, prediction, test_relation, root)
         elif method in ("msle", "mean_squared_log_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [mean_squared_log_error(y, self.deploySQL()[idx], relation)]
+                    result.values[y] = [
+                        mean_squared_log_error(y, self.deploySQL()[idx], relation)
+                    ]
             else:
                 return mean_squared_log_error(self.y, prediction, test_relation)
         elif method in ("max", "max_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [
-                        max_error(y, self.deploySQL()[idx], relation)
-                    ]
+                    result.values[y] = [max_error(y, self.deploySQL()[idx], relation)]
             else:
                 return max_error(self.y, prediction, test_relation)
         elif method in ("median", "median_absolute_error"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [median_absolute_error(y, self.deploySQL()[idx], relation)]
+                    result.values[y] = [
+                        median_absolute_error(y, self.deploySQL()[idx], relation)
+                    ]
             else:
                 return median_absolute_error(self.y, prediction, test_relation)
         elif method in ("var", "explained_variance"):
             if self.type == "VAR":
                 for idx, y in enumerate(self.X):
-                    result.values[y] = [explained_variance(y, self.deploySQL()[idx], relation)]
+                    result.values[y] = [
+                        explained_variance(y, self.deploySQL()[idx], relation)
+                    ]
             else:
                 return explained_variance(self.y, prediction, test_relation)
         else:
@@ -3924,11 +4107,18 @@ class Unsupervised(vModel):
                 else:
                     result = result["sum"]
                 result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
-                assert abs(result) < 0.01, ConversionError("MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation.")
+                assert abs(result) < 0.01, ConversionError(
+                    "MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation."
+                )
             self.input_relation = input_relation.__genSQL__()
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
-            executeSQL("CREATE VIEW {} AS SELECT * FROM {}".format(relation, input_relation.__genSQL__()), print_time_sql=False)
+            executeSQL(
+                "CREATE VIEW {} AS SELECT * FROM {}".format(
+                    relation, input_relation.__genSQL__()
+                ),
+                print_time_sql=False,
+            )
             if not (X):
                 X = input_relation.numcol()
         else:
@@ -3956,7 +4146,9 @@ class Unsupervised(vModel):
             and not (isinstance(parameters["init_method"], str))
             and self.type in ("KMeans", "BisectingKMeans")
         ):
-            name_init = gen_tmp_name(schema=schema_relation(self.name)[0], name="kmeans_init")
+            name_init = gen_tmp_name(
+                schema=schema_relation(self.name)[0], name="kmeans_init"
+            )
             del parameters["init_method"]
             drop_if_exists(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
@@ -3998,11 +4190,19 @@ class Unsupervised(vModel):
         except:
             if isinstance(input_relation, vDataFrame):
                 drop_if_exists(relation, method="view")
-            if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
+            if (
+                "init_method" in parameters
+                and not (isinstance(parameters["init_method"], str))
+                and self.type in ("KMeans", "BisectingKMeans")
+            ):
                 drop_if_exists("{}".format(name_init), method="table")
             raise
         if self.type == "KMeans":
-            if ("init_method" in parameters and not (isinstance(parameters["init_method"], str)) and self.type in ("KMeans", "BisectingKMeans")):
+            if (
+                "init_method" in parameters
+                and not (isinstance(parameters["init_method"], str))
+                and self.type in ("KMeans", "BisectingKMeans")
+            ):
                 drop_if_exists("{}".format(name_init), method="table")
             self.cluster_centers_ = self.get_attr("centers")
             result = self.get_attr("metrics").values["metrics"][0]
@@ -4081,7 +4281,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def deploySQL(
-        self, key_columns: list = [], exclude_columns: list = [], X: list = [],
+        self, key_columns: list = [], exclude_columns: list = [], X: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -4270,9 +4470,7 @@ class Preprocessing(Unsupervised):
             return X
 
     # ---#
-    def inverse_transform(
-        self, vdf: Union[str, vDataFrame], X: list = [],
-    ):
+    def inverse_transform(self, vdf: Union[str, vDataFrame], X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the Inverse Model on a vDataFrame.
@@ -4316,9 +4514,7 @@ class Preprocessing(Unsupervised):
         return vdf_from_relation(main_relation, "Inverse Transformation")
 
     # ---#
-    def transform(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [],
-    ):
+    def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the model on a vDataFrame.
@@ -4339,9 +4535,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, str):
             X = [X]
-        check_types(
-            [("X", X, [list])]
-        )
+        check_types([("X", X, [list])])
         if not (vdf):
             vdf = self.input_relation
         if not (X):
@@ -4432,9 +4626,7 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def plot(
-        self, dimensions: tuple = (1, 2), ax=None, **style_kwds,
-    ):
+    def plot(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws a decomposition scatter plot.
@@ -4453,16 +4645,37 @@ class Decomposition(Preprocessing):
         """
         check_types([("dimensions", dimensions, [tuple])])
         vdf = vdf_from_relation(self.input_relation)
-        ax = self.transform(vdf).scatter(columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])], max_nb_points=100000, ax=ax, **style_kwds)
+        ax = self.transform(vdf).scatter(
+            columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])],
+            max_nb_points=100000,
+            ax=ax,
+            **style_kwds,
+        )
         explained_variance = self.explained_variance_["explained_variance"]
-        ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[dimensions[0] - 1]) else "({}%)".format(round(explained_variance[dimensions[0] - 1] * 100, 1))))
-        ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[dimensions[1] - 1]) else "({}%)".format(round(explained_variance[dimensions[1] - 1] * 100, 1))))
+        ax.set_xlabel(
+            "Dim{} {}".format(
+                dimensions[0],
+                ""
+                if not (explained_variance[dimensions[0] - 1])
+                else "({}%)".format(
+                    round(explained_variance[dimensions[0] - 1] * 100, 1)
+                ),
+            )
+        )
+        ax.set_ylabel(
+            "Dim{} {}".format(
+                dimensions[1],
+                ""
+                if not (explained_variance[dimensions[1] - 1])
+                else "({}%)".format(
+                    round(explained_variance[dimensions[1] - 1] * 100, 1)
+                ),
+            )
+        )
         return ax
 
     # ---#
-    def plot_circle(
-        self, dimensions: tuple = (1, 2), ax=None, **style_kwds
-    ):
+    def plot_circle(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws a decomposition circle.
@@ -4489,12 +4702,21 @@ class Decomposition(Preprocessing):
             x = self.components_["PC{}".format(dimensions[0])]
             y = self.components_["PC{}".format(dimensions[1])]
         explained_variance = self.explained_variance_["explained_variance"]
-        return plot_pca_circle(x, y, self.X, (explained_variance[dimensions[0] - 1], explained_variance[dimensions[1] - 1]), dimensions, ax, **style_kwds)
+        return plot_pca_circle(
+            x,
+            y,
+            self.X,
+            (
+                explained_variance[dimensions[0] - 1],
+                explained_variance[dimensions[1] - 1],
+            ),
+            dimensions,
+            ax,
+            **style_kwds,
+        )
 
     # ---#
-    def plot_scree(
-        self, ax=None, **style_kwds
-    ):
+    def plot_scree(self, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws a decomposition scree plot.
@@ -4512,18 +4734,39 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         explained_variance = self.explained_variance_["explained_variance"]
-        explained_variance, n = [100 * elem for elem in explained_variance], len(explained_variance)
-        information = tablesample({"dimensions": [i + 1 for i in range(n)], "percentage_explained_variance": explained_variance}).to_vdf()
+        explained_variance, n = (
+            [100 * elem for elem in explained_variance],
+            len(explained_variance),
+        )
+        information = tablesample(
+            {
+                "dimensions": [i + 1 for i in range(n)],
+                "percentage_explained_variance": explained_variance,
+            }
+        ).to_vdf()
         information["dimensions_center"] = information["dimensions"] + 0.5
-        ax = information["dimensions"].hist(method="avg", of="percentage_explained_variance", h=1, max_cardinality=1, ax=ax, **style_kwds)
-        ax = information["percentage_explained_variance"].plot(ts="dimensions_center", ax=ax, color="black")
+        ax = information["dimensions"].hist(
+            method="avg",
+            of="percentage_explained_variance",
+            h=1,
+            max_cardinality=1,
+            ax=ax,
+            **style_kwds,
+        )
+        ax = information["percentage_explained_variance"].plot(
+            ts="dimensions_center", ax=ax, color="black"
+        )
         ax.set_xlim(1, n + 1)
         ax.set_xticks([i + 1.5 for i in range(n)])
         ax.set_xticklabels([i + 1 for i in range(n)])
         ax.set_ylabel('"percentage_explained_variance"')
         ax.set_xlabel('"dimensions"')
         for i in range(n):
-            ax.text(i + 1.5, explained_variance[i] + 1, "{}%".format(round(explained_variance[i], 1)))
+            ax.text(
+                i + 1.5,
+                explained_variance[i] + 1,
+                "{}%".format(round(explained_variance[i], 1)),
+            )
         return ax
 
     # ---#
@@ -4689,7 +4932,11 @@ class Clustering(Unsupervised):
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True,
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        inplace: bool = True,
     ):
         """
 	---------------------------------------------------------------------------
@@ -4717,11 +4964,7 @@ class Clustering(Unsupervised):
         if isinstance(X, str):
             X = [X]
         check_types(
-            [
-                ("name", name, [str]),
-                ("X", X, [list]),
-                ("vdf", vdf, [str, vDataFrame]),
-            ],
+            [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)

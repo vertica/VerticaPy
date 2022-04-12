@@ -56,7 +56,9 @@ try:
     from highcharts import Highchart, Highstock
 except:
     raise ImportError(
-        "The highcharts module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install python-highcharts' in your terminal to install the module."
+        "The highcharts module doesn't seem to be installed in your environment.\n"
+        "To be able to use this method, you'll have to install it.\n[Tips] Run: "
+        "'pip3 install python-highcharts' in your terminal to install the module."
     )
 
 # VerticaPy Modules
@@ -139,7 +141,7 @@ def hchart_from_vdf(
         is_num = vdf[x].isnum()
         order_by = " ORDER BY 2 DESC "
         if unique > max_cardinality:
-            if not(aggregate):
+            if not (aggregate):
                 limit = min(limit, max_cardinality)
             elif is_num:
                 order_by = " ORDER BY MIN({}) DESC ".format(x)
@@ -147,8 +149,17 @@ def hchart_from_vdf(
                     "{}", x
                 ) + " AS {}".format(x)
             else:
-                query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(x, y, vdf.__genSQL__(), max_cardinality)
-                result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+                query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
+                    x, y, vdf.__genSQL__(), max_cardinality
+                )
+                result = executeSQL(
+                    query,
+                    title=(
+                        "Selecting the categories and their respective aggregations "
+                        "to draw the chart."
+                    ),
+                    method="fetchall",
+                )
                 result = [elem[0] for elem in result]
                 result = [
                     "NULL" if elem == None else "'{}'".format(elem) for elem in result
@@ -281,18 +292,13 @@ def hchart_from_vdf(
                 else:
                     z = vdf[z].discretize(
                         k=max_cardinality, method="topk", return_enum_trans=True
-                    )[0].replace("{}", z) + " AS {}".format(z)
-            query = "SELECT {}{}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)".format(
-                x,
-                cast,
-                y,
-                z,
-                vdf.__genSQL__(),
-                x,
-                y,
-                max(int(limit / unique), 1),
-                z_copy,
-                x,
+                    )[0].replace("{}", z) + " AS {0}".format(z)
+            query = (
+                "SELECT {0}{1}, {2}, {3} FROM {4} "
+                "WHERE {0} IS NOT NULL AND {3} IS NOT NULL "
+                "LIMIT {5} OVER (PARTITION BY {6} ORDER BY {0} DESC)"
+            ).format(
+                x, cast, y, z, vdf.__genSQL__(), max(int(limit / unique), 1), z_copy,
             )
     elif kind in ("scatter", "bubble"):
         check_types([("y", y, [str, list])])
@@ -306,9 +312,10 @@ def hchart_from_vdf(
             x = x[0]
         cast = "::timestamp" if (vdf[x].isdate()) else ""
         if not (z) and not (c) and (kind == "scatter"):
-            query = "SELECT {}{}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
-                x, cast, y, vdf.__genSQL__(), x, y, limit
-            )
+            query = (
+                "SELECT {0}{1}, {2} FROM {3} WHERE {0}"
+                " IS NOT NULL AND {2} IS NOT NULL LIMIT {4}"
+            ).format(x, cast, y, vdf.__genSQL__(), limit)
         elif not (c) and (z):
             check_types([("z", z, [str, list])])
             try:
@@ -319,9 +326,11 @@ def hchart_from_vdf(
                 )
             except:
                 pass
-            query = "SELECT {}{}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
-                x, cast, y, z, vdf.__genSQL__(), x, y, z, limit
-            )
+            query = (
+                "SELECT {0}{1}, {2}, {3} FROM {4} "
+                "WHERE {0} IS NOT NULL AND {2} IS NOT NULL "
+                "AND {3} IS NOT NULL LIMIT {5}"
+            ).format(x, cast, y, z, vdf.__genSQL__(), limit)
         else:
             if z:
                 check_types([("z", z, [str, list])])
@@ -355,18 +364,19 @@ def hchart_from_vdf(
                     c = vdf[c].discretize(
                         k=max_cardinality, method="topk", return_enum_trans=True
                     )[0].replace("{}", c) + " AS {}".format(c)
-            query = "SELECT {}{}, {}{}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL{}LIMIT {} OVER (PARTITION BY {} ORDER BY {})".format(
+            query = (
+                "SELECT {0}{1}, {2}{3}, {4} FROM {5} "
+                "WHERE {0} IS NOT NULL AND {2} IS NOT "
+                "NULL{6}LIMIT {7} OVER (PARTITION BY {8} ORDER BY {8})"
+            ).format(
                 x,
                 cast,
                 y,
                 ", " + str(z) if z else "",
                 c,
                 vdf.__genSQL__(),
-                x,
-                y,
                 " AND {} IS NOT NULL ".format(z) if z else " ",
                 max(int(limit / unique), 1),
-                c_copy,
                 c_copy,
             )
     elif kind == "area_range":
@@ -376,7 +386,7 @@ def hchart_from_vdf(
         columns_check([x], vdf)
         order_by = " ORDER BY 1 " if (vdf[x].isdate() or vdf[x].isnum()) else ""
         cast = "::timestamp" if (vdf[x].isdate()) else ""
-        query = "SELECT {}{}, {} FROM {}{}{} LIMIT {}".format(
+        query = "SELECT {0}{1}, {2} FROM {3}{4}{5} LIMIT {6}".format(
             x,
             cast,
             ", ".join(y),
@@ -404,8 +414,18 @@ def hchart_from_vdf(
                 ) + " AS {}".format(x)
             else:
                 if len(y) == 1:
-                    query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(x, y[0], vdf.__genSQL__(), max_cardinality)
-                    result = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+                    query = (
+                        "SELECT {0}, {1} FROM {2} "
+                        "GROUP BY 1 ORDER BY 2 DESC LIMIT {3}"
+                    ).format(x, y[0], vdf.__genSQL__(), max_cardinality)
+                    result = executeSQL(
+                        query,
+                        title=(
+                            "Selecting the categories and their "
+                            "respective aggregations to draw the chart."
+                        ),
+                        method="fetchall",
+                    )
                     result = [elem[0] for elem in result]
                     result = [
                         "NULL" if elem == None else "'{}'".format(elem)
@@ -433,16 +453,16 @@ def hchart_from_vdf(
             if isinstance(y, Iterable) and not (isinstance(y, str)) and len(y) == 1:
                 y = y[0]
             if isinstance(y, str):
-                query = """SELECT {}::timestamp, 
-			                      APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) AS open,
-			                      MAX({}) AS high,
-			                      MIN({}) AS low,
-			                      APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) AS close,
-			                      SUM({}) AS volume
-		                	FROM {} GROUP BY 1 ORDER BY 1"""
-                query = query.format(
-                    x, y, 1 - alpha, y, y, y, alpha, y, vdf.__genSQL__()
-                )
+                query = """SELECT {0}::timestamp, 
+			                      APPROXIMATE_PERCENTILE({1} 
+                                    USING PARAMETERS percentile = {2}) AS open,
+			                      MAX({1}) AS high,
+			                      MIN({1}) AS low,
+			                      APPROXIMATE_PERCENTILE({1} 
+                                    USING PARAMETERS percentile = {3}) AS close,
+			                      SUM({1}) AS volume
+		                	FROM {4} GROUP BY 1 ORDER BY 1"""
+                query = query.format(x, y, 1 - alpha, alpha, vdf.__genSQL__())
             else:
                 check_types([("y", y, [list])])
                 query = "SELECT {}::timestamp, {} FROM {} GROUP BY 1 ORDER BY 1".format(
@@ -454,16 +474,10 @@ def hchart_from_vdf(
             )
     if drilldown:
         return drilldown_chart(
-            query=query,
-            options=options,
-            width=width,
-            height=height,
-            chart_type=kind,
+            query=query, options=options, width=width, height=height, chart_type=kind,
         )
     elif kind == "candlestick":
-        return candlestick(
-            query=query, options=options, width=width, height=height,
-        )
+        return candlestick(query=query, options=options, width=width, height=height,)
     elif kind in (
         "area",
         "area_range",
@@ -484,11 +498,7 @@ def hchart_from_vdf(
         )
     elif kind in ("bar", "hist", "stacked_bar", "stacked_hist"):
         return bar(
-            query=query,
-            options=options,
-            width=width,
-            height=height,
-            chart_type=kind,
+            query=query, options=options, width=width, height=height, chart_type=kind,
         )
     elif kind == "boxplot":
         if isinstance(x, str):
@@ -500,21 +510,13 @@ def hchart_from_vdf(
         if x and y and z and kind == "scatter":
             kind = "3d"
         return scatter(
-            query=query,
-            options=options,
-            width=width,
-            height=height,
-            chart_type=kind,
+            query=query, options=options, width=width, height=height, chart_type=kind,
         )
     elif kind in ("pie", "pie_half", "donut", "pie3d", "donut3d"):
         if kind == "pie_half":
             kind = "half"
         return pie(
-            query=query,
-            options=options,
-            width=width,
-            height=height,
-            chart_type=kind,
+            query=query, options=options, width=width, height=height, chart_type=kind,
         )
     elif kind == "heatmap":
         chart = heatmap(query=query, width=width, height=height)
@@ -524,13 +526,9 @@ def hchart_from_vdf(
         chart.set_dict_options(options)
         return chart
     elif kind == "negative_bar":
-        return negative_bar(
-            query=query, options=options, width=width, height=height
-        )
+        return negative_bar(query=query, options=options, width=width, height=height)
     elif kind == "spider":
-        return spider(
-            query=query, options=options, width=width, height=height
-        )
+        return spider(query=query, options=options, width=width, height=height)
     elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman"):
         check_types([("x", x, [list])])
         x = vdf_columns_names(x, vdf)
@@ -582,14 +580,14 @@ def hchart_from_vdf(
 
 # ---#
 def hchartSQL(
-    query: str,
-    kind="auto",
-    width: int = 600,
-    height: int = 400,
-    options: dict = {},
+    query: str, kind="auto", width: int = 600, height: int = 400, options: dict = {},
 ):
     aggregate, stock = False, False
-    data = executeSQL("SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query), method="fetchall", print_time_sql=False)
+    data = executeSQL(
+        "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query),
+        method="fetchall",
+        print_time_sql=False,
+    )
     names = [desc[0] for desc in current_cursor().description]
     vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
     allnum = vdf.numcol()
@@ -687,7 +685,14 @@ def bar(
         chart_type = "hist"
     if chart_type == "stacked_bar":
         chart_type = "bar"
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title=(
+            "Selecting the categories and their"
+            " respective aggregations to draw the chart."
+        ),
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -839,7 +844,14 @@ def boxplot(
 
 # ---#
 def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title=(
+            "Selecting the categories and their "
+            "respective aggregations to draw the chart."
+        ),
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highstock(width=width, height=height)
@@ -900,7 +912,14 @@ def drilldown_chart(
     height: int = 400,
     chart_type: str = "column",
 ):
-    data = executeSQL(query[0], title="Selecting the categories and their respective aggregations to draw the first part of the drilldown.", method="fetchall")
+    data = executeSQL(
+        query[0],
+        title=(
+            "Selecting the categories and their "
+            "respective aggregations to draw the first part of the drilldown."
+        ),
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     chart = Highchart(width=width, height=height)
     default_options = {
@@ -942,7 +961,14 @@ def drilldown_chart(
         key = str(elem[0])
         data_final += [{"name": key, "y": val, "drilldown": key}]
     chart.add_data_set(data_final, chart_type, colorByPoint=True)
-    data = executeSQL(query[1], title="Selecting the categories and their respective aggregations to draw the second part of the drilldown.", method="fetchall")
+    data = executeSQL(
+        query[1],
+        title=(
+            "Selecting the categories and their respective aggregations "
+            "to draw the second part of the drilldown."
+        ),
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     all_categories = list(set([elem[0] for elem in data]))
@@ -982,7 +1008,12 @@ def heatmap(
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
         "tooltip": {
-            "formatter": "function () {return '<b>[' + this.series.xAxis.categories[this.point.x] + ', ' + this.series.yAxis.categories[this.point.y] + ']</b>: ' + this.point.value + '</b>';}"
+            "formatter": (
+                "function () {return '<b>[' + this.series.xAxis."
+                "categories[this.point.x] + ', ' + this.series.yAxis"
+                ".categories[this.point.y] + ']</b>: ' + this.point"
+                ".value + '</b>';}"
+            )
         },
     }
     default_options["colors"] = [
@@ -1001,7 +1032,14 @@ def heatmap(
     ]
     chart.set_dict_options(default_options)
     if query:
-        data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+        data = executeSQL(
+            query,
+            title=(
+                "Selecting the categories and their respective "
+                "aggregations to draw the chart."
+            ),
+            method="fetchall",
+        )
         names = [desc[0] for desc in current_cursor().description]
         n = len(names)
         columns = data_to_columns(data, n)
@@ -1071,7 +1109,11 @@ def line(
         chart_type = "line"
     if chart_type == "multi_spline":
         chart_type = "spline"
-    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title="Selecting the different values to draw the chart.",
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     if stock:
@@ -1170,7 +1212,10 @@ def line(
                     "xAxis": {
                         "type": "datetime",
                         "labels": {
-                            "formatter": "function() {return Highcharts.dateFormat('%a %d %b', this.value);}"
+                            "formatter": (
+                                "function() {return "
+                                "Highcharts.dateFormat('%a %d %b', this.value);}"
+                            )
                         },
                     }
                 }
@@ -1230,7 +1275,11 @@ def line(
 
 # ---#
 def negative_bar(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title="Selecting the categories and their respective aggregations to draw the chart.",
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1309,7 +1358,11 @@ def pie(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title="Selecting the categories and their respective aggregations to draw the chart.",
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1396,7 +1449,11 @@ def scatter(
     height: int = 400,
     chart_type: str = "regular",
 ):
-    data = executeSQL(query, title="Selecting the different values to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title="Selecting the different values to draw the chart.",
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)
@@ -1591,7 +1648,14 @@ def scatter(
 
 # ---#
 def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
-    data = executeSQL(query, title="Selecting the categories and their respective aggregations to draw the chart.", method="fetchall")
+    data = executeSQL(
+        query,
+        title=(
+            "Selecting the categories and their respective "
+            "aggregations to draw the chart."
+        ),
+        method="fetchall",
+    )
     names = [desc[0] for desc in current_cursor().description]
     n = len(names)
     chart = Highchart(width=width, height=height)

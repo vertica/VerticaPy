@@ -149,9 +149,7 @@ p: int, optional
             self.y,
             self.y,
         )
-        self.centroids_ = to_tablesample(
-            query=query, title="Getting Model Centroids.",
-        )
+        self.centroids_ = to_tablesample(query=query, title="Getting Model Centroids.",)
         self.classes_ = self.centroids_.values[y]
         model_save = {
             "type": "NearestCentroid",
@@ -164,9 +162,7 @@ p: int, optional
             "classes": self.classes_,
         }
         insert_verticapy_schema(
-            model_name=self.name,
-            model_type="NearestCentroid",
-            model_save=model_save,
+            model_name=self.name, model_type="NearestCentroid", model_save=model_save,
         )
         return self
 
@@ -243,7 +239,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not(key_columns) and key_columns != None:
+        if not (key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -344,7 +340,13 @@ p: int, optional
             self.test_relation = self.input_relation
         self.X = [str_column(column) for column in X]
         self.y = str_column(y)
-        classes = executeSQL("SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(self.y, self.input_relation, self.y, self.y), method="fetchall", print_time_sql=False)
+        classes = executeSQL(
+            "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
+                self.y, self.input_relation, self.y, self.y
+            ),
+            method="fetchall",
+            print_time_sql=False,
+        )
         self.classes_ = [item[0] for item in classes]
         model_save = {
             "type": "KNeighborsClassifier",
@@ -398,7 +400,9 @@ p: int, optional
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
     # ---#
-    def cutoff_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
+    def cutoff_curve(
+        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the ROC curve of a classification model.
@@ -431,11 +435,19 @@ p: int, optional
             pos_label
         )
         return roc_curve(
-            self.y, "proba_predict", input_relation, pos_label, ax=ax, cutoff_curve=True, **style_kwds,
+            self.y,
+            "proba_predict",
+            input_relation,
+            pos_label,
+            ax=ax,
+            cutoff_curve=True,
+            **style_kwds,
         )
 
     # ---#
-    def confusion_matrix(self, pos_label: Union[int, float, str] = None, cutoff: float = -1):
+    def confusion_matrix(
+        self, pos_label: Union[int, float, str] = None, cutoff: float = -1
+    ):
         """
     ---------------------------------------------------------------------------
     Computes the model confusion matrix.
@@ -483,11 +495,13 @@ p: int, optional
                 ", ".join(self.X), self.deploySQL()
             )
             return multilabel_confusion_matrix(
-                self.y, "predict_neighbors", input_relation, self.classes_,
+                self.y, "predict_neighbors", input_relation, self.classes_
             )
 
     # ---#
-    def lift_chart(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
+    def lift_chart(
+        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the model Lift Chart.
@@ -525,7 +539,9 @@ p: int, optional
         )
 
     # ---#
-    def prc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
+    def prc_curve(
+        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the model PRC curve.
@@ -571,7 +587,7 @@ p: int, optional
         inplace: bool = True,
         cutoff: float = -1,
         all_classes: bool = False,
-        **kwargs,
+        **kwargs
     ):
         """
     ---------------------------------------------------------------------------
@@ -687,7 +703,9 @@ p: int, optional
             return vdf_from_relation(name="Neighbors", relation=sql)
 
     # ---#
-    def roc_curve(self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds):
+    def roc_curve(
+        self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
+    ):
         """
     ---------------------------------------------------------------------------
     Draws the model ROC curve.
@@ -788,15 +806,15 @@ p: int, optional
                     pos_label=None,
                 )
             else:
-                return accuracy_score(y_true, y_score, input_relation, pos_label=pos_label)
+                return accuracy_score(
+                    y_true, y_score, input_relation, pos_label=pos_label
+                )
         elif method == "auc":
             return auc(y_true, y_proba, input_relation)
         elif method == "prc_auc":
             return prc_auc(y_true, y_proba, input_relation)
         elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(
-                y_true, y_proba, input_relation, best_threshold=True
-            )
+            return roc_curve(y_true, y_proba, input_relation, best_threshold=True)
         elif method in ("recall", "tpr"):
             return recall_score(y_true, y_score, input_relation)
         elif method in ("precision", "ppv"):
@@ -869,7 +887,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
-        **kwargs,
+        **kwargs
     ):
         check_types(
             [
@@ -902,9 +920,7 @@ xlim: list, optional
             self.verticapy_store = False
 
     # ---#
-    def fit(
-        self, input_relation: Union[str, vDataFrame], X: list = [],
-    ):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
     ---------------------------------------------------------------------------
     Trains the model.
@@ -952,9 +968,7 @@ xlim: list, optional
             p: int = 2,
         ):
             # ---#
-            def density_kde(
-                vdf, columns: list, kernel: str, x, p: int, h=None,
-            ):
+            def density_kde(vdf, columns: list, kernel: str, x, p: int, h=None):
                 for elem in columns:
                     if not (vdf[elem].isnum()):
                         raise TypeError(
@@ -996,7 +1010,9 @@ xlim: list, optional
                         )
                         L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
                     query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
-                    result = executeSQL(query, title="Computing the KDE", method="fetchrow")
+                    result = executeSQL(
+                        query, title="Computing the KDE", method="fetchrow"
+                    )
                     return [elem for elem in result]
                 else:
                     return 0
@@ -1097,9 +1113,7 @@ xlim: list, optional
                 "xlim": self.parameters["xlim"],
             }
             insert_verticapy_schema(
-                model_name=self.name,
-                model_type="KernelDensity",
-                model_save=model_save,
+                model_name=self.name, model_type="KernelDensity", model_save=model_save
             )
         else:
             self.X, self.input_relation = X, input_relation
@@ -1108,9 +1122,7 @@ xlim: list, optional
         return self
 
     # ---#
-    def plot(
-        self, ax=None, **style_kwds,
-    ):
+    def plot(self, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the Model.
@@ -1145,11 +1157,9 @@ xlim: list, optional
             param = {
                 "color": gen_colors()[0],
             }
-            ax.plot(
-                x, y, **updated_dict(param, style_kwds),
-            )
+            ax.plot(x, y, **updated_dict(param, style_kwds))
             ax.fill_between(
-                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7,
+                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7
             )
             ax.set_xlim(min(x), max(x))
             ax.set_ylim(bottom=0)
@@ -1168,7 +1178,11 @@ xlim: list, optional
                     [elem[2] for elem in result],
                 )
             else:
-                x, y, z = [elem[0] for elem in self.verticapy_x], [elem[1] for elem in self.verticapy_x], self.verticapy_y
+                x, y, z = (
+                    [elem[0] for elem in self.verticapy_x],
+                    [elem[1] for elem in self.verticapy_x],
+                    self.verticapy_y,
+                )
             result, idx = [], 0
             while idx < (n + 1) * (n + 1):
                 result += [[z[idx + i] for i in range(n + 1)]]
@@ -1259,7 +1273,7 @@ p: int, optional
         X = [str_column(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
-        if not(key_columns) and key_columns != None:
+        if not (key_columns) and key_columns != None:
             key_columns = [self.y]
         sql = [
             "POWER(ABS(x.{} - y.{}), {})".format(X[i], self.X[i], self.parameters["p"])
@@ -1363,7 +1377,14 @@ p: int, optional
         return self
 
     # ---#
-    def predict(self, vdf: Union[str, vDataFrame], X: list = [], name: str = "", inplace: bool = True, **kwargs):
+    def predict(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        inplace: bool = True,
+        **kwargs
+    ):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
@@ -1514,11 +1535,16 @@ p: int, optional
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]
         schema, relation = schema_relation(input_relation)
-        name_list = [gen_tmp_name(name="main"), gen_tmp_name(name="distance"), gen_tmp_name(name="lrd"), gen_tmp_name(name="lof")]
-        tmp_main_table_name     = gen_tmp_name(name="main")
+        name_list = [
+            gen_tmp_name(name="main"),
+            gen_tmp_name(name="distance"),
+            gen_tmp_name(name="lrd"),
+            gen_tmp_name(name="lof"),
+        ]
+        tmp_main_table_name = gen_tmp_name(name="main")
         tmp_distance_table_name = gen_tmp_name(name="distance")
-        tmp_lrd_table_name      = gen_tmp_name(name="lrd")
-        tmp_lof_table_name      = gen_tmp_name(name="lof")
+        tmp_lrd_table_name = gen_tmp_name(name="lrd")
+        tmp_lof_table_name = gen_tmp_name(name="lof")
         try:
             if not (index):
                 index = "id"
@@ -1530,7 +1556,9 @@ p: int, optional
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                drop_if_exists("v_temp_schema.{}".format(tmp_main_table_name), method="table")
+                drop_if_exists(
+                    "v_temp_schema.{}".format(tmp_main_table_name), method="table"
+                )
                 executeSQL(sql, print_time_sql=False)
             else:
                 main_table = self.input_relation
@@ -1550,27 +1578,69 @@ p: int, optional
                 schema,
                 main_table,
             )
-            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(sql, n_neighbors + 1)
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(tmp_distance_table_name, sql)
-            drop_if_exists("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
+            sql = "SELECT node_id, nn_id, distance, knn FROM ({}) distance_table WHERE knn <= {}".format(
+                sql, n_neighbors + 1
+            )
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
+                tmp_distance_table_name, sql
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
+            )
             executeSQL(sql, "Computing the LOF [Step 0].")
-            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(tmp_distance_table_name, n_neighbors + 1)
-            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(n_neighbors, tmp_distance_table_name, kdistance)
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(tmp_lrd_table_name, lrd)
-            drop_if_exists("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
+            kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(
+                tmp_distance_table_name, n_neighbors + 1
+            )
+            lrd = "SELECT distance_table.node_id, {} / SUM(CASE WHEN distance_table.distance > kdistance_table.distance THEN distance_table.distance ELSE kdistance_table.distance END) AS lrd FROM (v_temp_schema.{} AS distance_table LEFT JOIN {} ON distance_table.nn_id = kdistance_table.node_id) x GROUP BY 1".format(
+                n_neighbors, tmp_distance_table_name, kdistance
+            )
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
+                tmp_lrd_table_name, lrd
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
+            )
             executeSQL(sql, "Computing the LOF [Step 1].")
-            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(n_neighbors, tmp_distance_table_name, tmp_lrd_table_name, tmp_lrd_table_name)
-            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(tmp_lof_table_name, sql)
-            drop_if_exists("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
+            sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
+                n_neighbors,
+                tmp_distance_table_name,
+                tmp_lrd_table_name,
+                tmp_lrd_table_name,
+            )
+            sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
+                tmp_lof_table_name, sql
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
+            )
             executeSQL(sql, "Computing the LOF [Step 2].")
-            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format( ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index)
-            executeSQL("CREATE TABLE {} AS {}".format(self.name, sql), title="Computing the LOF [Step 3].")
-            self.n_errors_ = executeSQL("SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(schema, tmp_lof_table_name), method="fetchfirstelem", print_time_sql=False)
+            sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
+                ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index
+            )
+            executeSQL(
+                "CREATE TABLE {} AS {}".format(self.name, sql),
+                title="Computing the LOF [Step 3].",
+            )
+            self.n_errors_ = executeSQL(
+                "SELECT COUNT(*) FROM {}.{} z WHERE lof > 1e100 OR lof != lof".format(
+                    schema, tmp_lof_table_name
+                ),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
         except:
-            drop_if_exists("v_temp_schema.{}".format(tmp_main_table_name), method="table")
-            drop_if_exists("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
-            drop_if_exists("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
-            drop_if_exists("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_main_table_name), method="table"
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
+            )
+            drop_if_exists(
+                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
+            )
             raise
         drop_if_exists("v_temp_schema.{}".format(tmp_main_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")

@@ -25,13 +25,13 @@ def market_vd():
     market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market", )
+        drop(name="public.market",)
 
 
 @pytest.fixture(scope="module")
 def model(market_vd):
     current_cursor().execute("DROP MODEL IF EXISTS mca_model_test")
-    model_class = MCA("mca_model_test", )
+    model_class = MCA("mca_model_test",)
     model_class.fit(market_vd.cdt())
     yield model_class
     model_class.drop()
@@ -39,7 +39,10 @@ def model(market_vd):
 
 class TestMCA:
     def test_repr(self, model):
-        assert "index|                name                 |  mean  |   sd   " in model.__repr__()
+        assert (
+            "index|                name                 |  mean  |   sd   "
+            in model.__repr__()
+        )
         model_repr = MCA("mca_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<MCA>"
@@ -58,7 +61,7 @@ class TestMCA:
 
     def test_drop(self, market_vd):
         current_cursor().execute("DROP MODEL IF EXISTS mca_model_test_drop")
-        model_test = MCA("mca_model_test_drop", )
+        model_test = MCA("mca_model_test_drop",)
         model_test.fit(market_vd.cdt())
 
         current_cursor().execute(
@@ -179,7 +182,7 @@ class TestMCA:
 
     def test_model_from_vDF(self, market_vd):
         current_cursor().execute("DROP MODEL IF EXISTS mca_vDF")
-        model_test = MCA("mca_vDF", )
+        model_test = MCA("mca_vDF",)
         model_test.fit(market_vd.cdt())
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'mca_vDF'"

@@ -24,7 +24,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
@@ -34,7 +34,7 @@ def iris_vd():
     iris = load_iris()
     yield iris
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", )
+        drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +44,7 @@ def market_vd():
     market = load_market()
     yield market
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market", )
+        drop(name="public.market",)
 
 
 class TestvDFPreprocessing:
@@ -56,11 +56,17 @@ class TestvDFPreprocessing:
         assert test.shape() == (pytest.approx(407), 14)
 
     def test_vDF_add_duplicates(self):
-        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf()
-        result = names.add_duplicates("weight").groupby("name", "COUNT(*) AS cnt").sort("cnt")
-        assert result[0] == ['Badr', 1]
-        assert result[1] == ['Waqas', 2]
-        assert result[2] == ['Pratibha', 3]
+        names = tablesample(
+            {"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}
+        ).to_vdf()
+        result = (
+            names.add_duplicates("weight")
+            .groupby("name", "COUNT(*) AS cnt")
+            .sort("cnt")
+        )
+        assert result[0] == ["Badr", 1]
+        assert result[1] == ["Waqas", 2]
+        assert result[2] == ["Pratibha", 3]
 
     def test_vDF_cdt(self, titanic_vd):
         result = titanic_vd[["age", "fare", "pclass", "boat"]].cdt()
@@ -70,11 +76,13 @@ class TestvDFPreprocessing:
     def test_vDF_cut(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
-        assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
+        assert sorted(titanic_copy["age"].distinct()) == ["[0;15]", "]15;80]"]
         titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False)
-        assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
-        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"])
-        assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
+        assert sorted(titanic_copy["fare"].distinct()) == ["[15;800[", "]0;15["]
+        titanic_copy["parch"].cut(
+            [0, 5, 10], right=False, include_lowest=False, labels=["small", "big"]
+        )
+        assert sorted(titanic_copy["parch"].distinct()) == ["big", "small"]
 
     def test_vDF_decode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
@@ -111,11 +119,13 @@ class TestvDFPreprocessing:
         )
 
         titanic_copy["age"].discretize(method="same_freq", bins=5)
-        assert titanic_copy["age"].distinct() == ['[0.330;19.000]',
-                                                  '[19.000;25.000]',
-                                                  '[25.000;31.000]',
-                                                  '[31.000;42.000]',
-                                                  '[42.000;80.000]']
+        assert titanic_copy["age"].distinct() == [
+            "[0.330;19.000]",
+            "[19.000;25.000]",
+            "[25.000;31.000]",
+            "[31.000;42.000]",
+            "[42.000;80.000]",
+        ]
 
         ### method = "smart"
         titanic_copy = titanic_vd.copy()
@@ -417,7 +427,9 @@ class TestvDFPreprocessing:
         with pytest.raises(errors.ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
-        assert exception_info.match('Could not convert "female" from column titanic.sex to an int8')
+        assert exception_info.match(
+            'Could not convert "female" from column titanic.sex to an int8'
+        )
 
         titanic_copy["sex"].astype("varchar(10)")
         assert titanic_copy["sex"].dtype() == "varchar(10)"

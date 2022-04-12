@@ -26,13 +26,13 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     current_cursor().execute("DROP MODEL IF EXISTS lsvr_model_test")
-    model_class = LinearSVR("lsvr_model_test", )
+    model_class = LinearSVR("lsvr_model_test",)
     model_class.fit(
         "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
     )
@@ -48,12 +48,10 @@ class TestLinearSVR:
         assert model_repr.__repr__() == "<LinearSVR>"
 
     def test_contour(self, winequality_vd):
-        model_test = LinearSVR("model_contour", )
+        model_test = LinearSVR("model_contour",)
         model_test.drop()
         model_test.fit(
-            winequality_vd,
-            ["citric_acid", "residual_sugar"],
-            "quality",
+            winequality_vd, ["citric_acid", "residual_sugar"], "quality",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
@@ -67,7 +65,7 @@ class TestLinearSVR:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS lsvr_model_test_drop")
-        model_test = LinearSVR("lsvr_model_test_drop", )
+        model_test = LinearSVR("lsvr_model_test_drop",)
         model_test.fit("public.winequality", ["alcohol"], "quality")
 
         current_cursor().execute(
@@ -150,7 +148,7 @@ class TestLinearSVR:
 
     def test_get_plot(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LinearSVR("model_test_plot", )
+        model_test = LinearSVR("model_test_plot",)
         model_test.fit("public.winequality", ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -164,12 +162,14 @@ class TestLinearSVR:
             )
         )
         prediction = current_cursor().fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0]
+        )
 
     def test_to_sql(self, model):
         current_cursor().execute(
             "SELECT PREDICT_SVM_REGRESSOR(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([3.0, 11.0, 93.])
+                model.name, model.to_sql([3.0, 11.0, 93.0])
             )
         )
         prediction = current_cursor().fetchone()
@@ -177,15 +177,15 @@ class TestLinearSVR:
 
     def test_to_memmodel(self, model, winequality_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0, 93.],
-                              [11.0, 1.0, 99.]])
-        res_py = model.to_python()([[3.0, 11.0, 93.],
-                                   [11.0, 1.0, 99.]])
+        res = mmodel.predict([[3.0, 11.0, 93.0], [11.0, 1.0, 99.0]])
+        res_py = model.to_python()([[3.0, 11.0, 93.0], [11.0, 1.0, 99.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         vdf = winequality_vd.copy()
-        vdf["prediction_sql"] = mmodel.predict_sql(["citric_acid", "residual_sugar", "alcohol"])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ["citric_acid", "residual_sugar", "alcohol"]
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
 
@@ -284,7 +284,7 @@ class TestLinearSVR:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS lsvr_from_vDF")
-        model_test = LinearSVR("lsvr_from_vDF", )
+        model_test = LinearSVR("lsvr_from_vDF",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
 
         current_cursor().execute(
