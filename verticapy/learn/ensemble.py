@@ -254,11 +254,18 @@ class XGBoost_to_json:
                             + str(model.parameters["max_depth"])
                             + ', "learning_rate": '
                             + str(model.parameters["learning_rate"])
-                            + ', "verbosity": null, "booster": null, "tree_method": null, "gamma": null, "min_child_weight": null, "max_delta_step": null, "subsample": null, "colsample_bytree": '
+                            + ', "verbosity": null, "booster": null, "tree_method": null,'
+                            + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
+                            + ' null, "subsample": null, "colsample_bytree": '
                             + str(col_sample_by_tree)
                             + ', "colsample_bylevel": null, "colsample_bynode": '
                             + str(col_sample_by_node)
-                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight": null, "base_score": null, "missing": NaN, "num_parallel_tree": null, "kwargs": {}, "random_state": null, "n_jobs": null, "monotone_constraints": null, "interaction_constraints": null, "importance_type": "gain", "gpu_id": null, "validate_parameters": null, "_estimator_type": "regressor"}'
+                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                            + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
+                            + ': null, "kwargs": {}, "random_state": null, "n_jobs": null, '
+                            + '"monotone_constraints": null, "interaction_constraints": null,'
+                            + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
+                            + ': null, "_estimator_type": "regressor"}'
                         }
                     else:
                         objective = "binary:logistic"
@@ -269,11 +276,19 @@ class XGBoost_to_json:
                             + str(model.parameters["max_depth"])
                             + ', "learning_rate": '
                             + str(model.parameters["learning_rate"])
-                            + ', "verbosity": null, "booster": null, "tree_method": null, "gamma": null, "min_child_weight": null, "max_delta_step": null, "subsample": null, "colsample_bytree": '
+                            + ', "verbosity": null, "booster": null, "tree_method": null,'
+                            + ' "gamma": null, "min_child_weight": null, "max_delta_step":'
+                            + ' null, "subsample": null, "colsample_bytree": '
                             + str(col_sample_by_tree)
                             + ', "colsample_bylevel": null, "colsample_bynode": '
                             + str(col_sample_by_node)
-                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight": null, "base_score": null, "missing": NaN, "num_parallel_tree": null, "kwargs": {}, "random_state": null, "n_jobs": null, "monotone_constraints": null, "interaction_constraints": null, "importance_type": "gain", "gpu_id": null, "validate_parameters": null, "classes_": [0, 1], "n_classes_": 2, "_le": {"classes_": [0, 1]}, "_estimator_type": "classifier"}'
+                            + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                            + ' null, "base_score": null, "missing": NaN, "num_parallel_tree"'
+                            + ': null, "kwargs": {}, "random_state": null, "n_jobs": null,'
+                            + ' "monotone_constraints": null, "interaction_constraints": null,'
+                            + ' "importance_type": "gain", "gpu_id": null, "validate_parameters"'
+                            + ': null, "classes_": [0, 1], "n_classes_": 2, "_le": {"classes_": '
+                            + '[0, 1]}, "_estimator_type": "classifier"}'
                         }
                 else:
                     objective, bs, num_class, param, param_val = (
@@ -290,11 +305,18 @@ class XGBoost_to_json:
                         + str(model.parameters["max_depth"])
                         + ', "learning_rate": '
                         + str(model.parameters["learning_rate"])
-                        + ', "verbosity": null, "booster": null, "tree_method": null, "gamma": null, "min_child_weight": null, "max_delta_step": null, "subsample": null, "colsample_bytree": '
+                        + ', "verbosity": null, "booster": null, "tree_method": null, '
+                        + '"gamma": null, "min_child_weight": null, "max_delta_step": '
+                        + 'null, "subsample": null, "colsample_bytree": '
                         + str(col_sample_by_tree)
                         + ', "colsample_bylevel": null, "colsample_bynode": '
                         + str(col_sample_by_node)
-                        + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight": null, "base_score": null, "missing": NaN, "num_parallel_tree": null, "kwargs": {}, "random_state": null, "n_jobs": null, "monotone_constraints": null, "interaction_constraints": null, "importance_type": "gain", "gpu_id": null, "validate_parameters": null, "classes_": '
+                        + ', "reg_alpha": null, "reg_lambda": null, "scale_pos_weight":'
+                        + ' null, "base_score": null, "missing": NaN, "num_parallel_tree":'
+                        + ' null, "kwargs": {}, "random_state": null, "n_jobs": null, '
+                        + '"monotone_constraints": null, "interaction_constraints": null, '
+                        + '"importance_type": "gain", "gpu_id": null, "validate_parameters":'
+                        + ' null, "classes_": '
                         + str(model.classes_)
                         + ', "n_classes_": '
                         + str(len(model.classes_))

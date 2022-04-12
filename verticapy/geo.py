@@ -71,33 +71,35 @@ def create_index(
 ):
     """
 ---------------------------------------------------------------------------
-Creates a spatial index on a set of polygons to speed up spatial intersection 
-with a set of points.
+Creates a spatial index on a set of polygons to speed up spatial 
+intersection with a set of points.
 
 Parameters
 ----------
 vdf: vDataFrame
     vDataFrame to use to compute the spatial join.
 gid: str
-    Name of an integer column that uniquely identifies the polygon. The gid 
-    cannot be NULL.
+    Name of an integer column that uniquely identifies the polygon. 
+    The gid cannot be NULL.
 g: str
-    Name of a geometry or geography (WGS84) column or expression that contains 
-    polygons and multipolygons. Only polygon and multipolygon can be indexed. 
-    Other shape types are excluded from the index.
+    Name of a geometry or geography (WGS84) column or expression that 
+    contains polygons and multipolygons. Only polygon and multipolygon 
+    can be indexed. Other shape types are excluded from the index.
 index: str
     Name of the index.
 overwrite: bool, optional
-    BOOLEAN value that specifies whether to overwrite the index, if an index exists.
+    BOOLEAN value that specifies whether to overwrite the index, if an 
+    index exists.
 max_mem_mb: int, optional
-    A positive integer that assigns a limit to the amount of memory in megabytes 
-    that create_index can allocate during index construction.
+    A positive integer that assigns a limit to the amount of memory in 
+    megabytes that create_index can allocate during index construction.
 skip_nonindexable_polygons: bool, optional
-    In rare cases, intricate polygons (for instance, with too high resolution or 
-    anomalous spikes) cannot be indexed. These polygons are considered non-indexable. 
-    When set to False, non-indexable polygons cause the index creation to fail. 
-    When set to True, index creation can succeed by excluding non-indexable polygons 
-    from the index.
+    In rare cases, intricate polygons (for instance, with too high 
+    resolution or anomalous spikes) cannot be indexed. These polygons 
+    are considered non-indexable. 
+    When set to False, non-indexable polygons cause the index creation 
+    to fail. When set to True, index creation can succeed by excluding 
+    non-indexable polygons from the index.
 
 Returns
 -------
@@ -118,8 +120,16 @@ tablesample
     )
     columns_check([gid, g], vdf)
     gid, g = vdf_columns_names([gid, g], vdf)
-    query = "SELECT STV_Create_Index({}, {} USING PARAMETERS index='{}', overwrite={} , max_mem_mb={}, skip_nonindexable_polygons={}) OVER() FROM {}"
-    query = query.format(
+
+    query = """SELECT 
+                    STV_Create_Index({0}, {1} 
+                                     USING PARAMETERS 
+                                        index='{2}', 
+                                        overwrite={3} , 
+                                        max_mem_mb={4}, 
+                                        skip_nonindexable_polygons={5}) 
+                                        OVER() 
+                FROM {6}""".format(
         gid,
         g,
         index,
@@ -128,6 +138,7 @@ tablesample
         skip_nonindexable_polygons,
         vdf.__genSQL__(),
     )
+
     return to_tablesample(query)
 
 
@@ -158,9 +169,8 @@ x0: float, optional
 earth_radius: float, optional
     Earth radius in km.
 reverse: bool, optional
-    If set to True, the Euclidean coordinates are converted to latitude and 
-    longitude.
-
+    If set to True, the Euclidean coordinates are converted to latitude 
+    and longitude.
 
 Returns
 -------
@@ -178,15 +188,21 @@ vDataFrame
         ]
     )
     columns_check([x, y], vdf)
+
     result = vdf.copy()
+
     if reverse:
+
         result[x] = result[x] / earth_radius * 180 / st.pi + x0
         result[y] = (
             (st.atan(st.exp(result[y] / earth_radius)) - st.pi / 4) / st.pi * 360
         )
+
     else:
+
         result[x] = earth_radius * ((result[x] - x0) * st.pi / 180)
         result[y] = earth_radius * st.ln(st.tan(result[y] * st.pi / 360 + st.pi / 4))
+
     return result
 
 
@@ -213,14 +229,20 @@ tablesample
     utilities.tablesample.
     """
     check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
+
     if not (name):
         query = f"SELECT STV_Describe_Index () OVER ()"
     else:
-        query = f"SELECT STV_Describe_Index (USING PARAMETERS index='{name}', list_polygons={list_polygons}) OVER ()"
+        query = (
+            "SELECT STV_Describe_Index (USING PARAMETERS"
+            f" index='{name}', list_polygons={list_polygons}) OVER ()"
+        )
+
     if list_polygons:
         result = vdf_from_relation(f"({query}) x")
     else:
         result = to_tablesample(query)
+
     return result
 
 
@@ -239,8 +261,8 @@ vdf: vDataFrame
 index: str
     Name of the index.
 gid: str
-    An integer column or integer that uniquely identifies the spatial object(s) 
-    of g or x and y.
+    An integer column or integer that uniquely identifies the spatial 
+    object(s) of g or x and y.
 g: str, optional
     A geometry or geography (WGS84) column that contains points. 
     The g column can contain only point geometries or geographies.
@@ -264,18 +286,34 @@ vDataFrame
             ("index", index, [str]),
         ]
     )
-    table = vdf.__genSQL__()
     columns_check([gid], vdf)
+
+    table = vdf.__genSQL__()
+
     if g:
+
         columns_check([g], vdf)
         g = vdf_columns_names([g], vdf)[0]
-        query = f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS index='{index}') OVER (PARTITION BEST) AS (point_id, polygon_gid) FROM {table}) x"
+        query = (
+            f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
+            f" index='{index}') OVER (PARTITION BEST) AS "
+            f"(point_id, polygon_gid) FROM {table}) x"
+        )
+
     elif x and y:
+
         columns_check([x, y], vdf)
         x, y = vdf_columns_names([x, y], vdf)
-        query = f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS index='{index}') OVER (PARTITION BEST) AS (point_id, polygon_gid) FROM {table}) x"
+        query = (
+            f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"
+            f" index='{index}') OVER (PARTITION BEST) AS "
+            f"(point_id, polygon_gid) FROM {table}) x"
+        )
+
     else:
+
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
+
     return vdf_from_relation(query)
 
 
@@ -292,8 +330,8 @@ source: str
 dest: str
     New name of the spatial index.
 overwrite: bool, optional
-    BOOLEAN value that specifies whether to overwrite the index, if an index 
-    exists.
+    BOOLEAN value that specifies whether to overwrite the index, if an 
+    index exists.
 
 Returns
 -------
@@ -307,12 +345,21 @@ bool
             ("overwrite", overwrite, [bool]),
         ]
     )
-    query = f"SELECT STV_Rename_Index (USING PARAMETERS source = '{source}', dest = '{dest}', overwrite = {overwrite}) OVER ();"
+
+    query = (
+        f"SELECT STV_Rename_Index (USING PARAMETERS source = '{source}'"
+        f", dest = '{dest}', overwrite = {overwrite}) OVER ();"
+    )
+
     try:
+
         executeSQL(query, "Renaming Index.")
+
     except Exception as e:
+
         warnings.warn(str(e), Warning)
         return False
+
     return True
 
 
@@ -321,9 +368,9 @@ def split_polygon_n(p: str, nbins: int = 100):
     """
 ---------------------------------------------------------------------------
 Splits a polygon into (nbins ** 2) smaller polygons of approximately equal
-total area. This process is inexact, and the split polygons have approximated
-edges; greater values for nbins produces more accurate and precise edge 
-approximations.
+total area. This process is inexact, and the split polygons have 
+approximated edges; greater values for nbins produces more accurate and 
+precise edge approximations.
 
 Parameters
 ----------
@@ -339,15 +386,23 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
-    check_types(
-        [("p", p, [str]), ("nbins", nbins, [int]),]
-    )
-    sql = "SELECT MIN(ST_X(point)), MAX(ST_X(point)), MIN(ST_Y(point)), MAX(ST_Y(point)) FROM (SELECT STV_PolygonPoint(geom) OVER() FROM (SELECT ST_GeomFromText('{}') AS geom) x) y".format(
+    check_types([("p", p, [str]), ("nbins", nbins, [int])])
+
+    sql = """SELECT 
+                MIN(ST_X(point)), 
+                MAX(ST_X(point)), 
+                MIN(ST_Y(point)), 
+                MAX(ST_Y(point)) 
+             FROM (SELECT 
+                        STV_PolygonPoint(geom) OVER() 
+                   FROM (SELECT ST_GeomFromText('{0}') 
+                                AS geom) x) y""".format(
         p
     )
     min_x, max_x, min_y, max_y = executeSQL(
         sql, title="Computing min & max: x & y.", method="fetchrow"
     )
+
     delta_x, delta_y = (max_x - min_x) / nbins, (max_y - min_y) / nbins
     vdf = gen_meshgrid(
         {
@@ -356,11 +411,13 @@ vDataFrame
         }
     )
     vdf["gid"] = "ROW_NUMBER() OVER (ORDER BY x, y)"
-    vdf[
-        "geom"
-    ] = "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' || x + {} || ' ' || y || ', ' || x + {} || ' ' || y + {} || ', ' || x || ' ' || y + {} || ', ' || x || ' ' || y || '))')".format(
-        delta_x, delta_x, delta_y, delta_y
+    vdf["geom"] = (
+        "ST_GeomFromText('POLYGON ((' || x || ' ' || y || ', ' "
+        f"|| x + {delta_x} || ' ' || y || ', ' || x + {delta_x} "
+        f"|| ' ' || y + {delta_y} || ', ' || x || ' ' || y +"
+        f" {delta_y} || ', ' || x || ' ' || y || '))'"
     )
     vdf["gid"].apply("ROW_NUMBER() OVER (ORDER BY {})")
-    vdf.filter("ST_Intersects(geom, ST_GeomFromText('{}'))".format(p), print_info=False)
+    vdf.filter(f"ST_Intersects(geom, ST_GeomFromText('{p}'))", print_info=False)
+
     return vdf[["gid", "geom"]]

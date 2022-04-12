@@ -495,7 +495,7 @@ p: int, optional
                 ", ".join(self.X), self.deploySQL()
             )
             return multilabel_confusion_matrix(
-                self.y, "predict_neighbors", input_relation, self.classes_,
+                self.y, "predict_neighbors", input_relation, self.classes_
             )
 
     # ---#
@@ -587,7 +587,7 @@ p: int, optional
         inplace: bool = True,
         cutoff: float = -1,
         all_classes: bool = False,
-        **kwargs,
+        **kwargs
     ):
         """
     ---------------------------------------------------------------------------
@@ -887,7 +887,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
-        **kwargs,
+        **kwargs
     ):
         check_types(
             [
@@ -920,9 +920,7 @@ xlim: list, optional
             self.verticapy_store = False
 
     # ---#
-    def fit(
-        self, input_relation: Union[str, vDataFrame], X: list = [],
-    ):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
     ---------------------------------------------------------------------------
     Trains the model.
@@ -970,9 +968,7 @@ xlim: list, optional
             p: int = 2,
         ):
             # ---#
-            def density_kde(
-                vdf, columns: list, kernel: str, x, p: int, h=None,
-            ):
+            def density_kde(vdf, columns: list, kernel: str, x, p: int, h=None):
                 for elem in columns:
                     if not (vdf[elem].isnum()):
                         raise TypeError(
@@ -1117,7 +1113,7 @@ xlim: list, optional
                 "xlim": self.parameters["xlim"],
             }
             insert_verticapy_schema(
-                model_name=self.name, model_type="KernelDensity", model_save=model_save,
+                model_name=self.name, model_type="KernelDensity", model_save=model_save
             )
         else:
             self.X, self.input_relation = X, input_relation
@@ -1126,9 +1122,7 @@ xlim: list, optional
         return self
 
     # ---#
-    def plot(
-        self, ax=None, **style_kwds,
-    ):
+    def plot(self, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the Model.
@@ -1163,11 +1157,9 @@ xlim: list, optional
             param = {
                 "color": gen_colors()[0],
             }
-            ax.plot(
-                x, y, **updated_dict(param, style_kwds),
-            )
+            ax.plot(x, y, **updated_dict(param, style_kwds))
             ax.fill_between(
-                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7,
+                x, y, facecolor=updated_dict(param, style_kwds)["color"], alpha=0.7
             )
             ax.set_xlim(min(x), max(x))
             ax.set_ylim(bottom=0)
@@ -1391,7 +1383,7 @@ p: int, optional
         X: list = [],
         name: str = "",
         inplace: bool = True,
-        **kwargs,
+        **kwargs
     ):
         """
     ---------------------------------------------------------------------------

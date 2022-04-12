@@ -715,7 +715,7 @@ papprox_ma: int, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds,
+        **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -911,7 +911,7 @@ papprox_ma: int, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2),
+                **updated_dict(param3, style_kwds, 2)
             )
         if one_step:
             if confidence:
@@ -938,14 +938,14 @@ papprox_ma: int, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1),
+                **updated_dict(param2, style_kwds, 1)
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0),
+                **updated_dict(param1, style_kwds, 0)
             )
         ax.set_title(
             "SARIMAX({},{},{})({},{},{})_{}".format(
@@ -1143,9 +1143,7 @@ solver: str, optional
         assert p > 0, ParameterError(
             "Parameter 'p' must be greater than 0 to build a VAR model."
         )
-        self.set_params(
-            {"p": p, "tol": tol, "max_iter": max_iter, "solver": solver,}
-        )
+        self.set_params({"p": p, "tol": tol, "max_iter": max_iter, "solver": solver})
         version(condition=[8, 0, 0])
 
     # ---#
@@ -1177,7 +1175,7 @@ solver: str, optional
 
     # ---#
     def features_importance(
-        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds,
+        self, X_idx: int = 0, ax=None, show: bool = True, **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -1240,7 +1238,7 @@ solver: str, optional
             coeff_importances[elem] = 100 * coeff_importances[elem] / total
         if show:
             plot_importance(
-                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds,
+                coeff_importances, coeff_sign, print_legend=True, ax=ax, **style_kwds
             )
         importances = {"index": ["importance", "sign"]}
         for elem in coeff_importances:
@@ -1412,7 +1410,7 @@ solver: str, optional
         nlast: int = 0,
         limit: int = 1000,
         ax=None,
-        **style_kwds,
+        **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -1622,7 +1620,7 @@ solver: str, optional
                 dynamic_forecast[0],
                 dynamic_forecast[1],
                 label="Dynamic Forecast",
-                **updated_dict(param3, style_kwds, 2),
+                **updated_dict(param3, style_kwds, 2)
             )
         if one_step:
             if confidence:
@@ -1649,14 +1647,14 @@ solver: str, optional
                 one_step_ahead[0][delta_limit:],
                 one_step_ahead[1][delta_limit:],
                 label="One-step ahead Forecast",
-                **updated_dict(param2, style_kwds, 1),
+                **updated_dict(param2, style_kwds, 1)
             )
         if observed:
             ax.plot(
                 true_value[0][delta_limit:],
                 true_value[1][delta_limit:],
                 label="Observed",
-                **updated_dict(param1, style_kwds, 0),
+                **updated_dict(param1, style_kwds, 0)
             )
         ax.set_title("VAR({}) [{}]".format(self.parameters["p"], y))
         ax.set_xlabel(ts)

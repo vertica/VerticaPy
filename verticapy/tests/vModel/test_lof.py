@@ -40,9 +40,7 @@ def model(titanic_vd):
     create_verticapy_schema()
     model_class = LocalOutlierFactor("lof_model_test",)
     model_class.drop()
-    model_class.fit(
-        "public.titanic", ["age", "fare"],
-    )
+    model_class.fit("public.titanic", ["age", "fare"])
     yield model_class
     model_class.drop()
 

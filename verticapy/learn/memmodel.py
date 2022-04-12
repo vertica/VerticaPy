@@ -1118,9 +1118,7 @@ def bisecting_kmeans_to_graphviz(
         ]
     )
     if len(leaf_style) == 0:
-        leaf_style = {
-            "shape": "none",
-        }
+        leaf_style = {"shape": "none"}
     n, position = (
         len(children_left),
         '\ngraph [rankdir = "LR"];' if not (vertical) else "",
@@ -1951,9 +1949,7 @@ attributes: dict
     # Special Methods
     #
     # ---#
-    def __init__(
-        self, model_type: str, attributes: dict,
-    ):
+    def __init__(self, model_type: str, attributes: dict):
         check_types(
             [
                 ("attributes", attributes, [dict]),
@@ -2938,14 +2934,9 @@ attributes: dict
             Graphviz code.
         """
         if len(node_style) == 0 and self.model_type_ != "BisectingKMeans":
-            node_style = {
-                "shape": "box",
-                "style": "filled",
-            }
+            node_style = {"shape": "box", "style": "filled"}
         else:
-            node_style = {
-                "shape": "none",
-            }
+            node_style = {"shape": "none"}
         classes = self.attributes_["classes"] if "classes" in self.attributes_ else []
         if self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier"):
             prefix_pred = "prob"

@@ -442,7 +442,7 @@ tol: float, optional
 
     # ---#
     def plot_voronoi(
-        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds,
+        self, max_nb_points: int = 50, plot_crosses: bool = True, ax=None, **style_kwds
     ):
         """
     ---------------------------------------------------------------------------
@@ -478,7 +478,7 @@ tol: float, optional
                 plot_crosses=plot_crosses,
                 ax=ax,
                 max_nb_points=max_nb_points,
-                **style_kwds,
+                **style_kwds
             )
         else:
             raise Exception("Voronoi Plots are only available in 2D")

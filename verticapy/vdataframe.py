@@ -869,7 +869,7 @@ vColumns : vColumn
                     "No numerical column found in the vDataFrame."
                 )
             return self.__aggregate_matrix__(
-                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds,
+                method=method, columns=cols, round_nb=round_nb, show=show, **style_kwds
             )
 
     # ---#
@@ -1095,7 +1095,7 @@ vColumns : vColumn
 
     # ---#
     def __genSQL__(
-        self, split: bool = False, transformations: dict = {}, force_columns: list = [],
+        self, split: bool = False, transformations: dict = {}, force_columns: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -1438,9 +1438,7 @@ vColumns : vColumn
         return self.apply(func)
 
     # ---#
-    def add_duplicates(
-        self, weight: Union[int, str], use_gcd: bool = True,
-    ):
+    def add_duplicates(self, weight: Union[int, str], use_gcd: bool = True):
         """
     ---------------------------------------------------------------------------
     Duplicates the vDataFrame using the input weight.
@@ -2560,9 +2558,7 @@ vColumns : vColumn
                 expr = "(AVG({} * {}) OVER ({}) - AVG({}) OVER ({}) * AVG({}) OVER ({})){}".format(
                     columns[0], columns[1], by, columns[0], by, columns[1], by, den
                 )
-            self.eval(
-                name, expr,
-            )
+            self.eval(name, expr)
         else:
             try:
                 self.eval(
@@ -3064,11 +3060,8 @@ vColumns : vColumn
             else:
                 func, interp = "TS_FIRST_VALUE", "linear"
             all_elements += [
-                "{}({}, '{}') AS {}".format(
-                    func,
-                    vdf_columns_names([column], self)[0],
-                    interp,
-                    vdf_columns_names([column], self)[0],
+                "{0}({1}, '{2}') AS {1}".format(
+                    func, vdf_columns_names([column], self)[0], interp
                 )
             ]
         table = "SELECT {} FROM {}".format("{}", self.__genSQL__())
@@ -3294,7 +3287,7 @@ vColumns : vColumn
 
     # ---#
     def balance(
-        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = [],
+        self, column: str, method: str = "hybrid", x: float = 0.5, order_by: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -3429,9 +3422,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def boxplot(
-        self, columns: list = [], ax=None, **style_kwds,
-    ):
+    def boxplot(self, columns: list = [], ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the Box Plot of the input vColumns. 
@@ -3824,7 +3815,7 @@ vColumns : vColumn
             if "process" not in kwds or kwds["process"]:
                 from verticapy.learn.memmodel import memModel
 
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes,})
+                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
             return tree, idx
         else:
             tree["children"] = {}
@@ -3859,7 +3850,7 @@ vColumns : vColumn
             if "process" not in kwds or kwds["process"]:
                 from verticapy.learn.memmodel import memModel
 
-                return memModel("CHAID", attributes={"tree": tree, "classes": classes,})
+                return memModel("CHAID", attributes={"tree": tree, "classes": classes})
             return tree, idx
 
     # ---#
@@ -3915,9 +3906,7 @@ vColumns : vColumn
         return copy_vDataFrame
 
     # ---#
-    def case_when(
-        self, name: str, *argv,
-    ):
+    def case_when(self, name: str, *argv):
         """
     ---------------------------------------------------------------------------
     Creates a new feature by evaluating some conditions.
@@ -3949,9 +3938,7 @@ vColumns : vColumn
         return self.eval(name=name, expr=st.case_when(*argv))
 
     # ---#
-    def contour(
-        self, columns: list, func, nbins: int = 100, ax=None, **style_kwds,
-    ):
+    def contour(self, columns: list, func, nbins: int = 100, ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the contour plot of the input function two input vColumns.
@@ -4088,9 +4075,7 @@ vColumns : vColumn
             )
 
     # ---#
-    def corr_pvalue(
-        self, column1: str, column2: str, method: str = "pearson",
-    ):
+    def corr_pvalue(self, column1: str, column2: str, method: str = "pearson"):
         """
     ---------------------------------------------------------------------------
     Computes the Correlation Coefficient of the two input vColumns and its pvalue. 
@@ -4394,13 +4379,13 @@ vColumns : vColumn
         columns = vdf_columns_names(columns, self)
         if focus == "":
             return self.__aggregate_matrix__(
-                method="cov", columns=columns, show=show, ax=ax, **style_kwds,
+                method="cov", columns=columns, show=show, ax=ax, **style_kwds
             )
         else:
             columns_check([focus], self)
             focus = vdf_columns_names([focus], self)[0]
             return self.__aggregate_vector__(
-                focus, method="cov", columns=columns, show=show, ax=ax, **style_kwds,
+                focus, method="cov", columns=columns, show=show, ax=ax, **style_kwds
             )
 
     # ---#
@@ -5128,9 +5113,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def drop_duplicates(
-        self, columns: list = [],
-    ):
+    def drop_duplicates(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
     Filters the duplicated using a partition by the input vColumns.
@@ -5178,9 +5161,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def dropna(
-        self, columns: list = [],
-    ):
+    def dropna(self, columns: list = []):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame where the input vColumns are missing.
@@ -5541,9 +5522,7 @@ vColumns : vColumn
         return result
 
     # ---#
-    def fillna(
-        self, val: dict = {}, method: dict = {}, numeric_only: bool = False,
-    ):
+    def fillna(self, val: dict = {}, method: dict = {}, numeric_only: bool = False):
         """
     ---------------------------------------------------------------------------
     Fills the vColumns missing elements using specific rules.
@@ -5612,9 +5591,7 @@ vColumns : vColumn
             raise
 
     # ---#
-    def filter(
-        self, conditions: Union[list, str] = [], *args, **kwds,
-    ):
+    def filter(self, conditions: Union[list, str] = [], *args, **kwds):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame using the input expressions.
@@ -5702,9 +5679,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def first(
-        self, ts: str, offset: str,
-    ):
+    def first(self, ts: str, offset: str):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the first records.
@@ -5851,9 +5826,7 @@ vColumns : vColumn
 
     one_hot_encode = get_dummies
     # ---#
-    def groupby(
-        self, columns: list, expr: list = [],
-    ):
+    def groupby(self, columns: list, expr: list = []):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame by grouping the elements.
@@ -6750,9 +6723,7 @@ vColumns : vColumn
 
     kurt = kurtosis
     # ---#
-    def last(
-        self, ts: str, offset: str,
-    ):
+    def last(self, ts: str, offset: str):
         """
     ---------------------------------------------------------------------------
     Filters the vDataFrame by only keeping the last records.
@@ -7514,12 +7485,7 @@ vColumns : vColumn
 
     # ---#
     def pivot(
-        self,
-        index: str,
-        columns: str,
-        values: str,
-        aggr: str = "sum",
-        prefix: str = "",
+        self, index: str, columns: str, values: str, aggr: str = "sum", prefix: str = ""
     ):
         """
     ---------------------------------------------------------------------------
@@ -7893,9 +7859,7 @@ vColumns : vColumn
         )
 
     # ---#
-    def polynomial_comb(
-        self, columns: list = [], r: int = 2,
-    ):
+    def polynomial_comb(self, columns: list = [], r: int = 2):
         """
     ---------------------------------------------------------------------------
     Returns a vDataFrame containing different product combination of the 
@@ -8556,7 +8520,7 @@ vColumns : vColumn
         columns_check(columns + by + [elem for elem in order_by], self)
         if not (name):
             name = "moving_{}".format(
-                gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]]),
+                gen_name([func] + columns + [window[0], rule[0], window[1], rule[1]])
             )
         columns = vdf_columns_names(columns, self)
         by = (
@@ -8686,7 +8650,7 @@ vColumns : vColumn
 
     # ---#
     def sample(
-        self, n: int = None, x: float = None, method: str = "random", by: list = [],
+        self, n: int = None, x: float = None, method: str = "random", by: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -8968,9 +8932,7 @@ vColumns : vColumn
             )
 
     # ---#
-    def scatter_matrix(
-        self, columns: list = [], **style_kwds,
-    ):
+    def scatter_matrix(self, columns: list = [], **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the scatter matrix of the vDataFrame.
@@ -9065,9 +9027,7 @@ vColumns : vColumn
         return result.sort(order_by)
 
     # ---#
-    def select(
-        self, columns: list,
-    ):
+    def select(self, columns: list):
         """
     ---------------------------------------------------------------------------
     Returns a copy of the vDataFrame with only the selected vColumns.
@@ -9184,9 +9144,7 @@ vColumns : vColumn
         return self.eval(name=name, expr=expr)
 
     # ---#
-    def score(
-        self, y_true: str, y_score: str, method: str, nbins: int = 30,
-    ):
+    def score(self, y_true: str, y_score: str, method: str, nbins: int = 30):
         """
     ---------------------------------------------------------------------------
     Computes the score using the input columns and the input method.
@@ -9247,35 +9205,35 @@ vColumns : vColumn
         if method in ("r2", "rsquared"):
             from verticapy.learn.metrics import r2_score
 
-            return r2_score(y_true, y_score, self.__genSQL__(),)
+            return r2_score(y_true, y_score, self.__genSQL__())
         elif method in ("mae", "mean_absolute_error"):
             from verticapy.learn.metrics import mean_absolute_error
 
-            return mean_absolute_error(y_true, y_score, self.__genSQL__(),)
+            return mean_absolute_error(y_true, y_score, self.__genSQL__())
         elif method in ("mse", "mean_squared_error"):
             from verticapy.learn.metrics import mean_squared_error
 
-            return mean_squared_error(y_true, y_score, self.__genSQL__(),)
+            return mean_squared_error(y_true, y_score, self.__genSQL__())
         elif method in ("msle", "mean_squared_log_error"):
             from verticapy.learn.metrics import mean_squared_log_error
 
-            return mean_squared_log_error(y_true, y_score, self.__genSQL__(),)
+            return mean_squared_log_error(y_true, y_score, self.__genSQL__())
         elif method in ("max", "max_error"):
             from verticapy.learn.metrics import max_error
 
-            return max_error(y_true, y_score, self.__genSQL__(),)
+            return max_error(y_true, y_score, self.__genSQL__())
         elif method in ("median", "median_absolute_error"):
             from verticapy.learn.metrics import median_absolute_error
 
-            return median_absolute_error(y_true, y_score, self.__genSQL__(),)
+            return median_absolute_error(y_true, y_score, self.__genSQL__())
         elif method in ("var", "explained_variance"):
             from verticapy.learn.metrics import explained_variance
 
-            return explained_variance(y_true, y_score, self.__genSQL__(),)
+            return explained_variance(y_true, y_score, self.__genSQL__())
         elif method in ("accuracy", "acc"):
             from verticapy.learn.metrics import accuracy_score
 
-            return accuracy_score(y_true, y_score, self.__genSQL__(), pos_label=None,)
+            return accuracy_score(y_true, y_score, self.__genSQL__(), pos_label=None)
         elif method == "auc":
             from verticapy.learn.metrics import auc
 
@@ -9288,7 +9246,7 @@ vColumns : vColumn
             from verticapy.learn.model_selection import roc_curve
 
             return roc_curve(
-                y_true, y_score, self.__genSQL__(), best_threshold=True, nbins=nbins,
+                y_true, y_score, self.__genSQL__(), best_threshold=True, nbins=nbins
             )
         elif method in ("recall", "tpr"):
             from verticapy.learn.metrics import recall_score
@@ -9333,15 +9291,15 @@ vColumns : vColumn
         elif method in ("roc_curve", "roc"):
             from verticapy.learn.model_selection import roc_curve
 
-            return roc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins,)
+            return roc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins)
         elif method in ("prc_curve", "prc"):
             from verticapy.learn.model_selection import prc_curve
 
-            return prc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins,)
+            return prc_curve(y_true, y_score, self.__genSQL__(), nbins=nbins)
         elif method in ("lift_chart", "lift"):
             from verticapy.learn.model_selection import lift_chart
 
-            return lift_chart(y_true, y_score, self.__genSQL__(), nbins=nbins,)
+            return lift_chart(y_true, y_score, self.__genSQL__(), nbins=nbins)
         else:
             raise ParameterError(
                 "The parameter 'method' must be in roc|prc|lift|accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|r2|mae|mse|msle|max|median|var"
@@ -10460,7 +10418,7 @@ vColumns : vColumn
 
     # ---#
     def iv_woe(
-        self, y: str, columns: list = [], bins: int = 10, show: bool = True, ax=None,
+        self, y: str, columns: list = [], bins: int = 10, show: bool = True, ax=None
     ):
         """
     ---------------------------------------------------------------------------

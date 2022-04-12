@@ -804,9 +804,7 @@ tablesample
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    ax.plot(
-        L, all_within_cluster_SS, **updated_dict(param, style_kwds),
-    )
+    ax.plot(L, all_within_cluster_SS, **updated_dict(param, style_kwds))
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
@@ -1074,18 +1072,14 @@ tablesample
                     "range": [1, max_nfeatures],
                     "nbins": nbins,
                 },
-                "max_leaf_nodes": {"type": int, "range": [32, 1e9], "nbins": nbins,},
-                "max_depth": {"type": int, "range": [2, 30], "nbins": nbins,},
-                "min_samples_leaf": {"type": int, "range": [1, 15], "nbins": nbins,},
-                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins,},
-                "nbins": {"type": int, "range": [10, 1000], "nbins": nbins,},
+                "max_leaf_nodes": {"type": int, "range": [32, 1e9], "nbins": nbins},
+                "max_depth": {"type": int, "range": [2, 30], "nbins": nbins},
+                "min_samples_leaf": {"type": int, "range": [1, 15], "nbins": nbins},
+                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins},
+                "nbins": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
             if isinstance(RandomForestRegressor, RandomForestClassifier):
-                result["sample"] = {
-                    "type": float,
-                    "range": [0.1, 1.0],
-                    "nbins": nbins,
-                }
+                result["sample"] = {"type": float, "range": [0.1, 1.0], "nbins": nbins}
                 result["n_estimators"] = {
                     "type": int,
                     "range": [1, 100],
@@ -1119,14 +1113,14 @@ tablesample
             }
         elif optimized_grid == -666:
             return {
-                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins,},
-                "C": {"type": float, "range": [0.0, 1000.0], "nbins": nbins,},
-                "fit_intercept": {"type": bool,},
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "C": {"type": float, "range": [0.0, 1000.0], "nbins": nbins},
+                "fit_intercept": {"type": bool},
                 "intercept_mode": {
                     "type": str,
                     "values": ["regularized", "unregularized"],
                 },
-                "max_iter": {"type": int, "range": [10, 1000], "nbins": nbins,},
+                "max_iter": {"type": int, "range": [10, 1000], "nbins": nbins},
             }
     elif isinstance(estimator, (XGBoostClassifier, XGBoostRegressor)):
         if optimized_grid == 0:
@@ -1170,18 +1164,18 @@ tablesample
             }
         elif optimized_grid == -666:
             return {
-                "nbins": {"type": int, "range": [2, 100], "nbins": nbins,},
-                "max_depth": {"type": int, "range": [1, 20], "nbins": nbins,},
-                "weight_reg": {"type": float, "range": [0.0, 1.0], "nbins": nbins,},
+                "nbins": {"type": int, "range": [2, 100], "nbins": nbins},
+                "max_depth": {"type": int, "range": [1, 20], "nbins": nbins},
+                "weight_reg": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
                 "min_split_loss": {
                     "type": float,
                     "values": [0.0, 0.25],
                     "nbins": nbins,
                 },
-                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins,},
-                "sample": {"type": float, "range": [0.0, 1.0], "nbins": nbins,},
-                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins,},
-                "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins,},
+                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "sample": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins},
             }
     elif isinstance(estimator, NaiveBayes):
         if optimized_grid == 0:
@@ -1196,20 +1190,20 @@ tablesample
             params_grid = {"alpha": [0.01, 1.0, 10.0]}
         elif optimized_grid == -666:
             return {
-                "alpha": {"type": float, "range": [0.00001, 1000.0], "nbins": nbins,},
+                "alpha": {"type": float, "range": [0.00001, 1000.0], "nbins": nbins}
             }
     elif isinstance(estimator, (PCA, SVD)):
         if optimized_grid == 0:
             params_grid = {
                 "max_features": list(
                     range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))
-                ),
+                )
             }
         if isinstance(estimator, (PCA)):
             params_grid["scale"] = [False, True]
         if optimized_grid == -666:
             return {
-                "scale": {"type": bool,},
+                "scale": {"type": bool},
                 "max_features": {
                     "type": int,
                     "range": [1, max_nfeatures],
@@ -1220,10 +1214,7 @@ tablesample
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
         if optimized_grid == -666:
             return {
-                "method": {
-                    "type": str,
-                    "values": ["minmax", "robust_zscore", "zscore"],
-                },
+                "method": {"type": str, "values": ["minmax", "robust_zscore", "zscore"]}
             }
     elif isinstance(
         estimator,
@@ -1236,7 +1227,7 @@ tablesample
     ):
         if optimized_grid == 0:
             params_grid = {
-                "p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),
+                "p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2))))
             }
             if isinstance(
                 estimator,
@@ -1246,18 +1237,14 @@ tablesample
                     range(1, 100, math.ceil(100 / (nbins)))
                 )
         elif optimized_grid == 1:
-            params_grid = {
-                "p": [1, 2, 3, 4],
-            }
+            params_grid = {"p": [1, 2, 3, 4]}
             if isinstance(
                 estimator,
                 (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
             ):
                 params_grid["n_neighbors"] = [1, 2, 3, 4, 5, 10, 20, 100]
         elif optimized_grid == 2:
-            params_grid = {
-                "p": [1, 2],
-            }
+            params_grid = {"p": [1, 2]}
             if isinstance(
                 estimator,
                 (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
@@ -1265,8 +1252,8 @@ tablesample
                 params_grid["n_neighbors"] = [5, 10]
         elif optimized_grid == -666:
             return {
-                "p": {"type": int, "range": [1, 10], "nbins": nbins,},
-                "n_neighbors": {"type": int, "range": [1, 100], "nbins": nbins,},
+                "p": {"type": int, "range": [1, 10], "nbins": nbins},
+                "n_neighbors": {"type": int, "range": [1, 100], "nbins": nbins},
             }
     elif isinstance(estimator, (DBSCAN)):
         if optimized_grid == 0:
@@ -1278,28 +1265,19 @@ tablesample
                 "min_samples": list(range(1, 1000, math.ceil(1000 / nbins))),
             }
         elif optimized_grid == 1:
-            params_grid = {
-                "p": [1, 2, 3, 4],
-                "min_samples": [1, 2, 3, 4, 5, 10, 100],
-            }
+            params_grid = {"p": [1, 2, 3, 4], "min_samples": [1, 2, 3, 4, 5, 10, 100]}
         elif optimized_grid == 2:
-            params_grid = {
-                "p": [1, 2],
-                "min_samples": [5, 10],
-            }
+            params_grid = {"p": [1, 2], "min_samples": [5, 10]}
         elif optimized_grid == -666:
             return {
-                "p": {"type": int, "range": [1, 10], "nbins": nbins,},
-                "min_samples": {"type": int, "range": [1, 100], "nbins": nbins,},
+                "p": {"type": int, "range": [1, 10], "nbins": nbins},
+                "min_samples": {"type": int, "range": [1, 100], "nbins": nbins},
             }
     elif isinstance(
         estimator, (LogisticRegression, LinearRegression, ElasticNet, Lasso, Ridge)
     ):
         if optimized_grid == 0:
-            params_grid = {
-                "tol": [1e-4, 1e-6, 1e-8],
-                "max_iter": [100, 500, 1000],
-            }
+            params_grid = {"tol": [1e-4, 1e-6, 1e-8], "max_iter": [100, 500, 1000]}
             if isinstance(estimator, LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
@@ -1315,10 +1293,7 @@ tablesample
                     elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
                 ]
         elif optimized_grid == 1:
-            params_grid = {
-                "tol": [1e-6],
-                "max_iter": [100],
-            }
+            params_grid = {"tol": [1e-6], "max_iter": [100]}
             if isinstance(estimator, LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
@@ -1332,10 +1307,7 @@ tablesample
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
                 params_grid["l1_ratio"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         elif optimized_grid == 2:
-            params_grid = {
-                "tol": [1e-6],
-                "max_iter": [100],
-            }
+            params_grid = {"tol": [1e-6], "max_iter": [100]}
             if isinstance(estimator, LogisticRegression):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
@@ -1350,8 +1322,8 @@ tablesample
                 params_grid["l1_ratio"] = [0.5]
         elif optimized_grid == -666:
             result = {
-                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins,},
-                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins,},
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
             }
             if isinstance(estimator, LogisticRegression):
                 result["penalty"] = {
@@ -1363,11 +1335,7 @@ tablesample
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
                 result["solver"] = {"type": str, "values": ["bfgs", "cgd"]}
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                result["C"] = {
-                    "type": float,
-                    "range": [0.0, 1000.0],
-                    "nbins": nbins,
-                }
+                result["C"] = {"type": float, "range": [0.0, 1000.0], "nbins": nbins}
             if isinstance(estimator, (LogisticRegression)):
                 result["penalty"] = {
                     "type": str,
@@ -1421,10 +1389,10 @@ tablesample
             }
         elif optimized_grid == -666:
             return {
-                "tol": {"type": float, "range": [1e-2, 1e-8], "nbins": nbins,},
-                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins,},
-                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins,},
-                "init": {"type": str, "values": ["kmeanspp", "random"],},
+                "tol": {"type": float, "range": [1e-2, 1e-8], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
+                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
+                "init": {"type": str, "values": ["kmeanspp", "random"]},
             }
     elif isinstance(estimator, BisectingKMeans):
         if optimized_grid == 0:
@@ -1480,16 +1448,16 @@ tablesample
             }
         elif optimized_grid == -666:
             return {
-                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins,},
-                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins,},
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
                 "bisection_iterations": {
                     "type": int,
                     "range": [1, 1000],
                     "nbins": nbins,
                 },
-                "split_method": {"type": str, "values": ["sum_squares"],},
-                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins,},
-                "init": {"type": str, "values": ["kmeanspp", "pseudo"],},
+                "split_method": {"type": str, "values": ["sum_squares"]},
+                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
+                "init": {"type": str, "values": ["kmeanspp", "pseudo"]},
             }
     params_grid = parameter_grid(params_grid)
     final_param_grid = []
@@ -1966,9 +1934,7 @@ tablesample
         x_label = "n"
         y_label = "time"
         labels = []
-    range_curve(
-        X, Y, x_label, y_label, ax, labels, **style_kwds,
-    )
+    range_curve(X, Y, x_label, y_label, ax, labels, **style_kwds)
     return result
 
 
@@ -2049,9 +2015,7 @@ tablesample
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
     param1 = {"color": gen_colors()[0]}
-    ax.plot(
-        decision_boundary, lift, **updated_dict(param1, style_kwds, 0),
-    )
+    ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
     param2 = {"color": gen_colors()[1]}
     ax.plot(
         decision_boundary,
@@ -2084,7 +2048,7 @@ tablesample
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
             "lift": lift,
-        },
+        }
     )
 
 
@@ -2178,7 +2142,7 @@ tablesample
             "acf": acf.values["value"],
             "pacf": pacf.values["value"],
             "confidence": pacf.values["confidence"],
-        },
+        }
     )
     fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
@@ -2189,9 +2153,7 @@ tablesample
         result.values["confidence"],
     )
     plt.xlim(-1, x[-1] + 1)
-    ax1.bar(
-        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
-    )
+    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
     param = {
         "s": 90,
         "marker": "o",
@@ -2199,14 +2161,9 @@ tablesample
         "edgecolors": "black",
         "zorder": 2,
     }
-    ax1.scatter(
-        x, y, **updated_dict(param, tmp_style),
-    )
+    ax1.scatter(x, y, **updated_dict(param, tmp_style))
     ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
+        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
     )
     ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -2214,14 +2171,9 @@ tablesample
     y = result.values["pacf"]
     ax2 = fig.add_subplot(212)
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(
-        x, y, **updated_dict(param, tmp_style),
-    )
+    ax2.scatter(x, y, **updated_dict(param, tmp_style))
     ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
+        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
     )
     ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -2347,7 +2299,7 @@ tablesample
     ax.set_axisbelow(True)
     ax.grid()
     return tablesample(
-        values={"threshold": threshold, "recall": recall, "precision": precision},
+        values={"threshold": threshold, "recall": recall, "precision": precision}
     )
 
 
@@ -2844,7 +2796,7 @@ tablesample
             "threshold": threshold,
             "false_positive": false_positive,
             "true_positive": true_positive,
-        },
+        }
     )
 
 
@@ -3208,7 +3160,5 @@ tablesample
             "test_score_upper": Y[1][2],
         }
     )
-    range_curve(
-        X, Y, param_name, metric, ax, ["train", "test"], **style_kwds,
-    )
+    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
     return result

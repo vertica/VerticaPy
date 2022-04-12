@@ -57,10 +57,10 @@ from verticapy.learn.vmodel import *
 class MCA(Decomposition):
     """
 ---------------------------------------------------------------------------
-Creates a MCA (multiple correspondence analysis) object using the Vertica PCA
-algorithm on the data. It uses the property that the MCA is a PCA applied 
-to a complete disjunctive table. The input relation is transformed to a
-TCDT (transformed complete disjunctive table) before applying the PCA.
+Creates a MCA (multiple correspondence analysis) object using the Vertica 
+PCA algorithm on the data. It uses the property that the MCA is a PCA 
+applied to a complete disjunctive table. The input relation is transformed 
+to a TCDT (transformed complete disjunctive table) before applying the PCA.
  
 Parameters
 ----------
@@ -68,13 +68,11 @@ name: str
     Name of the the model. The model will be stored in the database.
     """
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
+        version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "MCA", name
         self.set_params({})
-        version(condition=[9, 1, 0])
 
     # ---#
     def plot_var(
@@ -258,13 +256,14 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 n_components: int, optional
-	The number of components to keep in the model. If this value is not provided, 
-	all components are kept. The maximum number of components is the number of 
-	non-zero singular values returned by the internal call to SVD. This number is 
-	less than or equal to SVD (number of columns, number of rows). 
+	The number of components to keep in the model. If this value is not 
+    provided, all components are kept. The maximum number of components 
+    is the number of non-zero singular values returned by the internal 
+    call to SVD. This number is less than or equal to SVD (number of 
+    columns, number of rows). 
 scale: bool, optional
-	A Boolean value that specifies whether to standardize the columns during the 
-	preparation step.
+	A Boolean value that specifies whether to standardize the columns 
+    during the preparation step.
 method: str, optional
 	The method to use to calculate PCA.
 		lapack: Lapack definition.
@@ -277,12 +276,12 @@ method: str, optional
         scale: bool = False,
         method: str = "lapack",
     ):
+        version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "PCA", name
         self.set_params(
             {"n_components": n_components, "scale": scale, "method": method.lower()}
         )
-        version(condition=[9, 1, 0])
 
 
 # ---#
@@ -297,17 +296,18 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 n_components: int, optional
-	The number of components to keep in the model. If this value is not provided, 
-	all components are kept. The maximum number of components is the number of 
-	non-zero singular values returned by the internal call to SVD. This number is 
-	less than or equal to SVD (number of columns, number of rows).
+	The number of components to keep in the model. If this value is not 
+    provided, all components are kept. The maximum number of components 
+    is the number of non-zero singular values returned by the internal 
+    call to SVD. This number is less than or equal to SVD (number of 
+    columns, number of rows).
 method: str, optional
 	The method to use to calculate SVD.
 		lapack: Lapack definition.
 	"""
 
     def __init__(self, name: str, n_components: int = 0, method: str = "lapack"):
+        version(condition=[9, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "SVD", name
         self.set_params({"n_components": n_components, "method": method.lower()})
-        version(condition=[9, 1, 0])

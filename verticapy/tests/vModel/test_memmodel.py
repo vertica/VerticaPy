@@ -556,9 +556,7 @@ class Test_memModel:
         assert attributes["threshold"][1] == 30
         assert attributes["value"][2][0] == 0.8
         assert attributes["value"][3][0] == 0.1
-        model.set_attributes(
-            {"classes": [0, 1, 2],}
-        )
+        model.set_attributes({"classes": [0, 1, 2]})
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1
@@ -594,9 +592,7 @@ class Test_memModel:
         assert attributes["tree"]["children"]["female"]["chi2"] == pytest.approx(
             10.472532457814179
         )
-        model.set_attributes(
-            {"classes": [0, 1],}
-        )
+        model.set_attributes({"classes": [0, 1]})
         attributes = model.get_attributes()
         assert attributes["classes"][0] == 0
         assert attributes["classes"][1] == 1

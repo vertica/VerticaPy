@@ -645,12 +645,7 @@ def plot_bubble_ml(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
-        param = {
-            "alpha": 0.8,
-            "marker": "o",
-            "color": colors[0],
-            "edgecolors": "black",
-        }
+        param = {"alpha": 0.8, "marker": "o", "color": colors[0], "edgecolors": "black"}
         if s:
             size = s
         else:
@@ -806,11 +801,7 @@ def plot_var(
     delta_x = (max(x) - min(x)) * 0.04
     for i in range(n):
         ax.text(x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center")
-    param = {
-        "marker": "^",
-        "s": 100,
-        "edgecolors": "black",
-    }
+    param = {"marker": "^", "s": 100, "edgecolors": "black"}
     if "c" not in style_kwds:
         param["color"] = colors[0]
     img = ax.scatter(x, y, **updated_dict(param, style_kwds, 0))
@@ -962,7 +953,7 @@ def regression_tree_plot(
         ]
     )
     query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
-        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points),
+        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
     )
     all_points = executeSQL(query, method="fetchall", print_time_sql=False)
     if not (ax):
@@ -990,9 +981,7 @@ def regression_tree_plot(
         "s": 50,
         "edgecolors": "black",
     }
-    ax.scatter(
-        x0, y0, **updated_dict(param, style_kwds),
-    )
+    ax.scatter(x0, y0, **updated_dict(param, style_kwds))
     ax.set_xlabel(X[0])
     ax.set_ylabel(y)
     return ax
@@ -1230,9 +1219,7 @@ def voronoi_plot(
     ]
     v = Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
-    voronoi_plot_2d(
-        v, ax=ax, **updated_dict(param, style_kwds),
-    )
+    voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
     if not (ax):
         ax = plt
         ax.xlabel(columns[0])

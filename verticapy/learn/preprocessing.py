@@ -314,9 +314,7 @@ method: str, optional
 class StandardScaler(Normalizer):
     """i.e. Normalizer with param method = 'zscore'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "zscore")
 
 
@@ -324,9 +322,7 @@ class StandardScaler(Normalizer):
 class RobustScaler(Normalizer):
     """i.e. Normalizer with param method = 'robust_zscore'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "robust_zscore")
 
 
@@ -334,9 +330,7 @@ class RobustScaler(Normalizer):
 class MinMaxScaler(Normalizer):
     """i.e. Normalizer with param method = 'minmax'"""
 
-    def __init__(
-        self, name: str,
-    ):
+    def __init__(self, name: str):
         super().__init__(name, "minmax")
 
 

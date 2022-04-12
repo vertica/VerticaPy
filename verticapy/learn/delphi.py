@@ -499,9 +499,7 @@ model_: object
         }
 
     # ---#
-    def fit(
-        self, input_relation: Union[str, vDataFrame], X: list = [],
-    ):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = []):
         """
     ---------------------------------------------------------------------------
     Trains the model.
@@ -678,7 +676,7 @@ model_grid_ : tablesample
         stepwise_max_steps: int = 100,
         stepwise_x_order: str = "pearson",
         preprocess_data: bool = True,
-        preprocess_dict: dict = {"identify_ts": False,},
+        preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
         check_types(
@@ -730,9 +728,7 @@ model_grid_ : tablesample
         }
 
     # ---#
-    def fit(
-        self, input_relation: Union[str, vDataFrame], X: list = [], y: str = "",
-    ):
+    def fit(self, input_relation: Union[str, vDataFrame], X: list = [], y: str = ""):
         """
     ---------------------------------------------------------------------------
     Trains the model.
@@ -1039,9 +1035,7 @@ model_grid_ : tablesample
         return self.model_grid_
 
     # ---#
-    def plot(
-        self, mltype: str = "champion", ax=None, **style_kwds,
-    ):
+    def plot(self, mltype: str = "champion", ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the AutoML plot.

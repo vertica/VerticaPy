@@ -189,7 +189,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp",)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2
@@ -205,9 +205,7 @@ class TestvDFUtilities:
                 )
             raise
         with warnings.catch_warnings(record=True) as w:
-            drop(
-                "verticapy_titanic_tmp", method="view",
-            )
+            drop("verticapy_titanic_tmp", method="view")
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(
@@ -217,7 +215,7 @@ class TestvDFUtilities:
                 db_filter="age > 40",
                 nb_split=3,
             )
-            titanic_tmp = vDataFrame("verticapy_titanic_tmp",)
+            titanic_tmp = vDataFrame("verticapy_titanic_tmp")
             assert titanic_tmp.shape() == (220, 4)
             assert titanic_tmp["_verticapy_split_"].min() == 0
             assert titanic_tmp["_verticapy_split_"].max() == 2

@@ -37,7 +37,7 @@ def model(winequality_vd):
     model_class = Pipeline(
         [
             ("NormalizerWine", StandardScaler("std_model_test",)),
-            ("LinearRegressionWine", LinearRegression("linreg_model_test",),),
+            ("LinearRegressionWine", LinearRegression("linreg_model_test",)),
         ]
     )
     model_class.drop()

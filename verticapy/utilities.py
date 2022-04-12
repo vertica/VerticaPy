@@ -42,7 +42,7 @@
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to do all of the above. The idea is simple: instead of moving of moving
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #

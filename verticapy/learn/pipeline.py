@@ -72,9 +72,7 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
-    def __init__(
-        self, steps: list,
-    ):
+    def __init__(self, steps: list):
         check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
@@ -196,7 +194,7 @@ steps: list
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
+        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator"
     ):
         """
     ---------------------------------------------------------------------------

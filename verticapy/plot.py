@@ -291,7 +291,7 @@ def animated_bar(
                 width_format = bar_values[i]["width"][k]
                 if width_format - int(width_format) == 0:
                     width_format = int(width_format)
-                width_format = f"{width_format:,}"
+                width_format = f"{width_format:}"
                 tmp_txt += [
                     ax.text(
                         bar_values[i]["width"][k] + 0.005 * delta_x,
@@ -328,14 +328,14 @@ def animated_bar(
             ax.set_yticks([])
         else:
             param = {
-                "wedgeprops": {"edgecolor": "white", "alpha": 0.5,},
+                "wedgeprops": {"edgecolor": "white", "alpha": 0.5},
                 "textprops": {"fontsize": 10, "fontweight": "bold"},
                 "autopct": "%1.1f%%",
             }
 
             def autopct(val):
                 a = val / 100.0 * sum(bar_values[i]["width"])
-                return f"{a:,}"
+                return f"{a:}"
 
             pie_chart = ax.pie(
                 x=bar_values[i]["width"],
@@ -706,7 +706,7 @@ def animated_ts_plot(
             "No numerical columns found to draw the animated multi TS plot"
         )
     query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
-        order_by, ", ".join(columns), vdf.__genSQL__(), order_by,
+        order_by, ", ".join(columns), vdf.__genSQL__(), order_by
     )
     query += (
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
@@ -823,9 +823,7 @@ def bar(
         ax.xaxis.grid()
         ax.set_axisbelow(True)
     param = {"color": gen_colors()[0], "alpha": 0.86}
-    ax.barh(
-        x, y, h, **updated_dict(param, style_kwds, 0),
-    )
+    ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
     ax.set_ylabel(vdf.alias)
     if is_categorical:
         if vdf.category() == "text":
@@ -952,7 +950,7 @@ def bar2D(
                 [
                     elem + bar_width / 2 - bar_width / 2 / (n - 1)
                     for elem in range(n_groups)
-                ],
+                ]
             )
             ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
@@ -1081,9 +1079,7 @@ def boxplot(
             **style_kwds,
         )
         for median in box["medians"]:
-            median.set(
-                color="black", linewidth=1,
-            )
+            median.set(color="black", linewidth=1)
         for patch in box["boxes"]:
             patch.set_facecolor(colors[0])
         ax.set_axisbelow(True)
@@ -1693,7 +1689,7 @@ def cmatrix(
     else:
         try:
             im = ax.imshow(
-                matrix_array, extent=extent, **updated_dict(param, style_kwds),
+                matrix_array, extent=extent, **updated_dict(param, style_kwds)
             )
         except:
             im = ax.imshow(matrix_array, **updated_dict(param, style_kwds))
@@ -1830,11 +1826,7 @@ def contour_plot(
         fig.set_size_inches(8, 6)
     else:
         fig = plt
-    param = {
-        "linewidths": 0.5,
-        "levels": 14,
-        "colors": "k",
-    }
+    param = {"linewidths": 0.5, "levels": 14, "colors": "k"}
     param = updated_dict(param, style_kwds)
     if "cmap" in param:
         del param["cmap"]
@@ -2226,7 +2218,7 @@ def hist(
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method, of, max_cardinality, bins, h,
+        vdf, method, of, max_cardinality, bins, h
     )
     is_numeric = vdf.isnum()
     if not (ax):
@@ -2236,9 +2228,7 @@ def hist(
         ax.set_axisbelow(True)
         ax.yaxis.grid()
     param = {"color": gen_colors()[0], "alpha": 0.86}
-    ax.bar(
-        x, y, h, **updated_dict(param, style_kwds),
-    )
+    ax.bar(x, y, h, **updated_dict(param, style_kwds))
     ax.set_xlabel(vdf.alias)
     if is_categorical:
         if not (is_numeric):
@@ -2643,13 +2633,9 @@ def multi_ts_plot(
         if "color" in style_kwds and len(order_by_values) < 20:
             param["markerfacecolor"] = color_dict(style_kwds, i)
         if kind == "step":
-            ax.step(
-                order_by_values, points, **param,
-            )
+            ax.step(order_by_values, points, **param)
         else:
-            ax.plot(
-                order_by_values, points, **param,
-            )
+            ax.plot(order_by_values, points, **param)
         if kind not in ("line", "step"):
             tmp_style = {}
             for elem in style_kwds:
@@ -2660,7 +2646,7 @@ def multi_ts_plot(
                 if not (isinstance(tmp_style["color"], str)):
                     tmp_style["color"] = tmp_style["color"][i % len(tmp_style["color"])]
             ax.fill_between(
-                order_by_values, prec, points, label=columns[i], **tmp_style,
+                order_by_values, prec, points, label=columns[i], **tmp_style
             )
             prec = points
     for tick in ax.get_xticklabels():
@@ -2713,9 +2699,7 @@ def range_curve(
             X, elem[2], alpha=alpha2, **updated_dict(param, style_kwds, i),
         )
         if plot_median:
-            ax.plot(
-                X, elem[1], label=label, **updated_dict(param, style_kwds, i),
-            )
+            ax.plot(X, elem[1], label=label, **updated_dict(param, style_kwds, i))
         if (not (without_scatter) or len(X) < 20) and plot_median:
             ax.scatter(
                 X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3
@@ -3728,9 +3712,7 @@ def scatter3D(
                 "s": 50,
                 "edgecolors": "black",
             }
-            ax.scatter(
-                column1, column2, column3, **updated_dict(param, style_kwds),
-            )
+            ax.scatter(column1, column2, column3, **updated_dict(param, style_kwds))
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
@@ -4012,13 +3994,9 @@ def ts_plot(
                 "linewidth": 2,
             }
         if step:
-            ax.step(
-                order_by_values, column_values, **updated_dict(param, style_kwds),
-            )
+            ax.step(order_by_values, column_values, **updated_dict(param, style_kwds))
         else:
-            ax.plot(
-                order_by_values, column_values, **updated_dict(param, style_kwds),
-            )
+            ax.plot(order_by_values, column_values, **updated_dict(param, style_kwds))
         if area and not (step):
             if "color" in updated_dict(param, style_kwds):
                 color = updated_dict(param, style_kwds)["color"]

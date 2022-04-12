@@ -224,7 +224,7 @@ tablesample
             ("with_trend", with_trend, [bool]),
             ("regresults", regresults, [bool]),
             ("vdf", vdf, [vDataFrame]),
-        ],
+        ]
     )
     columns_check([ts, column] + by, vdf)
     ts = vdf_columns_names([ts], vdf)[0]
@@ -273,9 +273,7 @@ tablesample
     predictors = ["lag1"] + ["delta{}".format(i) for i in range(1, p + 1)]
     if with_trend:
         predictors += ["ts"]
-    model.fit(
-        relation_name, predictors, "delta",
-    )
+    model.fit(relation_name, predictors, "delta")
     coef = model.coef_
     drop_if_exists(name, method="model")
     drop_if_exists(relation_name, method="view")
@@ -356,7 +354,7 @@ model
             ("vdf", vdf, [vDataFrame, str]),
             ("ts", ts, [vDataFrame, str]),
             ("drop_tmp_model", drop_tmp_model, [bool]),
-        ],
+        ]
     )
     if isinstance(vdf, str):
         vdf_tmp = vdf_from_relation(vdf)
@@ -429,7 +427,7 @@ float
             ("eps", eps, [str]),
             ("by", by, [list]),
             ("vdf", vdf, [vDataFrame, str]),
-        ],
+        ]
     )
     columns_check([eps] + [ts] + by, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -473,7 +471,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -548,7 +546,7 @@ tablesample
             ("ts", ts, [str]),
             ("p", p, [int, float]),
             ("vdf", vdf, [vDataFrame, str]),
-        ],
+        ]
     )
     columns_check([eps, ts] + by, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -626,7 +624,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -725,7 +723,7 @@ tablesample
             ("split", split, [int, float]),
             ("vdf", vdf, [vDataFrame, str]),
             ("alternative", alternative, ["increasing", "decreasing", "two-sided"]),
-        ],
+        ]
     )
     columns_check([y] + X, vdf)
     y = vdf_columns_names([y], vdf)[0]
@@ -756,7 +754,7 @@ tablesample
         fpval_sm = f.cdf(F, m - k, n - k)
         fpval_la = f.sf(F, m - k, n - k)
         f_pvalue = 2 * min(fpval_sm, fpval_la)
-    result = tablesample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue],})
+    result = tablesample({"index": ["F Value", "f_p_value"], "value": [F, f_pvalue]})
     return result
 
 
@@ -782,7 +780,7 @@ tablesample
     utilities.tablesample.
     """
     check_types(
-        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])],
+        [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
     columns_check([eps] + X, vdf)
     eps = vdf_columns_names([eps], vdf)[0]
@@ -866,7 +864,7 @@ tablesample
             ("column", column, [str]),
             ("alpha", alpha, [int, float]),
             ("vdf", vdf, [vDataFrame]),
-        ],
+        ]
     )
     columns_check([column], vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -927,7 +925,7 @@ tablesample
     B = B ** (1 / 3) if B > 0 else (-B) ** (1 / 3)
     Z2 = math.sqrt(9 * A / 2) * (1 - 2 / (9 * A) - B)
     pvalue = 2 * norm.sf(abs(Z2))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z2, pvalue]})
     return result
 
 
@@ -979,7 +977,7 @@ tablesample
             ("alpha", alpha, [int, float]),
             ("box_pierce", box_pierce, [bool]),
             ("vdf", vdf, [vDataFrame]),
-        ],
+        ]
     )
     columns_check([column] + [ts] + by, vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -1045,7 +1043,7 @@ tablesample
             ("column", column, [str]),
             ("alpha", alpha, [int, float]),
             ("vdf", vdf, [vDataFrame]),
-        ],
+        ]
     )
     columns_check([column, ts], vdf)
     column = vdf_columns_names([column], vdf)[0]
@@ -1131,7 +1129,7 @@ tablesample
     Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z, pvalue]})
     return result
 
 
@@ -1203,7 +1201,7 @@ vDataFrame
             ("two_sided", two_sided, [bool]),
             ("polynomial_order", polynomial_order, [int]),
             ("estimate_seasonality", estimate_seasonality, [bool]),
-        ],
+        ]
     )
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
@@ -1353,7 +1351,7 @@ tablesample
     alpha2 = 2 / (W2 - 1)
     Z1 = delta * math.asinh(g1 / math.sqrt(alpha2 * mu2))
     pvalue = 2 * norm.sf(abs(Z1))
-    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue],})
+    result = tablesample({"index": ["Statistic", "p_value"], "value": [Z1, pvalue]})
     return result
 
 
@@ -1380,7 +1378,7 @@ float
     VIF.
     """
     check_types(
-        [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),],
+        [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),]
     )
     columns_check(X, vdf)
     X = vdf_columns_names(X, vdf)

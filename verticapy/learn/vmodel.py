@@ -317,7 +317,7 @@ Main Class for Vertica Model
 
     # ---#
     def features_importance(
-        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds,
+        self, ax=None, tree_id: int = None, show: bool = True, **style_kwds
     ):
         """
 		---------------------------------------------------------------------------
@@ -362,7 +362,7 @@ Main Class for Vertica Model
             version(condition=[9, 1, 1])
             tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
             query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}'{})) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
-                name, tree_id,
+                name, tree_id
             )
             print_legend = False
         elif self.type in (
@@ -637,9 +637,7 @@ Main Class for Vertica Model
         return self.parameters
 
     # ---#
-    def plot(
-        self, max_nb_points: int = 100, ax=None, **style_kwds,
-    ):
+    def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model.
@@ -721,7 +719,7 @@ Main Class for Vertica Model
                 ),
                 1,
             )
-            return lof_plot(self.name, self.X, "lof_score", 100, ax=ax, **style_kwds,)
+            return lof_plot(self.name, self.X, "lof_score", 100, ax=ax, **style_kwds)
         elif self.type in ("RandomForestRegressor", "XGBoostRegressor"):
             return regression_tree_plot(
                 self.X + [self.deploySQL()],
@@ -1961,10 +1959,7 @@ Main Class for Vertica Model
                 "p": 2,
             }
         elif self.type == "KMeans":
-            attributes = {
-                "clusters": self.cluster_centers_.to_numpy(),
-                "p": 2,
-            }
+            attributes = {"clusters": self.cluster_centers_.to_numpy(), "p": 2}
         elif self.type == "NearestCentroid":
             attributes = {
                 "clusters": self.centroids_.to_numpy()[:, 0:-1],
@@ -2066,7 +2061,7 @@ Main Class for Vertica Model
                             if tree_attributes["value"][idx] != None:
                                 prob = [0.0 for i in range(len(self.classes_))]
                                 for idx2, c in enumerate(self.classes_):
-                                    if c == tree_attributes["value"][idx]:
+                                    if str(c) == str(tree_attributes["value"][idx]):
                                         prob[idx2] = tree[6][idx]
                                         break
                                 other_proba = (1 - tree[6][idx]) / (
@@ -2557,13 +2552,13 @@ class Supervised(vModel):
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0],
+                verticapy.options["random_state"], X[0]
             )
         if self.type == "BisectingKMeans" and isinstance(
             verticapy.options["random_state"], int
         ):
             query += ", kmeans_seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0],
+                verticapy.options["random_state"], X[0]
             )
         query += ")"
         try:
@@ -2830,9 +2825,7 @@ class BinaryClassifier(Classifier):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def lift_chart(
-        self, ax=None, nbins: int = 1000, **style_kwds,
-    ):
+    def lift_chart(self, ax=None, nbins: int = 1000, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model Lift Chart.
@@ -2862,9 +2855,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def prc_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def prc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model PRC curve.
@@ -2951,9 +2942,7 @@ class BinaryClassifier(Classifier):
             return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
 
     # ---#
-    def cutoff_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws the model Cutoff curve.
@@ -2984,9 +2973,7 @@ class BinaryClassifier(Classifier):
         )
 
     # ---#
-    def roc_curve(
-        self, ax=None, nbins: int = 30, **style_kwds,
-    ):
+    def roc_curve(self, ax=None, nbins: int = 30, **style_kwds):
         """
 	---------------------------------------------------------------------------
 	Draws the model ROC curve.
@@ -3088,30 +3075,26 @@ class BinaryClassifier(Classifier):
                 nbins=nbins,
             )
         elif method in ("recall", "tpr"):
-            return recall_score(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return recall_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("precision", "ppv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("specificity", "tnr"):
-            return specificity_score(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return specificity_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("negative_predictive_value", "npv"):
-            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return precision_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("log_loss", "logloss"):
             return log_loss(self.y, self.deploySQL(), self.test_relation)
         elif method == "f1":
-            return f1_score(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return f1_score(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method == "mcc":
-            return matthews_corrcoef(
-                self.y, self.deploySQL(cutoff), self.test_relation,
-            )
+            return matthews_corrcoef(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("bm", "informedness"):
-            return informedness(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return informedness(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("mk", "markedness"):
-            return markedness(self.y, self.deploySQL(cutoff), self.test_relation,)
+            return markedness(self.y, self.deploySQL(cutoff), self.test_relation)
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
-                self.y, self.deploySQL(cutoff), self.test_relation,
+                self.y, self.deploySQL(cutoff), self.test_relation
             )
         else:
             raise ParameterError(
@@ -3654,10 +3637,7 @@ class MulticlassClassifier(Classifier):
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
         if method in ("accuracy", "acc"):
             return accuracy_score(
-                self.y,
-                self.deploySQL(pos_label, cutoff),
-                self.test_relation,
-                pos_label,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation, pos_label
             )
         elif method == "auc":
             return auc(
@@ -3697,19 +3677,19 @@ class MulticlassClassifier(Classifier):
             )
         elif method in ("recall", "tpr"):
             return recall_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("precision", "ppv"):
             return precision_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("specificity", "tnr"):
             return specificity_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("negative_predictive_value", "npv"):
             return precision_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("log_loss", "logloss"):
             return log_loss(
@@ -3719,23 +3699,23 @@ class MulticlassClassifier(Classifier):
             )
         elif method == "f1":
             return f1_score(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method == "mcc":
             return matthews_corrcoef(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("bm", "informedness"):
             return informedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("mk", "markedness"):
             return markedness(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         elif method in ("csi", "critical_success_index"):
             return critical_success_index(
-                self.y, self.deploySQL(pos_label, cutoff), self.test_relation,
+                self.y, self.deploySQL(pos_label, cutoff), self.test_relation
             )
         else:
             raise ParameterError(
@@ -3882,12 +3862,12 @@ class Regressor(Supervised):
         if method == "metrics":
             return regression_report(self.y, prediction, test_relation, len(self.X))
         elif method == "anova":
-            return anova_table(self.y, prediction, test_relation, len(self.X),)
+            return anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
             vdf = vdf_from_relation(
                 "(SELECT {} FROM ".format(self.y)
                 + self.input_relation
-                + ") VERTICAPY_SUBTABLE",
+                + ") VERTICAPY_SUBTABLE"
             )
             n = vdf[self.y].count()
             kurt = vdf[self.y].kurt()
@@ -3895,7 +3875,7 @@ class Regressor(Supervised):
             jb = vdf[self.y].agg(["jb"])[self.y][0]
             R2 = self.score()
             R2_adj = 1 - ((1 - R2) * (n - 1) / (n - len(self.X) - 1))
-            anova_T = anova_table(self.y, prediction, test_relation, len(self.X),)
+            anova_T = anova_table(self.y, prediction, test_relation, len(self.X))
             F = anova_T["F"][0]
             p_F = anova_T["p_value"][0]
             return tablesample(
@@ -4301,7 +4281,7 @@ class Preprocessing(Unsupervised):
 
     # ---#
     def deploySQL(
-        self, key_columns: list = [], exclude_columns: list = [], X: list = [],
+        self, key_columns: list = [], exclude_columns: list = [], X: list = []
     ):
         """
     ---------------------------------------------------------------------------
@@ -4490,9 +4470,7 @@ class Preprocessing(Unsupervised):
             return X
 
     # ---#
-    def inverse_transform(
-        self, vdf: Union[str, vDataFrame], X: list = [],
-    ):
+    def inverse_transform(self, vdf: Union[str, vDataFrame], X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the Inverse Model on a vDataFrame.
@@ -4536,9 +4514,7 @@ class Preprocessing(Unsupervised):
         return vdf_from_relation(main_relation, "Inverse Transformation")
 
     # ---#
-    def transform(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [],
-    ):
+    def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
         """
     ---------------------------------------------------------------------------
     Applies the model on a vDataFrame.
@@ -4650,9 +4626,7 @@ class Decomposition(Preprocessing):
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
-    def plot(
-        self, dimensions: tuple = (1, 2), ax=None, **style_kwds,
-    ):
+    def plot(self, dimensions: tuple = (1, 2), ax=None, **style_kwds):
         """
     ---------------------------------------------------------------------------
     Draws a decomposition scatter plot.

@@ -40,8 +40,8 @@ class TestDatasets:
         result = gen_meshgrid(
             features_ranges={
                 "name": {"type": str, "values": ["Badr", "Badr", "Raghu", "Waqas"]},
-                "age": {"type": int, "range": [20, 40], "nbins": 10,},
-                "distance": {"type": float, "range": [1000, 4000], "nbins": 10,},
+                "age": {"type": int, "range": [20, 40], "nbins": 10},
+                "distance": {"type": float, "range": [1000, 4000], "nbins": 10},
                 "date": {
                     "type": datetime.date,
                     "range": ["1993-11-03", 365],

@@ -229,7 +229,7 @@ model
             from verticapy.learn.cluster import DBSCAN
 
             model = DBSCAN(
-                name, model_save["eps"], model_save["min_samples"], model_save["p"],
+                name, model_save["eps"], model_save["min_samples"], model_save["p"]
             )
             model.n_cluster_ = model_save["n_cluster"]
             model.n_noise_ = model_save["n_noise"]

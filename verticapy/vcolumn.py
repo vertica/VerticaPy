@@ -1064,7 +1064,7 @@ Attributes
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
-                ax=ax, **style_kwds,
+                ax=ax, **style_kwds
             )
             model.drop()
             return result
@@ -1074,7 +1074,7 @@ Attributes
 
     # ---#
     def describe(
-        self, method: str = "auto", max_cardinality: int = 6, numcol: str = "",
+        self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
     ):
         """
 	---------------------------------------------------------------------------
@@ -1591,7 +1591,7 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05,
+        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
     ):
         """
 	---------------------------------------------------------------------------
@@ -1632,7 +1632,7 @@ Attributes
             self.parent.filter(
                 "ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
-                ),
+                )
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1641,7 +1641,7 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha)
             )
         return self.parent
 
@@ -1981,9 +1981,7 @@ Attributes
         return self.parent
 
     # ---#
-    def geo_plot(
-        self, *args, **kwargs,
-    ):
+    def geo_plot(self, *args, **kwargs):
         """
     ---------------------------------------------------------------------------
     Draws the Geospatial object.
@@ -2309,9 +2307,7 @@ Attributes
         return self.category() == "date"
 
     # ---#
-    def isin(
-        self, val: list, *args,
-    ):
+    def isin(self, val: list, *args):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vColumn and it returns the new 
@@ -2358,9 +2354,7 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
-    def iv_woe(
-        self, y: str, bins: int = 10,
-    ):
+    def iv_woe(self, y: str, bins: int = 10):
         """
     ---------------------------------------------------------------------------
     Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
@@ -2559,7 +2553,7 @@ Attributes
         for k in range(max_floor):
             self.transformations += [("{}", self.ctype(), self.category())]
         self.transformations += [
-            ("AVG({}) OVER (PARTITION BY {})".format(response, "{}"), "int", "float",)
+            ("AVG({}) OVER (PARTITION BY {})".format(response, "{}"), "int", "float")
         ]
         self.parent.__update_catalog__(erase=True, columns=[self.alias])
         self.parent.__add_to_history__(

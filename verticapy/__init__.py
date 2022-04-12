@@ -49,7 +49,10 @@
 __version__ = "0.9.0-beta"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
-__description__ = """VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica."""
+__description__ = (
+    "VerticaPy simplifies data exploration, data cleaning"
+    " and machine learning in Vertica."
+)
 __url__ = "https://github.com/vertica/verticapy/"
 __license__ = "Apache License, Version 2.0"
 

@@ -160,6 +160,7 @@ Returns
 tuple
     tn, fn, fp, tp
     """
+
     matrix = confusion_matrix(y_true, y_score, input_relation, pos_label)
     non_pos_label = 0 if (pos_label == 1) else "Non-{0}".format(pos_label)
     tn, fn, fp, tp = (
@@ -534,9 +535,9 @@ float
     score
     """
     check_types([("q", q, [int, float])])
-    metric = "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})".format(
-        "{0}", "{1}", q
-    )
+    metric = (
+        "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})"
+    ).format("{0}", "{1}", q)
     return compute_metric_query(
         metric, y_true, y_score, input_relation, "Computing the Quantile Error."
     )
@@ -583,7 +584,9 @@ float
         "Computing the R2 Score.",
     )
     if adj and k > 0:
-        query = "SELECT COUNT(*) FROM {0} WHERE {1} IS NOT NULL AND {2} IS NOT NULL;".format(
+        query = """SELECT COUNT(*) FROM {0} 
+                   WHERE {1} IS NOT NULL 
+                     AND {2} IS NOT NULL;""".format(
             input_relation, y_true, y_score
         )
         n = executeSQL(
@@ -1005,7 +1008,8 @@ tablesample
         else input_relation.__genSQL__()
     )
     query = """SELECT 
-                    CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = 2) OVER() 
+                    CONFUSION_MATRIX(obs, response 
+                    USING PARAMETERS num_classes = 2) OVER() 
                 FROM 
                     (SELECT 
                         DECODE({0}, '{1}', 1, NULL, NULL, 0) AS obs, 
@@ -1172,9 +1176,10 @@ Returns
 float
 	score
 	"""
-    metric = "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90) ELSE - LOG(1 - {3}::float + 1e-90) END)".format(
-        "{0}", pos_label, "{1}", "{1}"
-    )
+    metric = (
+        "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90)"
+        " ELSE - LOG(1 - {3}::float + 1e-90) END)"
+    ).format("{0}", pos_label, "{1}", "{1}")
     return compute_metric_query(
         metric, y_true, y_score, input_relation, "Computing the Log Loss."
     )
@@ -1294,7 +1299,8 @@ tablesample
     version(condition=[8, 0, 0])
     num_classes = str(len(labels))
     query = """SELECT 
-                  CONFUSION_MATRIX(obs, response USING PARAMETERS num_classes = {0}) OVER() 
+                  CONFUSION_MATRIX(obs, response 
+                  USING PARAMETERS num_classes = {0}) OVER() 
                FROM (SELECT DECODE({1}""".format(
         num_classes, y_true
     )
