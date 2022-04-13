@@ -11,11 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys, os, verticapy
-from verticapy.learn.linear_model import Ridge
-from verticapy import drop, set_option, vertica_conn, current_cursor
+# Standard Libraries
+import pytest, sys, os
 from decimal import Decimal
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.learn.linear_model import Ridge
 
 set_option("print_info", False)
 

@@ -11,8 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import XGBoostRegressor
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+import numpy as np
+
+# VerticaPy
+import verticapy
+from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
@@ -20,11 +28,10 @@ from verticapy import (
     vertica_conn,
     xgb_prior,
     current_cursor,
+    dataset_reg,
 )
-from verticapy.tests.conftest import get_version
 from verticapy.datasets import load_winequality, load_titanic
-import matplotlib.pyplot as plt
-import numpy as np
+from verticapy.learn.ensemble import XGBoostRegressor
 
 set_option("print_info", False)
 
@@ -47,7 +54,7 @@ def titanic_vd():
 def xgbr_data_vd():
     xgbr_data = dataset_reg(table_name="xgbr_data", schema="public")
     yield xgbr_data
-    drop_if_exists(name="public.xgbr_data", method="table")
+    drop(name="public.xgbr_data", method="table")
 
 
 @pytest.fixture(scope="module")

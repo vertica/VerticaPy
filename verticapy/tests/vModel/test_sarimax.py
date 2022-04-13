@@ -11,8 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.tsa import SARIMAX
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import (
     drop,
     set_option,
@@ -20,7 +26,7 @@ from verticapy import (
     create_verticapy_schema,
     current_cursor,
 )
-import matplotlib.pyplot as plt
+from verticapy.learn.tsa import SARIMAX
 
 set_option("print_info", False)
 

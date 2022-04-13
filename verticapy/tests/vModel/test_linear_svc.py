@@ -11,11 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, math, sys, os, verticapy
-from verticapy.learn.svm import LinearSVC
+# Standard Libraries
+import pytest, warnings, math, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import drop, set_option, vertica_conn, current_cursor
 from verticapy.datasets import load_titanic, load_winequality
-import matplotlib.pyplot as plt
+from verticapy.learn.svm import LinearSVC
 
 set_option("print_info", False)
 

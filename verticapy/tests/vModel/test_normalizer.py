@@ -11,15 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# VerticaPy
+import verticapy
+from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_winequality
 from verticapy.learn.preprocessing import (
     Normalizer,
     StandardScaler,
     RobustScaler,
     MinMaxScaler,
 )
-from verticapy import drop, set_option, vertica_conn, current_cursor
-from verticapy.datasets import load_winequality
 
 set_option("print_info", False)
 

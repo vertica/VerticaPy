@@ -11,8 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
+# Standard Libraries
+import pytest, warnings, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import vDataFrame, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_titanic
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
 from verticapy.learn.naive_bayes import *
@@ -26,16 +34,12 @@ from verticapy.learn.preprocessing import *
 from verticapy.learn.tsa import *
 from verticapy.learn.tools import *
 
-import matplotlib.pyplot as plt
-
 set_option("print_info", False)
 set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
     drop(name="public.titanic")
@@ -43,10 +47,7 @@ def titanic_vd():
 
 class TestTools:
     def test_does_model_exist(self, titanic_vd):
-        try:
-            current_cursor().execute("CREATE SCHEMA load_model_test")
-        except:
-            pass
+        current_cursor().execute("CREATE SCHEMA IF NOT EXISTS load_model_test")
         model = LinearRegression("load_model_test.model_test")
         model.drop()
         assert does_model_exist("load_model_test.model_test") == False

@@ -11,8 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import XGBoostClassifier
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
@@ -20,9 +27,10 @@ from verticapy import (
     vertica_conn,
     xgb_prior,
     current_cursor,
+    dataset_cl,
 )
-from verticapy.tests.conftest import get_version
-import matplotlib.pyplot as plt
+from verticapy.datasets import load_titanic
+from verticapy.learn.ensemble import XGBoostClassifier
 
 set_option("print_info", False)
 
@@ -31,17 +39,14 @@ set_option("print_info", False)
 def xgbc_data_vd():
     xgbc_data = dataset_cl(table_name="xgbc_data", schema="public")
     yield xgbc_data
-    drop_if_exists(name="public.xgbc_data", method="table")
+    drop(name="public.xgbc_data", method="table")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")

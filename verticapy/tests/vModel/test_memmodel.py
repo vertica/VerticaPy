@@ -11,10 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
+# Standard Libraries
+import pytest, warnings, os
+
+# VerticaPy
+import verticapy
+from verticapy import drop, current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.memmodel import *
-from verticapy import drop, current_cursor
 
 
 @pytest.fixture(scope="module")

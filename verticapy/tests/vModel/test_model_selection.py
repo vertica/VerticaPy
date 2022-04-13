@@ -11,7 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
+# Standard Libraries
+import pytest, warnings, os, 
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import vDataFrame, set_option, vertica_conn, current_cursor
 from verticapy.datasets import load_titanic, load_amazon, load_winequality
 from verticapy.learn.model_selection import *
@@ -22,8 +29,6 @@ from verticapy.learn.tree import *
 from verticapy.learn.svm import *
 from verticapy.learn.cluster import *
 from verticapy.learn.neighbors import *
-
-import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 set_option("random_state", 0)

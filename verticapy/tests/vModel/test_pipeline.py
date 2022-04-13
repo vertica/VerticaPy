@@ -11,14 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import (drop, set_option, vertica_conn, current_cursor, tablesample)
+from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
-from verticapy.utilities import tablesample
-from verticapy import drop, set_option, vertica_conn, current_cursor
-from verticapy.datasets import load_winequality
-import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 

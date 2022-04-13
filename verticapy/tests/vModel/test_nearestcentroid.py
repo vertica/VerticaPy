@@ -11,8 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.neighbors import NearestCentroid
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import (
     drop,
     set_option,
@@ -21,7 +27,7 @@ from verticapy import (
     current_cursor,
 )
 from verticapy.datasets import load_titanic
-import matplotlib.pyplot as plt
+from verticapy.learn.neighbors import NearestCentroid
 
 set_option("print_info", False)
 

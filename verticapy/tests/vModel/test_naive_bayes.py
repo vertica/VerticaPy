@@ -11,7 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_winequality, load_titanic, load_iris
 from verticapy.learn.naive_bayes import (
     NaiveBayes,
     BernoulliNB,
@@ -19,9 +28,6 @@ from verticapy.learn.naive_bayes import (
     GaussianNB,
     MultinomialNB,
 )
-from verticapy import drop, set_option, vertica_conn, current_cursor
-from verticapy.datasets import load_winequality, load_titanic, load_iris
-import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 

@@ -11,10 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_cl)
+from verticapy.learn.ensemble import RandomForestClassifier
 
 set_option("print_info", False)
 
