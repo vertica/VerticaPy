@@ -11,66 +11,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
-from verticapy.learn.tree import DecisionTreeClassifier
-from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
+# Standard Libraries
+import pytest, warnings, os
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_cl)
+from verticapy.datasets import load_titanic
+from verticapy.learn.tree import DecisionTreeClassifier
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def dtc_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.dtc_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.dtc_data(Id INT, transportation VARCHAR, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (1, 'Bus', 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (2, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (3, 'Train', 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (4, 'Bus', 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (5, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (6, 'Train', 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (7, 'Train', 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (8, 'Car', 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (9, 'Car', 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO dtc_data VALUES (10, 'Car', 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    dtc_data = vDataFrame(input_relation="public.dtc_data",)
+    dtc_data = dataset_cl(table_name="dtc_data", schema="public")
     yield dtc_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.dtc_data",)
+    drop(name="public.dtc_data", method="table")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")

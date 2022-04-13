@@ -11,56 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.tree import DummyTreeRegressor
-from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy.learn.tree import DummyTreeRegressor
+from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_reg)
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def tr_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.tr_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.tr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO tr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    tr_data = vDataFrame(input_relation="public.tr_data",)
+    tr_data = dataset_reg(table_name="tr_data", schema="public")
     yield tr_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.tr_data",)
+    drop_if_exists(name="public.tr_data", method="table")
 
 
 @pytest.fixture(scope="module")

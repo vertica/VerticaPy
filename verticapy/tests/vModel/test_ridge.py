@@ -26,7 +26,7 @@ def winequality_vd():
 
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(name="public.winequality", method="table")
 
 
 @pytest.fixture(scope="module")

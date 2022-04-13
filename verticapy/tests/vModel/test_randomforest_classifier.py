@@ -20,47 +20,10 @@ set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def rfc_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.rfc_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.rfc_data(Id INT, transportation VARCHAR, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (1, 'Bus', 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (2, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (3, 'Train', 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (4, 'Bus', 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (5, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (6, 'Train', 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (7, 'Train', 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (8, 'Car', 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (9, 'Car', 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfc_data VALUES (10, 'Car', 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    rfc_data = vDataFrame(input_relation="public.rfc_data",)
-    yield rfc_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.rfc_data",)
+def rfr_data_vd():
+    rfc_data_vd = dataset_cl(table_name="rfc_data", schema="public")
+    yield rfc_data_vd
+    drop_if_exists(name="public.rfc_data", method="table")
 
 
 @pytest.fixture(scope="module")

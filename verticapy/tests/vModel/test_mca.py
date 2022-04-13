@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import pytest, warnings, sys, os, verticapy
+from verticapy.datasets import load_market
 from verticapy.learn.decomposition import MCA
 from verticapy import drop, set_option, vertica_conn, current_cursor
 
@@ -20,12 +21,9 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def market_vd():
-    from verticapy.datasets import load_market
-
     market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market",)
+    drop(name="public.market",)
 
 
 @pytest.fixture(scope="module")

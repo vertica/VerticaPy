@@ -31,8 +31,7 @@ def commodities_vd():
 
     commodities = load_commodities()
     yield commodities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.commodities",)
+    drop(name="public.commodities",)
 
 
 @pytest.fixture(scope="module")

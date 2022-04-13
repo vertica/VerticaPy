@@ -11,44 +11,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.cluster import KMeans
-from verticapy import drop, set_option, vertica_conn, current_cursor
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_iris, load_winequality
+from verticapy.learn.cluster import KMeans
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def iris_vd():
-    from verticapy.datasets import load_iris
-
     iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris",)
+    drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(iris_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS kmeans_model_test")
-
     model_class = KMeans(
         "kmeans_model_test",
         n_cluster=3,
         max_iter=10,
         init=[[7.2, 3.0, 5.8, 1.6], [6.9, 3.1, 4.9, 1.5], [5.7, 4.4, 1.5, 0.4]],
     )
+    model_class.drop()
     model_class.fit(
         "public.iris",
         ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],

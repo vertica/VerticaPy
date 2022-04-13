@@ -31,8 +31,7 @@ def amazon_vd():
 
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon",)
+    drop(name="public.amazon",)
 
 
 @pytest.fixture(scope="module")

@@ -11,22 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Standard Libraries
 import pytest, warnings
-from verticapy.learn.preprocessing import Balance
-from verticapy import drop, set_option, current_cursor
+
+# Dependencies
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_titanic
+from verticapy.learn.preprocessing import Balance
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 class TestBalance:

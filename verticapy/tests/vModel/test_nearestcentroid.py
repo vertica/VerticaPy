@@ -20,6 +20,7 @@ from verticapy import (
     create_verticapy_schema,
     current_cursor,
 )
+from verticapy.datasets import load_titanic
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -27,12 +28,9 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")

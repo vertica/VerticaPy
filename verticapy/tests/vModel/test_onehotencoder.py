@@ -14,24 +14,22 @@
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.preprocessing import OneHotEncoder
 from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_titanic
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS ohe_model_test")
     model_class = OneHotEncoder("ohe_model_test", drop_first=False)
+    model_class.drop()
     model_class.fit("public.titanic", ["pclass", "sex", "embarked"])
     yield model_class
     model_class.drop()

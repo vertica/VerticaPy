@@ -1551,7 +1551,7 @@ def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16):
         columns_tmp.remove(col)
     return columns_tmp
 
-
+# ---#
 def flat_dict(d: dict) -> str:
     # converts dictionary to string with a specific format
     res = []
@@ -1562,6 +1562,104 @@ def flat_dict(d: dict) -> str:
     if res:
         res = ", {}".format(res)
     return res
+
+# ---#
+def dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
+    # Function used in the tests
+    from verticapy import vDataFrame
+
+    data = [[1, 0, 'Male', 0, 'Cheap', 'Low'],
+         [2, 0, 'Male', 1, 'Cheap', 'Med'],
+         [3, 1, 'Female', 1, 'Cheap', 'Med'],
+         [4, 0, 'Female', 0, 'Cheap', 'Low'],
+         [5, 0, 'Male', 1, 'Cheap', 'Med'],
+         [6, 1, 'Male', 0, 'Standard', 'Med'],
+         [7, 1, 'Female', 1, 'Standard', 'Med'],
+         [8, 2, 'Female', 1, 'Expensive', 'Hig'],
+         [9, 2, 'Male', 2, 'Expensive', 'Med'],
+         [10, 2, 'Female', 2, 'Expensive', 'Hig']]
+    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(table_name=table_name,
+                 schema=schema,
+                 dtype={"Id": "INT",
+                        "transportation": "INT",
+                        "gender": "VARCHAR",
+                        "owned cars": "INT",
+                        "cost": "VARCHAR",
+                        "income": "CHAR(4)"})
+    insert_into(table_name=table_name,
+                schema=schema,
+                data=data,
+                copy=False)
+
+    return vDataFrame(input_relation=input_relation)
+
+# ---#
+def dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
+    # Function used in the tests
+    from verticapy import vDataFrame
+
+    data = [[1, 'Bus', 'Male', 0, 'Cheap', 'Low'],
+         [2, 'Bus', 'Male', 1, 'Cheap', 'Med'],
+         [3, 'Train', 'Female', 1, 'Cheap', 'Med'],
+         [4, 'Bus', 'Female', 0, 'Cheap', 'Low'],
+         [5, 'Bus', 'Male', 1, 'Cheap', 'Med'],
+         [6, 'Train', 'Male', 0, 'Standard', 'Med'],
+         [7, 'Train', 'Female', 1, 'Standard', 'Med'],
+         [8, 'Car', 'Female', 1, 'Expensive', 'Hig'],
+         [9, 'Car', 'Male', 2, 'Expensive', 'Med'],
+         [10, 'Car', 'Female', 2, 'Expensive', 'Hig']]
+    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(table_name=table_name,
+                 schema=schema,
+                 dtype={"Id": "INT",
+                        "transportation": "VARCHAR",
+                        "gender": "VARCHAR",
+                        "owned cars": "INT",
+                        "cost": "VARCHAR",
+                        "income": "CHAR(4)"})
+    insert_into(table_name=table_name,
+                schema=schema,
+                data=data,
+                copy=False)
+
+    return vDataFrame(input_relation=input_relation)
+
+# ---#
+def dataset_num(table_name: str = "dataset_num", schema: str = "public"):
+    # Function used in the tests
+    from verticapy import vDataFrame
+
+    data = [[1, 7.2, 3.6, 6.1, 2.5],
+         [2, 7.7, 2.8, 6.7, 2.0],
+         [3, 7.7, 3.0, 6.1, 2.3],
+         [4, 7.9, 3.8, 6.4, 2.0],
+         [5, 4.4, 2.9, 1.4, 0.2],
+         [6, 4.6, 3.6, 1.0, 0.2],
+         [7, 4.7, 3.2, 1.6, 0.2],
+         [8, 6.5, 2.8, 4.6, 1.5],
+         [9, 6.8, 2.8, 4.8, 1.4],
+         [10, 7.0, 3.2, 4.7, 1.4]]
+    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(table_name=table_name,
+                 schema=schema,
+                 dtype={"Id": "INT",
+                        "col1": "FLOAT",
+                        "col2": "FLOAT",
+                        "col3": "FLOAT",
+                        "col4": "FLOAT"})
+    insert_into(table_name=table_name,
+                schema=schema,
+                data=data,
+                copy=False)
+
+    return vDataFrame(input_relation=input_relation)
 
 
 # ---#

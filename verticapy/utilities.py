@@ -137,7 +137,7 @@ bool
         executeSQL(query, title="Creating the new table.")
         return True
     except Exception as e:
-        warnings.warn(e, Warning)
+        warnings.warn(str(e), Warning)
         return False
 
 
@@ -515,8 +515,9 @@ list of tuples
 # ---#
 def insert_into(
     table_name: str,
-    column_names: list,
     data: list,
+    schema: str = "",
+    column_names: list = [],
     copy: bool = True,
     genSQL: bool = False,
 ):
@@ -528,10 +529,12 @@ Parameters
 ----------
 table_name: str
     Name of the table to insert into.
-column_names: list
-    Name of the column(s) to insert into.
 data: list
     The data to ingest.
+schema: str, optional
+    Schema name.
+column_names: list, optional
+    Name of the column(s) to insert into.
 copy: bool, optional
     If set to True, the batch insert is converted to a COPY statement 
     with prepared statements. Otherwise, the INSERTs are performed
@@ -549,11 +552,39 @@ See Also
 --------
 pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     """
+    check_types(
+        [
+            ("table_name", table_name, [str]),
+            ("column_names", column_names, [list]),
+            ("data", data, [list]),
+            ("schema", schema, [str]),
+            ("copy", copy, [bool]),
+            ("genSQL", genSQL, [bool]),
+        ]
+    )
+    if not (schema):
+        schema = verticapy.options["temp_schema"]
+    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    if not(column_names):
+        query = f"""SELECT 
+                        column_name
+                    FROM columns 
+                    WHERE table_name = '{table_name}' 
+                        AND table_schema = '{schema}' 
+                    ORDER BY ordinal_position"""
+        result = executeSQL(
+            query,
+            title=f"Getting the table {input_relation} column names.",
+            method="fetchall"
+        )
+        column_names = [elem[0] for elem in result]
+        assert column_names, MissingRelation(f"The table {input_relation} does not exist.")
+    cols = [str_column(col) for col in column_names]
     if copy and not (genSQL):
         sql = "INSERT INTO {} ({}) VALUES ({})".format(
-            table_name,
-            ", ".join(column_names),
-            ", ".join(["%s" for i in range(len(column_names))]),
+            input_relation,
+            ", ".join(cols),
+            ", ".join(["%s" for i in range(len(cols))]),
         )
         executeSQL(
             sql,
@@ -570,7 +601,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             sql = []
         i, n, total_rows = 0, len(data), 0
         header = "INSERT INTO {} ({}) VALUES ".format(
-            table_name, ", ".join(column_names)
+            input_relation, ", ".join(cols)
         )
         for i in range(n):
             sql_tmp = "("
@@ -590,7 +621,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
                 try:
                     executeSQL(
                         query,
-                        title="Insert a new line in the {} table.".format(table_name),
+                        title="Insert a new line in the relation: {}.".format(input_relation),
                     )
                     executeSQL("COMMIT;", title="Commit.")
                     total_rows += 1

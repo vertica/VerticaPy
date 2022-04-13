@@ -11,21 +11,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.preprocessing import CountVectorizer
+# Standard Libraries
+import pytest, warnings, sys, os
+
+# VerticaPy
+import verticapy
 from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy.datasets import load_titanic
+from verticapy.learn.preprocessing import CountVectorizer
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
