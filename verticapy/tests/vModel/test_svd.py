@@ -25,13 +25,13 @@ def winequality_vd():
     winequality = load_winequality()
     yield winequality
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", )
+        drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
     current_cursor().execute("DROP MODEL IF EXISTS SVD_model_test")
-    model_class = SVD("SVD_model_test", )
+    model_class = SVD("SVD_model_test",)
     model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
     yield model_class
     model_class.drop()
@@ -74,7 +74,7 @@ class TestSVD:
 
     def test_drop(self):
         current_cursor().execute("DROP MODEL IF EXISTS SVD_model_test_drop")
-        model_test = SVD("SVD_model_test_drop", )
+        model_test = SVD("SVD_model_test_drop",)
         model_test.fit("public.winequality", ["alcohol", "quality"])
 
         current_cursor().execute(
@@ -123,7 +123,9 @@ class TestSVD:
             )
         )
         prediction = current_cursor().fetchone()
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0]
+        )
 
     def test_to_sql(self, model):
         current_cursor().execute(
@@ -149,7 +151,11 @@ class TestSVD:
         prediction = [float(elem) for elem in current_cursor().fetchone()]
         current_cursor().execute(
             "SELECT {} FROM (SELECT 3.0 AS citric_acid, 11.0 AS residual_sugar, 93. AS alcohol) x".format(
-                ", ".join(model.to_memmodel().transform_sql(["citric_acid", "residual_sugar", "alcohol"]))
+                ", ".join(
+                    model.to_memmodel().transform_sql(
+                        ["citric_acid", "residual_sugar", "alcohol"]
+                    )
+                )
             )
         )
         prediction2 = [float(elem) for elem in current_cursor().fetchone()]
@@ -200,7 +206,7 @@ class TestSVD:
 
     def test_model_from_vDF(self, winequality_vd):
         current_cursor().execute("DROP MODEL IF EXISTS SVD_vDF")
-        model_test = SVD("SVD_vDF", )
+        model_test = SVD("SVD_vDF",)
         model_test.fit(winequality_vd, ["alcohol", "quality"])
         current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'SVD_vDF'"

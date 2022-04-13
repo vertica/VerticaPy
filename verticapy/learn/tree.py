@@ -58,35 +58,37 @@ from typing import Union
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """
----------------------------------------------------------------------------
-A DecisionTreeClassifier made of a single tree.
+    ---------------------------------------------------------------------------
+    A DecisionTreeClassifier made of a single tree.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-max_features: str/int, optional
-	The number of randomly chosen features from which to pick the best feature 
-	to split on a given tree node. It can be an integer or one of the two following
-	methods.
-		auto : square root of the total number of predictors.
-		max  : number of predictors.
-max_leaf_nodes: int, optional
-	The maximum number of leaf nodes a tree in the forest can have, an integer 
-	between 1 and 1e9, inclusive. 
-max_depth: int, optional
-	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-	The minimum number of samples each branch must have after splitting a node, an 
-	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-	is discarded. 
-min_info_gain: float, optional
-	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-	A split with information gain less than this threshold is discarded.
-nbins: int, optional 
-	The number of bins to use for continuous features, an integer between 2 and 1000, 
-	inclusive.
-	"""
+    Parameters
+    ----------
+    name: str
+            Name of the the model. The model will be stored in the DB.
+    max_features: str/int, optional
+            The number of randomly chosen features from which to pick the best
+        feature to split on a given tree node. It can be an integer or one
+        of the two following methods.
+                    auto : square root of the total number of predictors.
+                    max  : number of predictors.
+    max_leaf_nodes: int, optional
+            The maximum number of leaf nodes a tree in the forest can have, an
+        integer between 1 and 1e9, inclusive.
+    max_depth: int, optional
+            The maximum depth for growing each tree, an integer between 1 and 100,
+        inclusive.
+    min_samples_leaf: int, optional
+            The minimum number of samples each branch must have after splitting a
+        node, an integer between 1 and 1e6, inclusive. A split that causes
+        fewer remaining samples is discarded.
+    min_info_gain: float, optional
+            The minimum threshold for including a split, a float between 0.0 and
+        1.0, inclusive. A split with information gain less than this threshold
+        is discarded.
+    nbins: int, optional
+            The number of bins to use for continuous features, an integer between 2
+        and 1000, inclusive.
+    """
 
     def __init__(
         self,
@@ -98,6 +100,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -112,41 +115,42 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        version(condition=[8, 1, 1])
 
 
 # ---#
 class DecisionTreeRegressor(Regressor, Tree):
     """
----------------------------------------------------------------------------
-A DecisionTreeRegressor made of a single tree.
+    ---------------------------------------------------------------------------
+    A DecisionTreeRegressor made of a single tree.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-max_features: str/int, optional
-	The number of randomly chosen features from which to pick the best feature 
-	to split on a given tree node. It can be an integer or one of the two following
-	methods.
-		auto : square root of the total number of predictors.
-		max  : number of predictors.
-max_leaf_nodes: int, optional
-	The maximum number of leaf nodes a tree in the forest can have, an integer 
-	between 1 and 1e9, inclusive. 
-max_depth: int, optional
-	The maximum depth for growing each tree, an integer between 1 and 100, inclusive.
-min_samples_leaf: int, optional
-	The minimum number of samples each branch must have after splitting a node, an 
-	integer between 1 and 1e6, inclusive. A split that causes fewer remaining samples 
-	is discarded. 
-min_info_gain: float, optional
-	The minimum threshold for including a split, a float between 0.0 and 1.0, inclusive. 
-	A split with information gain less than this threshold is discarded.
-nbins: int, optional 
-	The number of bins to use for continuous features, an integer between 2 and 1000, 
-	inclusive.
-	"""
+    Parameters
+    ----------
+    name: str
+            Name of the the model. The model will be stored in the DB.
+    max_features: str/int, optional
+            The number of randomly chosen features from which to pick the best
+        feature to split on a given tree node. It can be an integer or one
+        of the two following methods.
+                    auto : square root of the total number of predictors.
+                    max  : number of predictors.
+    max_leaf_nodes: int, optional
+            The maximum number of leaf nodes a tree in the forest can have, an
+        integer between 1 and 1e9, inclusive.
+    max_depth: int, optional
+            The maximum depth for growing each tree, an integer between 1 and 100,
+        inclusive.
+    min_samples_leaf: int, optional
+            The minimum number of samples each branch must have after splitting
+        a node, an integer between 1 and 1e6, inclusive. A split that causes
+        fewer remaining samples is discarded.
+    min_info_gain: float, optional
+            The minimum threshold for including a split, a float between 0.0 and
+        1.0, inclusive. A split with information gain less than this threshold
+        is discarded.
+    nbins: int, optional
+            The number of bins to use for continuous features, an integer between 2
+        and 1000, inclusive.
+    """
 
     def __init__(
         self,
@@ -158,6 +162,7 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        version(condition=[9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -172,23 +177,23 @@ nbins: int, optional
                 "nbins": nbins,
             }
         )
-        version(condition=[9, 0, 1])
 
 
 # ---#
 class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
----------------------------------------------------------------------------
-A classifier that overfits the training data. These models are typically 
-used as a control to compare with your other models.
+    ---------------------------------------------------------------------------
+    A classifier that overfits the training data. These models are typically
+    used as a control to compare with your other models.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-	"""
+    Parameters
+    ----------
+    name: str
+            Name of the the model. The model will be stored in the DB.
+    """
 
     def __init__(self, name: str):
+        version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
         self.set_params(
@@ -203,23 +208,23 @@ name: str
                 "nbins": 1000,
             }
         )
-        version(condition=[8, 1, 1])
 
 
 # ---#
 class DummyTreeRegressor(Regressor, Tree):
     """
----------------------------------------------------------------------------
-A regressor that overfits the training data. These models are typically 
-used as a control to compare with your other models.
+    ---------------------------------------------------------------------------
+    A regressor that overfits the training data. These models are typically
+    used as a control to compare with your other models.
 
-Parameters
-----------
-name: str
-	Name of the the model. The model will be stored in the DB.
-	"""
+    Parameters
+    ----------
+    name: str
+            Name of the the model. The model will be stored in the DB.
+    """
 
     def __init__(self, name: str):
+        version(condition=[9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
         self.set_params(
@@ -234,4 +239,3 @@ name: str
                 "nbins": 1000,
             }
         )
-        version(condition=[9, 0, 1])

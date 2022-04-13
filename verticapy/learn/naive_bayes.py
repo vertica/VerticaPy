@@ -49,12 +49,6 @@
 # Modules
 #
 # VerticaPy Modules
-from verticapy.learn.metrics import *
-from verticapy.learn.mlplot import *
-from verticapy.utilities import *
-from verticapy.toolbox import *
-from verticapy import vDataFrame
-from verticapy.errors import *
 from verticapy.learn.vmodel import *
 
 # ---#
@@ -62,8 +56,8 @@ class NaiveBayes(MulticlassClassifier):
     """
 ---------------------------------------------------------------------------
 Creates a NaiveBayes object using the Vertica Naive Bayes algorithm on 
-the data. It is a "probabilistic classifier" based on applying Bayes' theorem 
-with strong (naïve) independence assumptions between the features.
+the data. It is a "probabilistic classifier" based on applying Bayes' 
+theorem with strong (naïve) independence assumptions between the features.
 
 Parameters
 ----------
@@ -75,32 +69,28 @@ alpha: float, optional
 nbtype: str, optional
     Naive Bayes Type.
     - auto        : Vertica NB will treat columns according to data type:
-        - FLOAT        : Values are assumed to follow some Gaussian 
+        * FLOAT        : Values are assumed to follow some Gaussian 
                          distribution.
-        - INTEGER      : Values are assumed to belong to one multinomial 
+        * INTEGER      : Values are assumed to belong to one multinomial 
                          distribution.
-        - CHAR/VARCHAR : Values are assumed to follow some categorical 
+        * CHAR/VARCHAR : Values are assumed to follow some categorical 
                          distribution. The string values stored in these 
                          columns must not be greater than 128 characters.
-        - BOOLEAN      : Values are treated as categorical with two values.
+        * BOOLEAN      : Values are treated as categorical with two values.
      - bernoulli   : Casts the variables to boolean.
      - categorical : Casts the variables to categorical.
      - multinomial : Casts the variables to integer.
      - gaussian    : Casts the variables to float.
 	"""
 
-    def __init__(
-        self, name: str, alpha: float = 1.0, nbtype: str = "auto"
-    ):
+    def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
+
+        nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
         check_types(
             [
                 ("name", name, [str]),
                 ("alpha", alpha, [int, float]),
-                (
-                    "nbtype",
-                    nbtype,
-                    ["auto", "bernoulli", "categorical", "multinomial", "gaussian"],
-                ),
+                ("nbtype", nbtype, nbtype_vals),
             ]
         )
         self.type, self.name = "NaiveBayes", name
@@ -112,9 +102,8 @@ nbtype: str, optional
 class BernoulliNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'bernoulli'"""
 
-    def __init__(
-        self, name: str, alpha: float = 1.0,
-    ):
+    def __init__(self, name: str, alpha: float = 1.0):
+
         super().__init__(name, alpha, "bernoulli")
 
 
@@ -122,9 +111,8 @@ class BernoulliNB(NaiveBayes):
 class CategoricalNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'categorical'"""
 
-    def __init__(
-        self, name: str, alpha: float = 1.0,
-    ):
+    def __init__(self, name: str, alpha: float = 1.0):
+
         super().__init__(name, alpha, "categorical")
 
 
@@ -132,9 +120,8 @@ class CategoricalNB(NaiveBayes):
 class GaussianNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'gaussian'"""
 
-    def __init__(
-        self, name: str, 
-    ):
+    def __init__(self, name: str):
+
         super().__init__(name, nbtype="gaussian")
 
 
@@ -142,7 +129,6 @@ class GaussianNB(NaiveBayes):
 class MultinomialNB(NaiveBayes):
     """i.e. NaiveBayes with param nbtype = 'multinomial'"""
 
-    def __init__(
-        self, name: str, alpha: float = 1.0,
-    ):
+    def __init__(self, name: str, alpha: float = 1.0):
+
         super().__init__(name, alpha, "multinomial")

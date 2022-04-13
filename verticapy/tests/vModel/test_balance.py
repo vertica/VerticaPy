@@ -26,7 +26,7 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 class TestBalance:

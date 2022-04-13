@@ -60,28 +60,30 @@ class ElasticNet(Regressor):
     """
 ---------------------------------------------------------------------------
 Creates a ElasticNet object using the Vertica Linear Regression algorithm 
-on the data. The Elastic Net is a regularized regression method that linearly 
-combines the L1 and L2 penalties of the Lasso and Ridge methods.
+on the data. The Elastic Net is a regularized regression method that 
+linearly combines the L1 and L2 penalties of the Lasso and Ridge methods.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
+	Determines whether the algorithm has reached the specified accuracy 
+    result.
 C: float, optional
-	The regularization parameter value. The value must be zero or non-negative.
+	The regularization parameter value. The value must be zero or 
+    non-negative.
 max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs before 
-	achieving the specified accuracy result.
+	Determines the maximum number of iterations the algorithm performs 
+    before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
 		CGD    : Coordinate Gradient Descent
 l1_ratio: float, optional
-	ENet mixture parameter that defines how much L1 versus L2 regularization 
-	to provide.
+	ENet mixture parameter that defines how much L1 versus L2 
+    regularization to provide.
 	"""
 
     def __init__(
@@ -93,6 +95,7 @@ l1_ratio: float, optional
         solver: str = "CGD",
         l1_ratio: float = 0.5,
     ):
+        version(condition=[8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -105,7 +108,6 @@ l1_ratio: float, optional
                 "l1_ratio": l1_ratio,
             }
         )
-        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -120,12 +122,14 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
+	Determines whether the algorithm has reached the specified accuracy 
+    result.
 C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
+    The regularization parameter value. The value must be zero or 
+    non-negative.
 max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs before 
-	achieving the specified accuracy result.
+	Determines the maximum number of iterations the algorithm performs 
+    before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
@@ -141,6 +145,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "CGD",
     ):
+        version(condition=[8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearRegression", name
         self.set_params(
@@ -155,25 +160,25 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        version(condition=[8, 0, 0])
 
 
 # ---#
 class LinearRegression(Regressor):
     """
 ---------------------------------------------------------------------------
-Creates a LinearRegression object using the Vertica Linear Regression algorithm 
-on the data.
+Creates a LinearRegression object using the Vertica Linear Regression 
+algorithm on the data.
 
 Parameters
 ----------
 name: str
 	Name of the the model. The model will be stored in the DB.
 tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
+	Determines whether the algorithm has reached the specified accuracy 
+    result.
 max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs before 
-	achieving the specified accuracy result.
+	Determines the maximum number of iterations the algorithm performs 
+    before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
@@ -181,12 +186,9 @@ solver: str, optional
 	"""
 
     def __init__(
-        self,
-        name: str,
-        tol: float = 1e-6,
-        max_iter: int = 100,
-        solver: str = "Newton",
+        self, name: str, tol: float = 1e-6, max_iter: int = 100, solver: str = "Newton"
     ):
+        version(condition=[8, 0, 0])
         check_types(
             [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"])]
         )
@@ -202,7 +204,6 @@ solver: str, optional
         for elem in ["l1_ratio", "C"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -249,6 +250,7 @@ l1_ratio: float, optional
         solver: str = "Newton",
         l1_ratio: float = 0.5,
     ):
+        version(condition=[8, 0, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LogisticRegression", name
         self.set_params(
@@ -268,10 +270,9 @@ l1_ratio: float, optional
             check_types([("solver", solver.lower(), ["bfgs", "newton"])])
         elif penalty.lower() in ("l1", "l2"):
             for elem in ["l1_ratio"]:
-            	if elem in self.parameters:
-                	del self.parameters[elem]
+                if elem in self.parameters:
+                    del self.parameters[elem]
             check_types([("solver", solver.lower(), ["bfgs", "newton", "cgd"])])
-        version(condition=[8, 0, 0])
 
 
 # ---#
@@ -286,12 +287,14 @@ Parameters
 name: str
 	Name of the the model. The model will be stored in the DB.
 tol: float, optional
-	Determines whether the algorithm has reached the specified accuracy result.
+	Determines whether the algorithm has reached the specified 
+    accuracy result.
 C: float, optional
-    The regularization parameter value. The value must be zero or non-negative.
+    The regularization parameter value. The value must be zero 
+    or non-negative.
 max_iter: int, optional
-	Determines the maximum number of iterations the algorithm performs before 
-	achieving the specified accuracy result.
+	Determines the maximum number of iterations the algorithm 
+    performs before achieving the specified accuracy result.
 solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
@@ -306,6 +309,7 @@ solver: str, optional
         max_iter: int = 100,
         solver: str = "Newton",
     ):
+        version(condition=[8, 0, 0])
         check_types(
             [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"]))]
         )
@@ -322,4 +326,3 @@ solver: str, optional
         for elem in ["l1_ratio"]:
             if elem in self.parameters:
                 del self.parameters[elem]
-        version(condition=[8, 0, 0])

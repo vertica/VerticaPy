@@ -20,7 +20,10 @@ class TestConnect:
         # test for read_dsn / new_connection / available_connections /
         #          read_auto_connect / change_auto_connection / delete_connection.
         # read_dsn
-        d = read_dsn("vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
+        d = read_dsn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        )
         assert int(d["port"]) > 0
         # new_auto_connection
         new_connection(d, "vp_test_config")
@@ -39,7 +42,10 @@ class TestConnect:
         assert delete_connection("vp_test_config")
 
     def test_vertica_conn(self, base):
-        cur = vertica_conn("vp_test_config", os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf").cursor()
+        cur = vertica_conn(
+            "vp_test_config",
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+        ).cursor()
         cur.execute("SELECT 1;")
         result = cur.fetchone()
         assert result == [1]

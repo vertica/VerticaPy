@@ -13,7 +13,13 @@
 
 import pytest, warnings, sys, os, verticapy
 from verticapy.learn.cluster import DBSCAN
-from verticapy import drop, set_option, vertica_conn, create_verticapy_schema, current_cursor
+from verticapy import (
+    drop,
+    set_option,
+    vertica_conn,
+    create_verticapy_schema,
+    current_cursor,
+)
 import matplotlib.pyplot as plt
 
 set_option("print_info", False)
@@ -26,17 +32,15 @@ def titanic_vd():
     titanic = load_titanic()
     yield titanic
     with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", )
+        drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     create_verticapy_schema()
-    model_class = DBSCAN("DBSCAN_model_test", )
+    model_class = DBSCAN("DBSCAN_model_test",)
     model_class.drop()
-    model_class.fit(
-        "public.titanic", ["age", "fare"],
-    )
+    model_class.fit("public.titanic", ["age", "fare"])
     yield model_class
     model_class.drop()
 
@@ -49,13 +53,16 @@ class TestDBSCAN:
         assert model_repr.__repr__() == "<DBSCAN>"
 
     def test_drop(self):
-        model_test = DBSCAN("model_test_drop", )
+        model_test = DBSCAN("model_test_drop",)
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare"], "survived")
         current_cursor().execute(
             "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
         )
-        assert current_cursor().fetchone()[0] in ('model_test_drop', '"model_test_drop"')
+        assert current_cursor().fetchone()[0] in (
+            "model_test_drop",
+            '"model_test_drop"',
+        )
 
         model_test.drop()
         current_cursor().execute(
@@ -64,14 +71,12 @@ class TestDBSCAN:
         assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
-        assert model.get_params() == {'eps': 0.5, 'min_samples': 5, 'p': 2}
+        assert model.get_params() == {"eps": 0.5, "min_samples": 5, "p": 2}
 
     def test_get_predict(self, titanic_vd, model):
         titanic_copy = model.predict()
 
-        assert titanic_copy["dbscan_cluster"].min() == pytest.approx(
-            -1, abs=1e-6
-        )
+        assert titanic_copy["dbscan_cluster"].min() == pytest.approx(-1, abs=1e-6)
 
     def test_get_attr(self, model):
         result = model.get_attr()

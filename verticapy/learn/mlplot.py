@@ -458,14 +458,26 @@ def plot_importance(
     ax.set_yticklabels(coefficients)
     return ax
 
+
 # ---#
-def plot_stepwise_ml(x: list, y: list, z: list = [], w: list = [], var: list = [], x_label: str = "n_features", y_label: str = "score", direction = "forward", ax=None, **style_kwds):
+def plot_stepwise_ml(
+    x: list,
+    y: list,
+    z: list = [],
+    w: list = [],
+    var: list = [],
+    x_label: str = "n_features",
+    y_label: str = "score",
+    direction="forward",
+    ax=None,
+    **style_kwds,
+):
     colors = gen_colors()
-    if not(ax):
+    if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-        ax.grid(axis = "y")
+        ax.grid(axis="y")
         ax.set_axisbelow(True)
     sign = "+" if direction == "forward" else "-"
     x_new, y_new, z_new = [], [], []
@@ -503,22 +515,61 @@ def plot_stepwise_ml(x: list, y: list, z: list = [], w: list = [], var: list = [
         horizontalalignment = "left"
     param = {"marker": "s", "alpha": 0.5, "edgecolors": "black", "s": 400}
     ax.scatter(x_new[1:-1], y_new[1:-1], c=c0, **updated_dict(param, style_kwds))
-    ax.scatter([x_new[0], x_new[-1]], [y_new[0], y_new[-1]], c=c1, **updated_dict(param, style_kwds))
-    ax.text(x_new[0] + delta_ini, y_new[0], "Initial Variables: {}".format("["+", ".join(var0)+"]"), rotation = rot_ini, verticalalignment=verticalalignment_init)
+    ax.scatter(
+        [x_new[0], x_new[-1]],
+        [y_new[0], y_new[-1]],
+        c=c1,
+        **updated_dict(param, style_kwds),
+    )
+    ax.text(
+        x_new[0] + delta_ini,
+        y_new[0],
+        "Initial Variables: {}".format("[" + ", ".join(var0) + "]"),
+        rotation=rot_ini,
+        verticalalignment=verticalalignment_init,
+    )
     for idx in range(1, len(x_new)):
         dx, dy = x_new[idx] - x_new[idx - 1], y_new[idx] - y_new[idx - 1]
-        ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc='k', ec='k', alpha=0.2)
-        ax.text((x_new[idx] + x_new[idx - 1]) / 2, (y_new[idx] + y_new[idx - 1]) / 2, sign + " " + z_new[idx], rotation = rot_ini)
+        ax.arrow(x_new[idx - 1], y_new[idx - 1], dx, dy, fc="k", ec="k", alpha=0.2)
+        ax.text(
+            (x_new[idx] + x_new[idx - 1]) / 2,
+            (y_new[idx] + y_new[idx - 1]) / 2,
+            sign + " " + z_new[idx],
+            rotation=rot_ini,
+        )
     if direction == "backward":
-        ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
-    ax.text(x_new[-1] + delta_final, y_new[-1], "Final Variables: {}".format("["+", ".join(var1)+"]"), rotation = rot_final, verticalalignment=verticalalignment_final, horizontalalignment=horizontalalignment)
+        ax.set_xlim(
+            max(x) + 0.1 * (1 + max(x) - min(x)),
+            min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
+        )
+    ax.text(
+        x_new[-1] + delta_final,
+        y_new[-1],
+        "Final Variables: {}".format("[" + ", ".join(var1) + "]"),
+        rotation=rot_final,
+        verticalalignment=verticalalignment_final,
+        horizontalalignment=horizontalalignment,
+    )
     ax.set_xticks(x_new)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     return ax
 
+
 # ---#
-def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str = "time", y_label: str = "score", title: str = "Model Type", reverse: tuple = (True, True), plt_text=True, ax=None, **style_kwds):
+def plot_bubble_ml(
+    x: list,
+    y: list,
+    s: list = None,
+    z: list = [],
+    x_label: str = "time",
+    y_label: str = "score",
+    title: str = "Model Type",
+    reverse: tuple = (True, True),
+    plt_text=True,
+    ax=None,
+    **style_kwds,
+):
     if s:
         s = [min(250 + 5000 * elem, 1200) if elem != 0 else 1000 for elem in s]
     if z and s:
@@ -539,7 +590,7 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         fig, ax = plt.subplots()
         if isnotebook():
             fig.set_size_inches(8, 6)
-        ax.grid(axis = "y")
+        ax.grid(axis="y")
         ax.set_axisbelow(True)
     if z:
         current_cat = z[0]
@@ -552,15 +603,21 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         while j != len(z):
             while j < len(z) and z[j] == current_cat:
                 j += 1
-            param = {"alpha": 0.8,
-                     "marker": "o",
-                     "color": colors[idx],
-                     "edgecolors": "black",}
+            param = {
+                "alpha": 0.8,
+                "marker": "o",
+                "color": colors[idx],
+                "edgecolors": "black",
+            }
             if s:
                 size = s[i:j]
             else:
                 size = 50
-            all_scatter += [ax.scatter(x[i:j], y[i:j], s=size, **updated_dict(param, style_kwds, idx))]
+            all_scatter += [
+                ax.scatter(
+                    x[i:j], y[i:j], s=size, **updated_dict(param, style_kwds, idx)
+                )
+            ]
             tmp_colors += [updated_dict(param, style_kwds, idx)["color"]]
             if j < len(z):
                 all_categories += [z[j]]
@@ -568,7 +625,17 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
                 i = j
                 idx += 1
         ax.legend(
-            [Line2D([0], [0], marker="o", color="black", markerfacecolor=color, markersize=8) for color in tmp_colors],
+            [
+                Line2D(
+                    [0],
+                    [0],
+                    marker="o",
+                    color="black",
+                    markerfacecolor=color,
+                    markersize=8,
+                )
+                for color in tmp_colors
+            ],
             all_categories,
             bbox_to_anchor=[1, 0.5],
             loc="center left",
@@ -578,73 +645,94 @@ def plot_bubble_ml(x: list, y: list, s: list = None, z: list = [], x_label: str 
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     else:
-        param = {"alpha": 0.8,
-                 "marker": "o",
-                 "color": colors[0],
-                 "edgecolors": "black",}
+        param = {"alpha": 0.8, "marker": "o", "color": colors[0], "edgecolors": "black"}
         if s:
             size = s
         else:
             size = 300
         ax.scatter(x, y, s=size, **updated_dict(param, style_kwds, 0))
     if reverse[0]:
-        ax.set_xlim(max(x) + 0.1 * (1 + max(x) - min(x)), min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)))
+        ax.set_xlim(
+            max(x) + 0.1 * (1 + max(x) - min(x)),
+            min(x) - 0.1 - 0.1 * (1 + max(x) - min(x)),
+        )
     if reverse[1]:
-        ax.set_ylim(max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y)))
+        ax.set_ylim(
+            max(y) + 0.1 * (1 + max(y) - min(y)), min(y) - 0.1 * (1 + max(y) - min(y))
+        )
     if plt_text:
         ax.set_xlabel(x_label, loc="right")
         ax.set_ylabel(y_label, loc="top")
-        ax.spines['left'].set_position('center')
-        ax.spines['bottom'].set_position('center')
-        ax.spines['right'].set_color('none')
-        ax.spines['top'].set_color('none')
+        ax.spines["left"].set_position("center")
+        ax.spines["bottom"].set_position("center")
+        ax.spines["right"].set_color("none")
+        ax.spines["top"].set_color("none")
         delta_x = (max(x) - min(x)) * 0.1
         delta_y = (max(y) - min(y)) * 0.1
-        plt.text(max(x) + delta_x if reverse[0] else min(x) - delta_x, 
-                 max(y) + delta_y if reverse[1] else min(y) - delta_y, 
-                 "Modest", size=15, rotation=130.,
-                 ha="center", va="center",
-                 bbox=dict(boxstyle="round",
-                           ec=gen_colors()[0],
-                           fc=gen_colors()[0],
-                           alpha=0.3))
-        plt.text(max(x) + delta_x if reverse[0] else min(x) - delta_x, 
-                 min(y) - delta_y if reverse[1] else max(y) + delta_y, 
-                 "Efficient", size=15, rotation=30.,
-                 ha="center", va="center",
-                 bbox=dict(boxstyle="round",
-                           ec=gen_colors()[1],
-                           fc=gen_colors()[1],
-                           alpha=0.3))
-        plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
-                 max(y) + delta_y if reverse[1] else min(y) - delta_y, 
-                 "Performant", size=15, rotation=-130.,
-                 ha="center", va="center",
-                 bbox=dict(boxstyle="round",
-                           ec=gen_colors()[2],
-                           fc=gen_colors()[2],
-                           alpha=0.3))
-        plt.text(min(x) - delta_x if reverse[0] else max(x) + delta_x, 
-                 min(y) - delta_y if reverse[1] else max(y) + delta_y, 
-                 "Performant & Efficient", size=15, rotation=-30.,
-                 ha="center", va="center",
-                 bbox=dict(boxstyle="round",
-                           ec=gen_colors()[3],
-                           fc=gen_colors()[3],
-                           alpha=0.3))
+        plt.text(
+            max(x) + delta_x if reverse[0] else min(x) - delta_x,
+            max(y) + delta_y if reverse[1] else min(y) - delta_y,
+            "Modest",
+            size=15,
+            rotation=130.0,
+            ha="center",
+            va="center",
+            bbox=dict(
+                boxstyle="round", ec=gen_colors()[0], fc=gen_colors()[0], alpha=0.3
+            ),
+        )
+        plt.text(
+            max(x) + delta_x if reverse[0] else min(x) - delta_x,
+            min(y) - delta_y if reverse[1] else max(y) + delta_y,
+            "Efficient",
+            size=15,
+            rotation=30.0,
+            ha="center",
+            va="center",
+            bbox=dict(
+                boxstyle="round", ec=gen_colors()[1], fc=gen_colors()[1], alpha=0.3
+            ),
+        )
+        plt.text(
+            min(x) - delta_x if reverse[0] else max(x) + delta_x,
+            max(y) + delta_y if reverse[1] else min(y) - delta_y,
+            "Performant",
+            size=15,
+            rotation=-130.0,
+            ha="center",
+            va="center",
+            bbox=dict(
+                boxstyle="round", ec=gen_colors()[2], fc=gen_colors()[2], alpha=0.3
+            ),
+        )
+        plt.text(
+            min(x) - delta_x if reverse[0] else max(x) + delta_x,
+            min(y) - delta_y if reverse[1] else max(y) + delta_y,
+            "Performant & Efficient",
+            size=15,
+            rotation=-30.0,
+            ha="center",
+            va="center",
+            bbox=dict(
+                boxstyle="round", ec=gen_colors()[3], fc=gen_colors()[3], alpha=0.3
+            ),
+        )
     else:
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
     return ax
 
+
 # ---#
-def plot_pca_circle(x: list, 
-                    y: list, 
-                    variable_names: list = [], 
-                    explained_variance: tuple = (None, None), 
-                    dimensions: tuple = (1, 2),
-                    ax=None, 
-                    **style_kwds):
+def plot_pca_circle(
+    x: list,
+    y: list,
+    variable_names: list = [],
+    explained_variance: tuple = (None, None),
+    dimensions: tuple = (1, 2),
+    ax=None,
+    **style_kwds,
+):
     colors = gen_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -657,27 +745,46 @@ def plot_pca_circle(x: list,
     n = len(x)
     ax.add_patch(circle1)
     for i in range(n):
-        ax.arrow(0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True)
+        ax.arrow(
+            0, 0, x[i], y[i], head_width=0.05, color="black", length_includes_head=True
+        )
         ax.text(x[i], y[i], variable_names[i])
-    ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle='--', color="black")
-    ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle='--', color="black")
-    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
-    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
+    ax.plot([-1.1, 1.1], [0.0, 0.0], linestyle="--", color="black")
+    ax.plot([0.0, 0.0], [-1.1, 1.1], linestyle="--", color="black")
+    ax.set_xlabel(
+        "Dim{} {}".format(
+            dimensions[0],
+            ""
+            if not (explained_variance[0])
+            else "({}%)".format(round(explained_variance[0] * 100, 1)),
+        )
+    )
+    ax.set_ylabel(
+        "Dim{} {}".format(
+            dimensions[1],
+            ""
+            if not (explained_variance[1])
+            else "({}%)".format(round(explained_variance[1] * 100, 1)),
+        )
+    )
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
     return ax
 
+
 # ---#
-def plot_var(x: list, 
-             y: list,
-             variable_names: list = [], 
-             explained_variance: tuple = (None, None), 
-             dimensions: tuple = (1, 2),
-             bar_name: str = "",
-             ax=None, 
-             **style_kwds):
+def plot_var(
+    x: list,
+    y: list,
+    variable_names: list = [],
+    explained_variance: tuple = (None, None),
+    dimensions: tuple = (1, 2),
+    bar_name: str = "",
+    ax=None,
+    **style_kwds,
+):
     colors = gen_colors()
     if "color" in style_kwds:
         colors[0] = style_kwds["color"]
@@ -694,21 +801,46 @@ def plot_var(x: list,
     delta_x = (max(x) - min(x)) * 0.04
     for i in range(n):
         ax.text(x[i], y[i] + delta_y, variable_names[i], horizontalalignment="center")
-    param = {"marker": "^", "s": 100, "edgecolors": "black",}
+    param = {"marker": "^", "s": 100, "edgecolors": "black"}
     if "c" not in style_kwds:
         param["color"] = colors[0]
     img = ax.scatter(x, y, **updated_dict(param, style_kwds, 0))
-    ax.plot([min(x) - 5 * delta_x, max(x) + 5 * delta_x], [0.0, 0.0], linestyle='--', color="black")
-    ax.plot([0.0, 0.0], [min(y) - 5 * delta_y, max(y) + 5 * delta_y], linestyle='--', color="black")
+    ax.plot(
+        [min(x) - 5 * delta_x, max(x) + 5 * delta_x],
+        [0.0, 0.0],
+        linestyle="--",
+        color="black",
+    )
+    ax.plot(
+        [0.0, 0.0],
+        [min(y) - 5 * delta_y, max(y) + 5 * delta_y],
+        linestyle="--",
+        color="black",
+    )
     ax.set_xlim(min(x) - 5 * delta_x, max(x) + 5 * delta_x)
     ax.set_ylim(min(y) - 5 * delta_y, max(y) + 5 * delta_y)
-    ax.set_xlabel("Dim{} {}".format(dimensions[0], "" if not(explained_variance[0]) else "({}%)".format(round(explained_variance[0] * 100, 1))))
-    ax.set_ylabel("Dim{} {}".format(dimensions[1], "" if not(explained_variance[1]) else "({}%)".format(round(explained_variance[1] * 100, 1))))
+    ax.set_xlabel(
+        "Dim{} {}".format(
+            dimensions[0],
+            ""
+            if not (explained_variance[0])
+            else "({}%)".format(round(explained_variance[0] * 100, 1)),
+        )
+    )
+    ax.set_ylabel(
+        "Dim{} {}".format(
+            dimensions[1],
+            ""
+            if not (explained_variance[1])
+            else "({}%)".format(round(explained_variance[1] * 100, 1)),
+        )
+    )
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
     if "c" in style_kwds:
         fig.colorbar(img).set_label(bar_name)
     return ax
+
 
 # ---#
 def regression_plot(
@@ -821,7 +953,7 @@ def regression_tree_plot(
         ]
     )
     query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
-        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points),
+        X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
     )
     all_points = executeSQL(query, method="fetchall", print_time_sql=False)
     if not (ax):
@@ -849,9 +981,7 @@ def regression_tree_plot(
         "s": 50,
         "edgecolors": "black",
     }
-    ax.scatter(
-        x0, y0, **updated_dict(param, style_kwds),
-    )
+    ax.scatter(x0, y0, **updated_dict(param, style_kwds))
     ax.set_xlabel(X[0])
     ax.set_ylabel(y)
     return ax
@@ -1089,9 +1219,7 @@ def voronoi_plot(
     ]
     v = Voronoi(clusters + dummies_point)
     param = {"show_vertices": False}
-    voronoi_plot_2d(
-        v, ax=ax, **updated_dict(param, style_kwds),
-    )
+    voronoi_plot_2d(v, ax=ax, **updated_dict(param, style_kwds))
     if not (ax):
         ax = plt
         ax.xlabel(columns[0])

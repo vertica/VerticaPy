@@ -37,6 +37,7 @@ def amazon_vd():
     with warnings.catch_warnings(record=True) as w:
         drop(name="public.amazon")
 
+
 @pytest.fixture(scope="module")
 def titanic_vd():
     from verticapy.datasets import load_titanic
@@ -77,9 +78,7 @@ class TestModelSelection:
         assert result in [3, 4]
 
     def test_cross_validate(self, winequality_vd):
-        current_cursor().execute(
-            "DROP MODEL IF EXISTS model_test"
-        )
+        current_cursor().execute("DROP MODEL IF EXISTS model_test")
         result = cross_validate(
             LinearRegression("model_test"),
             winequality_vd,
@@ -126,13 +125,17 @@ class TestModelSelection:
         assert len(result["parameters"]) == 25
         model = NaiveBayes("NB_bs_test")
         model.drop()
-        result = bayesian_search_cv(model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", lmax=4)
+        result = bayesian_search_cv(
+            model, titanic_vd, ["age", "fare"], "embarked", pos_label="C", lmax=4
+        )
         assert len(result["parameters"]) == 14
 
     def test_randomized_features_search_cv(self, titanic_vd):
         model = LogisticRegression("Logit_fs_test")
         model.drop()
-        result = randomized_features_search_cv(model, titanic_vd, ["age", "fare", "pclass"], "survived")
+        result = randomized_features_search_cv(
+            model, titanic_vd, ["age", "fare", "pclass"], "survived"
+        )
         assert len(result["features"]) == 7
 
     def test_elbow(self, winequality_vd):
@@ -164,21 +167,45 @@ class TestModelSelection:
         assert len(gen_params_grid(Ridge("model_test"), lmax=3)) == 3
         assert len(gen_params_grid(LinearRegression("model_test"), lmax=3)) == 3
         assert len(gen_params_grid(NaiveBayes("model_test"), lmax=3)) == 3
-        assert len(gen_params_grid(RandomForestClassifier("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(RandomForestRegressor("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(XGBoostClassifier("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(XGBoostRegressor("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(DecisionTreeRegressor("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(DecisionTreeClassifier("model_test"), lmax=3, nbins=3)) == 3
+        assert (
+            len(gen_params_grid(RandomForestClassifier("model_test"), lmax=3, nbins=3))
+            == 3
+        )
+        assert (
+            len(gen_params_grid(RandomForestRegressor("model_test"), lmax=3, nbins=3))
+            == 3
+        )
+        assert (
+            len(gen_params_grid(XGBoostClassifier("model_test"), lmax=3, nbins=3)) == 3
+        )
+        assert (
+            len(gen_params_grid(XGBoostRegressor("model_test"), lmax=3, nbins=3)) == 3
+        )
+        assert (
+            len(gen_params_grid(DecisionTreeRegressor("model_test"), lmax=3, nbins=3))
+            == 3
+        )
+        assert (
+            len(gen_params_grid(DecisionTreeClassifier("model_test"), lmax=3, nbins=3))
+            == 3
+        )
         assert len(gen_params_grid(DummyTreeClassifier("model_test"), lmax=3)) == 0
         assert len(gen_params_grid(DummyTreeRegressor("model_test"), lmax=3)) == 0
-        assert len(gen_params_grid(KNeighborsClassifier("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(KNeighborsRegressor("model_test"), lmax=3, nbins=3)) == 3
+        assert (
+            len(gen_params_grid(KNeighborsClassifier("model_test"), lmax=3, nbins=3))
+            == 3
+        )
+        assert (
+            len(gen_params_grid(KNeighborsRegressor("model_test"), lmax=3, nbins=3))
+            == 3
+        )
         assert len(gen_params_grid(NearestCentroid("model_test"), lmax=3, nbins=3)) == 3
         assert len(gen_params_grid(KMeans("model_test"), lmax=3, nbins=3)) == 3
         assert len(gen_params_grid(BisectingKMeans("model_test"), lmax=3, nbins=3)) == 3
         assert len(gen_params_grid(DBSCAN("model_test"), lmax=3, nbins=3)) == 3
-        assert len(gen_params_grid(LocalOutlierFactor("model_test"), lmax=3, nbins=3)) == 3
+        assert (
+            len(gen_params_grid(LocalOutlierFactor("model_test"), lmax=3, nbins=3)) == 3
+        )
 
     def test_grid_search_cv(self, winequality_vd):
         result = grid_search_cv(
@@ -199,28 +226,24 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
-        result = lift_chart(
-            "good",
-            "prediction",
-            data,
-            pos_label=1,
-            nbins=30,
-        )
+        result = lift_chart("good", "prediction", data, pos_label=1, nbins=30,)
         assert result["lift"][0] == pytest.approx(3.53927343297811)
         assert len(result["lift"]) == 31
         model.drop()
         plt.close("all")
 
     def test_parameter_grid(self):
-        assert parameter_grid({"param1": [1, 2, 3], "param2": ["a", "b", "c"]}) == [{'param1': 1, 'param2': 'a'},
-                                                                                    {'param1': 1, 'param2': 'b'},
-                                                                                    {'param1': 1, 'param2': 'c'},
-                                                                                    {'param1': 2, 'param2': 'a'},
-                                                                                    {'param1': 2, 'param2': 'b'},
-                                                                                    {'param1': 2, 'param2': 'c'},
-                                                                                    {'param1': 3, 'param2': 'a'},
-                                                                                    {'param1': 3, 'param2': 'b'},
-                                                                                    {'param1': 3, 'param2': 'c'}]
+        assert parameter_grid({"param1": [1, 2, 3], "param2": ["a", "b", "c"]}) == [
+            {"param1": 1, "param2": "a"},
+            {"param1": 1, "param2": "b"},
+            {"param1": 1, "param2": "c"},
+            {"param1": 2, "param2": "a"},
+            {"param1": 2, "param2": "b"},
+            {"param1": 2, "param2": "c"},
+            {"param1": 3, "param2": "a"},
+            {"param1": 3, "param2": "b"},
+            {"param1": 3, "param2": "c"},
+        ]
 
     def test_plot_acf_pacf(self, amazon_vd):
         result = plot_acf_pacf(amazon_vd, ts="date", by=["state"], column="number", p=3)
@@ -244,13 +267,7 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
-        result = prc_curve(
-            "good",
-            "prediction",
-            data,
-            pos_label=1,
-            nbins=30,
-        )
+        result = prc_curve("good", "prediction", data, pos_label=1, nbins=30,)
         assert result["precision"][1] == pytest.approx(0.196552254886871)
         assert len(result["precision"]) == 30
         model.drop()
@@ -276,13 +293,7 @@ class TestModelSelection:
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
-        result = roc_curve(
-            "good",
-            "prediction",
-            data,
-            pos_label=1,
-            nbins=30,
-        )
+        result = roc_curve("good", "prediction", data, pos_label=1, nbins=30,)
         assert result["true_positive"][2] == pytest.approx(0.945967110415035)
         assert len(result["true_positive"]) == 31
         model.drop()
@@ -326,11 +337,37 @@ class TestModelSelection:
         titanic["boat"].fillna(method="0ifnull")
         model = LogisticRegression("Logit_stepwise_test")
         model.drop()
-        result = stepwise(model, titanic, ["age", "fare", "boat", "pclass"], "survived", "bic", "backward", 100, 3, True, "pearson", True, True)
+        result = stepwise(
+            model,
+            titanic,
+            ["age", "fare", "boat", "pclass"],
+            "survived",
+            "bic",
+            "backward",
+            100,
+            3,
+            True,
+            "pearson",
+            True,
+            True,
+        )
         assert result["importance"][-1] == pytest.approx(99.99999999999999, 1e-2)
         assert result["importance"][-4] == pytest.approx(0.0, 1e-2)
         plt.close("all")
-        result = stepwise(model, titanic, ["age", "fare", "boat", "pclass"], "survived", "aic", "forward", 100, 3, True, "spearman", True, True)
+        result = stepwise(
+            model,
+            titanic,
+            ["age", "fare", "boat", "pclass"],
+            "survived",
+            "aic",
+            "forward",
+            100,
+            3,
+            True,
+            "spearman",
+            True,
+            True,
+        )
         assert result["importance"][-1] == pytest.approx(0.0, 1e-2)
         assert result["importance"][-4] == pytest.approx(99.99999999999999, 1e-2)
         plt.close("all")
