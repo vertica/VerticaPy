@@ -162,18 +162,17 @@ class TestBisectingKMeans:
         model_test_kmeanspp.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
         assert (
-            model_test_kmeanspp.get_attr("call_string")["call_string"][0]
-            == "bisecting_kmeans('bsk_kmeanspp_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='kmeanspp', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+            "kmeans_center_init_method='kmeanspp'"
+            in model_test_kmeanspp.get_attr("call_string")["call_string"][0]
         )
         model_test_kmeanspp.drop()
 
         model_test_pseudo = BisectingKMeans("bsk_pseudo_test", init="pseudo")
         model_test_pseudo.drop()
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
-
         assert (
-            model_test_pseudo.get_attr("call_string")["call_string"][0]
-            == "bisecting_kmeans('bsk_pseudo_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='pseudo', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+            "kmeans_center_init_method='pseudo'"
+            in model_test_pseudo.get_attr("call_string")["call_string"][0]
         )
         model_test_pseudo.drop()
 

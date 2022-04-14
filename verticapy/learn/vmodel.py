@@ -2527,7 +2527,7 @@ class Supervised(vModel):
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
                 ),
-                print_time_sql=False,
+                title="Creating a temporary view to fit the model.",
             )
         else:
             self.input_relation = input_relation
@@ -4147,7 +4147,7 @@ class Unsupervised(vModel):
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
                 ),
-                print_time_sql=False,
+                title="Creating a temporary view to fit the model.",
             )
             if not (X):
                 X = input_relation.numcol()
