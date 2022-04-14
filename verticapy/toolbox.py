@@ -1568,7 +1568,7 @@ def flat_dict(d: dict) -> str:
 # ---#
 def dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
     # Function used in the tests
-    from verticapy import vDataFrame
+    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
 
     data = [
         [1, 0, "Male", 0, "Cheap", "Low"],
@@ -1605,7 +1605,7 @@ def dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
 # ---#
 def dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
     # Function used in the tests
-    from verticapy import vDataFrame
+    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
 
     data = [
         [1, "Bus", "Male", 0, "Cheap", "Low"],
@@ -1642,7 +1642,7 @@ def dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
 # ---#
 def dataset_num(table_name: str = "dataset_num", schema: str = "public"):
     # Function used in the tests
-    from verticapy import vDataFrame
+    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
 
     data = [
         [1, 7.2, 3.6, 6.1, 2.5],
