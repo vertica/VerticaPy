@@ -49,8 +49,10 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, sys, warnings, random, itertools
+import os, math, shutil, re, sys, warnings, random, itertools, datetime
 from collections.abc import Iterable
+
+# Other Modules
 import numpy as np
 
 # VerticaPy Modules
@@ -1460,8 +1462,6 @@ def str_category(expr):
     try:
         category = expr.category()
     except:
-        import datetime
-
         if isinstance(expr, (float)):
             category = "float"
         elif isinstance(expr, (int)):

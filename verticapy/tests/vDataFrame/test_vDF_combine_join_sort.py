@@ -15,6 +15,7 @@
 import pytest
 
 # VerticaPy
+from vertica_python.errors import VerticaSyntaxError
 from verticapy import drop, set_option
 from verticapy.datasets import load_iris, load_market, load_amazon
 
@@ -81,8 +82,6 @@ class TestvDFCombineJoinSort:
             159,
             4,
         ), "testing vDataFrame.groupby(columns, expr) failed"
-
-        from vertica_python.errors import VerticaSyntaxError
 
         with pytest.raises(VerticaSyntaxError) as exception_info:
             result2 = market_vd.groupby(

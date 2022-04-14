@@ -18,6 +18,7 @@ import pytest
 import warnings, os
 
 # VerticaPy
+import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql

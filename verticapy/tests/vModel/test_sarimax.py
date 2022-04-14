@@ -11,21 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings, sys, os
+# Pytest
+import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
 
 # VerticaPy
-import verticapy
 from verticapy import (
     drop,
     set_option,
-    vertica_conn,
     create_verticapy_schema,
     current_cursor,
 )
+from verticapy.datasets import load_amazon
 from verticapy.learn.tsa import SARIMAX
 
 set_option("print_info", False)
@@ -33,8 +32,6 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
     drop(name="public.amazon",)

@@ -18,6 +18,7 @@ import pytest
 from verticapy import drop, drop_if_exists, set_option
 from verticapy.datasets import load_titanic, load_airline_passengers, load_amazon
 import verticapy.stats as st
+from verticapy.learn.linear_model import LinearRegression
 
 set_option("print_info", False)
 
@@ -66,9 +67,6 @@ class TestStats:
         airline_copy["passengers_bias"] = (
             airline_copy["passengers"] ** 2 - 50 * st.random()
         )
-
-        from verticapy.learn.linear_model import LinearRegression
-
         drop_if_exists("lin_cochrane_orcutt_model_test", method="model")
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")

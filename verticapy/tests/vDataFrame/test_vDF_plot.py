@@ -20,6 +20,8 @@ import datetime, os, sys
 # Other Modules
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from highcharts.highcharts.highcharts import Highchart
+from highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 import verticapy
@@ -436,9 +438,6 @@ class TestvDFPlot:
         plt.close("all")
 
     def test_vDF_hchart(self, titanic_vd, amazon_vd):
-        from highcharts.highcharts.highcharts import Highchart
-        from highcharts.highstock.highstock import Highstock
-
         # boxplot
         result = titanic_vd.hchart(kind="boxplot")
         assert isinstance(result, Highchart)

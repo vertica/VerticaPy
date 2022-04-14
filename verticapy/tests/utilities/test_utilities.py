@@ -21,7 +21,7 @@ import pandas as pd
 import vertica_python
 from verticapy.utilities import *
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
-from verticapy.geo import read_shp
+from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 
 set_option("print_info", False)

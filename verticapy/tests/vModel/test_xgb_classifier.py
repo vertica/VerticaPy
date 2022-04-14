@@ -11,11 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Pytest
+import pytest
+
 # Standard Python Modules
-import pytest, warnings, sys, os
+import os
 
 # Other Modules
 import matplotlib.pyplot as plt
+import xgboost as xgb
 
 # VerticaPy
 import verticapy
@@ -24,7 +28,6 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    vertica_conn,
     xgb_prior,
     current_cursor,
     dataset_cl,
@@ -536,8 +539,6 @@ class TestXGBC:
         os.remove(path)
 
     def test_to_json_multiclass(self, titanic_vd):
-        import xgboost as xgb
-
         titanic = titanic_vd.copy()
         titanic.fillna()
         path = "verticapy_test_xgbr.json"

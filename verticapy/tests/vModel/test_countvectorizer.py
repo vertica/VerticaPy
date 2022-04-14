@@ -15,7 +15,13 @@
 import pytest
 
 # VerticaPy
-from verticapy import (drop, set_option, vertica_conn, current_cursor, create_verticapy_schema)
+from verticapy import (
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    create_verticapy_schema,
+)
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import CountVectorizer
 

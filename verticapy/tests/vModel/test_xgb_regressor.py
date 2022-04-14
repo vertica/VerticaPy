@@ -11,21 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Pytest
+import pytest
+
 # Standard Python Modules
-import pytest, warnings, sys, os
+import os
 
 # Other Modules
 import matplotlib.pyplot as plt
-import numpy as np
+import xgboost as xgb
 
 # VerticaPy
-import verticapy
 from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    vertica_conn,
     xgb_prior,
     current_cursor,
     dataset_reg,
@@ -466,8 +467,6 @@ class TestXGBR:
         assert model.to_graphviz() == result.source.strip()
 
     def test_to_json(self, titanic_vd):
-        import xgboost as xgb
-
         titanic = titanic_vd.copy()
         titanic.fillna()
         path = "verticapy_test_xgbr.json"

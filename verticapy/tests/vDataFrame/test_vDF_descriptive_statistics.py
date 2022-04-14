@@ -15,8 +15,10 @@
 import pytest
 
 # VerticaPy
+from vertica_python.errors import QueryError
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_market, load_amazon
+from verticapy.learn.linear_model import LogisticRegression
 
 set_option("print_info", False)
 
@@ -392,8 +394,6 @@ class TestvDFDescriptiveStat:
         assert result["avg"][2] == pytest.approx(0.378444084)
 
         # there is an expected exception for categorical columns
-        from vertica_python.errors import QueryError
-
         with pytest.raises(QueryError) as exception_info:
             titanic_vd.avg(columns=["embarked"])
         # checking the error message
@@ -792,8 +792,6 @@ class TestvDFDescriptiveStat:
         # assert titanic_vd["fare"].quantile(x=0.1, exact=True) == pytest.approx(7.5892)
 
     def test_vDF_score(self, titanic_vd):
-        from verticapy.learn.linear_model import LogisticRegression
-
         model = LogisticRegression(
             name="public.LR_titanic",
             tol=1e-4,
