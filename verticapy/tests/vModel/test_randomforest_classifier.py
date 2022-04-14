@@ -27,26 +27,24 @@ from verticapy import (
     current_cursor,
     dataset_cl,
 )
+from verticapy.datasets import load_titanic
 from verticapy.learn.ensemble import RandomForestClassifier
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def rfr_data_vd():
+def rfc_data_vd():
     rfc_data_vd = dataset_cl(table_name="rfc_data", schema="public")
     yield rfc_data_vd
-    drop_if_exists(name="public.rfc_data", method="table")
+    drop(name="public.rfc_data", method="table")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")

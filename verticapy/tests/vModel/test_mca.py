@@ -32,8 +32,8 @@ def market_vd():
 
 @pytest.fixture(scope="module")
 def model(market_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS mca_model_test")
     model_class = MCA("mca_model_test",)
+    model_class.drop()
     model_class.fit(market_vd.cdt())
     yield model_class
     model_class.drop()

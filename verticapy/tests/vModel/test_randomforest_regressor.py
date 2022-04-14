@@ -51,7 +51,7 @@ def titanic_vd():
 def rfr_data_vd():
     rfr_data = dataset_reg(table_name="rfr_data", schema="public")
     yield rfr_data
-    drop_if_exists(name="public.rfr_data", method="table")
+    drop(name="public.rfr_data", method="table")
 
 
 @pytest.fixture(scope="module")

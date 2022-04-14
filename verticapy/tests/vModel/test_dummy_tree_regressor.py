@@ -36,7 +36,7 @@ set_option("print_info", False)
 def tr_data_vd():
     tr_data = dataset_reg(table_name="tr_data", schema="public")
     yield tr_data
-    drop_if_exists(name="public.tr_data", method="table")
+    drop(name="public.tr_data", method="table")
 
 
 @pytest.fixture(scope="module")
