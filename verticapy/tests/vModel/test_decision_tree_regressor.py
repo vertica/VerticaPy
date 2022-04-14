@@ -20,7 +20,14 @@ import matplotlib.pyplot as plt
 # VerticaPy
 import verticapy
 from verticapy.learn.tree import DecisionTreeRegressor
-from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_reg)
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    dataset_reg,
+)
 
 set_option("print_info", False)
 
@@ -30,6 +37,7 @@ def tr_data_vd():
     tr_data = dataset_reg(table_name="tr_data", schema="public")
     yield tr_data
     drop(name="public.tr_data", method="table")
+
 
 @pytest.fixture(scope="module")
 def model(tr_data_vd):

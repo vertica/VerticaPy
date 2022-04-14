@@ -19,7 +19,14 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 import verticapy
-from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_cl)
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    dataset_cl,
+)
 from verticapy.datasets import load_titanic
 from verticapy.learn.tree import DecisionTreeClassifier
 

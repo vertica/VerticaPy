@@ -11,8 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Pytest
 import pytest
+
+# VerticaPy
 from verticapy import drop, set_option
+from verticapy.datasets import load_cities, load_world
 from verticapy.geo import *
 
 set_option("print_info", False)
@@ -20,22 +24,16 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def cities_vd():
-    from verticapy.datasets import load_cities
-
     cities = load_cities()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities")
+    drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
 def world_vd():
-    from verticapy.datasets import load_world
-
     world = load_world()
     yield world
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world")
+    drop(name="public.world")
 
 
 class TestGeo:

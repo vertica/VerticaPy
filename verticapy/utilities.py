@@ -565,7 +565,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     if not (schema):
         schema = verticapy.options["temp_schema"]
     input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
-    if not(column_names):
+    if not (column_names):
         query = f"""SELECT 
                         column_name
                     FROM columns 
@@ -575,10 +575,12 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         result = executeSQL(
             query,
             title=f"Getting the table {input_relation} column names.",
-            method="fetchall"
+            method="fetchall",
         )
         column_names = [elem[0] for elem in result]
-        assert column_names, MissingRelation(f"The table {input_relation} does not exist.")
+        assert column_names, MissingRelation(
+            f"The table {input_relation} does not exist."
+        )
     cols = [str_column(col) for col in column_names]
     if copy and not (genSQL):
         sql = "INSERT INTO {} ({}) VALUES ({})".format(
@@ -600,9 +602,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         if genSQL:
             sql = []
         i, n, total_rows = 0, len(data), 0
-        header = "INSERT INTO {} ({}) VALUES ".format(
-            input_relation, ", ".join(cols)
-        )
+        header = "INSERT INTO {} ({}) VALUES ".format(input_relation, ", ".join(cols))
         for i in range(n):
             sql_tmp = "("
             for elem in data[i]:
@@ -621,7 +621,9 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
                 try:
                     executeSQL(
                         query,
-                        title="Insert a new line in the relation: {}.".format(input_relation),
+                        title="Insert a new line in the relation: {}.".format(
+                            input_relation
+                        ),
                     )
                     executeSQL("COMMIT;", title="Commit.")
                     total_rows += 1

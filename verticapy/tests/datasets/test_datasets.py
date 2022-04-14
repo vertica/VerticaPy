@@ -11,10 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Pytest
 import pytest
+
+# Standard Libraries
+import datetime
+
+# VerticaPy
 from verticapy import drop, set_option
 from verticapy.datasets import *
-import datetime
 
 set_option("print_info", False)
 

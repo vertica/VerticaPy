@@ -11,7 +11,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, math, os, verticapy
+# Pytest
+import pytest
+
+# Standard Libraries
+import math, os
+
+# VerticaPy
+import verticapy
 from verticapy.udf import *
 
 

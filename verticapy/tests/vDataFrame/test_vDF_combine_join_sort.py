@@ -11,42 +11,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame, drop
+# Pytest
+import pytest
 
-from verticapy import set_option
+# Standard Libraries
+import warnings
+
+# VerticaPy
+from verticapy import vDataFrame, drop, set_option
+from verticapy.datasets import load_iris, load_market, load_amazon
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def iris_vd():
-    from verticapy.datasets import load_iris
-
     iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris")
+    drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
 def market_vd():
-    from verticapy.datasets import load_market
-
     market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market")
+    drop(name="public.market")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 class TestvDFCombineJoinSort:

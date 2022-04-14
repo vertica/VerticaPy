@@ -12,7 +12,7 @@
 # limitations under the License.
 
 # Standard Libraries
-import pytest, warnings, os, 
+import pytest, warnings, os
 
 # Dependencies
 import matplotlib.pyplot as plt

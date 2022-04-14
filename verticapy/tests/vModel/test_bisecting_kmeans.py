@@ -19,7 +19,14 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 import verticapy
-from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_num)
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    dataset_num,
+)
 from verticapy.datasets import load_winequality
 from verticapy.learn.cluster import BisectingKMeans
 

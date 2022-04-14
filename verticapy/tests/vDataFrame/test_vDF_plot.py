@@ -11,29 +11,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, datetime, warnings, os, verticapy, sys
-from verticapy import vDataFrame, drop, create_verticapy_schema
-import matplotlib.pyplot as plt
+# Pytest
+import pytest
 
-from verticapy import set_option
+# Standard Libraries
+import datetime, warnings, os, sys
+
+# Dependencies
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+# VerticaPy
+import verticapy
+from verticapy import vDataFrame, drop, create_verticapy_schema, set_option
+from verticapy.datasets import (
+    load_titanic,
+    load_amazon,
+    load_commodities,
+    load_iris,
+    load_world,
+    load_pop_growth,
+    load_gapminder,
+)
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
     drop(name="public.amazon")
@@ -41,8 +53,6 @@ def amazon_vd():
 
 @pytest.fixture(scope="module")
 def commodities_vd():
-    from verticapy.datasets import load_commodities
-
     commodities = load_commodities()
     yield commodities
     drop(name="public.commodities")
@@ -50,8 +60,6 @@ def commodities_vd():
 
 @pytest.fixture(scope="module")
 def iris_vd():
-    from verticapy.datasets import load_iris
-
     iris = load_iris()
     yield iris
     drop(name="public.iris")
@@ -59,38 +67,27 @@ def iris_vd():
 
 @pytest.fixture(scope="module")
 def world_vd():
-    from verticapy.datasets import load_world
-
     cities = load_world()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world")
+    drop(name="public.world")
 
 
 @pytest.fixture(scope="module")
 def pop_growth_vd():
-    from verticapy.datasets import load_pop_growth
-
     pop_growth = load_pop_growth()
     yield pop_growth
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.pop_growth")
+    drop(name="public.pop_growth")
 
 
 @pytest.fixture(scope="module")
 def gapminder_vd():
-    from verticapy.datasets import load_gapminder
-
     gapminder = load_gapminder()
     yield gapminder
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.gapminder")
+    drop(name="public.gapminder")
 
 
 class TestvDFPlot:
     def test_vDF_animated(self, pop_growth_vd, amazon_vd, commodities_vd, gapminder_vd):
-        import matplotlib.animation as animation
-
         result = pop_growth_vd.animated(
             "year",
             ["city", "population"],

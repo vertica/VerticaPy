@@ -18,7 +18,14 @@ import pytest, warnings, os, verticapy
 import matplotlib.pyplot as plt
 
 # VerticaPy
-from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_cl)
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    dataset_cl,
+)
 from verticapy.datasets import load_titanic
 from verticapy.learn.tree import DummyTreeClassifier
 

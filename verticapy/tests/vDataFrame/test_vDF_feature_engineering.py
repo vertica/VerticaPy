@@ -11,52 +11,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, datetime, warnings
-from verticapy import vDataFrame, drop, errors
+# Pytest
+import pytest
 
-from verticapy import set_option
+# Standard Libraries
+import datetime, warnings
+
+# VerticaPy
+from verticapy import vDataFrame, drop, errors, set_option
+from verticapy.datasets import load_amazon, load_iris, load_smart_meters, load_titanic
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
 def iris_vd():
-    from verticapy.datasets import load_iris
-
     iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris")
+    drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
 def smart_meters_vd():
-    from verticapy.datasets import load_smart_meters
-
     smart_meters = load_smart_meters()
     yield smart_meters
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.smart_meters")
+    drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 class TestvDFFeatureEngineering:

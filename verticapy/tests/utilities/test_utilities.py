@@ -11,8 +11,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, vertica_python
-from verticapy import drop, set_option, vDataFrame
+# Pytest
+import pytest
+
+# VerticaPy
+import vertica_python
+from verticapy import drop, drop_if_exists, set_option, vDataFrame
+from verticapy.datasets import load_cities, load_titanic, load_world
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 
@@ -21,38 +26,28 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def cities_vd():
-    from verticapy.datasets import load_cities
-
     cities = load_cities()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities")
+    drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def world_vd():
-    from verticapy.datasets import load_world
-
     cities = load_world()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world")
+    drop(name="public.world")
 
 
 class TestUtilities:
     def test_create_verticapy_schema(self):
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy", method="schema")
+        drop_if_exists("verticapy", method="schema")
         create_verticapy_schema()
         current_cursor().execute(
             "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"

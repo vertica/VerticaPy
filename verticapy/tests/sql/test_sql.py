@@ -11,9 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
+# Pytest
+import pytest
+
+# Standard Libraries
+import warnings
+
+# VerticaPy
 from verticapy import drop, set_option
 from verticapy.connect import *
+from verticapy.datasets import load_titanic
 from verticapy.sql import *
 
 set_option("print_info", False)
@@ -21,12 +28,9 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 class TestSQL:

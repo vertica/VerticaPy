@@ -19,7 +19,14 @@ import matplotlib.pyplot as plt
 
 # VerticaPy
 import verticapy
-from verticapy import (vDataFrame, drop, set_option, vertica_conn, current_cursor, dataset_cl)
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    vertica_conn,
+    current_cursor,
+    dataset_cl,
+)
 from verticapy.learn.ensemble import RandomForestClassifier
 
 set_option("print_info", False)
