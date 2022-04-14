@@ -19,9 +19,9 @@ import pandas as pd
 
 # VerticaPy
 import vertica_python
-from verticapy import drop, drop_if_exists, set_option, vDataFrame
+from verticapy import drop, drop_if_exists, set_option
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
-from verticapy.geo import *
+from verticapy.geo import read_shp
 from verticapy.learn.neighbors import KNeighborsClassifier
 
 set_option("print_info", False)
@@ -357,8 +357,7 @@ class TestUtilities:
         # test the param gen_tmp_table_name
 
     def test_read_shp(self, cities_vd):
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop_if_exists(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
         vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
@@ -368,8 +367,7 @@ class TestUtilities:
             os.remove("/home/dbadmin/cities_test.dbf")
         except:
             pass
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop(name="public.cities_test")
 
     def test_tablesample(self):
         result = tablesample(

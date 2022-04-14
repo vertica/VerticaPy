@@ -19,9 +19,8 @@ import warnings
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import *
 from verticapy.datasets import load_titanic
-from verticapy.sql import *
+from verticapy.sql import sql
 
 set_option("print_info", False)
 

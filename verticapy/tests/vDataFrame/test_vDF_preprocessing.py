@@ -14,9 +14,6 @@
 # Pytest
 import pytest
 
-# Standard Python Modules
-import warnings
-
 # VerticaPy
 from verticapy import vDataFrame, drop, errors, set_option, tablesample
 from verticapy.datasets import load_titanic, load_iris, load_market

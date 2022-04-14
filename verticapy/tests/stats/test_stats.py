@@ -14,11 +14,8 @@
 # Pytest
 import pytest
 
-# Standard Python Modules
-import warnings
-
 # VerticaPy
-from verticapy import drop, drop_if_exists, set_option, str_sql
+from verticapy import drop, drop_if_exists, set_option
 from verticapy.datasets import load_titanic, load_airline_passengers, load_amazon
 import verticapy.stats as st
 

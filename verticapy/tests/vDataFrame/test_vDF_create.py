@@ -12,10 +12,9 @@
 # limitations under the License.
 
 # Standard Python Modules
-import pytest, warnings, os
+import pytest
 
 # VerticaPy
-import verticapy
 from verticapy import vDataFrame, drop, set_option
 from verticapy.datasets import load_titanic
 

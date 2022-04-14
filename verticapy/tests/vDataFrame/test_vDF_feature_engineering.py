@@ -15,10 +15,10 @@
 import pytest
 
 # Standard Python Modules
-import datetime, warnings
+import datetime
 
 # VerticaPy
-from verticapy import vDataFrame, drop, errors, set_option
+from verticapy import drop, errors, set_option
 from verticapy.datasets import load_amazon, load_iris, load_smart_meters, load_titanic
 
 set_option("print_info", False)

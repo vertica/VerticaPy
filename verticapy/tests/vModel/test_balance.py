@@ -11,11 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings
-
-# Other Modules
-import matplotlib.pyplot as plt
+# Pytest
+import pytest
 
 # VerticaPy
 from verticapy import drop, set_option, current_cursor

@@ -11,16 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings, os, verticapy
+# Pytest
+import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
 
 # VerticaPy
-from verticapy import set_option, current_cursor
+from verticapy import set_option
 from verticapy.datasets import load_winequality, load_amazon, load_titanic
-from verticapy.learn.delphi import *
+from verticapy.learn.delphi import AutoML, AutoDataPrep, AutoClustering
 
 set_option("print_info", False)
 set_option("random_state", 0)

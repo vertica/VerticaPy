@@ -18,7 +18,7 @@ import pytest
 import datetime
 
 # VerticaPy
-from verticapy import drop, set_option
+from verticapy import set_option
 from verticapy.datasets import *
 
 set_option("print_info", False)

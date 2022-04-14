@@ -11,12 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings, sys, os
+# Pytest
+import pytest
 
 # VerticaPy
-import verticapy
-from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy import (drop, set_option, vertica_conn, current_cursor, create_verticapy_schema)
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import CountVectorizer
 
@@ -32,7 +31,7 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    verticapy.utilities.create_verticapy_schema()
+    create_verticapy_schema()
     model_class = CountVectorizer("model_test",)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])

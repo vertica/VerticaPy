@@ -15,7 +15,7 @@
 import pytest
 
 # Standard Python Modules
-import datetime, warnings, os, sys
+import datetime, os, sys
 
 # Other Modules
 import matplotlib.pyplot as plt
@@ -23,7 +23,7 @@ import matplotlib.animation as animation
 
 # VerticaPy
 import verticapy
-from verticapy import vDataFrame, drop, create_verticapy_schema, set_option
+from verticapy import drop, create_verticapy_schema, set_option
 from verticapy.datasets import (
     load_titanic,
     load_amazon,

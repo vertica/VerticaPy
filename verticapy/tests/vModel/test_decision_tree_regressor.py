@@ -11,23 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings, sys, os
+# Pytest
+import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
 
 # VerticaPy
-import verticapy
-from verticapy.learn.tree import DecisionTreeRegressor
 from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    vertica_conn,
     current_cursor,
     dataset_reg,
 )
+from verticapy.datasets import load_titanic
+from verticapy.learn.tree import DecisionTreeRegressor
 
 set_option("print_info", False)
 
@@ -68,12 +67,9 @@ def model(tr_data_vd):
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 class TestDecisionTreeRegressor:

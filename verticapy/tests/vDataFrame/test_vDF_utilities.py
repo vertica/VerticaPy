@@ -15,7 +15,7 @@
 import pytest
 
 # Standard Python Modules
-import os, warnings, shutil
+import os
 from math import ceil, floor
 
 # VerticaPy
@@ -28,8 +28,8 @@ from verticapy import (
     read_shp,
     current_cursor,
 )
-from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 import verticapy.stats as st
+from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 
 set_option("print_info", False)
 
@@ -171,7 +171,7 @@ class TestvDFUtilities:
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
-        # shutil.rmtree(name) # trying to erase the folder
+        # TODO: erasing the folder
 
     def test_vDF_to_db(self, titanic_vd):
         drop_if_exists("verticapy_titanic_tmp")
@@ -194,13 +194,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop(
-                    "verticapy_titanic_tmp", method="view",
-                )
+            drop_if_exists("verticapy_titanic_tmp", method="view")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp", method="view")
+        drop("verticapy_titanic_tmp", method="view")
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(
@@ -220,11 +216,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(
@@ -244,11 +238,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(
@@ -268,11 +260,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session()
@@ -328,8 +318,7 @@ class TestvDFUtilities:
         assert result.shape == (177, 4)
 
     def test_vDF_to_shp(self, cities_vd):
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop_if_exists(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
         vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
@@ -339,8 +328,7 @@ class TestvDFUtilities:
             os.remove("/home/dbadmin/cities_test.dbf")
         except:
             pass
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop(name="public.cities_test")
 
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()

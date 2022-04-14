@@ -19,7 +19,7 @@ import math, os
 
 # VerticaPy
 import verticapy
-from verticapy.udf import *
+from verticapy.udf import create_lib_udf
 
 
 def normalize_titanic(age, fare):

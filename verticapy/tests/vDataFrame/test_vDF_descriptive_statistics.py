@@ -14,11 +14,8 @@
 # Pytest
 import pytest
 
-# Standard Python Modules
-import warnings
-
 # VerticaPy
-from verticapy import vDataFrame, drop, set_option
+from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_market, load_amazon
 
 set_option("print_info", False)

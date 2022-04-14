@@ -14,18 +14,14 @@
 # Pytest
 import pytest
 
-# Standard Python Modules
-import warnings
-
 # Other Modules
 from highcharts.highcharts.highcharts import Highchart
 from highcharts.highstock.highstock import Highstock
 
 # VerticaPy
 from verticapy import drop, set_option
-from verticapy.connect import *
 from verticapy.datasets import load_titanic, load_amazon
-from verticapy.hchart import *
+from verticapy.hchart import hchart
 
 set_option("print_info", False)
 
