@@ -15,7 +15,7 @@
 import pytest
 
 # Standard Python Modules
-import warnings
+import warnings, os
 
 # VerticaPy
 from verticapy import drop, set_option

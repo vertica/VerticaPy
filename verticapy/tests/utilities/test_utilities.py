@@ -19,7 +19,7 @@ import pandas as pd
 
 # VerticaPy
 import vertica_python
-from verticapy import drop, drop_if_exists, set_option
+from verticapy.utilities import *
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
 from verticapy.geo import read_shp
 from verticapy.learn.neighbors import KNeighborsClassifier

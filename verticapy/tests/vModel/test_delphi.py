@@ -18,7 +18,7 @@ import pytest
 import matplotlib.pyplot as plt
 
 # VerticaPy
-from verticapy import set_option
+from verticapy import set_option, drop
 from verticapy.datasets import load_winequality, load_amazon, load_titanic
 from verticapy.learn.delphi import AutoML, AutoDataPrep, AutoClustering
 

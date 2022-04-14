@@ -14,11 +14,7 @@
 # Pytest
 import pytest
 
-# Other Modules
-import matplotlib.pyplot as plt
-
 # VerticaPy
-import verticapy
 from verticapy import (
     drop,
     set_option,

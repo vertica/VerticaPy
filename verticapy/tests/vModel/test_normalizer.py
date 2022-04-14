@@ -11,12 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Python Modules
-import pytest, warnings, sys, os
+# Pytest
+import pytest
 
 # VerticaPy
-import verticapy
-from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy import drop, set_option, current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.preprocessing import (
     Normalizer,

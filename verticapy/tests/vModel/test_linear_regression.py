@@ -12,14 +12,13 @@
 # limitations under the License.
 
 # Standard Python Modules
-import pytest, warnings, sys, os
+import pytest
 
 # Other Modules
 import matplotlib.pyplot as plt
 
 # VerticaPy
-import verticapy
-from verticapy import drop, set_option, vertica_conn, current_cursor
+from verticapy import drop, set_option, current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression
 
