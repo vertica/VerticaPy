@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Standard Libraries
+# Standard Python Modules
 import pytest, warnings, os
 
 # VerticaPy

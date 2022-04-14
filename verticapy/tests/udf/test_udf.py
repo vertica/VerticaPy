@@ -14,7 +14,7 @@
 # Pytest
 import pytest
 
-# Standard Libraries
+# Standard Python Modules
 import math, os
 
 # VerticaPy

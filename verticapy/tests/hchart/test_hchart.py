@@ -14,10 +14,10 @@
 # Pytest
 import pytest
 
-# Standard Libraries
+# Standard Python Modules
 import warnings
 
-# Dependencies
+# Other Modules
 from highcharts.highcharts.highcharts import Highchart
 from highcharts.highstock.highstock import Highstock
 

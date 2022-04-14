@@ -14,7 +14,7 @@
 # Pytest
 import pytest
 
-# Standard Libraries
+# Standard Python Modules
 import os, warnings, shutil
 from math import ceil, floor
 

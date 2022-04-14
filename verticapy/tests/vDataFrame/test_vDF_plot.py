@@ -14,10 +14,10 @@
 # Pytest
 import pytest
 
-# Standard Libraries
+# Standard Python Modules
 import datetime, warnings, os, sys
 
-# Dependencies
+# Other Modules
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 

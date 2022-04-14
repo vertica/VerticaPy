@@ -14,6 +14,9 @@
 # Pytest
 import pytest
 
+# Other Modules
+import pandas as pd
+
 # VerticaPy
 import vertica_python
 from verticapy import drop, drop_if_exists, set_option, vDataFrame
@@ -169,7 +172,12 @@ class TestUtilities:
 
         # using copy
         iris = load_iris()
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list())
+        result = insert_into(
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+        )
         with warnings.catch_warnings(record=True) as w:
             drop(name="public.iris")
         assert result == 150
@@ -177,17 +185,25 @@ class TestUtilities:
         iris = load_iris()
         # generating the SQL code
         result = insert_into(
-            "public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+            copy=False,
+            genSQL=True,
         )
         assert len(result) == 150
         for elem in result:
             assert elem[0:23] == "INSERT INTO public.iris"
         # executing multiple inserts
         result = insert_into(
-            "public.iris", iris.get_columns(), iris.to_list(), copy=False
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+            copy=False,
         )
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.iris")
+        drop(name="public.iris")
         assert result == 150
 
     def test_pandas_to_vertica(self, titanic_vd):
@@ -200,9 +216,6 @@ class TestUtilities:
             drop("titanic_pandas")
         vdf = pandas_to_vertica(df=df)
         assert vdf.shape() == (1234, 14)
-
-        import pandas as pd
-
         d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         df = pd.DataFrame(data=d)
         vdf = pandas_to_vertica(df)

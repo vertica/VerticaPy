@@ -14,10 +14,10 @@
 # Pytest
 import pytest
 
-# Standard Libraries
+# Standard Python Modules
 import warnings
 
-# Dependencies
+# Other Modules
 import matplotlib.pyplot as plt
 
 # VerticaPy
