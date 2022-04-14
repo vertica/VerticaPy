@@ -2508,7 +2508,7 @@ class Supervised(vModel):
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostRegressor",
+            "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
@@ -2563,7 +2563,7 @@ class Supervised(vModel):
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostRegressor",
+            "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
@@ -2680,7 +2680,10 @@ class Tree:
         check_types([("tree_id", tree_id, [int, float])])
         version(condition=[9, 1, 1])
         name = self.tree_name if self.type == "KernelDensity" else self.name
-        query = "SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular')) x ORDER BY node_id;".format(
+        query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
+                                        model_name = '{0}', 
+                                        tree_id = {1}, 
+                                        format = 'tabular')) x ORDER BY node_id;""".format(
             name, tree_id
         )
         result = to_tablesample(query=query, title="Reading Tree.")
@@ -3107,7 +3110,9 @@ class BinaryClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
+                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
+                "|markedness|critical_success_index|aic|bic"
             )
 
 
@@ -3728,7 +3733,9 @@ class MulticlassClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
+                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
+                "|markedness|critical_success_index|aic|bic"
             )
 
 
@@ -4107,7 +4114,9 @@ class Unsupervised(vModel):
         )
         does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self.type in ("BisectingKMeans",) and isinstance(verticapy.options["random_state"], int):
+        if self.type in ("BisectingKMeans",) and isinstance(
+            verticapy.options["random_state"], int
+        ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
                 ", ".join(X), id_column_name
             )
@@ -4128,7 +4137,9 @@ class Unsupervised(vModel):
                     result = result["sum"]
                 result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
                 assert abs(result) < 0.01, ConversionError(
-                    "MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation."
+                    "MCA can only work on a transformed complete disjunctive table. "
+                    "You should transform your relation first.\nTips: Use the "
+                    "vDataFrame.cdt method to transform the relation."
                 )
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
@@ -4283,15 +4294,31 @@ class Unsupervised(vModel):
         elif self.type == "OneHotEncoder":
             try:
                 self.param_ = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                        self.name, self.name
+                    query="""SELECT 
+                                category_name, 
+                                category_level::varchar, 
+                                category_level_index 
+                             FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                                model_name = '{0}', 
+                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
+                             UNION ALL 
+                             SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{0}', 
+                                        attr_name = 'varchar_categories')""".format(
+                        self.name,
                     ),
                     title="Getting Model Attributes.",
                 )
             except:
                 try:
                     self.param_ = to_tablesample(
-                        query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
+                        query="""SELECT 
+                                    category_name, 
+                                    category_level::varchar, 
+                                    category_level_index 
+                                 FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                                model_name = '{0}', 
+                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE""".format(
                             self.name
                         ),
                         title="Getting Model Attributes.",
