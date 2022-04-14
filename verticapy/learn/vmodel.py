@@ -2484,6 +2484,8 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
+        self.X = [str_column(column) for column in X]
+        self.y = str_column(y)
         if (self.type == "NaiveBayes") and (
             self.parameters["nbtype"]
             in ("bernoulli", "categorical", "multinomial", "gaussian")
@@ -2502,13 +2504,28 @@ class Supervised(vModel):
                 input_relation = vdf_from_relation(input_relation)
             input_relation.astype(new_types)
         does_model_exist(name=self.name, raise_error=True)
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+        id_column, id_column_name = "", gen_tmp_name(name="id_column")
+        if self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "XGBoostRegressor",
+            "XGBoostRegressor",
+        ) and isinstance(verticapy.options["random_state"], int):
+            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
+                ", ".join(X), id_column_name
+            )
+        tmp_view = False
+        if isinstance(input_relation, vDataFrame) or (id_column):
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation.__genSQL__()
+            else:
+                self.input_relation = input_relation
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
             executeSQL(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
+                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                    relation, id_column, self.input_relation
                 ),
                 print_time_sql=False,
             )
@@ -2521,8 +2538,6 @@ class Supervised(vModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
         parameters = vertica_param_dict(self)
         if (
             "regularization" in parameters
@@ -2552,22 +2567,16 @@ class Supervised(vModel):
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0]
-            )
-        if self.type == "BisectingKMeans" and isinstance(
-            verticapy.options["random_state"], int
-        ):
-            query += ", kmeans_seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0]
+                verticapy.options["random_state"], id_column_name
             )
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
         except:
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
             raise
         if self.type in (
             "LinearSVC",
@@ -4097,9 +4106,20 @@ class Unsupervised(vModel):
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
         does_model_exist(name=self.name, raise_error=True)
+        id_column, id_column_name = "", gen_tmp_name(name="id_column")
+        if self.type in ("BisectingKMeans",) and isinstance(verticapy.options["random_state"], int):
+            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
+                ", ".join(X), id_column_name
+            )
         if isinstance(input_relation, str) and self.type == "MCA":
             input_relation = vdf_from_relation(input_relation)
-        if isinstance(input_relation, vDataFrame):
+        tmp_view = False
+        if isinstance(input_relation, vDataFrame) or (id_column):
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation.__genSQL__()
+            else:
+                self.input_relation = input_relation
             if self.type == "MCA":
                 result = input_relation.sum(columns=X)
                 if isinstance(result, (int, float)):
@@ -4110,12 +4130,11 @@ class Unsupervised(vModel):
                 assert abs(result) < 0.01, ConversionError(
                     "MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation."
                 )
-            self.input_relation = input_relation.__genSQL__()
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
             executeSQL(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
+                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                    relation, id_column, self.input_relation
                 ),
                 print_time_sql=False,
             )
@@ -4182,14 +4201,20 @@ class Unsupervised(vModel):
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
+        if self.type == "BisectingKMeans" and isinstance(
+            verticapy.options["random_state"], int
+        ):
+            query += ", kmeans_seed={}, id_column='{}'".format(
+                verticapy.options["random_state"], id_column_name
+            )
         query += ")"
         try:
             executeSQL(query, "Fitting the model.")
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
         except:
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
