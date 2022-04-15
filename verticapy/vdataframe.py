@@ -1729,7 +1729,7 @@ vColumns : vColumn
         List of the vColumn's names. If empty, depending on the aggregations,
         all or only numerical vColumns will be used.
     ncols_block: int, optional
-        The number of columns used per query. Setting this parameter divides
+        Number of columns used per query. Setting this parameter divides
         what would otherwise be one large query into many smaller queries called
         "blocks." The size of each block is determined by the ncols_block parmeter.
     processes: int, optional
@@ -4782,7 +4782,7 @@ vColumns : vColumn
     unique: bool, optional
         If set to True, the cardinality of each element will be computed.
     ncols_block: int, optional
-        The number of columns used per query. Setting this parameter divides
+        Number of columns used per query. Setting this parameter divides
         what would otherwise be one large query into many smaller queries called
         "blocks." The size of each block is determined by the ncols_block parmeter.
     processes: int, optional
