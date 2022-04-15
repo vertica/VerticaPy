@@ -1941,8 +1941,8 @@ The tablesample attributes are the same than the parameters.
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module doesn't seem to be installed in your environment."
-                "\nTo be able to use this method, you'll have to install it."
+                "The pandas module is not installed in your environment."
+                "\nInstall the pandas module to use this method."
             )
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
