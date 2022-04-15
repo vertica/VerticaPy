@@ -11,8 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, vertica_python
-from verticapy import drop, set_option, vDataFrame
+# Pytest
+import pytest
+
+# Other Modules
+import pandas as pd
+
+# VerticaPy
+import vertica_python
+from verticapy.utilities import *
+from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
 from verticapy.geo import *
 from verticapy.learn.neighbors import KNeighborsClassifier
 
@@ -21,38 +29,28 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def cities_vd():
-    from verticapy.datasets import load_cities
-
     cities = load_cities()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities")
+    drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def world_vd():
-    from verticapy.datasets import load_world
-
     cities = load_world()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world")
+    drop(name="public.world")
 
 
 class TestUtilities:
     def test_create_verticapy_schema(self):
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy", method="schema")
+        drop_if_exists("verticapy", method="schema")
         create_verticapy_schema()
         current_cursor().execute(
             "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"
@@ -170,56 +168,59 @@ class TestUtilities:
         ]
 
     def test_insert_into(self):
-        from verticapy.datasets import load_iris
-
         # using copy
         iris = load_iris()
-        result = insert_into("public.iris", iris.get_columns(), iris.to_list())
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.iris")
+        result = insert_into(
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+        )
+        drop(name="public.iris", method="table")
         assert result == 150
         # using multiple inserts
         iris = load_iris()
         # generating the SQL code
         result = insert_into(
-            "public.iris", iris.get_columns(), iris.to_list(), copy=False, genSQL=True
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+            copy=False,
+            genSQL=True,
         )
         assert len(result) == 150
         for elem in result:
-            assert elem[0:23] == "INSERT INTO public.iris"
+            assert elem[0:27] == 'INSERT INTO "public"."iris"'
         # executing multiple inserts
         result = insert_into(
-            "public.iris", iris.get_columns(), iris.to_list(), copy=False
+            table_name="iris",
+            schema="public",
+            column_names=iris.get_columns(),
+            data=iris.to_list(),
+            copy=False,
         )
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.iris")
+        drop(name="public.iris", method="table")
         assert result == 150
 
     def test_pandas_to_vertica(self, titanic_vd):
         df = titanic_vd.to_pandas()
-        with warnings.catch_warnings(record=True) as w:
-            drop("titanic_pandas")
+        drop_if_exists("titanic_pandas")
         vdf = pandas_to_vertica(df=df, name="titanic_pandas")
         assert vdf.shape() == (1234, 14)
-        with warnings.catch_warnings(record=True) as w:
-            drop("titanic_pandas")
+        drop_if_exists("titanic_pandas")
         vdf = pandas_to_vertica(df=df)
         assert vdf.shape() == (1234, 14)
-
-        import pandas as pd
-
         d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         df = pd.DataFrame(data=d)
         vdf = pandas_to_vertica(df)
         assert vdf.shape() == (4, 2)
-        with warnings.catch_warnings(record=True) as w:
-            drop("test_df")
+        drop_if_exists("test_df")
         pandas_to_vertica(df, name="test_df", schema="public")
         pandas_to_vertica(df, name="test_df", schema="public", insert=True)
         vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
         assert vdf.shape() == (12, 2)
-        with warnings.catch_warnings(record=True) as w:
-            drop("test_df")
+        drop_if_exists("test_df")
 
     def test_pcsv(self):
         result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
@@ -356,8 +357,7 @@ class TestUtilities:
         # test the param gen_tmp_table_name
 
     def test_read_shp(self, cities_vd):
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop_if_exists(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
         vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
@@ -367,8 +367,7 @@ class TestUtilities:
             os.remove("/home/dbadmin/cities_test.dbf")
         except:
             pass
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop(name="public.cities_test")
 
     def test_tablesample(self):
         result = tablesample(

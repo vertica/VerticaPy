@@ -11,38 +11,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.linear_model import LogisticRegression
-from verticapy import drop, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_winequality, load_titanic
+from verticapy.learn.linear_model import LogisticRegression
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(titanic_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS logreg_model_test")
     model_class = LogisticRegression("logreg_model_test",)
+    model_class.drop()
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()

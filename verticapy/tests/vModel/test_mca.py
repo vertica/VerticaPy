@@ -11,27 +11,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_market
 from verticapy.learn.decomposition import MCA
-from verticapy import drop, set_option, vertica_conn, current_cursor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def market_vd():
-    from verticapy.datasets import load_market
-
     market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market",)
+    drop(name="public.market",)
 
 
 @pytest.fixture(scope="module")
 def model(market_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS mca_model_test")
     model_class = MCA("mca_model_test",)
+    model_class.drop()
     model_class.fit(market_vd.cdt())
     yield model_class
     model_class.drop()

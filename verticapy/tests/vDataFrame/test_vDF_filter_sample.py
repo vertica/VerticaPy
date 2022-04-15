@@ -11,11 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame
-from verticapy import drop
+# Pytest
+import pytest
 
-from verticapy import set_option
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.datasets import load_smart_meters, load_titanic, load_amazon
 
 set_option("print_info", False)
 set_option("random_state", 0)
@@ -23,32 +24,23 @@ set_option("random_state", 0)
 
 @pytest.fixture(scope="module")
 def smart_meters_vd():
-    from verticapy.datasets import load_smart_meters
-
     smart_meters = load_smart_meters()
     yield smart_meters
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.smart_meters")
+    drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 class TestvDFFilterSample:

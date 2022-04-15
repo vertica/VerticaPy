@@ -11,28 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.tsa import VAR
+# Pytest
+import pytest
+
+# Other Modules
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
 from verticapy import (
     drop,
     set_option,
-    vertica_conn,
     create_verticapy_schema,
     current_cursor,
 )
-import matplotlib.pyplot as plt
+from verticapy.datasets import load_commodities
+from verticapy.learn.tsa import VAR
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def commodities_vd():
-    from verticapy.datasets import load_commodities
-
     commodities = load_commodities()
     yield commodities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.commodities",)
+    drop(name="public.commodities",)
 
 
 @pytest.fixture(scope="module")

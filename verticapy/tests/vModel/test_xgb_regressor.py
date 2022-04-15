@@ -11,85 +11,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import XGBoostRegressor
+# Pytest
+import pytest
+
+# Standard Python Modules
+import os
+
+# Other Modules
+import matplotlib.pyplot as plt
+import xgboost as xgb
+
+# VerticaPy
+from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    vertica_conn,
     xgb_prior,
     current_cursor,
+    dataset_reg,
 )
-from verticapy.tests.conftest import get_version
-import matplotlib.pyplot as plt
-import numpy as np
+from verticapy.datasets import load_winequality, load_titanic
+from verticapy.learn.ensemble import XGBoostRegressor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality")
+    drop(name="public.winequality")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def xgbr_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.xgbr_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.xgbr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    xgbr_data = vDataFrame(input_relation="public.xgbr_data",)
+    xgbr_data = dataset_reg(table_name="xgbr_data", schema="public")
     yield xgbr_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.xgbr_data",)
+    drop(name="public.xgbr_data", method="table")
 
 
 @pytest.fixture(scope="module")
@@ -501,8 +467,6 @@ class TestXGBR:
         assert model.to_graphviz() == result.source.strip()
 
     def test_to_json(self, titanic_vd):
-        import xgboost as xgb
-
         titanic = titanic_vd.copy()
         titanic.fillna()
         path = "verticapy_test_xgbr.json"

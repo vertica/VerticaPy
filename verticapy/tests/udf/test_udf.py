@@ -11,8 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, math, os, verticapy
-from verticapy.udf import *
+# Pytest
+import pytest
+
+# Standard Python Modules
+import math, os
+
+# VerticaPy
+import verticapy
+from verticapy.udf import create_lib_udf
 
 
 def normalize_titanic(age, fare):

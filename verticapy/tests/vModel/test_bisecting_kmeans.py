@@ -11,18 +11,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.cluster import BisectingKMeans
-from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    current_cursor,
+    dataset_num,
+)
+from verticapy.datasets import load_winequality
+from verticapy.learn.cluster import BisectingKMeans
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
     drop(name="public.winequality",)
@@ -30,26 +41,9 @@ def winequality_vd():
 
 @pytest.fixture(scope="module")
 def bsk_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.bsk_data")
-    current_cursor().execute(
-        "CREATE TABLE IF NOT EXISTS public.bsk_data(Id INT, col1 FLOAT, col2 FLOAT, col3 FLOAT, col4 FLOAT)"
-    )
-    current_cursor().execute("INSERT INTO bsk_data VALUES (1, 7.2, 3.6, 6.1, 2.5)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (2, 7.7, 2.8, 6.7, 2.0)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (3, 7.7, 3.0, 6.1, 2.3)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (4, 7.9, 3.8, 6.4, 2.0)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (5, 4.4, 2.9, 1.4, 0.2)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (6, 4.6, 3.6, 1.0, 0.2)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (7, 4.7, 3.2, 1.6, 0.2)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (8, 6.5, 2.8, 4.6, 1.5)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (9, 6.8, 2.8, 4.8, 1.4)")
-    current_cursor().execute("INSERT INTO bsk_data VALUES (10, 7.0, 3.2, 4.7, 1.4)")
-    current_cursor().execute("COMMIT")
-
-    bsk_data = vDataFrame(input_relation="public.bsk_data",)
+    bsk_data = dataset_num(table_name="bsk_data", schema="public")
     yield bsk_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.bsk_data",)
+    drop(name="public.bsk_data", method="table")
 
 
 @pytest.fixture(scope="module")
@@ -168,18 +162,17 @@ class TestBisectingKMeans:
         model_test_kmeanspp.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
 
         assert (
-            model_test_kmeanspp.get_attr("call_string")["call_string"][0]
-            == "bisecting_kmeans('bsk_kmeanspp_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='kmeanspp', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+            "kmeans_center_init_method='kmeanspp'"
+            in model_test_kmeanspp.get_attr("call_string")["call_string"][0]
         )
         model_test_kmeanspp.drop()
 
         model_test_pseudo = BisectingKMeans("bsk_pseudo_test", init="pseudo")
         model_test_pseudo.drop()
         model_test_pseudo.fit("public.bsk_data", ["col1", "col2", "col3", "col4"])
-
         assert (
-            model_test_pseudo.get_attr("call_string")["call_string"][0]
-            == "bisecting_kmeans('bsk_pseudo_test', 'public.bsk_data', '\"col1\", \"col2\", \"col3\", \"col4\"', 8\nUSING PARAMETERS bisection_iterations=1, split_method='SUM_SQUARES', min_divisible_cluster_size=2, distance_method='euclidean', kmeans_center_init_method='pseudo', kmeans_epsilon=0.0001, kmeans_max_iterations=300, key_columns=''\"col1\", \"col2\", \"col3\", \"col4\"'')"
+            "kmeans_center_init_method='pseudo'"
+            in model_test_pseudo.get_attr("call_string")["call_string"][0]
         )
         model_test_pseudo.drop()
 

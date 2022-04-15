@@ -11,41 +11,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import drop, drop_if_exists, set_option, str_sql
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop, drop_if_exists, set_option
+from verticapy.datasets import load_titanic, load_airline_passengers, load_amazon
 import verticapy.stats as st
+from verticapy.learn.linear_model import LinearRegression
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def airline_vd():
-    from verticapy.datasets import load_airline_passengers
-
     airline = load_airline_passengers()
     yield airline
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.airline_passengers")
+    drop(name="public.airline_passengers")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 class TestStats:
@@ -71,9 +67,6 @@ class TestStats:
         airline_copy["passengers_bias"] = (
             airline_copy["passengers"] ** 2 - 50 * st.random()
         )
-
-        from verticapy.learn.linear_model import LinearRegression
-
         drop_if_exists("lin_cochrane_orcutt_model_test", method="model")
         model = LinearRegression("lin_cochrane_orcutt_model_test")
         model.fit(airline_copy, ["passengers_bias"], "passengers")

@@ -373,15 +373,25 @@ Main Class for Vertica Model
         ):
             relation = self.input_relation
             version(condition=[8, 1, 1])
-            query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
-            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
-            query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
-                ", ".join(self.X)
+            query = """SELECT 
+                            predictor, 
+                            ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
+                            sign 
+                        FROM (SELECT 
+                                stat.predictor AS predictor, 
+                                ABS(coefficient * (max - min))::float AS importance, 
+                                SIGN(coefficient)::int AS sign 
+                              FROM (SELECT 
+                                        LOWER("column") AS predictor, 
+                                        min, 
+                                        max 
+                                    FROM (SELECT 
+                                            SUMMARIZE_NUMCOL({0}) OVER() 
+                                          FROM {1}) VERTICAPY_SUBTABLE) stat 
+                                          NATURAL JOIN ({2}) coeff) importance_t 
+                                          ORDER BY 2 DESC;""".format(
+                ", ".join(self.X), relation, self.coef_.to_sql()
             )
-            query += " FROM {}) VERTICAPY_SUBTABLE) stat NATURAL JOIN ({})".format(
-                relation, self.coef_.to_sql()
-            )
-            query += " coeff) importance_t ORDER BY 2 DESC;"
             print_legend = True
         else:
             raise FunctionError(
@@ -438,7 +448,7 @@ Main Class for Vertica Model
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[8, 1, 1])
             result = to_tablesample(
-                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
+                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{0}'{1})".format(
                     name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 title="Getting Model Attributes.",
@@ -458,7 +468,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "CountVectorizer":
             if attr_name == "lowercase":
                 return self.parameters["lowercase"]
@@ -493,7 +503,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "NearestCentroid":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -507,7 +517,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KNeighborsClassifier":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -521,7 +531,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KNeighborsRegressor":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -531,7 +541,7 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["n_neighbors", "p"],},)
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "LocalOutlierFactor":
             if attr_name == "n_errors":
                 return self.n_errors_
@@ -541,7 +551,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "SARIMAX":
             if attr_name == "coefficients":
                 return self.coef_
@@ -555,7 +565,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "VAR":
             if attr_name == "coefficients":
                 return self.coef_
@@ -563,7 +573,7 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["coefficients"]})
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KernelDensity":
             if attr_name == "map":
                 return self.map_
@@ -571,10 +581,10 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["map"]})
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         else:
             raise FunctionError(
-                "Method 'get_attr' for '{}' doesn't exist.".format(self.type)
+                "Method 'get_attr' for '{0}' doesn't exist.".format(self.type)
             )
 
     # ---#
@@ -758,7 +768,9 @@ Main Class for Vertica Model
                     "cgd",
                 ], ParameterError(
                     "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | "
-                    "BFGS | CGD), found '{0}'.".format(parameters["solver"])
+                    "BFGS | CGD), found '{0}'.".format(
+                        parameters["solver"]
+                    )
                 )
                 model_parameters["solver"] = parameters["solver"]
             elif "solver" not in self.parameters:
@@ -776,7 +788,8 @@ Main Class for Vertica Model
                     "l2",
                     "enet",
                 ], ParameterError(
-                    "Incorrect parameter 'penalty'.\nThe regularization must be in (None | L1 | L2 | ENet), found '{}'.".format(
+                    "Incorrect parameter 'penalty'.\nThe regularization must be in "
+                    "(None | L1 | L2 | ENet), found '{0}'.".format(
                         parameters["penalty"]
                     )
                 )
@@ -2483,6 +2496,8 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
+        self.X = [str_column(column) for column in X]
+        self.y = str_column(y)
         if (self.type == "NaiveBayes") and (
             self.parameters["nbtype"]
             in ("bernoulli", "categorical", "multinomial", "gaussian")
@@ -2501,15 +2516,30 @@ class Supervised(vModel):
                 input_relation = vdf_from_relation(input_relation)
             input_relation.astype(new_types)
         does_model_exist(name=self.name, raise_error=True)
-        if isinstance(input_relation, vDataFrame):
-            self.input_relation = input_relation.__genSQL__()
+        id_column, id_column_name = "", gen_tmp_name(name="id_column")
+        if self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "XGBoostClassifier",
+            "XGBoostRegressor",
+        ) and isinstance(verticapy.options["random_state"], int):
+            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
+                ", ".join(X), id_column_name
+            )
+        tmp_view = False
+        if isinstance(input_relation, vDataFrame) or (id_column):
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation.__genSQL__()
+            else:
+                self.input_relation = input_relation
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
             executeSQL(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
+                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                    relation, id_column, self.input_relation
                 ),
-                print_time_sql=False,
+                title="Creating a temporary view to fit the model.",
             )
         else:
             self.input_relation = input_relation
@@ -2520,8 +2550,6 @@ class Supervised(vModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
         parameters = vertica_param_dict(self)
         if (
             "regularization" in parameters
@@ -2547,26 +2575,20 @@ class Supervised(vModel):
         if self.type in (
             "RandomForestClassifier",
             "RandomForestRegressor",
-            "XGBoostRegressor",
+            "XGBoostClassifier",
             "XGBoostRegressor",
         ) and isinstance(verticapy.options["random_state"], int):
             query += ", seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0]
-            )
-        if self.type == "BisectingKMeans" and isinstance(
-            verticapy.options["random_state"], int
-        ):
-            query += ", kmeans_seed={}, id_column='{}'".format(
-                verticapy.options["random_state"], X[0]
+                verticapy.options["random_state"], id_column_name
             )
         query += ")"
         try:
             executeSQL(query, title="Fitting the model.")
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
         except:
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
             raise
         if self.type in (
             "LinearSVC",
@@ -2670,7 +2692,10 @@ class Tree:
         check_types([("tree_id", tree_id, [int, float])])
         version(condition=[9, 1, 1])
         name = self.tree_name if self.type == "KernelDensity" else self.name
-        query = "SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular')) x ORDER BY node_id;".format(
+        query = """SELECT * FROM (SELECT READ_TREE ( USING PARAMETERS 
+                                        model_name = '{0}', 
+                                        tree_id = {1}, 
+                                        format = 'tabular')) x ORDER BY node_id;""".format(
             name, tree_id
         )
         result = to_tablesample(query=query, title="Reading Tree.")
@@ -3097,7 +3122,9 @@ class BinaryClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
+                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
+                "|markedness|critical_success_index|aic|bic"
             )
 
 
@@ -3718,7 +3745,9 @@ class MulticlassClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index|aic|bic"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
+                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
+                "|markedness|critical_success_index|aic|bic"
             )
 
 
@@ -4096,9 +4125,22 @@ class Unsupervised(vModel):
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
         does_model_exist(name=self.name, raise_error=True)
+        id_column, id_column_name = "", gen_tmp_name(name="id_column")
+        if self.type in ("BisectingKMeans",) and isinstance(
+            verticapy.options["random_state"], int
+        ):
+            id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
+                ", ".join(X), id_column_name
+            )
         if isinstance(input_relation, str) and self.type == "MCA":
             input_relation = vdf_from_relation(input_relation)
-        if isinstance(input_relation, vDataFrame):
+        tmp_view = False
+        if isinstance(input_relation, vDataFrame) or (id_column):
+            tmp_view = True
+            if isinstance(input_relation, vDataFrame):
+                self.input_relation = input_relation.__genSQL__()
+            else:
+                self.input_relation = input_relation
             if self.type == "MCA":
                 result = input_relation.sum(columns=X)
                 if isinstance(result, (int, float)):
@@ -4107,16 +4149,17 @@ class Unsupervised(vModel):
                     result = result["sum"]
                 result = sum(result) + (input_relation.shape()[0] - 1) * len(result)
                 assert abs(result) < 0.01, ConversionError(
-                    "MCA can only work on a transformed complete disjunctive table. You should transform your relation first.\nTips: Use the vDataFrame.cdt method to transform the relation."
+                    "MCA can only work on a transformed complete disjunctive table. "
+                    "You should transform your relation first.\nTips: Use the "
+                    "vDataFrame.cdt method to transform the relation."
                 )
-            self.input_relation = input_relation.__genSQL__()
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
             drop_if_exists(relation, method="view")
             executeSQL(
-                "CREATE VIEW {} AS SELECT * FROM {}".format(
-                    relation, input_relation.__genSQL__()
+                "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
+                    relation, id_column, self.input_relation
                 ),
-                print_time_sql=False,
+                title="Creating a temporary view to fit the model.",
             )
             if not (X):
                 X = input_relation.numcol()
@@ -4181,14 +4224,20 @@ class Unsupervised(vModel):
         query += ", ".join(
             ["{} = {}".format(elem, parameters[elem]) for elem in parameters]
         )
+        if self.type == "BisectingKMeans" and isinstance(
+            verticapy.options["random_state"], int
+        ):
+            query += ", kmeans_seed={}, id_column='{}'".format(
+                verticapy.options["random_state"], id_column_name
+            )
         query += ")"
         try:
             executeSQL(query, "Fitting the model.")
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
         except:
-            if isinstance(input_relation, vDataFrame):
-                drop_if_exists(relation, method="view")
+            if tmp_view:
+                drop(relation, method="view")
             if (
                 "init_method" in parameters
                 and not (isinstance(parameters["init_method"], str))
@@ -4257,15 +4306,31 @@ class Unsupervised(vModel):
         elif self.type == "OneHotEncoder":
             try:
                 self.param_ = to_tablesample(
-                    query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
-                        self.name, self.name
+                    query="""SELECT 
+                                category_name, 
+                                category_level::varchar, 
+                                category_level_index 
+                             FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                                model_name = '{0}', 
+                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
+                             UNION ALL 
+                             SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                        model_name = '{0}', 
+                                        attr_name = 'varchar_categories')""".format(
+                        self.name,
                     ),
                     title="Getting Model Attributes.",
                 )
             except:
                 try:
                     self.param_ = to_tablesample(
-                        query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE".format(
+                        query="""SELECT 
+                                    category_name, 
+                                    category_level::varchar, 
+                                    category_level_index 
+                                 FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
+                                                model_name = '{0}', 
+                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE""".format(
                             self.name
                         ),
                         title="Getting Model Attributes.",

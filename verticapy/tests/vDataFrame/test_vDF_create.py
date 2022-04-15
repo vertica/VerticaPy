@@ -11,20 +11,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
+# Standard Python Modules
+import pytest
+
+# VerticaPy
 from verticapy import vDataFrame, drop, set_option
+from verticapy.datasets import load_titanic
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 class TestvDFCreate:
