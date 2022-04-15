@@ -153,19 +153,18 @@ class TestvDFUtilities:
         assert titanic_vd[titanic_vd["fare"] / 4 - 2 < 500].shape()[0] == 1233
 
     def test_vDF_to_csv(self, titanic_vd):
-        session_id = get_session()
         titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
             0:2
-        ].to_csv("verticapy_test_{}".format(session_id))
+        ].to_csv("verticapy_test_to_csv.csv")
         try:
-            file = open("verticapy_test_{}.csv".format(session_id), "r")
+            file = open("verticapy_test_to_csv.csv", "r")
             result = file.read()
             assert result == "age,fare\n80.000,30.00000\n76.000,78.85000"
         except:
-            os.remove("verticapy_test_{}.csv".format(session_id))
+            os.remove("verticapy_test_to_csv.csv")
             file.close()
             raise
-        os.remove("verticapy_test_{}.csv".format(session_id))
+        os.remove("verticapy_test_to_csv.csv")
         file.close()
         # TODO - test with multiple CSV files.
 
@@ -271,20 +270,19 @@ class TestvDFUtilities:
         session_id = get_session()
         titanic_vd.copy().select(["age", "fare"]).sort({"age": "desc", "fare": "desc"})[
             0:2
-        ].to_json("verticapy_test_{}".format(session_id))
+        ].to_json("verticapy_test_to_json.json")
         try:
-            file = open("verticapy_test_{}.json".format(session_id), "r")
+            file = open("verticapy_test_to_json.json", "r")
             result = file.read()
-            print(result)
             assert (
                 result
                 == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
             )
         except:
-            os.remove("verticapy_test_{}.json".format(session_id))
+            os.remove("verticapy_test_to_json.json")
             file.close()
             raise
-        os.remove("verticapy_test_{}.json".format(session_id))
+        os.remove("verticapy_test_to_json.json")
         file.close()
         # TODO - test with multiple JSON files.
 

@@ -55,3 +55,36 @@ class TestSQL:
         assert result["predict"][0] == pytest.approx(0.395335892040411)
         result = sql("DROP MODEL IF EXISTS model_test; SELECT 1 AS col;;", "")
         assert result["col"][0] == 1
+        # Export to JSON
+        result = sql("-o verticapy_test_sql.json", 
+            "SELECT age, fare FROM titanic ORDER BY age DESC, fare DESC LIMIT 2;")
+        try:
+            file = open("verticapy_test_sql.json", "r")
+            result = file.read()
+            print(result)
+            assert (
+                result
+                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+            )
+        except:
+            os.remove("verticapy_test_sql.json")
+            file.close()
+            raise
+        os.remove("verticapy_test_sql.json")
+        file.close()
+        # Export to CSV
+        result = sql("-o verticapy_test_sql.csv", 
+            "SELECT age, fare FROM titanic ORDER BY age DESC, fare DESC LIMIT 2;")
+        try:
+            file = open("verticapy_test_sql.csv", "r")
+            result = file.read()
+            assert (
+                result
+                == "age,fare\n80.000,30.00000\n76.000,78.85000"
+            )
+        except:
+            os.remove("verticapy_test_sql.csv")
+            file.close()
+            raise
+        os.remove("verticapy_test_sql.csv")
+        file.close()

@@ -9660,8 +9660,7 @@ vColumns : vColumn
     # ---#
     def to_csv(
         self,
-        name: str,
-        path: str = "",
+        path: str,
         sep: str = ",",
         na_rep: str = "",
         quotechar: str = '"',
@@ -9677,11 +9676,9 @@ vColumns : vColumn
 
     Parameters
     ----------
-    name: str
-        Name of the CSV file. Be careful: if a CSV file with the same name exists, 
-        it will over-write it.
-    path: str, optional
-        Absolute path where the CSV file will be created.
+    path: str
+        File/Folder system path. Be careful: if a CSV file with the same name 
+        exists, it will over-write it.
     sep: str, optional
         Column separator.
     na_rep: str, optional
@@ -9721,7 +9718,6 @@ vColumns : vColumn
             usecols = [usecols]
         check_types(
             [
-                ("name", name, [str]),
                 ("path", path, [str]),
                 ("sep", sep, [str]),
                 ("na_rep", na_rep, [str]),
@@ -9737,7 +9733,10 @@ vColumns : vColumn
             "Parameter 'n_files' must be greater or equal to 1."
         )
         assert (n_files == 1) or order_by, ParameterError(
-            "If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed."
+            "If you want to store the vDataFrame in many CSV files, "
+            "you have to sort your data by using at least one column. "
+            "If the column hasn't unique values, the final result can "
+            "not be guaranteed."
         )
         file_name = "{}{}{}".format(
             path, "/" if (len(path) > 1 and path[-1] != "/") else "", name
@@ -9760,9 +9759,9 @@ vColumns : vColumn
             os.makedirs(file_name)
         while current_nb_rows_written < total:
             if n_files == 1:
-                file = open(file_name + ".csv", "w+")
+                file = open(path, "w+")
             else:
-                file = open(file_name + "/{}.csv".format(file_id), "w+")
+                file = open("{0}/{1}.csv".format(path, file_id), "w+")
             if new_header:
                 file.write(sep.join(new_header))
             elif header:
@@ -9954,13 +9953,19 @@ vColumns : vColumn
             from shapely import wkt
         except:
             raise ImportError(
-                "The geopandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install geopandas' in your terminal to install the module."
+                "The geopandas module doesn't seem to be installed in your "
+                "environment.\nTo be able to use this method, you'll have to "
+                "install it.\n[Tips] Run: 'pip3 install geopandas' in your "
+                "terminal to install the module."
             )
         try:
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
+                "The pandas module doesn't seem to be installed in your "
+                "environment.\nTo be able to use this method, you'll have to "
+                "install it.\n[Tips] Run: 'pip3 install pandas' in your "
+                "terminal to install the module."
             )
         columns = self.get_columns(exclude_columns=[geometry])
         columns = ", ".join(columns)
@@ -9985,23 +9990,21 @@ vColumns : vColumn
     # ---#
     def to_json(
         self,
-        name: str,
-        path: str = "",
+        path: str,
         usecols: list = [],
         order_by: Union[list, dict] = [],
         n_files: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a JSON file or folder of JSON files of the current vDataFrame relation.
+    Creates a JSON file or folder of JSON files of the current vDataFrame 
+    relation.
 
     Parameters
     ----------
-    name: str
-        Name of the JSON file. Be careful: if a JSON file with the same name exists, 
-        it will over-write it.
-    path: str, optional
-        Absolute path where the JSON file will be created.
+    path: str
+        File/Folder system path. Be careful: if a JSON file with the same name 
+        exists, it will over-write it.
     usecols: list, optional
         vColumns to select from the final vDataFrame relation. If empty, all
         vColumns will be selected.
@@ -10031,7 +10034,6 @@ vColumns : vColumn
             usecols = [usecols]
         check_types(
             [
-                ("name", name, [str]),
                 ("path", path, [str]),
                 ("usecols", usecols, [list]),
                 ("order_by", order_by, [list, dict]),
@@ -10042,10 +10044,10 @@ vColumns : vColumn
             "Parameter 'n_files' must be greater or equal to 1."
         )
         assert (n_files == 1) or order_by, ParameterError(
-            "If you want to store the vDataFrame in many CSV files, you have to sort your data by using at least one column. If the column hasn't unique values, the final result can not be guaranteed."
-        )
-        file_name = "{}{}{}".format(
-            path, "/" if (len(path) > 1 and path[-1] != "/") else "", name
+            "If you want to store the vDataFrame in many JSON files, you "
+            "have to sort your data by using at least one column. If "
+            "the column hasn't unique values, the final result can not "
+            "be guaranteed."
         )
         columns = (
             self.get_columns()
@@ -10062,9 +10064,9 @@ vColumns : vColumn
             os.makedirs(file_name)
         while current_nb_rows_written < total:
             if n_files == 1:
-                file = open(file_name + ".json", "w+")
+                file = open(path, "w+")
             else:
-                file = open(file_name + "/{}.json".format(file_id), "w+")
+                file = open("{0}/{1}.json".format(path, file_id), "w+")
             file.write("[\n")
             result = executeSQL(
                 "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(

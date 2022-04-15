@@ -768,9 +768,7 @@ Main Class for Vertica Model
                     "cgd",
                 ], ParameterError(
                     "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | "
-                    "BFGS | CGD), found '{0}'.".format(
-                        parameters["solver"]
-                    )
+                    "BFGS | CGD), found '{0}'.".format(parameters["solver"])
                 )
                 model_parameters["solver"] = parameters["solver"]
             elif "solver" not in self.parameters:
