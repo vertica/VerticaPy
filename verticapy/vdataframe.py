@@ -1723,23 +1723,21 @@ vColumns : vColumn
             topk_percent   : kth most occurent element density
             unique         : cardinality (count distinct)
             var            : variance
-                Other aggregations could work if it is part of 
-                the DB version you are using.
+                Other aggregations will work if supported by your version of 
+                the database.
     columns: list, optional
-        List of the vColumns names. If empty, all vColumns 
-        or only numerical vColumns will be used depending on the
-        aggregations.
+        List of the vColumn's names. If empty, depending on the aggregations,
+        all or only numerical vColumns will be used.
     ncols_block: int, optional
-        Number of columns used per query. For query performance, it is better to
-        pick up a balanced number. A small number will lead to the generation of
-        multiple queries. A higher number will lead to the generation of one big
-        SQL query.
+        The number of columns used per query. Setting this parameter divides
+        what would otherwise be one large query into many smaller queries called
+        "blocks." The size of each block is determined by the ncols_block parmeter.
     processes: int, optional
-        Number of child processes to use. Each one will create a new connection
-        and send a query for each block of columns. For query performance, it is 
-        better to pick up a balanced number. Using this parameter can make the 
-        computation more performant but it can also lead to very big ressource
-        consumptions.
+        Number of child processes to create. Setting this with the ncols_block parameter
+        lets you parallelize a single query into many smaller queries, where each child 
+        process creates its own connection to the database and sends one query. This can 
+        improve query performance, but consumes more resources. If processes is set to 1, 
+        the queries are sent iteratively from a single process.
 
     Returns
     -------
@@ -1839,10 +1837,10 @@ vColumns : vColumn
                         assert n >= 1
                     except:
                         raise FunctionError(
-                            f"The aggregation '{fun}' doesn't exist. If you want to"
-                            " compute the frequence of the nth most occurent element"
-                            " please write 'topn_percent' with n > 0. Example: "
-                            "top2_percent for the frequency of the second most occurent "
+                            f"The aggregation '{fun}' doesn't exist. To"
+                            " compute the frequency of the n-th most occurent element,"
+                            " use 'topk_percent' with k > 0. For example: "
+                            "top2_percent computes the frequency of the second most occurent "
                             "element."
                         )
                     try:
@@ -1860,10 +1858,10 @@ vColumns : vColumn
                         assert n >= 1
                     except:
                         raise FunctionError(
-                            f"The aggregation '{fun}' doesn't exist. If you want to"
-                            " compute the nth most occurent element please write "
-                            "'topn' with n > 0. Example: top2 for the second most "
-                            "occurent element."
+                            f"The aggregation '{fun}' doesn't exist. To"
+                            " compute the n-th most occurent element, use "
+                            "'topk' with n > 0. For example: "
+                            "top2 computes the second most occurent element."
                         )
                     expr = format_magic(self[column].mode(n=n))
                 elif fun.lower() == "mode":
@@ -2184,8 +2182,8 @@ vColumns : vColumn
     function on one or two specific vColumns.
 
     \u26A0 Warning : Some analytical functions can make the vDataFrame 
-                     structure heavier. It is recommended to always check 
-                     the current structure using the 'current_relation' 
+                     structure more resource intensive. It is best to check 
+                     the structure of the vDataFrame using the 'current_relation' 
                      method and to save it using the 'to_db' method with 
                      the parameters 'inplace = True' and 
                      'relation_type = table'
@@ -4784,16 +4782,15 @@ vColumns : vColumn
     unique: bool, optional
         If set to True, the cardinality of each element will be computed.
     ncols_block: int, optional
-        Number of columns used per query. For query performance, it is better to
-        pick up a balanced number. A small number will lead to the generation of
-        multiple queries. A higher number will lead to the generation of one big
-        SQL query.
+        The number of columns used per query. Setting this parameter divides
+        what would otherwise be one large query into many smaller queries called
+        "blocks." The size of each block is determined by the ncols_block parmeter.
     processes: int, optional
-        Number of child processes to use. Each one will create a new connection
-        and send a query for each block of columns. For query performance, it is 
-        better to pick up a balanced number. Using this parameter can make the 
-        computation more performant but it can also lead to very big ressource
-        consumptions.
+        Number of child processes to create. Setting this with the ncols_block parameter
+        lets you parallelize a single query into many smaller queries, where each child 
+        process creates its own connection to the database and sends one query. This can 
+        improve query performance, but consumes more resources. If processes is set to 1, 
+        the queries are sent iteratively from a single process.
 
     Returns
     -------
