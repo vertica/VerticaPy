@@ -373,15 +373,25 @@ Main Class for Vertica Model
         ):
             relation = self.input_relation
             version(condition=[8, 1, 1])
-            query = "SELECT predictor, ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, sign FROM "
-            query += "(SELECT stat.predictor AS predictor, ABS(coefficient * (max - min))::float AS importance, SIGN(coefficient)::int AS sign FROM "
-            query += '(SELECT LOWER("column") AS predictor, min, max FROM (SELECT SUMMARIZE_NUMCOL({}) OVER() '.format(
-                ", ".join(self.X)
+            query = """SELECT 
+                            predictor, 
+                            ROUND(100 * importance / SUM(importance) OVER(), 2) AS importance, 
+                            sign 
+                        FROM (SELECT 
+                                stat.predictor AS predictor, 
+                                ABS(coefficient * (max - min))::float AS importance, 
+                                SIGN(coefficient)::int AS sign 
+                              FROM (SELECT 
+                                        LOWER("column") AS predictor, 
+                                        min, 
+                                        max 
+                                    FROM (SELECT 
+                                            SUMMARIZE_NUMCOL({0}) OVER() 
+                                          FROM {1}) VERTICAPY_SUBTABLE) stat 
+                                          NATURAL JOIN ({2}) coeff) importance_t 
+                                          ORDER BY 2 DESC;""".format(
+                ", ".join(self.X), relation, self.coef_.to_sql()
             )
-            query += " FROM {}) VERTICAPY_SUBTABLE) stat NATURAL JOIN ({})".format(
-                relation, self.coef_.to_sql()
-            )
-            query += " coeff) importance_t ORDER BY 2 DESC;"
             print_legend = True
         else:
             raise FunctionError(
@@ -438,7 +448,7 @@ Main Class for Vertica Model
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[8, 1, 1])
             result = to_tablesample(
-                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}'{})".format(
+                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{0}'{1})".format(
                     name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 title="Getting Model Attributes.",
@@ -458,7 +468,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "CountVectorizer":
             if attr_name == "lowercase":
                 return self.parameters["lowercase"]
@@ -493,7 +503,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "NearestCentroid":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -507,7 +517,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KNeighborsClassifier":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -521,7 +531,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KNeighborsRegressor":
             if attr_name == "p":
                 return self.parameters["p"]
@@ -531,7 +541,7 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["n_neighbors", "p"],},)
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "LocalOutlierFactor":
             if attr_name == "n_errors":
                 return self.n_errors_
@@ -541,7 +551,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "SARIMAX":
             if attr_name == "coefficients":
                 return self.coef_
@@ -555,7 +565,7 @@ Main Class for Vertica Model
                 )
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "VAR":
             if attr_name == "coefficients":
                 return self.coef_
@@ -563,7 +573,7 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["coefficients"]})
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         elif self.type == "KernelDensity":
             if attr_name == "map":
                 return self.map_
@@ -571,10 +581,10 @@ Main Class for Vertica Model
                 result = tablesample(values={"attr_name": ["map"]})
                 return result
             else:
-                raise ParameterError("Attribute '{}' doesn't exist.".format(attr_name))
+                raise ParameterError(f"Attribute '{attr_name}' doesn't exist.")
         else:
             raise FunctionError(
-                "Method 'get_attr' for '{}' doesn't exist.".format(self.type)
+                "Method 'get_attr' for '{0}' doesn't exist.".format(self.type)
             )
 
     # ---#
@@ -757,7 +767,8 @@ Main Class for Vertica Model
                     "bfgs",
                     "cgd",
                 ], ParameterError(
-                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | BFGS | CGD), found '{}'.".format(
+                    "Incorrect parameter 'solver'.\nThe optimizer must be in (Newton | "
+                    "BFGS | CGD), found '{0}'.".format(
                         parameters["solver"]
                     )
                 )
@@ -777,7 +788,8 @@ Main Class for Vertica Model
                     "l2",
                     "enet",
                 ], ParameterError(
-                    "Incorrect parameter 'penalty'.\nThe regularization must be in (None | L1 | L2 | ENet), found '{}'.".format(
+                    "Incorrect parameter 'penalty'.\nThe regularization must be in "
+                    "(None | L1 | L2 | ENet), found '{0}'.".format(
                         parameters["penalty"]
                     )
                 )
