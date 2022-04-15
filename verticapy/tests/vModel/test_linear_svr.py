@@ -11,28 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
-from verticapy.learn.svm import LinearSVR
-from verticapy import drop, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_winequality
+from verticapy.learn.svm import LinearSVR
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS lsvr_model_test")
     model_class = LinearSVR("lsvr_model_test",)
+    model_class.drop()
     model_class.fit(
         "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
     )

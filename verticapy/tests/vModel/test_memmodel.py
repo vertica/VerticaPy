@@ -11,19 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
-from verticapy.learn.memmodel import *
-from verticapy import drop, current_cursor
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop
+from verticapy.datasets import load_titanic
+from verticapy.learn.memmodel import memModel
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 class Test_memModel:

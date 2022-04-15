@@ -11,74 +11,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import XGBoostClassifier
+# Pytest
+import pytest
+
+# Standard Python Modules
+import os
+
+# Other Modules
+import matplotlib.pyplot as plt
+import xgboost as xgb
+
+# VerticaPy
+import verticapy
+from verticapy.tests.conftest import get_version
 from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    vertica_conn,
     xgb_prior,
     current_cursor,
+    dataset_cl,
 )
-from verticapy.tests.conftest import get_version
-import matplotlib.pyplot as plt
+from verticapy.datasets import load_titanic
+from verticapy.learn.ensemble import XGBoostClassifier
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def xgbc_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.xgbc_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.xgbc_data(Id INT, transportation VARCHAR, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (1, 'Bus', 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (2, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (3, 'Train', 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (4, 'Bus', 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (5, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (6, 'Train', 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (7, 'Train', 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (8, 'Car', 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (9, 'Car', 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO xgbc_data VALUES (10, 'Car', 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    xgbc_data = vDataFrame(input_relation="public.xgbc_data",)
+    xgbc_data = dataset_cl(table_name="xgbc_data", schema="public")
     yield xgbc_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.xgbc_data",)
+    drop(name="public.xgbc_data", method="table")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
@@ -568,8 +539,6 @@ class TestXGBC:
         os.remove(path)
 
     def test_to_json_multiclass(self, titanic_vd):
-        import xgboost as xgb
-
         titanic = titanic_vd.copy()
         titanic.fillna()
         path = "verticapy_test_xgbr.json"

@@ -11,76 +11,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import RandomForestRegressor
-from verticapy import vDataFrame, drop, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+    current_cursor,
+    dataset_reg,
+)
+from verticapy.datasets import load_titanic, load_winequality
+from verticapy.learn.ensemble import RandomForestRegressor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic",)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
 def rfr_data_vd():
-    current_cursor().execute("DROP TABLE IF EXISTS public.rfr_data")
-    current_cursor().execute(
-        'CREATE TABLE IF NOT EXISTS public.rfr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
-    )
-    current_cursor().execute(
-        "INSERT INTO rfr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
-    )
-    current_cursor().execute("COMMIT")
-
-    rfr_data = vDataFrame(input_relation="public.rfr_data",)
+    rfr_data = dataset_reg(table_name="rfr_data", schema="public")
     yield rfr_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.rfr_data",)
+    drop(name="public.rfr_data", method="table")
 
 
 @pytest.fixture(scope="module")

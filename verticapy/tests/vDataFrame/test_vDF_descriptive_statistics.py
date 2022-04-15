@@ -11,42 +11,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame, drop
+# Pytest
+import pytest
 
-from verticapy import set_option
+# VerticaPy
+from vertica_python.errors import QueryError
+from verticapy import drop, set_option
+from verticapy.datasets import load_titanic, load_market, load_amazon
+from verticapy.learn.linear_model import LogisticRegression
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def market_vd():
-    from verticapy.datasets import load_market
-
     market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market")
+    drop(name="public.market")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 class TestvDFDescriptiveStat:
@@ -399,8 +394,6 @@ class TestvDFDescriptiveStat:
         assert result["avg"][2] == pytest.approx(0.378444084)
 
         # there is an expected exception for categorical columns
-        from vertica_python.errors import QueryError
-
         with pytest.raises(QueryError) as exception_info:
             titanic_vd.avg(columns=["embarked"])
         # checking the error message
@@ -799,8 +792,6 @@ class TestvDFDescriptiveStat:
         # assert titanic_vd["fare"].quantile(x=0.1, exact=True) == pytest.approx(7.5892)
 
     def test_vDF_score(self, titanic_vd):
-        from verticapy.learn.linear_model import LogisticRegression
-
         model = LogisticRegression(
             name="public.LR_titanic",
             tol=1e-4,

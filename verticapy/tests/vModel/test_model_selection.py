@@ -11,8 +11,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, os, verticapy
-from verticapy import vDataFrame, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Other Modules
+import matplotlib.pyplot as plt
+
+# VerticaPy
+import verticapy
+from verticapy import vDataFrame, set_option, current_cursor
+from verticapy.datasets import load_titanic, load_amazon, load_winequality
 from verticapy.learn.model_selection import *
 from verticapy.learn.linear_model import *
 from verticapy.learn.naive_bayes import *
@@ -22,40 +30,29 @@ from verticapy.learn.svm import *
 from verticapy.learn.cluster import *
 from verticapy.learn.neighbors import *
 
-import matplotlib.pyplot as plt
-
 set_option("print_info", False)
 set_option("random_state", 0)
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality")
+    drop(name="public.winequality")
 
 
 class TestModelSelection:

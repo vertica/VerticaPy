@@ -11,22 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys, os, verticapy
-from verticapy.learn.linear_model import Ridge
-from verticapy import drop, set_option, vertica_conn, current_cursor
-from decimal import Decimal
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_winequality
+from verticapy.learn.linear_model import Ridge
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    drop(name="public.winequality",)
+    drop(name="public.winequality", method="table")
 
 
 @pytest.fixture(scope="module")

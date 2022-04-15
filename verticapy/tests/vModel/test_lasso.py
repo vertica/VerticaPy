@@ -11,18 +11,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, sys, verticapy, os, warnings
-from verticapy.learn.linear_model import Lasso
-from verticapy import drop, set_option, vertica_conn, current_cursor
+# Pytest
+import pytest
+
+# Standard Python Modules
+import warnings
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor
+from verticapy.datasets import load_winequality
+from verticapy.learn.linear_model import Lasso
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
     drop(name="public.winequality",)
@@ -30,8 +37,8 @@ def winequality_vd():
 
 @pytest.fixture(scope="module")
 def model(winequality_vd):
-    current_cursor().execute("DROP MODEL IF EXISTS lasso_model_test")
     model_class = Lasso("lasso_model_test",)
+    model_class.drop()
     model_class.fit(
         "public.winequality",
         ["total_sulfur_dioxide", "residual_sugar", "alcohol"],

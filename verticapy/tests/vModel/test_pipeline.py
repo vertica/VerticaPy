@@ -11,25 +11,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop, set_option, current_cursor, tablesample
+from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
-from verticapy.utilities import tablesample
-from verticapy import drop, set_option, vertica_conn, current_cursor
-import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def winequality_vd():
-    from verticapy.datasets import load_winequality
-
     winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality",)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")

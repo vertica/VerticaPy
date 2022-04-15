@@ -11,8 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, os, warnings, shutil
+# Pytest
+import pytest
+
+# Standard Python Modules
+import os, pickle
 from math import ceil, floor
+
+# Other Modules
+import pandas, geopandas
+
+# VerticaPy
 from verticapy import (
     vDataFrame,
     get_session,
@@ -23,48 +32,37 @@ from verticapy import (
     current_cursor,
 )
 import verticapy.stats as st
+from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
 def titanic_vd():
-    from verticapy.datasets import load_titanic
-
     titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic")
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
 def cities_vd():
-    from verticapy.datasets import load_cities
-
     cities = load_cities()
     yield cities
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.cities")
+    drop(name="public.cities")
 
 
 @pytest.fixture(scope="module")
 def amazon_vd():
-    from verticapy.datasets import load_amazon
-
     amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.amazon")
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
 def world_vd():
-    from verticapy.datasets import load_world
-
     world = load_world()
     yield world
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.world")
+    drop(name="public.world")
 
 
 class TestvDFUtilities:
@@ -176,7 +174,7 @@ class TestvDFUtilities:
         name = "parquet_test_{}".format(session_id)
         result = titanic_vd.to_parquet(name)
         assert result["Rows Exported"][0] == 1234
-        # shutil.rmtree(name) # trying to erase the folder
+        # TODO: erasing the folder
 
     def test_vDF_to_db(self, titanic_vd):
         drop_if_exists("verticapy_titanic_tmp")
@@ -199,13 +197,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop(
-                    "verticapy_titanic_tmp", method="view",
-                )
+            drop_if_exists("verticapy_titanic_tmp", method="view")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp", method="view")
+        drop("verticapy_titanic_tmp", method="view")
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(
@@ -225,11 +219,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(
@@ -249,11 +241,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(
@@ -273,11 +263,9 @@ class TestvDFUtilities:
             result = current_cursor().fetchone()
             assert result[0] == "verticapy_titanic_tmp"
         except:
-            with warnings.catch_warnings(record=True) as w:
-                drop("verticapy_titanic_tmp")
+            drop_if_exists("verticapy_titanic_tmp")
             raise
-        with warnings.catch_warnings(record=True) as w:
-            drop("verticapy_titanic_tmp")
+        drop("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session()
@@ -310,31 +298,24 @@ class TestvDFUtilities:
         assert result.shape == (20, 2)
 
     def test_vDF_to_pandas(self, titanic_vd):
-        import pandas
-
         result = titanic_vd.to_pandas()
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
 
     def test_vDF_to_pickle(self, titanic_vd):
         result = titanic_vd.select(["age", "survived"])[:20].to_pickle("save.p")
-        import pickle
-
         pickle.DEFAULT_PROTOCOL = 4
         result_tmp = pickle.load(open("save.p", "rb"))
         assert result_tmp.shape() == (20, 2)
         os.remove("save.p")
 
     def test_vDF_to_geopandas(self, world_vd):
-        import geopandas
-
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)
 
     def test_vDF_to_shp(self, cities_vd):
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop_if_exists(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
         vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)
@@ -344,8 +325,7 @@ class TestvDFUtilities:
             os.remove("/home/dbadmin/cities_test.dbf")
         except:
             pass
-        with warnings.catch_warnings(record=True) as w:
-            drop(name="public.cities_test")
+        drop(name="public.cities_test")
 
     def test_vDF_del_catalog(self, titanic_vd):
         result = titanic_vd.copy()
