@@ -1786,6 +1786,48 @@ The tablesample attributes are the same than the parameters.
     # Methods
     #
     # ---#
+    def append(self, tbs):
+        """
+        ---------------------------------------------------------------------------
+        Appends the input tablesample.
+
+        Parameters
+        ----------
+        tbs: tablesample, optional
+            Table Sample to append.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("tbs", tbs, [tablesample])])
+        n1, n2 = self.shape()[0], tbs.shape()[0]
+        assert n1 == n2, ParameterError(
+            "The tablesample to append must have the same number of columns."
+            f" Expected {n1}, Found {n2}."
+        )
+        cols1, cols2 = [col for col in self.values], [col for col in tbs.values]
+        for idx in range(n1):
+            self.values[cols1[idx]] += tbs.values[cols2[idx]]
+        return self
+
+    # ---#
+    def shape(self):
+        """
+    ---------------------------------------------------------------------------
+    Transposes the tablesample.
+
+    Returns
+    -------
+    tuple
+        (number of columns, number of rows)
+        """
+        cols = [col for col in self.values]
+        n, m = len(cols), len(self.values[cols[0]])
+        return (n, m)
+
+    # ---#
     def transpose(self):
         """
 	---------------------------------------------------------------------------
@@ -1866,7 +1908,8 @@ The tablesample attributes are the same than the parameters.
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it."
+                "The pandas module doesn't seem to be installed in your environment."
+                "\nTo be able to use this method, you'll have to install it."
             )
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])

@@ -56,6 +56,14 @@ import numpy as np
 
 pickle.DEFAULT_PROTOCOL = 4
 
+# Other modules
+import multiprocessing
+
+try:
+    from tqdm.auto import tqdm
+except:
+    pass
+
 # VerticaPy Modules
 import verticapy
 from verticapy.vcolumn import vColumn
@@ -670,12 +678,7 @@ vColumns : vColumn
                     title = "Covariance Matrix"
                     i0, step = 0, 1
                 n = len(columns)
-                if verticapy.options["tqdm"]:
-                    from tqdm.auto import tqdm
-
-                    loop = tqdm(range(i0, n))
-                else:
-                    loop = range(i0, n)
+                loop = tqdm(range(i0, n)) if verticapy.options["tqdm"] else range(i0, n)
                 try:
                     all_list = []
                     nb_precomputed = 0
@@ -1679,7 +1682,9 @@ vColumns : vColumn
             return result
 
     # ---#
-    def aggregate(self, func: list, columns: list = [], ncols_block: int = 20):
+    def aggregate(
+        self, func: list, columns: list = [], ncols_block: int = 20, processes: int = 1,
+    ):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using the input functions.
@@ -1729,6 +1734,12 @@ vColumns : vColumn
         pick up a balanced number. A small number will lead to the generation of
         multiple queries. A higher number will lead to the generation of one big
         SQL query.
+    processes: int, optional
+        Number of child processes to use. Each one will create a new connection
+        and send a query for each block of columns. For query performance, it is 
+        better to pick up a balanced number. Using this parameter can make the 
+        computation more performant but it can also lead to very big ressource
+        consumptions.
 
     Returns
     -------
@@ -1759,6 +1770,7 @@ vColumns : vColumn
                 ("func", func, [list]),
                 ("columns", columns, [list]),
                 ("ncols_block", ncols_block, [int]),
+                ("processes", processes, [int]),
             ]
         )
         columns_check(columns, self)
@@ -1778,27 +1790,32 @@ vColumns : vColumn
                     break
         else:
             columns = vdf_columns_names(columns, self)
-        if ncols_block < len(columns):
-            i = ncols_block
-            result = self.aggregate(
-                func=func, columns=columns[0:ncols_block], ncols_block=ncols_block
-            ).transpose()
+        if ncols_block < len(columns) and processes <= 1:
             if verticapy.options["tqdm"]:
-                from tqdm.auto import tqdm
-
-                loop = tqdm(range(ncols_block, len(columns), ncols_block))
+                loop = tqdm(range(0, len(columns), ncols_block))
             else:
-                loop = range(ncols_block, len(columns), ncols_block)
+                loop = range(0, len(columns), ncols_block)
             for i in loop:
-                columns_tmp = columns[i : i + ncols_block]
-                if columns_tmp:
-                    result_tmp = self.aggregate(
-                        func=func, columns=columns_tmp, ncols_block=ncols_block
-                    ).transpose()
-                    for elem in result_tmp.values:
-                        if elem != "index":
-                            result.values[elem] = result_tmp[elem]
-            return result.transpose()
+                res_tmp = self.aggregate(
+                    func=func,
+                    columns=columns[i : i + ncols_block],
+                    ncols_block=ncols_block,
+                )
+                if i == 0:
+                    result = res_tmp
+                else:
+                    result.append(res_tmp)
+            return result
+        elif ncols_block < len(columns):
+            parameters = []
+            for i in range(0, len(columns), ncols_block):
+                parameters += [(self, func, columns, ncols_block, i)]
+            a_pool = multiprocessing.Pool(processes)
+            L = a_pool.starmap(func=aggregate_parallel_block, iterable=parameters)
+            result = L[0]
+            for i in range(1, len(L)):
+                result.append(L[i])
+            return result
         agg = [[] for i in range(len(columns))]
         nb_precomputed = 0
         for idx, column in enumerate(columns):
@@ -1822,9 +1839,11 @@ vColumns : vColumn
                         assert n >= 1
                     except:
                         raise FunctionError(
-                            "The aggregation '{}' doesn't exist. If you want to compute the frequence of the nth most occurent element please write 'topn_percent' with n > 0. Example: top2_percent for the frequency of the second most occurent element.".format(
-                                fun
-                            )
+                            f"The aggregation '{fun}' doesn't exist. If you want to"
+                            " compute the frequence of the nth most occurent element"
+                            " please write 'topn_percent' with n > 0. Example: "
+                            "top2_percent for the frequency of the second most occurent "
+                            "element."
                         )
                     try:
                         expr = str(
@@ -1841,9 +1860,10 @@ vColumns : vColumn
                         assert n >= 1
                     except:
                         raise FunctionError(
-                            "The aggregation '{}' doesn't exist. If you want to compute the nth most occurent element please write 'topn' with n > 0. Example: top2 for the second most occurent element.".format(
-                                fun
-                            )
+                            f"The aggregation '{fun}' doesn't exist. If you want to"
+                            " compute the nth most occurent element please write "
+                            "'topn' with n > 0. Example: top2 for the second most "
+                            "occurent element."
                         )
                     expr = format_magic(self[column].mode(n=n))
                 elif fun.lower() == "mode":
@@ -2121,7 +2141,7 @@ vColumns : vColumn
 
     agg = aggregate
     # ---#
-    def all(self, columns: list):
+    def all(self, columns: list, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'bool_and'.
@@ -2130,6 +2150,9 @@ vColumns : vColumn
     ----------
     columns: list
         List of the vColumns names.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
+
 
     Returns
     -------
@@ -2141,7 +2164,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["bool_and"], columns=columns)
+        return self.aggregate(func=["bool_and"], columns=columns, **agg_kwds,)
 
     # ---#
     def analytic(
@@ -2157,13 +2180,14 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Adds a new vColumn to the vDataFrame by using an advanced analytical function 
-    on one or two specific vColumns.
+    Adds a new vColumn to the vDataFrame by using an advanced analytical 
+    function on one or two specific vColumns.
 
-    \u26A0 Warning : Some analytical functions can make the vDataFrame structure 
-                     heavier. It is recommended to always check the current structure 
-                     using the 'current_relation' method and to save it using the 
-                     'to_db' method with the parameters 'inplace = True' and 
+    \u26A0 Warning : Some analytical functions can make the vDataFrame 
+                     structure heavier. It is recommended to always check 
+                     the current structure using the 'current_relation' 
+                     method and to save it using the 'to_db' method with 
+                     the parameters 'inplace = True' and 
                      'relation_type = table'
 
     Parameters
@@ -2291,15 +2315,13 @@ vColumns : vColumn
         ) or ("%" in func):
             if order_by and not (verticapy.options["print_info"]):
                 print(
-                    "\u26A0 '{}' analytic method doesn't need an order by clause, it was ignored".format(
-                        func
-                    )
+                    f"\u26A0 '{func}' analytic method doesn't need an "
+                     "order by clause, it was ignored"
                 )
             elif not (columns):
                 raise MissingColumn(
-                    "The parameter 'column' must be a vDataFrame Column when using analytic method '{}'".format(
-                        func
-                    )
+                     "The parameter 'column' must be a vDataFrame Column "
+                    f"when using analytic method '{func}'"
                 )
             if func in ("skewness", "kurtosis", "aad", "mad", "jb"):
                 mean_name = "{}_mean_{}".format(
@@ -2835,7 +2857,7 @@ vColumns : vColumn
             )
 
     # ---#
-    def any(self, columns: list):
+    def any(self, columns: list, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'bool_or'.
@@ -2844,6 +2866,8 @@ vColumns : vColumn
     ----------
     columns: list
         List of the vColumns names.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -2855,7 +2879,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["bool_or"], columns=columns)
+        return self.aggregate(func=["bool_or"], columns=columns, **agg_kwds,)
 
     # ---#
     def append(
@@ -3139,7 +3163,7 @@ vColumns : vColumn
         return self
 
     # ---#
-    def avg(self, columns: list = []):
+    def avg(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'avg' (Average).
@@ -3149,6 +3173,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -3160,7 +3186,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["avg"], columns=columns)
+        return self.aggregate(func=["avg"], columns=columns, **agg_kwds,)
 
     mean = avg
     # ---#
@@ -4263,6 +4289,7 @@ vColumns : vColumn
         percent: bool = True,
         sort_result: bool = True,
         desc: bool = True,
+        **agg_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -4305,7 +4332,7 @@ vColumns : vColumn
         if not (columns):
             columns = self.get_columns()
         func = ["count", "percent"] if (percent) else ["count"]
-        result = self.aggregate(func=func, columns=columns)
+        result = self.aggregate(func=func, columns=columns, **agg_kwds,)
         if sort_result:
             sort = []
             for i in range(len(result.values["index"])):
@@ -4726,6 +4753,7 @@ vColumns : vColumn
         columns: list = [],
         unique: bool = True,
         ncols_block: int = 20,
+        processes: int = 1,
     ):
         """
     ---------------------------------------------------------------------------
@@ -4760,6 +4788,12 @@ vColumns : vColumn
         pick up a balanced number. A small number will lead to the generation of
         multiple queries. A higher number will lead to the generation of one big
         SQL query.
+    processes: int, optional
+        Number of child processes to use. Each one will create a new connection
+        and send a query for each block of columns. For query performance, it is 
+        better to pick up a balanced number. Using this parameter can make the 
+        computation more performant but it can also lead to very big ressource
+        consumptions.
 
     Returns
     -------
@@ -4793,6 +4827,7 @@ vColumns : vColumn
                 ("columns", columns, [list]),
                 ("unique", unique, [bool]),
                 ("ncols_block", ncols_block, [int]),
+                ("processes", processes, [int]),
             ]
         )
         if method == "auto":
@@ -4812,28 +4847,33 @@ vColumns : vColumn
             assert columns, EmptyParameter(
                 "No Numerical Columns found to run describe using parameter method = 'numerical'."
             )
-            if ncols_block < len(columns):
-                i = ncols_block
-                result = self.describe(
-                    method=method,
-                    columns=columns[0:ncols_block],
-                    unique=unique,
-                    ncols_block=ncols_block,
-                ).transpose()
-                while i < len(columns):
-                    columns_tmp = columns[i : i + ncols_block]
-                    if columns_tmp:
-                        result_tmp = self.describe(
-                            method=method,
-                            columns=columns_tmp,
-                            unique=unique,
-                            ncols_block=ncols_block,
-                        ).transpose()
-                        for elem in result_tmp.values:
-                            if elem != "index":
-                                result.values[elem] = result_tmp[elem]
-                    i += ncols_block
-                return result.transpose()
+            if ncols_block < len(columns) and processes <= 1:
+                if verticapy.options["tqdm"]:
+                    loop = tqdm(range(0, len(columns), ncols_block))
+                else:
+                    loop = range(0, len(columns), ncols_block)
+                for i in loop:
+                    res_tmp = self.describe(
+                        method=method,
+                        columns=columns[i : i + ncols_block],
+                        unique=unique,
+                        ncols_block=ncols_block,
+                    )
+                    if i == 0:
+                        result = res_tmp
+                    else:
+                        result.append(res_tmp)
+                return result
+            elif ncols_block < len(columns):
+                parameters = []
+                for i in range(0, len(columns), ncols_block):
+                    parameters += [(self, method, columns, unique, ncols_block, i)]
+                a_pool = multiprocessing.Pool(processes)
+                L = a_pool.starmap(func=describe_parallel_block, iterable=parameters)
+                result = L[0]
+                for i in range(1, len(L)):
+                    result.append(L[i])
+                return result
             try:
                 version(condition=[9, 0, 0])
                 idx = [
@@ -4893,17 +4933,21 @@ vColumns : vColumn
                     ["count", "mean", "std", "min", "25%", "50%", "75%", "max"],
                     columns=columns,
                     ncols_block=ncols_block,
+                    processes=processes,
                 ).values
             if unique:
                 values["unique"] = self.aggregate(
-                    ["unique"], columns=columns, ncols_block=ncols_block
+                    ["unique"],
+                    columns=columns,
+                    ncols_block=ncols_block,
+                    processes=processes,
                 ).values["unique"]
         elif method == "categorical":
             func = ["dtype", "unique", "count", "top", "top_percent"]
             if not (unique):
                 del func[1]
             values = self.aggregate(
-                func, columns=columns, ncols_block=ncols_block
+                func, columns=columns, ncols_block=ncols_block, processes=processes,
             ).values
         elif method == "statistics":
             func = [
@@ -4928,7 +4972,10 @@ vColumns : vColumn
             if not (unique):
                 del func[3]
             values = self.aggregate(
-                func=func, columns=columns, ncols_block=ncols_block
+                func=func,
+                columns=columns,
+                ncols_block=ncols_block,
+                processes=processes,
             ).values
         elif method == "length":
             if not (columns):
@@ -4950,7 +4997,10 @@ vColumns : vColumn
             if not (unique):
                 del func[3]
             values = self.aggregate(
-                func=func, columns=columns, ncols_block=ncols_block
+                func=func,
+                columns=columns,
+                ncols_block=ncols_block,
+                processes=processes,
             ).values
         elif method == "range":
             if not (columns):
@@ -4963,7 +5013,10 @@ vColumns : vColumn
             if not (unique):
                 del func[3]
             values = self.aggregate(
-                func=func, columns=columns, ncols_block=ncols_block
+                func=func,
+                columns=columns,
+                ncols_block=ncols_block,
+                processes=processes,
             ).values
         elif method == "all":
             datecols, numcol, catcol = [], [], []
@@ -4995,6 +5048,7 @@ vColumns : vColumn
                 ],
                 columns=numcol,
                 ncols_block=ncols_block,
+                processes=processes,
             ).values
             values["empty"] = [None] * len(numcol)
             if datecols:
@@ -5011,6 +5065,8 @@ vColumns : vColumn
                         "range",
                     ],
                     columns=datecols,
+                    ncols_block=ncols_block,
+                    processes=processes,
                 ).values
                 for elem in [
                     "index",
@@ -5048,6 +5104,7 @@ vColumns : vColumn
                     ],
                     columns=catcol,
                     ncols_block=ncols_block,
+                    processes=processes,
                 ).values
                 for elem in [
                     "index",
@@ -6698,7 +6755,7 @@ vColumns : vColumn
         )
 
     # ---#
-    def kurtosis(self, columns: list = []):
+    def kurtosis(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'kurtosis'.
@@ -6708,6 +6765,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -6719,7 +6778,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["kurtosis"], columns=columns)
+        return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwds,)
 
     kurt = kurtosis
     # ---#
@@ -6786,7 +6845,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
-    def mad(self, columns: list = []):
+    def mad(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'mad' (Median Absolute Deviation).
@@ -6796,6 +6855,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -6807,10 +6868,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["mad"], columns=columns)
+        return self.aggregate(func=["mad"], columns=columns, **agg_kwds,)
 
     # ---#
-    def max(self, columns: list = []):
+    def max(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'max' (Maximum).
@@ -6820,6 +6881,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -6831,10 +6894,10 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["max"], columns=columns)
+        return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
 
     # ---#
-    def median(self, columns: list = []):
+    def median(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'median'.
@@ -6844,6 +6907,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -6855,7 +6920,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["median"], columns=columns)
+        return self.aggregate(func=["median"], columns=columns, **agg_kwds,)
 
     # ---#
     def memory_usage(self):
@@ -6889,7 +6954,7 @@ vColumns : vColumn
         return tablesample(values=values)
 
     # ---#
-    def min(self, columns: list = []):
+    def min(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'min' (Minimum).
@@ -6899,6 +6964,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -6910,7 +6977,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["min"], columns=columns)
+        return self.aggregate(func=["min"], columns=columns, **agg_kwds,)
 
     # ---#
     def narrow(
@@ -7073,7 +7140,7 @@ vColumns : vColumn
         return columns
 
     # ---#
-    def nunique(self, columns: list = []):
+    def nunique(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'unique' (cardinality).
@@ -7082,6 +7149,8 @@ vColumns : vColumn
     ----------
     columns: list, optional
         List of the vColumns names. If empty, all vColumns will be used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -7093,7 +7162,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["unique"], columns=columns)
+        return self.aggregate(func=["unique"], columns=columns, **agg_kwds,)
 
     # ---#
     def outliers(
@@ -7393,12 +7462,7 @@ vColumns : vColumn
         else:
             if isinstance(p, (float, int)):
                 p = range(0, p + 1)
-            if verticapy.options["tqdm"]:
-                from tqdm.auto import tqdm
-
-                loop = tqdm(p)
-            else:
-                loop = p
+            loop = tqdm(p) if verticapy.options["tqdm"] else p
             pacf = []
             for i in loop:
                 pacf += [self.pacf(ts=ts, column=column, by=by, p=[i], unit=unit)]
@@ -7894,7 +7958,7 @@ vColumns : vColumn
         return vdf
 
     # ---#
-    def product(self, columns: list = []):
+    def product(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'product'.
@@ -7903,6 +7967,8 @@ vColumns : vColumn
     ----------
     columns: list, optional
         List of the vColumn names. If empty, all numerical vColumns will be used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -7914,12 +7980,12 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["prod"], columns=columns)
+        return self.aggregate(func=["prod"], columns=columns, **agg_kwds,)
 
     prod = product
 
     # ---#
-    def quantile(self, q: list, columns: list = [], exact: bool = False):
+    def quantile(self, q: list, columns: list = [], exact: bool = False, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using a list of 'quantiles'.
@@ -7935,6 +8001,8 @@ vColumns : vColumn
     exact: bool, optional
         If set to True, the exact quantile is returned. By using this parameter,
         the function's performance can drastically decrease.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -7951,6 +8019,7 @@ vColumns : vColumn
         return self.aggregate(
             func=[prefix + "{}%".format(float(item) * 100) for item in q],
             columns=columns,
+            **agg_kwds,
         )
 
     # ---#
@@ -9063,7 +9132,7 @@ vColumns : vColumn
         )
 
     # ---#
-    def sem(self, columns: list = []):
+    def sem(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'sem' (Standard Error of the Mean).
@@ -9073,6 +9142,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -9084,7 +9155,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["sem"], columns=columns)
+        return self.aggregate(func=["sem"], columns=columns, **agg_kwds,)
 
     # ---#
     def sessionize(
@@ -9329,7 +9400,7 @@ vColumns : vColumn
         return (self._VERTICAPY_VARIABLES_["count"], m)
 
     # ---#
-    def skewness(self, columns: list = []):
+    def skewness(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'skewness'.
@@ -9339,6 +9410,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -9350,7 +9423,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["skewness"], columns=columns)
+        return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
 
     skew = skewness
     # ---#
@@ -9464,7 +9537,7 @@ vColumns : vColumn
         )
 
     # ---#
-    def std(self, columns: list = []):
+    def std(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'std' (Standard Deviation).
@@ -9474,6 +9547,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -9485,11 +9560,11 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["stddev"], columns=columns)
+        return self.aggregate(func=["stddev"], columns=columns, **agg_kwds,)
 
     stddev = std
     # ---#
-    def sum(self, columns: list = []):
+    def sum(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'sum'.
@@ -9499,6 +9574,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -9510,7 +9587,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["sum"], columns=columns)
+        return self.aggregate(func=["sum"], columns=columns, **agg_kwds,)
 
     # ---#
     def swap(self, column1: Union[int, str], column2: Union[int, str]):
@@ -10377,7 +10454,7 @@ vColumns : vColumn
         )
 
     # ---#
-    def var(self, columns: list = []):
+    def var(self, columns: list = [], **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'variance'.
@@ -10387,6 +10464,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -10398,7 +10477,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["variance"], columns=columns)
+        return self.aggregate(func=["variance"], columns=columns, **agg_kwds,)
 
     variance = var
     # ---#
@@ -10482,3 +10561,29 @@ vColumns : vColumn
         return tablesample(
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
+
+
+#
+# Multiprocessing
+#
+# ---#
+#
+# Functions used to send multiple queries at the same time.
+#
+
+# Aggregate
+def aggregate_parallel_block(vdf, func: list, columns: list, ncols_block: int, i: int):
+    return vdf.aggregate(
+        func=func, columns=columns[i : i + ncols_block], ncols_block=ncols_block
+    )
+
+# Describe
+def describe_parallel_block(
+    vdf, method: str, columns: list, unique: bool, ncols_block: int, i: int,
+):
+    return vdf.describe(
+        method=method,
+        columns=columns[i : i + ncols_block],
+        unique=unique,
+        ncols_block=ncols_block,
+    )
