@@ -21,6 +21,7 @@ from verticapy.datasets import load_titanic, load_market, load_amazon
 from verticapy.learn.linear_model import LogisticRegression
 
 set_option("print_info", False)
+set_option("cache", False)
 
 
 @pytest.fixture(scope="module")
