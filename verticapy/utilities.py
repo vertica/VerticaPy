@@ -1822,7 +1822,7 @@ The tablesample attributes are the same than the parameters.
     def append(self, tbs):
         """
         ---------------------------------------------------------------------------
-        Appends the input tablesample to another tablesample.
+        Appends the input tablesample to a target tablesample.
 
         Parameters
         ----------
@@ -1837,7 +1837,7 @@ The tablesample attributes are the same than the parameters.
         check_types([("tbs", tbs, [tablesample])])
         n1, n2 = self.shape()[0], tbs.shape()[0]
         assert n1 == n2, ParameterError(
-            "The input tablesample and target tablesample must have the same number of columns."
+            "The input and target tablesamples must have the same number of columns."
             f" Expected {n1}, Found {n2}."
         )
         cols1, cols2 = [col for col in self.values], [col for col in tbs.values]
