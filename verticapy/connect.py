@@ -165,9 +165,11 @@ section: str / connector
     Name of the section in the configuration file.
 dsn: str, optional
     Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTIONS environment variable will be used.
+    Connection File will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
+    if not(dsn):
+        dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)

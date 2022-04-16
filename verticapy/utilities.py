@@ -1845,6 +1845,54 @@ The tablesample attributes are the same than the parameters.
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
+    
+    # ---#
+    def decimal_to_float(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts all the tablesample's decimals to floats.
+
+    Returns
+    -------
+    tablesample
+        self
+        """
+        for elem in self.values:
+            if elem != "index":
+                for i in range(len(self.values[elem])):
+                    if isinstance(self.values[elem][i], decimal.Decimal):
+                        self.values[elem][i] = float(self.values[elem][i])
+        return self
+
+
+    # ---#
+    def merge(self, tbs):
+        """
+        ---------------------------------------------------------------------------
+        Merges the input tablesample to a target tablesample.
+
+        Parameters
+        ----------
+        tbs: tablesample, optional
+            Tablesample to merge.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("tbs", tbs, [tablesample])])
+        n1, n2 = self.shape()[1], tbs.shape()[1]
+        assert n1 == n2, ParameterError(
+            "The input and target tablesamples must have the same number of rows."
+            f" Expected {n1}, Found {n2}."
+        )
+        for col in tbs:
+            if col != "index":
+                self.values[col] += tbs.values[col]
+        return self
+
+
     # ---#
     def shape(self):
         """
@@ -1876,7 +1924,10 @@ The tablesample attributes are the same than the parameters.
         columns = [[] for i in range(len(self.values[first_item]))]
         for column in self.values:
             for idx, item in enumerate(self.values[column]):
-                columns[idx] += [item]
+                try:
+                    columns[idx] += [item]
+                except:
+                    pass
         columns = [index] + columns
         values = {}
         for item in columns:
@@ -2058,12 +2109,7 @@ def to_tablesample(query: str, title: str = ""):
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    for elem in values:
-        if elem != "index":
-            for idx in range(len(values[elem])):
-                if isinstance(values[elem][idx], decimal.Decimal):
-                    values[elem][idx] = float(values[elem][idx])
-    return tablesample(values=values, dtype=dtype)
+    return tablesample(values=values, dtype=dtype).decimal_to_float()
 
 
 # ---#

@@ -854,12 +854,7 @@ vColumns : vColumn
                     for idx, column2 in enumerate(values["index"]):
                         val[column2] = values[column1][idx]
                     self.__update_catalog__(values=val, matrix=method, column=column1)
-            for elem in values:
-                if elem != "index":
-                    for idx in range(len(values[elem])):
-                        if isinstance(values[elem][idx], decimal.Decimal):
-                            values[elem][idx] = float(values[elem][idx])
-            return tablesample(values=values)
+            return tablesample(values=values).decimal_to_float()
         else:
             if method == "cramer":
                 cols = self.catcol()
@@ -1091,10 +1086,7 @@ vColumns : vColumn
             self.__update_catalog__(
                 values={column: vector[idx]}, matrix=method, column=focus
             )
-        for idx in range(len(vector)):
-            if isinstance(vector[idx], decimal.Decimal):
-                vector[idx] = float(vector[idx])
-        return tablesample(values={"index": cols, focus: vector})
+        return tablesample(values={"index": cols, focus: vector}).decimal_to_float()
 
     # ---#
     def __genSQL__(
@@ -1694,6 +1686,8 @@ vColumns : vColumn
     func: list
         List of the different aggregations.
             aad            : average absolute deviation
+            approx_q%      : approximate q quantile 
+                             (ex: approx_50% for the approximate median)
             approx_unique  : approximative cardinality
             count          : number of non-missing elements
             cvar           : conditional value at risk
@@ -1707,11 +1701,9 @@ vColumns : vColumn
             median         : median
             min            : minimum
             mode           : most occurent element
-            percent        : percent of non-missing elements
-            q%             : approximate q quantile 
-                             (ex: 50% for the approximate median) 
-            exact_q%       : q quantile (ex: exact_50% for the median)
-                             Use the 'q%' (approximate quantile) 
+            percent        : percent of non-missing elements 
+            q%             : q quantile (ex: 50% for the median)
+                             Use the 'approx_q%' (approximate quantile) 
                              aggregation to get better performances.
             prod           : product
             range          : difference between the max and the min
@@ -1750,14 +1742,6 @@ vColumns : vColumn
     vDataFrame.analytic : Adds a new vColumn to the vDataFrame by using an advanced 
         analytical function on a specific vColumn.
         """
-
-        def agg_format(item):
-            if isinstance(item, (float, int)):
-                return "'{}'".format(item)
-            elif isinstance(item, type(None)):
-                return "NULL"
-            else:
-                return str(item)
 
         if isinstance(columns, str):
             columns = [columns]
@@ -1816,10 +1800,17 @@ vColumns : vColumn
             return result
         agg = [[] for i in range(len(columns))]
         nb_precomputed = 0
+
+        for fun in func:
+            if fun.lower() in ["kurtosis", "kurt", "skewness", "skew", "jb", ]:
+                count_avg_stddev = self.aggregate(func=["count", "avg", "stddev"], columns=columns).transpose().values
+                break
+
         for idx, column in enumerate(columns):
             cast = "::int" if (self[column].isbool()) else ""
             for fun in func:
                 pre_comp = self.__get_catalog_value__(column, fun)
+
                 if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                     nb_precomputed += 1
                     if pre_comp == None or pre_comp != pre_comp:
@@ -1828,6 +1819,7 @@ vColumns : vColumn
                         expr = pre_comp
                     else:
                         expr = "'{}'".format(str(pre_comp).replace("'", "''"))
+
                 elif ("_percent" in fun.lower()) and (fun.lower()[0:3] == "top"):
                     n = fun.lower().replace("top", "").replace("_percent", "")
                     if n == "":
@@ -1851,6 +1843,7 @@ vColumns : vColumn
                         )
                     except:
                         expr = "0.0"
+
                 elif (len(fun.lower()) > 2) and (fun.lower()[0:3] == "top"):
                     n = fun.lower()[3:] if (len(fun.lower()) > 3) else 1
                     try:
@@ -1864,14 +1857,12 @@ vColumns : vColumn
                             "top2 computes the second most occurent element."
                         )
                     expr = format_magic(self[column].mode(n=n))
+
                 elif fun.lower() == "mode":
                     expr = format_magic(self[column].mode(n=1))
+
                 elif fun.lower() in ("kurtosis", "kurt"):
-                    count, avg, std = (
-                        self.aggregate(func=["count", "avg", "stddev"], columns=columns)
-                        .transpose()
-                        .values[column]
-                    )
+                    count, avg, std = count_avg_stddev[column]
                     if (
                         count == 0
                         or (std != std)
@@ -1903,12 +1894,9 @@ vColumns : vColumn
                                 if (count == 3)
                                 else ""
                             )
+
                 elif fun.lower() in ("skewness", "skew"):
-                    count, avg, std = (
-                        self.aggregate(func=["count", "avg", "stddev"], columns=columns)
-                        .transpose()
-                        .values[column]
-                    )
+                    count, avg, std = count_avg_stddev[column]
                     if (
                         count == 0
                         or (std != std)
@@ -1927,12 +1915,9 @@ vColumns : vColumn
                             expr += "* {}".format(
                                 count * count / (count - 1) / (count - 2)
                             )
+
                 elif fun.lower() == "jb":
-                    count, avg, std = (
-                        self.aggregate(func=["count", "avg", "stddev"], columns=columns)
-                        .transpose()
-                        .values[column]
-                    )
+                    count, avg, std = count_avg_stddev[column]
                     if (count < 4) or (std == 0):
                         expr = "NULL"
                     else:
@@ -1949,74 +1934,100 @@ vColumns : vColumn
                             std,
                             count * count / (count - 1) / (count - 2),
                         )
+
                 elif fun.lower() == "dtype":
                     expr = "'{}'".format(self[column].ctype())
+
                 elif fun.lower() == "range":
                     expr = "MAX({}{}) - MIN({}{})".format(column, cast, column, cast)
+
                 elif fun.lower() == "unique":
                     expr = "COUNT(DISTINCT {})".format(column)
+
                 elif fun.lower() in ("approx_unique", "approximate_count_distinct"):
                     expr = "APPROXIMATE_COUNT_DISTINCT({})".format(column)
+
                 elif fun.lower() == "count":
                     expr = "COUNT({})".format(column)
-                elif fun.lower() == "median":
+
+                elif fun.lower() in ("approx_median", "approximate_median"):
                     expr = "APPROXIMATE_MEDIAN({}{})".format(column, cast)
+
+                elif fun.lower() == "median":
+                    expr = "MEDIAN({}{}) OVER ()".format(column, cast)
+
                 elif fun.lower() in ("std", "stddev", "stdev"):
                     expr = "STDDEV({}{})".format(column, cast)
+
                 elif fun.lower() in ("var", "variance"):
                     expr = "VARIANCE({}{})".format(column, cast)
+
                 elif fun.lower() in ("mean", "avg"):
                     expr = "AVG({}{})".format(column, cast)
+
                 elif fun.lower() == "iqr":
                     expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = 0.75) - APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = 0.25)".format(
                         column, cast, column, cast
                     )
+
                 elif "%" == fun[-1]:
                     try:
-                        if fun[0:6] == "exact_":
-                            expr = "PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}{})".format(
-                                float(fun[6:-1]) / 100, column, cast
+                        if (len(fun.lower()) >= 8) and fun[0:7] == "approx_":
+                            expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(
+                                column, cast, float(fun[7:-1]) / 100
                             )
                         else:
-                            expr = "APPROXIMATE_PERCENTILE({}{} USING PARAMETERS percentile = {})".format(
-                                column, cast, float(fun[0:-1]) / 100
+                            expr = "PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}{})".format(
+                                float(fun[0:-1]) / 100, column, cast
                             )
                     except:
+                        raise
                         raise FunctionError(
-                            "The aggregation '{}' doesn't exist. If you want to compute the percentile x of the element please write 'x%' with x > 0. Example: 50% for the median.".format(
-                                fun
-                            )
+                            f"The aggregation '{fun}' doesn't exist. If you want to compute the percentile x "
+                            "of the element please write 'x%' with x > 0. Example: 50% for the median or "
+                            "approx_50% for the approximate median."
                         )
+
                 elif fun.lower() == "cvar":
                     q95 = self[column].quantile(0.95)
                     expr = "AVG(CASE WHEN {}{} >= {} THEN {}{} ELSE NULL END)".format(
                         column, cast, q95, column, cast
                     )
+
                 elif fun.lower() == "sem":
                     expr = "STDDEV({}{}) / SQRT(COUNT({}))".format(column, cast, column)
+
                 elif fun.lower() == "aad":
                     mean = self[column].avg()
                     expr = "SUM(ABS({}{} - {})) / COUNT({})".format(
                         column, cast, mean, column
                     )
+
                 elif fun.lower() == "mad":
                     median = self[column].median()
                     expr = "APPROXIMATE_MEDIAN(ABS({}{} - {}))".format(
                         column, cast, median
                     )
+
                 elif fun.lower() in ("prod", "product"):
                     expr = "DECODE(ABS(MOD(SUM(CASE WHEN {}{} < 0 THEN 1 ELSE 0 END), 2)), 0, 1, -1) * POWER(10, SUM(LOG(ABS({}{}))))".format(
                         column, cast, column, cast
                     )
+
                 elif fun.lower() in ("percent", "count_percent"):
                     expr = "ROUND(COUNT({}) / {} * 100, 3)::float".format(
                         column, self.shape()[0]
                     )
+
                 elif "{}" not in fun:
                     expr = "{}({}{})".format(fun.upper(), column, cast)
+
                 else:
                     expr = fun.replace("{}", column)
+
                 agg[idx] += [expr]
+
+
         for idx, elem in enumerate(func):
             if "AS " in str(elem).upper():
                 try:
@@ -2030,7 +2041,10 @@ vColumns : vColumn
                 except:
                     pass
         values = {"index": func}
+
+
         try:
+
             if nb_precomputed == len(func) * len(columns):
                 res = executeSQL(
                     "SELECT {}".format(
@@ -2058,11 +2072,14 @@ vColumns : vColumn
             for column in columns:
                 values[column] = result[i : i + len(func)]
                 i += len(func)
+
         except:
+
             try:
+
                 query = [
                     "SELECT {} FROM vdf_table LIMIT 1".format(
-                        ", ".join([agg_format(item) for item in elem])
+                        ", ".join([format_magic(item, cast_float_int_to_str=True) for item in elem])
                     )
                     for elem in agg
                 ]
@@ -2082,17 +2099,21 @@ vColumns : vColumn
                         title="Computing the different aggregations using UNION ALL.",
                         method="fetchall",
                     )
+
                 for idx, elem in enumerate(result):
                     values[columns[idx]] = [item for item in elem]
+
             except:
+
                 try:
+
                     for i, elem in enumerate(agg):
                         pre_comp_val = []
                         for fun in func:
                             pre_comp = self.__get_catalog_value__(columns[i], fun)
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
                                 query = "SELECT {} FROM {}".format(
-                                    ", ".join([agg_format(item) for item in elem]),
+                                    ", ".join([format_magic(item, cast_float_int_to_str=True) for item in elem]),
                                     self.__genSQL__(),
                                 )
                                 executeSQL(
@@ -2127,15 +2148,13 @@ vColumns : vColumn
                             values[columns[i]] += [result]
         for elem in values:
             for idx in range(len(values[elem])):
-                if isinstance(values[elem][idx], decimal.Decimal):
-                    values[elem][idx] = float(values[elem][idx])
-                elif isinstance(values[elem][idx], str) and "top" not in elem:
+                if isinstance(values[elem][idx], str) and "top" not in elem:
                     try:
                         values[elem][idx] = float(values[elem][idx])
                     except:
                         pass
         self.__update_catalog__(values)
-        return tablesample(values=values).transpose()
+        return tablesample(values=values).decimal_to_float().transpose()
 
     agg = aggregate
     # ---#
@@ -2446,9 +2465,9 @@ vColumns : vColumn
                     x = float(func[0:-1]) / 100
                 except:
                     raise FunctionError(
-                        "The aggregate function '{}' doesn't exist. If you want to compute the percentile x of the element please write 'x%' with x > 0. Example: 50% for the median.".format(
-                            func
-                        )
+                        f"The aggregate function '{fun}' doesn't exist. If you want to compute the "
+                        "percentile x of the element please write 'x%' with x > 0. Example: "
+                        "50% for the median."
                     )
                 self.eval(
                     name,
@@ -4749,7 +4768,7 @@ vColumns : vColumn
         self,
         method: str = "auto",
         columns: list = [],
-        unique: bool = True,
+        unique: bool = False,
         ncols_block: int = 20,
         processes: int = 1,
     ):
@@ -4770,7 +4789,7 @@ vColumns : vColumn
             categorical : Uses only categorical aggregations.
             length      : Aggregates the vDataFrame using numerical aggregation 
                 on the length of all selected vColumns.
-             numerical   : Uses only numerical descriptive statistics which are 
+            numerical   : Uses only numerical descriptive statistics which are 
                  computed in a faster way than the 'aggregate' method.
             range       : Aggregates the vDataFrame using multiple statistical
                 aggregations - min, max, range...
@@ -4833,16 +4852,22 @@ vColumns : vColumn
         columns = vdf_columns_names(columns, self)
         for i in range(len(columns)):
             columns[i] = str_column(columns[i])
+        dtype, percent = {}, {}
+
+
         if method == "numerical":
+
             if not (columns):
                 columns = self.numcol()
             else:
                 for column in columns:
                     assert self[column].isnum(), TypeError(
-                        f"vColumn {column} must be numerical to run describe using parameter method = 'numerical'"
+                        f"vColumn {column} must be numerical to run describe"
+                        " using parameter method = 'numerical'"
                     )
             assert columns, EmptyParameter(
-                "No Numerical Columns found to run describe using parameter method = 'numerical'."
+                "No Numerical Columns found to run describe using parameter"
+                " method = 'numerical'."
             )
             if ncols_block < len(columns) and processes <= 1:
                 if verticapy.options["tqdm"]:
@@ -4879,9 +4904,9 @@ vColumns : vColumn
                     "mean",
                     "std",
                     "min",
-                    "25%",
-                    "50%",
-                    "75%",
+                    "approx_25%",
+                    "approx_50%",
+                    "approx_75%",
                     "max",
                 ]
                 values = {}
@@ -4896,9 +4921,9 @@ vColumns : vColumn
                                 col_to_compute += [column]
                                 break
                     elif verticapy.options["print_info"]:
-                        warning_message = "The vColumn {} is not numerical, it was ignored.\nTo get statistical information about all different variables, please use the parameter method = 'categorical'.".format(
-                            column
-                        )
+                        warning_message = (f"The vColumn {column} is not numerical, it was ignored."
+                                            "\nTo get statistical information about all different "
+                                            "variables, please use the parameter method = 'categorical'.")
                         warnings.warn(warning_message, Warning)
                 for column in columns:
                     if column not in col_to_compute:
@@ -4919,69 +4944,74 @@ vColumns : vColumn
                     )
                     query_result = executeSQL(
                         query,
-                        title="Computing the descriptive statistics of all numerical columns using SUMMARIZE_NUMCOL.",
+                        title=("Computing the descriptive statistics of all numerical "
+                               "columns using SUMMARIZE_NUMCOL."),
                         method="fetchall",
                     )
+
+                    # Formatting - to have the same columns' order than the input one.
                     for i, key in enumerate(idx):
                         values[key] += [elem[i] for elem in query_result]
-                    columns = [elem for elem in values["index"]]
+                    tb = tablesample(values).transpose()
+                    vals = {"index": tb["index"]}
+                    for col in columns:
+                        vals[col] = tb[col]
+                    values = tablesample(vals).transpose().values
+
             except:
+                raise
                 values = self.aggregate(
-                    ["count", "mean", "std", "min", "25%", "50%", "75%", "max"],
+                    ["count", "mean", "std", "min", "approx_25%", "approx_50%", "approx_75%", "max"],
                     columns=columns,
                     ncols_block=ncols_block,
                     processes=processes,
                 ).values
-            if unique:
-                values["unique"] = self.aggregate(
-                    ["unique"],
-                    columns=columns,
-                    ncols_block=ncols_block,
-                    processes=processes,
-                ).values["unique"]
+
+
         elif method == "categorical":
-            func = ["dtype", "unique", "count", "top", "top_percent"]
-            if not (unique):
-                del func[1]
+
+            func = ["dtype", "count", "top", "top_percent"]
             values = self.aggregate(
                 func, columns=columns, ncols_block=ncols_block, processes=processes,
             ).values
+
+
         elif method == "statistics":
+
             func = [
                 "dtype",
                 "percent",
                 "count",
-                "unique",
                 "avg",
                 "stddev",
                 "min",
-                "1%",
-                "10%",
-                "25%",
-                "median",
-                "75%",
-                "90%",
-                "99%",
+                "approx_1%",
+                "approx_10%",
+                "approx_25%",
+                "approx_50%",
+                "approx_75%",
+                "approx_90%",
+                "approx_99%",
                 "max",
                 "skewness",
                 "kurtosis",
             ]
-            if not (unique):
-                del func[3]
             values = self.aggregate(
                 func=func,
                 columns=columns,
                 ncols_block=ncols_block,
                 processes=processes,
             ).values
+
+
         elif method == "length":
+
             if not (columns):
                 columns = self.get_columns()
             func = [
                 "dtype",
                 "percent",
                 "count",
-                "unique",
                 "SUM(CASE WHEN LENGTH({}::varchar) = 0 THEN 1 ELSE 0 END) AS empty",
                 "AVG(LENGTH({}::varchar)) AS avg_length",
                 "STDDEV(LENGTH({}::varchar)) AS stddev_length",
@@ -4991,31 +5021,33 @@ vColumns : vColumn
                 "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.75)::int AS '75%_length'",
                 "MAX(LENGTH({}::varchar))::int AS max_length",
             ]
-            if not (unique):
-                del func[3]
             values = self.aggregate(
                 func=func,
                 columns=columns,
                 ncols_block=ncols_block,
                 processes=processes,
             ).values
+
+
         elif method == "range":
+
             if not (columns):
                 columns = []
                 all_cols = self.get_columns()
                 for idx, column in enumerate(all_cols):
                     if self[column].isnum() or self[column].isdate():
                         columns += [column]
-            func = ["dtype", "percent", "count", "unique", "min", "max", "range"]
-            if not (unique):
-                del func[3]
+            func = ["dtype", "percent", "count", "min", "max", "range"]
             values = self.aggregate(
                 func=func,
                 columns=columns,
                 ncols_block=ncols_block,
                 processes=processes,
             ).values
+
+
         elif method == "all":
+
             datecols, numcol, catcol = [], [], []
             if not (columns):
                 columns = self.get_columns()
@@ -5031,15 +5063,14 @@ vColumns : vColumn
                     "dtype",
                     "percent",
                     "count",
-                    "unique",
                     "top",
                     "top_percent",
                     "avg",
                     "stddev",
                     "min",
-                    "25%",
-                    "50%",
-                    "75%",
+                    "approx_25%",
+                    "approx_50%",
+                    "approx_75%",
                     "max",
                     "range",
                 ],
@@ -5054,7 +5085,6 @@ vColumns : vColumn
                         "dtype",
                         "percent",
                         "count",
-                        "unique",
                         "top",
                         "top_percent",
                         "min",
@@ -5070,7 +5100,6 @@ vColumns : vColumn
                     "dtype",
                     "percent",
                     "count",
-                    "unique",
                     "top",
                     "top_percent",
                     "min",
@@ -5078,7 +5107,7 @@ vColumns : vColumn
                     "range",
                 ]:
                     values[elem] += tmp[elem]
-                for elem in ["avg", "stddev", "25%", "50%", "75%", "empty"]:
+                for elem in ["avg", "stddev", "approx_25%", "approx_50%", "approx_75%", "empty"]:
                     values[elem] += [None] * len(datecols)
             if catcol:
                 tmp = self.aggregate(
@@ -5086,15 +5115,14 @@ vColumns : vColumn
                         "dtype",
                         "percent",
                         "count",
-                        "unique",
                         "top",
                         "top_percent",
                         "AVG(LENGTH({}::varchar)) AS avg",
                         "STDDEV(LENGTH({}::varchar)) AS stddev",
                         "MIN(LENGTH({}::varchar))::int AS min",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.25)::int AS '25%'",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.5)::int AS '50%'",
-                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.75)::int AS '75%'",
+                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.25)::int AS 'approx_25%'",
+                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.5)::int AS 'approx_50%'",
+                        "APPROXIMATE_PERCENTILE(LENGTH({}::varchar) USING PARAMETERS percentile = 0.75)::int AS 'approx_75%'",
                         "MAX(LENGTH({}::varchar))::int AS max",
                         "MAX(LENGTH({}::varchar))::int - MIN(LENGTH({}::varchar))::int AS range",
                         "SUM(CASE WHEN LENGTH({}::varchar) = 0 THEN 1 ELSE 0 END) AS empty",
@@ -5108,35 +5136,38 @@ vColumns : vColumn
                     "dtype",
                     "percent",
                     "count",
-                    "unique",
                     "top",
                     "top_percent",
                     "avg",
                     "stddev",
                     "min",
-                    "25%",
-                    "50%",
-                    "75%",
+                    "approx_25%",
+                    "approx_50%",
+                    "approx_75%",
                     "max",
                     "range",
                     "empty",
                 ]:
                     values[elem] += tmp[elem]
-            dtype, percent = {}, {}
-            if isnotebook():
-                for i in range(len(values["index"])):
-                    dtype[values["index"][i]] = values["dtype"][i]
-                    percent[values["index"][i]] = values["percent"][i]
-                del values["dtype"]
-                del values["percent"]
-            return tablesample(values, percent=percent, dtype=dtype).transpose()
+            for i in range(len(values["index"])):
+                dtype[values["index"][i]] = values["dtype"][i]
+                percent[values["index"][i]] = values["percent"][i]
+
+        if unique:
+            values["unique"] = self.aggregate(
+                ["unique"],
+                columns=columns,
+                ncols_block=ncols_block,
+                processes=processes,
+            ).values["unique"]
+
         self.__update_catalog__(tablesample(values).transpose().values)
         values["index"] = [str_column(elem) for elem in values["index"]]
-        for elem in values:
-            for i in range(len(values[elem])):
-                if isinstance(values[elem][i], decimal.Decimal):
-                    values[elem][i] = float(values[elem][i])
-        return tablesample(values)
+        result = tablesample(values, percent=percent, dtype=dtype).decimal_to_float()
+        if method == "all":
+            result = result.transpose()
+
+        return result
 
     # ---#
     def drop(self, columns: list = []):
@@ -6894,7 +6925,7 @@ vColumns : vColumn
         return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
 
     # ---#
-    def median(self, columns: list = [], **agg_kwds,):
+    def median(self, columns: list = [], approx: bool = True, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'median'.
@@ -6904,6 +6935,9 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    approx: bool, optional
+        If set to True, the approximate median is returned. By setting this 
+        parameter to False, the function's performance can drastically decrease.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -6917,7 +6951,7 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["median"], columns=columns, **agg_kwds,)
+        return self.quantile(0.5, columns=columns, approx=approx, **agg_kwds,)
 
     # ---#
     def memory_usage(self):
@@ -7137,7 +7171,7 @@ vColumns : vColumn
         return columns
 
     # ---#
-    def nunique(self, columns: list = [], **agg_kwds,):
+    def nunique(self, columns: list = [], approx: bool = True, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'unique' (cardinality).
@@ -7146,6 +7180,10 @@ vColumns : vColumn
     ----------
     columns: list, optional
         List of the vColumns names. If empty, all vColumns will be used.
+    approx: bool, optional
+        If set to True, the approximate cardinality is returned. By setting 
+        this parameter to False, the function's performance can drastically 
+        decrease.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -7159,7 +7197,8 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        return self.aggregate(func=["unique"], columns=columns, **agg_kwds,)
+        func = ["approx_unique"] if approx else ["unique"]
+        return self.aggregate(func=func, columns=columns, **agg_kwds,)
 
     # ---#
     def outliers(
@@ -7210,7 +7249,7 @@ vColumns : vColumn
         if not (robust):
             result = self.aggregate(func=["std", "avg"], columns=columns).values
         else:
-            result = self.aggregate(func=["mad", "median"], columns=columns).values
+            result = self.aggregate(func=["mad", "approx_median"], columns=columns).values
         conditions = []
         for idx, elem in enumerate(result["index"]):
             if not (robust):
@@ -7222,7 +7261,7 @@ vColumns : vColumn
             else:
                 conditions += [
                     "ABS({} - {}) / NULLIFZERO({} * 1.4826) > {}".format(
-                        elem, result["median"][idx], result["mad"][idx], threshold
+                        elem, result["approx_median"][idx], result["mad"][idx], threshold
                     )
                 ]
         self.eval(
@@ -7982,7 +8021,7 @@ vColumns : vColumn
     prod = product
 
     # ---#
-    def quantile(self, q: list, columns: list = [], exact: bool = False, **agg_kwds,):
+    def quantile(self, q: list, columns: list = [], approx: bool = True, **agg_kwds,):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using a list of 'quantiles'.
@@ -7995,9 +8034,9 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
-    exact: bool, optional
-        If set to True, the exact quantile is returned. By using this parameter,
-        the function's performance can drastically decrease.
+    approx: bool, optional
+        If set to True, the approximate quantile is returned. By setting this 
+        parameter to False, the function's performance can drastically decrease.
     **agg_kwds
         Any optional parameter to pass to the Aggregate function.
 
@@ -8011,10 +8050,12 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        check_types([("q", q, [list]), ("exact", exact, [bool])])
-        prefix = "exact_" if exact else ""
+        if isinstance(q, (int, float)):
+            q = [q]
+        check_types([("q", q, [list]), ("approx", approx, [bool])])
+        prefix = "approx_" if approx else ""
         return self.aggregate(
-            func=[prefix + "{}%".format(float(item) * 100) for item in q],
+            func=[str_function(prefix + "{}%".format(float(item) * 100)) for item in q],
             columns=columns,
             **agg_kwds,
         )
@@ -8448,18 +8489,13 @@ vColumns : vColumn
         del matrix[0]
         for column in matrix:
             values[column[0]] = column[1 : len(column)]
-        for elem in values:
-            if elem != "index":
-                for idx in range(len(values[elem])):
-                    if isinstance(values[elem][idx], decimal.Decimal):
-                        values[elem][idx] = float(values[elem][idx])
         for column1 in values:
             if column1 != "index":
                 val = {}
                 for idx, column2 in enumerate(values["index"]):
                     val[column2] = values[column1][idx]
                 self.__update_catalog__(values=val, matrix=method, column=column1)
-        return tablesample(values=values)
+        return tablesample(values=values).decimal_to_float()
 
     # ---#
     def rolling(
@@ -9737,9 +9773,6 @@ vColumns : vColumn
             "you have to sort your data by using at least one column. "
             "If the column hasn't unique values, the final result can "
             "not be guaranteed."
-        )
-        file_name = "{}{}{}".format(
-            path, "/" if (len(path) > 1 and path[-1] != "/") else "", name
         )
         columns = (
             self.get_columns()

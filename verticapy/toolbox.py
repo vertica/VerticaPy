@@ -487,18 +487,20 @@ def executeSQL(
 
 
 # ---#
-def format_magic(x, return_cat: bool = False):
+def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = False):
 
     from verticapy.vcolumn import vColumn
 
     if isinstance(x, vColumn):
         val = x.alias
-    elif isinstance(x, (int, float, str_sql)):
+    elif (isinstance(x, (int, float)) and not(cast_float_int_to_str)) or isinstance(x, str_sql):
         val = x
     elif isinstance(x, type(None)):
         val = "NULL"
-    else:
+    elif isinstance(x, (int, float)) or not(cast_float_int_to_str):
         val = "'{}'".format(str(x).replace("'", "''"))
+    else:
+        val = x
     if return_cat:
         return (val, str_category(x))
     else:
@@ -1249,8 +1251,10 @@ def str_column(column: str):
 # ---#
 def str_function(key: str, method: str = ""):
     key = key.lower()
-    if key in ("median", "med", "approximate_median"):
+    if key in ("median", "med"):
         key = "50%"
+    elif key in ("approx_median", "approximate_median"):
+         key = "approx_50%"
     elif key == "100%":
         key = "max"
     elif key == "0%":
@@ -1278,11 +1282,11 @@ def str_function(key: str, method: str = ""):
     elif key == "top1_percent":
         key = "top_percent"
     elif "%" == key[-1]:
-        start = 6 if key[0:6] == "exact_" else 0
+        start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
         if float(key[start:-1]) == int(float(key[start:-1])):
             key = "{}%".format(int(float(key[start:-1])))
-        if start == 6:
-            key = "exact_" + key
+            if start == 7:
+                key = "approx_" + key
     elif key == "row":
         key = "row_number"
     elif key == "first":
