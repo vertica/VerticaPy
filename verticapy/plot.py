@@ -873,7 +873,7 @@ def bar2D(
     if density:
         if method != "density":
             raise ParameterError("Pyramid Bar works only with the 'density' method.")
-        unique = vdf.nunique(columns)["unique"]
+        unique = vdf.nunique(columns)["approx_unique"]
         if unique[1] != 2 and unique[0] != 2:
             raise ParameterError(
                 "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
@@ -3870,7 +3870,7 @@ def spider(
     ax=None,
     **style_kwds,
 ):
-    unique = vdf[columns[0]].nunique()
+    unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(
             f"The first column of the Spider Plot must have at least 3 categories. Found {int(unique)}."

@@ -48,6 +48,7 @@ def winequality_vd():
 
 
 class TestDelphi:
+    @pytest.mark.skip(reason="slow")
     def test_AutoML(self, titanic_vd):
         model = AutoML("AutoML_test_ml",)
         model.drop()
@@ -58,7 +59,7 @@ class TestDelphi:
         assert len(model.plot("stepwise").get_default_bbox_extra_artists()) < 200
         plt.close("all")
         model.drop()
-
+    @pytest.mark.skip(reason="slow")
     def test_AutoDataPrep(self, titanic_vd, amazon_vd):
         model = AutoDataPrep("AutoML_test_dp",)
         model.drop()
@@ -82,7 +83,7 @@ class TestDelphi:
         model4.fit(amazon_vd)
         assert model4.final_relation_.shape() == (6318, 3)
         model4.drop()
-
+    @pytest.mark.skip(reason="slow")
     def test_AutoClustering(self, titanic_vd):
         model = AutoClustering("AutoML_test_cluster",)
         model.drop()
