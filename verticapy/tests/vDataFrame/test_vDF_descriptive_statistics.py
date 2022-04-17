@@ -575,7 +575,6 @@ class TestvDFDescriptiveStat:
         assert result6["dtype"][3] == "int"
         assert result6["percent"][3] == 100
         assert result6["count"][3] == 1234
-        print(titanic_vd["parch"].distinct())
         #assert result6["unique"][3] == 7
         assert result6["avg"][3] == pytest.approx(0.504051863857374)
         assert result6["stddev"][3] == pytest.approx(1.04111727241629)
@@ -790,7 +789,6 @@ class TestvDFDescriptiveStat:
     def test_vDF_nunique(self, titanic_vd):
         # Exact Cardinality
         result = titanic_vd.nunique(columns=["pclass", "embarked", "survived", "cabin"], approx=False,)
-        print(result)
 
         assert result["unique"][0] == 3.0
         #assert result["unique"][1] == 3.0
