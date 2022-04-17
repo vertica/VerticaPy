@@ -198,7 +198,7 @@ class TestvDFUtilities:
         except:
             drop_if_exists("verticapy_titanic_tmp", method="view")
             raise
-        drop("verticapy_titanic_tmp", method="view")
+        drop_if_exists("verticapy_titanic_tmp", method="view")
         # testing relation_type = table
         try:
             titanic_vd.copy().to_db(
@@ -220,7 +220,7 @@ class TestvDFUtilities:
         except:
             drop_if_exists("verticapy_titanic_tmp")
             raise
-        drop("verticapy_titanic_tmp")
+        drop_if_exists("verticapy_titanic_tmp")
         # testing relation_type = temporary table
         try:
             titanic_vd.copy().to_db(
@@ -242,7 +242,7 @@ class TestvDFUtilities:
         except:
             drop_if_exists("verticapy_titanic_tmp")
             raise
-        drop("verticapy_titanic_tmp")
+        drop_if_exists("verticapy_titanic_tmp")
         # testing relation_type = temporary local table
         try:
             titanic_vd.copy().to_db(
@@ -264,7 +264,7 @@ class TestvDFUtilities:
         except:
             drop_if_exists("verticapy_titanic_tmp")
             raise
-        drop("verticapy_titanic_tmp")
+        drop_if_exists("verticapy_titanic_tmp")
 
     def test_vDF_to_json(self, titanic_vd):
         session_id = get_session()
