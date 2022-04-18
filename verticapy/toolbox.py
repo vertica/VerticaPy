@@ -110,7 +110,7 @@ def check_types(types_list: list = []):
         if list_check:
             if not (isinstance(elem[1], str)) and (elem[1] != None):
                 warning_message = (
-                    "Parameter '{0}' must be of type {1}, " "found type {2}"
+                    "Parameter '{0}' must be of type {1}, found type {2}"
                 ).format(elem[0], str, type(elem[1]))
                 warnings.warn(warning_message, Warning)
             if (elem[1] != None) and (

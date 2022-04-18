@@ -830,7 +830,8 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
-        "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
+        """CREATE FLEX LOCAL TEMP TABLE {0}(x int) 
+           ON COMMIT PRESERVE ROWS;""".format(
             flex_name
         ),
         title="Creating flex table to identify the data types.",
@@ -838,10 +839,18 @@ read_json : Ingests a JSON file into the Vertica database.
     header_names = (
         ""
         if not (header_names)
-        else "header_names = '{}',".format(sep.join(header_names))
+        else "header_names = '{0}',".format(sep.join(header_names))
     )
     executeSQL(
-        "COPY {} FROM{} '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(
+        """COPY {0} 
+           FROM{1} '{2}' 
+           PARSER FCSVPARSER(
+                type = 'traditional', 
+                delimiter = '{3}', 
+                header = {4}, {5} 
+                enclosed_by = '{6}', 
+                escape = '{7}') 
+           NULL '{8}';""".format(
             flex_name,
             " LOCAL" if ingest_local else "",
             path,
@@ -855,25 +864,26 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Parsing the data.",
     )
     executeSQL(
-        "SELECT compute_flextable_keys('{}');".format(flex_name),
+        "SELECT compute_flextable_keys('{0}');".format(flex_name),
         title="Guessing flex tables keys.",
     )
     result = executeSQL(
-        "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),
+        "SELECT key_name, data_type_guess FROM {1}_keys".format(flex_name),
         title="Guessing the data types.",
         method="fetchall",
     )
     dtype = {}
     for column_dtype in result:
         try:
-            query = 'SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(
-                column_dtype[0],
-                na_rep,
-                column_dtype[0],
-                column_dtype[1],
-                column_dtype[0],
-                flex_name,
-                column_dtype[0],
+            query = """SELECT 
+                        (CASE 
+                            WHEN "{0}"=\'{1}\' THEN NULL 
+                            ELSE "{0}" 
+                         END)::{2} AS "{0}" 
+                       FROM {3} 
+                       WHERE "{0}" IS NOT NULL 
+                       LIMIT 1000""".format(
+                column_dtype[0], na_rep, column_dtype[1], flex_name,
             )
             executeSQL(query, print_time_sql=False)
             dtype[column_dtype[0]] = column_dtype[1]
@@ -1049,12 +1059,16 @@ read_json : Ingests a JSON file into the Vertica database.
     else:
         schema = "public"
     if header_names and dtype:
-        warning_message = "Parameters 'header_names' and 'dtype' are both defined. Only 'dtype' will be used."
+        warning_message = (
+            "Parameters 'header_names' and 'dtype' are both defined. "
+            "Only 'dtype' will be used."
+        )
         warnings.warn(warning_message, Warning)
     if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=path.split("/")[-1].split(".csv")[0])
     assert not (temporary_table) or not (temporary_local_table), ParameterError(
-        "Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True."
+        "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
+        "set to True."
     )
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
@@ -1072,10 +1086,16 @@ read_json : Ingests a JSON file into the Vertica database.
         table_name = path.split("/")[-1].split(".csv")[0]
     if table_name == "*":
         assert dtype, ParameterError(
-            "Parameter 'dtype' must include the types of all columns in the table when ingesting multiple files."
+            "Parameter 'dtype' must include the types of all columns in "
+            "the table when ingesting multiple files."
         )
         table_name = path.split("/")[-2]
-    query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
+    query = """SELECT 
+                    column_name 
+               FROM columns 
+               WHERE table_name = '{0}' 
+                 AND table_schema = '{1}' 
+               ORDER BY ordinal_position""".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
     )
     result = executeSQL(
@@ -1107,11 +1127,17 @@ read_json : Ingests a JSON file into the Vertica database.
                     else:
                         position = "middle"
                     file_header[idx] = "col{}".format(idx)
-                    warning_message = "An inconsistent name was found in the {} of the file header (isolated separator). It will be replaced by col{}.".format(
-                        position, idx
-                    )
+                    warning_message = (
+                        "An inconsistent name was found in the {0} of the "
+                        "file header (isolated separator). It will be replaced "
+                        "by col{1}."
+                    ).format(position, idx)
                     if idx == 0:
-                        warning_message += "\nThis can happen when exporting a pandas DataFrame to CSV while retaining its indexes.\nTip: Use index=False when exporting with pandas.DataFrame.to_csv."
+                        warning_message += (
+                            "\nThis can happen when exporting a pandas DataFrame "
+                            "to CSV while retaining its indexes.\nTip: Use "
+                            "index=False when exporting with pandas.DataFrame.to_csv."
+                        )
                     warnings.warn(warning_message, Warning)
         if (header_names == []) and (header):
             if not (dtype):
@@ -1171,7 +1197,12 @@ read_json : Ingests a JSON file into the Vertica database.
                 genSQL=True,
             )
         skip = " SKIP 1" if (header) else ""
-        query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
+        query2 = """COPY {0}({1}) 
+                    FROM {2} 
+                    DELIMITER '{3}' 
+                    NULL '{4}' 
+                    ENCLOSED BY '{5}' 
+                    ESCAPE AS '{6}'{7};""".format(
             input_relation,
             ", ".join(['"' + column + '"' for column in header_names]),
             "{}",
@@ -1314,7 +1345,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = '"{}"'.format(table_name)
         flex_name = gen_tmp_name(name="flex")[1:-1]
         executeSQL(
-            "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
+            "CREATE FLEX LOCAL TEMP TABLE {0}(x int) ON COMMIT PRESERVE ROWS;".format(
                 flex_name
             ),
             title="Creating flex table.",
@@ -2134,11 +2165,11 @@ relation: str
 name: str, optional
 	Name of the vDataFrame. It is used only when displaying the vDataFrame.
 schema: str, optional
-	Relation schema. It can be to use to be less ambiguous and allow to create schema 
-	and relation name with dots '.' inside.
+	Relation schema. It can be to use to be less ambiguous and allow to 
+    create schema and relation name with dots '.' inside.
 history: list, optional
-	vDataFrame history (user modifications). to use to keep the previous vDataFrame
-	history.
+	vDataFrame history (user modifications). to use to keep the previous 
+    vDataFrame history.
 saving: list, optional
 	List to use to reconstruct the vDataFrame from previous transformations.
 
@@ -2174,9 +2205,10 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
     for column, ctype in dtypes:
         if '"' in column:
-            warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
-                column, column.replace('"', "_")
-            )
+            warning_message = (
+                'A double quote " was found in the column {0}, its '
+                "alias was changed using underscores '_' to {1}"
+            ).format(column, column.replace('"', "_"))
             warnings.warn(warning_message, Warning)
         from verticapy.vcolumn import vColumn
 
@@ -2250,7 +2282,11 @@ list
             test = False
         if not (test):
             raise VersionError(
-                "This Function is not available for Vertica version {}.\nPlease upgrade your Vertica version to at least {} to get this functionality.".format(
+                (
+                    "This Function is not available for Vertica version {0}.\n"
+                    "Please upgrade your Vertica version to at least {1} to "
+                    "get this functionality."
+                ).format(
                     version[0] + "." + version[1] + "." + version[2].split("-")[0],
                     ".".join([str(elem) for elem in condition[:3]]),
                 )
