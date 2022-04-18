@@ -63,7 +63,6 @@ from verticapy.errors import *
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
-from verticapy.learn.tree import get_tree_list_of_arrays
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -2053,6 +2052,7 @@ Main Class for Vertica Model
         memModel model.
         """
         from verticapy.learn.memmodel import memModel
+        from verticapy.learn.tree import get_tree_list_of_arrays
 
         if self.type == "AutoML":
             return self.best_model_.to_memmodel()
@@ -2265,6 +2265,8 @@ Main Class for Vertica Model
     str / func
         Python function
         """
+        from verticapy.learn.tree import get_tree_list_of_arrays
+
         if not (return_str):
             func = self.to_python(
                 name=name,
