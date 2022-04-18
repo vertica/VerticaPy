@@ -864,11 +864,11 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Parsing the data.",
     )
     executeSQL(
-        "SELECT compute_flextable_keys('{0}');".format(flex_name),
+        f"SELECT compute_flextable_keys('{flex_name}');",
         title="Guessing flex tables keys.",
     )
     result = executeSQL(
-        "SELECT key_name, data_type_guess FROM {1}_keys".format(flex_name),
+        f"SELECT key_name, data_type_guess FROM {flex_name}_keys",
         title="Guessing the data types.",
         method="fetchall",
     )
