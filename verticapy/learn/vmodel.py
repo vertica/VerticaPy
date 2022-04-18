@@ -1308,7 +1308,9 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
-                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number of samples each branch must have after splitting a node must be between 1 and 1e6, inclusive."
+                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
+                    "of samples each branch must have after splitting a node must "
+                    "be between 1 and 1e6, inclusive."
                 )
                 model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
             elif "min_samples_leaf" not in self.parameters:
@@ -2410,7 +2412,8 @@ Main Class for Vertica Model
             func += "\t\telse:\n"
             func += "\t\t\tright_node = int(right_child[node_id])\n"
             func += "\t\t\tleft_node = int(left_child[node_id])\n"
-            func += "\t\t\tif np.sum((row - centroids[left_node]) ** 2) < np.sum((row - centroids[right_node]) ** 2):\n"
+            func += "\t\t\tif np.sum((row - centroids[left_node]) ** 2) < "
+            func += "np.sum((row - centroids[right_node]) ** 2):\n"
             func += "\t\t\t\treturn predict_tree(right_child, left_child, row, left_node, centroids)\n"
             func += "\t\t\telse:\n"
             func += "\t\t\t\treturn predict_tree(right_child, left_child, row, right_node, centroids)\n"
@@ -2525,7 +2528,9 @@ Main Class for Vertica Model
             func += "\t\t\t\telif prob['type'] == 'categorical':\n"
             func += "\t\t\t\t\tprob = prob[str(c)][X[idx]]\n"
             func += "\t\t\t\telse:\n"
-            func += "\t\t\t\t\tprob = 1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq']) * np.exp(- (float(X[idx]) - prob[c]['mu']) ** 2 / (2 * prob[c]['sigma_sq']))\n"
+            func += "\t\t\t\t\tprob = 1 / np.sqrt(2 * np.pi * prob[c]['sigma_sq'])"
+            func += " * np.exp(- (float(X[idx]) - prob[c]['mu']) ** 2 / "
+            func += "(2 * prob[c]['sigma_sq']))\n"
             func += "\t\t\t\tsub_result += [prob]\n"
             func += "\t\t\tresult += [sub_result]\n"
             func += "\t\tresult = np.array(result).prod(axis=1) * prior\n"
@@ -2595,8 +2600,10 @@ Main Class for Vertica Model
             else:
                 func += "\t\t\treturn tree[6][node_id]\n"
             func += "\t\telse:\n"
-            func += "\t\t\tidx, right_node, left_node = tree[2][node_id], tree[1][node_id], tree[0][node_id]\n"
-            func += "\t\t\tif (tree[5][node_id] and str(X[idx]) == tree[3][node_id]) or (not(tree[5][node_id]) and float(X[idx]) < float(tree[3][node_id])):\n"
+            func += "\t\t\tidx, right_node, left_node = tree[2]"
+            func += "[node_id], tree[1][node_id], tree[0][node_id]\n"
+            func += "\t\t\tif (tree[5][node_id] and str(X[idx]) == tree[3][node_id]) "
+            func += "or (not(tree[5][node_id]) and float(X[idx]) < float(tree[3][node_id])):\n"
             func += "\t\t\t\treturn predict_tree(tree, left_node, X)\n"
             func += "\t\t\telse:\n"
             func += "\t\t\t\treturn predict_tree(tree, right_node, X)\n"
@@ -2623,10 +2630,12 @@ Main Class for Vertica Model
                     func += "\t\tfor idx, elem in enumerate(all_classes_score):\n"
                     func += "\t\t\tfor val in result:\n"
                     func += "\t\t\t\tall_classes_score[elem] += val[elem]\n"
-                    func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - (logodds[idx] + {} * all_classes_score[elem])))\n".format(
+                    func += "\t\t\tall_classes_score[elem] = 1 / (1 + np.exp( - "
+                    func += "(logodds[idx] + {} * all_classes_score[elem])))\n".format(
                         self.parameters["learning_rate"]
                     )
-                    func += "\t\tresult = [all_classes_score[elem] for elem in all_classes_score]\n"
+                    func += "\t\tresult = [all_classes_score[elem] for elem in "
+                    func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
                 func += "\t\treturn np.mean(result)\n"
             else:
