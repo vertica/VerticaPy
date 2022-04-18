@@ -174,7 +174,8 @@ def sql_from_nb(
     """
     ---------------------------------------------------------------------------
     Predicts using a naive Bayes model and the input attributes. This function
-    returns the unnormalized probabilities of each class as raw SQL code to deploy the model.
+    returns the unnormalized probabilities of each class as raw SQL code to 
+    deploy the model.
 
     Parameters
     ----------
@@ -210,8 +211,8 @@ def sql_from_nb(
                       'S': 0.324942791762014}
           For 'categorical':
             Key 'type' must have the value 'categorical'.
-            Each of the model's classes must include a dictionary with all the feature
-            categories.
+            Each of the model's classes must include a dictionary with all the 
+            feature categories.
             Example: {'type': 'categorical', 
                       'C': {'female': 0.407843137254902, 'male': 0.592156862745098}, 
                       'Q': {'female': 0.416666666666667, 'male': 0.583333333333333}, 
@@ -278,7 +279,8 @@ def predict_from_chaid_tree(
     X: list / numpy.array
       Data on which to make the prediction.
     tree: dict
-      A CHAID tree. CHAID trees can be generated with the vDataFrame.chaid method.
+      A CHAID tree. CHAID trees can be generated with the vDataFrame.chaid 
+      method.
     classes: list / numpy.array, optional
       The classes in the CHAID model.
     return_proba: bool, optional
@@ -340,7 +342,8 @@ def sql_from_chaid_tree(
     X: list / numpy.array
       Data on which to make the prediction.
     tree: dict
-      A CHAID tree. Chaid trees can be generated with the vDataFrame.chaid method.
+      A CHAID tree. Chaid trees can be generated with the vDataFrame.chaid 
+      method.
     classes: list / numpy.array, optional
       The classes in the CHAID model.
     return_proba: bool, optional
@@ -414,26 +417,31 @@ def chaid_to_graphviz(
     Parameters
     ----------
     tree: dict
-        CHAID tree. You can generate this tree with the vDataFrame.chaid method.
+        CHAID tree. You can generate this tree with the vDataFrame.chaid 
+        method.
     classes: list, optional
         The classes in the CHAID model.
     classes_color: list, optional
         Colors that represent the different classes.
     round_pred: int, optional
-        The number of decimals to round the prediction to. 0 rounds to an integer.
+        The number of decimals to round the prediction to. 0 rounds to 
+        an integer.
     percent: bool, optional
         If set to True, the probabilities are returned as percents.
     vertical: bool, optional
         If set to True, the function generates a vertical tree.
     node_style: dict, optional
-        Dictionary of options to customize each node of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each node of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
     arrow_style: dict, optional
-        Dictionary of options to customize each arrow of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each arrow of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
     leaf_style: dict, optional
-        Dictionary of options to customize each leaf of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each leaf of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
 
     Returns
     -------
@@ -488,9 +496,11 @@ def chaid_to_graphviz(
                 else classes.copy()
             )
             color = classes_color[(np.argmax(tree["prediction"])) % len(classes_color)]
-            label = '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" bgcolor="{}"><b> prediction: {} </b></td></tr>'.format(
-                color, classes_[np.argmax(tree["prediction"])]
-            )
+            label = (
+                '<<table border="0" cellspacing="0"> '
+                '<tr><td port="port1" border="1" bgcolor="{}">'
+                "<b> prediction: {} </b></td></tr>"
+            ).format(color, classes_[np.argmax(tree["prediction"])])
             for j in range(len(tree["prediction"])):
                 val = (
                     round(tree["prediction"][j] * 100, round_pred)
@@ -499,9 +509,10 @@ def chaid_to_graphviz(
                 )
                 if percent:
                     val = str(val) + "%"
-                label += '<tr><td port="port{}" border="1" align="left"> prob({}): {} </td></tr>'.format(
-                    j, classes_[j], val
-                )
+                label += (
+                    '<tr><td port="port{}" border="1" align="left"> '
+                    "prob({}): {} </td></tr>"
+                ).format(j, classes_[j], val)
             label += "</table>>"
         return "{} [label={}{}]".format(tree["node_id"], label, flat_dict(leaf_style))
     else:
@@ -560,21 +571,21 @@ def predict_from_binary_tree(
     X: list / numpy.array
         Data on which to make the prediction.
     children_left: list / numpy.array
-        A list of node IDs, where children_left[i] is the node id of the left 
-        child of node i.
+        A list of node IDs, where children_left[i] is the node id of the 
+        left child of node i.
     children_right: list / numpy.array
-        A list of node IDs, children_right[i] is the node id of the right child 
-        of node i.
+        A list of node IDs, children_right[i] is the node id of the right 
+        child of node i.
     feature: list / numpy.array
-         A list of features, where feature[i] is the feature to split on for the 
-         internal node i.
+         A list of features, where feature[i] is the feature to split on 
+         for the internal node i.
     threshold: list / numpy.array
-        A list of thresholds, where threshold[i] is the threshold for the internal 
-        node i.
+        A list of thresholds, where threshold[i] is the threshold for the 
+        internal node i.
     value: list / numpy.array
-        Contains the constant prediction value of each node. If used for classification 
-        and if return_proba is set to True, each element of the list must be a sublist
-        with the probabilities of each class.
+        Contains the constant prediction value of each node. If used for 
+        classification and if return_proba is set to True, each element 
+        of the list must be a sublist with the probabilities of each class.
     classes: list / numpy.array, optional
         The classes for the binary tree model.
     return_proba: bool, optional
@@ -667,28 +678,29 @@ def sql_from_binary_tree(
 ) -> Union[list, str]:
     """
     ---------------------------------------------------------------------------
-    Returns the SQL code needed to deploy a binary tree model using its attributes.
+    Returns the SQL code needed to deploy a binary tree model using 
+    its attributes.
 
     Parameters
     ----------
     X: list / numpy.array
         Data on which to make the prediction.
     children_left: list / numpy.array
-        A list of node IDs, where children_left[i] is the node id of the left 
-        child of node i.
+        A list of node IDs, where children_left[i] is the node id of the 
+        left child of node i.
     children_right: list / numpy.array
-        A list of node IDs, children_right[i] is the node id of the right child 
-        of node i.
+        A list of node IDs, children_right[i] is the node id of the right 
+        child of node i.
     feature: list / numpy.array
-         A list of features, where feature[i] is the feature to split on for the 
-         internal node i.
+        A list of features, where feature[i] is the feature to split on 
+        for the internal node i.
     threshold: list / numpy.array
-        A list of thresholds, where threshold[i] is the threshold for the internal 
-        node i.
+        A list of thresholds, where threshold[i] is the threshold for the 
+        internal node i.
     value: list / numpy.array
-        Contains the constant prediction value of each node. If used for classification 
-        and if return_proba is set to True, each element of the list must be a sublist
-        with the probabilities of each class.
+        Contains the constant prediction value of each node. If used for 
+        classification and if return_proba is set to True, each element 
+        of the list must be a sublist with the probabilities of each class.
     classes: list / numpy.array, optional
         The classes for the binary tree model.
     return_proba: bool, optional
@@ -808,21 +820,21 @@ def binary_tree_to_graphviz(
     Parameters
     ----------
     children_left: list / numpy.array
-        A list of node IDs, where children_left[i] is the node ID of the left
-        child of node i.
+        A list of node IDs, where children_left[i] is the node ID 
+        of the left child of node i.
     children_right: list / numpy.array
-        A list of node IDs, where children_right[i] is the node ID of the right child
-        of node i.
+        A list of node IDs, where children_right[i] is the node ID 
+        of the right child of node i.
     feature: list / numpy.array
-        A list of features, where feature[i] is the feature to split on for
-        internal node i.
+        A list of features, where feature[i] is the feature to split 
+        on for internal node i.
     threshold: list / numpy.array
-        A list of thresholds, where threshold[i] is the threshold for internal
-        node i.
+        A list of thresholds, where threshold[i] is the threshold for 
+        internal node i.
     value: list / numpy.array
-        A list of constant prediction values of each node. If used for classification
-        and return_proba is set to True, each element of the list must be a sublist
-        with the probabilities of each class.
+        A list of constant prediction values of each node. If used for 
+        classification and return_proba is set to True, each element of 
+        the list must be a sublist with the probabilities of each class.
     feature_names: list / numpy.array, optional
         List of the names of each feature.
     classes: list / numpy.array, optional
@@ -832,20 +844,24 @@ def binary_tree_to_graphviz(
     prefix_pred: str, optional
         The prefix for the name of each prediction.
     round_pred: int, optional
-        The number of decimals to round the prediction to. 0 rounds to an integer.
+        The number of decimals to round the prediction to. 0 rounds to 
+        an integer.
     percent: bool, optional
         If set to True, the probabilities are returned as percents.
     vertical: bool, optional
         If set to True, the function generates a vertical tree.
     node_style: dict, optional
-        Dictionary of options to customize each node of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each node of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
     arrow_style: dict, optional
-        Dictionary of options to customize each arrow of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each arrow of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
     leaf_style: dict, optional
-        Dictionary of options to customize each leaf of the tree. For a list of options, see
-        the Graphviz API: https://graphviz.org/doc/info/attrs.html
+        Dictionary of options to customize each leaf of the tree. 
+        For a list of options, see the Graphviz API: 
+        https://graphviz.org/doc/info/attrs.html
 
     Returns
     -------

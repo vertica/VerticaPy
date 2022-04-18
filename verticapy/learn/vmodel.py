@@ -1547,9 +1547,7 @@ Main Class for Vertica Model
                             "Incorrect parameter 'init'.\nThe initialization "
                             "method of the clusters must be in (random | "
                             "kmeanspp | pseudo) or a list of the initial "
-                            "clusters position, found '{}'.".format(
-                                parameters["init"]
-                            )
+                            "clusters position, found '{}'.".format(parameters["init"])
                         )
                     else:
                         assert str(parameters["init"]).lower() in [
@@ -1559,9 +1557,7 @@ Main Class for Vertica Model
                             "Incorrect parameter 'init'.\nThe initialization"
                             " method of the clusters must be in (random | "
                             "kmeanspp) or a list of the initial clusters "
-                            "position, found '{}'.".format(
-                                parameters["init"]
-                            )
+                            "position, found '{}'.".format(parameters["init"])
                         )
                 model_parameters["init"] = parameters["init"]
             elif "init" not in self.parameters:
@@ -1805,9 +1801,7 @@ Main Class for Vertica Model
                         "lapack"
                     ], ParameterError(
                         "Incorrect parameter 'method'.\nThe decomposition method "
-                        "must be in (lapack), found '{}'.".format(
-                            parameters["method"]
-                        )
+                        "must be in (lapack), found '{}'.".format(parameters["method"])
                     )
                     model_parameters["method"] = parameters["method"]
                 elif "method" not in self.parameters:
@@ -1881,9 +1875,7 @@ Main Class for Vertica Model
                 ], ParameterError(
                     "Incorrect parameter 'column_naming'.\nThe column_naming "
                     "method must be in (indices | values | values_relaxed), "
-                    "found '{}'.".format(
-                        parameters["column_naming"]
-                    )
+                    "found '{}'.".format(parameters["column_naming"])
                 )
                 model_parameters["column_naming"] = parameters["column_naming"]
             elif "column_naming" not in self.parameters:
