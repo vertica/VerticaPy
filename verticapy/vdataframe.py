@@ -107,34 +107,43 @@ input_relation: str
     In this case input_relation must only be the relation name (it must 
     not include a schema).
 usecols: list, optional
-    List of columns to use to create the object. As Vertica is a columnar DB
-    including less columns makes the process faster. Do not hesitate to not include 
-    useless columns.
+    List of columns to use to create the object. As Vertica is a columnar 
+    DB including less columns makes the process faster. Do not hesitate 
+    to not include useless columns.
 schema: str, optional
-    Relation schema. It can be used to be less ambiguous and allow to create schema 
-    and relation name with dots '.' inside.
+    Relation schema. It can be used to be less ambiguous and allow to 
+    create schema and relation name with dots '.' inside.
 empty: bool, optional
-    If set to True, the created object will be empty. It can be used to create customized 
-    vDataFrame without going through the initialization check.
+    If set to True, the created object will be empty. It can be used to 
+    create customized vDataFrame without going through the initialization 
+    check.
 
 Attributes
 ----------
 _VERTICAPY_VARIABLES_: dict
     Dictionary containing all vDataFrame attributes.
-        allcols_ind, int      : Int to use to optimize the SQL code generation.
+        allcols_ind, int      : Int to use to optimize the SQL 
+                                code generation.
         columns, list         : List of the vColumns names.
-        count, int            : Number of elements of the vDataFrame (catalog).
-        exclude_columns, list : vColumns to exclude from the final relation.
+        count, int            : Number of elements of the vDataFrame 
+                                (catalog).
+        exclude_columns, list : vColumns to exclude from the final 
+                                relation.
         history, list         : vDataFrame history (user modifications).
         input_relation, str   : Name of the vDataFrame.
-        main_relation, str    : Relation to use to build the vDataFrame (first floor).
-        order_by, dict        : Dictionary of all rules to sort the vDataFrame.
-        saving, list          : List to use to reconstruct the vDataFrame.
+        main_relation, str    : Relation to use to build the vDataFrame 
+                                (first floor).
+        order_by, dict        : Dictionary of all rules to sort the 
+                                vDataFrame.
+        saving, list          : List to use to reconstruct the 
+                                vDataFrame.
         schema, str           : Schema of the input relation.
-        where, list           : List of all rules to filter the vDataFrame.
+        where, list           : List of all rules to filter the 
+                                vDataFrame.
 vColumns : vColumn
-    Each vColumn of the vDataFrame is accessible by entering its name between brackets
-    For example to access to "myVC", you can write vDataFrame["myVC"].
+    Each vColumn of the vDataFrame is accessible by entering its name 
+    between brackets. For example to access to "myVC", you can write 
+    vDataFrame["myVC"].
     """
 
     #
@@ -180,12 +189,16 @@ vColumns : vColumn
                 if (usecols)
                 else ""
             )
-            query = "SELECT column_name, data_type FROM ((SELECT column_name, data_type, ordinal_position FROM columns WHERE table_name = '{}' AND table_schema = '{}'{})".format(
+            query = ("SELECT column_name, data_type FROM ((SELECT column_name, "
+                     "data_type, ordinal_position FROM columns WHERE table_name "
+                     "= '{0}' AND table_schema = '{1}'{2})").format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
             )
-            query += " UNION (SELECT column_name, data_type, ordinal_position FROM view_columns WHERE table_name = '{}' AND table_schema = '{}'{})) x ORDER BY ordinal_position".format(
+            query += (" UNION (SELECT column_name, data_type, ordinal_position "
+                      "FROM view_columns WHERE table_name = '{0}' AND table_schema "
+                      "= '{1}'{2})) x ORDER BY ordinal_position").format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
@@ -208,7 +221,8 @@ vColumns : vColumn
             for col_dtype in columns_dtype:
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
-                    warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}.".format(
+                    warning_message = ("A double quote \" was found in the column {0}, "
+                                       "its alias was changed using underscores '_' to {1}.").format(
                         column, column.replace('"', "_")
                     )
                     warnings.warn(warning_message, Warning)
@@ -261,7 +275,8 @@ vColumns : vColumn
     def __getitem__(self, index):
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
-                "vDataFrame doesn't allow slicing having steps different than 1."
+                "vDataFrame doesn't allow slicing having steps "
+                "different than 1."
             )
             index_stop = index.stop
             index_start = index.start
@@ -431,10 +446,9 @@ vColumns : vColumn
                 table = (
                     self.__genSQL__()
                     if (method == "pearson")
-                    else "(SELECT RANK() OVER (ORDER BY {}) AS {}, RANK() OVER (ORDER BY {}) AS {} FROM {}) rank_spearman_table".format(
+                    else ("(SELECT RANK() OVER (ORDER BY {0}) AS {0}, RANK() OVER "
+                          "(ORDER BY {1}) AS {1} FROM {2}) rank_spearman_table").format(
                         columns[0],
-                        columns[0],
-                        columns[1],
                         columns[1],
                         self.__genSQL__(),
                     )
@@ -476,24 +490,18 @@ vColumns : vColumn
                     cast_b, cast_n = cast_0, cast_1
                 else:
                     return float("nan")
-                query = "SELECT (AVG(DECODE({}{}, 1, {}{}, NULL)) - AVG(DECODE({}{}, 0, {}{}, NULL))) / STDDEV({}{}) * SQRT(SUM({}{}) * SUM(1 - {}{}) / COUNT(*) / COUNT(*)) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+                query = """SELECT 
+                                (AVG(DECODE({0}{1}, 1, {2}{3}, NULL)) 
+                                    - AVG(DECODE({0}{1}, 0, {2}{3}, NULL))) 
+                                    / STDDEV({2}{3}) * SQRT(SUM({0}{1}) 
+                                    * SUM(1 - {0}{1}) / COUNT(*) / COUNT(*)) 
+                            FROM {4} 
+                            WHERE {0} IS NOT NULL AND {2} IS NOT NULL;""".format(
                     column_b,
                     cast_b,
                     column_n,
                     cast_n,
-                    column_b,
-                    cast_b,
-                    column_n,
-                    cast_n,
-                    column_n,
-                    cast_n,
-                    column_b,
-                    cast_b,
-                    column_b,
-                    cast_b,
                     self.__genSQL__(),
-                    column_n,
-                    column_b,
                 )
                 title = "Computes the biserial correlation between {} and {}.".format(
                     column_b, column_n
@@ -501,11 +509,11 @@ vColumns : vColumn
             elif method == "cramer":
                 if columns[1] == columns[0]:
                     return 1
-                table_0_1 = "SELECT {}, {}, COUNT(*) AS nij FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2".format(
-                    columns[0], columns[1], self.__genSQL__(), columns[0], columns[1]
+                table_0_1 = "SELECT {0}, {1}, COUNT(*) AS nij FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT NULL GROUP BY 1, 2".format(
+                    columns[0], columns[1], self.__genSQL__()
                 )
-                table_0 = "SELECT {}, COUNT(*) AS ni FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1".format(
-                    columns[0], self.__genSQL__(), columns[0], columns[1]
+                table_0 = "SELECT {0}, COUNT(*) AS ni FROM {1} WHERE {0} IS NOT NULL AND {2} IS NOT NULL GROUP BY 1".format(
+                    columns[0], self.__genSQL__(), columns[1]
                 )
                 table_1 = "SELECT {}, COUNT(*) AS nj FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1".format(
                     columns[1], self.__genSQL__(), columns[0], columns[1]

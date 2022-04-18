@@ -165,14 +165,16 @@ schema, or geo index.
 Parameters
 ----------
 name: str, optional
-    Relation name. If empty, it will drop all VerticaPy temporary elements.
+    Relation name. If empty, it will drop all VerticaPy temporary 
+    elements.
 raise_error: bool, optional
-    If the object couldn't be dropped, raises the entire error instead of
-    displaying a warning.
+    If the object couldn't be dropped, raises the entire error 
+    instead of displaying a warning.
 method: str, optional
     Method used to drop.
-        auto   : identifies the table/view/index/model to drop. It will never
-                 drop an entire schema unless the method is set to 'schema'.
+        auto   : identifies the table/view/index/model to drop. 
+                 It will never drop an entire schema unless the 
+                 method is set to 'schema'.
         model  : drops the input model.
         table  : drops the input table.
         view   : drops the input view.        

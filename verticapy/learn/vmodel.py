@@ -708,51 +708,52 @@ Main Class for Vertica Model
                 return param
 
         parameters = {}
-        for param in model.parameters:
+        
+        for param in self.parameters:
 
-            if model.type in ("LinearSVC", "LinearSVR") and param == "C":
-                parameters[param] = model.parameters[param]
+            if self.type in ("LinearSVC", "LinearSVR") and param == "C":
+                parameters[param] = self.parameters[param]
 
             elif (
-                model.type in ("LinearRegression", "LogisticRegression")
+                self.type in ("LinearRegression", "LogisticRegression")
                 and param == "C"
             ):
-                parameters["lambda"] = model.parameters[param]
+                parameters["lambda"] = self.parameters[param]
 
-            elif model.type == "BisectingKMeans" and param in (
+            elif self.type == "BisectingKMeans" and param in (
                 "init",
                 "max_iter",
                 "tol",
             ):
                 if param == "init":
                     parameters["kmeans_center_init_method"] = (
-                        "'" + model.parameters[param] + "'"
+                        "'" + self.parameters[param] + "'"
                     )
                 elif param == "max_iter":
-                    parameters["kmeans_max_iterations"] = model.parameters[param]
+                    parameters["kmeans_max_iterations"] = self.parameters[param]
                 elif param == "tol":
-                    parameters["kmeans_epsilon"] = model.parameters[param]
+                    parameters["kmeans_epsilon"] = self.parameters[param]
 
             elif param == "max_leaf_nodes":
                 parameters[map_to_vertica_param_name(param)] = int(
-                    model.parameters[param]
+                    self.parameters[param]
                 )
 
             elif param == "class_weight":
-                if isinstance(model.parameters[param], Iterable):
+                if isinstance(self.parameters[param], Iterable):
                     parameters["class_weights"] = "'{}'".format(
-                        ", ".join([str(item) for item in model.parameters[param]])
+                        ", ".join([str(item) for item in self.parameters[param]])
                     )
                 else:
-                    parameters["class_weights"] = "'{}'".format(model.parameters[param])
+                    parameters["class_weights"] = "'{}'".format(self.parameters[param])
 
-            elif isinstance(model.parameters[param], (str, dict)):
+            elif isinstance(self.parameters[param], (str, dict)):
                 parameters[map_to_vertica_param_name(param)] = "'{}'".format(
-                    model.parameters[param]
+                    self.parameters[param]
                 )
 
             else:
-                parameters[map_to_vertica_param_name(param)] = model.parameters[param]
+                parameters[map_to_vertica_param_name(param)] = self.parameters[param]
 
         return parameters
 
