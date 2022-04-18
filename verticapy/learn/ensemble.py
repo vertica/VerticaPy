@@ -65,7 +65,7 @@ from verticapy.learn.tree import get_tree_list_of_arrays
 
 # ---#
 class XGBoost_utils:
-    # Class: 
+    # Class:
     # - to export Vertica XGBoost to the Python XGBoost JSON format.
     # - to get the XGB priors
 

@@ -1307,10 +1307,10 @@ vColumns : vColumn
             for elem in columns:
                 column_name = self.format_colnames(elem)
                 if columns[elem].lower() not in ("asc", "desc"):
-                    warning_message = ("Method of {} must be in (asc, desc), found '{}'\n"
-                                       "This column was ignored.").format(
-                        column_name, columns[elem].lower()
-                    )
+                    warning_message = (
+                        "Method of {} must be in (asc, desc), found '{}'\n"
+                        "This column was ignored."
+                    ).format(column_name, columns[elem].lower())
                     warnings.warn(warning_message, Warning)
                 else:
                     order_by += ["{} {}".format(column_name, columns[elem].upper())]
@@ -9736,7 +9736,9 @@ vColumns : vColumn
         columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in columns_tmp:
             max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(columns)
+        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(
+            columns
+        )
         return self
 
     # ---#

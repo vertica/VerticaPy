@@ -769,6 +769,7 @@ vDataFrame
         dataset_name="world",
     )
 
+
 #
 # Datasets used in the tests
 #
@@ -806,6 +807,7 @@ def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
     insert_into(table_name=table_name, schema=schema, data=data, copy=False)
 
     return vDataFrame(input_relation=input_relation)
+
 
 # ---#
 def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):

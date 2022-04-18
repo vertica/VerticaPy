@@ -53,8 +53,8 @@ import os
 from configparser import ConfigParser
 
 # VerticaPy Modules
-from verticapy.utilities import check_types
 import verticapy
+from verticapy.toolbox import check_types
 from verticapy.errors import *
 
 # Vertica Modules
@@ -151,6 +151,7 @@ dsn: str, optional
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
+
 
 # ---#
 def current_conn():

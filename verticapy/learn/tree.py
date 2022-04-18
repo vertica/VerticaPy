@@ -66,6 +66,7 @@ def get_tree_list_of_arrays(
     It returns a list of arrays. Each index of the arrays represents
     a node value.
     """
+
     def map_idx(x):
         for idx, elem in enumerate(X):
             if quote_ident(x).lower() == quote_ident(elem).lower():
@@ -101,6 +102,7 @@ def get_tree_list_of_arrays(
     if return_probability:
         tree_list += [tree["probability/variance"]]
     return tree_list
+
 
 #
 # Tree Algorithms

@@ -55,7 +55,6 @@ from typing import Union
 # VerticaPy Modules
 import vertica_python
 import verticapy
-from verticapy.connect import current_cursor
 from verticapy.toolbox import *
 from verticapy.errors import *
 
@@ -449,6 +448,7 @@ Returns
 list of tuples
 	The list of the different columns and their respective type.
 	"""
+    from verticapy.connect import current_cursor
 
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
         try:

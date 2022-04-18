@@ -649,7 +649,7 @@ Main Class for Vertica Model
 
     # ---#
     def get_vertica_param_dict(self):
-    """
+        """
     ---------------------------------------------------------------------------
     Returns the Vertica parameters dict to use when fitting the
     model. As some model's parameters names are not the same in
@@ -714,10 +714,17 @@ Main Class for Vertica Model
             if model.type in ("LinearSVC", "LinearSVR") and param == "C":
                 parameters[param] = model.parameters[param]
 
-            elif model.type in ("LinearRegression", "LogisticRegression") and param == "C":
+            elif (
+                model.type in ("LinearRegression", "LogisticRegression")
+                and param == "C"
+            ):
                 parameters["lambda"] = model.parameters[param]
 
-            elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
+            elif model.type == "BisectingKMeans" and param in (
+                "init",
+                "max_iter",
+                "tol",
+            ):
                 if param == "init":
                     parameters["kmeans_center_init_method"] = (
                         "'" + model.parameters[param] + "'"
@@ -728,7 +735,9 @@ Main Class for Vertica Model
                     parameters["kmeans_epsilon"] = model.parameters[param]
 
             elif param == "max_leaf_nodes":
-                parameters[map_to_vertica_param_name(param)] = int(model.parameters[param])
+                parameters[map_to_vertica_param_name(param)] = int(
+                    model.parameters[param]
+                )
 
             elif param == "class_weight":
                 if isinstance(model.parameters[param], Iterable):
@@ -2155,7 +2164,9 @@ Main Class for Vertica Model
                     "return_tree" not in kwds
                 ):
                     tree = self.get_tree(i)
-                    tree = get_tree_list_of_arrays(tree, self.X, self.type, return_prob_rf)
+                    tree = get_tree_list_of_arrays(
+                        tree, self.X, self.type, return_prob_rf
+                    )
                     tree_attributes = {
                         "children_left": tree[0],
                         "children_right": tree[1],

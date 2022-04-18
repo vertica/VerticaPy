@@ -485,11 +485,13 @@ def insert_verticapy_schema(
     sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
     result = executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):
-        warning_message = ("The VerticaPy schema doesn't exist or is "
-                           "incomplete. The model can not be stored.\n"
-                           "Please use create_verticapy_schema function "
-                           "to set up the schema and the drop function to "
-                           "drop it if it is corrupted.")
+        warning_message = (
+            "The VerticaPy schema doesn't exist or is "
+            "incomplete. The model can not be stored.\n"
+            "Please use create_verticapy_schema function "
+            "to set up the schema and the drop function to "
+            "drop it if it is corrupted."
+        )
         warnings.warn(warning_message, Warning)
     else:
         size = sys.getsizeof(model_save)
@@ -503,11 +505,11 @@ def insert_verticapy_schema(
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
-                sql = ("INSERT INTO verticapy.models(model_name, category, "
+                sql = (
+                    "INSERT INTO verticapy.models(model_name, category, "
                     "model_type, create_time, size) VALUES ('{}', '{}', '{}', "
-                    "'{}', {});").format(
-                    model_name, category, model_type, create_time, size
-                )
+                    "'{}', {});"
+                ).format(model_name, category, model_type, create_time, size)
                 executeSQL(sql, print_time_sql=False)
                 executeSQL("COMMIT;", print_time_sql=False)
                 for elem in model_save:
