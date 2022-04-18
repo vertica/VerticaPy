@@ -15,7 +15,8 @@
 import pytest
 
 # VerticaPy
-from verticapy import drop, set_option, current_cursor, tablesample
+from verticapy import drop, set_option, tablesample
+from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler

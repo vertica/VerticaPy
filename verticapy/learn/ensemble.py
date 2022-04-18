@@ -61,10 +61,14 @@ from verticapy.toolbox import *
 from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
+from verticapy.learn.tree import get_tree_list_of_arrays
 
 # ---#
-class XGBoost_to_json:
-    # Class to export Vertica XGBoost to the Python XGBoost JSON format.
+class XGBoost_utils:
+    # Class: 
+    # - to export Vertica XGBoost to the Python XGBoost JSON format.
+    # - to get the XGB priors
+
     def to_json(self, path: str = ""):
         """
         ---------------------------------------------------------------------------
@@ -122,7 +126,7 @@ class XGBoost_to_json:
 
             def xgboost_tree_dict(model, tree_id: int, c: str = None):
                 tree = model.get_tree(tree_id)
-                attributes = tree_attributes_list(tree, model.X, model.type)
+                attributes = get_tree_list_of_arrays(tree, model.X, model.type)
                 n_nodes = len(attributes[0])
                 split_conditions = []
                 parents = [0 for i in range(n_nodes)]
@@ -360,6 +364,57 @@ class XGBoost_to_json:
         else:
             return result
 
+    # ---#
+    def get_prior(self):
+        """
+        ---------------------------------------------------------------------------
+        Returns the XGB Priors.
+            
+        Returns
+        -------
+        list
+            XGB Priors.
+        """
+        from verticapy.utilities import version
+
+        condition = ["{} IS NOT NULL".format(elem) for elem in self.X] + [
+            "{} IS NOT NULL".format(self.y)
+        ]
+        v = version()
+        v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
+        if self.type == "XGBoostRegressor" or (
+            len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
+        ):
+            prior_ = executeSQL(
+                "SELECT AVG({}) FROM {} WHERE {}".format(
+                    self.y, self.input_relation, " AND ".join(condition)
+                ),
+                method="fetchfirstelem",
+                print_time_sql=False,
+            )
+        elif not (v):
+            prior_ = []
+            for elem in self.classes_:
+                avg = executeSQL(
+                    "SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
+                        self.input_relation, " AND ".join(condition), self.y, elem
+                    ),
+                    method="fetchfirstelem",
+                    print_time_sql=False,
+                )
+                avg /= executeSQL(
+                    "SELECT COUNT(*) FROM {} WHERE {}".format(
+                        self.input_relation, " AND ".join(condition)
+                    ),
+                    method="fetchfirstelem",
+                    print_time_sql=False,
+                )
+                logodds = np.log(avg / (1 - avg))
+                prior_ += [logodds]
+        else:
+            prior_ = [0.0 for elem in self.classes_]
+        return prior_
+
 
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
@@ -500,7 +555,7 @@ nbins: int, optional
 
 
 # ---#
-class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_to_json):
+class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
     """
 ---------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
@@ -584,7 +639,7 @@ col_sample_by_node: float, optional
 
 
 # ---#
-class XGBoostRegressor(Regressor, Tree, XGBoost_to_json):
+class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
     """
 ---------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 

@@ -53,9 +53,10 @@ import os
 
 # VerticaPy Modules
 import vertica_python
+from verticapy import vDataFrame
+from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
-from verticapy import vDataFrame
 from verticapy.errors import *
 from verticapy.learn.vmodel import *
 from verticapy.learn.tools import *

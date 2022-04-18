@@ -62,6 +62,7 @@ except:
     )
 
 # VerticaPy Modules
+from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
 

@@ -66,6 +66,7 @@ except:
 
 # VerticaPy Modules
 import verticapy
+from verticapy.connect import current_cursor
 from verticapy.vcolumn import vColumn
 from verticapy.utilities import *
 from verticapy.toolbox import *
@@ -1256,12 +1257,12 @@ vColumns : vColumn
                 return "VERTICAPY_NOT_PRECOMPUTED"
             return total
         elif method:
-            method = str_function(method.lower())
+            method = get_verticapy_function(method.lower())
             if columns[1] in self[columns[0]].catalog[method]:
                 return self[columns[0]].catalog[method][columns[1]]
             else:
                 return "VERTICAPY_NOT_PRECOMPUTED"
-        key = str_function(key.lower())
+        key = get_verticapy_function(key.lower())
         column = self.format_colnames(column)
         try:
             if (key == "approx_unique") and ("unique" in self[column].catalog):
@@ -1292,6 +1293,30 @@ vColumns : vColumn
         if max_pos in self._VERTICAPY_VARIABLES_["order_by"]:
             order_by = self._VERTICAPY_VARIABLES_["order_by"][max_pos]
         return order_by
+
+    # ---#
+    def __get_sort_syntax__(columns):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL syntax to use to sort the input columns.
+        """
+        if not (columns):
+            return ""
+        if isinstance(columns, dict):
+            order_by = []
+            for elem in columns:
+                column_name = self.format_colnames(elem)
+                if columns[elem].lower() not in ("asc", "desc"):
+                    warning_message = ("Method of {} must be in (asc, desc), found '{}'\n"
+                                       "This column was ignored.").format(
+                        column_name, columns[elem].lower()
+                    )
+                    warnings.warn(warning_message, Warning)
+                else:
+                    order_by += ["{} {}".format(column_name, columns[elem].upper())]
+        else:
+            order_by = [quote_ident(elem) for elem in columns]
+        return " ORDER BY {}".format(", ".join(order_by))
 
     # ---#
     def __update_catalog__(
@@ -1331,7 +1356,7 @@ vColumns : vColumn
                 }
             self._VERTICAPY_VARIABLES_["count"] = -1
         elif matrix:
-            matrix = str_function(matrix.lower())
+            matrix = get_verticapy_function(matrix.lower())
             if matrix in [
                 "cov",
                 "pearson",
@@ -1363,7 +1388,7 @@ vColumns : vColumn
                 for i in range(len(values["index"])):
                     key, val = values["index"][i].lower(), values[column][i]
                     if key not in ["listagg"]:
-                        key = str_function(key)
+                        key = get_verticapy_function(key)
                         try:
                             val = float(val)
                             if val - int(val) == 0:
@@ -1409,12 +1434,11 @@ vColumns : vColumn
         """
         if isinstance(columns, str):
             columns = [columns]
-        vdf_columns = self.get_columns()
         for column in columns:
             if not (self.is_colname_in(column)):
                 try:
                     e = ""
-                    nearestcol = nearest_column(vdf_columns, column)
+                    nearestcol = self.get_nearest_column(column)
                     if nearestcol[1] < 5:
                         e = "\nDid you mean {} ?".format(nearestcol[0])
                 except:
@@ -1503,6 +1527,35 @@ vColumns : vColumn
                     "|".join([str(elem) for elem in expected_nb_of_cols]), len(columns)
                 )
             )
+
+    # ---#
+    def get_nearest_column(self, column: str):
+        """
+    ---------------------------------------------------------------------------
+    Method used to find the nearest column's name to the input one.
+
+    Parameters
+    ----------
+    column: str
+        Input column.
+
+    Returns
+    -------
+    tuple
+        (nearest column, levenstein distance)
+        """
+        columns = self.get_columns()
+        col = column.replace('"', "").lower()
+        result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
+        if len(columns) == 1:
+            return result
+        for elem in columns:
+            if elem != result[0]:
+                current_col = elem.replace('"', "").lower()
+                d = levenshtein(current_col, col)
+                if result[1] > d:
+                    result = (elem, d)
+        return result
 
     #
     # Methods
@@ -2471,8 +2524,8 @@ vColumns : vColumn
         func = func.lower()
         by = ", ".join(by)
         by = "PARTITION BY {}".format(by) if (by) else ""
-        order_by = sort_str(order_by, self)
-        func = str_function(func.lower(), method="vertica")
+        order_by = self.__get_sort_syntax__(order_by)
+        func = get_verticapy_function(func.lower(), method="vertica")
         if func in (
             "max",
             "min",
@@ -8242,7 +8295,10 @@ vColumns : vColumn
         check_types([("q", q, [list]), ("approx", approx, [bool])])
         prefix = "approx_" if approx else ""
         return self.aggregate(
-            func=[str_function(prefix + "{}%".format(float(item) * 100)) for item in q],
+            func=[
+                get_verticapy_function(prefix + "{}%".format(float(item) * 100))
+                for item in q
+            ],
             columns=columns,
             **agg_kwds,
         )
@@ -8815,9 +8871,9 @@ vColumns : vColumn
         order_by = (
             " ORDER BY {}".format(columns[0])
             if not (order_by)
-            else sort_str(order_by, self)
+            else self.__get_sort_syntax__(order_by)
         )
-        func = str_function(func.lower(), method="vertica")
+        func = get_verticapy_function(func.lower(), method="vertica")
         windows_frame = " OVER ({}{} {} BETWEEN {} AND {})".format(
             by,
             order_by,
@@ -9680,7 +9736,7 @@ vColumns : vColumn
         columns_tmp = [elem for elem in self._VERTICAPY_VARIABLES_["columns"]]
         for column in columns_tmp:
             max_pos = max(max_pos, len(self[column].transformations) - 1)
-        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = sort_str(columns, self)
+        self._VERTICAPY_VARIABLES_["order_by"][max_pos] = self.__get_sort_syntax__(columns)
         return self
 
     # ---#
@@ -9978,7 +10034,7 @@ vColumns : vColumn
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
-        order_by = sort_str(order_by, self)
+        order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
         if n_files > 1:
@@ -10283,7 +10339,7 @@ vColumns : vColumn
         total = self.shape()[0]
         current_nb_rows_written, file_id = 0, 0
         limit = int(total / n_files) + 1
-        order_by = sort_str(order_by, self)
+        order_by = self.__get_sort_syntax__(order_by)
         if not (order_by):
             order_by = self.__get_last_order_by__()
         if n_files > 1:
@@ -10515,7 +10571,7 @@ vColumns : vColumn
             dirMode,
             str(int96AsTimestamp).lower(),
             partition,
-            sort_str(order_by, self),
+            self.__get_sort_syntax__(order_by),
             self.__genSQL__(),
         )
         title = "Exporting data to Parquet format."
@@ -10654,7 +10710,7 @@ vColumns : vColumn
                 ("random_state", random_state, [int]),
             ]
         )
-        order_by = sort_str(order_by, self)
+        order_by = self.__get_sort_syntax__(order_by)
         if not random_state:
             random_state = verticapy.options["random_state"]
         random_seed = (

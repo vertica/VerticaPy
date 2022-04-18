@@ -19,6 +19,7 @@ import pandas as pd
 
 # VerticaPy
 import vertica_python
+from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.datasets import load_cities, load_titanic, load_world, load_iris
 from verticapy.geo import *

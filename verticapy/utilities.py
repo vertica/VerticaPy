@@ -53,8 +53,9 @@ import os, math, shutil, re, time, decimal, warnings, datetime
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
 import vertica_python
+import verticapy
+from verticapy.connect import current_cursor
 from verticapy.toolbox import *
 from verticapy.errors import *
 
@@ -454,7 +455,7 @@ list of tuples
             if column_name:
                 executeSQL(expr, print_time_sql=False)
                 description = current_cursor().description[0]
-                return type_code_dtype(
+                return type_code_to_dtype(
                     type_code=description[1],
                     display_size=description[2],
                     precision=description[4],
@@ -467,7 +468,7 @@ list of tuples
                     ctype += [
                         [
                             elem[0],
-                            type_code_dtype(
+                            type_code_to_dtype(
                                 type_code=elem[1],
                                 display_size=elem[2],
                                 precision=elem[4],
@@ -2090,7 +2091,7 @@ def to_tablesample(query: str, title: str = ""):
     cursor = executeSQL(query, print_time_sql=False)
     description, dtype = cursor.description, {}
     for elem in description:
-        dtype[elem[0]] = type_code_dtype(
+        dtype[elem[0]] = type_code_to_dtype(
             type_code=elem[1], display_size=elem[2], precision=elem[4], scale=elem[5]
         )
     elapsed_time = time.time() - start_time

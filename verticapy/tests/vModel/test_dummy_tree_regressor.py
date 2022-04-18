@@ -22,10 +22,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    current_cursor,
-    dataset_reg,
 )
-from verticapy.datasets import load_titanic
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_dataset_reg
 from verticapy.learn.tree import DummyTreeRegressor
 
 set_option("print_info", False)
@@ -33,7 +32,7 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def tr_data_vd():
-    tr_data = dataset_reg(table_name="tr_data", schema="public")
+    tr_data = load_dataset_reg(table_name="tr_data", schema="public")
     yield tr_data
     drop(name="public.tr_data", method="table")
 

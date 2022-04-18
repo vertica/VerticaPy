@@ -28,11 +28,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    xgb_prior,
-    current_cursor,
-    dataset_cl,
 )
-from verticapy.datasets import load_titanic
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.ensemble import XGBoostClassifier
 
 set_option("print_info", False)
@@ -40,7 +38,7 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def xgbc_data_vd():
-    xgbc_data = dataset_cl(table_name="xgbc_data", schema="public")
+    xgbc_data = load_dataset_cl(table_name="xgbc_data", schema="public")
     yield xgbc_data
     drop(name="public.xgbc_data", method="table")
 
@@ -81,7 +79,7 @@ def model(xgbc_data_vd):
     )
     classes = current_cursor().fetchall()
     model_class.classes_ = [item[0] for item in classes]
-    model_class.prior_ = xgb_prior(model_class)
+    model_class.prior_ = model_class.get_prior()
 
     yield model_class
     model_class.drop()

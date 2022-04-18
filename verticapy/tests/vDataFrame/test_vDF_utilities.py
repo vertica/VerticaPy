@@ -29,8 +29,8 @@ from verticapy import (
     drop_if_exists,
     set_option,
     read_shp,
-    current_cursor,
 )
+from verticapy.connect import current_cursor
 import verticapy.stats as st
 from verticapy.datasets import load_titanic, load_cities, load_amazon, load_world
 

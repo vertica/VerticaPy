@@ -63,6 +63,7 @@ from verticapy.errors import *
 from verticapy.learn.metrics import *
 from verticapy.learn.tools import *
 from verticapy.learn.memmodel import *
+from verticapy.learn.tree import get_tree_list_of_arrays
 
 ##
 #  ___      ___  ___      ___     ______    ________    _______  ___
@@ -645,6 +646,107 @@ Main Class for Vertica Model
 		model parameters
 		"""
         return self.parameters
+
+    # ---#
+    def get_vertica_param_dict(self):
+    """
+    ---------------------------------------------------------------------------
+    Returns the Vertica parameters dict to use when fitting the
+    model. As some model's parameters names are not the same in
+    Vertica. It is important to map them.
+
+    Returns
+    -------
+    dict
+        vertica parameters
+        """
+
+        def map_to_vertica_param_name(param: str):
+
+            if param.lower() == "class_weights":
+                return "class_weight"
+
+            elif param.lower() == "solver":
+                return "optimizer"
+
+            elif param.lower() == "tol":
+                return "epsilon"
+
+            elif param.lower() == "max_iter":
+                return "max_iterations"
+
+            elif param.lower() == "penalty":
+                return "regularization"
+
+            elif param.lower() == "C":
+                return "lambda"
+
+            elif param.lower() == "l1_ratio":
+                return "alpha"
+
+            elif param.lower() == "n_estimators":
+                return "ntree"
+
+            elif param.lower() == "max_features":
+                return "mtry"
+
+            elif param.lower() == "sample":
+                return "sampling_size"
+
+            elif param.lower() == "max_leaf_nodes":
+                return "max_breadth"
+
+            elif param.lower() == "min_samples_leaf":
+                return "min_leaf_size"
+
+            elif param.lower() == "n_components":
+                return "num_components"
+
+            elif param.lower() == "init":
+                return "init_method"
+
+            else:
+                return param
+
+        parameters = {}
+        for param in model.parameters:
+
+            if model.type in ("LinearSVC", "LinearSVR") and param == "C":
+                parameters[param] = model.parameters[param]
+
+            elif model.type in ("LinearRegression", "LogisticRegression") and param == "C":
+                parameters["lambda"] = model.parameters[param]
+
+            elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
+                if param == "init":
+                    parameters["kmeans_center_init_method"] = (
+                        "'" + model.parameters[param] + "'"
+                    )
+                elif param == "max_iter":
+                    parameters["kmeans_max_iterations"] = model.parameters[param]
+                elif param == "tol":
+                    parameters["kmeans_epsilon"] = model.parameters[param]
+
+            elif param == "max_leaf_nodes":
+                parameters[map_to_vertica_param_name(param)] = int(model.parameters[param])
+
+            elif param == "class_weight":
+                if isinstance(model.parameters[param], Iterable):
+                    parameters["class_weights"] = "'{}'".format(
+                        ", ".join([str(item) for item in model.parameters[param]])
+                    )
+                else:
+                    parameters["class_weights"] = "'{}'".format(model.parameters[param])
+
+            elif isinstance(model.parameters[param], (str, dict)):
+                parameters[map_to_vertica_param_name(param)] = "'{}'".format(
+                    model.parameters[param]
+                )
+
+            else:
+                parameters[map_to_vertica_param_name(param)] = model.parameters[param]
+
+        return parameters
 
     # ---#
     def plot(self, max_nb_points: int = 100, ax=None, **style_kwds):
@@ -2053,7 +2155,7 @@ Main Class for Vertica Model
                     "return_tree" not in kwds
                 ):
                     tree = self.get_tree(i)
-                    tree = tree_attributes_list(tree, self.X, self.type, return_prob_rf)
+                    tree = get_tree_list_of_arrays(tree, self.X, self.type, return_prob_rf)
                     tree_attributes = {
                         "children_left": tree[0],
                         "children_right": tree[1],
@@ -2372,7 +2474,7 @@ Main Class for Vertica Model
             for i in range(n):
                 tree = self.get_tree(i)
                 func += "\ttree_list += [{}]\n".format(
-                    tree_attributes_list(tree, self.X, self.type)
+                    get_tree_list_of_arrays(tree, self.X, self.type)
                 )
             func += "\tdef predict_tree(tree, node_id, X):\n"
             func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
@@ -2565,7 +2667,7 @@ class Supervised(vModel):
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        parameters = vertica_param_dict(self)
+        parameters = self.get_vertica_param_dict()
         if (
             "regularization" in parameters
             and parameters["regularization"].lower() == "'enet'"
@@ -2626,7 +2728,7 @@ class Supervised(vModel):
             else:
                 self.classes_ = input_relation[self.y].distinct()
         if self.type in ("XGBoostClassifier", "XGBoostRegressor"):
-            self.prior_ = xgb_prior(self)
+            self.prior_ = self.get_prior()
         return self
 
 
@@ -4184,7 +4286,7 @@ class Unsupervised(vModel):
             if not (X):
                 X = vDataFrame(input_relation).numcol()
         self.X = [quote_ident(column) for column in X]
-        parameters = vertica_param_dict(self)
+        parameters = self.get_vertica_param_dict()
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
         fun = self.get_model_fun()[0] if self.type != "MCA" else "PCA"

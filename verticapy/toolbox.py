@@ -105,32 +105,6 @@ def bin_spatial_to_str(category: str, column: str = "{}"):
 
 
 # ---#
-def current_conn():
-    from verticapy.connect import read_auto_connect, connect
-
-    if (
-        not (verticapy.options["connection"]["conn"])
-        or verticapy.options["connection"]["conn"].closed()
-    ):
-        if (
-            verticapy.options["connection"]["section"]
-            and verticapy.options["connection"]["dsn"]
-        ):
-            connect(
-                verticapy.options["connection"]["section"],
-                verticapy.options["connection"]["dsn"],
-            )
-        else:
-            read_auto_connect()
-    return verticapy.options["connection"]["conn"]
-
-
-# ---#
-def current_cursor():
-    return current_conn().cursor()
-
-
-# ---#
 def check_types(types_list: list = []):
     for elem in types_list:
         list_check = False
@@ -193,6 +167,8 @@ def executeSQL(
             ),
         ]
     )
+    from verticapy.connect import current_cursor
+
     cursor = current_cursor()
     if verticapy.options["query_on"] and print_time_sql:
         print_query(query, title)
@@ -237,29 +213,6 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         return (val, str_category(x))
     else:
         return val
-
-
-# ---#
-def gen_name(L: list):
-    return "_".join(
-        [
-            "".join(ch for ch in str(elem).lower() if ch.isalnum() or ch == "_")
-            for elem in L
-        ]
-    )
-
-
-# ---#
-def gen_tmp_name(schema: str = "", name: str = ""):
-    session_user = get_session()
-    L = session_user.split("_")
-    L[0] = "".join(filter(str.isalnum, L[0]))
-    L[1] = "".join(filter(str.isalnum, L[1]))
-    random_int = random.randint(0, 10e9)
-    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
-    if schema:
-        name = "{}.{}".format(quote_ident(schema), name)
-    return name
 
 
 # ---#
@@ -309,6 +262,16 @@ def get_match_index(x: str, col_list: list, str_check: bool = True):
         ):
             return idx
     return None
+
+
+# ---#
+def gen_name(L: list):
+    return "_".join(
+        [
+            "".join(ch for ch in str(elem).lower() if ch.isalnum() or ch == "_")
+            for elem in L
+        ]
+    )
 
 
 # ---#
@@ -398,6 +361,76 @@ def get_session(add_username: bool = True):
 
 
 # ---#
+def gen_tmp_name(schema: str = "", name: str = ""):
+    session_user = get_session()
+    L = session_user.split("_")
+    L[0] = "".join(filter(str.isalnum, L[0]))
+    L[1] = "".join(filter(str.isalnum, L[1]))
+    random_int = random.randint(0, 10e9)
+    name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
+    if schema:
+        name = "{}.{}".format(quote_ident(schema), name)
+    return name
+
+
+# ---#
+def get_verticapy_function(key: str, method: str = ""):
+    key = key.lower()
+    if key in ("median", "med"):
+        key = "50%"
+    elif key in ("approx_median", "approximate_median"):
+        key = "approx_50%"
+    elif key == "100%":
+        key = "max"
+    elif key == "0%":
+        key = "min"
+    elif key == "approximate_count_distinct":
+        key = "approx_unique"
+    elif key == "approximate_count_distinct":
+        key = "approx_unique"
+    elif key == "ema":
+        key = "exponential_moving_average"
+    elif key == "mean":
+        key = "avg"
+    elif key in ("stddev", "stdev"):
+        key = "std"
+    elif key == "product":
+        key = "prod"
+    elif key == "variance":
+        key = "var"
+    elif key == "kurt":
+        key = "kurtosis"
+    elif key == "skew":
+        key = "skewness"
+    elif key in ("top1", "mode"):
+        key = "top"
+    elif key == "top1_percent":
+        key = "top_percent"
+    elif "%" == key[-1]:
+        start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
+        if float(key[start:-1]) == int(float(key[start:-1])):
+            key = "{}%".format(int(float(key[start:-1])))
+            if start == 7:
+                key = "approx_" + key
+    elif key == "row":
+        key = "row_number"
+    elif key == "first":
+        key = "first_value"
+    elif key == "last":
+        key = "last_value"
+    elif key == "next":
+        key = "lead"
+    elif key in ("prev", "previous"):
+        key = "lag"
+    if method == "vertica":
+        if key == "var":
+            key = "variance"
+        elif key == "std":
+            key = "stddev"
+    return key
+
+
+# ---#
 def indentSQL(query: str):
     query = (
         query.replace("SELECT", "\n   SELECT\n    ")
@@ -452,7 +485,11 @@ def insert_verticapy_schema(
     sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
     result = executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):
-        warning_message = "The VerticaPy schema doesn't exist or is incomplete. The model can not be stored.\nPlease use create_verticapy_schema function to set up the schema and the drop function to drop it if it is corrupted."
+        warning_message = ("The VerticaPy schema doesn't exist or is "
+                           "incomplete. The model can not be stored.\n"
+                           "Please use create_verticapy_schema function "
+                           "to set up the schema and the drop function to "
+                           "drop it if it is corrupted.")
         warnings.warn(warning_message, Warning)
     else:
         size = sys.getsizeof(model_save)
@@ -466,7 +503,9 @@ def insert_verticapy_schema(
             if result:
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
-                sql = "INSERT INTO verticapy.models(model_name, category, model_type, create_time, size) VALUES ('{}', '{}', '{}', '{}', {});".format(
+                sql = ("INSERT INTO verticapy.models(model_name, category, "
+                    "model_type, create_time, size) VALUES ('{}', '{}', '{}', "
+                    "'{}', {});").format(
                     model_name, category, model_type, create_time, size
                 )
                 executeSQL(sql, print_time_sql=False)
@@ -481,24 +520,6 @@ def insert_verticapy_schema(
             warning_message = "The VerticaPy model could not be stored:\n{}".format(e)
             warnings.warn(warning_message, Warning)
             raise
-
-
-# ---#
-def reverse_score(metric: str):
-    if metric in [
-        "logloss",
-        "max",
-        "mae",
-        "median",
-        "mse",
-        "msle",
-        "rmse",
-        "aic",
-        "bic",
-        "auto",
-    ]:
-        return False
-    return True
 
 
 # ---#
@@ -539,63 +560,6 @@ def levenshtein(s: str, t: str):
 
 
 # ---#
-def nearest_column(columns: list, column: str):
-    col = column.replace('"', "").lower()
-    result = (columns[0], levenshtein(col, columns[0].replace('"', "").lower()))
-    if len(columns) == 1:
-        return result
-    for elem in columns:
-        if elem != result[0]:
-            current_col = elem.replace('"', "").lower()
-            d = levenshtein(current_col, col)
-            if result[1] > d:
-                result = (elem, d)
-    return result
-
-
-# ---#
-def tree_attributes_list(
-    tree, X: list, model_type: str, return_probability: bool = False
-):
-    # Returns trees list of attributes.
-    def map_idx(x):
-        for idx, elem in enumerate(X):
-            if quote_ident(x).lower() == quote_ident(elem).lower():
-                return idx
-
-    tree_list = []
-    for idx in range(len(tree["tree_id"])):
-        tree.values["left_child_id"] = [
-            idx if elem == tree.values["node_id"][idx] else elem
-            for elem in tree.values["left_child_id"]
-        ]
-        tree.values["right_child_id"] = [
-            idx if elem == tree.values["node_id"][idx] else elem
-            for elem in tree.values["right_child_id"]
-        ]
-        tree.values["node_id"][idx] = idx
-        tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
-        if model_type == "XGBoostClassifier" and isinstance(tree["log_odds"][idx], str):
-            val, all_val = tree["log_odds"][idx].split(","), {}
-            for elem in val:
-                all_val[elem.split(":")[0]] = float(elem.split(":")[1])
-            tree.values["log_odds"][idx] = all_val
-    tree_list = [
-        tree["left_child_id"],
-        tree["right_child_id"],
-        tree["split_predictor"],
-        tree["split_value"],
-        tree["prediction"],
-        tree["is_categorical_split"],
-    ]
-    if model_type == "XGBoostClassifier":
-        tree_list += [tree["log_odds"]]
-    if return_probability:
-        tree_list += [tree["probability/variance"]]
-    return tree_list
-
-
-# ---#
 def print_query(query: str, title: str = ""):
     screen_columns = shutil.get_terminal_size().columns
     query_print = indentSQL(query)
@@ -608,20 +572,6 @@ def print_query(query: str, title: str = ""):
     else:
         print("$ {} $\n".format(title))
         print(query_print)
-        print("-" * int(screen_columns) + "\n")
-
-
-# ---#
-def print_time(elapsed_time: float):
-    screen_columns = shutil.get_terminal_size().columns
-    if isnotebook():
-        from IPython.core.display import HTML, display
-
-        display(
-            HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3)))
-        )
-    else:
-        print("Execution: {}s".format(round(elapsed_time, 3)))
         print("-" * int(screen_columns) + "\n")
 
 
@@ -855,11 +805,43 @@ def print_table(
 
 
 # ---#
+def print_time(elapsed_time: float):
+    screen_columns = shutil.get_terminal_size().columns
+    if isnotebook():
+        from IPython.core.display import HTML, display
+
+        display(
+            HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3)))
+        )
+    else:
+        print("Execution: {}s".format(round(elapsed_time, 3)))
+        print("-" * int(screen_columns) + "\n")
+
+
+# ---#
 def quote_ident(column: str):
     tmp_column = str(column)
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
     return '"{}"'.format(str(tmp_column).replace('"', '""'))
+
+
+# ---#
+def reverse_score(metric: str):
+    if metric in [
+        "logloss",
+        "max",
+        "mae",
+        "median",
+        "mse",
+        "msle",
+        "rmse",
+        "aic",
+        "bic",
+        "auto",
+    ]:
+        return False
+    return True
 
 
 # ---#
@@ -892,86 +874,12 @@ def schema_relation(relation):
 
 
 # ---#
-def sort_str(columns, vdf):
-    if not (columns):
-        return ""
-    if isinstance(columns, dict):
-        order_by = []
-        for elem in columns:
-            column_name = vdf.format_colnames(elem)
-            if columns[elem].lower() not in ("asc", "desc"):
-                warning_message = "Method of {} must be in (asc, desc), found '{}'\nThis column was ignored.".format(
-                    column_name, columns[elem].lower()
-                )
-                warnings.warn(warning_message, Warning)
-            else:
-                order_by += ["{} {}".format(column_name, columns[elem].upper())]
-    else:
-        order_by = [quote_ident(elem) for elem in columns]
-    return " ORDER BY {}".format(", ".join(order_by))
-
-
-# ---#
-def str_function(key: str, method: str = ""):
-    key = key.lower()
-    if key in ("median", "med"):
-        key = "50%"
-    elif key in ("approx_median", "approximate_median"):
-        key = "approx_50%"
-    elif key == "100%":
-        key = "max"
-    elif key == "0%":
-        key = "min"
-    elif key == "approximate_count_distinct":
-        key = "approx_unique"
-    elif key == "approximate_count_distinct":
-        key = "approx_unique"
-    elif key == "ema":
-        key = "exponential_moving_average"
-    elif key == "mean":
-        key = "avg"
-    elif key in ("stddev", "stdev"):
-        key = "std"
-    elif key == "product":
-        key = "prod"
-    elif key == "variance":
-        key = "var"
-    elif key == "kurt":
-        key = "kurtosis"
-    elif key == "skew":
-        key = "skewness"
-    elif key in ("top1", "mode"):
-        key = "top"
-    elif key == "top1_percent":
-        key = "top_percent"
-    elif "%" == key[-1]:
-        start = 7 if len(key) >= 7 and key[0:7] == "approx_" else 0
-        if float(key[start:-1]) == int(float(key[start:-1])):
-            key = "{}%".format(int(float(key[start:-1])))
-            if start == 7:
-                key = "approx_" + key
-    elif key == "row":
-        key = "row_number"
-    elif key == "first":
-        key = "first_value"
-    elif key == "last":
-        key = "last_value"
-    elif key == "next":
-        key = "lead"
-    elif key in ("prev", "previous"):
-        key = "lag"
-    if method == "vertica":
-        if key == "var":
-            key = "variance"
-        elif key == "std":
-            key = "stddev"
-    return key
-
-
-# ---#
-def type_code_dtype(
+def type_code_to_dtype(
     type_code: int, display_size: int = 0, precision: int = 0, scale: int = 0
 ):
+    """
+Takes as input the Vertica Python type code and returns its corresponding data type.
+    """
     types = {
         5: "Boolean",
         6: "Integer",
@@ -1042,75 +950,6 @@ def color_dict(d: dict, idx: int = 0):
 
 
 # ---#
-def vertica_param_name(param: str):
-    if param.lower() == "class_weights":
-        return "class_weight"
-    elif param.lower() == "solver":
-        return "optimizer"
-    elif param.lower() == "tol":
-        return "epsilon"
-    elif param.lower() == "max_iter":
-        return "max_iterations"
-    elif param.lower() == "penalty":
-        return "regularization"
-    elif param.lower() == "C":
-        return "lambda"
-    elif param.lower() == "l1_ratio":
-        return "alpha"
-    elif param.lower() == "n_estimators":
-        return "ntree"
-    elif param.lower() == "max_features":
-        return "mtry"
-    elif param.lower() == "sample":
-        return "sampling_size"
-    elif param.lower() == "max_leaf_nodes":
-        return "max_breadth"
-    elif param.lower() == "min_samples_leaf":
-        return "min_leaf_size"
-    elif param.lower() == "n_components":
-        return "num_components"
-    elif param.lower() == "init":
-        return "init_method"
-    else:
-        return param
-
-
-# ---#
-def vertica_param_dict(model):
-    parameters = {}
-    for param in model.parameters:
-        if model.type in ("LinearSVC", "LinearSVR") and param == "C":
-            parameters[param] = model.parameters[param]
-        elif model.type in ("LinearRegression", "LogisticRegression") and param == "C":
-            parameters["lambda"] = model.parameters[param]
-        elif model.type == "BisectingKMeans" and param in ("init", "max_iter", "tol"):
-            if param == "init":
-                parameters["kmeans_center_init_method"] = (
-                    "'" + model.parameters[param] + "'"
-                )
-            elif param == "max_iter":
-                parameters["kmeans_max_iterations"] = model.parameters[param]
-            elif param == "tol":
-                parameters["kmeans_epsilon"] = model.parameters[param]
-        elif param == "max_leaf_nodes":
-            parameters[vertica_param_name(param)] = int(model.parameters[param])
-        elif param == "class_weight":
-            if isinstance(model.parameters[param], Iterable):
-                parameters["class_weights"] = "'{}'".format(
-                    ", ".join([str(item) for item in model.parameters[param]])
-                )
-            else:
-                parameters["class_weights"] = "'{}'".format(model.parameters[param])
-        elif isinstance(model.parameters[param], (str, dict)):
-            parameters[vertica_param_name(param)] = "'{}'".format(
-                model.parameters[param]
-            )
-        else:
-            parameters[vertica_param_name(param)] = model.parameters[param]
-    return parameters
-
-
-# ---#
 def str_category(expr):
     try:
         category = expr.category()
@@ -1126,50 +965,6 @@ def str_category(expr):
         else:
             category = ""
     return category
-
-
-# ---#
-def xgb_prior(model):
-    # Computing XGB prior probabilities
-    from verticapy.utilities import version
-
-    condition = ["{} IS NOT NULL".format(elem) for elem in model.X] + [
-        "{} IS NOT NULL".format(model.y)
-    ]
-    v = version()
-    v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
-    if model.type == "XGBoostRegressor" or (
-        len(model.classes_) == 2 and model.classes_[1] == 1 and model.classes_[0] == 0
-    ):
-        prior_ = executeSQL(
-            "SELECT AVG({}) FROM {} WHERE {}".format(
-                model.y, model.input_relation, " AND ".join(condition)
-            ),
-            method="fetchfirstelem",
-            print_time_sql=False,
-        )
-    elif not (v):
-        prior_ = []
-        for elem in model.classes_:
-            avg = executeSQL(
-                "SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
-                    model.input_relation, " AND ".join(condition), model.y, elem
-                ),
-                method="fetchfirstelem",
-                print_time_sql=False,
-            )
-            avg /= executeSQL(
-                "SELECT COUNT(*) FROM {} WHERE {}".format(
-                    model.input_relation, " AND ".join(condition)
-                ),
-                method="fetchfirstelem",
-                print_time_sql=False,
-            )
-            logodds = np.log(avg / (1 - avg))
-            prior_ += [logodds]
-    else:
-        prior_ = [0.0 for elem in model.classes_]
-    return prior_
 
 
 # ---#
@@ -1216,116 +1011,6 @@ def flat_dict(d: dict) -> str:
     if res:
         res = ", {}".format(res)
     return res
-
-
-# ---#
-def dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
-    # Function used in the tests
-    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
-
-    data = [
-        [1, 0, "Male", 0, "Cheap", "Low"],
-        [2, 0, "Male", 1, "Cheap", "Med"],
-        [3, 1, "Female", 1, "Cheap", "Med"],
-        [4, 0, "Female", 0, "Cheap", "Low"],
-        [5, 0, "Male", 1, "Cheap", "Med"],
-        [6, 1, "Male", 0, "Standard", "Med"],
-        [7, 1, "Female", 1, "Standard", "Med"],
-        [8, 2, "Female", 1, "Expensive", "Hig"],
-        [9, 2, "Male", 2, "Expensive", "Med"],
-        [10, 2, "Female", 2, "Expensive", "Hig"],
-    ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
-
-    drop_if_exists(name=input_relation, method="table")
-    create_table(
-        table_name=table_name,
-        schema=schema,
-        dtype={
-            "Id": "INT",
-            "transportation": "INT",
-            "gender": "VARCHAR",
-            "owned cars": "INT",
-            "cost": "VARCHAR",
-            "income": "CHAR(4)",
-        },
-    )
-    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
-
-    return vDataFrame(input_relation=input_relation)
-
-
-# ---#
-def dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
-    # Function used in the tests
-    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
-
-    data = [
-        [1, "Bus", "Male", 0, "Cheap", "Low"],
-        [2, "Bus", "Male", 1, "Cheap", "Med"],
-        [3, "Train", "Female", 1, "Cheap", "Med"],
-        [4, "Bus", "Female", 0, "Cheap", "Low"],
-        [5, "Bus", "Male", 1, "Cheap", "Med"],
-        [6, "Train", "Male", 0, "Standard", "Med"],
-        [7, "Train", "Female", 1, "Standard", "Med"],
-        [8, "Car", "Female", 1, "Expensive", "Hig"],
-        [9, "Car", "Male", 2, "Expensive", "Med"],
-        [10, "Car", "Female", 2, "Expensive", "Hig"],
-    ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
-
-    drop_if_exists(name=input_relation, method="table")
-    create_table(
-        table_name=table_name,
-        schema=schema,
-        dtype={
-            "Id": "INT",
-            "transportation": "VARCHAR",
-            "gender": "VARCHAR",
-            "owned cars": "INT",
-            "cost": "VARCHAR",
-            "income": "CHAR(4)",
-        },
-    )
-    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
-
-    return vDataFrame(input_relation=input_relation)
-
-
-# ---#
-def dataset_num(table_name: str = "dataset_num", schema: str = "public"):
-    # Function used in the tests
-    from verticapy import vDataFrame, drop_if_exists, insert_into, create_table
-
-    data = [
-        [1, 7.2, 3.6, 6.1, 2.5],
-        [2, 7.7, 2.8, 6.7, 2.0],
-        [3, 7.7, 3.0, 6.1, 2.3],
-        [4, 7.9, 3.8, 6.4, 2.0],
-        [5, 4.4, 2.9, 1.4, 0.2],
-        [6, 4.6, 3.6, 1.0, 0.2],
-        [7, 4.7, 3.2, 1.6, 0.2],
-        [8, 6.5, 2.8, 4.6, 1.5],
-        [9, 6.8, 2.8, 4.8, 1.4],
-        [10, 7.0, 3.2, 4.7, 1.4],
-    ]
-    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
-
-    drop_if_exists(name=input_relation, method="table")
-    create_table(
-        table_name=table_name,
-        schema=schema,
-        dtype={
-            "Id": "INT",
-            "col1": "FLOAT",
-            "col2": "FLOAT",
-            "col3": "FLOAT",
-            "col4": "FLOAT",
-        },
-    )
-    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
-
-    return vDataFrame(input_relation=input_relation)
 
 
 # ---#
