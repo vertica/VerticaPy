@@ -708,15 +708,14 @@ Main Class for Vertica Model
                 return param
 
         parameters = {}
-        
+
         for param in self.parameters:
 
             if self.type in ("LinearSVC", "LinearSVR") and param == "C":
                 parameters[param] = self.parameters[param]
 
             elif (
-                self.type in ("LinearRegression", "LogisticRegression")
-                and param == "C"
+                self.type in ("LinearRegression", "LogisticRegression") and param == "C"
             ):
                 parameters["lambda"] = self.parameters[param]
 

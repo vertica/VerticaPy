@@ -189,16 +189,20 @@ vColumns : vColumn
                 if (usecols)
                 else ""
             )
-            query = ("SELECT column_name, data_type FROM ((SELECT column_name, "
-                     "data_type, ordinal_position FROM columns WHERE table_name "
-                     "= '{0}' AND table_schema = '{1}'{2})").format(
+            query = (
+                "SELECT column_name, data_type FROM ((SELECT column_name, "
+                "data_type, ordinal_position FROM columns WHERE table_name "
+                "= '{0}' AND table_schema = '{1}'{2})"
+            ).format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
             )
-            query += (" UNION (SELECT column_name, data_type, ordinal_position "
-                      "FROM view_columns WHERE table_name = '{0}' AND table_schema "
-                      "= '{1}'{2})) x ORDER BY ordinal_position").format(
+            query += (
+                " UNION (SELECT column_name, data_type, ordinal_position "
+                "FROM view_columns WHERE table_name = '{0}' AND table_schema "
+                "= '{1}'{2})) x ORDER BY ordinal_position"
+            ).format(
                 self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
                 self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
                 where,
@@ -221,10 +225,10 @@ vColumns : vColumn
             for col_dtype in columns_dtype:
                 column, dtype = col_dtype[0], col_dtype[1]
                 if '"' in column:
-                    warning_message = ("A double quote \" was found in the column {0}, "
-                                       "its alias was changed using underscores '_' to {1}.").format(
-                        column, column.replace('"', "_")
-                    )
+                    warning_message = (
+                        'A double quote " was found in the column {0}, '
+                        "its alias was changed using underscores '_' to {1}."
+                    ).format(column, column.replace('"', "_"))
                     warnings.warn(warning_message, Warning)
                 new_vColumn = vColumn(
                     '"{}"'.format(column.replace('"', "_")),
@@ -275,8 +279,7 @@ vColumns : vColumn
     def __getitem__(self, index):
         if isinstance(index, slice):
             assert index.step in (1, None), ValueError(
-                "vDataFrame doesn't allow slicing having steps "
-                "different than 1."
+                "vDataFrame doesn't allow slicing having steps " "different than 1."
             )
             index_stop = index.stop
             index_start = index.start
@@ -446,11 +449,11 @@ vColumns : vColumn
                 table = (
                     self.__genSQL__()
                     if (method == "pearson")
-                    else ("(SELECT RANK() OVER (ORDER BY {0}) AS {0}, RANK() OVER "
-                          "(ORDER BY {1}) AS {1} FROM {2}) rank_spearman_table").format(
-                        columns[0],
-                        columns[1],
-                        self.__genSQL__(),
+                    else (
+                        "(SELECT RANK() OVER (ORDER BY {0}) AS {0}, RANK() OVER "
+                        "(ORDER BY {1}) AS {1} FROM {2}) rank_spearman_table"
+                    ).format(
+                        columns[0], columns[1], self.__genSQL__(),
                     )
                 )
                 query = "SELECT CORR({}{}, {}{}) FROM {}".format(
@@ -497,11 +500,7 @@ vColumns : vColumn
                                     * SUM(1 - {0}{1}) / COUNT(*) / COUNT(*)) 
                             FROM {4} 
                             WHERE {0} IS NOT NULL AND {2} IS NOT NULL;""".format(
-                    column_b,
-                    cast_b,
-                    column_n,
-                    cast_n,
-                    self.__genSQL__(),
+                    column_b, cast_b, column_n, cast_n, self.__genSQL__(),
                 )
                 title = "Computes the biserial correlation between {} and {}.".format(
                     column_b, column_n
@@ -509,38 +508,64 @@ vColumns : vColumn
             elif method == "cramer":
                 if columns[1] == columns[0]:
                     return 1
-                table_0_1 = "SELECT {0}, {1}, COUNT(*) AS nij FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT NULL GROUP BY 1, 2".format(
+                table_0_1 = """SELECT 
+                                    {0}, 
+                                    {1}, 
+                                    COUNT(*) AS nij 
+                               FROM {2} 
+                               WHERE {0} IS NOT NULL 
+                                 AND {1} IS NOT NULL 
+                               GROUP BY 1, 2""".format(
                     columns[0], columns[1], self.__genSQL__()
                 )
-                table_0 = "SELECT {0}, COUNT(*) AS ni FROM {1} WHERE {0} IS NOT NULL AND {2} IS NOT NULL GROUP BY 1".format(
+                table_0 = """SELECT 
+                                {0}, 
+                                COUNT(*) AS ni 
+                             FROM {1} 
+                             WHERE {0} IS NOT NULL 
+                               AND {2} IS NOT NULL 
+                             GROUP BY 1""".format(
                     columns[0], self.__genSQL__(), columns[1]
                 )
-                table_1 = "SELECT {}, COUNT(*) AS nj FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1".format(
-                    columns[1], self.__genSQL__(), columns[0], columns[1]
+                table_1 = """SELECT 
+                                {0}, 
+                                COUNT(*) AS nj 
+                             FROM {1} 
+                             WHERE {2} IS NOT NULL 
+                               AND {0} IS NOT NULL 
+                             GROUP BY 1""".format(
+                    columns[1], self.__genSQL__(), columns[0]
                 )
-                sql = "SELECT COUNT(*) AS n, APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
-                    columns[0], columns[1], self.__genSQL__(), columns[0], columns[1]
+                sql = """SELECT 
+                            COUNT(*) AS n, 
+                            APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
+                            APPROXIMATE_COUNT_DISTINCT({1}) AS r 
+                         FROM {2} 
+                         WHERE {0} IS NOT NULL 
+                           AND {1} IS NOT NULL""".format(
+                    columns[0], columns[1], self.__genSQL__()
                 )
                 n, k, r = executeSQL(
                     sql, title="Computing the columns cardinalities.", method="fetchrow"
                 )
-                chi2 = "SELECT SUM((nij - ni * nj / {}) * (nij - ni * nj / {}) / ((ni * nj) / {})) AS chi2 FROM (SELECT * FROM ({}) table_0_1 LEFT JOIN ({}) table_0 ON table_0_1.{} = table_0.{}) x LEFT JOIN ({}) table_1 ON x.{} = table_1.{}".format(
-                    n,
-                    n,
-                    n,
-                    table_0_1,
-                    table_0,
-                    columns[0],
-                    columns[0],
-                    table_1,
-                    columns[1],
-                    columns[1],
+                chi2 = """SELECT 
+                            SUM((nij - ni * nj / {0}) * (nij - ni * nj / {0}) 
+                                / ((ni * nj) / {0})) AS chi2 
+                          FROM 
+                            (SELECT 
+                                * 
+                             FROM ({1}) table_0_1 
+                             LEFT JOIN ({2}) table_0 
+                             ON table_0_1.{3} = table_0.{3}) x 
+                             LEFT JOIN ({4}) table_1 ON x.{5} = table_1.{5}""".format(
+                    n, table_0_1, table_0, columns[0], table_1, columns[1],
                 )
                 result = executeSQL(
                     chi2,
-                    title="Computing the CramerV correlation between {} and {} (Chi2 Statistic).".format(
-                        columns[0], columns[1]
-                    ),
+                    title=(
+                        "Computing the CramerV correlation between {0} "
+                        "and {1} (Chi2 Statistic)."
+                    ).format(columns[0], columns[1]),
                     method="fetchfirstelem",
                 )
                 if min(k - 1, r - 1) == 0:
@@ -554,47 +579,19 @@ vColumns : vColumn
                 if columns[1] == columns[0]:
                     return 1
                 n_ = "SQRT(COUNT(*))"
-                n_c = "(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                    columns[0],
-                    cast_0,
-                    columns[0],
-                    cast_0,
-                    columns[1],
-                    cast_1,
-                    columns[1],
-                    cast_1,
-                    columns[0],
-                    cast_0,
-                    columns[0],
-                    cast_0,
-                    columns[1],
-                    cast_1,
-                    columns[1],
-                    cast_1,
+                n_c = (
+                    "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) "
+                    "OR (x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                ).format(columns[0], cast_0, columns[1], cast_1,)
+                n_d = (
+                    "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) "
+                    "OR (x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                ).format(columns[0], cast_0, columns[1], cast_1,)
+                n_1 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                    columns[0], cast_0, n_
                 )
-                n_d = "(SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                    columns[0],
-                    cast_0,
-                    columns[0],
-                    cast_0,
-                    columns[1],
-                    cast_1,
-                    columns[1],
-                    cast_1,
-                    columns[0],
-                    cast_0,
-                    columns[0],
-                    cast_0,
-                    columns[1],
-                    cast_1,
-                    columns[1],
-                    cast_1,
-                )
-                n_1 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                    columns[0], cast_0, columns[0], cast_0, n_
-                )
-                n_2 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                    columns[1], cast_1, columns[1], cast_1, n_
+                n_2 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                    columns[1], cast_1, n_
                 )
                 n_0 = f"{n_} * ({n_} - 1)/2"
                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
@@ -1303,7 +1300,7 @@ vColumns : vColumn
         return order_by
 
     # ---#
-    def __get_sort_syntax__(columns):
+    def __get_sort_syntax__(self, columns: list):
         """
     ---------------------------------------------------------------------------
     Returns the SQL syntax to use to sort the input columns.
