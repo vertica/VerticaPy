@@ -67,6 +67,7 @@ from verticapy.learn.neighbors import *
 from verticapy.learn.svm import *
 from verticapy.learn.mlplot import plot_bubble_ml
 from verticapy.learn.vmodel import *
+from verticapy.learn.tools import get_model_category
 
 
 class vAuto(vModel):
@@ -274,8 +275,8 @@ final_relation_: vDataFrame
                 ts = ts_tmp
             if nb_date == 1 and nb_others == 1:
                 by = [cat_tmp]
-        columns_check(X, vdf)
-        X = vdf_columns_names(X, vdf)
+        vdf.are_namecols_in(X)
+        X = vdf.format_colnames(X)
         X_diff = vdf.get_columns(exclude_columns=X)
         columns_to_drop = []
         n = vdf.shape()[0]
@@ -369,9 +370,9 @@ final_relation_: vDataFrame
         if columns_to_drop:
             vdf.drop(columns_to_drop)
         if ts:
-            columns_check([ts] + by, vdf)
-            ts = vdf_columns_names([ts], vdf)[0]
-            by = vdf_columns_names(by, vdf)
+            vdf.are_namecols_in([ts] + by)
+            ts = vdf.format_colnames(ts)
+            by = vdf.format_colnames(by)
             if self.parameters["rule"] == "auto":
                 vdf_tmp = vdf[[ts] + by]
                 by_tmp = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
@@ -880,7 +881,7 @@ model_grid_ : tablesample
         if self.parameters["estimator_type"] == "auto":
             self.parameters["estimator_type"] = self.parameters["estimator"][0].type
         for elem in self.parameters["estimator"]:
-            cat = category_from_model_type(elem.type)
+            cat = get_model_category(elem.type)
             assert (
                 self.parameters["estimator_type"] in ("binary", "multi")
                 and cat[0] == "classifier"

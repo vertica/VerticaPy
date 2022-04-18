@@ -155,7 +155,7 @@ Attributes
             query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
                 self.alias,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 index_start,
                 limit,
             )
@@ -168,7 +168,7 @@ Attributes
                 self.alias,
                 cast,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 index,
             )
             return executeSQL(
@@ -284,11 +284,11 @@ Attributes
 	vDataFrame.eval : Evaluates a customized expression.
 		"""
         check_types([("name", name, [str])])
-        name = str_column(name.replace('"', "_"))
+        name = quote_ident(name.replace('"', "_"))
         assert name.replace('"', ""), EmptyParameter(
             "The parameter 'name' must not be empty"
         )
-        assert not (column_check_ambiguous(name, self.parent.get_columns())), NameError(
+        assert not (self.parent.is_colname_in(name)), NameError(
             f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
         )
         new_vColumn = vColumn(
@@ -408,11 +408,11 @@ Attributes
                     ),
                     "apply_test_feature",
                 )
-            category = category_from_type(ctype=ctype)
+            category = get_category_from_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
-                    if (str_column(column) in func) or (
+                    if (quote_ident(column) in func) or (
                         re.search(
                             re.compile("\\b{}\\b".format(column.replace('"', ""))), func
                         )
@@ -567,7 +567,11 @@ Attributes
             )
             executeSQL(query, title="Testing the Type casting.")
             self.transformations += [
-                ("{}::{}".format("{}", dtype), dtype, category_from_type(ctype=dtype))
+                (
+                    "{}::{}".format("{}", dtype),
+                    dtype,
+                    get_category_from_type(ctype=dtype),
+                )
             ]
             self.parent.__add_to_history__(
                 "[AsType]: The vColumn {} was converted to {}.".format(
@@ -660,8 +664,8 @@ Attributes
             ]
         )
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import bar
 
         return bar(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds)
@@ -719,8 +723,8 @@ Attributes
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
         from verticapy.plot import boxplot
 
         return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds)
@@ -1000,8 +1004,8 @@ Attributes
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
             from verticapy.plot import gen_colors
             from matplotlib.lines import Line2D
 
@@ -1129,7 +1133,7 @@ Attributes
             index = result.values["index"]
             result = result.values[self.alias]
         elif (method == "cat_stats") and (numcol != ""):
-            numcol = vdf_columns_names([numcol], self.parent)[0]
+            numcol = self.parent.format_colnames(numcol)
             assert self.parent[numcol].category() in ("float", "int"), TypeError(
                 "The column 'numcol' must be numerical"
             )
@@ -1158,13 +1162,14 @@ Attributes
                                     APPROXIMATE_PERCENTILE ({3}{4} 
                                         USING PARAMETERS percentile = 0.9) AS 'approx_90%', 
                                     MAX({3}{4}) AS max 
-                               FROM vdf_table""".format(category, self.alias, self.parent.shape()[0], numcol, cast,)
+                               FROM vdf_table""".format(
+                    category, self.alias, self.parent.shape()[0], numcol, cast,
+                )
                 tmp_query += (
                     " WHERE {} IS NULL".format(self.alias)
                     if (category in ("None", None))
                     else " WHERE {} = '{}'".format(
-                        convert_special_type(self.category(), False, self.alias),
-                        category,
+                        bin_spatial_to_str(self.category(), self.alias), category,
                     )
                 )
                 query += [lp + tmp_query + rp]
@@ -1330,8 +1335,8 @@ Attributes
             assert response, ParameterError(
                 "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
             )
-            columns_check([response], self.parent)
-            response = vdf_columns_names([response], self.parent)[0]
+            self.parent.are_namecols_in(response)
+            response = self.parent.format_colnames(response)
             drop_if_exists(tmp_view_name, method="view")
             self.parent.to_db(tmp_view_name)
             from verticapy.learn.ensemble import (
@@ -1378,14 +1383,14 @@ Attributes
             distinct = self.topk(k).values["index"]
             trans = (
                 "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
-                    convert_special_type(self.category(), False),
+                    bin_spatial_to_str(self.category()),
                     ", ".join(
                         [
                             "'{}'".format(str(elem).replace("'", "''"))
                             for elem in distinct
                         ]
                     ),
-                    convert_special_type(self.category(), False),
+                    bin_spatial_to_str(self.category()),
                     new_category.replace("'", "''"),
                 ),
                 "varchar",
@@ -1497,7 +1502,7 @@ Attributes
 		"""
         if "agg" not in kwargs:
             query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
-                convert_special_type(self.category(), True, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
                 self.alias,
@@ -1507,7 +1512,7 @@ Attributes
         else:
             query = "SELECT {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
                 self.alias,
-                convert_special_type(self.category(), True, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 kwargs["agg"],
                 self.parent.__genSQL__(),
@@ -1842,8 +1847,8 @@ Attributes
             ]
         )
         method = method.lower()
-        columns_check([elem for elem in order_by] + by, self.parent)
-        by = vdf_columns_names(by, self.parent)
+        self.parent.are_namecols_in([elem for elem in order_by] + by)
+        by = self.parent.format_colnames(by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()
@@ -1918,12 +1923,12 @@ Attributes
             desc = "" if (method in ("ffill", "pad")) else " DESC"
             partition_by = (
                 "PARTITION BY {}".format(
-                    ", ".join([str_column(column) for column in by])
+                    ", ".join([quote_ident(column) for column in by])
                 )
                 if (by)
                 else ""
             )
-            order_by_ts = ", ".join([str_column(column) + desc for column in order_by])
+            order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
             new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}))".format(
                 "{}", "{}", partition_by, order_by_ts
             )
@@ -2010,8 +2015,8 @@ Attributes
         else:
             check = False
         if check:
-            columns_check([column], self.parent)
-            column = vdf_columns_names([column], self.parent)[0]
+            self.parent.are_namecols_in(column)
+            column = self.parent.format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
                 from verticapy.plot import gen_cmap
@@ -2080,7 +2085,6 @@ Attributes
                 else prefix.replace('"', "_") + prefix_sep.replace('"', "_")
             )
             n = 1 if drop_first else 0
-            columns = self.parent.get_columns()
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2089,8 +2093,12 @@ Attributes
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
-                assert not (column_check_ambiguous(name, columns)), NameError(
-                    f"A vColumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vColumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue."
+                assert not (self.parent.is_colname_in(name)), NameError(
+                    f"A vColumn has already the alias of one of the dummies ({name}).\n"
+                    "It can be the result of using previously the method on the vColumn "
+                    "or simply because of ambiguous columns naming.\nBy changing one of "
+                    "the parameters ('prefix', 'prefix_sep'), you'll be able to solve this "
+                    "issue."
                 )
             for k in range(len(distinct_elements) - n):
                 name = (
@@ -2221,8 +2229,8 @@ Attributes
             ]
         )
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import hist
 
         return hist(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds)
@@ -2257,10 +2265,10 @@ Attributes
         title = "Reads {}.".format(self.alias)
         tail = to_tablesample(
             "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
-                convert_special_type(self.category(), False, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 limit,
                 offset,
             ),
@@ -2381,8 +2389,8 @@ Attributes
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
         check_types([("y", y, [str]), ("bins", bins, [int])])
-        columns_check([y], self.parent)
-        y = vdf_columns_names([y], self.parent)[0]
+        self.parent.are_namecols_in(y)
+        y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
             "vColumn {} must be binary to use iv_woe.".format(y)
         )
@@ -2544,8 +2552,8 @@ Attributes
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
         check_types([("response", response, [str])])
-        columns_check([response], self.parent)
-        response = vdf_columns_names([response], self.parent)[0]
+        self.parent.are_namecols_in(response)
+        response = self.parent.format_colnames(response)
         assert self.parent[response].isnum(), TypeError(
             "The response column must be numerical to use a mean encoding"
         )
@@ -2568,7 +2576,9 @@ Attributes
         return self.parent
 
     # ---#
-    def median(self, approx: bool = True,):
+    def median(
+        self, approx: bool = True,
+    ):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vColumn using 'median'.
@@ -2776,14 +2786,13 @@ Attributes
             ]
         )
         method = method.lower()
-        columns_check(by, self.parent)
-        by = vdf_columns_names(by, self.parent)
+        self.parent.are_namecols_in(by)
+        by = self.parent.format_colnames(by)
         nullifzero, n = 1, len(by)
         if self.isbool():
 
             warning_message = "Normalize doesn't work on booleans".format(self.alias)
             warnings.warn(warning_message, Warning)
-
 
         elif self.isnum():
 
@@ -2885,7 +2894,6 @@ Attributes
                         )
                     ]
 
-
             elif method == "robust_zscore":
 
                 if n > 0:
@@ -2911,7 +2919,6 @@ Attributes
                     )
                     warnings.warn(warning_message, Warning)
                     return self
-
 
             elif method == "minmax":
 
@@ -3015,7 +3022,6 @@ Attributes
                             "float",
                         )
                     ]
-
 
             if method != "robust_zscore":
                 max_floor = 0
@@ -3278,8 +3284,8 @@ Attributes
         donut = True if pie_type == "donut" else False
         rose = True if pie_type == "rose" else False
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import pie
 
         return pie(
@@ -3343,11 +3349,11 @@ Attributes
                 ("step", step, [bool]),
             ]
         )
-        columns_check([ts], self.parent)
-        ts = vdf_columns_names([ts], self.parent)[0]
+        self.parent.are_namecols_in(ts)
+        ts = self.parent.format_colnames(ts)
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
         from verticapy.plot import ts_plot
 
         return ts_plot(
@@ -3465,8 +3471,8 @@ Attributes
                 ("plot_median", plot_median, [bool]),
             ]
         )
-        columns_check([ts], self.parent)
-        ts = vdf_columns_names([ts], self.parent)[0]
+        self.parent.are_namecols_in(ts)
+        ts = self.parent.format_colnames(ts)
         from verticapy.plot import range_curve_vdf
 
         return range_curve_vdf(
@@ -3499,11 +3505,9 @@ Attributes
 	vDataFrame.add_copy : Creates a copy of the vColumn.
 		"""
         check_types([("new_name", new_name, [str])])
-        old_name = str_column(self.alias)
+        old_name = quote_ident(self.alias)
         new_name = new_name.replace('"', "")
-        assert not (
-            column_check_ambiguous(new_name, self.parent.get_columns())
-        ), NameError(
+        assert not (self.parent.is_colname_in(new_name)), NameError(
             f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue."
         )
         self.add_copy(new_name)
@@ -3672,14 +3676,14 @@ Attributes
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
             columns = [self.alias, by]
         else:
             columns = [self.alias]
         if of:
-            columns_check([of], self)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import spider as spider_plot
 
         return spider_plot(
@@ -3724,7 +3728,7 @@ Attributes
             return pre_comp
         store_usage = executeSQL(
             "SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
-                convert_special_type(self.category(), False, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.parent.__genSQL__(),
             ),
             title="Computing the Store Usage of the vColumn {}.".format(self.alias),
@@ -3993,7 +3997,7 @@ Attributes
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
         query = "SELECT {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
-            convert_special_type(self.category(), True, self.alias),
+            bin_spatial_to_str(self.category(), self.alias),
             self.alias,
             self.parent.shape()[0],
             self.parent.__genSQL__(),

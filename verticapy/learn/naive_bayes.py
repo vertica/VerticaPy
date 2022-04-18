@@ -97,6 +97,64 @@ nbtype: str, optional
         self.set_params({"alpha": alpha, "nbtype": nbtype})
         version(condition=[8, 0, 0])
 
+    # ---#
+    def get_var_info(self):
+        # Returns a list of dictionary for each of the NB variables.
+        # It is used to translate NB to Python
+        from verticapy.utilities import vdf_from_relation
+
+        vdf = vdf_from_relation(self.input_relation)
+        var_info = {}
+        gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
+        for idx, elem in enumerate(self.X):
+            var_info[elem] = {"rank": idx}
+            if vdf[elem].isbool():
+                var_info[elem]["type"] = "bernoulli"
+                for c in self.classes_:
+                    var_info[elem][c] = self.get_attr("bernoulli.{}".format(c))[
+                        "probability"
+                    ][bernoulli_incr]
+                bernoulli_incr += 1
+            elif vdf[elem].category() == "int":
+                var_info[elem]["type"] = "multinomial"
+                for c in self.classes_:
+                    multinomial = self.get_attr("multinomial.{}".format(c))
+                    var_info[elem][c] = multinomial["probability"][multinomial_incr]
+                multinomial_incr += 1
+            elif vdf[elem].isnum():
+                var_info[elem]["type"] = "gaussian"
+                for c in self.classes_:
+                    gaussian = self.get_attr("gaussian.{}".format(c))
+                    var_info[elem][c] = {
+                        "mu": gaussian["mu"][gaussian_incr],
+                        "sigma_sq": gaussian["sigma_sq"][gaussian_incr],
+                    }
+                gaussian_incr += 1
+            else:
+                var_info[elem]["type"] = "categorical"
+                my_cat = "categorical." + quote_ident(elem)[1:-1]
+                attr = self.get_attr()["attr_name"]
+                for item in attr:
+                    if item.lower() == my_cat.lower():
+                        my_cat = item
+                        break
+                val = self.get_attr(my_cat).values
+                for item in val:
+                    if item != "category":
+                        if item not in var_info[elem]:
+                            var_info[elem][item] = {}
+                        for i, p in enumerate(val[item]):
+                            var_info[elem][item][val["category"][i]] = p
+        var_info_simplified = []
+        for i in range(len(var_info)):
+            for elem in var_info:
+                if var_info[elem]["rank"] == i:
+                    var_info_simplified += [var_info[elem]]
+                    break
+        for elem in var_info_simplified:
+            del elem["rank"]
+        return var_info_simplified
+
 
 # ---#
 class BernoulliNB(NaiveBayes):

@@ -116,9 +116,9 @@ bool
         schema = ""
         temporary_local_table = True
     input_relation = (
-        str_column(schema) + "." + str_column(table_name)
+        quote_ident(schema) + "." + quote_ident(table_name)
         if schema
-        else str_column(table_name)
+        else quote_ident(table_name)
     )
     temp = "TEMPORARY " if temporary_table else ""
     if not (schema):
@@ -127,7 +127,7 @@ bool
         temp,
         input_relation,
         ", ".join(
-            ["{} {}".format(str_column(column), dtype[column]) for column in dtype]
+            ["{} {}".format(quote_ident(column), dtype[column]) for column in dtype]
         ),
         " ON COMMIT PRESERVE ROWS" if temp else "",
     )
@@ -215,7 +215,7 @@ bool
         if not (result):
             try:
                 query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                    str_column(name).lower()
+                    quote_ident(name).lower()
                 )
                 result = executeSQL(query, print_time_sql=False, method="fetchrow")
             except:
@@ -255,7 +255,7 @@ bool
     if method == "model":
         try:
             query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             result = executeSQL(query, print_time_sql=False, method="fetchrow")
         except:
@@ -267,7 +267,7 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 query = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(
-                    str_column(name).lower()
+                    quote_ident(name).lower()
                 )
                 res = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
                 drop(res, method="table")
@@ -278,12 +278,12 @@ bool
                     method="model",
                 )
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             executeSQL(sql, title="Deleting vModel.")
             executeSQL("COMMIT;", title="Commit.")
             sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             executeSQL(sql, title="Deleting vModel attributes.")
             executeSQL("COMMIT;", title="Commit.")
@@ -424,7 +424,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
-            result.percent[column] = percent[vdf_columns_names([column], vdf)[0]][0]
+            result.percent[column] = percent[vdf.format_colnames(column)][0]
     return result
 
 
@@ -564,7 +564,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     )
     if not (schema):
         schema = verticapy.options["temp_schema"]
-    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
     if not (column_names):
         query = f"""SELECT 
                         column_name
@@ -581,7 +581,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         assert column_names, MissingRelation(
             f"The table {input_relation} does not exist."
         )
-    cols = [str_column(col) for col in column_names]
+    cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
         sql = "INSERT INTO {} ({}) VALUES ({})".format(
             input_relation,
@@ -737,7 +737,7 @@ read_json : Ingests a JSON file into the Vertica database.
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027"
         )
         if insert:
-            input_relation = "{}.{}".format(str_column(schema), str_column(name))
+            input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
             query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
                 input_relation,
                 ", ".join(
@@ -1689,7 +1689,7 @@ The tablesample attributes are the same than the parameters.
     def __getitem__(self, key):
         all_cols = [elem for elem in self.values]
         for elem in all_cols:
-            if str_column(str(elem).lower()) == str_column(str(key).lower()):
+            if quote_ident(str(elem).lower()) == quote_ident(str(key).lower()):
                 key = elem
                 break
         return self.values[key]
@@ -1845,7 +1845,6 @@ The tablesample attributes are the same than the parameters.
             self.values[cols1[idx]] += tbs.values[cols2[idx]]
         return self
 
-    
     # ---#
     def decimal_to_float(self):
         """
@@ -1863,7 +1862,6 @@ The tablesample attributes are the same than the parameters.
                     if isinstance(self.values[elem][i], decimal.Decimal):
                         self.values[elem][i] = float(self.values[elem][i])
         return self
-
 
     # ---#
     def merge(self, tbs):
@@ -1891,7 +1889,6 @@ The tablesample attributes are the same than the parameters.
             if col != "index":
                 self.values[col] += tbs.values[col]
         return self
-
 
     # ---#
     def shape(self):
@@ -2187,7 +2184,7 @@ vDataFrame
                 (
                     '"{}"'.format(column.replace('"', '""')),
                     ctype,
-                    category_from_type(ctype),
+                    get_category_from_type(ctype),
                 )
             ],
         )

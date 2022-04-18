@@ -168,7 +168,7 @@ dsn: str, optional
     Connection File will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
-    if not(dsn):
+    if not (dsn):
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()

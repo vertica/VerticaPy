@@ -1738,12 +1738,12 @@ def contour_plot(
 
         vdf_tmp = gen_meshgrid(
             {
-                str_column(columns[1])[1:-1]: {
+                quote_ident(columns[1])[1:-1]: {
                     "type": float,
                     "range": [min_y, max_y],
                     "nbins": nbins,
                 },
-                str_column(columns[0])[1:-1]: {
+                quote_ident(columns[0])[1:-1]: {
                     "type": float,
                     "range": [min_x, max_x],
                     "nbins": nbins,
@@ -1873,10 +1873,10 @@ def compute_plot_variables(
         or (method.lower() and method[-1] == "%")
     ) and (of):
         if method.lower() in ["avg", "min", "max", "sum"]:
-            aggregate = "{}({})".format(method.upper(), str_column(of))
+            aggregate = "{}({})".format(method.upper(), quote_ident(of))
         elif method and method[-1] == "%":
             aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-                str_column(of), float(method[0:-1]) / 100
+                quote_ident(of), float(method[0:-1]) / 100
             )
         else:
             raise ParameterError(
@@ -1936,11 +1936,11 @@ def compute_plot_variables(
                     enum_trans + other_columns, table
                 )
             query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
-                convert_special_type(vdf.category(), True, vdf.alias),
+                bin_spatial_to_str(vdf.category(), vdf.alias),
                 vdf.alias,
                 aggregate,
                 table,
-                convert_special_type(vdf.category(), True, vdf.alias),
+                bin_spatial_to_str(vdf.category(), vdf.alias),
                 max_cardinality,
             )
             if cardinality > max_cardinality:
@@ -2125,7 +2125,7 @@ def hexbin(
     if (
         (method.lower() in ["avg", "min", "max", "sum"])
         and (of)
-        and ((of in vdf.get_columns()) or (str_column(of) in vdf.get_columns()))
+        and ((of in vdf.get_columns()) or (quote_ident(of) in vdf.get_columns()))
     ):
         aggregate = "{}({})".format(method, of)
         others_aggregate = method
@@ -3105,10 +3105,10 @@ def pivot_table(
             "Parameter 'of' must be empty when using customized aggregations."
         )
     if (method.lower() in ["avg", "min", "max", "sum"]) and (of):
-        aggregate = "{}({})".format(method.upper(), str_column(of))
+        aggregate = "{}({})".format(method.upper(), quote_ident(of))
     elif method.lower() and method[-1] == "%":
         aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-            str_column(of), float(method[0:-1]) / 100
+            quote_ident(of), float(method[0:-1]) / 100
         )
     elif method.lower() in ["density", "count"]:
         aggregate = "COUNT(*)"
@@ -3120,7 +3120,7 @@ def pivot_table(
         raise ParameterError(
             "The parameter 'method' must be in [count|density|avg|mean|min|max|sum|q%]"
         )
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     all_columns = []
     is_column_date = [False, False]
     timestampadd = ["", ""]
@@ -3200,7 +3200,7 @@ def pivot_table(
             if len(distinct) < max_cardinality[idx]:
                 where += [
                     "({} IN ({}))".format(
-                        convert_special_type(vdf[column].category(), False, column),
+                        bin_spatial_to_str(vdf[column].category(), column),
                         ", ".join(
                             [
                                 "'{}'".format(str(elem).replace("'", "''"))
@@ -3215,7 +3215,7 @@ def pivot_table(
     if len(columns) == 1:
         over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
         query = "SELECT {} AS {}, {}{} FROM {}{} GROUP BY 1 {}".format(
-            convert_special_type(vdf[columns[0]].category(), True, all_columns[-1]),
+            bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1]),
             columns[0],
             aggregate,
             over,
@@ -3224,7 +3224,7 @@ def pivot_table(
             order_by,
         )
         return to_tablesample(query)
-    alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
+    alias = ", " + quote_ident(of) + " AS " + quote_ident(of) if of else ""
     aggr = ", " + of if (of) else ""
     subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table".format(
         all_columns[0],
@@ -3270,7 +3270,7 @@ def pivot_table(
     over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
     cast = []
     for column in columns:
-        cast += [convert_special_type(vdf[column].category(), True, column)]
+        cast += [bin_spatial_to_str(vdf[column].category(), column)]
     query = "SELECT {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(
         cast[0],
         columns[0],
@@ -3373,7 +3373,7 @@ def scatter_matrix(
 ):
     for column in columns:
         if (column not in vdf.get_columns()) and (
-            str_column(column) not in vdf.get_columns()
+            quote_ident(column) not in vdf.get_columns()
         ):
             raise MissingColumn("The Virtual Column {} doesn't exist".format(column))
     if not (columns):
@@ -3392,7 +3392,7 @@ def scatter_matrix(
             figsize=(min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)),
         )
     )
-    random_func = random_function()
+    random_func = get_random_function()
     query = "SELECT {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
         ", ".join(columns), random_func, vdf.__genSQL__(True)
     )
@@ -3452,7 +3452,7 @@ def scatter2D(
 ):
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     if (bbox) and len(bbox) != 4:
         warning_message = "Parameter 'bbox' must be a list of 4 numerics containing the 'xlim' and 'ylim'.\nIt was ignored."
         warnings.warn(warning_message, Warning)
@@ -3662,7 +3662,7 @@ def scatter3D(
     ax=None,
     **style_kwds,
 ):
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
     if (len(columns) < 3) or (len(columns) > 4):
@@ -4009,7 +4009,7 @@ def ts_plot(
         return ax
     else:
         colors = gen_colors()
-        by = str_column(by)
+        by = quote_ident(by)
         cat = vdf.parent[by].distinct()
         all_data = []
         for column in cat:

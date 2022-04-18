@@ -358,10 +358,10 @@ papprox_ma: int, optional
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.y, self.ts, self.deploy_predict_ = str_column(y), str_column(ts), ""
+        self.y, self.ts, self.deploy_predict_ = quote_ident(y), quote_ident(ts), ""
         self.coef_ = tablesample({"predictor": [], "coefficient": []})
         self.ma_avg_, self.ma_piq_ = None, None
-        X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
+        X, schema = [quote_ident(elem) for elem in X], schema_relation(self.name)[0]
         self.X, self.exogenous = [], X
         relation = (
             "(SELECT *, [VerticaPy_y] AS VerticaPy_y_copy FROM {}) VERTICAPY_SUBTABLE "
@@ -1018,8 +1018,8 @@ papprox_ma: int, optional
             ts = self.ts
         if not (X):
             X = self.exogenous
-        columns_check([y, ts], vdf)
-        y, ts = vdf_columns_names([y, ts], vdf)
+        vdf.are_namecols_in([y, ts])
+        y, ts = vdf.format_colnames([y, ts])
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -1200,9 +1200,9 @@ solver: str, optional
         """
         check_types([("X_idx", X_idx, [int, float, str]), ("show", show, [bool])])
         if isinstance(X_idx, str):
-            X_idx = str_column(X_idx).lower()
+            X_idx = quote_ident(X_idx).lower()
             for idx, elem in enumerate(self.X):
-                if str_column(elem).lower() == X_idx:
+                if quote_ident(elem).lower() == X_idx:
                     X_idx = idx
                     break
         assert (
@@ -1228,7 +1228,7 @@ solver: str, optional
         for idx, coef in enumerate(coefficient["predictor"]):
             if idx > 0:
                 predictor = int(coef.split("_")[0].replace("ar", ""))
-                predictor = str_column(self.X[predictor])
+                predictor = quote_ident(self.X[predictor])
                 minimum, maximum = min_max[predictor]
                 val = coefficient["coefficient"][idx]
                 coeff_importances[coef] = abs(val) * (maximum - minimum)
@@ -1294,8 +1294,11 @@ solver: str, optional
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.ts, self.deploy_predict_ = str_column(ts), []
-        self.X, schema = [str_column(elem) for elem in X], schema_relation(self.name)[0]
+        self.ts, self.deploy_predict_ = quote_ident(ts), []
+        self.X, schema = (
+            [quote_ident(elem) for elem in X],
+            schema_relation(self.name)[0],
+        )
         model = LinearRegression(
             name=self.name,
             solver=self.parameters["solver"],
@@ -1483,9 +1486,9 @@ solver: str, optional
             "Dynamic Plots are only possible if either parameter 'nlead' is greater than 0 or parameter 'nlast' is greater than 0, and parameter 'dynamic' is set to True."
         )
         if isinstance(X_idx, str):
-            X_idx = str_column(X_idx).lower()
+            X_idx = quote_ident(X_idx).lower()
             for idx, elem in enumerate(X):
-                if str_column(elem).lower() == X_idx:
+                if quote_ident(elem).lower() == X_idx:
                     X_idx = idx
                     break
         assert (
@@ -1711,9 +1714,9 @@ solver: str, optional
             ts = self.ts
         if not (X):
             X = self.X
-        columns_check(X + [ts], vdf)
-        X = vdf_columns_names(X, vdf)
-        ts = vdf_columns_names([ts], vdf)[0]
+        vdf.are_namecols_in(X + [ts])
+        X = vdf.format_colnames(X)
+        ts = vdf.format_colnames(ts)
         all_pred, names = [], []
         transform_relation = self.transform_relation.replace("[VerticaPy_ts]", self.ts)
         for idx, elem in enumerate(X):

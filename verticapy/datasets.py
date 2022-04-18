@@ -290,8 +290,8 @@ def load_dataset(
 
     except:
 
-        name = str_column(name)
-        schema = "v_temp_schema" if not (schema) else str_column(schema)
+        name = quote_ident(name)
+        schema = "v_temp_schema" if not (schema) else quote_ident(schema)
         create_table(table_name=name, dtype=dtype, schema=schema)
 
         try:
@@ -299,7 +299,7 @@ def load_dataset(
             path = os.path.dirname(verticapy.__file__)
             path += f"/data/{dataset_name}.csv"
             if not (copy_cols):
-                copy_cols = [str_column(col) for col in dtype]
+                copy_cols = [quote_ident(col) for col in dtype]
             copy_cols = ", ".join(copy_cols)
             query = (
                 "COPY {0}.{1}({2}) FROM {3} DELIMITER ',' NULL '' "

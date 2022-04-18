@@ -210,9 +210,9 @@ max_text_size: int, optional
             if not (X):
                 X = vDataFrame(input_relation).get_columns()
             self.input_relation = input_relation
-        self.X = [str_column(elem) for elem in X]
+        self.X = [quote_ident(elem) for elem in X]
         schema, relation = schema_relation(self.name)
-        schema = str_column(schema)
+        schema = quote_ident(schema)
         tmp_name = gen_tmp_name(schema=schema, name="countvectorizer")
         try:
             self.drop()

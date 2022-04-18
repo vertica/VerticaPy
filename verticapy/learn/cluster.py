@@ -236,9 +236,9 @@ p: int, optional
         else:
             if not (X):
                 X = vDataFrame(input_relation).numcol()
-        X = [str_column(column) for column in X]
+        X = [quote_ident(column) for column in X]
         self.X = X
-        self.key_columns = [str_column(column) for column in key_columns]
+        self.key_columns = [quote_ident(column) for column in key_columns]
         self.input_relation = input_relation
         schema, relation = schema_relation(input_relation)
         name_main, name_dbscan_clusters = (

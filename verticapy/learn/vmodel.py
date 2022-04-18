@@ -295,7 +295,7 @@ Main Class for Vertica Model
         if self.type not in ("DBSCAN", "LocalOutlierFactor"):
             name = self.tree_name if self.type == "KernelDensity" else self.name
             check_types([("X", X, [list])])
-            X = [str_column(elem) for elem in X]
+            X = [quote_ident(elem) for elem in X]
             fun = self.get_model_fun()[1]
             sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
             return sql.format(fun, ", ".join(self.X if not (X) else X), name)
@@ -758,7 +758,7 @@ Main Class for Vertica Model
         if not (hasattr(self, "parameters")):
             self.parameters = {}
         model_parameters = {}
-        default_parameters = default_model_parameters(self.type)
+        default_parameters = get_model_init_params(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
             if "solver" in parameters:
                 check_types([("solver", parameters["solver"], [str])])
@@ -1978,12 +1978,29 @@ Main Class for Vertica Model
             }
         elif self.type == "NaiveBayes":
             attributes = {
-                "attributes": nb_var_info(self),
+                "attributes": self.get_var_info(),
                 "prior": self.get_attr("prior")["probability"],
                 "classes": self.classes_,
             }
         elif self.type == "OneHotEncoder":
-            cat = list(ooe_details_transform([l[0:2] for l in self.param_.to_list()]))
+
+            def get_one_hot_encode_X_cat(L: list):
+                # Allows to split the One Hot Encoder Array by features categories
+                cat, tmp_cat, init_cat, X = [], [], L[0][0], [L[0][0]]
+                for c in L:
+                    if c[0] != init_cat:
+                        init_cat = c[0]
+                        X += [c[0]]
+                        cat += [tmp_cat]
+                        tmp_cat = [c[1]]
+                    else:
+                        tmp_cat += [c[1]]
+                cat += [tmp_cat]
+                return X, cat
+
+            cat = list(
+                get_one_hot_encode_X_cat([l[0:2] for l in self.param_.to_list()])
+            )
             cat_list_idx = []
             for i, x1 in enumerate(cat[0]):
                 for j, x2 in enumerate(self.X):
@@ -2278,7 +2295,7 @@ Main Class for Vertica Model
             func += "\treturn result\n"
             return func
         elif self.type == "NaiveBayes":
-            var_info_simplified = nb_var_info(self)
+            var_info_simplified = self.get_var_info()
             prior = self.get_attr("prior").values["probability"]
             func += "var_info_simplified = {}\n".format(var_info_simplified)
             func += "\tprior = np.array({})\n".format(prior)
@@ -2312,7 +2329,7 @@ Main Class for Vertica Model
             n, m = len(predictors), len(details["category_name"])
             positions = {}
             for i in range(m):
-                val = str_column(details["category_name"][i])
+                val = quote_ident(details["category_name"][i])
                 if val not in positions:
                     positions[val] = [i]
                 else:
@@ -2494,8 +2511,8 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
+        self.X = [quote_ident(column) for column in X]
+        self.y = quote_ident(y)
         if (self.type == "NaiveBayes") and (
             self.parameters["nbtype"]
             in ("bernoulli", "categorical", "multinomial", "gaussian")
@@ -2839,7 +2856,7 @@ class BinaryClassifier(Classifier):
         if isinstance(X, str):
             X = [X]
         check_types([("cutoff", cutoff, [int, float]), ("X", X, [list])])
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
         sql = "{}({} USING PARAMETERS model_name = '{}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
@@ -2952,7 +2969,7 @@ class BinaryClassifier(Classifier):
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -3245,7 +3262,7 @@ class MulticlassClassifier(Classifier):
             )
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
-                get_index(pos_label, self.classes_, False)
+                get_match_index(pos_label, self.classes_, False)
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -3301,7 +3318,7 @@ class MulticlassClassifier(Classifier):
                 ("X", X, [list]),
             ]
         )
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
         if allSQL:
             if self.type == "NearestCentroid":
@@ -3321,7 +3338,7 @@ class MulticlassClassifier(Classifier):
                 if self.type == "NearestCentroid":
                     sql = self.to_memmodel().predict_proba_sql(
                         self.X if not (X) else X
-                    )[get_index(pos_label, self.classes_, False)]
+                    )[get_match_index(pos_label, self.classes_, False)]
                 else:
                     sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
                         fun, ", ".join(self.X if not (X) else X), self.name, pos_label
@@ -3391,7 +3408,7 @@ class MulticlassClassifier(Classifier):
             )
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
-                get_index(pos_label, self.classes_, False)
+                get_match_index(pos_label, self.classes_, False)
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -3447,7 +3464,7 @@ class MulticlassClassifier(Classifier):
             )
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
-                get_index(pos_label, self.classes_, False)
+                get_match_index(pos_label, self.classes_, False)
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -3512,7 +3529,7 @@ class MulticlassClassifier(Classifier):
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -3571,7 +3588,7 @@ class MulticlassClassifier(Classifier):
             )
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
-                get_index(pos_label, self.classes_, False)
+                get_match_index(pos_label, self.classes_, False)
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -3655,7 +3672,7 @@ class MulticlassClassifier(Classifier):
             cutoff = self.score("best_cutoff", pos_label, 0.5)
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
-                get_index(pos_label, self.classes_, False)
+                get_match_index(pos_label, self.classes_, False)
             ]
         else:
             deploySQL_str = self.deploySQL(allSQL=True)[0].format(pos_label)
@@ -3790,7 +3807,7 @@ class Regressor(Supervised):
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)
@@ -4166,7 +4183,7 @@ class Unsupervised(vModel):
             relation = input_relation
             if not (X):
                 X = vDataFrame(input_relation).numcol()
-        self.X = [str_column(column) for column in X]
+        self.X = [quote_ident(column) for column in X]
         parameters = vertica_param_dict(self)
         if "num_components" in parameters and not (parameters["num_components"]):
             del parameters["num_components"]
@@ -4378,16 +4395,16 @@ class Preprocessing(Unsupervised):
                 ("X", X, [list]),
             ]
         )
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
-                ", ".join([str_column(item) for item in key_columns])
+                ", ".join([quote_ident(item) for item in key_columns])
             )
         if exclude_columns:
             sql += ", exclude_columns = '{}'".format(
-                ", ".join([str_column(item) for item in exclude_columns])
+                ", ".join([quote_ident(item) for item in exclude_columns])
             )
         if self.type == "OneHotEncoder":
             separator = (
@@ -4446,16 +4463,16 @@ class Preprocessing(Unsupervised):
                 "method 'inverse_transform' is not supported for OneHotEncoder models."
             )
         check_types([("key_columns", key_columns, [list]), ("X", X, [list])])
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[2]
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
-                ", ".join([str_column(item) for item in key_columns])
+                ", ".join([quote_ident(item) for item in key_columns])
             )
         if exclude_columns:
             sql += ", exclude_columns = '{}'".format(
-                ", ".join([str_column(item) for item in exclude_columns])
+                ", ".join([quote_ident(item) for item in exclude_columns])
             )
         sql += ")"
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
@@ -4481,7 +4498,7 @@ class Preprocessing(Unsupervised):
         """
         if isinstance(X, str):
             X = [X]
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         if not (X):
             X = self.X
         if self.type in ("PCA", "SVD", "MCA") and not (inverse):
@@ -4497,7 +4514,7 @@ class Preprocessing(Unsupervised):
             for column in self.X:
                 k = 0
                 for i in range(len(self.param_["category_name"])):
-                    if str_column(self.param_["category_name"][i]) == str_column(
+                    if quote_ident(self.param_["category_name"][i]) == quote_ident(
                         column
                     ):
                         if (k != 0 or not (self.parameters["drop_first"])) and (
@@ -4507,7 +4524,7 @@ class Preprocessing(Unsupervised):
                             if self.parameters["column_naming"] == "indices":
                                 names += [
                                     '"'
-                                    + str_column(column)[1:-1]
+                                    + quote_ident(column)[1:-1]
                                     + "{}{}".format(
                                         self.parameters["separator"],
                                         self.param_["category_level_index"][i],
@@ -4517,7 +4534,7 @@ class Preprocessing(Unsupervised):
                             else:
                                 names += [
                                     '"'
-                                    + str_column(column)[1:-1]
+                                    + quote_ident(column)[1:-1]
                                     + "{}{}".format(
                                         self.parameters["separator"],
                                         self.param_["category_level"][i].lower()
@@ -4565,7 +4582,7 @@ class Preprocessing(Unsupervised):
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = vdf_columns_names(X, vdf)
+        X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
@@ -4605,8 +4622,8 @@ class Preprocessing(Unsupervised):
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        columns_check(X, vdf)
-        X = vdf_columns_names(X, vdf)
+        vdf.are_namecols_in(X)
+        X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
@@ -4669,16 +4686,16 @@ class Decomposition(Preprocessing):
                 ("X", X, [list]),
             ]
         )
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
         sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'"
         if key_columns:
             sql += ", key_columns = '{}'".format(
-                ", ".join([str_column(item) for item in key_columns])
+                ", ".join([quote_ident(item) for item in key_columns])
             )
         if exclude_columns:
             sql += ", exclude_columns = '{}'".format(
-                ", ".join([str_column(item) for item in exclude_columns])
+                ", ".join([quote_ident(item) for item in exclude_columns])
             )
         if n_components:
             sql += ", num_components = {}".format(n_components)
@@ -4975,8 +4992,8 @@ class Decomposition(Preprocessing):
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        columns_check(X, vdf)
-        X = vdf_columns_names(X, vdf)
+        vdf.are_namecols_in(X)
+        X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
         all_columns = vdf.get_columns()
@@ -5030,7 +5047,7 @@ class Clustering(Unsupervised):
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = [str_column(elem) for elem in X]
+        X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
             if not (name)

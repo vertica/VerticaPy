@@ -95,74 +95,13 @@ def arange(start: float, stop: float, step: float):
 
 
 # ---#
-def category_from_model_type(model_type: str):
-    if model_type in ["LogisticRegression", "LinearSVC"]:
-        return ("classifier", "binary")
-    elif model_type in [
-        "NaiveBayes",
-        "RandomForestClassifier",
-        "KNeighborsClassifier",
-        "NearestCentroid",
-        "XGBoostClassifier",
-    ]:
-        return ("classifier", "multiclass")
-    elif model_type in [
-        "LinearRegression",
-        "LinearSVR",
-        "RandomForestRegressor",
-        "KNeighborsRegressor",
-        "XGBoostRegressor",
-    ]:
-        return ("regressor", "")
-    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
-        return ("unsupervised", "clustering")
-    elif model_type in ["PCA", "SVD", "MCA"]:
-        return ("unsupervised", "decomposition")
-    elif model_type in ["Normalizer", "OneHotEncoder"]:
-        return ("unsupervised", "preprocessing")
-    elif model_type in ["LocalOutlierFactor"]:
-        return ("unsupervised", "anomaly_detection")
+def bin_spatial_to_str(category: str, column: str = "{}"):
+    if category == "binary":
+        return "TO_HEX({})".format(column)
+    elif category == "spatial":
+        return "ST_AsText({})".format(column)
     else:
-        return ("", "")
-
-
-# ---#
-def category_from_type(ctype: str = ""):
-    check_types([("ctype", ctype, [str])])
-    ctype = ctype.lower()
-    if ctype != "":
-        if (
-            (ctype[0:4] == "date")
-            or (ctype[0:4] == "time")
-            or (ctype == "smalldatetime")
-            or (ctype[0:8] == "interval")
-        ):
-            return "date"
-        elif (
-            (ctype[0:3] == "int")
-            or (ctype[0:4] == "bool")
-            or (ctype in ("tinyint", "smallint", "bigint"))
-        ):
-            return "int"
-        elif (
-            (ctype[0:3] == "num")
-            or (ctype[0:5] == "float")
-            or (ctype[0:7] == "decimal")
-            or (ctype == "money")
-            or (ctype[0:6] == "double")
-            or (ctype[0:4] == "real")
-        ):
-            return "float"
-        elif ctype[0:3] == "geo" or ("long varbinary" in ctype.lower()):
-            return "spatial"
-        elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
-            return "binary"
-        elif "uuid" in ctype:
-            return "uuid"
-        else:
-            return "text"
-    else:
-        return "undefined"
+        return column
 
 
 # ---#
@@ -235,215 +174,6 @@ def check_types(types_list: list = []):
 
 
 # ---#
-def column_check_ambiguous(column: str, columns: list):
-    column = column.replace('"', "").lower()
-    for col in columns:
-        col = col.replace('"', "").lower()
-        if column == col:
-            return True
-    return False
-
-
-# ---#
-def columns_check(columns: list, vdf, columns_nb=None):
-    vdf_columns = vdf.get_columns()
-    if columns_nb != None and len(columns) not in columns_nb:
-        raise ParameterError(
-            "The number of Virtual Columns expected is {}, found {}.".format(
-                "|".join([str(elem) for elem in columns_nb]), len(columns)
-            )
-        )
-    for column in columns:
-        if not (column_check_ambiguous(column, vdf_columns)):
-            try:
-                e = ""
-                nearestcol = nearest_column(vdf_columns, column)
-                if nearestcol[1] < 5:
-                    e = "\nDid you mean {} ?".format(nearestcol[0])
-            except:
-                e = ""
-            raise MissingColumn(
-                "The Virtual Column '{}' doesn't exist{}.".format(
-                    column.lower().replace('"', ""), e
-                )
-            )
-
-
-# ---#
-def convert_special_type(category: str, convert_date: bool = True, column: str = "{}"):
-    if category == "binary":
-        return "TO_HEX({})".format(column)
-    elif category == "spatial":
-        return "ST_AsText({})".format(column)
-    else:
-        return column
-
-
-# ---#
-def data_to_columns(data: list, n: int):
-    columns = [[]] * n
-    for elem in data:
-        for i in range(n):
-            try:
-                columns[i] = columns[i] + [float(elem[i])]
-            except:
-                columns[i] = columns[i] + [elem[i]]
-    return columns
-
-
-# ---#
-def default_model_parameters(model_type: str):
-    if model_type == "LogisticRegression":
-        return {
-            "penalty": "L2",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "CGD",
-            "l1_ratio": 0.5,
-        }
-    elif model_type == "KernelDensity":
-        return {
-            "bandwidth": 1,
-            "kernel": "gaussian",
-            "p": 2,
-            "max_leaf_nodes": 1e9,
-            "max_depth": 5,
-            "min_samples_leaf": 1,
-            "nbins": 5,
-            "xlim": [],
-        }
-    elif model_type == "LinearRegression":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-        }
-    elif model_type == "SARIMAX":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-            "p": 1,
-            "d": 0,
-            "q": 0,
-            "P": 0,
-            "D": 0,
-            "Q": 0,
-            "s": 0,
-            "max_pik": 100,
-            "papprox_ma": 200,
-        }
-    elif model_type == "VAR":
-        return {
-            "penalty": "None",
-            "tol": 1e-4,
-            "C": 1,
-            "max_iter": 100,
-            "solver": "Newton",
-            "l1_ratio": 0.5,
-            "p": 1,
-        }
-    elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
-        return {
-            "n_estimators": 10,
-            "max_features": "auto",
-            "max_leaf_nodes": 1e9,
-            "sample": 0.632,
-            "max_depth": 5,
-            "min_samples_leaf": 1,
-            "min_info_gain": 0.0,
-            "nbins": 32,
-        }
-    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
-        return {
-            "max_ntree": 10,
-            "max_depth": 5,
-            "nbins": 32,
-            "split_proposal_method": "global",
-            "tol": 0.001,
-            "learning_rate": 0.1,
-            "min_split_loss": 0.0,
-            "weight_reg": 0.0,
-            "sample": 1.0,
-            "col_sample_by_tree": 1.0,
-            "col_sample_by_node": 1.0,
-        }
-    elif model_type in ("SVD"):
-        return {"n_components": 0, "method": "lapack"}
-    elif model_type in ("PCA"):
-        return {"n_components": 0, "scale": False, "method": "lapack"}
-    elif model_type in ("MCA"):
-        return {}
-    elif model_type == "OneHotEncoder":
-        return {
-            "extra_levels": {},
-            "drop_first": True,
-            "ignore_null": True,
-            "separator": "_",
-            "column_naming": "indices",
-            "null_column_name": "null",
-        }
-    elif model_type in ("Normalizer"):
-        return {"method": "zscore"}
-    elif model_type == "LinearSVR":
-        return {
-            "C": 1.0,
-            "tol": 1e-4,
-            "fit_intercept": True,
-            "intercept_scaling": 1.0,
-            "intercept_mode": "regularized",
-            "acceptable_error_margin": 0.1,
-            "max_iter": 100,
-        }
-    elif model_type == "LinearSVC":
-        return {
-            "C": 1.0,
-            "tol": 1e-4,
-            "fit_intercept": True,
-            "intercept_scaling": 1.0,
-            "intercept_mode": "regularized",
-            "class_weight": [1, 1],
-            "max_iter": 100,
-        }
-    elif model_type == "NaiveBayes":
-        return {
-            "alpha": 1.0,
-            "nbtype": "auto",
-        }
-    elif model_type == "KMeans":
-        return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
-    elif model_type in ("BisectingKMeans"):
-        return {
-            "n_cluster": 8,
-            "bisection_iterations": 1,
-            "split_method": "sum_squares",
-            "min_divisible_cluster_size": 2,
-            "distance_method": "euclidean",
-            "init": "kmeanspp",
-            "max_iter": 300,
-            "tol": 1e-4,
-        }
-    elif model_type in ("KNeighborsClassifier", "KNeighborsRegressor"):
-        return {
-            "n_neighbors": 5,
-            "p": 2,
-        }
-    elif model_type == "NearestCentroid":
-        return {
-            "p": 2,
-        }
-    elif model_type == "DBSCAN":
-        return {"eps": 0.5, "min_samples": 5, "p": 2}
-
-
-# ---#
 def executeSQL(
     query: str,
     title: str = "",
@@ -493,11 +223,13 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
 
     if isinstance(x, vColumn):
         val = x.alias
-    elif (isinstance(x, (int, float)) and not(cast_float_int_to_str)) or isinstance(x, str_sql):
+    elif (isinstance(x, (int, float)) and not (cast_float_int_to_str)) or isinstance(
+        x, str_sql
+    ):
         val = x
     elif isinstance(x, type(None)):
         val = "NULL"
-    elif isinstance(x, (int, float)) or not(cast_float_int_to_str):
+    elif isinstance(x, (int, float)) or not (cast_float_int_to_str):
         val = "'{}'".format(str(x).replace("'", "''"))
     else:
         val = x
@@ -505,14 +237,6 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
         return (val, str_category(x))
     else:
         return val
-
-
-# ---#
-def get_data_types_vdf(vdf):
-    result, columns = [], vdf.get_columns()
-    for col in columns:
-        result += [(col, vdf[col].ctype())]
-    return result
 
 
 # ---#
@@ -534,14 +258,53 @@ def gen_tmp_name(schema: str = "", name: str = ""):
     random_int = random.randint(0, 10e9)
     name = '"_verticapy_tmp_{}_{}_{}_{}_"'.format(name.lower(), L[0], L[1], random_int)
     if schema:
-        name = "{}.{}".format(str_column(schema), name)
+        name = "{}.{}".format(quote_ident(schema), name)
     return name
 
 
 # ---#
-def get_index(x: str, col_list: list, str_check: bool = True):
+def get_category_from_type(ctype: str = ""):
+    check_types([("ctype", ctype, [str])])
+    ctype = ctype.lower()
+    if ctype != "":
+        if (
+            (ctype[0:4] == "date")
+            or (ctype[0:4] == "time")
+            or (ctype == "smalldatetime")
+            or (ctype[0:8] == "interval")
+        ):
+            return "date"
+        elif (
+            (ctype[0:3] == "int")
+            or (ctype[0:4] == "bool")
+            or (ctype in ("tinyint", "smallint", "bigint"))
+        ):
+            return "int"
+        elif (
+            (ctype[0:3] == "num")
+            or (ctype[0:5] == "float")
+            or (ctype[0:7] == "decimal")
+            or (ctype == "money")
+            or (ctype[0:6] == "double")
+            or (ctype[0:4] == "real")
+        ):
+            return "float"
+        elif ctype[0:3] == "geo" or ("long varbinary" in ctype.lower()):
+            return "spatial"
+        elif ("byte" in ctype) or (ctype == "raw") or ("binary" in ctype):
+            return "binary"
+        elif "uuid" in ctype:
+            return "uuid"
+        else:
+            return "text"
+    else:
+        return "undefined"
+
+
+# ---#
+def get_match_index(x: str, col_list: list, str_check: bool = True):
     for idx, col in enumerate(col_list):
-        if (str_check and str_column(x.lower()) == str_column(col.lower())) or (
+        if (str_check and quote_ident(x.lower()) == quote_ident(col.lower())) or (
             x == col
         ):
             return idx
@@ -602,6 +365,22 @@ def get_magic_options(line: str):
         i += 2
 
     return all_options_dict
+
+
+# ---#
+def get_random_function(rand_int=None):
+    random_state = verticapy.options["random_state"]
+    if isinstance(rand_int, int):
+        if isinstance(random_state, int):
+            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
+        else:
+            random_func = "RANDOMINT({})".format(rand_int)
+    else:
+        if isinstance(random_state, int):
+            random_func = "SEEDED_RANDOM({})".format(random_state)
+        else:
+            random_func = "RANDOM()"
+    return random_func
 
 
 # ---#
@@ -679,7 +458,7 @@ def insert_verticapy_schema(
         size = sys.getsizeof(model_save)
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         try:
-            model_name = str_column(model_name)
+            model_name = quote_ident(model_name)
             sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 model_name.lower()
             )
@@ -737,17 +516,6 @@ def isnotebook():
 
 
 # ---#
-def last_order_by(vdf):
-    max_pos, order_by = 0, ""
-    columns_tmp = [elem for elem in vdf.get_columns()]
-    for column in columns_tmp:
-        max_pos = max(max_pos, len(vdf[column].transformations) - 1)
-    if max_pos in vdf._VERTICAPY_VARIABLES_["order_by"]:
-        order_by = vdf._VERTICAPY_VARIABLES_["order_by"][max_pos]
-    return order_by
-
-
-# ---#
 def levenshtein(s: str, t: str):
     rows = len(s) + 1
     cols = len(t) + 1
@@ -786,29 +554,13 @@ def nearest_column(columns: list, column: str):
 
 
 # ---#
-def ooe_details_transform(L: list):
-    # Allows to split the One Hot Encoder Array by features categories
-    cat, tmp_cat, init_cat, X = [], [], L[0][0], [L[0][0]]
-    for c in L:
-        if c[0] != init_cat:
-            init_cat = c[0]
-            X += [c[0]]
-            cat += [tmp_cat]
-            tmp_cat = [c[1]]
-        else:
-            tmp_cat += [c[1]]
-    cat += [tmp_cat]
-    return X, cat
-
-
-# ---#
 def tree_attributes_list(
     tree, X: list, model_type: str, return_probability: bool = False
 ):
     # Returns trees list of attributes.
     def map_idx(x):
         for idx, elem in enumerate(X):
-            if str_column(x).lower() == str_column(elem).lower():
+            if quote_ident(x).lower() == quote_ident(elem).lower():
                 return idx
 
     tree_list = []
@@ -841,82 +593,6 @@ def tree_attributes_list(
     if return_probability:
         tree_list += [tree["probability/variance"]]
     return tree_list
-
-
-# ---#
-def nb_var_info(model):
-    # Returns a list of dictionary for each of the NB variables.
-    # It is used to translate NB to Python
-    from verticapy.utilities import vdf_from_relation
-
-    vdf = vdf_from_relation(model.input_relation)
-    var_info = {}
-    gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
-    for idx, elem in enumerate(model.X):
-        var_info[elem] = {"rank": idx}
-        if vdf[elem].isbool():
-            var_info[elem]["type"] = "bernoulli"
-            for c in model.classes_:
-                var_info[elem][c] = model.get_attr("bernoulli.{}".format(c))[
-                    "probability"
-                ][bernoulli_incr]
-            bernoulli_incr += 1
-        elif vdf[elem].category() == "int":
-            var_info[elem]["type"] = "multinomial"
-            for c in model.classes_:
-                multinomial = model.get_attr("multinomial.{}".format(c))
-                var_info[elem][c] = multinomial["probability"][multinomial_incr]
-            multinomial_incr += 1
-        elif vdf[elem].isnum():
-            var_info[elem]["type"] = "gaussian"
-            for c in model.classes_:
-                gaussian = model.get_attr("gaussian.{}".format(c))
-                var_info[elem][c] = {
-                    "mu": gaussian["mu"][gaussian_incr],
-                    "sigma_sq": gaussian["sigma_sq"][gaussian_incr],
-                }
-            gaussian_incr += 1
-        else:
-            var_info[elem]["type"] = "categorical"
-            my_cat = "categorical." + str_column(elem)[1:-1]
-            attr = model.get_attr()["attr_name"]
-            for item in attr:
-                if item.lower() == my_cat.lower():
-                    my_cat = item
-                    break
-            val = model.get_attr(my_cat).values
-            for item in val:
-                if item != "category":
-                    if item not in var_info[elem]:
-                        var_info[elem][item] = {}
-                    for i, p in enumerate(val[item]):
-                        var_info[elem][item][val["category"][i]] = p
-    var_info_simplified = []
-    for i in range(len(var_info)):
-        for elem in var_info:
-            if var_info[elem]["rank"] == i:
-                var_info_simplified += [var_info[elem]]
-                break
-    for elem in var_info_simplified:
-        del elem["rank"]
-    return var_info_simplified
-
-
-# ---#
-def order_discretized_classes(categories):
-    try:
-        try:
-            order = []
-            for item in categories:
-                order += [float(item.split(";")[0].split("[")[1])]
-        except:
-            order = []
-            for item in all_subcategories:
-                order += [float(item)]
-        order = [x for _, x in sorted(zip(order, categories))]
-    except:
-        return categories
-    return order
 
 
 # ---#
@@ -1103,7 +779,7 @@ def print_table(
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
-                                category = category_from_type(type_val)
+                                category = get_category_from_type(type_val)
                                 if (category == "spatial") or (
                                     (
                                         "lat" in val.lower().split(" ")
@@ -1179,19 +855,11 @@ def print_table(
 
 
 # ---#
-def random_function(rand_int=None):
-    random_state = verticapy.options["random_state"]
-    if isinstance(rand_int, int):
-        if isinstance(random_state, int):
-            random_func = "FLOOR({} * SEEDED_RANDOM({}))".format(rand_int, random_state)
-        else:
-            random_func = "RANDOMINT({})".format(rand_int)
-    else:
-        if isinstance(random_state, int):
-            random_func = "SEEDED_RANDOM({})".format(random_state)
-        else:
-            random_func = "RANDOM()"
-    return random_func
+def quote_ident(column: str):
+    tmp_column = column
+    if len(column) >= 2 and (column[0] == column[1] == '"'):
+        tmp_column = column[1:-1]
+    return '"{}"'.format(str(tmp_column).replace('"', '""'))
 
 
 # ---#
@@ -1220,7 +888,7 @@ def schema_relation(relation):
             schema, relation = "public", relation
         else:
             schema, relation = schema_input_relation[0], schema_input_relation[1]
-    return (str_column(schema), str_column(relation))
+    return (quote_ident(schema), quote_ident(relation))
 
 
 # ---#
@@ -1230,7 +898,7 @@ def sort_str(columns, vdf):
     if isinstance(columns, dict):
         order_by = []
         for elem in columns:
-            column_name = vdf_columns_names([elem], vdf)[0]
+            column_name = vdf.format_colnames(elem)
             if columns[elem].lower() not in ("asc", "desc"):
                 warning_message = "Method of {} must be in (asc, desc), found '{}'\nThis column was ignored.".format(
                     column_name, columns[elem].lower()
@@ -1239,13 +907,8 @@ def sort_str(columns, vdf):
             else:
                 order_by += ["{} {}".format(column_name, columns[elem].upper())]
     else:
-        order_by = [str_column(elem) for elem in columns]
+        order_by = [quote_ident(elem) for elem in columns]
     return " ORDER BY {}".format(", ".join(order_by))
-
-
-# ---#
-def str_column(column: str):
-    return '"{}"'.format(str(column).replace('"', ""))
 
 
 # ---#
@@ -1254,7 +917,7 @@ def str_function(key: str, method: str = ""):
     if key in ("median", "med"):
         key = "50%"
     elif key in ("approx_median", "approximate_median"):
-         key = "approx_50%"
+        key = "approx_50%"
     elif key == "100%":
         key = "max"
     elif key == "0%":
@@ -1376,20 +1039,6 @@ def color_dict(d: dict, idx: int = 0):
         from verticapy.plot import gen_colors
 
         return gen_colors()[idx % len(gen_colors())]
-
-
-# ---#
-def vdf_columns_names(columns: list, vdf):
-    from verticapy import vDataFrame
-
-    check_types([("columns", columns, [list]), ("vdf", vdf, [vDataFrame])])
-    vdf_columns = vdf.get_columns()
-    columns_names = []
-    for column in columns:
-        for vdf_column in vdf_columns:
-            if str_column(column).lower() == str_column(vdf_column).lower():
-                columns_names += [str_column(vdf_column)]
-    return columns_names
 
 
 # ---#
@@ -1536,7 +1185,7 @@ def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16):
                 remove_cols += [col]
     else:
         remove_cols = []
-        columns_tmp = vdf_columns_names(columns_tmp, vdf)
+        columns_tmp = vdf.format_colnames(columns_tmp)
         for col in columns_tmp:
             if vdf[col].category() not in ("float", "int", "text") or (
                 vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality
@@ -1586,7 +1235,7 @@ def dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
         [9, 2, "Male", 2, "Expensive", "Med"],
         [10, 2, "Female", 2, "Expensive", "Hig"],
     ]
-    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
     drop_if_exists(name=input_relation, method="table")
     create_table(
@@ -1623,7 +1272,7 @@ def dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
         [9, "Car", "Male", 2, "Expensive", "Med"],
         [10, "Car", "Female", 2, "Expensive", "Hig"],
     ]
-    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
     drop_if_exists(name=input_relation, method="table")
     create_table(
@@ -1660,7 +1309,7 @@ def dataset_num(table_name: str = "dataset_num", schema: str = "public"):
         [9, 6.8, 2.8, 4.8, 1.4],
         [10, 7.0, 3.2, 4.7, 1.4],
     ]
-    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
     drop_if_exists(name=input_relation, method="table")
     create_table(

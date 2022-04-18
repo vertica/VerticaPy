@@ -130,40 +130,40 @@ class TestvDFDescriptiveStat:
         assert result1_1["max"][3] == 1
 
         # multiple queries at the same time
-        #result1_2 = titanic_vd.agg(
+        # result1_2 = titanic_vd.agg(
         #    func=["unique", "top", "min", "10%", "50%", "90%", "max"],
         #    columns=["age", "fare", "pclass", "survived"],
         #    ncols_block=2,
         #    processes=2,
-        #)
-        #assert result1_2["unique"][0] == 96
-        #assert result1_2["unique"][1] == 277
-        #assert result1_2["unique"][2] == 3
-        #assert result1_2["unique"][3] == 2
-        #assert result1_2["top"][0] is None
-        #assert result1_2["top"][1] == pytest.approx(8.05)
-        #assert result1_2["top"][2] == 3
-        #assert result1_2["top"][3] == 0
-        #assert result1_2["min"][0] == pytest.approx(0.330)
-        #assert result1_2["min"][1] == 0
-        #assert result1_2["min"][2] == 1
-        #assert result1_2["min"][3] == 0
-        #assert result1_2["10%"][0] == pytest.approx(14.5)
-        #assert result1_2["10%"][1] == pytest.approx(7.5892)
-        #assert result1_2["10%"][2] == 1
-        #assert result1_2["10%"][3] == 0
-        #assert result1_2["50%"][0] == 28
-        #assert result1_2["50%"][1] == pytest.approx(14.4542)
-        #assert result1_2["50%"][2] == 3
-        #assert result1_2["50%"][3] == 0
-        #assert result1_2["90%"][0] == 50
-        #assert result1_2["90%"][1] == pytest.approx(79.13)
-        #assert result1_2["90%"][2] == 3
-        #assert result1_2["90%"][3] == 1
-        #assert result1_2["max"][0] == 80
-        #assert result1_2["max"][1] == pytest.approx(512.3292)
-        #assert result1_2["max"][2] == 3
-        #assert result1_2["max"][3] == 1
+        # )
+        # assert result1_2["unique"][0] == 96
+        # assert result1_2["unique"][1] == 277
+        # assert result1_2["unique"][2] == 3
+        # assert result1_2["unique"][3] == 2
+        # assert result1_2["top"][0] is None
+        # assert result1_2["top"][1] == pytest.approx(8.05)
+        # assert result1_2["top"][2] == 3
+        # assert result1_2["top"][3] == 0
+        # assert result1_2["min"][0] == pytest.approx(0.330)
+        # assert result1_2["min"][1] == 0
+        # assert result1_2["min"][2] == 1
+        # assert result1_2["min"][3] == 0
+        # assert result1_2["10%"][0] == pytest.approx(14.5)
+        # assert result1_2["10%"][1] == pytest.approx(7.5892)
+        # assert result1_2["10%"][2] == 1
+        # assert result1_2["10%"][3] == 0
+        # assert result1_2["50%"][0] == 28
+        # assert result1_2["50%"][1] == pytest.approx(14.4542)
+        # assert result1_2["50%"][2] == 3
+        # assert result1_2["50%"][3] == 0
+        # assert result1_2["90%"][0] == 50
+        # assert result1_2["90%"][1] == pytest.approx(79.13)
+        # assert result1_2["90%"][2] == 3
+        # assert result1_2["90%"][3] == 1
+        # assert result1_2["max"][0] == 80
+        # assert result1_2["max"][1] == pytest.approx(512.3292)
+        # assert result1_2["max"][2] == 3
+        # assert result1_2["max"][3] == 1
 
         result2 = titanic_vd.agg(
             func=[
@@ -487,7 +487,7 @@ class TestvDFDescriptiveStat:
         assert result1["empty"][0] is None
 
         assert result1["count"][5] == 1233
-        #assert result1["unique"][5] == 277
+        # assert result1["unique"][5] == 277
         assert result1["top"][5] == 8.05
         assert result1["top_percent"][5] == pytest.approx(4.7)
         assert result1["avg"][5] == pytest.approx(33.9637936)
@@ -503,7 +503,7 @@ class TestvDFDescriptiveStat:
         result2 = titanic_vd.describe(method="categorical", unique=True)
 
         assert result2["dtype"][7] == "varchar(36)"
-        #assert result2["unique"][7] == 887
+        # assert result2["unique"][7] == 887
         assert result2["count"][7] == 1234
         assert result2["top"][7] == "CA. 2343"
         assert result2["top_percent"][7] == pytest.approx(0.81)
@@ -513,7 +513,7 @@ class TestvDFDescriptiveStat:
         assert result3["dtype"][9] == "varchar(30)"
         assert result3["percent"][9] == pytest.approx(23.177)
         assert result3["count"][9] == 286
-        #assert result3["unique"][9] == 182
+        # assert result3["unique"][9] == 182
         assert result3["empty"][9] == 0
         assert result3["avg_length"][9] == pytest.approx(3.72027972)
         assert result3["stddev_length"][9] == pytest.approx(2.28313602)
@@ -547,24 +547,24 @@ class TestvDFDescriptiveStat:
         assert result4_1["max"][1] == 1
         assert result4_1["unique"][1] == 2.0
 
-        #result4_2 = titanic_vd.describe(method="numerical", unique=True, ncols_block=2, processes=2)
+        # result4_2 = titanic_vd.describe(method="numerical", unique=True, ncols_block=2, processes=2)
 
-        #assert result4_2["count"][1] == 1234
-        #assert result4_2["mean"][1] == pytest.approx(0.36466774)
-        #assert result4_2["std"][1] == pytest.approx(0.48153201)
-        #assert result4_2["min"][1] == 0
-        #assert result4_2["approx_25%"][1] == 0
-        #assert result4_2["approx_50%"][1] == 0
-        #assert result4_2["approx_75%"][1] == 1
-        #assert result4_2["max"][1] == 1
-        #assert result4_2["unique"][1] == 2.0
+        # assert result4_2["count"][1] == 1234
+        # assert result4_2["mean"][1] == pytest.approx(0.36466774)
+        # assert result4_2["std"][1] == pytest.approx(0.48153201)
+        # assert result4_2["min"][1] == 0
+        # assert result4_2["approx_25%"][1] == 0
+        # assert result4_2["approx_50%"][1] == 0
+        # assert result4_2["approx_75%"][1] == 1
+        # assert result4_2["max"][1] == 1
+        # assert result4_2["unique"][1] == 2.0
 
         result5 = titanic_vd.describe(method="range", unique=True)
 
         assert result5["dtype"][2] == "numeric(6,3)"
         assert result5["percent"][2] == pytest.approx(80.794)
         assert result5["count"][2] == 997
-        #assert result5["unique"][2] == 96
+        # assert result5["unique"][2] == 96
         assert result5["min"][2] == pytest.approx(0.33)
         assert result5["max"][2] == 80
         assert result5["range"][2] == pytest.approx(79.67)
@@ -574,7 +574,7 @@ class TestvDFDescriptiveStat:
         assert result6["dtype"][3] == "int"
         assert result6["percent"][3] == 100
         assert result6["count"][3] == 1234
-        #assert result6["unique"][3] == 7
+        # assert result6["unique"][3] == 7
         assert result6["avg"][3] == pytest.approx(0.504051863857374)
         assert result6["stddev"][3] == pytest.approx(1.04111727241629)
         assert result6["min"][3] == 0
@@ -618,7 +618,11 @@ class TestvDFDescriptiveStat:
         assert result2["value"][10] == pytest.approx(10.163712)
 
         # testing vDataFrame[].describe - cat_stats
-        result3 = market_vd["Form"].describe(method="cat_stats", numcol="Price").transpose()["Canned,"]
+        result3 = (
+            market_vd["Form"]
+            .describe(method="cat_stats", numcol="Price")
+            .transpose()["Canned,"]
+        )
 
         assert result3[0] == 2
         assert result3[1] == pytest.approx(0.63694267515)
@@ -787,20 +791,24 @@ class TestvDFDescriptiveStat:
 
     def test_vDF_nunique(self, titanic_vd):
         # Exact Cardinality
-        result = titanic_vd.nunique(columns=["pclass", "embarked", "survived", "cabin"], approx=False,)
+        result = titanic_vd.nunique(
+            columns=["pclass", "embarked", "survived", "cabin"], approx=False,
+        )
 
         assert result["unique"][0] == 3.0
-        #assert result["unique"][1] == 3.0
+        # assert result["unique"][1] == 3.0
         assert result["unique"][2] == 2.0
-        #assert result["unique"][3] == 182.0
+        # assert result["unique"][3] == 182.0
 
         # Approximate Cardinality
-        result = titanic_vd.nunique(columns=["pclass", "embarked", "survived", "cabin"], approx=True,)
+        result = titanic_vd.nunique(
+            columns=["pclass", "embarked", "survived", "cabin"], approx=True,
+        )
 
         assert result["approx_unique"][0] == 3.0
-        #assert result["approx_unique"][1] == 3.0
+        # assert result["approx_unique"][1] == 3.0
         assert result["approx_unique"][2] == 2.0
-        #assert result["approx_unique"][3] == 181.0
+        # assert result["approx_unique"][3] == 181.0
 
     def test_vDF_numh(self, market_vd, amazon_vd):
         assert market_vd["Price"].numh(method="auto") == pytest.approx(0.984707376)
@@ -848,8 +856,10 @@ class TestvDFDescriptiveStat:
         assert titanic_vd["age"].quantile(x=0.5) == pytest.approx(28.0)
         assert titanic_vd["fare"].quantile(x=0.1) == pytest.approx(7.5892)
 
-        # testing exact vDataFrame.quantile 
-        result = titanic_vd.quantile(q=[0.22, 0.9], columns=["age", "fare"], approx=False)
+        # testing exact vDataFrame.quantile
+        result = titanic_vd.quantile(
+            q=[0.22, 0.9], columns=["age", "fare"], approx=False
+        )
 
         assert result["22%"][0] == pytest.approx(20.0)
         assert result["90%"][0] == pytest.approx(50.0)
