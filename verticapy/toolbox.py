@@ -856,7 +856,7 @@ def print_table(
 
 # ---#
 def quote_ident(column: str):
-    tmp_column = column
+    tmp_column = str(column)
     if len(column) >= 2 and (column[0] == column[-1] == '"'):
         tmp_column = column[1:-1]
     return '"{}"'.format(str(tmp_column).replace('"', '""'))
