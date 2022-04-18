@@ -49,15 +49,11 @@
 # Modules
 #
 # Standard Python Modules
-import os, math, shutil, re, sys, warnings, random, itertools, datetime
+import shutil, re, sys, warnings, random, itertools, datetime
 from collections.abc import Iterable
-
-# Other Modules
-import numpy as np
 
 # VerticaPy Modules
 import verticapy
-from verticapy.utilities import *
 from verticapy.errors import *
 
 #

@@ -1280,7 +1280,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 0 <= parameters["min_info_gain"] <= 1, ParameterError(
-                    "Incorrect parameter 'min_info_gain'.\nThe minimum threshold for including a split must be between 0.0 and 1.0, inclusive."
+                    "Incorrect parameter 'min_info_gain'.\nThe minimum threshold "
+                    "for including a split must be between 0.0 and 1.0, inclusive."
                 )
                 model_parameters["min_info_gain"] = parameters["min_info_gain"]
             elif "min_info_gain" not in self.parameters:
@@ -1290,7 +1291,8 @@ Main Class for Vertica Model
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float])])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use for "
+                    "continuous features must be between 2 and 1000, inclusive."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
             elif "nbins" not in self.parameters:
@@ -1301,7 +1303,8 @@ Main Class for Vertica Model
             if "max_ntree" in parameters:
                 check_types([("max_ntree", parameters["max_ntree"], [int])])
                 assert 0 <= parameters["max_ntree"] <= 1000, ParameterError(
-                    "Incorrect parameter 'max_ntree'.\nThe maximum number of trees must be lesser than 1000."
+                    "Incorrect parameter 'max_ntree'.\nThe maximum number of "
+                    "trees must be lesser than 1000."
                 )
                 model_parameters["max_ntree"] = parameters["max_ntree"]
             elif "max_ntree" not in self.parameters:
@@ -1312,7 +1315,8 @@ Main Class for Vertica Model
                 assert str(parameters["split_proposal_method"]).lower() in [
                     "global",
                 ], ParameterError(
-                    "Incorrect parameter 'split_proposal_method'.\nThe Split Proposal Method must be in (global), found '{}'.".format(
+                    "Incorrect parameter 'split_proposal_method'.\nThe Split "
+                    "Proposal Method must be in (global), found '{}'.".format(
                         parameters["split_proposal_method"]
                     )
                 )
@@ -1342,7 +1346,8 @@ Main Class for Vertica Model
                     [("learning_rate", parameters["learning_rate"], [int, float])]
                 )
                 assert 0 < parameters["learning_rate"] <= 1, ParameterError(
-                    "Incorrect parameter 'learning_rate'.\nThe Learning Rate must be between 0 and 1."
+                    "Incorrect parameter 'learning_rate'.\nThe Learning Rate"
+                    " must be between 0 and 1."
                 )
                 model_parameters["learning_rate"] = parameters["learning_rate"]
             elif "learning_rate" not in self.parameters:
@@ -1354,7 +1359,8 @@ Main Class for Vertica Model
                     [("min_split_loss", parameters["min_split_loss"], [int, float])]
                 )
                 assert 0 <= parameters["min_split_loss"] <= 1000, ParameterError(
-                    "Incorrect parameter 'min_split_loss'.\nThe Minimum Split Loss must be must be lesser than 1000."
+                    "Incorrect parameter 'min_split_loss'.\nThe Minimum "
+                    "Split Loss must be must be lesser than 1000."
                 )
                 model_parameters["min_split_loss"] = parameters["min_split_loss"]
             elif "min_split_loss" not in self.parameters:
@@ -1366,7 +1372,8 @@ Main Class for Vertica Model
             if "weight_reg" in parameters:
                 check_types([("weight_reg", parameters["weight_reg"], [int, float])])
                 assert 0 <= parameters["weight_reg"] <= 1000, ParameterError(
-                    "Incorrect parameter 'weight_reg'.\nThe Weight must be lesser than 1000."
+                    "Incorrect parameter 'weight_reg'.\nThe Weight must be "
+                    "lesser than 1000."
                 )
                 model_parameters["weight_reg"] = parameters["weight_reg"]
             elif "weight_reg" not in self.parameters:
@@ -1376,7 +1383,9 @@ Main Class for Vertica Model
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float])])
                 assert 0 < parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0."
+                    "Incorrect parameter 'sample'.\nThe portion of the input "
+                    "data set that is randomly picked for training each tree "
+                    "must be between 0.0 and 1.0."
                 )
                 model_parameters["sample"] = parameters["sample"]
             elif "sample" not in self.parameters:
@@ -1397,7 +1406,8 @@ Main Class for Vertica Model
                         ]
                     )
                     assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
-                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter 'col_sample_by_tree' must be between 0.0 and 1.0."
+                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter "
+                        "'col_sample_by_tree' must be between 0.0 and 1.0."
                     )
                     model_parameters["col_sample_by_tree"] = parameters[
                         "col_sample_by_tree"
@@ -1421,7 +1431,8 @@ Main Class for Vertica Model
                         ]
                     )
                     assert 0 < parameters["col_sample_by_node"] <= 1, ParameterError(
-                        "Incorrect parameter 'col_sample_by_node'.\nThe parameter 'col_sample_by_node' must be between 0.0 and 1.0."
+                        "Incorrect parameter 'col_sample_by_node'.\nThe parameter "
+                        "'col_sample_by_node' must be between 0.0 and 1.0."
                     )
                     model_parameters["col_sample_by_node"] = parameters[
                         "col_sample_by_node"
@@ -1437,7 +1448,8 @@ Main Class for Vertica Model
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int])])
                 assert 1 <= parameters["max_depth"] <= 20, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 20, inclusive."
+                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing"
+                    " each tree must be between 1 and 20, inclusive."
                 )
                 model_parameters["max_depth"] = parameters["max_depth"]
             elif "max_depth" not in self.parameters:
@@ -1447,7 +1459,9 @@ Main Class for Vertica Model
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float])])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be between 2 and 1000, inclusive."
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use "
+                    "for continuous features must be between 2 and 1000, "
+                    "inclusive."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
             elif "nbins" not in self.parameters:
@@ -1458,7 +1472,8 @@ Main Class for Vertica Model
             if "alpha" in parameters:
                 check_types([("alpha", parameters["alpha"], [int, float])])
                 assert 0 <= parameters["alpha"], ParameterError(
-                    "Incorrect parameter 'alpha'.\nThe smoothing factor must be positive."
+                    "Incorrect parameter 'alpha'.\nThe smoothing factor "
+                    "must be positive."
                 )
                 model_parameters["alpha"] = parameters["alpha"]
             elif "alpha" not in self.parameters:
@@ -1475,7 +1490,9 @@ Main Class for Vertica Model
                         "gaussian",
                         "auto",
                     ], ParameterError(
-                        "Incorrect parameter 'nbtype'.\nThe Naive Bayes type must be in (bernoulli | categorical | multinomial | gaussian | auto), found '{}'.".format(
+                        "Incorrect parameter 'nbtype'.\nThe Naive Bayes "
+                        "type must be in (bernoulli | categorical | "
+                        "multinomial | gaussian | auto), found '{}'.".format(
                             parameters["init"]
                         )
                     )
@@ -1488,7 +1505,8 @@ Main Class for Vertica Model
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float])])
                 assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
+                    "Incorrect parameter 'max_iter'.\nThe maximum number "
+                    "of iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
             elif "max_iter" not in self.parameters:
@@ -1498,7 +1516,8 @@ Main Class for Vertica Model
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float])])
                 assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
+                    "Incorrect parameter 'tol'.\nThe tolerance parameter "
+                    "value must be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
             elif "tol" not in self.parameters:
@@ -1508,7 +1527,8 @@ Main Class for Vertica Model
             if "n_cluster" in parameters:
                 check_types([("n_cluster", parameters["n_cluster"], [int, float])])
                 assert 1 <= parameters["n_cluster"] <= 10000, ParameterError(
-                    "Incorrect parameter 'n_cluster'.\nThe number of clusters must be between 1 and 10000, inclusive."
+                    "Incorrect parameter 'n_cluster'.\nThe number of "
+                    "clusters must be between 1 and 10000, inclusive."
                 )
                 model_parameters["n_cluster"] = parameters["n_cluster"]
             elif "n_cluster" not in self.parameters:
@@ -1524,7 +1544,10 @@ Main Class for Vertica Model
                             "kmeanspp",
                             "pseudo",
                         ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp | pseudo) or a list of the initial clusters position, found '{}'.".format(
+                            "Incorrect parameter 'init'.\nThe initialization "
+                            "method of the clusters must be in (random | "
+                            "kmeanspp | pseudo) or a list of the initial "
+                            "clusters position, found '{}'.".format(
                                 parameters["init"]
                             )
                         )
@@ -1533,7 +1556,10 @@ Main Class for Vertica Model
                             "random",
                             "kmeanspp",
                         ], ParameterError(
-                            "Incorrect parameter 'init'.\nThe initialization method of the clusters must be in (random | kmeanspp) or a list of the initial clusters position, found '{}'.".format(
+                            "Incorrect parameter 'init'.\nThe initialization"
+                            " method of the clusters must be in (random | "
+                            "kmeanspp) or a list of the initial clusters "
+                            "position, found '{}'.".format(
                                 parameters["init"]
                             )
                         )
@@ -1556,7 +1582,10 @@ Main Class for Vertica Model
                 assert (
                     1 <= parameters["bisection_iterations"] <= 1000000
                 ), ParameterError(
-                    "Incorrect parameter 'bisection_iterations'.\nThe number of iterations the bisecting k-means algorithm performs for each bisection step must be between 1 and 1e6, inclusive."
+                    "Incorrect parameter 'bisection_iterations'."
+                    "\nThe number of iterations the bisecting "
+                    "k-means algorithm performs for each bisection "
+                    "step must be between 1 and 1e6, inclusive."
                 )
                 model_parameters["bisection_iterations"] = parameters[
                     "bisection_iterations"
@@ -1578,7 +1607,8 @@ Main Class for Vertica Model
                     "size",
                     "sum_squares",
                 ], ParameterError(
-                    "Incorrect parameter 'split_method'.\nThe split method must be in (size | sum_squares), found '{}'.".format(
+                    "Incorrect parameter 'split_method'.\nThe split method"
+                    " must be in (size | sum_squares), found '{}'.".format(
                         parameters["split_method"]
                     )
                 )
@@ -1601,7 +1631,9 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 2 <= parameters["min_divisible_cluster_size"], ParameterError(
-                    "Incorrect parameter 'min_divisible_cluster_size'.\nThe minimum number of points of a divisible cluster must be greater than or equal to 2."
+                    "Incorrect parameter 'min_divisible_cluster_size'.\n"
+                    "The minimum number of points of a divisible cluster "
+                    "must be greater than or equal to 2."
                 )
                 model_parameters["min_divisible_cluster_size"] = parameters[
                     "min_divisible_cluster_size"
@@ -1622,7 +1654,8 @@ Main Class for Vertica Model
                 assert str(parameters["distance_method"]).lower() in [
                     "euclidean"
                 ], ParameterError(
-                    "Incorrect parameter 'distance_method'.\nThe distance method must be in (euclidean), found '{}'.".format(
+                    "Incorrect parameter 'distance_method'.\nThe distance "
+                    "method must be in (euclidean), found '{}'.".format(
                         parameters["distance_method"]
                     )
                 )
@@ -1640,7 +1673,8 @@ Main Class for Vertica Model
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float])])
                 assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
+                    "Incorrect parameter 'tol'.\nThe tolerance parameter "
+                    "value must be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
             elif "tol" not in self.parameters:
@@ -1650,7 +1684,8 @@ Main Class for Vertica Model
             if "C" in parameters:
                 check_types([("C", parameters["C"], [int, float])])
                 assert 0 <= parameters["C"], ParameterError(
-                    "Incorrect parameter 'C'.\nThe weight for misclassification cost must be positive."
+                    "Incorrect parameter 'C'.\nThe weight for misclassification "
+                    "cost must be positive."
                 )
                 model_parameters["C"] = parameters["C"]
             elif "C" not in self.parameters:
@@ -1660,7 +1695,8 @@ Main Class for Vertica Model
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float])])
                 assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
+                    "Incorrect parameter 'max_iter'.\nThe maximum number "
+                    "of iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
             elif "max_iter" not in self.parameters:
@@ -1686,7 +1722,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 0 <= parameters["intercept_scaling"], ParameterError(
-                    "Incorrect parameter 'intercept_scaling'.\nThe Intercept Scaling parameter value must be positive."
+                    "Incorrect parameter 'intercept_scaling'.\nThe Intercept "
+                    "Scaling parameter value must be positive."
                 )
                 model_parameters["intercept_scaling"] = parameters["intercept_scaling"]
             elif "intercept_scaling" not in self.parameters:
@@ -1703,7 +1740,8 @@ Main Class for Vertica Model
                     "regularized",
                     "unregularized",
                 ], ParameterError(
-                    "Incorrect parameter 'intercept_mode'.\nThe Intercept Mode must be in (size | sum_squares), found '{}'.".format(
+                    "Incorrect parameter 'intercept_mode'.\nThe Intercept Mode "
+                    "must be in (size | sum_squares), found '{}'.".format(
                         parameters["intercept_mode"]
                     )
                 )
@@ -1735,7 +1773,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 0 <= parameters["acceptable_error_margin"], ParameterError(
-                    "Incorrect parameter 'acceptable_error_margin'.\nThe Acceptable Error Margin parameter value must be positive."
+                    "Incorrect parameter 'acceptable_error_margin'.\nThe Acceptable "
+                    "Error Margin parameter value must be positive."
                 )
                 model_parameters["acceptable_error_margin"] = parameters[
                     "acceptable_error_margin"
@@ -1765,7 +1804,8 @@ Main Class for Vertica Model
                     assert str(parameters["method"]).lower() in [
                         "lapack"
                     ], ParameterError(
-                        "Incorrect parameter 'method'.\nThe decomposition method must be in (lapack), found '{}'.".format(
+                        "Incorrect parameter 'method'.\nThe decomposition method "
+                        "must be in (lapack), found '{}'.".format(
                             parameters["method"]
                         )
                     )
@@ -1779,7 +1819,9 @@ Main Class for Vertica Model
                         [("n_components", parameters["n_components"], [int, float])]
                     )
                     assert 0 <= parameters["n_components"], ParameterError(
-                        "Incorrect parameter 'n_components'.\nThe number of components must be positive. If it is equal to 0, all the components will be considered."
+                        "Incorrect parameter 'n_components'.\nThe number of "
+                        "components must be positive. If it is equal to 0, all "
+                        "the components will be considered."
                     )
                     model_parameters["n_components"] = parameters["n_components"]
                 elif "n_components" not in self.parameters:
@@ -1837,7 +1879,9 @@ Main Class for Vertica Model
                     "values",
                     "values_relaxed",
                 ], ParameterError(
-                    "Incorrect parameter 'column_naming'.\nThe column_naming method must be in (indices | values | values_relaxed), found '{}'.".format(
+                    "Incorrect parameter 'column_naming'.\nThe column_naming "
+                    "method must be in (indices | values | values_relaxed), "
+                    "found '{}'.".format(
                         parameters["column_naming"]
                     )
                 )
@@ -1854,7 +1898,8 @@ Main Class for Vertica Model
                     "robust_zscore",
                     "minmax",
                 ], ParameterError(
-                    "Incorrect parameter 'method'.\nThe normalization method must be in (zscore | robust_zscore | minmax), found '{}'.".format(
+                    "Incorrect parameter 'method'.\nThe normalization method must "
+                    "be in (zscore | robust_zscore | minmax), found '{}'.".format(
                         parameters["method"]
                     )
                 )
@@ -1867,7 +1912,8 @@ Main Class for Vertica Model
             if "eps" in parameters:
                 check_types([("eps", parameters["eps"], [int, float])])
                 assert 0 < parameters["eps"], ParameterError(
-                    "Incorrect parameter 'eps'.\nThe radius of a neighborhood must be strictly positive."
+                    "Incorrect parameter 'eps'.\nThe radius of a neighborhood must "
+                    "be strictly positive."
                 )
                 model_parameters["eps"] = parameters["eps"]
             elif "eps" not in self.parameters:
@@ -1877,7 +1923,8 @@ Main Class for Vertica Model
             if "p" in parameters:
                 check_types([("p", parameters["p"], [int, float])])
                 assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
+                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
+                    "strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
             elif "p" not in self.parameters:
@@ -1887,7 +1934,9 @@ Main Class for Vertica Model
             if "min_samples" in parameters:
                 check_types([("min_samples", parameters["min_samples"], [int, float])])
                 assert 0 < parameters["min_samples"], ParameterError(
-                    "Incorrect parameter 'min_samples'.\nThe minimum number of points required to form a dense region must be strictly positive."
+                    "Incorrect parameter 'min_samples'.\nThe minimum number of "
+                    "points required to form a dense region must be strictly "
+                    "positive."
                 )
                 model_parameters["min_samples"] = parameters["min_samples"]
             elif "min_samples" not in self.parameters:
@@ -1903,7 +1952,8 @@ Main Class for Vertica Model
             if "p" in parameters:
                 check_types([("p", parameters["p"], [int, float])])
                 assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
+                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
+                    "strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
             elif "p" not in self.parameters:
@@ -1913,7 +1963,8 @@ Main Class for Vertica Model
             if ("n_neighbors" in parameters) and (self.type != "NearestCentroid"):
                 check_types([("n_neighbors", parameters["n_neighbors"], [int, float])])
                 assert 0 < parameters["n_neighbors"], ParameterError(
-                    "Incorrect parameter 'n_neighbors'.\nThe number of neighbors must be strictly positive."
+                    "Incorrect parameter 'n_neighbors'.\nThe number of neighbors "
+                    "must be strictly positive."
                 )
                 model_parameters["n_neighbors"] = parameters["n_neighbors"]
             elif (
