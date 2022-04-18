@@ -361,7 +361,16 @@ Main Class for Vertica Model
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[9, 1, 1])
             tree_id = "" if not (tree_id) else ", tree_id={}".format(tree_id)
-            query = "SELECT predictor_name AS predictor, ROUND(100 * importance_value / SUM(importance_value) OVER (), 2)::float AS importance, SIGN(importance_value)::int AS sign FROM (SELECT RF_PREDICTOR_IMPORTANCE ( USING PARAMETERS model_name = '{}'{})) VERTICAPY_SUBTABLE ORDER BY 2 DESC;".format(
+            query = """SELECT 
+                            predictor_name AS predictor, 
+                            ROUND(100 * importance_value / SUM(importance_value) 
+                                OVER (), 2)::float AS importance, 
+                            SIGN(importance_value)::int AS sign 
+                        FROM 
+                            (SELECT RF_PREDICTOR_IMPORTANCE ( 
+                                    USING PARAMETERS model_name = '{0}'{1})) 
+                                    VERTICAPY_SUBTABLE 
+                        ORDER BY 2 DESC;""".format(
                 name, tree_id
             )
             print_legend = False
@@ -448,7 +457,10 @@ Main Class for Vertica Model
             name = self.tree_name if self.type == "KernelDensity" else self.name
             version(condition=[8, 1, 1])
             result = to_tablesample(
-                query="SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{0}'{1})".format(
+                query=(
+                    "SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS "
+                    "model_name = '{0}'{1})"
+                ).format(
                     name, ", attr_name = '{}'".format(attr_name) if attr_name else "",
                 ),
                 title="Getting Model Attributes.",
@@ -600,36 +612,52 @@ Main Class for Vertica Model
 		"""
         if self.type == "AutoML":
             return self.best_model_.get_model_fun()
+
         if self.type in ("LinearRegression", "SARIMAX"):
             return ("LINEAR_REG", "PREDICT_LINEAR_REG", "")
+
         elif self.type == "LogisticRegression":
             return ("LOGISTIC_REG", "PREDICT_LOGISTIC_REG", "")
+
         elif self.type == "LinearSVC":
             return ("SVM_CLASSIFIER", "PREDICT_SVM_CLASSIFIER", "")
+
         elif self.type == "LinearSVR":
             return ("SVM_REGRESSOR", "PREDICT_SVM_REGRESSOR", "")
+
         elif self.type in ("RandomForestRegressor", "KernelDensity"):
             return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
+
         elif self.type == "RandomForestClassifier":
             return ("RF_CLASSIFIER", "PREDICT_RF_CLASSIFIER", "")
+
         elif self.type == "XGBoostRegressor":
             return ("XGB_REGRESSOR", "PREDICT_XGB_REGRESSOR", "")
+
         elif self.type == "XGBoostClassifier":
             return ("XGB_CLASSIFIER", "PREDICT_XGB_CLASSIFIER", "")
+
         elif self.type == "NaiveBayes":
             return ("NAIVE_BAYES", "PREDICT_NAIVE_BAYES", "")
+
         elif self.type == "KMeans":
             return ("KMEANS", "APPLY_KMEANS", "")
+
         elif self.type == "BisectingKMeans":
             return ("BISECTING_KMEANS", "APPLY_BISECTING_KMEANS", "")
+
         elif self.type in ("PCA", "MCA"):
             return ("PCA", "APPLY_PCA", "APPLY_INVERSE_PCA")
+
         elif self.type == "SVD":
             return ("SVD", "APPLY_SVD", "APPLY_INVERSE_SVD")
+
         elif self.type == "Normalizer":
             return ("NORMALIZE_FIT", "APPLY_NORMALIZE", "REVERSE_NORMALIZE")
+
         elif self.type == "OneHotEncoder":
             return ("ONE_HOT_ENCODER_FIT", "APPLY_ONE_HOT_ENCODER", "")
+
         else:
             return ("", "", "")
 
@@ -912,7 +940,8 @@ Main Class for Vertica Model
             if "max_iter" in parameters:
                 check_types([("max_iter", parameters["max_iter"], [int, float])])
                 assert 0 <= parameters["max_iter"], ParameterError(
-                    "Incorrect parameter 'max_iter'.\nThe maximum number of iterations must be positive."
+                    "Incorrect parameter 'max_iter'.\nThe maximum number of "
+                    "iterations must be positive."
                 )
                 model_parameters["max_iter"] = parameters["max_iter"]
             elif "max_iter" not in self.parameters:
@@ -925,7 +954,8 @@ Main Class for Vertica Model
             ):
                 check_types([("l1_ratio", parameters["l1_ratio"], [int, float])])
                 assert 0 <= parameters["l1_ratio"] <= 1, ParameterError(
-                    "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be between 0 and 1."
+                    "Incorrect parameter 'l1_ratio'.\nThe ENet Mixture must be "
+                    "between 0 and 1."
                 )
                 model_parameters["l1_ratio"] = parameters["l1_ratio"]
             elif (
@@ -941,7 +971,8 @@ Main Class for Vertica Model
             ):
                 check_types([("C", parameters["C"], [int, float])])
                 assert 0 <= parameters["C"], ParameterError(
-                    "Incorrect parameter 'C'.\nThe regularization parameter value must be positive."
+                    "Incorrect parameter 'C'.\nThe regularization parameter value must "
+                    "be positive."
                 )
                 model_parameters["C"] = parameters["C"]
             elif (
@@ -954,7 +985,8 @@ Main Class for Vertica Model
             if "tol" in parameters:
                 check_types([("tol", parameters["tol"], [int, float])])
                 assert 0 <= parameters["tol"], ParameterError(
-                    "Incorrect parameter 'tol'.\nThe tolerance parameter value must be positive."
+                    "Incorrect parameter 'tol'.\nThe tolerance parameter value must "
+                    "be positive."
                 )
                 model_parameters["tol"] = parameters["tol"]
             elif "tol" not in self.parameters:
@@ -994,7 +1026,8 @@ Main Class for Vertica Model
             if "P" in parameters and self.type == "SARIMAX":
                 check_types([("P", parameters["P"], [int, float])])
                 assert 0 <= parameters["P"], ParameterError(
-                    "Incorrect parameter 'P'.\nThe seasonal order of the AR part must be positive."
+                    "Incorrect parameter 'P'.\nThe seasonal order of the AR part must "
+                    "be positive."
                 )
                 model_parameters["P"] = parameters["P"]
             elif self.type == "SARIMAX" and "P" not in self.parameters:
@@ -1004,7 +1037,8 @@ Main Class for Vertica Model
             if "Q" in parameters and self.type == "SARIMAX":
                 check_types([("Q", parameters["Q"], [int, float])])
                 assert 0 <= parameters["Q"], ParameterError(
-                    "Incorrect parameter 'Q'.\nThe seasonal order of the MA part must be positive."
+                    "Incorrect parameter 'Q'.\nThe seasonal order of the MA part must "
+                    "be positive."
                 )
                 model_parameters["Q"] = parameters["Q"]
             elif self.type == "SARIMAX" and "Q" not in self.parameters:
@@ -1014,7 +1048,8 @@ Main Class for Vertica Model
             if "D" in parameters and self.type == "SARIMAX":
                 check_types([("D", parameters["D"], [int, float])])
                 assert 0 <= parameters["D"], ParameterError(
-                    "Incorrect parameter 'D'.\nThe seasonal order of the I part must be positive."
+                    "Incorrect parameter 'D'.\nThe seasonal order of the I part must "
+                    "be positive."
                 )
                 model_parameters["D"] = parameters["D"]
             elif self.type == "SARIMAX" and "D" not in self.parameters:
@@ -1024,7 +1059,8 @@ Main Class for Vertica Model
             if "s" in parameters and self.type == "SARIMAX":
                 check_types([("s", parameters["s"], [int, float])])
                 assert 0 <= parameters["s"], ParameterError(
-                    "Incorrect parameter 's'.\nThe Span of the seasonality must be positive."
+                    "Incorrect parameter 's'.\nThe Span of the seasonality must be "
+                    "positive."
                 )
                 model_parameters["s"] = parameters["s"]
             elif self.type == "SARIMAX" and "s" not in self.parameters:
@@ -1034,7 +1070,8 @@ Main Class for Vertica Model
             if "max_pik" in parameters and self.type == "SARIMAX":
                 check_types([("max_pik", parameters["max_pik"], [int, float])])
                 assert 0 <= parameters["max_pik"], ParameterError(
-                    "Incorrect parameter 'max_pik'.\nThe Maximum number of inverse MA coefficients took during the computation must be positive."
+                    "Incorrect parameter 'max_pik'.\nThe Maximum number of inverse MA "
+                    "coefficients took during the computation must be positive."
                 )
                 model_parameters["max_pik"] = parameters["max_pik"]
             elif self.type == "SARIMAX" and "max_pik" not in self.parameters:
@@ -1044,7 +1081,8 @@ Main Class for Vertica Model
             if "papprox_ma" in parameters and self.type == "SARIMAX":
                 check_types([("papprox_ma", parameters["papprox_ma"], [int, float])])
                 assert 0 <= parameters["papprox_ma"], ParameterError(
-                    "Incorrect parameter 'papprox_ma'.\nThe Maximum number of AR(P) used to approximate the MA during the computation must be positive."
+                    "Incorrect parameter 'papprox_ma'.\nThe Maximum number of AR(P) used "
+                    "to approximate the MA during the computation must be positive."
                 )
                 model_parameters["papprox_ma"] = parameters["papprox_ma"]
             elif self.type == "SARIMAX" and "papprox_ma" not in self.parameters:
@@ -1078,7 +1116,8 @@ Main Class for Vertica Model
                     "sigmoid",
                     "silverman",
                 ], ParameterError(
-                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(
+                    "Incorrect parameter 'kernel'.\nThe parameter 'kernel' must "
+                    "be in [gaussian|logistic|sigmoid|silverman], found '{}'.".format(
                         kernel
                     )
                 )
@@ -1099,7 +1138,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
-                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of leaf nodes must be between 1 and 1e9, inclusive."
+                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
+                    "leaf nodes must be between 1 and 1e9, inclusive."
                 )
                 model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
             elif "max_leaf_nodes" not in self.parameters:
@@ -1111,7 +1151,8 @@ Main Class for Vertica Model
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int])])
                 assert 1 <= parameters["max_depth"] <= 100, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 100, inclusive."
+                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing "
+                    "each tree must be between 1 and 100, inclusive."
                 )
                 model_parameters["max_depth"] = parameters["max_depth"]
             elif "max_depth" not in self.parameters:
@@ -1130,7 +1171,9 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
-                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number of samples each branch must have after splitting a node must be between 1 and 1e6, inclusive."
+                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
+                    "of samples each branch must have after splitting a node "
+                    "must be between 1 and 1e6, inclusive."
                 )
                 model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
             elif "min_samples_leaf" not in self.parameters:
@@ -1144,7 +1187,8 @@ Main Class for Vertica Model
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float])])
                 assert 2 <= parameters["nbins"], ParameterError(
-                    "Incorrect parameter 'nbins'.\nThe number of bins to use for continuous features must be greater than 2."
+                    "Incorrect parameter 'nbins'.\nThe number of bins to use for "
+                    "continuous features must be greater than 2."
                 )
                 model_parameters["nbins"] = parameters["nbins"]
             elif "nbins" not in self.parameters:
@@ -1154,7 +1198,8 @@ Main Class for Vertica Model
             if "p" in parameters:
                 check_types([("p", parameters["p"], [int, float])])
                 assert 0 < parameters["p"], ParameterError(
-                    "Incorrect parameter 'p'.\nThe p of the p-distance must be strictly positive."
+                    "Incorrect parameter 'p'.\nThe p of the p-distance must be "
+                    "strictly positive."
                 )
                 model_parameters["p"] = parameters["p"]
             elif "p" not in self.parameters:
@@ -1172,7 +1217,8 @@ Main Class for Vertica Model
             if "n_estimators" in parameters:
                 check_types([("n_estimators", parameters["n_estimators"], [int])])
                 assert 0 <= parameters["n_estimators"] <= 1000, ParameterError(
-                    "Incorrect parameter 'n_estimators'.\nThe number of trees must be lesser than 1000."
+                    "Incorrect parameter 'n_estimators'.\nThe number of trees must "
+                    "be lesser than 1000."
                 )
                 model_parameters["n_estimators"] = parameters["n_estimators"]
             elif "n_estimators" not in self.parameters:
@@ -1195,7 +1241,8 @@ Main Class for Vertica Model
                         "max",
                         "auto",
                     ], ParameterError(
-                        "Incorrect parameter 'init'.\nThe maximum number of features to test must be in (max | auto) or an integer, found '{}'.".format(
+                        "Incorrect parameter 'init'.\nThe maximum number of features "
+                        "to test must be in (max | auto) or an integer, found '{}'.".format(
                             parameters["max_features"]
                         )
                     )
@@ -1216,7 +1263,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
-                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of leaf nodes must be between 1 and 1e9, inclusive."
+                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
+                    "leaf nodes must be between 1 and 1e9, inclusive."
                 )
                 model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
             elif "max_leaf_nodes" not in self.parameters:
@@ -1228,7 +1276,9 @@ Main Class for Vertica Model
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float])])
                 assert 0 <= parameters["sample"] <= 1, ParameterError(
-                    "Incorrect parameter 'sample'.\nThe portion of the input data set that is randomly picked for training each tree must be between 0.0 and 1.0, inclusive."
+                    "Incorrect parameter 'sample'.\nThe portion of the input data "
+                    "set that is randomly picked for training each tree must be "
+                    "between 0.0 and 1.0, inclusive."
                 )
                 model_parameters["sample"] = parameters["sample"]
             elif "sample" not in self.parameters:
@@ -1238,7 +1288,8 @@ Main Class for Vertica Model
             if "max_depth" in parameters:
                 check_types([("max_depth", parameters["max_depth"], [int])])
                 assert 1 <= parameters["max_depth"] <= 100, ParameterError(
-                    "Incorrect parameter 'max_depth'.\nThe maximum depth for growing each tree must be between 1 and 100, inclusive."
+                    "Incorrect parameter 'max_depth'.\nThe maximum depth for "
+                    "growing each tree must be between 1 and 100, inclusive."
                 )
                 model_parameters["max_depth"] = parameters["max_depth"]
             elif "max_depth" not in self.parameters:
@@ -3485,12 +3536,13 @@ class MulticlassClassifier(Classifier):
             if self.type == "NearestCentroid":
                 sql = self.to_memmodel().predict_proba_sql(self.X if not (X) else X)
             else:
-                sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
-                    fun, ", ".join(self.X if not (X) else X), self.name, "{}"
-                )
+                sql = (
+                    "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
+                    "type = 'probability', match_by_pos = 'true')"
+                ).format(fun, ", ".join(self.X if not (X) else X), self.name, "{}")
                 sql = [
                     sql,
-                    "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
+                    "{0}({1} USING PARAMETERS model_name = '{2}', match_by_pos = 'true')".format(
                         fun, ", ".join(self.X if not (X) else X), self.name
                     ),
                 ]
@@ -3501,30 +3553,36 @@ class MulticlassClassifier(Classifier):
                         self.X if not (X) else X
                     )[get_match_index(pos_label, self.classes_, False)]
                 else:
-                    sql = "{}({} USING PARAMETERS model_name = '{}', class = '{}', type = 'probability', match_by_pos = 'true')".format(
+                    sql = (
+                        "{0}({1} USING PARAMETERS model_name = '{2}', class = '{3}', "
+                        "type = 'probability', match_by_pos = 'true')"
+                    ).format(
                         fun, ", ".join(self.X if not (X) else X), self.name, pos_label
                     )
             if pos_label in self.classes_ and cutoff <= 1 and cutoff >= 0:
                 if len(self.classes_) > 2:
-                    sql = "(CASE WHEN {} >= {} THEN '{}' WHEN {} IS NULL THEN NULL ELSE 'Non-{}' END)".format(
-                        sql, cutoff, pos_label, sql, pos_label
-                    )
+                    sql = (
+                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
+                        "ELSE 'Non-{2}' END)"
+                    ).format(sql, cutoff, pos_label)
                 else:
                     non_pos_label = (
                         self.classes_[0]
                         if (self.classes_[0] != pos_label)
                         else self.classes_[1]
                     )
-                    sql = "(CASE WHEN {} >= {} THEN '{}' WHEN {} IS NULL THEN NULL ELSE '{}' END)".format(
-                        sql, cutoff, pos_label, sql, non_pos_label
-                    )
+                    sql = (
+                        "(CASE WHEN {0} >= {1} THEN '{2}' WHEN {0} IS NULL THEN NULL "
+                        "ELSE '{3}' END)"
+                    ).format(sql, cutoff, pos_label, non_pos_label)
             elif pos_label not in self.classes_:
                 if self.type == "NearestCentroid":
                     sql = self.to_memmodel().predict_sql(self.X if not (X) else X)
                 else:
-                    sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
-                        fun, ", ".join(self.X if not (X) else X), self.name
-                    )
+                    sql = (
+                        "{0}({1} USING PARAMETERS model_name = '{2}', "
+                        "match_by_pos = 'true')"
+                    ).format(fun, ", ".join(self.X if not (X) else X), self.name)
         return sql
 
     # ---#
@@ -3921,9 +3979,10 @@ class MulticlassClassifier(Classifier):
             )
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall"
-                "|precision|log_loss|negative_predictive_value|specificity|mcc|informedness"
-                "|markedness|critical_success_index|aic|bic"
+                "The parameter 'method' must be in accuracy|auc|prc_auc"
+                "|best_cutoff|recall|precision|log_loss|negative_predictive_value"
+                "|specificity|mcc|informedness|markedness|critical_success_index"
+                "|aic|bic"
             )
 
 
@@ -4488,7 +4547,8 @@ class Unsupervised(vModel):
                                 category_level_index 
                              FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
                                                 model_name = '{0}', 
-                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE 
+                                                attr_name = 'integer_categories')) 
+                                                VERTICAPY_SUBTABLE 
                              UNION ALL 
                              SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
                                         model_name = '{0}', 
@@ -4506,7 +4566,8 @@ class Unsupervised(vModel):
                                     category_level_index 
                                  FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS 
                                                 model_name = '{0}', 
-                                                attr_name = 'integer_categories')) VERTICAPY_SUBTABLE""".format(
+                                                attr_name = 'integer_categories')) 
+                                                VERTICAPY_SUBTABLE""".format(
                             self.name
                         ),
                         title="Getting Model Attributes.",
@@ -4578,7 +4639,10 @@ class Preprocessing(Unsupervised):
                 if self.parameters["null_column_name"] == None
                 else "'{}'".format(self.parameters["null_column_name"])
             )
-            sql += ", drop_first = {}, ignore_null = {}, separator = {}, column_naming = '{}'".format(
+            sql += (
+                ", drop_first = {0}, ignore_null = {1}, separator = {2}, "
+                "column_naming = '{3}'"
+            ).format(
                 self.parameters["drop_first"],
                 self.parameters["ignore_null"],
                 separator,
@@ -5066,22 +5130,27 @@ class Decomposition(Preprocessing):
         col_init_1 = ["{} AS col_init{}".format(X[idx], idx) for idx in range(len(X))]
         col_init_2 = ["col_init{}".format(idx) for idx in range(len(X))]
         cols = ["col{}".format(idx + 1) for idx in range(n_components)]
-        query = "SELECT {}({} USING PARAMETERS model_name = '{}', key_columns = '{}', num_components = {}) OVER () FROM {}".format(
-            fun[1],
-            ", ".join(self.X),
-            self.name,
-            ", ".join(self.X),
-            n_components,
-            input_relation,
+        query = """SELECT 
+                        {0}({1} USING PARAMETERS 
+                            model_name = '{2}', 
+                            key_columns = '{1}', 
+                            num_components = {3}) OVER () 
+                    FROM {4}""".format(
+            fun[1], ", ".join(self.X), self.name, n_components, input_relation,
         )
-        query = "SELECT {} FROM ({}) VERTICAPY_SUBTABLE".format(
+        query = "SELECT {0} FROM ({1}) VERTICAPY_SUBTABLE".format(
             ", ".join(col_init_1 + cols), query
         )
-        query = "SELECT {}({} USING PARAMETERS model_name = '{}', key_columns = '{}', exclude_columns = '{}', num_components = {}) OVER () FROM ({}) y".format(
+        query = """SELECT 
+                        {0}({1} USING PARAMETERS 
+                            model_name = '{2}', 
+                            key_columns = '{3}', 
+                            exclude_columns = '{3}', 
+                            num_components = {4}) OVER () 
+                   FROM ({5}) y""".format(
             fun[2],
             ", ".join(col_init_2 + cols),
             self.name,
-            ", ".join(col_init_2),
             ", ".join(col_init_2),
             n_components,
             query,
@@ -5089,14 +5158,11 @@ class Decomposition(Preprocessing):
         query = "SELECT 'Score' AS 'index', {} FROM ({}) z".format(
             ", ".join(
                 [
-                    "{}(POWER(ABS(POWER({}, {}) - POWER({}, {})), {})) AS {}".format(
-                        method,
-                        X[idx],
-                        p,
-                        "col_init{}".format(idx),
-                        p,
-                        float(1 / p),
-                        X[idx],
+                    (
+                        "{0}(POWER(ABS(POWER({1}, {2}) - "
+                        "POWER({3}, {2})), {4})) AS {1}"
+                    ).format(
+                        method, X[idx], p, "col_init{}".format(idx), float(1 / p),
                     )
                     for idx in range(len(X))
                 ]
