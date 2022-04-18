@@ -109,9 +109,9 @@ def check_types(types_list: list = []):
                 list_check = True
         if list_check:
             if not (isinstance(elem[1], str)) and (elem[1] != None):
-                warning_message = "Parameter '{}' must be of type {}, found type {}".format(
-                    elem[0], str, type(elem[1])
-                )
+                warning_message = (
+                    "Parameter '{0}' must be of type {1}, " "found type {2}"
+                ).format(elem[0], str, type(elem[1]))
                 warnings.warn(warning_message, Warning)
             if (elem[1] != None) and (
                 elem[1].lower() not in elem[2] and elem[1] not in elem[2]
@@ -141,6 +141,32 @@ def check_types(types_list: list = []):
                         elem[0], elem[2], type(elem[1])
                     )
                     warnings.warn(warning_message, Warning)
+
+
+# ---#
+def color_dict(d: dict, idx: int = 0):
+    if "color" in d:
+        if isinstance(d["color"], str):
+            return d["color"]
+        else:
+            return d["color"][idx % len(d["color"])]
+    else:
+        from verticapy.plot import gen_colors
+
+        return gen_colors()[idx % len(gen_colors())]
+
+
+# ---#
+def flat_dict(d: dict) -> str:
+    # converts dictionary to string with a specific format
+    res = []
+    for elem in d:
+        q = '"' if isinstance(d[elem], str) else ""
+        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
+    res = ", ".join(res)
+    if res:
+        res = ", {}".format(res)
+    return res
 
 
 # ---#
@@ -206,13 +232,41 @@ def format_magic(x, return_cat: bool = False, cast_float_int_to_str: bool = Fals
     else:
         val = x
     if return_cat:
-        return (val, str_category(x))
+        return (val, get_category_from_python_type(x))
     else:
         return val
 
 
 # ---#
-def get_category_from_type(ctype: str = ""):
+def gen_name(L: list):
+    return "_".join(
+        [
+            "".join(ch for ch in str(elem).lower() if ch.isalnum() or ch == "_")
+            for elem in L
+        ]
+    )
+
+
+# ---#
+def get_category_from_python_type(expr):
+    try:
+        category = expr.category()
+    except:
+        if isinstance(expr, (float)):
+            category = "float"
+        elif isinstance(expr, (int)):
+            category = "int"
+        elif isinstance(expr, (str)):
+            category = "text"
+        elif isinstance(expr, (datetime.date, datetime.datetime)):
+            category = "date"
+        else:
+            category = ""
+    return category
+
+
+# ---#
+def get_category_from_vertica_type(ctype: str = ""):
     check_types([("ctype", ctype, [str])])
     ctype = ctype.lower()
     if ctype != "":
@@ -258,16 +312,6 @@ def get_match_index(x: str, col_list: list, str_check: bool = True):
         ):
             return idx
     return None
-
-
-# ---#
-def gen_name(L: list):
-    return "_".join(
-        [
-            "".join(ch for ch in str(elem).lower() if ch.isalnum() or ch == "_")
-            for elem in L
-        ]
-    )
 
 
 # ---#
@@ -727,7 +771,7 @@ def print_table(
                         ):
                             if dtype[data_columns[j][0]] != "undefined":
                                 type_val = dtype[data_columns[j][0]].capitalize()
-                                category = get_category_from_type(type_val)
+                                category = get_category_from_vertica_type(type_val)
                                 if (category == "spatial") or (
                                     (
                                         "lat" in val.lower().split(" ")
@@ -812,10 +856,10 @@ def print_time(elapsed_time: float):
         from IPython.core.display import HTML, display
 
         display(
-            HTML("<div><b>Execution: </b> {}s</div>".format(round(elapsed_time, 3)))
+            HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3)))
         )
     else:
-        print("Execution: {}s".format(round(elapsed_time, 3)))
+        print("Execution: {0}s".format(round(elapsed_time, 3)))
         print("-" * int(screen_columns) + "\n")
 
 
@@ -935,83 +979,6 @@ def updated_dict(
         else:
             d[elem] = d2[elem]
     return d
-
-
-# ---#
-def color_dict(d: dict, idx: int = 0):
-    if "color" in d:
-        if isinstance(d["color"], str):
-            return d["color"]
-        else:
-            return d["color"][idx % len(d["color"])]
-    else:
-        from verticapy.plot import gen_colors
-
-        return gen_colors()[idx % len(gen_colors())]
-
-
-# ---#
-def str_category(expr):
-    try:
-        category = expr.category()
-    except:
-        if isinstance(expr, (float)):
-            category = "float"
-        elif isinstance(expr, (int)):
-            category = "int"
-        elif isinstance(expr, (str)):
-            category = "text"
-        elif isinstance(expr, (datetime.date, datetime.datetime)):
-            category = "date"
-        else:
-            category = ""
-    return category
-
-
-# ---#
-def chaid_columns(vdf, columns: list = [], max_cardinality: int = 16):
-    columns_tmp = columns.copy()
-    if not (columns_tmp):
-        columns_tmp = vdf.get_columns()
-        remove_cols = []
-        for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text") or (
-                vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality
-            ):
-                remove_cols += [col]
-    else:
-        remove_cols = []
-        columns_tmp = vdf.format_colnames(columns_tmp)
-        for col in columns_tmp:
-            if vdf[col].category() not in ("float", "int", "text") or (
-                vdf[col].category() == "text" and vdf[col].nunique() > max_cardinality
-            ):
-                remove_cols += [col]
-                if vdf[col].category() not in ("float", "int", "text"):
-                    warning_message = "vColumn '{}' is of category '{}'. This method only accepts categorical & numerical inputs. This vColumn was ignored.".format(
-                        col, vdf[col].category()
-                    )
-                else:
-                    warning_message = "vColumn '{}' has a too high cardinality (> {}). This vColumn was ignored.".format(
-                        col, max_cardinality
-                    )
-                warnings.warn(warning_message, Warning)
-    for col in remove_cols:
-        columns_tmp.remove(col)
-    return columns_tmp
-
-
-# ---#
-def flat_dict(d: dict) -> str:
-    # converts dictionary to string with a specific format
-    res = []
-    for elem in d:
-        q = '"' if isinstance(d[elem], str) else ""
-        res += ["{}={}{}{}".format(elem, q, d[elem], q)]
-    res = ", ".join(res)
-    if res:
-        res = ", {}".format(res)
-    return res
 
 
 # ---#

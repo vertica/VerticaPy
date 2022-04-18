@@ -237,7 +237,7 @@ vColumns : vColumn
                         (
                             '"{}"'.format(column.replace('"', '""')),
                             dtype,
-                            get_category_from_type(dtype),
+                            get_category_from_vertica_type(dtype),
                         )
                     ],
                 )
@@ -595,21 +595,24 @@ vColumns : vColumn
                 )
                 n_0 = f"{n_} * ({n_} - 1)/2"
                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
-                query = "SELECT {} FROM (SELECT {}, {} FROM {}) x CROSS JOIN (SELECT {}, {} FROM {}) y"
-                query = query.format(
-                    tau_b,
-                    columns[0],
-                    columns[1],
-                    self.__genSQL__(),
-                    columns[0],
-                    columns[1],
-                    self.__genSQL__(),
-                )
-                title = "Computing the kendall correlation between {} and {}.".format(
-                    columns[0], columns[1]
-                )
+                query = """SELECT 
+                                {0} 
+                           FROM 
+                                (SELECT 
+                                    {1}, 
+                                    {2} 
+                                 FROM {3}) x 
+                                CROSS JOIN 
+                                (SELECT 
+                                    {1}, 
+                                    {2} 
+                                 FROM {3}) y"""
+                query = query.format(tau_b, columns[0], columns[1], self.__genSQL__(),)
+                title = (
+                    "Computing the kendall correlation " "between {0} and {1}."
+                ).format(columns[0], columns[1])
             elif method == "cov":
-                query = "SELECT COVAR_POP({}{}, {}{}) FROM {}".format(
+                query = "SELECT COVAR_POP({0}{1}, {2}{3}) FROM {4}".format(
                     columns[0], cast_0, columns[1], cast_1, self.__genSQL__()
                 )
                 title = "Computing the covariance between {} and {}.".format(
@@ -644,10 +647,10 @@ vColumns : vColumn
                 table = (
                     self.__genSQL__()
                     if (method == "pearson")
-                    else "(SELECT {} FROM {}) spearman_table".format(
+                    else "(SELECT {0} FROM {1}) spearman_table".format(
                         ", ".join(
                             [
-                                "RANK() OVER (ORDER BY {}) AS {}".format(column, column)
+                                "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
                                 for column in columns
                             ]
                         ),
@@ -656,10 +659,10 @@ vColumns : vColumn
                 )
                 version(condition=[9, 2, 1])
                 result = executeSQL(
-                    query="SELECT CORR_MATRIX({}) OVER () FROM {}".format(
+                    query="SELECT CORR_MATRIX({0}) OVER () FROM {1}".format(
                         ", ".join(columns), table
                     ),
-                    title="Computing the {} Corr Matrix.".format(method),
+                    title=f"Computing the {method} Corr Matrix.",
                     method="fetchall",
                 )
                 corr_dict = {}
@@ -676,11 +679,11 @@ vColumns : vColumn
                 matrix[0] = [""] + columns
                 for idx, column in enumerate(columns):
                     matrix[idx + 1][0] = column
-                title = "Correlation Matrix ({})".format(method)
+                title = f"Correlation Matrix ({method})"
             except:
                 if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
                     title_query = "Computing all Correlations in a single query"
-                    title = "Correlation Matrix ({})".format(method)
+                    title = f"Correlation Matrix ({method})"
                     if method == "biserial":
                         i0, step = 0, 1
                     else:
@@ -710,60 +713,32 @@ vColumns : vColumn
                                 nb_precomputed += 1
                             elif method in ("pearson", "spearman"):
                                 all_list += [
-                                    "ROUND(CORR({}{}, {}{}), {})".format(
+                                    "ROUND(CORR({0}{1}, {2}{3}), {4})".format(
                                         columns[i], cast_i, columns[j], cast_j, round_nb
                                     )
                                 ]
                             elif method == "kendall":
                                 n_ = "SQRT(COUNT(*))"
-                                n_c = "(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                                    columns[i],
-                                    cast_i,
-                                    columns[i],
-                                    cast_i,
-                                    columns[j],
-                                    cast_j,
-                                    columns[j],
-                                    cast_j,
-                                    columns[i],
-                                    cast_i,
-                                    columns[i],
-                                    cast_i,
-                                    columns[j],
-                                    cast_j,
-                                    columns[j],
-                                    cast_j,
+                                n_c = (
+                                    "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                                    "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                                ).format(columns[i], cast_i, columns[j], cast_j,)
+                                n_d = (
+                                    "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                                    "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                                ).format(columns[i], cast_i, columns[j], cast_j,)
+                                n_1 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                                    columns[i], cast_i, n_
                                 )
-                                n_d = "(SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                                    columns[i],
-                                    cast_i,
-                                    columns[i],
-                                    cast_i,
-                                    columns[j],
-                                    cast_j,
-                                    columns[j],
-                                    cast_j,
-                                    columns[i],
-                                    cast_i,
-                                    columns[i],
-                                    cast_i,
-                                    columns[j],
-                                    cast_j,
-                                    columns[j],
-                                    cast_j,
-                                )
-                                n_1 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                                    columns[i], cast_i, columns[i], cast_i, n_
-                                )
-                                n_2 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                                    columns[j], cast_j, columns[j], cast_j, n_
+                                n_2 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                                    columns[j], cast_j, n_
                                 )
                                 n_0 = f"{n_} * ({n_} - 1)/2"
                                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
                                 all_list += [tau_b]
                             elif method == "cov":
                                 all_list += [
-                                    "COVAR_POP({}{}, {}{})".format(
+                                    "COVAR_POP({0}{1}, {2}{3})".format(
                                         columns[i], cast_i, columns[j], cast_j
                                     )
                                 ]
@@ -771,18 +746,15 @@ vColumns : vColumn
                                 raise
                     if method == "spearman":
                         rank = [
-                            "RANK() OVER (ORDER BY {}) AS {}".format(column, column)
+                            "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
                             for column in columns
                         ]
-                        table = "(SELECT {} FROM {}) rank_spearman_table".format(
+                        table = "(SELECT {0} FROM {1}) rank_spearman_table".format(
                             ", ".join(rank), self.__genSQL__()
                         )
                     elif method == "kendall":
-                        table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(
-                            ", ".join(columns),
-                            self.__genSQL__(),
-                            ", ".join(columns),
-                            self.__genSQL__(),
+                        table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
+                            ", ".join(columns), self.__genSQL__(),
                         )
                     else:
                         table = self.__genSQL__()
@@ -924,7 +896,8 @@ vColumns : vColumn
                 method_type = ""
             for column in cols:
                 assert self[column].isnum(), TypeError(
-                    f"vColumn {column} must be numerical to compute the {method_name} Vector{method_type}."
+                    "vColumn {column} must be numerical to compute the "
+                    f"{method_name} Vector{method_type}."
                 )
         if method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
@@ -955,47 +928,19 @@ vColumns : vColumn
                         ]
                     elif method == "kendall":
                         n = "SQRT(COUNT(*))"
-                        n_c = "(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                            focus,
-                            cast_i,
-                            focus,
-                            cast_i,
-                            column,
-                            cast_j,
-                            column,
-                            cast_j,
-                            focus,
-                            cast_i,
-                            focus,
-                            cast_i,
-                            column,
-                            cast_j,
-                            column,
-                            cast_j,
+                        n_c = (
+                            "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                            "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                        ).format(focus, cast_i, column, cast_j,)
+                        n_d = (
+                            "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                            "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+                        ).format(focus, cast_i, column, cast_j,)
+                        n_1 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                            focus, cast_i, n
                         )
-                        n_d = "(SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
-                            focus,
-                            cast_i,
-                            focus,
-                            cast_i,
-                            column,
-                            cast_j,
-                            column,
-                            cast_j,
-                            focus,
-                            cast_i,
-                            focus,
-                            cast_i,
-                            column,
-                            cast_j,
-                            column,
-                            cast_j,
-                        )
-                        n_1 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                            focus, cast_i, focus, cast_i, n
-                        )
-                        n_2 = "(SUM((x.{}{} = y.{}{})::int)-{})/2".format(
-                            column, cast_j, column, cast_j, n
+                        n_2 = "(SUM((x.{0}{1} = y.{0}{1})::int)-{2})/2".format(
+                            column, cast_j, n
                         )
                         n_0 = f"{n} * ({n} - 1)/2"
                         tau_b = (
@@ -1004,39 +949,36 @@ vColumns : vColumn
                         all_list += [tau_b]
                     elif method == "cov":
                         all_list += [
-                            "COVAR_POP({}{}, {}{})".format(
+                            "COVAR_POP({0}{1}, {2}{3})".format(
                                 focus, cast_i, column, cast_j
                             )
                         ]
                 if method == "spearman":
                     rank = [
-                        "RANK() OVER (ORDER BY {}) AS {}".format(column, column)
+                        "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
                         for column in all_cols
                     ]
-                    table = "(SELECT {} FROM {}) rank_spearman_table".format(
+                    table = "(SELECT {0} FROM {1}) rank_spearman_table".format(
                         ", ".join(rank), self.__genSQL__()
                     )
                 elif method == "kendall":
-                    table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(
-                        ", ".join(all_cols),
-                        self.__genSQL__(),
-                        ", ".join(all_cols),
-                        self.__genSQL__(),
+                    table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
+                        ", ".join(all_cols), self.__genSQL__(),
                     )
                 else:
                     table = self.__genSQL__()
                 if nb_precomputed == len(cols):
                     result = executeSQL(
-                        "SELECT {}".format(", ".join(all_list)),
+                        "SELECT {0}".format(", ".join(all_list)),
                         method="fetchrow",
                         print_time_sql=False,
                     )
                 else:
                     result = executeSQL(
-                        query="SELECT {} FROM {} LIMIT 1".format(
+                        query="SELECT {0} FROM {1} LIMIT 1".format(
                             ", ".join(all_list), table
                         ),
-                        title="Computing the Correlation Vector ({})".format(method),
+                        title=f"Computing the Correlation Vector ({method})",
                         method="fetchrow",
                     )
                 vector = [elem for elem in result]
@@ -1076,7 +1018,7 @@ vColumns : vColumn
                 cm1, cm2 = gen_cmap()
                 cmap = cm1 if (method == "cramer") else cm2
                 style_kwds["cmap"] = cmap
-            title = "Correlation Vector of {} ({})".format(focus, method)
+            title = f"Correlation Vector of {focus} ({method})"
             cmatrix(
                 [cols, [focus] + vector],
                 cols,
@@ -1201,7 +1143,8 @@ vColumns : vColumn
             if (len(all_where) > max_transformation_floor - 1)
             else ""
         )
-        # Only the last order_by matters as the order_by will never change the final relation
+        # Only the last order_by matters as the order_by will never change
+        # the final relation
         try:
             order_final = self._VERTICAPY_VARIABLES_["order_by"][
                 max_transformation_floor - 1
@@ -1313,7 +1256,7 @@ vColumns : vColumn
                 column_name = self.format_colnames(elem)
                 if columns[elem].lower() not in ("asc", "desc"):
                     warning_message = (
-                        "Method of {} must be in (asc, desc), found '{}'\n"
+                        "Method of {0} must be in (asc, desc), found '{1}'\n"
                         "This column was ignored."
                     ).format(column_name, columns[elem].lower())
                     warnings.warn(warning_message, Warning)
@@ -3989,7 +3932,7 @@ vColumns : vColumn
             assert 2 <= nbins <= 16, ParameterError(
                 "Parameter 'nbins' must be between 2 and 16, inclusive."
             )
-            columns = chaid_columns(self, columns)
+            columns = self.chaid_columns(columns)
             if not (columns):
                 raise ValueError("No column to process.")
         idx = 0 if ("node_id" not in kwds) else kwds["node_id"]
@@ -4111,6 +4054,61 @@ vColumns : vColumn
 
                 return memModel("CHAID", attributes={"tree": tree, "classes": classes})
             return tree, idx
+
+    # ---#
+    def chaid_columns(self, columns: list = [], max_cardinality: int = 16):
+        """
+    ---------------------------------------------------------------------------
+    Function used to simplify the code. It returns the columns picked by
+    the CHAID algorithm.
+
+    Parameters
+    ----------
+    columns: list
+        List of the vColumn names.
+    max_cardinality: int, optional
+        The maximum number of categories for each categorical column. Categorical 
+        columns with a higher cardinality are discarded.
+
+    Returns
+    -------
+    list
+        columns picked by the CHAID algorithm
+        """
+        columns_tmp = columns.copy()
+        if not (columns_tmp):
+            columns_tmp = self.get_columns()
+            remove_cols = []
+            for col in columns_tmp:
+                if self[col].category() not in ("float", "int", "text") or (
+                    self[col].category() == "text"
+                    and self[col].nunique() > max_cardinality
+                ):
+                    remove_cols += [col]
+        else:
+            remove_cols = []
+            columns_tmp = self.format_colnames(columns_tmp)
+            for col in columns_tmp:
+                if self[col].category() not in ("float", "int", "text") or (
+                    self[col].category() == "text"
+                    and self[col].nunique() > max_cardinality
+                ):
+                    remove_cols += [col]
+                    if self[col].category() not in ("float", "int", "text"):
+                        warning_message = (
+                            "vColumn '{0}' is of category '{1}'. This method only "
+                            "accepts categorical & numerical inputs. This vColumn "
+                            "was ignored."
+                        ).format(col, self[col].category())
+                    else:
+                        warning_message = (
+                            "vColumn '{0}' has a too high cardinality (> {1}). This "
+                            "vColumn was ignored."
+                        ).format(col, max_cardinality)
+                    warnings.warn(warning_message, Warning)
+        for col in remove_cols:
+            columns_tmp.remove(col)
+        return columns_tmp
 
     # ---#
     def copy(self):
@@ -5655,7 +5653,7 @@ vColumns : vColumn
                     f"The expression '{expr}' seems to be incorrect.\nBy turning on the SQL with the 'set_option' function, you'll print the SQL code generation and probably see why the evaluation didn't work."
                 )
         ctype = ctype if (ctype) else "undefined"
-        category = get_category_from_type(ctype=ctype)
+        category = get_category_from_vertica_type(ctype=ctype)
         all_cols, max_floor = self.get_columns(), 0
         for column in all_cols:
             if (quote_ident(column) in expr) or (
@@ -7966,7 +7964,7 @@ vColumns : vColumn
         assert 2 <= nbins <= 16, ParameterError(
             "Parameter 'nbins' must be between 2 and 16, inclusive."
         )
-        columns = chaid_columns(self, columns)
+        columns = self.chaid_columns(columns)
         for col in columns:
             if quote_ident(response) == quote_ident(col):
                 columns.remove(col)

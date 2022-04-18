@@ -2187,7 +2187,7 @@ vDataFrame
                 (
                     '"{}"'.format(column.replace('"', '""')),
                     ctype,
-                    get_category_from_type(ctype),
+                    get_category_from_vertica_type(ctype),
                 )
             ],
         )

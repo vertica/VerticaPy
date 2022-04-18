@@ -408,7 +408,7 @@ Attributes
                     ),
                     "apply_test_feature",
                 )
-            category = get_category_from_type(ctype=ctype)
+            category = get_category_from_vertica_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
@@ -570,7 +570,7 @@ Attributes
                 (
                     "{}::{}".format("{}", dtype),
                     dtype,
-                    get_category_from_type(ctype=dtype),
+                    get_category_from_vertica_type(ctype=dtype),
                 )
             ]
             self.parent.__add_to_history__(

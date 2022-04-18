@@ -1042,7 +1042,7 @@ str_sql
         raise ParameterError(
             "The number of arguments of the 'case_when' function must be strictly greater than 1."
         )
-    category = str_category(argv[1])
+    category = get_category_from_python_type(argv[1])
     i = 0
     expr = "CASE"
     while i < n:
@@ -1119,7 +1119,7 @@ Returns
 str_sql
     SQL expression.
     """
-    category = str_category(expr)
+    category = get_category_from_python_type(expr)
     expr = [format_magic(expr)]
     for arg in argv:
         expr += [format_magic(arg)]
@@ -1314,7 +1314,7 @@ str_sql
         raise ParameterError(
             "The number of arguments of the 'decode' function must be greater than 3."
         )
-    category = str_category(argv[1])
+    category = get_category_from_python_type(argv[1])
     expr = (
         "DECODE("
         + str(format_magic(expr))
