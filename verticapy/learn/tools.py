@@ -95,7 +95,7 @@ int
     if result:
         result = executeSQL(
             "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
-                str_column(name)
+                quote_ident(name)
             ),
             method="fetchrow",
             print_time_sql=False,
@@ -160,7 +160,7 @@ model
     if does_exist == 2:
         result = executeSQL(
             "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
-                str_column(name.lower())
+                quote_ident(name.lower())
             ),
             method="fetchall",
             print_time_sql=False,
@@ -661,6 +661,190 @@ model
                     }
                 )
     return model
+
+
+# ---#
+def get_model_category(model_type: str):
+    if model_type in ["LogisticRegression", "LinearSVC"]:
+        return ("classifier", "binary")
+    elif model_type in [
+        "NaiveBayes",
+        "RandomForestClassifier",
+        "KNeighborsClassifier",
+        "NearestCentroid",
+        "XGBoostClassifier",
+    ]:
+        return ("classifier", "multiclass")
+    elif model_type in [
+        "LinearRegression",
+        "LinearSVR",
+        "RandomForestRegressor",
+        "KNeighborsRegressor",
+        "XGBoostRegressor",
+    ]:
+        return ("regressor", "")
+    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
+        return ("unsupervised", "clustering")
+    elif model_type in ["PCA", "SVD", "MCA"]:
+        return ("unsupervised", "decomposition")
+    elif model_type in ["Normalizer", "OneHotEncoder"]:
+        return ("unsupervised", "preprocessing")
+    elif model_type in ["LocalOutlierFactor"]:
+        return ("unsupervised", "anomaly_detection")
+    else:
+        return ("", "")
+
+
+# ---#
+def get_model_init_params(model_type: str):
+    if model_type == "LogisticRegression":
+        return {
+            "penalty": "L2",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "CGD",
+            "l1_ratio": 0.5,
+        }
+    elif model_type == "KernelDensity":
+        return {
+            "bandwidth": 1,
+            "kernel": "gaussian",
+            "p": 2,
+            "max_leaf_nodes": 1e9,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "nbins": 5,
+            "xlim": [],
+        }
+    elif model_type == "LinearRegression":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+        }
+    elif model_type == "SARIMAX":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+            "d": 0,
+            "q": 0,
+            "P": 0,
+            "D": 0,
+            "Q": 0,
+            "s": 0,
+            "max_pik": 100,
+            "papprox_ma": 200,
+        }
+    elif model_type == "VAR":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+        }
+    elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
+        return {
+            "n_estimators": 10,
+            "max_features": "auto",
+            "max_leaf_nodes": 1e9,
+            "sample": 0.632,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 32,
+        }
+    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
+        return {
+            "max_ntree": 10,
+            "max_depth": 5,
+            "nbins": 32,
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "learning_rate": 0.1,
+            "min_split_loss": 0.0,
+            "weight_reg": 0.0,
+            "sample": 1.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
+        }
+    elif model_type in ("SVD"):
+        return {"n_components": 0, "method": "lapack"}
+    elif model_type in ("PCA"):
+        return {"n_components": 0, "scale": False, "method": "lapack"}
+    elif model_type in ("MCA"):
+        return {}
+    elif model_type == "OneHotEncoder":
+        return {
+            "extra_levels": {},
+            "drop_first": True,
+            "ignore_null": True,
+            "separator": "_",
+            "column_naming": "indices",
+            "null_column_name": "null",
+        }
+    elif model_type in ("Normalizer"):
+        return {"method": "zscore"}
+    elif model_type == "LinearSVR":
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "acceptable_error_margin": 0.1,
+            "max_iter": 100,
+        }
+    elif model_type == "LinearSVC":
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "class_weight": [1, 1],
+            "max_iter": 100,
+        }
+    elif model_type == "NaiveBayes":
+        return {
+            "alpha": 1.0,
+            "nbtype": "auto",
+        }
+    elif model_type == "KMeans":
+        return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
+    elif model_type in ("BisectingKMeans"):
+        return {
+            "n_cluster": 8,
+            "bisection_iterations": 1,
+            "split_method": "sum_squares",
+            "min_divisible_cluster_size": 2,
+            "distance_method": "euclidean",
+            "init": "kmeanspp",
+            "max_iter": 300,
+            "tol": 1e-4,
+        }
+    elif model_type in ("KNeighborsClassifier", "KNeighborsRegressor"):
+        return {
+            "n_neighbors": 5,
+            "p": 2,
+        }
+    elif model_type == "NearestCentroid":
+        return {
+            "p": 2,
+        }
+    elif model_type == "DBSCAN":
+        return {"eps": 0.5, "min_samples": 5, "p": 2}
 
 
 # ---#

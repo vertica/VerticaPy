@@ -294,7 +294,7 @@ def lof_plot(
         "color": colors[0],
     }
     if len(columns) == 1:
-        column = str_column(columns[0])
+        column = quote_ident(columns[0])
         query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
             column, lof, input_relation, tablesample, column
         )
@@ -324,7 +324,7 @@ def lof_plot(
             color=colors[1],
         )
     elif len(columns) == 2:
-        columns = [str_column(column) for column in columns]
+        columns = [quote_ident(column) for column in columns]
         query = "SELECT {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
             columns[0],
             columns[1],

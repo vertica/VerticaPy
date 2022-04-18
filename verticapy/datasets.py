@@ -53,7 +53,8 @@ import os, datetime
 
 # VerticaPy Modules
 import verticapy, vertica_python
-from verticapy import vDataFrame, vdf_from_relation
+from verticapy import vDataFrame
+from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
@@ -290,8 +291,8 @@ def load_dataset(
 
     except:
 
-        name = str_column(name)
-        schema = "v_temp_schema" if not (schema) else str_column(schema)
+        name = quote_ident(name)
+        schema = "v_temp_schema" if not (schema) else quote_ident(schema)
         create_table(table_name=name, dtype=dtype, schema=schema)
 
         try:
@@ -299,7 +300,7 @@ def load_dataset(
             path = os.path.dirname(verticapy.__file__)
             path += f"/data/{dataset_name}.csv"
             if not (copy_cols):
-                copy_cols = [str_column(col) for col in dtype]
+                copy_cols = [quote_ident(col) for col in dtype]
             copy_cols = ", ".join(copy_cols)
             query = (
                 "COPY {0}.{1}({2}) FROM {3} DELIMITER ',' NULL '' "
@@ -767,3 +768,113 @@ vDataFrame
         ],
         dataset_name="world",
     )
+
+
+#
+# Datasets used in the tests
+#
+# ---#
+def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
+    # Classification Dataset
+
+    data = [
+        [1, "Bus", "Male", 0, "Cheap", "Low"],
+        [2, "Bus", "Male", 1, "Cheap", "Med"],
+        [3, "Train", "Female", 1, "Cheap", "Med"],
+        [4, "Bus", "Female", 0, "Cheap", "Low"],
+        [5, "Bus", "Male", 1, "Cheap", "Med"],
+        [6, "Train", "Male", 0, "Standard", "Med"],
+        [7, "Train", "Female", 1, "Standard", "Med"],
+        [8, "Car", "Female", 1, "Expensive", "Hig"],
+        [9, "Car", "Male", 2, "Expensive", "Med"],
+        [10, "Car", "Female", 2, "Expensive", "Hig"],
+    ]
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(
+        table_name=table_name,
+        schema=schema,
+        dtype={
+            "Id": "INT",
+            "transportation": "VARCHAR",
+            "gender": "VARCHAR",
+            "owned cars": "INT",
+            "cost": "VARCHAR",
+            "income": "CHAR(4)",
+        },
+    )
+    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
+
+    return vDataFrame(input_relation=input_relation)
+
+
+# ---#
+def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
+    # Regression Dataset
+
+    data = [
+        [1, 0, "Male", 0, "Cheap", "Low"],
+        [2, 0, "Male", 1, "Cheap", "Med"],
+        [3, 1, "Female", 1, "Cheap", "Med"],
+        [4, 0, "Female", 0, "Cheap", "Low"],
+        [5, 0, "Male", 1, "Cheap", "Med"],
+        [6, 1, "Male", 0, "Standard", "Med"],
+        [7, 1, "Female", 1, "Standard", "Med"],
+        [8, 2, "Female", 1, "Expensive", "Hig"],
+        [9, 2, "Male", 2, "Expensive", "Med"],
+        [10, 2, "Female", 2, "Expensive", "Hig"],
+    ]
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(
+        table_name=table_name,
+        schema=schema,
+        dtype={
+            "Id": "INT",
+            "transportation": "INT",
+            "gender": "VARCHAR",
+            "owned cars": "INT",
+            "cost": "VARCHAR",
+            "income": "CHAR(4)",
+        },
+    )
+    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
+
+    return vDataFrame(input_relation=input_relation)
+
+
+# ---#
+def load_dataset_num(table_name: str = "dataset_num", schema: str = "public"):
+    # Numerical Dataset
+
+    data = [
+        [1, 7.2, 3.6, 6.1, 2.5],
+        [2, 7.7, 2.8, 6.7, 2.0],
+        [3, 7.7, 3.0, 6.1, 2.3],
+        [4, 7.9, 3.8, 6.4, 2.0],
+        [5, 4.4, 2.9, 1.4, 0.2],
+        [6, 4.6, 3.6, 1.0, 0.2],
+        [7, 4.7, 3.2, 1.6, 0.2],
+        [8, 6.5, 2.8, 4.6, 1.5],
+        [9, 6.8, 2.8, 4.8, 1.4],
+        [10, 7.0, 3.2, 4.7, 1.4],
+    ]
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
+
+    drop_if_exists(name=input_relation, method="table")
+    create_table(
+        table_name=table_name,
+        schema=schema,
+        dtype={
+            "Id": "INT",
+            "col1": "FLOAT",
+            "col2": "FLOAT",
+            "col3": "FLOAT",
+            "col4": "FLOAT",
+        },
+    )
+    insert_into(table_name=table_name, schema=schema, data=data, copy=False)
+
+    return vDataFrame(input_relation=input_relation)

@@ -21,7 +21,8 @@ import warnings
 import matplotlib.pyplot as plt
 
 # VerticaPy
-from verticapy import drop, set_option, current_cursor
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import Lasso
 

@@ -53,36 +53,12 @@ import os
 from configparser import ConfigParser
 
 # VerticaPy Modules
-from verticapy.utilities import check_types
 import verticapy
+from verticapy.toolbox import check_types
 from verticapy.errors import *
 
 # Vertica Modules
 import vertica_python
-
-#
-# ---#
-def get_connection_file():
-    """
----------------------------------------------------------------------------
-Gets (and creates, if necessary) the auto-connection file.
-If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
-to be the full path to the auto-connection file.
-Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
-folder in the user's home directory.
-
-Returns
--------
-string
-        the full path to the auto-connection file.
-        """
-    if "VERTICAPY_CONNECTIONS" in os.environ:
-        return os.environ["VERTICAPY_CONNECTIONS"]
-    path = os.path.join(os.path.expanduser("~"), ".vertica")
-    os.makedirs(path, 0o700, exist_ok=True)
-    path = os.path.join(path, "connections.verticapy")
-    return path
-
 
 #
 # ---#
@@ -165,14 +141,50 @@ section: str / connector
     Name of the section in the configuration file.
 dsn: str, optional
     Path to the file containing the credentials. If empty, the 
-    VERTICAPY_CONNECTIONS environment variable will be used.
+    Connection File will be used.
     """
     prev_conn = verticapy.options["connection"]["conn"]
+    if not (dsn):
+        dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
     verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
+
+
+# ---#
+def current_conn():
+    """
+---------------------------------------------------------------------------
+Returns the current Database connection.
+    """
+    from verticapy.connect import read_auto_connect, connect
+
+    if (
+        not (verticapy.options["connection"]["conn"])
+        or verticapy.options["connection"]["conn"].closed()
+    ):
+        if (
+            verticapy.options["connection"]["section"]
+            and verticapy.options["connection"]["dsn"]
+        ):
+            connect(
+                verticapy.options["connection"]["section"],
+                verticapy.options["connection"]["dsn"],
+            )
+        else:
+            read_auto_connect()
+    return verticapy.options["connection"]["conn"]
+
+
+# ---#
+def current_cursor():
+    """
+---------------------------------------------------------------------------
+Returns the current Database cursor.
+    """
+    return current_conn().cursor()
 
 
 # ---#
@@ -213,6 +225,29 @@ bool
 
         warnings.warn(f"The connection {name} does not exist.", Warning)
         return False
+
+
+# ---#
+def get_connection_file():
+    """
+---------------------------------------------------------------------------
+Gets (and creates, if necessary) the auto-connection file.
+If the environment variable 'VERTICAPY_CONNECTIONS' is set, it is assumed 
+to be the full path to the auto-connection file.
+Otherwise, we reference "connections.verticapy" in the hidden ".verticapy" 
+folder in the user's home directory.
+
+Returns
+-------
+string
+        the full path to the auto-connection file.
+        """
+    if "VERTICAPY_CONNECTIONS" in os.environ:
+        return os.environ["VERTICAPY_CONNECTIONS"]
+    path = os.path.join(os.path.expanduser("~"), ".vertica")
+    os.makedirs(path, 0o700, exist_ok=True)
+    path = os.path.join(path, "connections.verticapy")
+    return path
 
 
 # ---#

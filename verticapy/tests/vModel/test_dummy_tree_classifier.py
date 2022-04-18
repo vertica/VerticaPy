@@ -22,10 +22,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    current_cursor,
-    dataset_cl,
 )
-from verticapy.datasets import load_titanic
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_dataset_cl
 from verticapy.learn.tree import DummyTreeClassifier
 
 set_option("print_info", False)
@@ -33,7 +32,7 @@ set_option("print_info", False)
 
 @pytest.fixture(scope="module")
 def dtc_data_vd():
-    dtc_data = dataset_cl(table_name="dtc_data", schema="public")
+    dtc_data = load_dataset_cl(table_name="dtc_data", schema="public")
     yield dtc_data
     drop(name="public.dtc_data", method="table")
 

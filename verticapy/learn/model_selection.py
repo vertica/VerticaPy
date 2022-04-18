@@ -62,7 +62,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
-from verticapy.learn.tools import does_model_exist
+from verticapy.learn.tools import does_model_exist, get_model_category
 from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
 # Other Python Modules
@@ -382,7 +382,7 @@ int
     schema, relation = schema_relation(input_relation)
     if not (schema):
         schema = verticapy.options["temp_schema"]
-    schema = str_column(schema)
+    schema = quote_ident(schema)
     if verticapy.options["tqdm"] and (
         "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
     ):
@@ -499,7 +499,7 @@ tablesample
         input_relation = vdf_from_relation(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if category_from_model_type(estimator.type)[0] == "regressor":
+    if get_model_category(estimator.type)[0] == "regressor":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -512,7 +512,7 @@ tablesample
             "aic",
             "bic",
         ]
-    elif category_from_model_type(estimator.type)[0] == "classifier":
+    elif get_model_category(estimator.type)[0] == "classifier":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -565,7 +565,7 @@ tablesample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if category_from_model_type(estimator.type)[0] == "regressor":
+        if get_model_category(estimator.type)[0] == "regressor":
             if metric == "all":
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                     "value"
@@ -1578,7 +1578,7 @@ tablesample
             ("print_info", print_info, [bool]),
         ]
     )
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -1809,7 +1809,7 @@ tablesample
 
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -2131,9 +2131,9 @@ tablesample
         color = style_kwds["color"]
     else:
         color = gen_colors()[0]
-    columns_check([column, ts] + by, vdf)
-    by = vdf_columns_names(by, vdf)
-    column, ts = vdf_columns_names([column, ts], vdf)
+    vdf.are_namecols_in([column, ts] + by)
+    by = vdf.format_colnames(by)
+    column, ts = vdf.format_colnames([column, ts])
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     result = tablesample(
@@ -2394,7 +2394,7 @@ tablesample
             ("comb_limit", comb_limit, [int]),
         ]
     )
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"

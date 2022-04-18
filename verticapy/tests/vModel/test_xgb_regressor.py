@@ -27,11 +27,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    xgb_prior,
-    current_cursor,
-    dataset_reg,
 )
-from verticapy.datasets import load_winequality, load_titanic
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_winequality, load_titanic, load_dataset_reg
 from verticapy.learn.ensemble import XGBoostRegressor
 
 set_option("print_info", False)
@@ -53,7 +51,7 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def xgbr_data_vd():
-    xgbr_data = dataset_reg(table_name="xgbr_data", schema="public")
+    xgbr_data = load_dataset_reg(table_name="xgbr_data", schema="public")
     yield xgbr_data
     drop(name="public.xgbr_data", method="table")
 
@@ -80,7 +78,7 @@ def model(xgbr_data_vd):
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
     model_class.y = '"TransPortation"'
-    model_class.prior_ = xgb_prior(model_class)
+    model_class.prior_ = model_class.get_prior()
 
     yield model_class
     model_class.drop()

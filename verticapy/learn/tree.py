@@ -54,7 +54,59 @@ from verticapy.learn.vmodel import *
 # Standard Python Modules
 from typing import Union
 
+#
+# Functions used to simplify the code
+#
+# ---#
+def get_tree_list_of_arrays(
+    tree, X: list, model_type: str, return_probability: bool = False
+):
+    """
+    Takes as input a tree which is represented by a tablesample
+    It returns a list of arrays. Each index of the arrays represents
+    a node value.
+    """
 
+    def map_idx(x):
+        for idx, elem in enumerate(X):
+            if quote_ident(x).lower() == quote_ident(elem).lower():
+                return idx
+
+    tree_list = []
+    for idx in range(len(tree["tree_id"])):
+        tree.values["left_child_id"] = [
+            idx if elem == tree.values["node_id"][idx] else elem
+            for elem in tree.values["left_child_id"]
+        ]
+        tree.values["right_child_id"] = [
+            idx if elem == tree.values["node_id"][idx] else elem
+            for elem in tree.values["right_child_id"]
+        ]
+        tree.values["node_id"][idx] = idx
+        tree.values["split_predictor"][idx] = map_idx(tree["split_predictor"][idx])
+        if model_type == "XGBoostClassifier" and isinstance(tree["log_odds"][idx], str):
+            val, all_val = tree["log_odds"][idx].split(","), {}
+            for elem in val:
+                all_val[elem.split(":")[0]] = float(elem.split(":")[1])
+            tree.values["log_odds"][idx] = all_val
+    tree_list = [
+        tree["left_child_id"],
+        tree["right_child_id"],
+        tree["split_predictor"],
+        tree["split_value"],
+        tree["prediction"],
+        tree["is_categorical_split"],
+    ]
+    if model_type == "XGBoostClassifier":
+        tree_list += [tree["log_odds"]]
+    if return_probability:
+        tree_list += [tree["probability/variance"]]
+    return tree_list
+
+
+#
+# Tree Algorithms
+#
 # ---#
 class DecisionTreeClassifier(MulticlassClassifier, Tree):
     """

@@ -53,8 +53,8 @@ import os, math, shutil, re, time, decimal, warnings, datetime
 from typing import Union
 
 # VerticaPy Modules
-import verticapy
 import vertica_python
+import verticapy
 from verticapy.toolbox import *
 from verticapy.errors import *
 
@@ -116,9 +116,9 @@ bool
         schema = ""
         temporary_local_table = True
     input_relation = (
-        str_column(schema) + "." + str_column(table_name)
+        quote_ident(schema) + "." + quote_ident(table_name)
         if schema
-        else str_column(table_name)
+        else quote_ident(table_name)
     )
     temp = "TEMPORARY " if temporary_table else ""
     if not (schema):
@@ -127,7 +127,7 @@ bool
         temp,
         input_relation,
         ", ".join(
-            ["{} {}".format(str_column(column), dtype[column]) for column in dtype]
+            ["{} {}".format(quote_ident(column), dtype[column]) for column in dtype]
         ),
         " ON COMMIT PRESERVE ROWS" if temp else "",
     )
@@ -165,14 +165,16 @@ schema, or geo index.
 Parameters
 ----------
 name: str, optional
-    Relation name. If empty, it will drop all VerticaPy temporary elements.
+    Relation name. If empty, it will drop all VerticaPy temporary 
+    elements.
 raise_error: bool, optional
-    If the object couldn't be dropped, raises the entire error instead of
-    displaying a warning.
+    If the object couldn't be dropped, raises the entire error 
+    instead of displaying a warning.
 method: str, optional
     Method used to drop.
-        auto   : identifies the table/view/index/model to drop. It will never
-                 drop an entire schema unless the method is set to 'schema'.
+        auto   : identifies the table/view/index/model to drop. 
+                 It will never drop an entire schema unless the 
+                 method is set to 'schema'.
         model  : drops the input model.
         table  : drops the input table.
         view   : drops the input view.        
@@ -215,7 +217,7 @@ bool
         if not (result):
             try:
                 query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                    str_column(name).lower()
+                    quote_ident(name).lower()
                 )
                 result = executeSQL(query, print_time_sql=False, method="fetchrow")
             except:
@@ -255,7 +257,7 @@ bool
     if method == "model":
         try:
             query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             result = executeSQL(query, print_time_sql=False, method="fetchrow")
         except:
@@ -267,7 +269,7 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 query = "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{}' AND attr_name = 'countvectorizer_table'".format(
-                    str_column(name).lower()
+                    quote_ident(name).lower()
                 )
                 res = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
                 drop(res, method="table")
@@ -278,12 +280,12 @@ bool
                     method="model",
                 )
             sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             executeSQL(sql, title="Deleting vModel.")
             executeSQL("COMMIT;", title="Commit.")
             sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
-                str_column(name).lower()
+                quote_ident(name).lower()
             )
             executeSQL(sql, title="Deleting vModel attributes.")
             executeSQL("COMMIT;", title="Commit.")
@@ -424,7 +426,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         percent = vdf.agg(["percent"]).transpose().values
         for column in result.values:
             result.dtype[column] = vdf[column].ctype()
-            result.percent[column] = percent[vdf_columns_names([column], vdf)[0]][0]
+            result.percent[column] = percent[vdf.format_colnames(column)][0]
     return result
 
 
@@ -448,13 +450,14 @@ Returns
 list of tuples
 	The list of the different columns and their respective type.
 	"""
+    from verticapy.connect import current_cursor
 
     if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
         try:
             if column_name:
                 executeSQL(expr, print_time_sql=False)
                 description = current_cursor().description[0]
-                return type_code_dtype(
+                return type_code_to_dtype(
                     type_code=description[1],
                     display_size=description[2],
                     precision=description[4],
@@ -467,7 +470,7 @@ list of tuples
                     ctype += [
                         [
                             elem[0],
-                            type_code_dtype(
+                            type_code_to_dtype(
                                 type_code=elem[1],
                                 display_size=elem[2],
                                 precision=elem[4],
@@ -564,7 +567,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
     )
     if not (schema):
         schema = verticapy.options["temp_schema"]
-    input_relation = "{}.{}".format(str_column(schema), str_column(table_name))
+    input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
     if not (column_names):
         query = f"""SELECT 
                         column_name
@@ -581,7 +584,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         assert column_names, MissingRelation(
             f"The table {input_relation} does not exist."
         )
-    cols = [str_column(col) for col in column_names]
+    cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
         sql = "INSERT INTO {} ({}) VALUES ({})".format(
             input_relation,
@@ -737,7 +740,7 @@ read_json : Ingests a JSON file into the Vertica database.
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027"
         )
         if insert:
-            input_relation = "{}.{}".format(str_column(schema), str_column(name))
+            input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
             query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
                 input_relation,
                 ", ".join(
@@ -827,7 +830,8 @@ read_json : Ingests a JSON file into the Vertica database.
 	"""
     flex_name = gen_tmp_name(name="flex")[1:-1]
     executeSQL(
-        "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
+        """CREATE FLEX LOCAL TEMP TABLE {0}(x int) 
+           ON COMMIT PRESERVE ROWS;""".format(
             flex_name
         ),
         title="Creating flex table to identify the data types.",
@@ -835,10 +839,18 @@ read_json : Ingests a JSON file into the Vertica database.
     header_names = (
         ""
         if not (header_names)
-        else "header_names = '{}',".format(sep.join(header_names))
+        else "header_names = '{0}',".format(sep.join(header_names))
     )
     executeSQL(
-        "COPY {} FROM{} '{}' PARSER FCSVPARSER(type = 'traditional', delimiter = '{}', header = {}, {} enclosed_by = '{}', escape = '{}') NULL '{}';".format(
+        """COPY {0} 
+           FROM{1} '{2}' 
+           PARSER FCSVPARSER(
+                type = 'traditional', 
+                delimiter = '{3}', 
+                header = {4}, {5} 
+                enclosed_by = '{6}', 
+                escape = '{7}') 
+           NULL '{8}';""".format(
             flex_name,
             " LOCAL" if ingest_local else "",
             path,
@@ -852,25 +864,26 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Parsing the data.",
     )
     executeSQL(
-        "SELECT compute_flextable_keys('{}');".format(flex_name),
+        f"SELECT compute_flextable_keys('{flex_name}');",
         title="Guessing flex tables keys.",
     )
     result = executeSQL(
-        "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),
+        f"SELECT key_name, data_type_guess FROM {flex_name}_keys",
         title="Guessing the data types.",
         method="fetchall",
     )
     dtype = {}
     for column_dtype in result:
         try:
-            query = 'SELECT (CASE WHEN "{}"=\'{}\' THEN NULL ELSE "{}" END)::{} AS "{}" FROM {} WHERE "{}" IS NOT NULL LIMIT 1000'.format(
-                column_dtype[0],
-                na_rep,
-                column_dtype[0],
-                column_dtype[1],
-                column_dtype[0],
-                flex_name,
-                column_dtype[0],
+            query = """SELECT 
+                        (CASE 
+                            WHEN "{0}"=\'{1}\' THEN NULL 
+                            ELSE "{0}" 
+                         END)::{2} AS "{0}" 
+                       FROM {3} 
+                       WHERE "{0}" IS NOT NULL 
+                       LIMIT 1000""".format(
+                column_dtype[0], na_rep, column_dtype[1], flex_name,
             )
             executeSQL(query, print_time_sql=False)
             dtype[column_dtype[0]] = column_dtype[1]
@@ -1046,12 +1059,16 @@ read_json : Ingests a JSON file into the Vertica database.
     else:
         schema = "public"
     if header_names and dtype:
-        warning_message = "Parameters 'header_names' and 'dtype' are both defined. Only 'dtype' will be used."
+        warning_message = (
+            "Parameters 'header_names' and 'dtype' are both defined. "
+            "Only 'dtype' will be used."
+        )
         warnings.warn(warning_message, Warning)
     if gen_tmp_table_name and temporary_local_table and not (table_name):
         table_name = gen_tmp_name(name=path.split("/")[-1].split(".csv")[0])
     assert not (temporary_table) or not (temporary_local_table), ParameterError(
-        "Parameters 'temporary_table' and 'temporary_local_table' can not be both set to True."
+        "Parameters 'temporary_table' and 'temporary_local_table' can not be both "
+        "set to True."
     )
     path, sep, header_names, na_rep, quotechar, escape = (
         path.replace("'", "''"),
@@ -1069,10 +1086,16 @@ read_json : Ingests a JSON file into the Vertica database.
         table_name = path.split("/")[-1].split(".csv")[0]
     if table_name == "*":
         assert dtype, ParameterError(
-            "Parameter 'dtype' must include the types of all columns in the table when ingesting multiple files."
+            "Parameter 'dtype' must include the types of all columns in "
+            "the table when ingesting multiple files."
         )
         table_name = path.split("/")[-2]
-    query = "SELECT column_name FROM columns WHERE table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
+    query = """SELECT 
+                    column_name 
+               FROM columns 
+               WHERE table_name = '{0}' 
+                 AND table_schema = '{1}' 
+               ORDER BY ordinal_position""".format(
         table_name.replace("'", "''"), schema.replace("'", "''")
     )
     result = executeSQL(
@@ -1104,11 +1127,17 @@ read_json : Ingests a JSON file into the Vertica database.
                     else:
                         position = "middle"
                     file_header[idx] = "col{}".format(idx)
-                    warning_message = "An inconsistent name was found in the {} of the file header (isolated separator). It will be replaced by col{}.".format(
-                        position, idx
-                    )
+                    warning_message = (
+                        "An inconsistent name was found in the {0} of the "
+                        "file header (isolated separator). It will be replaced "
+                        "by col{1}."
+                    ).format(position, idx)
                     if idx == 0:
-                        warning_message += "\nThis can happen when exporting a pandas DataFrame to CSV while retaining its indexes.\nTip: Use index=False when exporting with pandas.DataFrame.to_csv."
+                        warning_message += (
+                            "\nThis can happen when exporting a pandas DataFrame "
+                            "to CSV while retaining its indexes.\nTip: Use "
+                            "index=False when exporting with pandas.DataFrame.to_csv."
+                        )
                     warnings.warn(warning_message, Warning)
         if (header_names == []) and (header):
             if not (dtype):
@@ -1168,7 +1197,12 @@ read_json : Ingests a JSON file into the Vertica database.
                 genSQL=True,
             )
         skip = " SKIP 1" if (header) else ""
-        query2 = "COPY {}({}) FROM {} DELIMITER '{}' NULL '{}' ENCLOSED BY '{}' ESCAPE AS '{}'{};".format(
+        query2 = """COPY {0}({1}) 
+                    FROM {2} 
+                    DELIMITER '{3}' 
+                    NULL '{4}' 
+                    ENCLOSED BY '{5}' 
+                    ESCAPE AS '{6}'{7};""".format(
             input_relation,
             ", ".join(['"' + column + '"' for column in header_names]),
             "{}",
@@ -1311,7 +1345,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             input_relation = '"{}"'.format(table_name)
         flex_name = gen_tmp_name(name="flex")[1:-1]
         executeSQL(
-            "CREATE FLEX LOCAL TEMP TABLE {}(x int) ON COMMIT PRESERVE ROWS;".format(
+            "CREATE FLEX LOCAL TEMP TABLE {0}(x int) ON COMMIT PRESERVE ROWS;".format(
                 flex_name
             ),
             title="Creating flex table.",
@@ -1689,7 +1723,7 @@ The tablesample attributes are the same than the parameters.
     def __getitem__(self, key):
         all_cols = [elem for elem in self.values]
         for elem in all_cols:
-            if str_column(str(elem).lower()) == str_column(str(key).lower()):
+            if quote_ident(str(elem).lower()) == quote_ident(str(key).lower()):
                 key = elem
                 break
         return self.values[key]
@@ -1819,6 +1853,93 @@ The tablesample attributes are the same than the parameters.
     # Methods
     #
     # ---#
+    def append(self, tbs):
+        """
+        ---------------------------------------------------------------------------
+        Appends the input tablesample to a target tablesample.
+
+        Parameters
+        ----------
+        tbs: tablesample, optional
+            Tablesample to append.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("tbs", tbs, [tablesample])])
+        n1, n2 = self.shape()[0], tbs.shape()[0]
+        assert n1 == n2, ParameterError(
+            "The input and target tablesamples must have the same number of columns."
+            f" Expected {n1}, Found {n2}."
+        )
+        cols1, cols2 = [col for col in self.values], [col for col in tbs.values]
+        for idx in range(n1):
+            self.values[cols1[idx]] += tbs.values[cols2[idx]]
+        return self
+
+    # ---#
+    def decimal_to_float(self):
+        """
+    ---------------------------------------------------------------------------
+    Converts all the tablesample's decimals to floats.
+
+    Returns
+    -------
+    tablesample
+        self
+        """
+        for elem in self.values:
+            if elem != "index":
+                for i in range(len(self.values[elem])):
+                    if isinstance(self.values[elem][i], decimal.Decimal):
+                        self.values[elem][i] = float(self.values[elem][i])
+        return self
+
+    # ---#
+    def merge(self, tbs):
+        """
+        ---------------------------------------------------------------------------
+        Merges the input tablesample to a target tablesample.
+
+        Parameters
+        ----------
+        tbs: tablesample, optional
+            Tablesample to merge.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("tbs", tbs, [tablesample])])
+        n1, n2 = self.shape()[1], tbs.shape()[1]
+        assert n1 == n2, ParameterError(
+            "The input and target tablesamples must have the same number of rows."
+            f" Expected {n1}, Found {n2}."
+        )
+        for col in tbs:
+            if col != "index":
+                self.values[col] += tbs.values[col]
+        return self
+
+    # ---#
+    def shape(self):
+        """
+    ---------------------------------------------------------------------------
+    Transposes the tablesample.
+
+    Returns
+    -------
+    tuple
+        (number of columns, number of rows)
+        """
+        cols = [col for col in self.values]
+        n, m = len(cols), len(self.values[cols[0]])
+        return (n, m)
+
+    # ---#
     def transpose(self):
         """
 	---------------------------------------------------------------------------
@@ -1834,7 +1955,10 @@ The tablesample attributes are the same than the parameters.
         columns = [[] for i in range(len(self.values[first_item]))]
         for column in self.values:
             for idx, item in enumerate(self.values[column]):
-                columns[idx] += [item]
+                try:
+                    columns[idx] += [item]
+                except:
+                    pass
         columns = [index] + columns
         values = {}
         for item in columns:
@@ -1899,7 +2023,8 @@ The tablesample attributes are the same than the parameters.
             import pandas as pd
         except:
             raise ImportError(
-                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it."
+                "The pandas module is not installed in your environment."
+                "\nInstall the pandas module to use this method."
             )
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
@@ -1999,7 +2124,7 @@ def to_tablesample(query: str, title: str = ""):
     cursor = executeSQL(query, print_time_sql=False)
     description, dtype = cursor.description, {}
     for elem in description:
-        dtype[elem[0]] = type_code_dtype(
+        dtype[elem[0]] = type_code_to_dtype(
             type_code=elem[1], display_size=elem[2], precision=elem[4], scale=elem[5]
         )
     elapsed_time = time.time() - start_time
@@ -2015,12 +2140,7 @@ def to_tablesample(query: str, title: str = ""):
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    for elem in values:
-        if elem != "index":
-            for idx in range(len(values[elem])):
-                if isinstance(values[elem][idx], decimal.Decimal):
-                    values[elem][idx] = float(values[elem][idx])
-    return tablesample(values=values, dtype=dtype)
+    return tablesample(values=values, dtype=dtype).decimal_to_float()
 
 
 # ---#
@@ -2045,11 +2165,11 @@ relation: str
 name: str, optional
 	Name of the vDataFrame. It is used only when displaying the vDataFrame.
 schema: str, optional
-	Relation schema. It can be to use to be less ambiguous and allow to create schema 
-	and relation name with dots '.' inside.
+	Relation schema. It can be to use to be less ambiguous and allow to 
+    create schema and relation name with dots '.' inside.
 history: list, optional
-	vDataFrame history (user modifications). to use to keep the previous vDataFrame
-	history.
+	vDataFrame history (user modifications). to use to keep the previous 
+    vDataFrame history.
 saving: list, optional
 	List to use to reconstruct the vDataFrame from previous transformations.
 
@@ -2085,9 +2205,10 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
     for column, ctype in dtypes:
         if '"' in column:
-            warning_message = "A double quote \" was found in the column {}, its alias was changed using underscores '_' to {}".format(
-                column, column.replace('"', "_")
-            )
+            warning_message = (
+                'A double quote " was found in the column {0}, its '
+                "alias was changed using underscores '_' to {1}"
+            ).format(column, column.replace('"', "_"))
             warnings.warn(warning_message, Warning)
         from verticapy.vcolumn import vColumn
 
@@ -2098,7 +2219,7 @@ vDataFrame
                 (
                     '"{}"'.format(column.replace('"', '""')),
                     ctype,
-                    category_from_type(ctype),
+                    get_category_from_vertica_type(ctype),
                 )
             ],
         )
@@ -2161,7 +2282,11 @@ list
             test = False
         if not (test):
             raise VersionError(
-                "This Function is not available for Vertica version {}.\nPlease upgrade your Vertica version to at least {} to get this functionality.".format(
+                (
+                    "This Function is not available for Vertica version {0}.\n"
+                    "Please upgrade your Vertica version to at least {1} to "
+                    "get this functionality."
+                ).format(
                     version[0] + "." + version[1] + "." + version[2].split("-")[0],
                     ".".join([str(elem) for elem in condition[:3]]),
                 )

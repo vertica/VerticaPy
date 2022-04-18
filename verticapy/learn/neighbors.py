@@ -137,8 +137,8 @@ p: int, optional
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
+        self.X = [quote_ident(column) for column in X]
+        self.y = quote_ident(y)
         query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {} ASC".format(
             ", ".join(
                 ["{}({}) AS {}".format(func, column, column) for column in self.X]
@@ -236,7 +236,7 @@ p: int, optional
                 ("key_columns", key_columns, [list], False),
             ],
         )
-        X = [str_column(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
@@ -251,7 +251,7 @@ p: int, optional
         )
         sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
             ", ".join(["x.{}".format(item) for item in X]),
-            ", " + ", ".join(["x." + str_column(elem) for elem in key_columns])
+            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
             sql,
@@ -263,25 +263,25 @@ p: int, optional
         )
         sql = "(SELECT row_id, {}{}, predict_neighbors, COUNT(*) / {} AS proba_predict FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id, predict_neighbors) kneighbors_table".format(
             ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
             self.parameters["n_neighbors"],
             sql,
             self.parameters["n_neighbors"],
             ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
         )
         if predict:
             sql = "(SELECT {}{}, predict_neighbors FROM (SELECT {}{}, predict_neighbors, ROW_NUMBER() OVER (PARTITION BY {} ORDER BY proba_predict DESC) AS order_prediction FROM {}) VERTICAPY_SUBTABLE WHERE order_prediction = 1) predict_neighbors_table".format(
                 ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
+                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
                 if (key_columns)
                 else "",
                 ", ".join(X),
-                ", " + ", ".join([str_column(elem) for elem in key_columns])
+                ", " + ", ".join([quote_ident(elem) for elem in key_columns])
                 if (key_columns)
                 else "",
                 ", ".join(X),
@@ -338,8 +338,8 @@ p: int, optional
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
+        self.X = [quote_ident(column) for column in X]
+        self.y = quote_ident(y)
         classes = executeSQL(
             "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC".format(
                 self.y, self.input_relation, self.y, self.y
@@ -633,7 +633,7 @@ p: int, optional
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
-        X = [str_column(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
             key_columns_arg = None
@@ -955,8 +955,8 @@ xlim: list, optional
                 vdf = vdf_from_relation(input_relation)
             if not (X):
                 X = vdf.numcol()
-        columns_check(X, vdf)
-        X = vdf_columns_names(X, vdf)
+        vdf.are_namecols_in(X)
+        X = vdf.format_colnames(X)
 
         # ---#
         def density_compute(
@@ -1017,8 +1017,8 @@ xlim: list, optional
                 else:
                     return 0
 
-            columns_check(columns, vdf)
-            columns = vdf_columns_names(columns, vdf)
+            vdf.are_namecols_in(columns)
+            columns = vdf.format_colnames(columns)
             x_vars = []
             y = []
             for idx, column in enumerate(columns):
@@ -1270,7 +1270,7 @@ p: int, optional
                 ("key_columns", key_columns, [list], False),
             ],
         )
-        X = [str_column(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
         if not (test_relation):
             test_relation = self.test_relation
         if not (key_columns) and key_columns != None:
@@ -1285,7 +1285,7 @@ p: int, optional
         )
         sql = "SELECT {}{}, {} AS ordered_distance, y.{} AS predict_neighbors, row_id FROM (SELECT *, ROW_NUMBER() OVER() AS row_id FROM {} WHERE {}) x CROSS JOIN (SELECT * FROM {} WHERE {}) y".format(
             ", ".join(["x.{}".format(item) for item in X]),
-            ", " + ", ".join(["x." + str_column(elem) for elem in key_columns])
+            ", " + ", ".join(["x." + quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
             sql,
@@ -1297,13 +1297,13 @@ p: int, optional
         )
         sql = "(SELECT {}{}, AVG(predict_neighbors) AS predict_neighbors FROM ({}) z WHERE ordered_distance <= {} GROUP BY {}{}, row_id) knr_table".format(
             ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
             sql,
             self.parameters["n_neighbors"],
             ", ".join(X),
-            ", " + ", ".join([str_column(elem) for elem in key_columns])
+            ", " + ", ".join([quote_ident(elem) for elem in key_columns])
             if (key_columns)
             else "",
         )
@@ -1358,8 +1358,8 @@ p: int, optional
             self.test_relation = test_relation
         else:
             self.test_relation = self.input_relation
-        self.X = [str_column(column) for column in X]
-        self.y = str_column(y)
+        self.X = [quote_ident(column) for column in X]
+        self.y = quote_ident(y)
         model_save = {
             "type": "KNeighborsRegressor",
             "input_relation": self.input_relation,
@@ -1420,7 +1420,7 @@ p: int, optional
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(vdf)
-        X = [str_column(elem) for elem in X] if (X) else self.X
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
             key_columns_arg = None
@@ -1521,7 +1521,7 @@ p: int, optional
             ]
         )
         does_model_exist(name=self.name, raise_error=True)
-        self.key_columns = [str_column(column) for column in key_columns]
+        self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
             if not (X):
@@ -1530,7 +1530,7 @@ p: int, optional
             self.input_relation = input_relation
             if not (X):
                 X = vDataFrame(input_relation).numcol()
-        X = [str_column(column) for column in X]
+        X = [quote_ident(column) for column in X]
         self.X = X
         n_neighbors = self.parameters["n_neighbors"]
         p = self.parameters["p"]

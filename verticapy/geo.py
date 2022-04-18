@@ -118,8 +118,8 @@ tablesample
             ("skip_nonindexable_polygons", skip_nonindexable_polygons, [bool]),
         ]
     )
-    columns_check([gid, g], vdf)
-    gid, g = vdf_columns_names([gid, g], vdf)
+    vdf.are_namecols_in([gid, g])
+    gid, g = vdf.format_colnames([gid, g])
 
     query = """SELECT 
                     STV_Create_Index({0}, {1} 
@@ -187,7 +187,7 @@ vDataFrame
             ("reverse", reverse, [bool]),
         ]
     )
-    columns_check([x, y], vdf)
+    vdf.are_namecols_in([x, y])
 
     result = vdf.copy()
 
@@ -286,14 +286,14 @@ vDataFrame
             ("index", index, [str]),
         ]
     )
-    columns_check([gid], vdf)
+    vdf.are_namecols_in([gid])
 
     table = vdf.__genSQL__()
 
     if g:
 
-        columns_check([g], vdf)
-        g = vdf_columns_names([g], vdf)[0]
+        vdf.are_namecols_in(g)
+        g = vdf.format_colnames(g)
         query = (
             f"(SELECT STV_Intersect({gid}, {g} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "
@@ -302,8 +302,8 @@ vDataFrame
 
     elif x and y:
 
-        columns_check([x, y], vdf)
-        x, y = vdf_columns_names([x, y], vdf)
+        vdf.are_namecols_in([x, y])
+        x, y = vdf.format_colnames([x, y])
         query = (
             f"(SELECT STV_Intersect({gid}, {x}, {y} USING PARAMETERS"
             f" index='{index}') OVER (PARTITION BEST) AS "

@@ -15,7 +15,8 @@
 import pytest
 
 # VerticaPy
-from verticapy import drop, set_option, current_cursor
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import Balance
 

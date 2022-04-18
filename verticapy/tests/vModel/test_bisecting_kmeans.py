@@ -23,10 +23,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    current_cursor,
-    dataset_num,
 )
-from verticapy.datasets import load_winequality
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_winequality, load_dataset_num
 from verticapy.learn.cluster import BisectingKMeans
 
 set_option("print_info", False)
@@ -41,7 +40,7 @@ def winequality_vd():
 
 @pytest.fixture(scope="module")
 def bsk_data_vd():
-    bsk_data = dataset_num(table_name="bsk_data", schema="public")
+    bsk_data = load_dataset_num(table_name="bsk_data", schema="public")
     yield bsk_data
     drop(name="public.bsk_data", method="table")
 

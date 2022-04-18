@@ -226,10 +226,10 @@ tablesample
             ("vdf", vdf, [vDataFrame]),
         ]
     )
-    columns_check([ts, column] + by, vdf)
-    ts = vdf_columns_names([ts], vdf)[0]
-    column = vdf_columns_names([column], vdf)[0]
-    by = vdf_columns_names(by, vdf)
+    vdf.are_namecols_in([ts, column] + by)
+    ts = vdf.format_colnames(ts)
+    column = vdf.format_colnames(column)
+    by = vdf.format_colnames(by)
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
     relation_name = gen_tmp_name(
         schema=verticapy.options["temp_schema"], name="linear_reg_view"
@@ -360,7 +360,7 @@ model
         vdf_tmp = vdf_from_relation(vdf)
     else:
         vdf_tmp = vdf.copy()
-    columns_check([ts], vdf_tmp)
+    vdf.are_namecols_in(ts)
     name = gen_tmp_name(schema=schema_relation(model.name)[0], name="linear")
     param = model.get_params()
     model_tmp = type(model)(name)
@@ -429,10 +429,10 @@ float
             ("vdf", vdf, [vDataFrame, str]),
         ]
     )
-    columns_check([eps] + [ts] + by, vdf)
-    eps = vdf_columns_names([eps], vdf)[0]
-    ts = vdf_columns_names([ts], vdf)[0]
-    by = vdf_columns_names(by, vdf)
+    vdf.are_namecols_in([eps] + [ts] + by)
+    eps = vdf.format_colnames(eps)
+    ts = vdf.format_colnames(ts)
+    by = vdf.format_colnames(by)
     query = "(SELECT et, LAG(et) OVER({}ORDER BY {}) AS lag_et FROM (SELECT {} AS et, {}{} FROM {}) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE".format(
         "PARTITION BY {} ".format(", ".join(by)) if (by) else "",
         ts,
@@ -473,9 +473,9 @@ tablesample
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
-    columns_check([eps] + X, vdf)
-    eps = vdf_columns_names([eps], vdf)[0]
-    X = vdf_columns_names(X, vdf)
+    vdf.are_namecols_in([eps] + X)
+    eps = vdf.format_colnames(eps)
+    X = vdf.format_colnames(X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -548,10 +548,10 @@ tablesample
             ("vdf", vdf, [vDataFrame, str]),
         ]
     )
-    columns_check([eps, ts] + by, vdf)
-    eps = vdf_columns_names([eps], vdf)[0]
-    ts = vdf_columns_names([ts], vdf)[0]
-    by = vdf_columns_names(by, vdf)
+    vdf.are_namecols_in([eps, ts] + by)
+    eps = vdf.format_colnames(eps)
+    ts = vdf.format_colnames(ts)
+    by = vdf.format_colnames(by)
     X = []
     X_names = []
     for i in range(0, p + 1):
@@ -626,9 +626,9 @@ tablesample
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
-    columns_check([eps] + X, vdf)
-    eps = vdf_columns_names([eps], vdf)[0]
-    X = vdf_columns_names(X, vdf)
+    vdf.are_namecols_in([eps] + X)
+    eps = vdf.format_colnames(eps)
+    X = vdf.format_colnames(X)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -725,9 +725,9 @@ tablesample
             ("alternative", alternative, ["increasing", "decreasing", "two-sided"]),
         ]
     )
-    columns_check([y] + X, vdf)
-    y = vdf_columns_names([y], vdf)[0]
-    X = vdf_columns_names(X, vdf)
+    vdf.are_namecols_in([y] + X)
+    y = vdf.format_colnames(y)
+    X = vdf.format_colnames(X)
     split_value = vdf[X[idx]].quantile(split)
     vdf_0_half = vdf.search(vdf[X[idx]] < split_value)
     vdf_1_half = vdf.search(vdf[X[idx]] > split_value)
@@ -782,9 +782,9 @@ tablesample
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
-    columns_check([eps] + X, vdf)
-    eps = vdf_columns_names([eps], vdf)[0]
-    X = vdf_columns_names(X, vdf)
+    vdf.are_namecols_in([eps] + X)
+    eps = vdf.format_colnames(eps)
+    X = vdf.format_colnames(X)
     X_0 = ["1"] + X
     variables = []
     variables_names = []
@@ -866,8 +866,8 @@ tablesample
             ("vdf", vdf, [vDataFrame]),
         ]
     )
-    columns_check([column], vdf)
-    column = vdf_columns_names([column], vdf)[0]
+    vdf.are_namecols_in(column)
+    column = vdf.format_colnames(column)
     jb, kurtosis, skewness, n = (
         vdf[column].agg(["jb", "kurtosis", "skewness", "count"]).values[column]
     )
@@ -909,8 +909,8 @@ tablesample
     utilities.tablesample.
     """
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
-    columns_check([column], vdf)
-    column = vdf_columns_names([column], vdf)[0]
+    vdf.are_namecols_in(column)
+    column = vdf.format_colnames(column)
     g2, n = vdf[column].agg(["kurtosis", "count"]).values[column]
     mu1 = -6 / (n + 1)
     mu2 = 24 * n * (n - 2) * (n - 3) / (((n + 1) ** 2) * (n + 3) * (n + 5))
@@ -979,10 +979,10 @@ tablesample
             ("vdf", vdf, [vDataFrame]),
         ]
     )
-    columns_check([column] + [ts] + by, vdf)
-    column = vdf_columns_names([column], vdf)[0]
-    ts = vdf_columns_names([ts], vdf)[0]
-    by = vdf_columns_names(by, vdf)
+    vdf.are_namecols_in([column] + [ts] + by)
+    column = vdf.format_colnames(column)
+    ts = vdf.format_colnames(ts)
+    by = vdf.format_colnames(by)
     acf = vdf.acf(column=column, ts=ts, by=by, p=p, show=False)
     if p >= 2:
         acf = acf.values["value"][1:]
@@ -1045,9 +1045,9 @@ tablesample
             ("vdf", vdf, [vDataFrame]),
         ]
     )
-    columns_check([column, ts], vdf)
-    column = vdf_columns_names([column], vdf)[0]
-    ts = vdf_columns_names([ts], vdf)[0]
+    vdf.are_namecols_in([column, ts])
+    column = vdf.format_colnames(column)
+    ts = vdf.format_colnames(ts)
     table = "(SELECT {}, {} FROM {})".format(column, ts, vdf.__genSQL__())
     query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
@@ -1206,11 +1206,11 @@ vDataFrame
     assert period > 0 or polynomial_order > 0, ParameterError(
         "Parameters 'polynomial_order' and 'period' can not be both null."
     )
-    columns_check([column, ts] + by, vdf)
+    vdf.are_namecols_in([column, ts] + by)
     ts, column, by = (
-        vdf_columns_names([ts], vdf)[0],
-        vdf_columns_names([column], vdf)[0],
-        vdf_columns_names(by, vdf),
+        vdf.format_colnames(ts),
+        vdf.format_colnames(column),
+        vdf.format_colnames(by),
     )
     if rule:
         vdf_tmp = vdf.asfreq(ts=ts, rule=period, method={column: "linear"}, by=by)
@@ -1222,9 +1222,7 @@ vDataFrame
         "{}_epsilon".format(column[1:-1]),
     )
     by, by_tmp = (
-        ""
-        if not (by)
-        else "PARTITION BY " + ", ".join(vdf_columns_names(by, self)) + " ",
+        "" if not (by) else "PARTITION BY " + ", ".join(vdf.format_colnames(by)) + " ",
         by,
     )
     if polynomial_order <= 0:
@@ -1337,8 +1335,8 @@ tablesample
     utilities.tablesample.
     """
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
-    columns_check([column], vdf)
-    column = vdf_columns_names([column], vdf)[0]
+    vdf.are_namecols_in(column)
+    column = vdf.format_colnames(column)
     g1, n = vdf[column].agg(["skewness", "count"]).values[column]
     mu1 = 0
     mu2 = 6 * (n - 2) / ((n + 1) * (n + 3))
@@ -1380,13 +1378,13 @@ float
     check_types(
         [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),]
     )
-    columns_check(X, vdf)
-    X = vdf_columns_names(X, vdf)
+    vdf.are_namecols_in(X)
+    X = vdf.format_colnames(X)
 
     if isinstance(X_idx, str):
-        columns_check([X_idx], vdf)
+        vdf.are_namecols_in(X_idx)
         for i in range(len(X)):
-            if str_column(X[i]) == str_column(X_idx):
+            if quote_ident(X[i]) == quote_ident(X_idx):
                 X_idx = i
                 break
     if isinstance(X_idx, (int, float)):

@@ -23,8 +23,8 @@ from verticapy import (
     drop,
     set_option,
     create_verticapy_schema,
-    current_cursor,
 )
+from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.cluster import DBSCAN
 

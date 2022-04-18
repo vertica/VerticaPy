@@ -56,12 +56,17 @@
 ##
 #
 # ---#
+# Jupyter Modules
 from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
 
+# Standard Python Modules
+import warnings
+
+# VerticaPy Modules
 import verticapy
 from verticapy.errors import QueryError
-from verticapy import executeSQL, vdf_from_relation, get_magic_options
+from verticapy import executeSQL, vdf_from_relation, get_magic_options, vDataFrame
 
 
 import re, time
@@ -70,10 +75,10 @@ import re, time
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
     queries = line if (not (cell) and (line)) else cell
-    queries = queries.replace("\t", " ").replace("\n", " ")
-    queries = re.sub(" +", " ", queries)
 
-    has_option = (queries[0] == "-") or ((cell) and (line))
+    has_option = (len(queries) > 1 and queries[0] == "-" and queries[1] != "-") or (
+        (cell) and (line)
+    )
     options = {}
 
     if has_option:
@@ -82,20 +87,25 @@ def sql(line, cell="", local_ns=None):
 
         for option in all_options_dict:
 
-            if option.lower() == "-i":
-                options["i"] = all_options_dict[option]
+            if option.lower() in ("-i", "-o",):
+                x = option.lower()[1:]
+                options[x] = all_options_dict[option]
 
             elif verticapy.options["print_info"]:
-                print(
+                warning_message = (
                     f"\u26A0 Warning : The option '{option}' doesn't "
                     "exist, it was skipped."
                 )
+                warnings.warn(warning_message, Warning)
 
     if "i" in options:
         f = open(options["i"], "r")
-        queries = f.read().replace("\t", " ").replace("\n", " ")
-        queries = re.sub(" +", " ", queries)
+        queries = f.read()
         f.close()
+
+    queries = re.sub("--.+\n", "", queries)
+    queries = queries.replace("\t", " ").replace("\n", " ")
+    queries = re.sub(" +", " ", queries)
 
     n, i, all_split = len(queries), 0, []
 
@@ -208,6 +218,13 @@ def sql(line, cell="", local_ns=None):
 
     if verticapy.options["print_info"]:
         display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+
+    if isinstance(result, vDataFrame) and "o" in options:
+
+        if options["o"][-4:] == "json":
+            result.to_json(options["o"])
+        else:
+            result.to_csv(options["o"])
 
     return result
 

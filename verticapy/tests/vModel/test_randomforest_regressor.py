@@ -22,10 +22,9 @@ from verticapy import (
     vDataFrame,
     drop,
     set_option,
-    current_cursor,
-    dataset_reg,
 )
-from verticapy.datasets import load_titanic, load_winequality
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_winequality, load_dataset_reg
 from verticapy.learn.ensemble import RandomForestRegressor
 
 set_option("print_info", False)
@@ -47,7 +46,7 @@ def titanic_vd():
 
 @pytest.fixture(scope="module")
 def rfr_data_vd():
-    rfr_data = dataset_reg(table_name="rfr_data", schema="public")
+    rfr_data = load_dataset_reg(table_name="rfr_data", schema="public")
     yield rfr_data
     drop(name="public.rfr_data", method="table")
 
