@@ -767,8 +767,11 @@ def print_table(
                                     diff = 24
                             except:
                                 pass
-                            missing_values = '<div style="float: right; margin-top: 6px;">{}%</div><div style="width: calc(100% - {}px); height: 8px; margin-top: 10px; border: 1px solid black;"><div style="width: {}%; height: 6px; background-color: orange;"></div></div>'.format(
-                                per, diff, per
+                            missing_values = ('<div style="float: right; margin-top: 6px;">{0}%</div><div '
+                                              'style="width: calc(100% - {1}px); height: 8px; margin-top: '
+                                              '10px; border: 1px solid black;"><div style="width: {0}%; '
+                                              'height: 6px; background-color: orange;"></div></div>').format(
+                                per, diff
                             )
                     else:
                         ctype, missing_values, category = "", "", ""

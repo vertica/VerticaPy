@@ -51,6 +51,7 @@
 # Standard Python Modules
 import numpy as np
 from collections.abc import Iterable
+from typing import Union
 
 # VerticaPy Modules
 from verticapy.toolbox import *

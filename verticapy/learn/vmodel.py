@@ -1977,7 +1977,8 @@ Main Class for Vertica Model
             if "max_df" in parameters:
                 check_types([("max_df", parameters["max_df"], [int, float])])
                 assert 0 <= parameters["max_df"] <= 1, ParameterError(
-                    "Incorrect parameter 'max_df'.\nIt must be between 0 and 1, inclusive."
+                    "Incorrect parameter 'max_df'.\nIt must be between 0 and 1, "
+                    "inclusive."
                 )
                 model_parameters["max_df"] = parameters["max_df"]
             elif "max_df" not in self.parameters:
@@ -1987,7 +1988,8 @@ Main Class for Vertica Model
             if "min_df" in parameters:
                 check_types([("min_df", parameters["min_df"], [int, float])])
                 assert 0 <= parameters["min_df"] <= 1, ParameterError(
-                    "Incorrect parameter 'min_df'.\nIt must be between 0 and 1, inclusive."
+                    "Incorrect parameter 'min_df'.\nIt must be between 0 and 1, "
+                    "inclusive."
                 )
                 model_parameters["min_df"] = parameters["min_df"]
             elif "min_df" not in self.parameters:
@@ -2022,7 +2024,8 @@ Main Class for Vertica Model
                     ]
                 )
                 assert 0 < parameters["max_text_size"], ParameterError(
-                    "Incorrect parameter 'max_text_size'.\nThe maximum text size must be positive."
+                    "Incorrect parameter 'max_text_size'.\nThe maximum text size "
+                    "must be positive."
                 )
                 model_parameters["max_text_size"] = parameters["max_text_size"]
             elif "max_text_size" not in self.parameters:
@@ -2302,11 +2305,11 @@ Main Class for Vertica Model
     name: str, optional
         Function Name.
     return_proba: bool, optional
-        If set to True and the model is a classifier, the function will return 
-        the model probabilities.
+        If set to True and the model is a classifier, the function will 
+        return the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroid, the function 
-        will return the model clusters distances.
+        If set to True and the model type is KMeans or NearestCentroid, the 
+        function will return the model clusters distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
