@@ -512,6 +512,7 @@ class TestvDFUtilities:
         result = amazon_vd["state"].isnum()
         assert result == False
 
+    @pytest.mark.skip(reason="test not stable")
     def test_vDF_memory_usage(self, amazon_vd):
         # testing vDataFrame[].memory_usage
         result = amazon_vd["number"].memory_usage()
