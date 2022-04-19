@@ -59,10 +59,10 @@ class TestUtilities:
             schema="verticapy_test_create_schema",
         )
         current_cursor().execute(
-            "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"
+            "SELECT table_name FROM columns WHERE table_schema = 'verticapy_test_create_schema' GROUP BY 1 ORDER BY 1;"
         )
         result = current_cursor().fetchone()[0]
-        assert result == "verticapy_test_create_schema"
+        assert result == "test"
         drop("verticapy", method="schema")
 
     def test_create_verticapy_schema(self):
