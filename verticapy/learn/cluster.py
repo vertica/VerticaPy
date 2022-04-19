@@ -307,9 +307,7 @@ p: int, optional
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                drop(
-                    "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
-                )
+                drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
                 executeSQL(
                     "CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(
                         name_dbscan_clusters
@@ -355,9 +353,7 @@ p: int, optional
             )
         except:
             drop("v_temp_schema.{}".format(name_main), method="table")
-            drop(
-                "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
-            )
+            drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
             raise
         drop("v_temp_schema.{}".format(name_main), method="table")
         drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")

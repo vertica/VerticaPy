@@ -1556,9 +1556,7 @@ p: int, optional
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                drop(
-                    "v_temp_schema.{}".format(tmp_main_table_name), method="table"
-                )
+                drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
                 executeSQL(sql, print_time_sql=False)
             else:
                 main_table = self.input_relation
@@ -1584,9 +1582,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_distance_table_name, sql
             )
-            drop(
-                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 0].")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(
                 tmp_distance_table_name, n_neighbors + 1
@@ -1597,9 +1593,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lrd_table_name, lrd
             )
-            drop(
-                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 1].")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
                 n_neighbors,
@@ -1610,9 +1604,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lof_table_name, sql
             )
-            drop(
-                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 2].")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
                 ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index
@@ -1629,18 +1621,10 @@ p: int, optional
                 print_time_sql=False,
             )
         except:
-            drop(
-                "v_temp_schema.{}".format(tmp_main_table_name), method="table"
-            )
-            drop(
-                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
-            )
-            drop(
-                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
-            )
-            drop(
-                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
             raise
         drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")

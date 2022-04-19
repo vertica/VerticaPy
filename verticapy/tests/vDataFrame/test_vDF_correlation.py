@@ -117,7 +117,7 @@ class TestvDFCorrelation:
         plt.close("all")
         assert result5["value"][0] == pytest.approx(1)
         assert result5["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
-        assert result5.values["value"][10] == pytest.approx(0.494663471420921, 1e-2)
+        assert result5.values["value"][10] == pytest.approx(0.5, 1e-2)
         assert result5.values["confidence"][10] == pytest.approx(
             0.06977116419369607, 1e-2
         )

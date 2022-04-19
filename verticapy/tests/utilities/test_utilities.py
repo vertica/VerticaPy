@@ -50,6 +50,21 @@ def world_vd():
 
 
 class TestUtilities:
+    def test_create_schema_table(self):
+        drop("verticapy_test_create_schema", method="schema")
+        create_schema("verticapy_test_create_schema")
+        create_table(
+            table_name="test",
+            dtype={"col0": "INT", "col1": "FLOAT"},
+            schema="verticapy_test_create_schema",
+        )
+        current_cursor().execute(
+            "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"
+        )
+        result = current_cursor().fetchone()[0]
+        assert result == "verticapy_test_create_schema"
+        drop("verticapy", method="schema")
+
     def test_create_verticapy_schema(self):
         drop("verticapy", method="schema")
         create_verticapy_schema()

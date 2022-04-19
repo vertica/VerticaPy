@@ -639,7 +639,15 @@ def hchartSQL(
                 kind = "boxplot"
         else:
             kind = "boxplot"
-    if kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand", "boxplot"):
+    if kind in (
+        "pearson",
+        "kendall",
+        "cramer",
+        "biserial",
+        "spearman",
+        "spearmand",
+        "boxplot",
+    ):
         x, y, z, c = allnum, None, None, None
     elif kind == "scatter":
         if len(names) < 2:

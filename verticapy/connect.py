@@ -195,7 +195,7 @@ Otherwise, it will try to connect to the Verticalab Environment.
                     verticapy.options["connection"]["conn"] = conn
 
                 except:
-                    raise(e)
+                    raise (e)
 
     return verticapy.options["connection"]["conn"]
 
@@ -270,6 +270,7 @@ string
     os.makedirs(path, 0o700, exist_ok=True)
     path = os.path.join(path, "connections.verticapy")
     return path
+
 
 # ---#
 def new_connection(
@@ -459,6 +460,7 @@ conn
     conn = vertica_python.connect(**read_dsn(section, dsn))
     return conn
 
+
 # ---#
 def verticalab_connection():
     """
@@ -470,10 +472,12 @@ Returns
 conn
     Database connection.
     """
-    conn_info = {'host': 'host.docker.internal',
-                 'port': 5433,
-                 'user': 'dbadmin',
-                 'password': '',
-                 'database': 'demo',
-                 'backup_server_node': ['localhost']}
+    conn_info = {
+        "host": "host.docker.internal",
+        "port": 5433,
+        "user": "dbadmin",
+        "password": "",
+        "database": "demo",
+        "backup_server_node": ["localhost"],
+    }
     return vertica_python.connect(**conn_info)

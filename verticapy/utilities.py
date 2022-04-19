@@ -66,6 +66,35 @@ except:
 
 #
 # ---#
+def create_schema(
+    schema: str, raise_error: bool = False,
+):
+    """
+---------------------------------------------------------------------------
+Creates a new schema.
+
+Parameters
+----------
+schema: str
+    Schema name.
+raise_error: bool, optional
+    If the schema couldn't be created, raises the entire error.
+
+Returns
+-------
+bool
+    True if the schema was successfully created, False otherwise.
+    """
+    try:
+        executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
+        return True
+    except:
+        if raise_error:
+            raise
+        return False
+
+
+# ---#
 def create_table(
     table_name: str,
     dtype: dict,
@@ -253,7 +282,9 @@ bool
             end_conditions = True
         if fail:
             if raise_error:
-                raise MissingRelation(f"No relation / index / view / model named '{name}' was detected.")
+                raise MissingRelation(
+                    f"No relation / index / view / model named '{name}' was detected."
+                )
             return False
     query = ""
     if method == "model":

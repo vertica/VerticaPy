@@ -433,7 +433,14 @@ vColumns : vColumn
                     f"vColumn {column} must be numerical to compute the {method_name} Matrix{method_type}."
                 )
         if len(columns) == 1:
-            if method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"):
+            if method in (
+                "pearson",
+                "spearman",
+                "spearmand",
+                "kendall",
+                "biserial",
+                "cramer",
+            ):
                 return 1.0
             elif method == "cov":
                 return self[columns[0]].var()
@@ -682,7 +689,14 @@ vColumns : vColumn
                     matrix[idx + 1][0] = column
                 title = f"Correlation Matrix ({method})"
             except:
-                if method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"):
+                if method in (
+                    "pearson",
+                    "spearman",
+                    "spearmand",
+                    "kendall",
+                    "biserial",
+                    "cramer",
+                ):
                     title_query = "Computing all Correlations in a single query"
                     title = f"Correlation Matrix ({method})"
                     if method == "biserial":
@@ -807,7 +821,14 @@ vColumns : vColumn
                     1
                     if (
                         method
-                        in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer")
+                        in (
+                            "pearson",
+                            "spearman",
+                            "spearmand",
+                            "kendall",
+                            "biserial",
+                            "cramer",
+                        )
                     )
                     else None
                 )
@@ -901,7 +922,9 @@ vColumns : vColumn
                     "vColumn {column} must be numerical to compute the "
                     f"{method_name} Vector{method_type}."
                 )
-        if method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (len(cols) >= 1):
+        if method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (
+            len(cols) >= 1
+        ):
             try:
                 fail = 0
                 cast_i = "::int" if (self[focus].isbool()) else ""
@@ -988,7 +1011,8 @@ vColumns : vColumn
             except:
                 fail = 1
         if not (
-            method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (len(cols) >= 1)
+            method in ("spearman", "spearmand", "pearson", "kendall", "cov")
+            and (len(cols) >= 1)
         ) or (fail):
             vector = []
             for column in cols:
@@ -1012,7 +1036,17 @@ vColumns : vColumn
                 vmin = None
             vmax = (
                 1
-                if (method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"))
+                if (
+                    method
+                    in (
+                        "pearson",
+                        "spearman",
+                        "spearmand",
+                        "kendall",
+                        "biserial",
+                        "cramer",
+                    )
+                )
                 else None
             )
             if "cmap" not in style_kwds:
@@ -1671,7 +1705,14 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"],
+                    [
+                        "pearson",
+                        "kendall",
+                        "spearman",
+                        "spearmand",
+                        "biserial",
+                        "cramer",
+                    ],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("confidence", confidence, [bool]),
@@ -4310,7 +4351,14 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"],
+                    [
+                        "pearson",
+                        "kendall",
+                        "spearman",
+                        "spearmand",
+                        "biserial",
+                        "cramer",
+                    ],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("focus", focus, [str]),
@@ -4432,23 +4480,16 @@ vColumns : vColumn
         elif method == "kendall":
             cast_i = "::int" if (self[column1].isbool()) else ""
             cast_j = "::int" if (self[column2].isbool()) else ""
-            n_c = ("(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                   "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2").format(
-                column1,
-                cast_i,
-                column2,
-                cast_j,
-            )
-            n_d = ("(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
-                   "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2").format(
-                column1,
-                cast_i,
-                column2,
-                cast_j,
-            )
+            n_c = (
+                "(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+            ).format(column1, cast_i, column2, cast_j,)
+            n_d = (
+                "(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2"
+            ).format(column1, cast_i, column2, cast_j,)
             table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
-                ", ".join([column1, column2]),
-                self.__genSQL__(),
+                ", ".join([column1, column2]), self.__genSQL__(),
             )
             nc, nd = executeSQL(
                 f"SELECT {n_c}::float, {n_d}::float FROM {table};",
