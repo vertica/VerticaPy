@@ -558,7 +558,7 @@ def hchart_from_vdf(
         return negative_bar(query=query, options=options, width=width, height=height)
     elif kind == "spider":
         return spider(query=query, options=options, width=width, height=height)
-    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmanD"):
+    elif kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand"):
         check_types([("x", x, [list])])
         x = vdf.format_colnames(x)
         data = vdf.corr(method=kind, show=False, columns=x)
@@ -639,7 +639,7 @@ def hchartSQL(
                 kind = "boxplot"
         else:
             kind = "boxplot"
-    if kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmanD", "boxplot"):
+    if kind in ("pearson", "kendall", "cramer", "biserial", "spearman", "spearmand", "boxplot"):
         x, y, z, c = allnum, None, None, None
     elif kind == "scatter":
         if len(names) < 2:

@@ -51,7 +51,7 @@ def world_vd():
 
 class TestUtilities:
     def test_create_verticapy_schema(self):
-        drop_if_exists("verticapy", method="schema")
+        drop("verticapy", method="schema")
         create_verticapy_schema()
         current_cursor().execute(
             "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"
@@ -206,22 +206,22 @@ class TestUtilities:
 
     def test_pandas_to_vertica(self, titanic_vd):
         df = titanic_vd.to_pandas()
-        drop_if_exists("titanic_pandas")
+        drop("titanic_pandas")
         vdf = pandas_to_vertica(df=df, name="titanic_pandas")
         assert vdf.shape() == (1234, 14)
-        drop_if_exists("titanic_pandas")
+        drop("titanic_pandas")
         vdf = pandas_to_vertica(df=df)
         assert vdf.shape() == (1234, 14)
         d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         df = pd.DataFrame(data=d)
         vdf = pandas_to_vertica(df)
         assert vdf.shape() == (4, 2)
-        drop_if_exists("test_df")
+        drop("test_df")
         pandas_to_vertica(df, name="test_df", schema="public")
         pandas_to_vertica(df, name="test_df", schema="public", insert=True)
         vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
         assert vdf.shape() == (12, 2)
-        drop_if_exists("test_df")
+        drop("test_df")
 
     def test_pcsv(self):
         result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
@@ -266,7 +266,7 @@ class TestUtilities:
         }
 
     def test_read_json(self):
-        drop_if_exists("public.titanic_verticapy_test_json", method="table")
+        drop("public.titanic_verticapy_test_json", method="table")
         path = (
             os.path.dirname(verticapy.__file__)
             + "/tests/utilities/titanic-passengers.json"
@@ -275,10 +275,10 @@ class TestUtilities:
             path, table_name="titanic_verticapy_test_json", schema="public"
         )
         assert result.shape() == (891, 15)
-        drop_if_exists("public.titanic_verticapy_test_json", method="table")
+        drop("public.titanic_verticapy_test_json", method="table")
         result = read_json(path, table_name="titanic_verticapy_test_json")
         assert result.shape() == (891, 15)
-        drop_if_exists("public.titanic_verticapy_test_json", method="table")
+        drop("public.titanic_verticapy_test_json", method="table")
         # TODO
         # test the param gen_tmp_table_name
 
@@ -289,7 +289,7 @@ class TestUtilities:
             path, table_name="titanic_verticapy_test_csv", schema="public"
         )
         assert result.shape() == (1234, 14)
-        drop_if_exists("public.titanic_verticapy_test_csv", method="table")
+        drop("public.titanic_verticapy_test_csv", method="table")
         # temporary table
         result = read_csv(
             path,
@@ -298,7 +298,7 @@ class TestUtilities:
             temporary_table=True,
         )
         assert result.shape() == (1234, 14)
-        drop_if_exists("public.titanic_verticapy_test_csv", method="table")
+        drop("public.titanic_verticapy_test_csv", method="table")
         # parse_n_lines
         result = read_csv(
             path,
@@ -312,11 +312,11 @@ class TestUtilities:
             path, table_name="titanic_verticapy_test_csv", schema="public", insert=True
         )
         assert result.shape() == (2468, 14)
-        drop_if_exists("public.titanic_verticapy_test_csv", method="table")
+        drop("public.titanic_verticapy_test_csv", method="table")
         # temporary local table
         result = read_csv(path, table_name="titanic_verticapy_test_csv")
         assert result.shape() == (1234, 14)
-        drop_if_exists("v_temp_schema.titanic_verticapy_test_csv", method="table")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with header names
         result = read_csv(
             path,
@@ -325,7 +325,7 @@ class TestUtilities:
         )
         assert result.shape() == (1234, 14)
         assert result.get_columns() == ['"ucol{}"'.format(i) for i in range(14)]
-        drop_if_exists("v_temp_schema.titanic_verticapy_test_csv", method="table")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # with dtypes
         result = read_csv(
             path,
@@ -348,7 +348,7 @@ class TestUtilities:
             },
         )
         assert result.shape() == (1234, 14)
-        drop_if_exists("v_temp_schema.titanic_verticapy_test_csv", method="table")
+        drop("v_temp_schema.titanic_verticapy_test_csv", method="table")
         # genSQL
         result = read_csv(
             path, schema="public", table_name="titanic_verticapy_test_csv", genSQL=True
@@ -359,7 +359,7 @@ class TestUtilities:
         # test the param gen_tmp_table_name
 
     def test_read_shp(self, cities_vd):
-        drop_if_exists(name="public.cities_test")
+        drop(name="public.cities_test")
         cities_vd.to_shp("cities_test", "/home/dbadmin/", shape="Point")
         vdf = read_shp("/home/dbadmin/cities_test.shp")
         assert vdf.shape() == (202, 3)

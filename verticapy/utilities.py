@@ -73,6 +73,7 @@ def create_table(
     temporary_table: bool = False,
     temporary_local_table: bool = True,
     genSQL: bool = False,
+    raise_error: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -96,6 +97,8 @@ temporary_local_table: bool, optional
 genSQL: bool, optional
     If set to True, the SQL code for creating the final table will be 
     generated but not executed.
+raise_error: bool, optional
+    If the relation couldn't be created, raises the entire error.
 
 Returns
 -------
@@ -110,6 +113,7 @@ bool
             ("genSQL", genSQL, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
+            ("raise_error", raise_error, [bool]),
         ]
     )
     if schema.lower() == "v_temp_schema":
@@ -136,8 +140,9 @@ bool
     try:
         executeSQL(query, title="Creating the new table.")
         return True
-    except Exception as e:
-        warnings.warn(str(e), Warning)
+    except:
+        if raise_error:
+            raise
         return False
 
 
@@ -156,7 +161,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
 
 
 # ---#
-def drop(name: str = "", raise_error: bool = False, method: str = "auto"):
+def drop(name: str = "", method: str = "auto", raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input relation. This can be a model, view, table, text index,
@@ -167,9 +172,6 @@ Parameters
 name: str, optional
     Relation name. If empty, it will drop all VerticaPy temporary 
     elements.
-raise_error: bool, optional
-    If the object couldn't be dropped, raises the entire error 
-    instead of displaying a warning.
 method: str, optional
     Method used to drop.
         auto   : identifies the table/view/index/model to drop. 
@@ -181,6 +183,8 @@ method: str, optional
         geo    : drops the input geo index.
         text   : drops the input text index.
         schema : drops the input schema.
+raise_error: bool, optional
+    If the object couldn't be dropped, raises the entire error.
 
 Returns
 -------
@@ -192,12 +196,12 @@ bool
     check_types(
         [
             ("name", name, [str]),
-            ("raise_error", raise_error, [bool]),
             (
                 "method",
                 method,
                 ["table", "view", "model", "geo", "text", "auto", "schema"],
             ),
+            ("raise_error", raise_error, [bool]),
         ]
     )
     schema, relation = schema_relation(name)
@@ -248,10 +252,8 @@ bool
             method = "geo"
             end_conditions = True
         if fail:
-            warning_message = "No relation / index / view / model named '{}' was detected.".format(
-                name
-            )
-            warnings.warn(warning_message, Warning)
+            if raise_error:
+                raise MissingRelation(f"No relation / index / view / model named '{name}' was detected.")
             return False
     query = ""
     if method == "model":
@@ -310,64 +312,33 @@ bool
                 raise
             if method in ("geo", "text"):
                 method += " index"
-            warning_message = f"The {method} '{name}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information."
-            warnings.warn(warning_message, Warning)
             result = False
     elif method == "temp":
-        sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
+        sql = """SELECT 
+                    table_schema, table_name 
+                 FROM columns 
+                 WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
+                 GROUP BY 1, 2;"""
         all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_tables:
             table = '"{}"."{}"'.format(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
-            drop_if_exists(table, method="table")
-        sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
+            drop(table, method="table")
+        sql = """SELECT 
+                    table_schema, table_name 
+                 FROM view_columns 
+                 WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
+                 GROUP BY 1, 2;"""
         all_views = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_views:
             view = '"{}"."{}"'.format(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
-            drop_if_exists(view, method="view")
+            drop(view, method="view")
         result = True
     else:
         result = True
-    return result
-
-
-# ---#
-def drop_if_exists(name: str = "", method: str = "auto"):
-    """
----------------------------------------------------------------------------
-Drops the input relation if it exists. This relation can be a model, view, 
-table, text index, schema, or geo index. This function will raise no error 
-or warning.
-
-Parameters
-----------
-name: str, optional
-    Relation name. If empty, it will drop all VerticaPy temporary elements.
-
-method: str, optional
-    Method used to drop.
-        auto   : identifies the table/view/index/model to drop. It will never
-                 drop an entire schema unless the method is set to 'schema'.
-        model  : drops the input model.
-        table  : drops the input table.
-        view   : drops the input view.        
-        geo    : drops the input geo index.
-        text   : drops the input text index.
-        schema : drops the input schema.
-
-Returns
--------
-bool
-    True if the relation was dropped, False otherwise.
-    """
-    try:
-        with warnings.catch_warnings(record=True) as w:
-            result = drop(name, method=method)
-    except:
-        result = False
     return result
 
 
@@ -482,7 +453,7 @@ list of tuples
         except:
             pass
     tmp_name, schema = gen_tmp_name(name="table"), "v_temp_schema"
-    drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+    drop("{}.{}".format(schema, tmp_name), method="table")
     try:
         if schema == "v_temp_schema":
             executeSQL(
@@ -499,7 +470,7 @@ list of tuples
                 print_time_sql=False,
             )
     except:
-        drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+        drop("{}.{}".format(schema, tmp_name), method="table")
         raise
     query = "SELECT column_name, data_type FROM columns WHERE {}table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         "column_name = '{}' AND ".format(column_name) if (column_name) else "",
@@ -511,7 +482,7 @@ list of tuples
         ctype = cursor.fetchone()[1]
     else:
         ctype = cursor.fetchall()
-    drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+    drop("{}.{}".format(schema, tmp_name), method="table")
     return ctype
 
 
@@ -889,7 +860,7 @@ read_json : Ingests a JSON file into the Vertica database.
             dtype[column_dtype[0]] = column_dtype[1]
         except:
             dtype[column_dtype[0]] = "Varchar(100)"
-    drop_if_exists(flex_name, method="table")
+    drop(flex_name, method="table")
     return dtype
 
 

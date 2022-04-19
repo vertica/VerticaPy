@@ -249,7 +249,7 @@ p: int, optional
         try:
             if not (index):
                 index = "id"
-                drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+                drop("v_temp_schema.{}".format(name_main), method="table")
                 sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
                     name_main,
                     ", ".join(X + key_columns),
@@ -307,7 +307,7 @@ p: int, optional
                 for elem in clusters:
                     f.write("{}, {}\n".format(elem, clusters[elem]))
                 f.close()
-                drop_if_exists(
+                drop(
                     "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
                 )
                 executeSQL(
@@ -354,12 +354,12 @@ p: int, optional
                 print_time_sql=False,
             )
         except:
-            drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
-            drop_if_exists(
+            drop("v_temp_schema.{}".format(name_main), method="table")
+            drop(
                 "v_temp_schema.{}".format(name_dbscan_clusters), method="table"
             )
             raise
-        drop_if_exists("v_temp_schema.{}".format(name_main), method="table")
+        drop("v_temp_schema.{}".format(name_main), method="table")
         drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
         model_save = {
             "type": "DBSCAN",

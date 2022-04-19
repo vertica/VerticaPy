@@ -311,9 +311,9 @@ Main Class for Vertica Model
 	Drops the model from the Vertica database.
 		"""
         if self.type == "AutoDataPrep":
-            drop_if_exists(self.name, method="table")
+            drop(self.name, method="table")
         else:
-            drop_if_exists(self.name, method="model")
+            drop(self.name, method="model")
 
     # ---#
     def features_importance(
@@ -2770,7 +2770,7 @@ class Supervised(vModel):
             else:
                 self.input_relation = input_relation
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
-            drop_if_exists(relation, method="view")
+            drop(relation, method="view")
             executeSQL(
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
@@ -4398,7 +4398,7 @@ class Unsupervised(vModel):
                     "vDataFrame.cdt method to transform the relation."
                 )
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
-            drop_if_exists(relation, method="view")
+            drop(relation, method="view")
             executeSQL(
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
@@ -4436,7 +4436,7 @@ class Unsupervised(vModel):
                 schema=schema_relation(self.name)[0], name="kmeans_init"
             )
             del parameters["init_method"]
-            drop_if_exists(name_init, method="table")
+            drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
                     "'init' must be a list of 'n_cluster' = {} points".format(
@@ -4487,7 +4487,7 @@ class Unsupervised(vModel):
                 and not (isinstance(parameters["init_method"], str))
                 and self.type in ("KMeans", "BisectingKMeans")
             ):
-                drop_if_exists("{}".format(name_init), method="table")
+                drop("{}".format(name_init), method="table")
             raise
         if self.type == "KMeans":
             if (
@@ -4495,7 +4495,7 @@ class Unsupervised(vModel):
                 and not (isinstance(parameters["init_method"], str))
                 and self.type in ("KMeans", "BisectingKMeans")
             ):
-                drop_if_exists("{}".format(name_init), method="table")
+                drop("{}".format(name_init), method="table")
             self.cluster_centers_ = self.get_attr("centers")
             result = self.get_attr("metrics").values["metrics"][0]
             values = {

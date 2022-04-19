@@ -433,7 +433,7 @@ vColumns : vColumn
                     f"vColumn {column} must be numerical to compute the {method_name} Matrix{method_type}."
                 )
         if len(columns) == 1:
-            if method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"):
+            if method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"):
                 return 1.0
             elif method == "cov":
                 return self[columns[0]].var()
@@ -443,7 +443,7 @@ vColumns : vColumn
                 return pre_comp_val
             cast_0 = "::int" if (self[columns[0]].isbool()) else ""
             cast_1 = "::int" if (self[columns[1]].isbool()) else ""
-            if method in ("pearson", "spearman", "spearmanD",):
+            if method in ("pearson", "spearman", "spearmand",):
                 if columns[1] == columns[0]:
                     return 1
                 table = (
@@ -642,9 +642,9 @@ vColumns : vColumn
                         if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                             nb_precomputed += 1
                 assert (nb_precomputed <= n * n / 3) and (
-                    method in ("pearson", "spearman", "spearmanD",)
+                    method in ("pearson", "spearman", "spearmand",)
                 )
-                fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
+                fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                 table = (
                     self.__genSQL__()
                     if (method == "pearson")
@@ -682,7 +682,7 @@ vColumns : vColumn
                     matrix[idx + 1][0] = column
                 title = f"Correlation Matrix ({method})"
             except:
-                if method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"):
+                if method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"):
                     title_query = "Computing all Correlations in a single query"
                     title = f"Correlation Matrix ({method})"
                     if method == "biserial":
@@ -712,7 +712,7 @@ vColumns : vColumn
                             if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                                 all_list += [str(pre_comp_val)]
                                 nb_precomputed += 1
-                            elif method in ("pearson", "spearman", "spearmanD"):
+                            elif method in ("pearson", "spearman", "spearmand"):
                                 all_list += [
                                     "ROUND(CORR({0}{1}, {2}{3}), {4})".format(
                                         columns[i], cast_i, columns[j], cast_j, round_nb
@@ -745,8 +745,8 @@ vColumns : vColumn
                                 ]
                             else:
                                 raise
-                    if method in ("spearman", "spearmanD"):
-                        fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
+                    if method in ("spearman", "spearmand"):
+                        fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                         rank = [
                             "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
                             for column in columns
@@ -807,7 +807,7 @@ vColumns : vColumn
                     1
                     if (
                         method
-                        in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer")
+                        in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer")
                     )
                     else None
                 )
@@ -901,7 +901,7 @@ vColumns : vColumn
                     "vColumn {column} must be numerical to compute the "
                     f"{method_name} Vector{method_type}."
                 )
-        if method in ("spearman", "spearmanD", "pearson", "kendall", "cov") and (len(cols) >= 1):
+        if method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
                 fail = 0
                 cast_i = "::int" if (self[focus].isbool()) else ""
@@ -922,7 +922,7 @@ vColumns : vColumn
                     if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                         all_list += [str(pre_comp_val)]
                         nb_precomputed += 1
-                    elif method in ("pearson", "spearman", "spearmanD"):
+                    elif method in ("pearson", "spearman", "spearmand"):
                         all_list += [
                             "ROUND(CORR({}{}, {}{}), {})".format(
                                 focus, cast_i, column, cast_j, round_nb
@@ -955,8 +955,8 @@ vColumns : vColumn
                                 focus, cast_i, column, cast_j
                             )
                         ]
-                if method in ("spearman", "spearmanD"):
-                    fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
+                if method in ("spearman", "spearmand"):
+                    fun = "DENSE_RANK" if method == "spearmand" else "RANK"
                     rank = [
                         "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
                         for column in all_cols
@@ -988,7 +988,7 @@ vColumns : vColumn
             except:
                 fail = 1
         if not (
-            method in ("spearman", "spearmanD", "pearson", "kendall", "cov") and (len(cols) >= 1)
+            method in ("spearman", "spearmand", "pearson", "kendall", "cov") and (len(cols) >= 1)
         ) or (fail):
             vector = []
             for column in cols:
@@ -1012,7 +1012,7 @@ vColumns : vColumn
                 vmin = None
             vmax = (
                 1
-                if (method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"))
+                if (method in ("pearson", "spearman", "spearmand", "kendall", "biserial", "cramer"))
                 else None
             )
             if "cmap" not in style_kwds:
@@ -1292,7 +1292,7 @@ vColumns : vColumn
                     "cov": {},
                     "pearson": {},
                     "spearman": {},
-                    "spearmanD": {},
+                    "spearmand": {},
                     "kendall": {},
                     "cramer": {},
                     "biserial": {},
@@ -1313,7 +1313,7 @@ vColumns : vColumn
                 "cov",
                 "pearson",
                 "spearman",
-                "spearmanD",
+                "spearmand",
                 "kendall",
                 "cramer",
                 "biserial",
@@ -1671,7 +1671,7 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "spearmanD", "biserial", "cramer"],
+                    ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("confidence", confidence, [bool]),
@@ -4310,7 +4310,7 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "spearmanD", "biserial", "cramer"],
+                    ["pearson", "kendall", "spearman", "spearmand", "biserial", "cramer"],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("focus", focus, [str]),
@@ -4394,7 +4394,7 @@ vColumns : vColumn
                         "kendallb",
                         "kendallc",
                         "spearman",
-                        "spearmanD",
+                        "spearmand",
                         "biserial",
                         "cramer",
                     ],
@@ -4426,7 +4426,7 @@ vColumns : vColumn
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
             pvalue = 2 * t.sf(abs(x), n - 2)
-        elif method in ("spearman", "spearmanD"):
+        elif method in ("spearman", "spearmand"):
             z = math.sqrt((n - 3) / 1.06) * 0.5 * log((1 + val) / (1 - val))
             pvalue = 2 * norm.sf(abs(z))
         elif method == "kendall":
@@ -6381,7 +6381,7 @@ vColumns : vColumn
                         "cramer",
                         "biserial",
                         "spearman",
-                        "spearmanD",
+                        "spearmand",
                     ],
                 ),
                 ("options", options, [dict]),
@@ -7710,7 +7710,7 @@ vColumns : vColumn
                 schema=verticapy.options["temp_schema"], name="linear_reg1"
             )
             try:
-                drop_if_exists(tmp_view_name, method="view")
+                drop(tmp_view_name, method="view")
                 query = "CREATE VIEW {} AS SELECT * FROM {}".format(
                     tmp_view_name, relation
                 )
@@ -7719,7 +7719,7 @@ vColumns : vColumn
 
                 from verticapy.learn.linear_model import LinearRegression
 
-                drop_if_exists(tmp_lr0_name, method="model")
+                drop(tmp_lr0_name, method="model")
                 model = LinearRegression(name=tmp_lr0_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
@@ -7727,7 +7727,7 @@ vColumns : vColumn
                     y=column,
                 )
                 model.predict(vdf, name="prediction_0")
-                drop_if_exists(tmp_lr1_name, method="model")
+                drop(tmp_lr1_name, method="model")
                 model = LinearRegression(name=tmp_lr1_name, solver="Newton")
                 model.fit(
                     input_relation=tmp_view_name,
@@ -7747,9 +7747,9 @@ vColumns : vColumn
                 drop(tmp_lr0_name, method="model")
                 drop(tmp_lr1_name, method="model")
             except:
-                drop_if_exists(tmp_view_name, method="view")
-                drop_if_exists(tmp_lr0_name, method="model")
-                drop_if_exists(tmp_lr1_name, method="model")
+                drop(tmp_view_name, method="view")
+                drop(tmp_lr0_name, method="model")
+                drop(tmp_lr1_name, method="model")
                 raise
             return result
         else:

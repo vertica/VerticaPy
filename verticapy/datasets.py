@@ -791,7 +791,7 @@ def load_dataset_cl(table_name: str = "dataset_cl", schema: str = "public"):
     ]
     input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
-    drop_if_exists(name=input_relation, method="table")
+    drop(name=input_relation, method="table")
     create_table(
         table_name=table_name,
         schema=schema,
@@ -827,7 +827,7 @@ def load_dataset_reg(table_name: str = "dataset_reg", schema: str = "public"):
     ]
     input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
-    drop_if_exists(name=input_relation, method="table")
+    drop(name=input_relation, method="table")
     create_table(
         table_name=table_name,
         schema=schema,
@@ -863,7 +863,7 @@ def load_dataset_num(table_name: str = "dataset_num", schema: str = "public"):
     ]
     input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
 
-    drop_if_exists(name=input_relation, method="table")
+    drop(name=input_relation, method="table")
     create_table(
         table_name=table_name,
         schema=schema,

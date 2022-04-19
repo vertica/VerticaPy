@@ -1556,7 +1556,7 @@ p: int, optional
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                drop_if_exists(
+                drop(
                     "v_temp_schema.{}".format(tmp_main_table_name), method="table"
                 )
                 executeSQL(sql, print_time_sql=False)
@@ -1584,7 +1584,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_distance_table_name, sql
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
             )
             executeSQL(sql, "Computing the LOF [Step 0].")
@@ -1597,7 +1597,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lrd_table_name, lrd
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
             )
             executeSQL(sql, "Computing the LOF [Step 1].")
@@ -1610,7 +1610,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lof_table_name, sql
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
             )
             executeSQL(sql, "Computing the LOF [Step 2].")
@@ -1629,20 +1629,20 @@ p: int, optional
                 print_time_sql=False,
             )
         except:
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_main_table_name), method="table"
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
             )
-            drop_if_exists(
+            drop(
                 "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
             )
             raise
-        drop_if_exists("v_temp_schema.{}".format(tmp_main_table_name), method="table")
+        drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
