@@ -2329,7 +2329,24 @@ VERTICAPY Interactive Help (FAQ).
     img2 += "                    \\  /\n"
     img2 += "                     \\/\n"
     message = img1 if (isnotebook()) else img2
-    message += "\n\n&#128226; Welcome to the <b>VERTICAPY</b> help Module. You are about to use a new fantastic way to analyze your data !\n\nYou can learn quickly how to set up a connection, how to create a Virtual DataFrame and much more.\n\nWhat do you want to know?\n - <b>[Enter  0]</b> Do you want to know why you should use this library ?\n - <b>[Enter  1]</b> You don't have data to play with and you want to load an available dataset ?\n - <b>[Enter  2]</b> Do you want to look at a quick example ?\n - <b>[Enter  3]</b> Do you want to get a link to the VERTICAPY github ?\n - <b>[Enter  4]</b> Do you want to know how to display the Virtual DataFrame SQL code generation and the time elapsed to run the query ?\n - <b>[Enter  5]</b> Do you want to know how to load your own dataset inside Vertica ?\n - <b>[Enter 6]</b> Do you want to know how you writing direct SQL queries in Jupyter ?\n - <b>[Enter -1]</b> Exit"
+    message += (
+        "\n\n&#128226; Welcome to the <b>VERTICAPY</b> help Module. You are "
+        "about to use a new fantastic way to analyze your data !\n\nYou can "
+        "learn quickly how to set up a connection, how to create a Virtual "
+        "DataFrame and much more.\n\nWhat do you want to know?\n "
+        "- <b>[Enter  0]</b> Do you want to know why you should use this library ?\n "
+        "- <b>[Enter  1]</b> You don't have data to play with and you want "
+        "to load an available dataset ?\n "
+        "- <b>[Enter  2]</b> Do you want to look at a quick example ?\n "
+        "- <b>[Enter  3]</b> Do you want to get a link to the VERTICAPY github ?\n "
+        "- <b>[Enter  4]</b> Do you want to know how to display the Virtual "
+        "DataFrame SQL code generation and the time elapsed to run the query ?\n "
+        "- <b>[Enter  5]</b> Do you want to know how to load your own dataset "
+        "inside Vertica ?\n "
+        "- <b>[Enter  6]</b> Do you want to know how you writing direct SQL "
+        "queries in Jupyter ?\n "
+        "- <b>[Enter -1]</b> Exit"
+    )
     if not (isnotebook()):
         message = (
             message.replace("<b>", "")
@@ -2349,26 +2366,34 @@ VERTICAPY Interactive Help (FAQ).
             )
             return
     if response == 0:
-        message = "# VerticaPy\nNowadays, The 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. \nThe idea behind VERTICAPY is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.\nMain Advantages:\n - easy Data Exploration.\n - easy Data Preparation.\n - easy Data Modeling.\n - easy Model Evaluation.\n - easy Model Deployment.\n - most of what pandas.DataFrame can do, verticapy.vdataframe can do (and even much more)\n - easy ML model creation and evaluation.\n - many scikit functions and algorithms are available (and scalable!).\n\n&#9888; Please read the VERTICAPY Documentation. If you do not have time just read below.\n\n&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.\nIf you have any feedback about the library, please contact me: <a href=\"mailto:badr.ouali@vertica.com\">badr.ouali@vertica.com</a>"
+        message = ""
     elif response == 1:
-        message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic()\n```"
+        message = ""
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation")\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = ""
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
         else:
-            message = "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>https://github.com/vertica/VerticaPy/</a>"
+            message = (
+                "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>"
+                "https://github.com/vertica/Verti)caPy/</a>"
+            )
     elif response == 4:
-        message = "You can Display the SQL Code generation & elapsed time of the Virtual DataFrame using the <b>set_option</b> function.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
+        message = ""
     elif response == 5:
-        message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
+        message = ""
     elif response == 6:
-        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n%%sql\nSELECT * FROM public.titanic\n```"
+        message = ""
     elif response == -1:
         message = "Thank you for using the VERTICAPY help."
     elif response == 666:
-        message = "Thank you so much for using this library. My only purpose is to solve real Big Data problems in the context of Data Science. I worked years to be able to create this API and give you a real way to analyse your data.\n\nYour devoted Data Scientist: <i>Badr Ouali</i>"
+        message = (
+            "Thank you so much for using this library. My only purpose is to solve "
+            "real Big Data problems in the context of Data Science. I worked years "
+            "to be able to create this API and give you a real way to analyse your "
+            "data.\n\nYour devoted Data Scientist: <i>Badr Ouali</i>"
+        )
     else:
         message = "The choice is incorrect.\nPlease enter a number between 0 and 11."
     if not (isnotebook()):
