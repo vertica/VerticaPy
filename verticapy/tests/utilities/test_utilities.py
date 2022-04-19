@@ -59,7 +59,11 @@ class TestUtilities:
             schema="verticapy_test_create_schema",
         )
         current_cursor().execute(
-            "SELECT table_name FROM columns WHERE table_schema = 'verticapy_test_create_schema' GROUP BY 1 ORDER BY 1;"
+            """SELECT 
+                    table_name 
+               FROM columns 
+               WHERE table_schema = 'verticapy_test_create_schema' 
+               GROUP BY 1 ORDER BY 1;"""
         )
         result = current_cursor().fetchone()[0]
         assert result == "test"
@@ -69,7 +73,11 @@ class TestUtilities:
         drop("verticapy", method="schema")
         create_verticapy_schema()
         current_cursor().execute(
-            "SELECT table_name FROM columns WHERE table_schema = 'verticapy' GROUP BY 1 ORDER BY 1;"
+            """SELECT 
+                    table_name 
+               FROM columns 
+               WHERE table_schema = 'verticapy' 
+               GROUP BY 1 ORDER BY 1;"""
         )
         result = [elem[0] for elem in current_cursor().fetchall()]
         assert result == ["attr", "models"]
