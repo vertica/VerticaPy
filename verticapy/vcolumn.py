@@ -115,6 +115,7 @@ Attributes
             "cov": {},
             "pearson": {},
             "spearman": {},
+            "spearmand": {},
             "kendall": {},
             "cramer": {},
             "biserial": {},

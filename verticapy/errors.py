@@ -49,6 +49,10 @@
 # Errors & Exceptions
 #
 # ---#
+class ConnectionError(Exception):
+    pass
+
+# ---#
 class ConversionError(Exception):
     pass
 

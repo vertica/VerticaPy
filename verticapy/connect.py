@@ -121,7 +121,7 @@ name: str
 def close_connection():
     """
 ---------------------------------------------------------------------------
-Close the Database connection.
+Closes the Database connection.
     """
     if verticapy.options["connection"]["conn"] and not (
         verticapy.options["connection"]["conn"].closed()
@@ -158,13 +158,20 @@ def current_connection():
     """
 ---------------------------------------------------------------------------
 Returns the current Database connection.
+If the connection is closed, it will try to connect using the 
+existing connection.
+If it fails, it will try to reconnect using the stored credential.
+If it fails, it will try to connect using the Auto Connection.
+Otherwise, it will try to connect to the Verticalab Environment.
     """
-    from verticapy.connect import read_auto_connect, connect
 
+    # Look if the connection does not exist or is closed
     if (
         not (verticapy.options["connection"]["conn"])
         or verticapy.options["connection"]["conn"].closed()
     ):
+
+        # Connection using the existing credentials
         if (
             verticapy.options["connection"]["section"]
             and verticapy.options["connection"]["dsn"]
@@ -173,8 +180,23 @@ Returns the current Database connection.
                 verticapy.options["connection"]["section"],
                 verticapy.options["connection"]["dsn"],
             )
+
         else:
-            read_auto_connect()
+
+            try:
+                # Connection using the Auto Connection
+                read_auto_connect()
+
+            except Exception as e:
+
+                try:
+                    # Connection to the Verticalab environment
+                    conn = verticalab_connection()
+                    verticapy.options["connection"]["conn"] = conn
+
+                except:
+                    raise(e)
+
     return verticapy.options["connection"]["conn"]
 
 
@@ -248,7 +270,6 @@ string
     os.makedirs(path, 0o700, exist_ok=True)
     path = os.path.join(path, "connections.verticapy")
     return path
-
 
 # ---#
 def new_connection(
@@ -432,8 +453,27 @@ dsn: str, optional
 Returns
 -------
 conn
-	Database connection
+	Database connection.
 	"""
     check_types([("dsn", dsn, [str])])
     conn = vertica_python.connect(**read_dsn(section, dsn))
     return conn
+
+# ---#
+def verticalab_connection():
+    """
+---------------------------------------------------------------------------
+Returns the Verticalab connection if possible.
+
+Returns
+-------
+conn
+    Database connection.
+    """
+    conn_info = {'host': 'host.docker.internal',
+                 'port': 5433,
+                 'user': 'dbadmin',
+                 'password': '',
+                 'database': 'demo',
+                 'backup_server_node': ['localhost']}
+    return vertica_python.connect(**conn_info)
