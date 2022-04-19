@@ -456,7 +456,7 @@ vColumns : vColumn
                         columns[0], columns[1], self.__genSQL__(),
                     )
                 )
-                query = "SELECT CORR({0}{1}, {2}{3}) FROM {}".format(
+                query = "SELECT CORR({0}{1}, {2}{3}) FROM {4}".format(
                     columns[0], cast_0, columns[1], cast_1, table
                 )
                 title = "Computes the {0} correlation between {1} and {2}.".format(

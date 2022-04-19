@@ -148,13 +148,13 @@ dsn: str, optional
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
-    verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
+    verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
 
 
 # ---#
-def current_conn():
+def current_connection():
     """
 ---------------------------------------------------------------------------
 Returns the current Database connection.
@@ -184,7 +184,7 @@ def current_cursor():
 ---------------------------------------------------------------------------
 Returns the current Database cursor.
     """
-    return current_conn().cursor()
+    return current_connection().cursor()
 
 
 # ---#
@@ -240,8 +240,8 @@ folder in the user's home directory.
 Returns
 -------
 string
-        the full path to the auto-connection file.
-        """
+    the full path to the auto-connection file.
+    """
     if "VERTICAPY_CONNECTIONS" in os.environ:
         return os.environ["VERTICAPY_CONNECTIONS"]
     path = os.path.join(os.path.expanduser("~"), ".vertica")
@@ -416,7 +416,7 @@ dict
 
 
 # ---#
-def vertica_conn(section: str, dsn: str = ""):
+def vertica_connection(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
