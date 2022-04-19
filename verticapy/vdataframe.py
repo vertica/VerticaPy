@@ -433,7 +433,7 @@ vColumns : vColumn
                     f"vColumn {column} must be numerical to compute the {method_name} Matrix{method_type}."
                 )
         if len(columns) == 1:
-            if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
+            if method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"):
                 return 1.0
             elif method == "cov":
                 return self[columns[0]].var()
@@ -443,7 +443,7 @@ vColumns : vColumn
                 return pre_comp_val
             cast_0 = "::int" if (self[columns[0]].isbool()) else ""
             cast_1 = "::int" if (self[columns[1]].isbool()) else ""
-            if method in ("pearson", "spearman"):
+            if method in ("pearson", "spearman", "spearmanD",):
                 if columns[1] == columns[0]:
                     return 1
                 table = (
@@ -456,10 +456,10 @@ vColumns : vColumn
                         columns[0], columns[1], self.__genSQL__(),
                     )
                 )
-                query = "SELECT CORR({}{}, {}{}) FROM {}".format(
+                query = "SELECT CORR({0}{1}, {2}{3}) FROM {}".format(
                     columns[0], cast_0, columns[1], cast_1, table
                 )
-                title = "Computes the {} correlation between {} and {}.".format(
+                title = "Computes the {0} correlation between {1} and {2}.".format(
                     method, columns[0], columns[1]
                 )
             elif method == "biserial":
@@ -642,15 +642,16 @@ vColumns : vColumn
                         if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                             nb_precomputed += 1
                 assert (nb_precomputed <= n * n / 3) and (
-                    method in ("pearson", "spearman")
+                    method in ("pearson", "spearman", "spearmanD",)
                 )
+                fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
                 table = (
                     self.__genSQL__()
                     if (method == "pearson")
                     else "(SELECT {0} FROM {1}) spearman_table".format(
                         ", ".join(
                             [
-                                "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
+                                "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
                                 for column in columns
                             ]
                         ),
@@ -681,7 +682,7 @@ vColumns : vColumn
                     matrix[idx + 1][0] = column
                 title = f"Correlation Matrix ({method})"
             except:
-                if method in ("pearson", "spearman", "kendall", "biserial", "cramer"):
+                if method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"):
                     title_query = "Computing all Correlations in a single query"
                     title = f"Correlation Matrix ({method})"
                     if method == "biserial":
@@ -711,7 +712,7 @@ vColumns : vColumn
                             if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                                 all_list += [str(pre_comp_val)]
                                 nb_precomputed += 1
-                            elif method in ("pearson", "spearman"):
+                            elif method in ("pearson", "spearman", "spearmanD"):
                                 all_list += [
                                     "ROUND(CORR({0}{1}, {2}{3}), {4})".format(
                                         columns[i], cast_i, columns[j], cast_j, round_nb
@@ -744,9 +745,10 @@ vColumns : vColumn
                                 ]
                             else:
                                 raise
-                    if method == "spearman":
+                    if method in ("spearman", "spearmanD"):
+                        fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
                         rank = [
-                            "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
+                            "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
                             for column in columns
                         ]
                         table = "(SELECT {0} FROM {1}) rank_spearman_table".format(
@@ -805,7 +807,7 @@ vColumns : vColumn
                     1
                     if (
                         method
-                        in ("pearson", "spearman", "kendall", "biserial", "cramer")
+                        in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer")
                     )
                     else None
                 )
@@ -899,7 +901,7 @@ vColumns : vColumn
                     "vColumn {column} must be numerical to compute the "
                     f"{method_name} Vector{method_type}."
                 )
-        if method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1):
+        if method in ("spearman", "spearmanD", "pearson", "kendall", "cov") and (len(cols) >= 1):
             try:
                 fail = 0
                 cast_i = "::int" if (self[focus].isbool()) else ""
@@ -920,7 +922,7 @@ vColumns : vColumn
                     if pre_comp_val != "VERTICAPY_NOT_PRECOMPUTED":
                         all_list += [str(pre_comp_val)]
                         nb_precomputed += 1
-                    elif method in ("pearson", "spearman"):
+                    elif method in ("pearson", "spearman", "spearmanD"):
                         all_list += [
                             "ROUND(CORR({}{}, {}{}), {})".format(
                                 focus, cast_i, column, cast_j, round_nb
@@ -953,9 +955,10 @@ vColumns : vColumn
                                 focus, cast_i, column, cast_j
                             )
                         ]
-                if method == "spearman":
+                if method in ("spearman", "spearmanD"):
+                    fun = "DENSE_RANK" if method == "spearmanD" else "RANK"
                     rank = [
-                        "RANK() OVER (ORDER BY {0}) AS {0}".format(column)
+                        "{0}() OVER (ORDER BY {1}) AS {1}".format(fun, column)
                         for column in all_cols
                     ]
                     table = "(SELECT {0} FROM {1}) rank_spearman_table".format(
@@ -985,7 +988,7 @@ vColumns : vColumn
             except:
                 fail = 1
         if not (
-            method in ("spearman", "pearson", "kendall", "cov") and (len(cols) >= 1)
+            method in ("spearman", "spearmanD", "pearson", "kendall", "cov") and (len(cols) >= 1)
         ) or (fail):
             vector = []
             for column in cols:
@@ -1009,7 +1012,7 @@ vColumns : vColumn
                 vmin = None
             vmax = (
                 1
-                if (method in ("pearson", "spearman", "kendall", "biserial", "cramer"))
+                if (method in ("pearson", "spearman", "spearmanD", "kendall", "biserial", "cramer"))
                 else None
             )
             if "cmap" not in style_kwds:
@@ -1289,6 +1292,7 @@ vColumns : vColumn
                     "cov": {},
                     "pearson": {},
                     "spearman": {},
+                    "spearmanD": {},
                     "kendall": {},
                     "cramer": {},
                     "biserial": {},
@@ -1309,6 +1313,7 @@ vColumns : vColumn
                 "cov",
                 "pearson",
                 "spearman",
+                "spearmanD",
                 "kendall",
                 "cramer",
                 "biserial",
@@ -1608,6 +1613,8 @@ vColumns : vColumn
         Method to use to compute the correlation.
             pearson   : Pearson's correlation coefficient (linear).
             spearman  : Spearman's correlation coefficient (monotonic - rank based).
+            spearmanD : Spearman's correlation coefficient using the DENSE RANK
+                        function instead of the RANK function.
             kendall   : Kendall's correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
                        \u26A0 Warning : This method uses a CROSS JOIN during computation 
@@ -1664,7 +1671,7 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "biserial", "cramer"],
+                    ["pearson", "kendall", "spearman", "spearmanD", "biserial", "cramer"],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("confidence", confidence, [bool]),
@@ -4259,6 +4266,8 @@ vColumns : vColumn
         Method to use to compute the correlation.
             pearson   : Pearson's correlation coefficient (linear).
             spearman  : Spearman's correlation coefficient (monotonic - rank based).
+            spearmanD : Spearman's correlation coefficient using the DENSE RANK
+                        function instead of the RANK function.
             kendall   : Kendall's correlation coefficient (similar trends). The method
                         will compute the Tau-B coefficient.
                         \u26A0 Warning : This method uses a CROSS JOIN during computation 
@@ -4301,7 +4310,7 @@ vColumns : vColumn
                 (
                     "method",
                     method,
-                    ["pearson", "kendall", "spearman", "biserial", "cramer"],
+                    ["pearson", "kendall", "spearman", "spearmanD", "biserial", "cramer"],
                 ),
                 ("round_nb", round_nb, [int, float]),
                 ("focus", focus, [str]),
@@ -4348,6 +4357,8 @@ vColumns : vColumn
         Method to use to compute the correlation.
             pearson   : Pearson's correlation coefficient (linear).
             spearman  : Spearman's correlation coefficient (monotonic - rank based).
+            spearmanD : Spearman's correlation coefficient using the DENSE RANK
+                        function instead of the RANK function.
             kendall   : Kendall's correlation coefficient (similar trends). 
                         Use kendallA to compute Tau-A, kendallB or kendall to compute 
                         Tau-B and kendallC to compute Tau-C.
@@ -4383,6 +4394,7 @@ vColumns : vColumn
                         "kendallb",
                         "kendallc",
                         "spearman",
+                        "spearmanD",
                         "biserial",
                         "cramer",
                     ],
@@ -4414,56 +4426,32 @@ vColumns : vColumn
         if method in ("pearson", "biserial"):
             x = val * math.sqrt((n - 2) / (1 - val * val))
             pvalue = 2 * t.sf(abs(x), n - 2)
-        elif method == "spearman":
+        elif method in ("spearman", "spearmanD"):
             z = math.sqrt((n - 3) / 1.06) * 0.5 * log((1 + val) / (1 - val))
             pvalue = 2 * norm.sf(abs(z))
         elif method == "kendall":
             cast_i = "::int" if (self[column1].isbool()) else ""
             cast_j = "::int" if (self[column2].isbool()) else ""
-            n_c = "(SUM(((x.{}{} < y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} > y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
+            n_c = ("(SUM(((x.{0}{1} < y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                   "(x.{0}{1} > y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2").format(
                 column1,
                 cast_i,
-                column1,
-                cast_i,
-                column2,
-                cast_j,
-                column2,
-                cast_j,
-                column1,
-                cast_i,
-                column1,
-                cast_i,
-                column2,
-                cast_j,
                 column2,
                 cast_j,
             )
-            n_d = "(SUM(((x.{}{} > y.{}{} AND x.{}{} < y.{}{}) OR (x.{}{} < y.{}{} AND x.{}{} > y.{}{}))::int))/2".format(
+            n_d = ("(SUM(((x.{0}{1} > y.{0}{1} AND x.{2}{3} < y.{2}{3}) OR "
+                   "(x.{0}{1} < y.{0}{1} AND x.{2}{3} > y.{2}{3}))::int))/2").format(
                 column1,
                 cast_i,
-                column1,
-                cast_i,
-                column2,
-                cast_j,
-                column2,
-                cast_j,
-                column1,
-                cast_i,
-                column1,
-                cast_i,
-                column2,
-                cast_j,
                 column2,
                 cast_j,
             )
-            table = "(SELECT {} FROM {}) x CROSS JOIN (SELECT {} FROM {}) y".format(
-                ", ".join([column1, column2]),
-                self.__genSQL__(),
+            table = "(SELECT {0} FROM {1}) x CROSS JOIN (SELECT {0} FROM {1}) y".format(
                 ", ".join([column1, column2]),
                 self.__genSQL__(),
             )
             nc, nd = executeSQL(
-                "SELECT {}::float, {}::float FROM {};".format(n_c, n_d, table),
+                f"SELECT {n_c}::float, {n_d}::float FROM {table};",
                 title="Computing nc and nd.",
                 method="fetchrow",
             )
@@ -4472,14 +4460,30 @@ vColumns : vColumn
                 Z = 3 * (nc - nd) / math.sqrt(n * (n - 1) * (2 * n + 5) / 2)
             elif kendall_type in ("b", "c"):
                 vt, v1_0, v2_0 = executeSQL(
-                    "SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(
+                    """SELECT 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1)), 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) 
+                       FROM 
+                            (SELECT 
+                                {0}, 
+                                COUNT(*) AS verticapy_cnt 
+                             FROM {1} GROUP BY 1) VERTICAPY_SUBTABLE""".format(
                         column1, self.__genSQL__()
                     ),
                     title="Computing vti.",
                     method="fetchrow",
                 )
                 vu, v1_1, v2_1 = executeSQL(
-                    "SELECT SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), SUM(verticapy_cnt * (verticapy_cnt - 1)), SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) FROM (SELECT {}, COUNT(*) AS verticapy_cnt FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(
+                    """SELECT 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1)), 
+                            SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) 
+                       FROM 
+                            (SELECT 
+                                {0}, 
+                                COUNT(*) AS verticapy_cnt 
+                             FROM {1} GROUP BY 1) VERTICAPY_SUBTABLE""".format(
                         column2, self.__genSQL__()
                     ),
                     title="Computing vui.",
@@ -4490,8 +4494,13 @@ vColumns : vColumn
                 v2 = v2_0 * v2_1 / (9 * n * (n - 1) * (n - 2))
                 Z = (nc - nd) / math.sqrt((v0 - vt - vu) / 18 + v1 + v2)
                 if kendall_type == "c":
-                    sql = "SELECT APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
-                        column1, column2, self.__genSQL__(), column1, column2
+                    sql = """SELECT 
+                                APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
+                                APPROXIMATE_COUNT_DISTINCT({1}) AS r 
+                             FROM {2} 
+                             WHERE {0} IS NOT NULL 
+                               AND {1} IS NOT NULL""".format(
+                        column1, column2, self.__genSQL__()
                     )
                     k, r = executeSQL(
                         sql,
@@ -4502,8 +4511,13 @@ vColumns : vColumn
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
             pvalue = 2 * norm.sf(abs(Z))
         elif method == "cramer":
-            sql = "SELECT APPROXIMATE_COUNT_DISTINCT({}) AS k, APPROXIMATE_COUNT_DISTINCT({}) AS r FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
-                column1, column2, self.__genSQL__(), column1, column2
+            sql = """SELECT 
+                        APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
+                        APPROXIMATE_COUNT_DISTINCT({1}) AS r 
+                     FROM {2} 
+                     WHERE {0} IS NOT NULL 
+                       AND {1} IS NOT NULL""".format(
+                column1, column2, self.__genSQL__()
             )
             k, r = executeSQL(
                 sql,
@@ -6240,16 +6254,17 @@ vColumns : vColumn
             / stacked_bar / stacked_hist
                 x: vColumn used to compute the first category.
                 y: vColumn used to compute the second category.
-                z: [OPTIONAL] numerical expression representing the different categories values. 
+                z: [OPTIONAL] numerical expression representing the different categories 
+                    values. 
                     If empty, COUNT(*) is used as the default aggregation.
-            biserial / boxplot / pearson / kendall / pearson / spearman
+            biserial / boxplot / pearson / kendall / pearson / spearman / spearmanD
                 x: list of the vColumns used to draw the Chart.
             bubble / scatter
                 x: numerical vColumn.
                 y: numerical vColumn.
                 z: numerical vColumn (bubble size in case of bubble plot, third 
                      dimension in case of scatter plot)
-                c: [OPTIONAL] [OPTIONAL] vColumn used to compute the different categories.
+                c: [OPTIONAL] vColumn used to compute the different categories.
             candlestick
                 x: date type vColumn.
                 y: Can be a numerical vColumn or list of 5 expressions 
@@ -6261,7 +6276,8 @@ vColumns : vColumn
                     If empty, COUNT(*) is used as the default aggregation.
             spider
                 x: vColumn used to compute the different categories.
-                y: [OPTIONAL] Can be a list of the expressions used to draw the Plot or a single expression. 
+                y: [OPTIONAL] Can be a list of the expressions used to draw the Plot 
+                    or a single expression. 
                     If empty, COUNT(*) is used as the default aggregation.
     aggregate: bool, optional
         If set to True, the input vColumns will be aggregated.
@@ -6299,6 +6315,8 @@ vColumns : vColumn
             stacked_bar  : Stacked Bar Chart
             stacked_hist : Stacked Histogram
             spearman     : Spearman's Correlation Matrix
+            spearmanD    : Spearman's Correlation Matrix using the DENSE RANK
+                           function instead of the RANK function.
     width: int, optional
         Chart Width.
     height: int, optional
@@ -6363,6 +6381,7 @@ vColumns : vColumn
                         "cramer",
                         "biserial",
                         "spearman",
+                        "spearmanD",
                     ],
                 ),
                 ("options", options, [dict]),
