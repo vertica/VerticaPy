@@ -4695,10 +4695,7 @@ vColumns : vColumn
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
         check_types(
-            [
-                ("desc", desc, [bool]),
-                ("sort_result", sort_result, [bool]),
-            ]
+            [("desc", desc, [bool]), ("sort_result", sort_result, [bool]),]
         )
         result = self.aggregate(func=["count", "percent"], columns=columns, **agg_kwds,)
         if sort_result:

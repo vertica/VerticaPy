@@ -1970,9 +1970,7 @@ The tablesample attributes are the same than the parameters.
                 column = col
         if idx is None:
             raise MissingColumn(
-                "The Column '{}' doesn't exist.".format(
-                    column.lower().replace('"', "")
-                )
+                "The Column '{}' doesn't exist.".format(column.lower().replace('"', ""))
             )
         n, sort = len(self[column]), []
         for i in range(n):

@@ -66,7 +66,14 @@ import warnings
 # VerticaPy Modules
 import verticapy
 from verticapy.errors import QueryError
-from verticapy import executeSQL, vdf_from_relation, get_magic_options, vDataFrame, set_option, tablesample
+from verticapy import (
+    executeSQL,
+    vdf_from_relation,
+    get_magic_options,
+    vDataFrame,
+    set_option,
+    tablesample,
+)
 
 
 import re, time
@@ -115,9 +122,9 @@ def sql(line, cell="", local_ns=None):
         queries = re.sub("--.+\n", "", queries)
         queries = queries.replace("\t", " ").replace("\n", " ")
         queries = re.sub(" +", " ", queries)
-        variables = re.findall(':[A-Za-z0-9_]+', queries)
+        variables = re.findall(":[A-Za-z0-9_]+", queries)
         for v in variables:
-            val = locals()['local_ns'][v[1:]]
+            val = locals()["local_ns"][v[1:]]
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
             elif isinstance(val, tablesample):
@@ -204,7 +211,8 @@ def sql(line, cell="", local_ns=None):
                 executeSQL(query, method="copy", path=file_name, print_time_sql=False)
 
             elif (i < n - 1) or (
-                (i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))
+                (i == n - 1)
+                and (query_type.lower() not in ("select", "with", "undefined"))
             ):
 
                 executeSQL(query, print_time_sql=False)

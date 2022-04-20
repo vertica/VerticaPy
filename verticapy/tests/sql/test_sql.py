@@ -19,7 +19,7 @@ import warnings, os
 
 # VerticaPy
 import verticapy
-from verticapy import drop, set_option
+from verticapy import drop, set_option, tablesample
 from verticapy.datasets import load_titanic
 from verticapy.sql import sql
 
@@ -35,8 +35,12 @@ def titanic_vd():
 
 class TestSQL:
     def test_sql(self, titanic_vd):
+
+        # SQL line Test
         result = sql("", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
+
+        # SQL cell Test
         result = sql(
             "",
             """DROP MODEL IF EXISTS model_test;
@@ -48,13 +52,14 @@ class TestSQL:
         assert result["predict"][0] == pytest.approx(0.395335892040411)
         result = sql("", "DROP MODEL IF EXISTS model_test; SELECT 1 AS col;;")
         assert result["col"][0] == 1
+
+        # Test: Reading SQL file
         result = sql(
             "-i {}/tests/sql/queries.sql".format(os.path.dirname(verticapy.__file__)),
             "",
         )
         assert result["predict"][0] == pytest.approx(0.395335892040411)
-        result = sql("DROP MODEL IF EXISTS model_test; SELECT 1 AS col;;", "")
-        assert result["col"][0] == 1
+
         # Export to JSON
         result = sql(
             "-o verticapy_test_sql.json",
@@ -64,9 +69,9 @@ class TestSQL:
             file = open("verticapy_test_sql.json", "r")
             result = file.read()
             print(result)
-            assert (
-                result
-                == '[\n{"age": 80.000, "fare": 30.00000},\n{"age": 76.000, "fare": 78.85000},\n]'
+            assert result == (
+                '[\n{"age": 80.000, "fare": 30.00000},'
+                '\n{"age": 76.000, "fare": 78.85000},\n]'
             )
         except:
             os.remove("verticapy_test_sql.json")
@@ -74,6 +79,7 @@ class TestSQL:
             raise
         os.remove("verticapy_test_sql.json")
         file.close()
+
         # Export to CSV
         result = sql(
             "-o verticapy_test_sql.csv",
@@ -89,3 +95,13 @@ class TestSQL:
             raise
         os.remove("verticapy_test_sql.csv")
         file.close()
+
+        # Test on the variables
+        result = sql("", "SELECT * FROM :titanic_vd;")
+        assert result.shape() == (1234, 14)
+        table = "titanic"
+        result = sql("", "SELECT * FROM :titanic;")
+        assert result.shape() == (1234, 14)
+        tb = tablesample({"x": [4, 5, 6], "y": [1, 2, 3]})
+        result = sql("", "SELECT AVG(x) FROM :tb;")
+        assert result == 5
