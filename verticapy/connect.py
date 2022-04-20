@@ -473,7 +473,7 @@ conn
     Database connection.
     """
     conn_info = {
-        "host": "host.docker.internal",
+        "host": "vertica-demo",
         "port": 5433,
         "user": "dbadmin",
         "password": "",

@@ -277,7 +277,7 @@ class TestvDFPreprocessing:
             },
         )
 
-        result = titanic_copy.count(
+        result = titanic_copy.count_percent(
             ["age", "fare", "embarked", "boat", "cabin", "body"]
         )
 
