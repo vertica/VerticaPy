@@ -399,6 +399,8 @@ p: int, optional
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
+    report = classification_report
+
     # ---#
     def cutoff_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds

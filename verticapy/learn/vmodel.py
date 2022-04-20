@@ -3034,6 +3034,8 @@ class BinaryClassifier(Classifier):
             cutoff=cutoff,
         )
 
+    report = classification_report
+
     # ---#
     def confusion_matrix(self, cutoff: float = 0.5):
         """
@@ -3399,6 +3401,8 @@ class MulticlassClassifier(Classifier):
         if not (labels):
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+
+    report = classification_report
 
     # ---#
     def confusion_matrix(
@@ -4180,6 +4184,8 @@ class Regressor(Supervised):
                     ],
                 }
             )
+
+    report = regression_report
 
     # ---#
     def score(self, method: str = "r2"):

@@ -2400,6 +2400,7 @@ vColumns : vColumn
                                 elem for elem in current_cursor().fetchone()
                             ]
                 except:
+
                     for i, elem in enumerate(agg):
                         values[columns[i]] = []
                         for j, agg_fun in enumerate(elem):

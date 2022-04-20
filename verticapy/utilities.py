@@ -1119,9 +1119,11 @@ read_json : Ingests a JSON file into the Vertica database.
         )
     else:
         if not (temporary_local_table):
-            input_relation = '{}.{}'.format(quote_ident(schema), quote_ident(table_name))
+            input_relation = "{}.{}".format(
+                quote_ident(schema), quote_ident(table_name)
+            )
         else:
-            input_relation = 'v_temp_schema.{}'.format(quote_ident(table_name))
+            input_relation = "v_temp_schema.{}".format(quote_ident(table_name))
         f = open(path, "r")
         file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
         f.close()
@@ -1976,9 +1978,7 @@ The tablesample attributes are the same than the parameters.
                 column = col
         if idx is None:
             raise MissingColumn(
-                "The Column '{}' doesn't exist.".format(
-                    column.lower().replace('"', "")
-                )
+                "The Column '{}' doesn't exist.".format(column.lower().replace('"', ""))
             )
         n, sort = len(self[column]), []
         for i in range(n):
