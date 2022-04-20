@@ -587,7 +587,7 @@ p: int, optional
         inplace: bool = True,
         cutoff: float = -1,
         all_classes: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
@@ -887,7 +887,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
-        **kwargs
+        **kwargs,
     ):
         check_types(
             [
@@ -972,9 +972,7 @@ xlim: list, optional
                 for elem in columns:
                     if not (vdf[elem].isnum()):
                         raise TypeError(
-                            "Cannot compute KDE for non-numerical columns. {} is not numerical.".format(
-                                elem
-                            )
+                            f"Cannot compute KDE for non-numerical columns. {elem} is not numerical."
                         )
                 if kernel == "gaussian":
                     fkernel = "EXP(-1 / 2 * POWER({}, 2)) / SQRT(2 * PI())"
@@ -1001,15 +999,13 @@ xlim: list, optional
                         distance = []
                         for i in range(len(columns)):
                             distance += [
-                                "POWER({} - {}, {})".format(columns[i], elem[i], p)
+                                "POWER({0} - {1}, {2})".format(columns[i], elem[i], p)
                             ]
                         distance = " + ".join(distance)
-                        distance = "POWER({}, {})".format(distance, 1.0 / p)
-                        fkernel_tmp = fkernel.replace(
-                            "{}", "{} / {}".format(distance, h)
-                        )
-                        L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
-                    query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
+                        distance = "POWER({0}, {1})".format(distance, 1.0 / p)
+                        fkernel_tmp = fkernel.format(f"{distance} / {h}")
+                        L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
+                    query = "SELECT {0} FROM {1}".format(", ".join(L), vdf.__genSQL__())
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1027,21 +1023,18 @@ xlim: list, optional
                         x_min, x_max = self.parameters["xlim"][idx]
                         N = vdf[column].count()
                     except:
-                        warning_message = "Wrong xlim for the vcolumn {}.\nThe max and the min will be used instead.".format(
-                            column,
+                        warning_message = (
+                            f"Wrong xlim for the vcolumn {column}.\n"
+                            "The max and the min will be used instead."
                         )
                         warnings.warn(warning_message, Warning)
-                        x_min, x_max, N = (
-                            vdf[column].min(),
-                            vdf[column].max(),
-                            vdf[column].count(),
-                        )
+                        x_min, x_max, N = vdf.agg(
+                            func=["min", "max", "count"], columns=[column]
+                        ).transpose()[column]
                 else:
-                    x_min, x_max, N = (
-                        vdf[column].min(),
-                        vdf[column].max(),
-                        vdf[column].count(),
-                    )
+                    x_min, x_max, N = vdf.agg(
+                        func=["min", "max", "count"], columns=[column]
+                    ).transpose()[column]
                 x_vars += [
                     [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
                 ]
@@ -1065,7 +1058,11 @@ xlim: list, optional
             self.parameters["p"],
         )
         if self.verticapy_store:
-            query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
+            query = """CREATE TABLE {0}_KernelDensity_Map AS    
+                            SELECT 
+                                {1}, 0.0::float AS KDE 
+                            FROM {2} 
+                            LIMIT 0""".format(
                 self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
             executeSQL(query, print_time_sql=False)
@@ -1075,22 +1072,23 @@ xlim: list, optional
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
+                query = "INSERT INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )
-                executeSQL(query, "Computing the KDE [Step {}].".format(idx))
+                executeSQL(query, f"Computing the KDE [Step {idx}].")
                 executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
-            self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
-            self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.map = "{0}_KernelDensity_Map".format(self.name.replace('"', ""))
+            self.tree_name = "{0}_KernelDensity_Tree".format(self.name.replace('"', ""))
             self.y = "KDE"
 
             from verticapy.learn.tree import DecisionTreeRegressor
 
             model = DecisionTreeRegressor(
                 name=self.tree_name,
+                max_features=len(self.X),
                 max_leaf_nodes=self.parameters["max_leaf_nodes"],
                 max_depth=self.parameters["max_depth"],
                 min_samples_leaf=self.parameters["min_samples_leaf"],
@@ -1383,7 +1381,7 @@ p: int, optional
         X: list = [],
         name: str = "",
         inplace: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------

@@ -59,7 +59,10 @@ class TestKernelDensity:
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare"])
         current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
+            """SELECT 
+                    model_name 
+               FROM verticapy.models 
+               WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"""
         )
         assert current_cursor().fetchone()[0] in (
             "model_test_drop",
@@ -68,7 +71,10 @@ class TestKernelDensity:
 
         model_test.drop()
         current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
+            """SELECT 
+                    model_name 
+               FROM verticapy.models 
+               WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"""
         )
         assert current_cursor().fetchone() is None
 
