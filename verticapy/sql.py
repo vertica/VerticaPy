@@ -66,7 +66,7 @@ import warnings
 # VerticaPy Modules
 import verticapy
 from verticapy.errors import QueryError
-from verticapy import executeSQL, vdf_from_relation, get_magic_options, vDataFrame
+from verticapy import executeSQL, vdf_from_relation, get_magic_options, vDataFrame, set_option, tablesample
 
 
 import re, time
@@ -74,159 +74,183 @@ import re, time
 
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
-    queries = line if (not (cell) and (line)) else cell
 
-    has_option = (len(queries) > 1 and queries[0] == "-" and queries[1] != "-") or (
-        (cell) and (line)
-    )
-    options = {}
+    # We don't want to display the query/time twice if the options are still on
+    # So we save the previous configuration and turn them off.
+    sql_on, time_on = verticapy.options["sql_on"], verticapy.options["time_on"]
+    set_option("sql_on", False)
+    set_option("time_on", False)
 
-    if has_option:
+    try:
 
-        all_options_dict = get_magic_options(line)
+        queries = line if (not (cell) and (line)) else cell
 
-        for option in all_options_dict:
+        has_option = (len(queries) > 1 and queries[0] == "-" and queries[1] != "-") or (
+            (cell) and (line)
+        )
+        options = {}
 
-            if option.lower() in ("-i", "-o",):
-                x = option.lower()[1:]
-                options[x] = all_options_dict[option]
+        if has_option:
 
-            elif verticapy.options["print_info"]:
-                warning_message = (
-                    f"\u26A0 Warning : The option '{option}' doesn't "
-                    "exist, it was skipped."
-                )
-                warnings.warn(warning_message, Warning)
+            all_options_dict = get_magic_options(line)
 
-    if "i" in options:
-        f = open(options["i"], "r")
-        queries = f.read()
-        f.close()
+            for option in all_options_dict:
 
-    queries = re.sub("--.+\n", "", queries)
-    queries = queries.replace("\t", " ").replace("\n", " ")
-    queries = re.sub(" +", " ", queries)
+                if option.lower() in ("-i", "-o",):
+                    x = option.lower()[1:]
+                    options[x] = all_options_dict[option]
 
-    n, i, all_split = len(queries), 0, []
-
-    while i < n and queries[n - i - 1] in (";", " ", "\n"):
-        i += 1
-
-    queries = queries[: n - i]
-    i, n = 0, n - i
-
-    while i < n:
-
-        if queries[i] == '"':
-            i += 1
-            while i < n and queries[i] != '"':
-                i += 1
-        elif queries[i] == "'":
-            i += 1
-            while i < n and queries[i] != "'":
-                i += 1
-        elif queries[i] == ";":
-            all_split += [i]
-        i += 1
-
-    all_split = [0] + all_split + [n]
-    m = len(all_split)
-    queries = [queries[all_split[i] : all_split[i + 1]] for i in range(m - 1)]
-    n = len(queries)
-
-    for i in range(n):
-
-        query = queries[i]
-        while len(query) > 0 and (query[-1] in (";", " ")):
-            query = query[0:-1]
-        while len(query) > 0 and (query[0] in (";", " ")):
-            query = query[1:]
-        queries[i] = query
-
-    queries_tmp, i = [], 0
-
-    while i < n:
-
-        query = queries[i]
-        if (i < n - 1) and (queries[i + 1].lower() == "end"):
-            query += "; {}".format(queries[i + 1])
-            i += 1
-        queries_tmp += [query]
-        i += 1
-
-    queries, n = queries_tmp, len(queries_tmp)
-    result, start_time = None, time.time()
-
-    for i in range(n):
-
-        query = queries[i]
-
-        if query.split(" ")[0]:
-            query_type = query.split(" ")[0].upper()
-        else:
-            query_type = query.split(" ")[1].upper()
-
-        if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
-            query_type = "undefined"
-
-        if (query_type == "COPY") and ("from local" in query.lower()):
-
-            query = re.split("from local", query, flags=re.IGNORECASE)
-            if query[1].split(" ")[0]:
-                file_name = query[1].split(" ")[0]
-            else:
-                file_name = query[1].split(" ")[1]
-            query = (
-                "".join(query[0])
-                + "FROM"
-                + "".join(query[1]).replace(file_name, "STDIN")
-            )
-            if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
-                file_name = file_name[1:-1]
-
-            executeSQL(query, method="copy", path=file_name, print_time_sql=False)
-
-        elif (i < n - 1) or (
-            (i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))
-        ):
-
-            executeSQL(query, print_time_sql=False)
-            if verticapy.options["print_info"]:
-                print(query_type)
-
-        else:
-
-            error = ""
-            try:
-                result = vdf_from_relation("({}) x".format(query))
-            except:
-                try:
-                    final_result = executeSQL(
-                        query, method="fetchfirstelem", print_time_sql=False
+                elif verticapy.options["print_info"]:
+                    warning_message = (
+                        f"\u26A0 Warning : The option '{option}' doesn't "
+                        "exist, it was skipped."
                     )
-                    if final_result and verticapy.options["print_info"]:
-                        print(final_result[0])
-                    elif verticapy.options["print_info"]:
-                        print(query_type)
-                except Exception as e:
-                    error = e
+                    warnings.warn(warning_message, Warning)
 
-            if error:
-                raise QueryError(error)
+        if "i" in options:
+            f = open(options["i"], "r")
+            queries = f.read()
+            f.close()
 
-    elapsed_time = round(time.time() - start_time, 3)
+        queries = re.sub("--.+\n", "", queries)
+        queries = queries.replace("\t", " ").replace("\n", " ")
+        queries = re.sub(" +", " ", queries)
+        variables = re.findall(':[A-Za-z0-9_]+', queries)
+        for v in variables:
+            val = locals()['local_ns'][v[1:]]
+            if isinstance(val, vDataFrame):
+                val = val.__genSQL__()
+            elif isinstance(val, tablesample):
+                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+            queries = queries.replace(v, str(val))
 
-    if verticapy.options["print_info"]:
-        display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+        n, i, all_split = len(queries), 0, []
 
-    if isinstance(result, vDataFrame) and "o" in options:
+        while i < n and queries[n - i - 1] in (";", " ", "\n"):
+            i += 1
 
-        if options["o"][-4:] == "json":
-            result.to_json(options["o"])
-        else:
-            result.to_csv(options["o"])
+        queries = queries[: n - i]
+        i, n = 0, n - i
 
-    return result
+        while i < n:
+
+            if queries[i] == '"':
+                i += 1
+                while i < n and queries[i] != '"':
+                    i += 1
+            elif queries[i] == "'":
+                i += 1
+                while i < n and queries[i] != "'":
+                    i += 1
+            elif queries[i] == ";":
+                all_split += [i]
+            i += 1
+
+        all_split = [0] + all_split + [n]
+        m = len(all_split)
+        queries = [queries[all_split[i] : all_split[i + 1]] for i in range(m - 1)]
+        n = len(queries)
+
+        for i in range(n):
+
+            query = queries[i]
+            while len(query) > 0 and (query[-1] in (";", " ")):
+                query = query[0:-1]
+            while len(query) > 0 and (query[0] in (";", " ")):
+                query = query[1:]
+            queries[i] = query
+
+        queries_tmp, i = [], 0
+
+        while i < n:
+
+            query = queries[i]
+            if (i < n - 1) and (queries[i + 1].lower() == "end"):
+                query += "; {}".format(queries[i + 1])
+                i += 1
+            queries_tmp += [query]
+            i += 1
+
+        queries, n = queries_tmp, len(queries_tmp)
+        result, start_time = None, time.time()
+
+        for i in range(n):
+
+            query = queries[i]
+
+            if query.split(" ")[0]:
+                query_type = query.split(" ")[0].upper()
+            else:
+                query_type = query.split(" ")[1].upper()
+
+            if len(query_type) > 1 and query_type[0:2] in ("/*", "--"):
+                query_type = "undefined"
+
+            if (query_type == "COPY") and ("from local" in query.lower()):
+
+                query = re.split("from local", query, flags=re.IGNORECASE)
+                if query[1].split(" ")[0]:
+                    file_name = query[1].split(" ")[0]
+                else:
+                    file_name = query[1].split(" ")[1]
+                query = (
+                    "".join(query[0])
+                    + "FROM"
+                    + "".join(query[1]).replace(file_name, "STDIN")
+                )
+                if (file_name[0] == file_name[-1]) and (file_name[0] in ('"', "'")):
+                    file_name = file_name[1:-1]
+
+                executeSQL(query, method="copy", path=file_name, print_time_sql=False)
+
+            elif (i < n - 1) or (
+                (i == n - 1) and (query_type.lower() not in ("select", "with", "undefined"))
+            ):
+
+                executeSQL(query, print_time_sql=False)
+                if verticapy.options["print_info"]:
+                    print(query_type)
+
+            else:
+
+                error = ""
+                try:
+                    result = vdf_from_relation("({}) x".format(query))
+                except:
+                    try:
+                        final_result = executeSQL(
+                            query, method="fetchfirstelem", print_time_sql=False
+                        )
+                        if final_result and verticapy.options["print_info"]:
+                            print(final_result[0])
+                        elif verticapy.options["print_info"]:
+                            print(query_type)
+                    except Exception as e:
+                        error = e
+
+                if error:
+                    raise QueryError(error)
+
+        elapsed_time = round(time.time() - start_time, 3)
+
+        if verticapy.options["print_info"]:
+            display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+
+        if isinstance(result, vDataFrame) and "o" in options:
+
+            if options["o"][-4:] == "json":
+                result.to_json(options["o"])
+            else:
+                result.to_csv(options["o"])
+
+        return result
+
+    except:
+
+        # If it fails, we load the previous configuration before raising the error.
+        set_option("sql_on", sql_on)
+        set_option("time_on", time_on)
+        raise
 
 
 # ---#

@@ -4635,12 +4635,7 @@ vColumns : vColumn
 
     # ---#
     def count(
-        self,
-        columns: list = [],
-        percent: bool = True,
-        sort_result: bool = True,
-        desc: bool = True,
-        **agg_kwds,
+        self, columns: list = [], **agg_kwds,
     ):
         """
     ---------------------------------------------------------------------------
@@ -4651,12 +4646,8 @@ vColumns : vColumn
     ----------
     columns: list, optional
         List of the vColumns names. If empty, all vColumns will be used.
-    percent: bool, optional
-        If set to True, the percentage of non-Missing value will be also computed.
-    sort_result: bool, optional
-        If set to True, the result will be sorted.
-    desc: bool, optional
-        If set to True and 'sort_result' is set to True, the result will be sorted desc.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -4668,40 +4659,50 @@ vColumns : vColumn
     --------
     vDataFrame.aggregate : Computes the vDataFrame input aggregations.
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        return self.aggregate(func=["count"], columns=columns, **agg_kwds,)
+
+    # ---#
+    def count_percent(
+        self,
+        columns: list = [],
+        sort_result: bool = True,
+        desc: bool = True,
+        **agg_kwds,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
+    values) and percent (Percent of non-missing values).
+
+    Parameters
+    ----------
+    columns: list, optional
+        List of the vColumns names. If empty, all vColumns will be used.
+    sort_result: bool, optional
+        If set to True, the result will be sorted.
+    desc: bool, optional
+        If set to True and 'sort_result' is set to True, the result will be 
+        sorted desc.
+
+    Returns
+    -------
+    tablesample
+        An object containing the result. For more information, see
+        utilities.tablesample.
+
+    See Also
+    --------
+    vDataFrame.aggregate : Computes the vDataFrame input aggregations.
+        """
         check_types(
             [
-                ("columns", columns, [list]),
-                ("percent", percent, [bool]),
                 ("desc", desc, [bool]),
                 ("sort_result", sort_result, [bool]),
             ]
         )
-        self.are_namecols_in(columns)
-        columns = self.format_colnames(columns)
-        if not (columns):
-            columns = self.get_columns()
-        func = ["count", "percent"] if (percent) else ["count"]
-        result = self.aggregate(func=func, columns=columns, **agg_kwds,)
+        result = self.aggregate(func=["count", "percent"], columns=columns, **agg_kwds,)
         if sort_result:
-            sort = []
-            for i in range(len(result.values["index"])):
-                if percent:
-                    sort += [
-                        (
-                            result.values["index"][i],
-                            result.values["count"][i],
-                            result.values["percent"][i],
-                        )
-                    ]
-                else:
-                    sort += [(result.values["index"][i], result.values["count"][i])]
-            sort.sort(key=lambda tup: tup[1], reverse=desc)
-            result.values["index"] = [elem[0] for elem in sort]
-            result.values["count"] = [elem[1] for elem in sort]
-            if percent:
-                result.values["percent"] = [elem[2] for elem in sort]
+            result.sort("count", desc)
         return result
 
     # ---#

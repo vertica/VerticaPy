@@ -450,14 +450,11 @@ class TestvDFDescriptiveStat:
 
     def test_vDF_count(self, titanic_vd):
         # tests for vDataFrame.count()
-        result = titanic_vd.count(desc=False)
+        result = titanic_vd.count()
 
-        assert result["count"][0] == 118
-        assert result["count"][1] == 286
-        assert result["count"][2] == 439
-        assert result["percent"][0] == pytest.approx(9.562)
-        assert result["percent"][1] == pytest.approx(23.177)
-        assert result["percent"][2] == pytest.approx(35.575)
+        assert result["count"][0] == 1234
+        assert result["count"][1] == 1234
+        assert result["count"][2] == 1234
 
         # tests for vDataFrame[].count()
         assert titanic_vd["age"].count() == 997
@@ -467,6 +464,17 @@ class TestvDFDescriptiveStat:
             titanic_vd["haha"].count()
         # checking the error message
         assert exception_info.match("'vDataFrame' object has no attribute 'haha'")
+
+    def test_vDF_count_percent(self, titanic_vd):
+        # tests for vDataFrame.count()
+        result = titanic_vd.count_percent(desc=False)
+
+        assert result["count"][0] == 118
+        assert result["count"][1] == 286
+        assert result["count"][2] == 439
+        assert result["percent"][0] == pytest.approx(9.562)
+        assert result["percent"][1] == pytest.approx(23.177)
+        assert result["percent"][2] == pytest.approx(35.575)
 
     def test_vDF_describe(self, titanic_vd):
         # testing vDataFrame.describe()

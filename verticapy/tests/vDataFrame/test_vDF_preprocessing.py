@@ -252,7 +252,7 @@ class TestvDFPreprocessing:
         # Testing vDataFrame.dropna
         titanic_copy = titanic_vd.copy()
         titanic_copy.dropna(columns=["fare", "embarked", "age"])
-        result = titanic_copy.count(columns=["fare", "embarked", "age"])
+        result = titanic_copy.count_percent(columns=["fare", "embarked", "age"])
 
         assert result["count"][0] == 994
         assert result["count"][1] == 994
@@ -261,7 +261,7 @@ class TestvDFPreprocessing:
         # Testing vDataFrame[].dropna
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].dropna()
-        assert titanic_copy.count(["age"])["count"][0] == 997
+        assert titanic_copy.count_percent(["age"])["count"][0] == 997
 
     def test_vDF_fillna(self, titanic_vd):
         # Testing vDataFrame.fillna

@@ -407,21 +407,21 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         method="fetchfirstelem",
         print_time_sql=False,
     )
-    query_on_init = verticapy.options["query_on"]
+    sql_on_init = verticapy.options["sql_on"]
     time_on_init = verticapy.options["time_on"]
     try:
         verticapy.options["time_on"] = time_on
-        verticapy.options["query_on"] = False
+        verticapy.options["sql_on"] = False
         try:
             result = to_tablesample("{} LIMIT {}".format(query, limit))
         except:
             result = to_tablesample(query)
     except:
         verticapy.options["time_on"] = time_on_init
-        verticapy.options["query_on"] = query_on_init
+        verticapy.options["sql_on"] = sql_on_init
         raise
     verticapy.options["time_on"] = time_on_init
-    verticapy.options["query_on"] = query_on_init
+    verticapy.options["sql_on"] = sql_on_init
     result.count = count
     if verticapy.options["percent_bar"]:
         vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
@@ -1636,7 +1636,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     elif option == "sql_on":
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
-            verticapy.options["query_on"] = value
+            verticapy.options["sql_on"] = value
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
@@ -1942,6 +1942,50 @@ The tablesample attributes are the same than the parameters.
         return (n, m)
 
     # ---#
+    def sort(self, column: str, desc: bool = False):
+        """
+        ---------------------------------------------------------------------------
+        Sort the tablesample using the input column.
+
+        Parameters
+        ----------
+        column: str, optional
+            Column used to sort the data.
+        desc: bool, optional
+            If set to True, the result will be sorted desc.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("column", column, [str]), ("desc", desc, [bool])])
+        column = column.replace('"', "").lower()
+        columns = [col for col in self.values]
+        idx = None
+        for i, col in enumerate(columns):
+            col_tmp = col.replace('"', "").lower()
+            if column == col_tmp:
+                idx = i
+                column = col
+        if idx is None:
+            raise MissingColumn(
+                "The Column '{}' doesn't exist.".format(
+                    column.lower().replace('"', "")
+                )
+            )
+        n, sort = len(self[column]), []
+        for i in range(n):
+            tmp_list = []
+            for col in columns:
+                tmp_list += [self[col][i]]
+            sort += [tmp_list]
+        sort.sort(key=lambda tup: tup[idx], reverse=desc)
+        for i, col in enumerate(columns):
+            self.values[col] = [sort[j][i] for j in range(n)]
+        return self
+
+    # ---#
     def transpose(self):
         """
 	---------------------------------------------------------------------------
@@ -2120,7 +2164,7 @@ def to_tablesample(query: str, title: str = ""):
 	tablesample : Object in memory created for rendering purposes.
 	"""
     check_types([("query", query, [str])])
-    if verticapy.options["query_on"]:
+    if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
     cursor = executeSQL(query, print_time_sql=False)
