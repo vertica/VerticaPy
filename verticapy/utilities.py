@@ -712,7 +712,7 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    path = "{}{}{}.csv".format(
+    path = "{0}{1}{2}.csv".format(
         temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name
     )
     try:
@@ -743,7 +743,13 @@ read_json : Ingests a JSON file into the Vertica database.
         )
         if insert:
             input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
-            query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
+            query = """COPY {0}({1}) 
+                       FROM LOCAL '{2}' 
+                       DELIMITER ',' 
+                       NULL ''
+                       ENCLOSED BY '\"' 
+                       ESCAPE AS '\\' 
+                       SKIP 1;""".format(
                 input_relation,
                 ", ".join(
                     ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
@@ -761,7 +767,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 dtype=dtype,
                 temporary_local_table=True,
                 parse_n_lines=parse_n_lines,
-                escape="\\",
+                escape="\027",
             )
         else:
             vdf = read_csv(
@@ -771,7 +777,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 schema=schema,
                 temporary_local_table=False,
                 parse_n_lines=parse_n_lines,
-                escape="\\",
+                escape="\027",
             )
         os.remove(path)
     except:
@@ -1113,9 +1119,9 @@ read_json : Ingests a JSON file into the Vertica database.
         )
     else:
         if not (temporary_local_table):
-            input_relation = '"{}"."{}"'.format(schema, table_name)
+            input_relation = '{}.{}'.format(quote_ident(schema), quote_ident(table_name))
         else:
-            input_relation = '"{}"'.format(table_name)
+            input_relation = 'v_temp_schema.{}'.format(quote_ident(table_name))
         f = open(path, "r")
         file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
         f.close()
@@ -1970,7 +1976,9 @@ The tablesample attributes are the same than the parameters.
                 column = col
         if idx is None:
             raise MissingColumn(
-                "The Column '{}' doesn't exist.".format(column.lower().replace('"', ""))
+                "The Column '{}' doesn't exist.".format(
+                    column.lower().replace('"', "")
+                )
             )
         n, sort = len(self[column]), []
         for i in range(n):
