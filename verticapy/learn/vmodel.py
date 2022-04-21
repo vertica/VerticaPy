@@ -3081,9 +3081,9 @@ class BinaryClassifier(Classifier):
         check_types([("cutoff", cutoff, [int, float]), ("X", X, [list])])
         X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
-        sql = "{}({} USING PARAMETERS model_name = '{}', type = 'probability', match_by_pos = 'true')"
+        sql = "{0}({1} USING PARAMETERS model_name = '{2}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
-            sql = "(CASE WHEN {} >= {} THEN 1 ELSE 0 END)".format(sql, cutoff)
+            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(sql,  cutoff)
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
@@ -3268,14 +3268,15 @@ class BinaryClassifier(Classifier):
         vdf_return = vdf if inplace else vdf.copy()
 
         # Result
+        name_tmp = name
         if pos_label in [0, "0", None]:
             if pos_label == None:
-                name = "{0}_0".format(name)
-            vdf_return.eval(name, "1 - {0}".format(self.deploySQL(X=X)))
+                name_tmp = f"{name}_0"
+            vdf_return.eval(name_tmp, "1 - {0}".format(self.deploySQL(X=X)))
         if pos_label in [1, "1", None]:
             if pos_label == None:
-                name = "{0}_1".format(name)
-            vdf_return.eval(name, self.deploySQL(X=X))
+                name_tmp = f"{name}_1"
+            vdf_return.eval(name_tmp, self.deploySQL(X=X))
 
         return vdf_return
 
@@ -3912,9 +3913,9 @@ class MulticlassClassifier(Classifier):
 
         # Result
         if pos_label == None:
-            for c in self.classes:
-                name = gen_name(name, c)
-                vdf_return.eval(name, self.deploySQL(pos_label=c, cutoff=-1, X=X))
+            for c in self.classes_:
+                name_tmp = gen_name([name, c])
+                vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=-1, X=X))
         else:
             vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=-1, X=X))
             
