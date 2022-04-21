@@ -235,17 +235,17 @@ class TestUtilities:
         drop("titanic_pandas")
         vdf = pandas_to_vertica(df=df)
         assert vdf.shape() == (1234, 14)
+        drop("test_df")
+        pandas_to_vertica(df, name="test_df", schema="public")
+        pandas_to_vertica(df, name="test_df", schema="public", insert=True)
+        vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
+        assert vdf.shape() == (3702, 14)
+        drop("test_df")
         # Problem with '\'
         # d = {"col1": [1, 2, 3, 4], "col2": ["red", 'gre"en', "b\lue", 'p\i""nk']}
         # df = pd.DataFrame(data=d)
         # vdf = pandas_to_vertica(df)
         # assert vdf.shape() == (4, 2)
-        drop("test_df")
-        pandas_to_vertica(df, name="test_df", schema="public")
-        pandas_to_vertica(df, name="test_df", schema="public", insert=True)
-        vdf = pandas_to_vertica(df, name="test_df", schema="public", insert=True)
-        assert vdf.shape() == (12, 2)
-        drop("test_df")
 
     def test_pcsv(self):
         result = pcsv(os.path.dirname(verticapy.__file__) + "/data/titanic.csv")
