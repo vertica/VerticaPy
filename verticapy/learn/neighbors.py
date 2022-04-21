@@ -629,9 +629,9 @@ p: int, optional
             ],
         )
         assert 0 <= cutoff <= 1, ParameterError(
-                    "Incorrect parameter 'cutoff'.\nThe cutoff "
-                    "must be between 0 and 1, inclusive."
-                )
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
@@ -643,9 +643,15 @@ p: int, optional
         if not (name):
             name = gen_name([self.type, self.name])
 
-        if len(self.classes_) == 2 and self.classes_[0] in [0, "0"] and self.classes_[1] in [1, "1"]:
-            sql = ("(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
-                   " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE").format(
+        if (
+            len(self.classes_) == 2
+            and self.classes_[0] in [0, "0"]
+            and self.classes_[1] in [1, "1"]
+        ):
+            sql = (
+                "(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
+                " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE"
+            ).format(
                 ", ".join(X),
                 ", " + ", ".join(key_columns) if key_columns else "",
                 cutoff,
@@ -679,8 +685,8 @@ p: int, optional
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
+        pos_label: Union[int, str, float] = None,
         inplace: bool = True,
-        cutoff: float = -1,
         **kwargs,
     ):
         """
@@ -698,6 +704,8 @@ p: int, optional
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
+    pos_label: int/float/str, optional
+        Class label.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
 
@@ -715,7 +723,14 @@ p: int, optional
                 ("X", X, [list]),
                 ("inplace", inplace, [bool]),
                 ("vdf", vdf, [str, vDataFrame]),
+                ("pos_label", pos_label, [int, float, str]),
             ],
+        )
+        assert pos_label is None or pos_label in self.classes_, ParameterError(
+            (
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "must be in [{0}]. Found '{1}'."
+            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
@@ -729,13 +744,21 @@ p: int, optional
             key_columns_arg = key_columns
 
         # Generating the probabilities
-        predict = [
-            ("ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
-             "proba_predict, NULL))) AS {1}").format(
-                elem, gen_name(name, elem)
-            )
-            for elem in self.classes_
-        ]
+        if pos_label == None:
+            predict = [
+                (
+                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
+                    "proba_predict, NULL))) AS {1}"
+                ).format(elem, gen_name([name, elem]))
+                for elem in self.classes_
+            ]
+        else:
+            predict = [
+                (
+                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
+                    "proba_predict, NULL))) AS {1}"
+                ).format(pos_label, name)
+            ]
         sql = "(SELECT {0}{1}, {2} FROM {3} GROUP BY {4}) VERTICAPY_SUBTABLE".format(
             ", ".join(X),
             ", " + ", ".join(key_columns) if key_columns else "",

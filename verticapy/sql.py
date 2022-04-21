@@ -127,6 +127,7 @@ def sql(line, cell="", local_ns=None):
             val = locals()["local_ns"][v[1:]]
             try:
                 import pandas as pd
+
                 pandas_import = True
             except:
                 pandas_import = False

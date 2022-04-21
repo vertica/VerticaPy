@@ -3083,7 +3083,9 @@ class BinaryClassifier(Classifier):
         fun = self.get_model_fun()[1]
         sql = "{0}({1} USING PARAMETERS model_name = '{2}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
-            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(sql,  cutoff)
+            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(
+                sql, cutoff
+            )
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
@@ -3194,9 +3196,9 @@ class BinaryClassifier(Classifier):
             ],
         )
         assert 0 <= cutoff <= 1, ParameterError(
-                    "Incorrect parameter 'cutoff'.\nThe cutoff "
-                    "must be between 0 and 1, inclusive."
-                )
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
@@ -3256,8 +3258,9 @@ class BinaryClassifier(Classifier):
             ],
         )
         assert pos_label in [1, 0, "0", "1", None], ParameterError(
-                    "Incorrect parameter 'pos_label'.\nThe class label "
-                    "can only be 1 or 0 in case of Binary Classification.")
+            "Incorrect parameter 'pos_label'.\nThe class label "
+            "can only be 1 or 0 in case of Binary Classification."
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
@@ -3835,9 +3838,9 @@ class MulticlassClassifier(Classifier):
             ],
         )
         assert 0 <= cutoff <= 1, ParameterError(
-                    "Incorrect parameter 'cutoff'.\nThe cutoff "
-                    "must be between 0 and 1, inclusive."
-                )
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
@@ -3849,11 +3852,17 @@ class MulticlassClassifier(Classifier):
 
         # Check if it is a Binary Classifier
         pos_label = None
-        if len(self.classes_) == 2 and self.classes_[0] in [0, "0"] and self.classes_[1] in [1, "1"]:
+        if (
+            len(self.classes_) == 2
+            and self.classes_[0] in [0, "0"]
+            and self.classes_[1] in [1, "1"]
+        ):
             pos_label = 1
 
         # Result
-        return vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X))
+        return vdf_return.eval(
+            name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X)
+        )
 
     # ---#
     def predict_proba(
@@ -3902,6 +3911,12 @@ class MulticlassClassifier(Classifier):
                 ("pos_label", pos_label, [int, float, str]),
             ],
         )
+        assert pos_label is None or pos_label in self.classes_, ParameterError(
+            (
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "must be in [{0}]. Found '{1}'."
+            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
@@ -3918,7 +3933,7 @@ class MulticlassClassifier(Classifier):
                 vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=-1, X=X))
         else:
             vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=-1, X=X))
-            
+
         return vdf_return
 
     # ---#
