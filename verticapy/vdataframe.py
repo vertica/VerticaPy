@@ -4672,18 +4672,18 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Aggregates the vDataFrame using a list of 'count' (Number of non-missing 
-    values) and percent (Percent of non-missing values).
+    Aggregates the vDataFrame using a list of 'count' (the number of non-missing 
+    values) and percent (the percent of non-missing values).
 
     Parameters
     ----------
     columns: list, optional
-        List of the vColumns names. If empty, all vColumns will be used.
+        List of vColumn names. If empty, all vColumns will be used.
     sort_result: bool, optional
         If set to True, the result will be sorted.
     desc: bool, optional
         If set to True and 'sort_result' is set to True, the result will be 
-        sorted desc.
+        sorted in descending order.
 
     Returns
     -------
