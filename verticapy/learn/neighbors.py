@@ -586,14 +586,106 @@ p: int, optional
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
+        cutoff: float = 0.5,
         inplace: bool = True,
-        cutoff: float = -1,
-        all_classes: bool = False,
         **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
     Predicts using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example 
+        "(SELECT 1) x" is correct whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    cutoff: float, optional
+        Cutoff for which the tested category will be accepted as a prediction.
+        The parameter is used only in case of binary classification.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the vDataFrame of the prediction
+        """
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("name", name, [str]),
+                ("cutoff", cutoff, [int, float]),
+                ("X", X, [list]),
+                ("inplace", inplace, [bool]),
+                ("vdf", vdf, [str, vDataFrame]),
+            ],
+        )
+        assert 0 <= cutoff <= 1, ParameterError(
+                    "Incorrect parameter 'cutoff'.\nThe cutoff "
+                    "must be between 0 and 1, inclusive."
+                )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf)
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        key_columns = vdf.get_columns(exclude_columns=X)
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        if len(self.classes_) == 2 and self.classes_[0] in [0, "0"] and self.classes_[1] in [1, "1"]:
+            sql = ("(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
+                   " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE").format(
+                ", ".join(X),
+                ", " + ", ".join(key_columns) if key_columns else "",
+                cutoff,
+                self.classes_[1],
+                self.classes_[0],
+                name,
+                self.deploySQL(
+                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+                ),
+            )
+        else:
+            sql = "(SELECT {0}{1}, predict_neighbors AS {2} FROM {3}) VERTICAPY_SUBTABLE".format(
+                ", ".join(X),
+                ", " + ", ".join(key_columns) if key_columns else "",
+                name,
+                self.deploySQL(
+                    X=X,
+                    test_relation=vdf.__genSQL__(),
+                    key_columns=key_columns_arg,
+                    predict=True,
+                ),
+            )
+        if inplace:
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
+        else:
+            return vdf_from_relation(name="Neighbors", relation=sql)
+
+    # ---#
+    def predict_proba(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        inplace: bool = True,
+        cutoff: float = -1,
+        **kwargs,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the model's probabilities using the input relation.
 
     Parameters
     ----------
@@ -608,26 +700,18 @@ p: int, optional
         Name of the added vcolumn. If empty, a name will be generated.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
-    cutoff: float, optional
-        The cutoff used for binary classification and represents the probability to
-        accept category 1.
-    all_classes: bool, optional
-        If True, the probabilities of all classes will be generated (one column per 
-        category).
 
     Returns
     -------
     vDataFrame
         the vDataFrame of the prediction
         """
+        # Inititalization
         if isinstance(X, str):
             X = [X]
         check_types(
             [
-                ("cutoff", cutoff, [int, float]),
-                ("all_classes", all_classes, [bool]),
                 ("name", name, [str]),
-                ("cutoff", cutoff, [int, float]),
                 ("X", X, [list]),
                 ("inplace", inplace, [bool]),
                 ("vdf", vdf, [str, vDataFrame]),
@@ -637,68 +721,32 @@ p: int, optional
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
+        if not (name):
+            name = gen_name([self.type, self.name])
         if "key_columns" in kwargs:
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
-        if all_classes:
-            predict = [
-                "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{}', proba_predict, NULL))) AS \"{}_{}\"".format(
-                    elem, name, elem
-                )
-                for elem in self.classes_
-            ]
-            sql = "SELECT {}{}, {} FROM {} GROUP BY {}".format(
-                ", ".join(X),
-                ", " + ", ".join(key_columns) if key_columns else "",
-                ", ".join(predict),
-                self.deploySQL(
-                    X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                ),
-                ", ".join(X + key_columns),
+
+        # Generating the probabilities
+        predict = [
+            ("ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
+             "proba_predict, NULL))) AS {1}").format(
+                elem, gen_name(name, elem)
             )
-        else:
-            if (len(self.classes_) == 2) and (cutoff <= 1 and cutoff >= 0):
-                sql = "SELECT {}{}, (CASE WHEN proba_predict > {} THEN '{}' ELSE '{}' END) AS {} FROM {} WHERE predict_neighbors = '{}'".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    cutoff,
-                    self.classes_[1],
-                    self.classes_[0],
-                    name,
-                    self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                    ),
-                    self.classes_[1],
-                )
-            elif len(self.classes_) == 2:
-                sql = "SELECT {}{}, proba_predict AS {} FROM {} WHERE predict_neighbors = '{}'".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    name,
-                    self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                    ),
-                    self.classes_[1],
-                )
-            else:
-                sql = "SELECT {}{}, predict_neighbors AS {} FROM {}".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    name,
-                    self.deploySQL(
-                        X=X,
-                        test_relation=vdf.__genSQL__(),
-                        key_columns=key_columns_arg,
-                        predict=True,
-                    ),
-                )
-        sql = "({}) VERTICAPY_SUBTABLE".format(sql)
+            for elem in self.classes_
+        ]
+        sql = "(SELECT {0}{1}, {2} FROM {3} GROUP BY {4}) VERTICAPY_SUBTABLE".format(
+            ", ".join(X),
+            ", " + ", ".join(key_columns) if key_columns else "",
+            ", ".join(predict),
+            self.deploySQL(
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            ),
+            ", ".join(X + key_columns),
+        )
+
+        # Result
         if inplace:
             return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
         else:
