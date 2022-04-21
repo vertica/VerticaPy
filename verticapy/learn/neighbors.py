@@ -598,8 +598,8 @@ p: int, optional
     ----------
     vdf: str/vDataFrame
         Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example 
-        "(SELECT 1) x" is correct whereas "(SELECT 1)" and "SELECT 1" are 
+        relation, but you must enclose it with an alias. For example,  
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
@@ -608,7 +608,7 @@ p: int, optional
         Name of the added vcolumn. If empty, a name will be generated.
     cutoff: float, optional
         Cutoff for which the tested category will be accepted as a prediction.
-        The parameter is used only in case of binary classification.
+        This parameter is only used for binary classification.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
 
@@ -697,8 +697,8 @@ p: int, optional
     ----------
     vdf: str/vDataFrame
         Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
+        is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
