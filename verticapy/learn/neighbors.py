@@ -977,16 +977,16 @@ xlim: list, optional
                             f"Cannot compute KDE for non-numerical columns. {elem} is not numerical."
                         )
                 if kernel == "gaussian":
-                    fkernel = "EXP(-1 / 2 * POWER({}, 2)) / SQRT(2 * PI())"
+                    fkernel = "EXP(-1 / 2 * POWER({0}, 2)) / SQRT(2 * PI())"
 
                 elif kernel == "logistic":
-                    fkernel = "1 / (2 + EXP({}) + EXP(-{}))"
+                    fkernel = "1 / (2 + EXP({0}) + EXP(-{0}))"
 
                 elif kernel == "sigmoid":
-                    fkernel = "2 / (PI() * (EXP({}) + EXP(-{})))"
+                    fkernel = "2 / (PI() * (EXP({0}) + EXP(-{0})))"
 
                 elif kernel == "silverman":
-                    fkernel = "EXP(-1 / SQRT(2) * ABS({})) / 2 * SIN(ABS({}) / SQRT(2) + PI() / 4)"
+                    fkernel = "EXP(-1 / SQRT(2) * ABS({0})) / 2 * SIN(ABS({0}) / SQRT(2) + PI() / 4)"
 
                 else:
                     raise ParameterError(
