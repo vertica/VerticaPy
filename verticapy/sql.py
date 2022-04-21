@@ -125,10 +125,17 @@ def sql(line, cell="", local_ns=None):
         variables = re.findall(":[A-Za-z0-9_]+", queries)
         for v in variables:
             val = locals()["local_ns"][v[1:]]
+            try:
+                import pandas as pd
+                pandas_import = True
+            except:
+                pandas_import = False
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
             elif isinstance(val, tablesample):
                 val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+            elif pandas_import and isinstance(val, pd.DataFrame):
+                val = pandas_to_vertica(val).__genSQL__()
             queries = queries.replace(v, str(val))
 
         n, i, all_split = len(queries), 0, []
