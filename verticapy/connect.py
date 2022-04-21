@@ -121,7 +121,7 @@ name: str
 def close_connection():
     """
 ---------------------------------------------------------------------------
-Closes the Database connection.
+Closes the connection to the database.
     """
     if verticapy.options["connection"]["conn"] and not (
         verticapy.options["connection"]["conn"].closed()
@@ -133,7 +133,7 @@ Closes the Database connection.
 def connect(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
-Connect to the Database.
+Connects to the database.
 
 Parameters
 ----------
@@ -157,12 +157,14 @@ dsn: str, optional
 def current_connection():
     """
 ---------------------------------------------------------------------------
-Returns the current Database connection.
-If the connection is closed, it will try to connect using the 
+Returns the current database connection.
+If the connection is closed, VerticaPy attempts to reconnect with the 
 existing connection.
-If it fails, it will try to reconnect using the stored credential.
-If it fails, it will try to connect using the Auto Connection.
-Otherwise, it will try to connect to the Verticalab Environment.
+
+If the connection attempt fails, VerticaPy attempts to reconnect using 
+stored credentials. If this also fails, VerticaPy attempts to connect using
+an auto connection. Otherwise, VerticaPy attempts to connect to a 
+VerticaLab Environment.
     """
 
     # Look if the connection does not exist or is closed
