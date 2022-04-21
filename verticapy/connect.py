@@ -192,7 +192,7 @@ VerticaLab Environment.
             except Exception as e:
 
                 try:
-                    # Connection to the Verticalab environment
+                    # Connection to the VerticaLab environment
                     conn = verticalab_connection()
                     verticapy.options["connection"]["conn"] = conn
 
@@ -206,7 +206,7 @@ VerticaLab Environment.
 def current_cursor():
     """
 ---------------------------------------------------------------------------
-Returns the current Database cursor.
+Returns the current database cursor.
     """
     return current_connection().cursor()
 
@@ -215,7 +215,7 @@ Returns the current Database cursor.
 def delete_connection(name: str):
     """
 ---------------------------------------------------------------------------
-Deletes the connection from the connection file.
+Deletes a specified connection from the connection file.
 
 Parameters
 ----------
@@ -467,7 +467,7 @@ conn
 def verticalab_connection():
     """
 ---------------------------------------------------------------------------
-Returns the Verticalab connection if possible.
+Returns the VerticaLab connection if possible.
 
 Returns
 -------
