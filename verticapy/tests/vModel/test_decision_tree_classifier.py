@@ -332,14 +332,25 @@ class TestDecisionTreeClassifier:
     def test_predict(self, dtc_data_vd, model):
         dtc_data_copy = dtc_data_vd.copy()
 
-        model.predict(dtc_data_copy, name="pred_probability")
-        assert dtc_data_copy["pred_probability"].mode() == "Bus"
+        model.predict(dtc_data_copy, name="pred")
+        assert dtc_data_copy["pred"].mode() == "Bus"
 
-        model.predict(dtc_data_copy, name="pred_class1", cutoff=0.7)
-        assert dtc_data_copy["pred_class1"].mode() == "Bus"
+        model.predict(dtc_data_copy, name="pred1", cutoff=0.7)
+        assert dtc_data_copy["pred1"].mode() == "Bus"
 
-        model.predict(dtc_data_copy, name="pred_class2", cutoff=0.3)
-        assert dtc_data_copy["pred_class2"].mode() == "Bus"
+        model.predict(dtc_data_copy, name="pred2", cutoff=0.3)
+        assert dtc_data_copy["pred2"].mode() == "Bus"
+
+    def test_predict_proba(self, dtc_data_vd, model):
+        dtc_data_copy = dtc_data_vd.copy()
+
+        model.predict_proba(dtc_data_copy, name="prob")
+        assert dtc_data_copy["prob_bus"].avg() == 0.0
+        assert dtc_data_copy["prob_train"].avg() == 0.0
+        assert dtc_data_copy["prob_car"].avg() == 0.0
+
+        model.predict_proba(dtc_data_copy, name="prob_bus_2", pos_label="Bus")
+        assert dtc_data_copy["prob_bus_2"].avg() == 0.0
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Train", nbins=1000)

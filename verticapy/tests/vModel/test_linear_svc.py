@@ -280,14 +280,17 @@ class TestLinearSVC:
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
 
-        model.predict_proba(titanic_copy, name="pred_probability", pos_label=1)
-        assert titanic_copy["pred_probability"].min() == pytest.approx(0.33841486903496)
-
         model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
         assert titanic_copy["pred_class1"].sum() == 23.0
 
         model.predict(titanic_copy, name="pred_class2", cutoff=0.3)
         assert titanic_copy["pred_class2"].sum() == 996.0
+
+    def test_predict_proba(self, titanic_vd, model):
+        titanic_copy = titanic_vd.copy()
+
+        model.predict_proba(titanic_copy, name="probability", pos_label=1)
+        assert titanic_copy["probability"].min() == pytest.approx(0.33841486903496)
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(nbins=1000)
