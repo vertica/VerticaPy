@@ -162,7 +162,7 @@ vColumns : vColumn
         assert input_relation or sql, ParameterError(
             "The parameters 'input_relation' and 'sql' can not be both empty."
         )
-        assert not (input_relation) or not (sql), ParameterError(
+        assert not (input_relation) or not (sql) or empty, ParameterError(
             "Either 'sql' and 'input_relation' must be empty."
         )
         if isinstance(usecols, str):
