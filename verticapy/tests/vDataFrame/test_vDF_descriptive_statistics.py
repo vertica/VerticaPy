@@ -891,7 +891,7 @@ class TestvDFDescriptiveStat:
 
         model.drop()  # dropping the model in case of its existance
         model.fit("public.titanic", ["fare", "age"], "survived")
-        model.predict(titanic_vd, name="survived_pred")
+        model.predict_proba(titanic_vd, name="survived_pred", pos_label=1)
 
         # Computing AUC
         auc = titanic_vd.score(y_true="survived", y_score="survived_pred", method="auc")
