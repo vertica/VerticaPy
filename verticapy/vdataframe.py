@@ -159,7 +159,7 @@ vColumns : vColumn
     ):
 
         # Intialization
-        assert input_relation or sql, ParameterError(
+        assert input_relation or sql or empty, ParameterError(
             "The parameters 'input_relation' and 'sql' can not be both empty."
         )
         assert not (input_relation) or not (sql) or empty, ParameterError(
