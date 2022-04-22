@@ -348,12 +348,12 @@ class TestRFC:
         rfc_data_copy = rfc_data_vd.copy()
 
         model.predict_proba(rfc_data_copy, name="prob")
-        assert rfc_data_copy["prob_bus"].avg() == 0.0
+        assert rfc_data_copy["prob_bus"].avg() == 0.4
         assert rfc_data_copy["prob_train"].avg() == 0.0
         assert rfc_data_copy["prob_car"].avg() == 0.0
 
         model.predict_proba(rfc_data_copy, name="prob_bus_2", pos_label="Bus")
-        assert rfc_data_copy["prob_bus_2"].avg() == 0.0
+        assert rfc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Train", nbins=1000)

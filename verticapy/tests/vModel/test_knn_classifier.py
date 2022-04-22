@@ -165,7 +165,7 @@ class TestKNeighborsClassifier:
             titanic_copy, X=["age", "fare"], name="prob_quality", inplace=False, pos_label=1,
         )
         assert titanic_copy["prob_quality"].mean() == pytest.approx(
-            0.381884944920441, abs=1e-6
+            0.378313253012048, abs=1e-6
         )
 
     def test_classification_report(self, model):
