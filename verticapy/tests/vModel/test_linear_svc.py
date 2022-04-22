@@ -64,7 +64,7 @@ class TestLinearSVC:
         assert cls_rep1["accuracy"][0] == pytest.approx(0.6536144578313253, 1e-2)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
         assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
-        assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444, 1e-2)
+        assert cls_rep1["recall"][0] == pytest.approx(0.21227621483375958, 1e-2)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.29122807017543856, 1e-2)
         assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555, 1e-2)
         assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408, 1e-2)
@@ -80,7 +80,7 @@ class TestLinearSVC:
         conf_mat1 = model.confusion_matrix()
 
         assert conf_mat1[0][0] == 568
-        assert conf_mat1[0][1] == 367
+        assert conf_mat1[0][1] == 308
         assert conf_mat1[1][0] == 37
         assert conf_mat1[1][1] == 83
 
@@ -316,7 +316,7 @@ class TestLinearSVC:
             0.6224899598393574
         )
         assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
-            0.4619124797406807
+            0.392570281124498
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
             0.6933968844454788

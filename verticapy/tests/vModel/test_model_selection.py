@@ -225,7 +225,7 @@ class TestModelSelection:
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
         result = lift_chart("good", "prediction", data, pos_label=1, nbins=30,)
-        assert result["lift"][0] == pytest.approx(3.53927343297811)
+        assert result["lift"][0] == pytest.approx(2.95543129990643)
         assert len(result["lift"]) == 31
         model.drop()
         plt.close("all")

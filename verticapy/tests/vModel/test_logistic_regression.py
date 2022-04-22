@@ -64,7 +64,7 @@ class TestLogisticRegression:
         assert cls_rep1["accuracy"][0] == pytest.approx(0.6586345381526104)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.271495668573431)
         assert cls_rep1["precision"][0] == pytest.approx(0.6758620689655173)
-        assert cls_rep1["recall"][0] == pytest.approx(0.21777777777777776)
+        assert cls_rep1["recall"][0] == pytest.approx(0.2506393861892583)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.32941176470588235)
         assert cls_rep1["mcc"][0] == pytest.approx(0.2359133929510658)
         assert cls_rep1["informedness"][0] == pytest.approx(0.15782879818594098)
@@ -80,7 +80,7 @@ class TestLogisticRegression:
         conf_mat1 = model.confusion_matrix()
 
         assert conf_mat1[0][0] == 558
-        assert conf_mat1[0][1] == 352
+        assert conf_mat1[0][1] == 293
         assert conf_mat1[1][0] == 47
         assert conf_mat1[1][1] == 98
 
@@ -290,7 +290,7 @@ class TestLogisticRegression:
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
 
-        model.predict(titanic_copy, name="pred_probability", pos_label=1)
+        model.predict_proba(titanic_copy, name="pred_probability", pos_label=1)
         assert titanic_copy["pred_probability"].min() == pytest.approx(
             0.182718648793846
         )
@@ -325,7 +325,7 @@ class TestLogisticRegression:
 
     def test_score(self, model):
         assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
-            0.653160453808752
+            0.6295180722891566
         )
         assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
             0.5429497568881686
