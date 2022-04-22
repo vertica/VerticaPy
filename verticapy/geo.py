@@ -239,7 +239,7 @@ tablesample
         )
 
     if list_polygons:
-        result = vdf_from_relation(f"({query}) x")
+        result = vDataFrameSQL(f"({query}) x")
     else:
         result = to_tablesample(query)
 
@@ -314,7 +314,7 @@ vDataFrame
 
         raise ParameterError("Either 'x' and 'y' or 'g' must not be empty.")
 
-    return vdf_from_relation(query)
+    return vDataFrameSQL(query)
 
 
 # ---#

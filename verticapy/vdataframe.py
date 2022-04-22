@@ -58,11 +58,7 @@ pickle.DEFAULT_PROTOCOL = 4
 
 # Other modules
 import multiprocessing
-
-try:
-    from tqdm.auto import tqdm
-except:
-    pass
+from tqdm.auto import tqdm
 
 # VerticaPy Modules
 import verticapy
@@ -99,7 +95,7 @@ preparation and exploration without modifying the data.
 
 Parameters
 ----------
-input_relation: str
+input_relation: str, optional
     Relation (View, Table or Temporary Table) to use to create the object.
     To get a specific schema relation, your string must include both
     relation and schema: 'schema.relation' or '"schema"."relation"'.
@@ -113,6 +109,9 @@ usecols: list, optional
 schema: str, optional
     Relation schema. It can be used to be less ambiguous and allow to 
     create schema and relation name with dots '.' inside.
+sql: str, optional
+    If used, the vDataFrame is created by using the input SQL query.
+    The parameter 'input_relation' must be empty. 
 empty: bool, optional
     If set to True, the created object will be empty. It can be used to 
     create customized vDataFrame without going through the initialization 
@@ -152,11 +151,20 @@ vColumns : vColumn
     # ---#
     def __init__(
         self,
-        input_relation: str,
+        input_relation: str = "",
         usecols: list = [],
         schema: str = "",
+        sql: str = "",
         empty: bool = False,
     ):
+
+        # Intialization
+        assert input_relation or sql, ParameterError(
+            "The parameters 'input_relation' and 'sql' can not be both empty."
+        )
+        assert not (input_relation) or not (sql), ParameterError(
+            "Either 'sql' and 'input_relation' must be empty."
+        )
         if isinstance(usecols, str):
             usecols = [usecols]
         check_types(
@@ -167,6 +175,30 @@ vColumns : vColumn
                 ("empty", empty, [bool]),
             ]
         )
+
+        if sql:
+
+            # Cleaning the Query
+            sql_tmp = re.sub("--.+\n", "", sql)
+            sql_tmp = sql_tmp.replace("\t", " ").replace("\n", " ")
+            sql_tmp = re.sub(" +", " ", queries)
+
+            while len(sql_tmp) > 0 and (sql_tmp[-1] in (";", " ")):
+                sql_tmp = sql_tmp[0:-1]
+
+            while len(sql_tmp) > 0 and (sql_tmp[0] in (";", " ")):
+                sql_tmp = sql_tmp[1:]
+
+            sql_tmp = f"({sql_tmp}) VERTICAPY_SUBTABLE"
+
+            # Filtering some columns
+            if usecols:
+                usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
+                sql_tmp = f"(SELECT {usecols_tmp} FROM {sql_tmp}) VERTICAPY_SUBTABLE"
+
+            # Returning the vDataFrame of the Query
+            return vDataFrameSQL(sql_tmp, name="", schema=schema)
+
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
@@ -299,7 +331,7 @@ vColumns : vColumn
             query = "(SELECT * FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
                 self.__genSQL__(), self.__get_last_order_by__(), index_start, limit
             )
-            return vdf_from_relation(query)
+            return vDataFrameSQL(query)
         elif isinstance(index, int):
             columns = self.get_columns()
             for idx, elem in enumerate(columns):
@@ -1387,7 +1419,7 @@ vColumns : vColumn
                         self[column].catalog[key] = val
 
     # ---#
-    def __vdf_from_relation__(self, table: str, func: str, history: str):
+    def __vDataFrameSQL__(self, table: str, func: str, history: str):
         """
     ---------------------------------------------------------------------------
     This method is to use to build a vDataFrame based on a relation
@@ -1402,7 +1434,7 @@ vColumns : vColumn
         schema = self._VERTICAPY_VARIABLES_["schema"]
         history = self._VERTICAPY_VARIABLES_["history"] + [history]
         saving = self._VERTICAPY_VARIABLES_["saving"]
-        return vdf_from_relation(table, func, schema, history, saving)
+        return vDataFrameSQL(table, func, schema, history, saving)
 
     #
     # Methods used to check & format the inputs
@@ -1685,10 +1717,12 @@ vColumns : vColumn
 
     See Also
     --------
-    vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
-    vDataFrame.corr   : Computes the Correlation Matrix of a vDataFrame.
-    vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.pacf   : Computes the partial autocorrelations of the input vColumn.
+    vDataFrame.interpolate : Interpolates and computes a regular time 
+                             interval vDataFrame.
+    vDataFrame.corr        : Computes the Correlation Matrix of a vDataFrame.
+    vDataFrame.cov         : Computes the covariance matrix of the vDataFrame.
+    vDataFrame.pacf        : Computes the partial autocorrelations of the 
+                             input vColumn.
         """
         if isinstance(method, str):
             method = method.lower()
@@ -1727,7 +1761,7 @@ vColumns : vColumn
         if unit == "rows":
             table = self.__genSQL__()
         else:
-            table = self.asfreq(
+            table = self.interpolate(
                 ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
             ).__genSQL__()
         if isinstance(p, (int, float)):
@@ -1743,11 +1777,9 @@ vColumns : vColumn
             ", ".join([column] + columns), table
         )
         if len(p) == 1:
-            return self.__vdf_from_relation__(relation, "acf", "").corr(
-                [], method=method
-            )
+            return self.__vDataFrameSQL__(relation, "acf", "").corr([], method=method)
         elif acf_type == "heatmap":
-            return self.__vdf_from_relation__(relation, "acf", "").corr(
+            return self.__vDataFrameSQL__(relation, "acf", "").corr(
                 [],
                 method=method,
                 round_nb=round_nb,
@@ -1756,7 +1788,7 @@ vColumns : vColumn
                 **style_kwds,
             )
         else:
-            result = self.__vdf_from_relation__(relation, "acf", "").corr(
+            result = self.__vDataFrameSQL__(relation, "acf", "").corr(
                 [], method=method, focus=column, show=False
             )
             columns = [elem for elem in result.values["index"]]
@@ -3227,7 +3259,7 @@ vColumns : vColumn
         table = "(SELECT {} FROM {}) {} (SELECT {} FROM {})".format(
             columns, first_relation, union, columns2, second_relation
         )
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             "({}) append_table".format(table),
             self._VERTICAPY_VARIABLES_["input_relation"],
             "[Append]: Union of two relations",
@@ -3298,7 +3330,7 @@ vColumns : vColumn
         return self.apply(function)
 
     # ---#
-    def asfreq(
+    def interpolate(
         self,
         ts: str,
         rule: Union[str, datetime.timedelta],
@@ -3313,12 +3345,12 @@ vColumns : vColumn
     Parameters
     ----------
     ts: str
-        TS (Time Series) vColumn to use to order the data. The vColumn type must be
-        date like (date, datetime, timestamp...)
+        TS (Time Series) vColumn to use to order the data. The vColumn type 
+        must be date like (date, datetime, timestamp...)
     rule: str / time
-        Interval used to create the time slices. The final interpolation is divided by these 
-        intervals. For example, specifying '5 minutes' creates records separated by 
-        time intervals of '5 minutes' 
+        Interval used to create the time slices. The final interpolation is 
+        divided by these intervals. For example, specifying '5 minutes' 
+        creates records separated by time intervals of '5 minutes' 
     method: dict, optional
         Dictionary, with the following format, of interpolation methods:
         {"column1": "interpolation1" ..., "columnk": "interpolationk"}
@@ -3386,11 +3418,13 @@ vColumns : vColumn
         table += " TIMESERIES slice_time AS '{}' OVER ({}ORDER BY {}::timestamp)".format(
             rule, partition, quote_ident(ts)
         )
-        return self.__vdf_from_relation__(
-            "({}) asfreq".format(table), "asfreq", "[Asfreq]: The data was resampled"
+        return self.__vDataFrameSQL__(
+            "({}) interpolate".format(table),
+            "interpolate",
+            "[interpolate]: The data was resampled",
         )
 
-    interpolate = asfreq
+    asfreq = interpolate
     # ---#
     def astype(self, dtype: dict):
         """
@@ -6295,7 +6329,7 @@ vColumns : vColumn
                 [str(i + 1) for i in range(len([str(elem) for elem in columns]))]
             ),
         )
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             relation,
             "groupby",
             "[Groupby]: The columns were grouped by {}".format(
@@ -7119,7 +7153,7 @@ vColumns : vColumn
         table = "SELECT {} FROM {} {} JOIN {} {}".format(
             expr, first_relation, how.upper(), second_relation, on_join
         )
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             "({}) VERTICAPY_SUBTABLE".format(table),
             "join",
             "[Join]: Two relations were joined together",
@@ -7436,7 +7470,7 @@ vColumns : vColumn
             ]
         query = " UNION ALL ".join(query)
         query = "({}) VERTICAPY_SUBTABLE".format(query)
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             query, "narrow", "[Narrow]: Narrow table using index = {}".format(index),
         )
 
@@ -7760,7 +7794,7 @@ vColumns : vColumn
     See Also
     --------
     vDataFrame.acf    : Computes the correlations between a vColumn and its lags.
-    vDataFrame.asfreq : Interpolates and computes a regular time interval vDataFrame.
+    vDataFrame.interpolate : Interpolates and computes a regular time interval vDataFrame.
     vDataFrame.corr   : Computes the correlation matrix of a vDataFrame.
     vDataFrame.cov    : Computes the covariance matrix of the vDataFrame.
         """
@@ -7791,7 +7825,7 @@ vColumns : vColumn
             if unit == "rows":
                 table = self.__genSQL__()
             else:
-                table = self.asfreq(
+                table = self.interpolate(
                     ts=ts, rule="1 {}".format(unit), method={column: "linear"}, by=by
                 ).__genSQL__()
             by = "PARTITION BY {} ".format(", ".join(by)) if (by) else ""
@@ -8020,7 +8054,7 @@ vColumns : vColumn
         relation = "(SELECT {}, {} FROM {} GROUP BY 1) VERTICAPY_SUBTABLE".format(
             index, ", ".join(new_cols_trans), self.__genSQL__()
         )
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             relation,
             "pivot",
             "[Pivot]: Pivot table using index = {} & columns = {} & values = {}".format(
@@ -9490,7 +9524,7 @@ vColumns : vColumn
         table = "(SELECT {} FROM {}{}) VERTICAPY_SUBTABLE".format(
             all_cols, self.__genSQL__(), conditions
         )
-        result = self.__vdf_from_relation__(table, "search", "")
+        result = self.__vDataFrameSQL__(table, "search", "")
         if usecols:
             result = result.select(usecols)
         return result.sort(order_by)
@@ -9527,7 +9561,7 @@ vColumns : vColumn
         table = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), self.__genSQL__()
         )
-        return self.__vdf_from_relation__(
+        return self.__vDataFrameSQL__(
             table, self._VERTICAPY_VARIABLES_["input_relation"], ""
         )
 
@@ -10358,6 +10392,8 @@ vColumns : vColumn
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
+        import pandas as pd
+
         try:
             from geopandas import GeoDataFrame
             from shapely import wkt
@@ -10366,15 +10402,6 @@ vColumns : vColumn
                 "The geopandas module doesn't seem to be installed in your "
                 "environment.\nTo be able to use this method, you'll have to "
                 "install it.\n[Tips] Run: 'pip3 install geopandas' in your "
-                "terminal to install the module."
-            )
-        try:
-            import pandas as pd
-        except:
-            raise ImportError(
-                "The pandas module doesn't seem to be installed in your "
-                "environment.\nTo be able to use this method, you'll have to "
-                "install it.\n[Tips] Run: 'pip3 install pandas' in your "
                 "terminal to install the module."
             )
         columns = self.get_columns(exclude_columns=[geometry])
@@ -10560,12 +10587,8 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        try:
-            import pandas as pd
-        except:
-            raise ImportError(
-                "The pandas module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install pandas' in your terminal to install the module."
-            )
+        import pandas as pd
+
         query = "SELECT * FROM {}{}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )
@@ -10862,8 +10885,8 @@ vColumns : vColumn
             self.__genSQL__(), random_func, q, order_by,
         )
         return (
-            vdf_from_relation(relation=train_table),
-            vdf_from_relation(relation=test_table),
+            vDataFrameSQL(relation=train_table),
+            vDataFrameSQL(relation=test_table),
         )
 
     # ---#

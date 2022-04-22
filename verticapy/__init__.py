@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.9.0-beta"
+__version__ = "0.9.0"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
@@ -55,6 +55,9 @@ __description__ = (
 )
 __url__ = "https://github.com/vertica/verticapy/"
 __license__ = "Apache License, Version 2.0"
+
+# Logo
+from verticapy.logo import *
 
 # vDataFrame
 from verticapy.vdataframe import *
@@ -71,13 +74,6 @@ import verticapy.stats
 # Learn
 import verticapy.learn
 
-try:
-    import tqdm
-
-    tqdm = True
-except:
-    tqdm = False
-
 verticapy.options = {
     "cache": True,
     "colors": [],
@@ -92,6 +88,6 @@ verticapy.options = {
     "random_state": None,
     "temp_schema": "public",
     "time_on": False,
-    "tqdm": tqdm,
+    "tqdm": True,
     "vertica_version": None,
 }

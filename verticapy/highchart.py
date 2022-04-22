@@ -618,7 +618,7 @@ def hchartSQL(
         print_time_sql=False,
     )
     names = [desc[0] for desc in current_cursor().description]
-    vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
+    vdf = vDataFrameSQL("({}) VERTICAPY_SUBTABLE".format(query))
     allnum = vdf.numcol()
     if kind == "auto":
         if len(names) == 1:

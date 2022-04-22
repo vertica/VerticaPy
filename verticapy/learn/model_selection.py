@@ -496,7 +496,7 @@ tablesample
         ]
     )
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation)
+        input_relation = vDataFrameSQL(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
     if get_model_category(estimator.type)[0] == "regressor":
@@ -899,7 +899,7 @@ tablesample
 
     if estimator_type == "auto":
         if not (isinstance(input_relation, vDataFrame)):
-            vdf = vdf_from_relation(input_relation)
+            vdf = vDataFrameSQL(input_relation)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:
@@ -1814,7 +1814,7 @@ tablesample
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation)
+        input_relation = vDataFrameSQL(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
     if verticapy.options["tqdm"]:
@@ -2897,7 +2897,7 @@ tablesample
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(input_relation)
+            vdf = vDataFrameSQL(input_relation)
         else:
             vdf = input_relation
         X = [

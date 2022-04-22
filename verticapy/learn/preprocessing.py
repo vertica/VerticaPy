@@ -278,7 +278,7 @@ max_text_size: int, optional
 	vDataFrame
  		object result of the model transformation.
 		"""
-        return vdf_from_relation(
+        return vDataFrameSQL(
             "({}) VERTICAPY_SUBTABLE".format(self.deploySQL()), self.name,
         )
 

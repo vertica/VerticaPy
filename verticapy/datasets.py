@@ -157,7 +157,7 @@ vDataFrame
         " t) x TIMESERIES tm AS '1 second' OVER(ORDER BY t)) y) z"
     )
 
-    return vdf_from_relation(sql)
+    return vDataFrameSQL(sql)
 
 
 # ---#
@@ -273,7 +273,7 @@ vDataFrame
 
     sql = "(SELECT * FROM {0}) x".format(" CROSS JOIN ".join(sql))
 
-    return vdf_from_relation(sql)
+    return vDataFrameSQL(sql)
 
 
 # ---#

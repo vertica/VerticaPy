@@ -235,7 +235,7 @@ Main Class for Vertica Model
                 "NaiveBayes",
                 "NearestCentroid",
             ):
-                return vdf_from_relation(self.input_relation).contour(
+                return vDataFrameSQL(self.input_relation).contour(
                     self.X,
                     self.deploySQL(X=self.X, pos_label=pos_label),
                     cbar_title=self.y,
@@ -244,7 +244,7 @@ Main Class for Vertica Model
                     **style_kwds,
                 )
             else:
-                return vdf_from_relation(self.input_relation).contour(
+                return vDataFrameSQL(self.input_relation).contour(
                     self.X,
                     self,
                     pos_label=pos_label,
@@ -254,15 +254,15 @@ Main Class for Vertica Model
                     **style_kwds,
                 )
         elif self.type == "KNeighborsRegressor":
-            return vdf_from_relation(self.input_relation).contour(
+            return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
         elif self.type in ("KMeans", "BisectingKMeans"):
-            return vdf_from_relation(self.input_relation).contour(
+            return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds
             )
         else:
-            return vdf_from_relation(self.input_relation).contour(
+            return vDataFrameSQL(self.input_relation).contour(
                 self.X,
                 self.deploySQL(X=self.X),
                 cbar_title=self.y,
@@ -844,11 +844,11 @@ Main Class for Vertica Model
                 )
         elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN"):
             if self.type != "DBSCAN":
-                vdf = vdf_from_relation(self.input_relation)
+                vdf = vDataFrameSQL(self.input_relation)
                 self.predict(vdf, name="kmeans_cluster")
                 catcol = "kmeans_cluster"
             else:
-                vdf = vdf_from_relation(self.name)
+                vdf = vDataFrameSQL(self.name)
                 catcol = "dbscan_cluster"
             return vdf.scatter(
                 columns=self.X,
@@ -2749,7 +2749,7 @@ class Supervised(vModel):
                 elif self.parameters["nbtype"] == "gaussian":
                     new_types[elem] = "float"
             if not (isinstance(input_relation, vDataFrame)):
-                input_relation = vdf_from_relation(input_relation)
+                input_relation = vDataFrameSQL(input_relation)
             input_relation.astype(new_types)
         does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
@@ -3200,7 +3200,7 @@ class BinaryClassifier(Classifier):
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -3263,7 +3263,7 @@ class BinaryClassifier(Classifier):
             "can only be 1 or 0 in case of Binary Classification."
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -3843,7 +3843,7 @@ class MulticlassClassifier(Classifier):
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -3922,7 +3922,7 @@ class MulticlassClassifier(Classifier):
             ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         if not (name):
             name = gen_name([self.type, self.name])
@@ -4201,7 +4201,7 @@ class Regressor(Supervised):
             [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
@@ -4302,7 +4302,7 @@ class Regressor(Supervised):
         elif method == "anova":
             return anova_table(self.y, prediction, test_relation, len(self.X))
         elif method == "details":
-            vdf = vdf_from_relation(
+            vdf = vDataFrameSQL(
                 "(SELECT {} FROM ".format(self.y)
                 + self.input_relation
                 + ") VERTICAPY_SUBTABLE"
@@ -4545,7 +4545,7 @@ class Unsupervised(vModel):
                 ", ".join(X), id_column_name
             )
         if isinstance(input_relation, str) and self.type == "MCA":
-            input_relation = vdf_from_relation(input_relation)
+            input_relation = vDataFrameSQL(input_relation)
         tmp_view = False
         if isinstance(input_relation, vDataFrame) or (id_column):
             tmp_view = True
@@ -4983,7 +4983,7 @@ class Preprocessing(Unsupervised):
             X = self.get_names()
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
         exclude_columns = vdf.get_columns(exclude_columns=X)
@@ -4992,7 +4992,7 @@ class Preprocessing(Unsupervised):
             self.deployInverseSQL(exclude_columns, exclude_columns, all_columns),
             relation,
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation")
+        return vDataFrameSQL(main_relation, "Inverse Transformation")
 
     # ---#
     def transform(self, vdf: Union[str, vDataFrame] = None, X: list = []):
@@ -5023,7 +5023,7 @@ class Preprocessing(Unsupervised):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
@@ -5032,7 +5032,7 @@ class Preprocessing(Unsupervised):
         main_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             self.deploySQL(exclude_columns, exclude_columns, all_columns), relation
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation")
+        return vDataFrameSQL(main_relation, "Inverse Transformation")
 
 
 # ---#
@@ -5125,7 +5125,7 @@ class Decomposition(Preprocessing):
         Matplotlib axes object
         """
         check_types([("dimensions", dimensions, [tuple])])
-        vdf = vdf_from_relation(self.input_relation)
+        vdf = vDataFrameSQL(self.input_relation)
         ax = self.transform(vdf).scatter(
             columns=["col{}".format(dimensions[0]), "col{}".format(dimensions[1])],
             max_nb_points=100000,
@@ -5395,7 +5395,7 @@ class Decomposition(Preprocessing):
             X = self.X
         check_types([("vdf", vdf, [str, vDataFrame])])
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         vdf.are_namecols_in(X)
         X = vdf.format_colnames(X)
         relation = vdf.__genSQL__()
@@ -5407,7 +5407,7 @@ class Decomposition(Preprocessing):
             ),
             relation,
         )
-        return vdf_from_relation(main_relation, "Inverse Transformation")
+        return vDataFrameSQL(main_relation, "Inverse Transformation")
 
 
 # ---#
@@ -5450,7 +5450,7 @@ class Clustering(Unsupervised):
             [("name", name, [str]), ("X", X, [list]), ("vdf", vdf, [str, vDataFrame]),],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X]
         name = (
             "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())

@@ -541,6 +541,16 @@ class TestvDFUtilities:
         assert result["age"] == [76.0, 80.0]
         assert result["fare"] == [78.85, 30.0]
 
+    def test_vDF_sql(self, titanic_vd):
+        sql = """-- Selecting some columns \n
+                 SELECT 
+                    age, 
+                    fare 
+                 FROM titanic 
+                 WHERE age IS NOT NULL;;"""
+        vdf = vDataFrame(sql=sql)
+        assert vdf.shape() == (996, 2)
+
     def test_vDF_store_usage(self, titanic_vd):
         result = titanic_vd["age"].store_usage()
         assert result == pytest.approx(5908, 1e-2)

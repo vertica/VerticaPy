@@ -101,9 +101,9 @@ nbtype: str, optional
     def get_var_info(self):
         # Returns a list of dictionary for each of the NB variables.
         # It is used to translate NB to Python
-        from verticapy.utilities import vdf_from_relation
+        from verticapy.utilities import vDataFrameSQL
 
-        vdf = vdf_from_relation(self.input_relation)
+        vdf = vDataFrameSQL(self.input_relation)
         var_info = {}
         gaussian_incr, bernoulli_incr, multinomial_incr = 0, 0, 0
         for idx, elem in enumerate(self.X):

@@ -440,6 +440,30 @@ dict
 
 
 # ---#
+def set_connection(conn):
+    """
+---------------------------------------------------------------------------
+Set a customised connector. You can use this function if you want
+to manually set the connection (Example: setting an ODBC or JDBC
+connection).
+
+Parameters
+----------
+conn: object
+    Connection object.
+    """
+    try:
+        conn.cursor().execute("SELECT 1;")
+        res = conn.cursor().fetchone()[0]
+        assert res == 1
+    except:
+        ParameterError("The input connector is not working properly.")
+    verticapy.options["connection"]["conn"] = conn
+    verticapy.options["connection"]["dsn"] = None
+    verticapy.options["connection"]["section"] = None
+
+
+# ---#
 def vertica_connection(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------

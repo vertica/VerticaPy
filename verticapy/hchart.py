@@ -52,9 +52,16 @@ from IPython.core.display import HTML, display
 import time
 import re
 
+# Other Modules
+import pandas as pd
+
+# VerticaPy
+from verticapy import vDataFrame, tablesample
+
 
 def hchart(line, cell):
 
+    # Initialization
     options = {"type": "auto"}
     query = cell
 
@@ -73,8 +80,21 @@ def hchart(line, cell):
                     " doesn't exist, it was skipped."
                 )
 
+    # Cleaning the Query
+    query = re.sub("--.+\n", "", query)
     query = query.replace("\t", " ").replace("\n", " ")
     query = re.sub(" +", " ", query)
+    variables = re.findall(":[A-Za-z0-9_]+", query)
+
+    for v in variables:
+        val = locals()["local_ns"][v[1:]]
+        if isinstance(val, vDataFrame):
+            val = val.__genSQL__()
+        elif isinstance(val, tablesample):
+            val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+        elif isinstance(val, pd.DataFrame):
+            val = pandas_to_vertica(val).__genSQL__()
+        variables = variables.replace(v, str(val))
 
     while len(query) > 0 and (query[-1] in (";", " ")):
         query = query[0:-1]
@@ -82,6 +102,7 @@ def hchart(line, cell):
     while len(query) > 0 and (query[0] in (";", " ")):
         query = query[1:]
 
+    # Drawing the graphic and displaying the info
     start_time = time.time()
     chart = hchartSQL(query, options["type"])
     elapsed_time = time.time() - start_time
