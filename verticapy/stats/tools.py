@@ -234,8 +234,8 @@ tablesample
     relation_name = gen_tmp_name(
         schema=verticapy.options["temp_schema"], name="linear_reg_view"
     )
-    drop_if_exists(name, method="model")
-    drop_if_exists(relation_name, method="view")
+    drop(name, method="model")
+    drop(relation_name, method="view")
     lag = [
         "LAG({}, 1) OVER ({}ORDER BY {}) AS lag1".format(
             column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts
@@ -275,8 +275,8 @@ tablesample
         predictors += ["ts"]
     model.fit(relation_name, predictors, "delta")
     coef = model.coef_
-    drop_if_exists(name, method="model")
-    drop_if_exists(relation_name, method="view")
+    drop(name, method="model")
+    drop(relation_name, method="view")
     if regresults:
         return coef
     coef = coef.transpose()

@@ -248,13 +248,13 @@ class TestRFC:
             ['"Gender"', '"owned cars"', '"cost"', '"income"']
         )[2]
         model.predict(vdf, name="prediction_vertica_sql")
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
         )
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
         )
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
         )
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
@@ -335,14 +335,25 @@ class TestRFC:
     def test_predict(self, rfc_data_vd, model):
         rfc_data_copy = rfc_data_vd.copy()
 
-        model.predict(rfc_data_copy, name="pred_probability")
-        assert rfc_data_copy["pred_probability"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred")
+        assert rfc_data_copy["pred"].mode() == "Bus"
 
-        model.predict(rfc_data_copy, name="pred_class1", cutoff=0.7)
-        assert rfc_data_copy["pred_class1"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred1", cutoff=0.7)
+        assert rfc_data_copy["pred1"].mode() == "Bus"
 
-        model.predict(rfc_data_copy, name="pred_class2", cutoff=0.3)
-        assert rfc_data_copy["pred_class2"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred2", cutoff=0.3)
+        assert rfc_data_copy["pred2"].mode() == "Bus"
+
+    def test_predict_proba(self, rfc_data_vd, model):
+        rfc_data_copy = rfc_data_vd.copy()
+
+        model.predict_proba(rfc_data_copy, name="prob")
+        assert rfc_data_copy["prob_bus"].avg() == 0.4
+        assert rfc_data_copy["prob_train"].avg() == 0.3
+        assert rfc_data_copy["prob_car"].avg() == 0.3
+
+        model.predict_proba(rfc_data_copy, name="prob_bus_2", pos_label="Bus")
+        assert rfc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Train", nbins=1000)

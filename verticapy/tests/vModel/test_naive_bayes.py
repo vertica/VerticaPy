@@ -254,17 +254,17 @@ class TestNB:
             ["age", "fare", "survived", "pclass", "sex", "has_children"]
         )[2]
         model_class.predict(titanic, name="prediction_vertica_sql")
-        model_class.predict(
+        model_class.predict_proba(
             titanic,
             name="prediction_proba_vertica_sql_0",
             pos_label=model_class.classes_[0],
         )
-        model_class.predict(
+        model_class.predict_proba(
             titanic,
             name="prediction_proba_vertica_sql_1",
             pos_label=model_class.classes_[1],
         )
-        model_class.predict(
+        model_class.predict_proba(
             titanic,
             name="prediction_proba_vertica_sql_2",
             pos_label=model_class.classes_[2],

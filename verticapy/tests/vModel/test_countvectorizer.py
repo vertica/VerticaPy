@@ -18,7 +18,6 @@ import pytest
 from verticapy import (
     drop,
     set_option,
-    vertica_conn,
     create_verticapy_schema,
 )
 from verticapy.connect import current_cursor

@@ -64,7 +64,6 @@ class TestNearestCentroid:
         m_att = model.get_attr("classes")
         assert m_att == model.classes_
 
-    # TODO
     def test_contour(self, titanic_vd):
         model_test = NearestCentroid("model_contour",)
         model_test.drop()
@@ -135,10 +134,10 @@ class TestNearestCentroid:
         titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         titanic = model.predict(titanic, name="prediction_vertica_sql", cutoff=0.5)
-        titanic = model.predict(
+        titanic = model.predict_proba(
             titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
         )
-        titanic = model.predict(
+        titanic = model.predict_proba(
             titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
         )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
@@ -175,13 +174,27 @@ class TestNearestCentroid:
     def test_get_params(self, model):
         assert model.get_params() == {"p": 2}
 
-    def test_get_predicts(self, titanic_vd, model):
+    def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
+
         titanic_copy = model.predict(
             titanic_copy, X=["age", "fare"], name="predicted_quality", inplace=False,
         )
-
         assert titanic_copy["predicted_quality"].mean() == pytest.approx(
+            0.245983935742972, abs=1e-6
+        )
+
+    def test_predict_proba(self, titanic_vd, model):
+        titanic_copy = titanic_vd.copy()
+
+        titanic_copy = model.predict_proba(
+            titanic_copy,
+            X=["age", "fare"],
+            name="prob_quality",
+            inplace=False,
+            pos_label=1,
+        )
+        assert titanic_copy["prob_quality"].mean() == pytest.approx(
             0.371179022830741, abs=1e-6
         )
 

@@ -115,6 +115,7 @@ Attributes
             "cov": {},
             "pearson": {},
             "spearman": {},
+            "spearmand": {},
             "kendall": {},
             "cramer": {},
             "biserial": {},
@@ -1337,14 +1338,14 @@ Attributes
             )
             self.parent.are_namecols_in(response)
             response = self.parent.format_colnames(response)
-            drop_if_exists(tmp_view_name, method="view")
+            drop(tmp_view_name, method="view")
             self.parent.to_db(tmp_view_name)
             from verticapy.learn.ensemble import (
                 RandomForestClassifier,
                 RandomForestRegressor,
             )
 
-            drop_if_exists(tmp_model_name, method="model")
+            drop(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
                 model = RandomForestRegressor(tmp_model_name)
             else:
@@ -1370,8 +1371,8 @@ Attributes
                 )
                 result = [elem[0] for elem in result]
             except:
-                drop_if_exists(tmp_view_name, method="view")
-                drop_if_exists(tmp_model_name, method="model")
+                drop(tmp_view_name, method="view")
+                drop(tmp_model_name, method="model")
                 raise
             drop(tmp_view_name, method="view")
             drop(tmp_model_name, method="model")

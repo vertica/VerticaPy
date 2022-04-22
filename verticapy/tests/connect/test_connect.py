@@ -41,8 +41,8 @@ class TestConnect:
         # delete_connection
         assert delete_connection("vp_test_config")
 
-    def test_vertica_conn(self, base):
-        cur = vertica_conn(
+    def test_vertica_connection(self, base):
+        cur = vertica_connection(
             "vp_test_config",
             os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
         ).cursor()

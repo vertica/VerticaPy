@@ -121,7 +121,7 @@ name: str
 def close_connection():
     """
 ---------------------------------------------------------------------------
-Close the Database connection.
+Closes the connection to the database.
     """
     if verticapy.options["connection"]["conn"] and not (
         verticapy.options["connection"]["conn"].closed()
@@ -133,7 +133,7 @@ Close the Database connection.
 def connect(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
-Connect to the Database.
+Connects to the database.
 
 Parameters
 ----------
@@ -148,23 +148,32 @@ dsn: str, optional
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
-    verticapy.options["connection"]["conn"] = vertica_conn(section, dsn)
+    verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
     verticapy.options["connection"]["dsn"] = dsn
     verticapy.options["connection"]["section"] = section
 
 
 # ---#
-def current_conn():
+def current_connection():
     """
 ---------------------------------------------------------------------------
-Returns the current Database connection.
-    """
-    from verticapy.connect import read_auto_connect, connect
+Returns the current database connection.
+If the connection is closed, VerticaPy attempts to reconnect with the 
+existing connection.
 
+If the connection attempt fails, VerticaPy attempts to reconnect using 
+stored credentials. If this also fails, VerticaPy attempts to connect using
+an auto connection. Otherwise, VerticaPy attempts to connect to a 
+VerticaLab Environment.
+    """
+
+    # Look if the connection does not exist or is closed
     if (
         not (verticapy.options["connection"]["conn"])
         or verticapy.options["connection"]["conn"].closed()
     ):
+
+        # Connection using the existing credentials
         if (
             verticapy.options["connection"]["section"]
             and verticapy.options["connection"]["dsn"]
@@ -173,8 +182,23 @@ Returns the current Database connection.
                 verticapy.options["connection"]["section"],
                 verticapy.options["connection"]["dsn"],
             )
+
         else:
-            read_auto_connect()
+
+            try:
+                # Connection using the Auto Connection
+                read_auto_connect()
+
+            except Exception as e:
+
+                try:
+                    # Connection to the VerticaLab environment
+                    conn = verticalab_connection()
+                    verticapy.options["connection"]["conn"] = conn
+
+                except:
+                    raise (e)
+
     return verticapy.options["connection"]["conn"]
 
 
@@ -182,16 +206,16 @@ Returns the current Database connection.
 def current_cursor():
     """
 ---------------------------------------------------------------------------
-Returns the current Database cursor.
+Returns the current database cursor.
     """
-    return current_conn().cursor()
+    return current_connection().cursor()
 
 
 # ---#
 def delete_connection(name: str):
     """
 ---------------------------------------------------------------------------
-Deletes the connection from the connection file.
+Deletes a specified connection from the connection file.
 
 Parameters
 ----------
@@ -240,8 +264,8 @@ folder in the user's home directory.
 Returns
 -------
 string
-        the full path to the auto-connection file.
-        """
+    the full path to the auto-connection file.
+    """
     if "VERTICAPY_CONNECTIONS" in os.environ:
         return os.environ["VERTICAPY_CONNECTIONS"]
     path = os.path.join(os.path.expanduser("~"), ".vertica")
@@ -416,7 +440,7 @@ dict
 
 
 # ---#
-def vertica_conn(section: str, dsn: str = ""):
+def vertica_connection(section: str, dsn: str = ""):
     """
 ---------------------------------------------------------------------------
 Reads the input DSN and creates a Vertica Database connection.
@@ -432,8 +456,30 @@ dsn: str, optional
 Returns
 -------
 conn
-	Database connection
+	Database connection.
 	"""
     check_types([("dsn", dsn, [str])])
     conn = vertica_python.connect(**read_dsn(section, dsn))
     return conn
+
+
+# ---#
+def verticalab_connection():
+    """
+---------------------------------------------------------------------------
+Returns the VerticaLab connection if possible.
+
+Returns
+-------
+conn
+    Database connection.
+    """
+    conn_info = {
+        "host": "vertica-demo",
+        "port": 5433,
+        "user": "dbadmin",
+        "password": "",
+        "database": "demo",
+        "backup_server_node": ["localhost"],
+    }
+    return vertica_python.connect(**conn_info)

@@ -311,9 +311,9 @@ Main Class for Vertica Model
 	Drops the model from the Vertica database.
 		"""
         if self.type == "AutoDataPrep":
-            drop_if_exists(self.name, method="table")
+            drop(self.name, method="table")
         else:
-            drop_if_exists(self.name, method="model")
+            drop(self.name, method="model")
 
     # ---#
     def features_importance(
@@ -2770,7 +2770,7 @@ class Supervised(vModel):
             else:
                 self.input_relation = input_relation
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
-            drop_if_exists(relation, method="view")
+            drop(relation, method="view")
             executeSQL(
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
@@ -3034,6 +3034,8 @@ class BinaryClassifier(Classifier):
             cutoff=cutoff,
         )
 
+    report = classification_report
+
     # ---#
     def confusion_matrix(self, cutoff: float = 0.5):
         """
@@ -3079,9 +3081,11 @@ class BinaryClassifier(Classifier):
         check_types([("cutoff", cutoff, [int, float]), ("X", X, [list])])
         X = [quote_ident(elem) for elem in X]
         fun = self.get_model_fun()[1]
-        sql = "{}({} USING PARAMETERS model_name = '{}', type = 'probability', match_by_pos = 'true')"
+        sql = "{0}({1} USING PARAMETERS model_name = '{2}', type = 'probability', match_by_pos = 'true')"
         if cutoff <= 1 and cutoff >= 0:
-            sql = "(CASE WHEN {} > {} THEN 1 ELSE 0 END)".format(sql, cutoff)
+            sql = "(CASE WHEN {0} >= {1} THEN 1 WHEN {0} IS NULL THEN NULL ELSE 0 END)".format(
+                sql, cutoff
+            )
         return sql.format(fun, ", ".join(self.X if not (X) else X), self.name)
 
     # ---#
@@ -3150,7 +3154,7 @@ class BinaryClassifier(Classifier):
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
-        cutoff: float = -1,
+        cutoff: float = 0.5,
         inplace: bool = True,
     ):
         """
@@ -3161,8 +3165,9 @@ class BinaryClassifier(Classifier):
 	----------
 	vdf: str/vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -3178,6 +3183,7 @@ class BinaryClassifier(Classifier):
 	vDataFrame
 		the input object.
 		"""
+        # Inititalization
         if isinstance(X, str):
             X = [X]
         check_types(
@@ -3186,20 +3192,97 @@ class BinaryClassifier(Classifier):
                 ("cutoff", cutoff, [int, float]),
                 ("X", X, [list]),
                 ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool]),
             ],
+        )
+        assert 0 <= cutoff <= 1, ParameterError(
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, X=X))
+
+    # ---#
+    def predict_proba(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        pos_label: Union[int, str, float] = None,
+        inplace: bool = True,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the model's probabilities using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct whereas, "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    pos_label: int/float/str, optional
+        Class label. For binary classification, this can be either 1 or 0.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the input object.
+        """
+        # Inititalization
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("name", name, [str]),
+                ("X", X, [list]),
+                ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool]),
+                ("pos_label", pos_label, [bool]),
+            ],
         )
-        if inplace:
-            return vdf.eval(name, self.deploySQL(cutoff=cutoff, X=X))
-        else:
-            return vdf.copy().eval(name, self.deploySQL(cutoff=cutoff, X=X))
+        assert pos_label in [1, 0, "0", "1", None], ParameterError(
+            "Incorrect parameter 'pos_label'.\nThe class label "
+            "can only be 1 or 0 in case of Binary Classification."
+        )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf)
+        X = [quote_ident(elem) for elem in X]
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        name_tmp = name
+        if pos_label in [0, "0", None]:
+            if pos_label == None:
+                name_tmp = f"{name}_0"
+            vdf_return.eval(name_tmp, "1 - {0}".format(self.deploySQL(X=X)))
+        if pos_label in [1, "1", None]:
+            if pos_label == None:
+                name_tmp = f"{name}_1"
+            vdf_return.eval(name_tmp, self.deploySQL(X=X))
+
+        return vdf_return
 
     # ---#
     def cutoff_curve(self, ax=None, nbins: int = 30, **style_kwds):
@@ -3399,6 +3482,8 @@ class MulticlassClassifier(Classifier):
         if not (labels):
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+
+    report = classification_report
 
     # ---#
     def confusion_matrix(
@@ -3712,8 +3797,7 @@ class MulticlassClassifier(Classifier):
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
-        cutoff: float = -1,
-        pos_label: Union[int, str, float] = None,
+        cutoff: float = 0.5,
         inplace: bool = True,
     ):
         """
@@ -3724,8 +3808,9 @@ class MulticlassClassifier(Classifier):
 	----------
 	vdf: str/vDataFrame
 		Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
 	X: list, optional
 		List of the columns used to deploy the models. If empty, the model
 		predictors will be used.
@@ -3733,10 +3818,7 @@ class MulticlassClassifier(Classifier):
 		Name of the added vcolumn. If empty, a name will be generated.
 	cutoff: float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
-		If the parameter is not between 0 and 1, the class probability will
-		be returned.
-	pos_label: int/float/str, optional
-		Class label.
+		This parameter is only used for binary classification.
 	inplace: bool, optional
 		If set to True, the prediction will be added to the vDataFrame.
 
@@ -3745,6 +3827,7 @@ class MulticlassClassifier(Classifier):
 	vDataFrame
 		the input object.
 		"""
+        # Inititalization
         if isinstance(X, str):
             X = [X]
         check_types(
@@ -3755,24 +3838,107 @@ class MulticlassClassifier(Classifier):
                 ("vdf", vdf, [str, vDataFrame]),
             ],
         )
+        assert 0 <= cutoff <= 1, ParameterError(
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
+        )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
         X = [quote_ident(elem) for elem in X]
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Check if it is a Binary Classifier
+        pos_label = None
+        if (
+            len(self.classes_) == 2
+            and self.classes_[0] in [0, "0"]
+            and self.classes_[1] in [1, "1"]
+        ):
+            pos_label = 1
+
+        # Result
+        return vdf_return.eval(
+            name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X)
         )
-        if len(self.classes_) == 2 and pos_label == None:
-            pos_label = self.classes_[1]
-        if inplace:
-            return vdf.eval(
-                name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X)
-            )
+
+    # ---#
+    def predict_proba(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        pos_label: Union[int, str, float] = None,
+        inplace: bool = True,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the model's probabilities using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the additional prediction vColumn. If unspecified, a name is 
+	generated based on the model and class names.
+    pos_label: int/float/str, optional
+        Class label, the class for which the probability is calculated. 
+	If name is specified and pos_label is unspecified, the probability column 
+	names use the following format: name_class1, name_class2, etc.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the input object.
+        """
+        # Inititalization
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("name", name, [str]),
+                ("X", X, [list]),
+                ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool]),
+                ("pos_label", pos_label, [int, float, str]),
+            ],
+        )
+        assert pos_label is None or pos_label in self.classes_, ParameterError(
+            (
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "must be in [{0}]. Found '{1}'."
+            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+        )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf)
+        X = [quote_ident(elem) for elem in X]
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        if pos_label == None:
+            for c in self.classes_:
+                name_tmp = gen_name([name, c])
+                vdf_return.eval(name_tmp, self.deploySQL(pos_label=c, cutoff=-1, X=X))
         else:
-            return vdf.copy().eval(
-                name, self.deploySQL(pos_label=pos_label, cutoff=cutoff, X=X)
-            )
+            vdf_return.eval(name, self.deploySQL(pos_label=pos_label, cutoff=-1, X=X))
+
+        return vdf_return
 
     # ---#
     def roc_curve(
@@ -4181,6 +4347,8 @@ class Regressor(Supervised):
                 }
             )
 
+    report = regression_report
+
     # ---#
     def score(self, method: str = "r2"):
         """
@@ -4398,7 +4566,7 @@ class Unsupervised(vModel):
                     "vDataFrame.cdt method to transform the relation."
                 )
             relation = gen_tmp_name(schema=schema_relation(self.name)[0], name="view")
-            drop_if_exists(relation, method="view")
+            drop(relation, method="view")
             executeSQL(
                 "CREATE VIEW {0} AS SELECT *{1} FROM {2}".format(
                     relation, id_column, self.input_relation
@@ -4436,7 +4604,7 @@ class Unsupervised(vModel):
                 schema=schema_relation(self.name)[0], name="kmeans_init"
             )
             del parameters["init_method"]
-            drop_if_exists(name_init, method="table")
+            drop(name_init, method="table")
             if len(self.parameters["init"]) != self.parameters["n_cluster"]:
                 raise ParameterError(
                     "'init' must be a list of 'n_cluster' = {} points".format(
@@ -4487,7 +4655,7 @@ class Unsupervised(vModel):
                 and not (isinstance(parameters["init_method"], str))
                 and self.type in ("KMeans", "BisectingKMeans")
             ):
-                drop_if_exists("{}".format(name_init), method="table")
+                drop("{}".format(name_init), method="table")
             raise
         if self.type == "KMeans":
             if (
@@ -4495,7 +4663,7 @@ class Unsupervised(vModel):
                 and not (isinstance(parameters["init_method"], str))
                 and self.type in ("KMeans", "BisectingKMeans")
             ):
-                drop_if_exists("{}".format(name_init), method="table")
+                drop("{}".format(name_init), method="table")
             self.cluster_centers_ = self.get_attr("centers")
             result = self.get_attr("metrics").values["metrics"][0]
             values = {

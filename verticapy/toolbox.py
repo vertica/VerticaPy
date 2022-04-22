@@ -192,7 +192,7 @@ def executeSQL(
     from verticapy.connect import current_cursor
 
     cursor = current_cursor()
-    if verticapy.options["query_on"] and print_time_sql:
+    if verticapy.options["sql_on"] and print_time_sql:
         print_query(query, title)
     start_time = time.time()
     if data:

@@ -88,7 +88,7 @@ verticapy.options = {
     "mode": None,
     "percent_bar": None,
     "print_info": True,
-    "query_on": False,
+    "sql_on": False,
     "random_state": None,
     "temp_schema": "public",
     "time_on": False,

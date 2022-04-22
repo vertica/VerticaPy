@@ -105,6 +105,23 @@ class TestvDFCorrelation:
         assert result4["value"][6] == pytest.approx(-0.06, 1e-2)
         assert result4["confidence"][6] == pytest.approx(0.05273251493184901, 1e-2)
 
+        # spearmanD method
+        result5 = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=20,
+            by=["state"],
+            unit="month",
+            method="spearmanD",
+        )
+        plt.close("all")
+        assert result5["value"][0] == pytest.approx(1)
+        assert result5["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
+        assert result5.values["value"][10] == pytest.approx(0.5, 1e-2)
+        assert result5.values["confidence"][10] == pytest.approx(
+            0.06977116419369607, 1e-2
+        )
+
     def test_vDF_chaid(self, titanic_vd):
         result = titanic_vd.chaid("survived", ["age", "fare", "sex"])
         tree = result.attributes_["tree"]
@@ -259,12 +276,40 @@ class TestvDFCorrelation:
         assert result5_f["survived"][1] == pytest.approx(0.73190924565401, 1e-2)
         assert result5_f["survived"][2] == pytest.approx(0.6707486879228794, 1e-2)
 
+        #
+        # DENSE SPEARMAN
+        #
+        # testing vDataFrame.corr (method = 'spearmanD')
+        result6 = titanic_vd_gb.corr(
+            columns=["survived", "age", "fare"], method="spearmanD",
+        )
+        plt.close("all")
+        assert result6["survived"][0] == 1.0
+        assert result6["survived"][1] == pytest.approx(-0.221388367729831, 1e-2)
+        assert result6["survived"][2] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6["age"][0] == pytest.approx(-0.221388367729831, 1e-2)
+        assert result6["age"][1] == 1.0
+        assert result6["age"][2] == pytest.approx(0.287617260787992, 1e-2)
+        assert result6["fare"][0] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6["fare"][1] == pytest.approx(0.287617260787992, 1e-2)
+        assert result6["fare"][2] == 1.0
+
+        # testing vDataFrame.corr (method = 'spearmanD') with focus
+        result6_f = titanic_vd_gb.corr(focus="survived", method="spearmanD")
+        plt.close("all")
+        assert result6_f["survived"][1] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6_f["survived"][2] == pytest.approx(-0.221388367729831, 1e-2)
+
     def test_vDF_corr_pvalue(self, titanic_vd):
         assert titanic_vd.corr_pvalue("age", "fare", "pearson") == (
             pytest.approx(0.178575164117468, 1e-2),
             pytest.approx(1.3923308548466764e-08, 1e-2),
         )
         assert titanic_vd.corr_pvalue("age", "fare", "spearman") == (
+            pytest.approx(0.0045193585753828, 1e-2),
+            pytest.approx(0.8899833744540833, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "spearmanD") == (
             pytest.approx(0.0045193585753828, 1e-2),
             pytest.approx(0.8899833744540833, 1e-2),
         )

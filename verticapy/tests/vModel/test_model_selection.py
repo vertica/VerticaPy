@@ -225,7 +225,7 @@ class TestModelSelection:
         data = winequality_vd.copy()
         data = model.predict(data, name="prediction")
         result = lift_chart("good", "prediction", data, pos_label=1, nbins=30,)
-        assert result["lift"][0] == pytest.approx(3.53927343297811)
+        assert result["lift"][0] == pytest.approx(2.95543129990643)
         assert len(result["lift"]) == 31
         model.drop()
         plt.close("all")
@@ -264,7 +264,7 @@ class TestModelSelection:
         model.drop()
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
-        data = model.predict(data, name="prediction")
+        data = model.predict_proba(data, name="prediction", pos_label=1)
         result = prc_curve("good", "prediction", data, pos_label=1, nbins=30,)
         assert result["precision"][1] == pytest.approx(0.196552254886871)
         assert len(result["precision"]) == 30
@@ -290,7 +290,7 @@ class TestModelSelection:
         model.drop()
         model.fit("public.winequality", ["residual_sugar", "alcohol"], "good")
         data = winequality_vd.copy()
-        data = model.predict(data, name="prediction")
+        data = model.predict_proba(data, name="prediction", pos_label=1)
         result = roc_curve("good", "prediction", data, pos_label=1, nbins=30,)
         assert result["true_positive"][2] == pytest.approx(0.945967110415035)
         assert len(result["true_positive"]) == 31

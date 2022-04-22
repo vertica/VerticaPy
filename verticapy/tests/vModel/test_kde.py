@@ -59,7 +59,10 @@ class TestKernelDensity:
         model_test.drop()
         model_test.fit("public.titanic", ["age", "fare"])
         current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
+            """SELECT 
+                    model_name 
+               FROM verticapy.models 
+               WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"""
         )
         assert current_cursor().fetchone()[0] in (
             "model_test_drop",
@@ -68,7 +71,10 @@ class TestKernelDensity:
 
         model_test.drop()
         current_cursor().execute(
-            "SELECT model_name FROM verticapy.models WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"
+            """SELECT 
+                    model_name 
+               FROM verticapy.models 
+               WHERE model_name IN ('model_test_drop', '\"model_test_drop\"')"""
         )
         assert current_cursor().fetchone() is None
 
@@ -88,7 +94,7 @@ class TestKernelDensity:
         titanic_copy = model.predict(titanic_vd.copy(), name="kde")
 
         assert titanic_copy["kde"].mean() == pytest.approx(
-            6.52177350119195e-07, abs=1e-6
+            1.82115211838814e-06, abs=1e-6
         )
 
     def test_get_attr(self, model):
@@ -118,6 +124,6 @@ class TestKernelDensity:
         titanic_copy = model_test.predict(titanic_vd.copy(), name="kde")
 
         assert titanic_copy["kde"].mean() == pytest.approx(
-            6.52177350119195e-07, abs=1e-6
+            1.82115211838814e-06, abs=1e-6
         )
         model_test.drop()

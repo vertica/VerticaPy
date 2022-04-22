@@ -421,7 +421,7 @@ papprox_ma: int, optional
                 ", ".join(columns), relation
             )
             view_name = gen_tmp_name(schema=schema, name="linear_reg")
-            drop_if_exists(view_name, method="view")
+            drop(view_name, method="view")
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(
                 view_name,
                 relation.format(self.input_relation)
@@ -436,9 +436,9 @@ papprox_ma: int, optional
                     input_relation=view_name, X=self.X, y=self.y,
                 )
             except:
-                drop_if_exists(view_name, method="view")
+                drop(view_name, method="view")
                 raise
-            drop_if_exists(view_name, method="view")
+            drop(view_name, method="view")
             self.coef_.values["predictor"] = model.coef_.values["predictor"]
             self.coef_.values["coefficient"] = model.coef_.values["coefficient"]
             alphaq = model.coef_.values["coefficient"]
@@ -566,7 +566,7 @@ papprox_ma: int, optional
             )
             for idx, elem in enumerate(X):
                 tmp_relation = tmp_relation.replace("[X{}]".format(idx), elem)
-            drop_if_exists(view_name, method="view")
+            drop(view_name, method="view")
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(
                 view_name,
                 tmp_relation.format(self.input_relation)
@@ -580,9 +580,9 @@ papprox_ma: int, optional
                     input_relation=view_name, X=ARq, y=self.y,
                 )
             except:
-                drop_if_exists(view_name, method="view")
+                drop(view_name, method="view")
                 raise
-            drop_if_exists(view_name, method="view")
+            drop(view_name, method="view")
             if not (self.coef_.values["predictor"]):
                 self.coef_.values["predictor"] += ["Intercept"]
                 self.coef_.values["coefficient"] += [self.ma_avg_]
@@ -1325,7 +1325,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         view_name = gen_tmp_name(schema=schema, name="linear_reg")
-        drop_if_exists(view_name, method="view")
+        drop(view_name, method="view")
         try:
             query = "CREATE VIEW {} AS SELECT * FROM {}".format(view_name, relation)
             executeSQL(query, print_time_sql=False)
@@ -1337,9 +1337,9 @@ solver: str, optional
                 self.coef_ += [model.coef_]
                 model.drop()
         except:
-            drop_if_exists(view_name, method="view")
+            drop(view_name, method="view")
             raise
-        drop_if_exists(view_name, method="view")
+        drop(view_name, method="view")
         model_save = {
             "type": "VAR",
             "input_relation": self.input_relation,

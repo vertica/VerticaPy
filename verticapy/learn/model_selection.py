@@ -221,7 +221,7 @@ tablesample
     schema = verticapy.options["temp_schema"]
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
-    drop_if_exists(relation, method="table")
+    drop(relation, method="table")
     executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False)
     if print_info:
         print(
@@ -263,7 +263,7 @@ tablesample
             vdf = gen_dataset(model_grid, nrows=nrows)
         else:
             vdf = gen_meshgrid(model_grid)
-        drop_if_exists(relation, method="table")
+        drop(relation, method="table")
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
         reverse = reverse_score(metric)
@@ -310,7 +310,7 @@ tablesample
         print(
             f"Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
         )
-    drop_if_exists(relation, method="table")
+    drop(relation, method="table")
     return result
 
 
@@ -393,7 +393,7 @@ int
         loop = L
     for i in loop:
         model_name = gen_tmp_name(schema=schema, name="kmeans")
-        drop_if_exists(model_name, method="model")
+        drop(model_name, method="model")
         model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         score = model.metrics_.values["value"][3]
@@ -785,7 +785,7 @@ tablesample
     else:
         loop = L
     for i in loop:
-        drop_if_exists(model_name, method="model")
+        drop(model_name, method="model")
         from verticapy.learn.cluster import KMeans
 
         model = KMeans(model_name, i, init, max_iter, tol)

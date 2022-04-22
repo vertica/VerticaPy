@@ -66,6 +66,35 @@ except:
 
 #
 # ---#
+def create_schema(
+    schema: str, raise_error: bool = False,
+):
+    """
+---------------------------------------------------------------------------
+Creates a new schema.
+
+Parameters
+----------
+schema: str
+    Schema name.
+raise_error: bool, optional
+    If the schema couldn't be created, the function raises an error.
+
+Returns
+-------
+bool
+    True if the schema was successfully created, False otherwise.
+    """
+    try:
+        executeSQL(f"CREATE SCHEMA {schema};", title="Creating the new schema.")
+        return True
+    except:
+        if raise_error:
+            raise
+        return False
+
+
+# ---#
 def create_table(
     table_name: str,
     dtype: dict,
@@ -73,6 +102,7 @@ def create_table(
     temporary_table: bool = False,
     temporary_local_table: bool = True,
     genSQL: bool = False,
+    raise_error: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -96,6 +126,8 @@ temporary_local_table: bool, optional
 genSQL: bool, optional
     If set to True, the SQL code for creating the final table will be 
     generated but not executed.
+raise_error: bool, optional
+    If the relation couldn't be created, raises the entire error.
 
 Returns
 -------
@@ -110,6 +142,7 @@ bool
             ("genSQL", genSQL, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
+            ("raise_error", raise_error, [bool]),
         ]
     )
     if schema.lower() == "v_temp_schema":
@@ -136,8 +169,9 @@ bool
     try:
         executeSQL(query, title="Creating the new table.")
         return True
-    except Exception as e:
-        warnings.warn(str(e), Warning)
+    except:
+        if raise_error:
+            raise
         return False
 
 
@@ -156,7 +190,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
 
 
 # ---#
-def drop(name: str = "", raise_error: bool = False, method: str = "auto"):
+def drop(name: str = "", method: str = "auto", raise_error: bool = False):
     """
 ---------------------------------------------------------------------------
 Drops the input relation. This can be a model, view, table, text index,
@@ -167,9 +201,6 @@ Parameters
 name: str, optional
     Relation name. If empty, it will drop all VerticaPy temporary 
     elements.
-raise_error: bool, optional
-    If the object couldn't be dropped, raises the entire error 
-    instead of displaying a warning.
 method: str, optional
     Method used to drop.
         auto   : identifies the table/view/index/model to drop. 
@@ -181,6 +212,8 @@ method: str, optional
         geo    : drops the input geo index.
         text   : drops the input text index.
         schema : drops the input schema.
+raise_error: bool, optional
+    If the object couldn't be dropped, this function raises an error.
 
 Returns
 -------
@@ -192,12 +225,12 @@ bool
     check_types(
         [
             ("name", name, [str]),
-            ("raise_error", raise_error, [bool]),
             (
                 "method",
                 method,
                 ["table", "view", "model", "geo", "text", "auto", "schema"],
             ),
+            ("raise_error", raise_error, [bool]),
         ]
     )
     schema, relation = schema_relation(name)
@@ -248,10 +281,10 @@ bool
             method = "geo"
             end_conditions = True
         if fail:
-            warning_message = "No relation / index / view / model named '{}' was detected.".format(
-                name
-            )
-            warnings.warn(warning_message, Warning)
+            if raise_error:
+                raise MissingRelation(
+                    f"No relation / index / view / model named '{name}' was detected."
+                )
             return False
     query = ""
     if method == "model":
@@ -310,64 +343,33 @@ bool
                 raise
             if method in ("geo", "text"):
                 method += " index"
-            warning_message = f"The {method} '{name}' doesn't exist or can not be dropped !\nUse parameter: raise_error = True to get more information."
-            warnings.warn(warning_message, Warning)
             result = False
     elif method == "temp":
-        sql = "SELECT table_schema, table_name FROM columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
+        sql = """SELECT 
+                    table_schema, table_name 
+                 FROM columns 
+                 WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
+                 GROUP BY 1, 2;"""
         all_tables = result = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_tables:
             table = '"{}"."{}"'.format(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
-            drop_if_exists(table, method="table")
-        sql = "SELECT table_schema, table_name FROM view_columns WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' GROUP BY 1, 2;"
+            drop(table, method="table")
+        sql = """SELECT 
+                    table_schema, table_name 
+                 FROM view_columns 
+                 WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
+                 GROUP BY 1, 2;"""
         all_views = executeSQL(sql, print_time_sql=False, method="fetchall")
         for elem in all_views:
             view = '"{}"."{}"'.format(
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
-            drop_if_exists(view, method="view")
+            drop(view, method="view")
         result = True
     else:
         result = True
-    return result
-
-
-# ---#
-def drop_if_exists(name: str = "", method: str = "auto"):
-    """
----------------------------------------------------------------------------
-Drops the input relation if it exists. This relation can be a model, view, 
-table, text index, schema, or geo index. This function will raise no error 
-or warning.
-
-Parameters
-----------
-name: str, optional
-    Relation name. If empty, it will drop all VerticaPy temporary elements.
-
-method: str, optional
-    Method used to drop.
-        auto   : identifies the table/view/index/model to drop. It will never
-                 drop an entire schema unless the method is set to 'schema'.
-        model  : drops the input model.
-        table  : drops the input table.
-        view   : drops the input view.        
-        geo    : drops the input geo index.
-        text   : drops the input text index.
-        schema : drops the input schema.
-
-Returns
--------
-bool
-    True if the relation was dropped, False otherwise.
-    """
-    try:
-        with warnings.catch_warnings(record=True) as w:
-            result = drop(name, method=method)
-    except:
-        result = False
     return result
 
 
@@ -405,21 +407,21 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         method="fetchfirstelem",
         print_time_sql=False,
     )
-    query_on_init = verticapy.options["query_on"]
+    sql_on_init = verticapy.options["sql_on"]
     time_on_init = verticapy.options["time_on"]
     try:
         verticapy.options["time_on"] = time_on
-        verticapy.options["query_on"] = False
+        verticapy.options["sql_on"] = False
         try:
             result = to_tablesample("{} LIMIT {}".format(query, limit))
         except:
             result = to_tablesample(query)
     except:
         verticapy.options["time_on"] = time_on_init
-        verticapy.options["query_on"] = query_on_init
+        verticapy.options["sql_on"] = sql_on_init
         raise
     verticapy.options["time_on"] = time_on_init
-    verticapy.options["query_on"] = query_on_init
+    verticapy.options["sql_on"] = sql_on_init
     result.count = count
     if verticapy.options["percent_bar"]:
         vdf = vdf_from_relation("({}) VERTICAPY_SUBTABLE".format(query))
@@ -482,7 +484,7 @@ list of tuples
         except:
             pass
     tmp_name, schema = gen_tmp_name(name="table"), "v_temp_schema"
-    drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+    drop("{}.{}".format(schema, tmp_name), method="table")
     try:
         if schema == "v_temp_schema":
             executeSQL(
@@ -499,7 +501,7 @@ list of tuples
                 print_time_sql=False,
             )
     except:
-        drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+        drop("{}.{}".format(schema, tmp_name), method="table")
         raise
     query = "SELECT column_name, data_type FROM columns WHERE {}table_name = '{}' AND table_schema = '{}' ORDER BY ordinal_position".format(
         "column_name = '{}' AND ".format(column_name) if (column_name) else "",
@@ -511,7 +513,7 @@ list of tuples
         ctype = cursor.fetchone()[1]
     else:
         ctype = cursor.fetchall()
-    drop_if_exists("{}.{}".format(schema, tmp_name), method="table")
+    drop("{}.{}".format(schema, tmp_name), method="table")
     return ctype
 
 
@@ -710,7 +712,7 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_name = gen_tmp_name(name="df")[1:-1]
     else:
         tmp_name = ""
-    path = "{}{}{}.csv".format(
+    path = "{0}{1}{2}.csv".format(
         temp_path, "/" if (len(temp_path) > 1 and temp_path[-1] != "/") else "", name
     )
     try:
@@ -741,7 +743,13 @@ read_json : Ingests a JSON file into the Vertica database.
         )
         if insert:
             input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
-            query = "COPY {}({}) FROM LOCAL '{}' DELIMITER ',' NULL '' ENCLOSED BY '\"' ESCAPE AS '\\' SKIP 1;".format(
+            query = """COPY {0}({1}) 
+                       FROM LOCAL '{2}' 
+                       DELIMITER ',' 
+                       NULL ''
+                       ENCLOSED BY '\"' 
+                       ESCAPE AS '\\' 
+                       SKIP 1;""".format(
                 input_relation,
                 ", ".join(
                     ['"' + col.replace('"', '""') + '"' for col in tmp_df.columns]
@@ -759,7 +767,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 dtype=dtype,
                 temporary_local_table=True,
                 parse_n_lines=parse_n_lines,
-                escape="\\",
+                escape="\027",
             )
         else:
             vdf = read_csv(
@@ -769,7 +777,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 schema=schema,
                 temporary_local_table=False,
                 parse_n_lines=parse_n_lines,
-                escape="\\",
+                escape="\027",
             )
         os.remove(path)
     except:
@@ -889,7 +897,7 @@ read_json : Ingests a JSON file into the Vertica database.
             dtype[column_dtype[0]] = column_dtype[1]
         except:
             dtype[column_dtype[0]] = "Varchar(100)"
-    drop_if_exists(flex_name, method="table")
+    drop(flex_name, method="table")
     return dtype
 
 
@@ -1111,9 +1119,11 @@ read_json : Ingests a JSON file into the Vertica database.
         )
     else:
         if not (temporary_local_table):
-            input_relation = '"{}"."{}"'.format(schema, table_name)
+            input_relation = "{}.{}".format(
+                quote_ident(schema), quote_ident(table_name)
+            )
         else:
-            input_relation = '"{}"'.format(table_name)
+            input_relation = "v_temp_schema.{}".format(quote_ident(table_name))
         f = open(path, "r")
         file_header = f.readline().replace("\n", "").replace('"', "").split(sep)
         f.close()
@@ -1634,7 +1644,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     elif option == "sql_on":
         check_types([("value", value, [bool])])
         if isinstance(value, bool):
-            verticapy.options["query_on"] = value
+            verticapy.options["sql_on"] = value
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
@@ -1940,6 +1950,48 @@ The tablesample attributes are the same than the parameters.
         return (n, m)
 
     # ---#
+    def sort(self, column: str, desc: bool = False):
+        """
+        ---------------------------------------------------------------------------
+        Sort the tablesample using the input column.
+
+        Parameters
+        ----------
+        column: str, optional
+            Column used to sort the data.
+        desc: bool, optional
+            If set to True, the result is sorted in descending order.
+
+        Returns
+        -------
+        tablesample
+            self
+        """
+        check_types([("column", column, [str]), ("desc", desc, [bool])])
+        column = column.replace('"', "").lower()
+        columns = [col for col in self.values]
+        idx = None
+        for i, col in enumerate(columns):
+            col_tmp = col.replace('"', "").lower()
+            if column == col_tmp:
+                idx = i
+                column = col
+        if idx is None:
+            raise MissingColumn(
+                "The Column '{}' doesn't exist.".format(column.lower().replace('"', ""))
+            )
+        n, sort = len(self[column]), []
+        for i in range(n):
+            tmp_list = []
+            for col in columns:
+                tmp_list += [self[col][i]]
+            sort += [tmp_list]
+        sort.sort(key=lambda tup: tup[idx], reverse=desc)
+        for i, col in enumerate(columns):
+            self.values[col] = [sort[j][i] for j in range(n)]
+        return self
+
+    # ---#
     def transpose(self):
         """
 	---------------------------------------------------------------------------
@@ -2118,7 +2170,7 @@ def to_tablesample(query: str, title: str = ""):
 	tablesample : Object in memory created for rendering purposes.
 	"""
     check_types([("query", query, [str])])
-    if verticapy.options["query_on"]:
+    if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
     cursor = executeSQL(query, print_time_sql=False)
@@ -2327,7 +2379,20 @@ VERTICAPY Interactive Help (FAQ).
     img2 += "                    \\  /\n"
     img2 += "                     \\/\n"
     message = img1 if (isnotebook()) else img2
-    message += "\n\n&#128226; Welcome to the <b>VERTICAPY</b> help Module. You are about to use a new fantastic way to analyze your data !\n\nYou can learn quickly how to set up a connection, how to create a Virtual DataFrame and much more.\n\nWhat do you want to know?\n - <b>[Enter  0]</b> Do you want to know why you should use this library ?\n - <b>[Enter  1]</b> You don't have data to play with and you want to load an available dataset ?\n - <b>[Enter  2]</b> Do you want to look at a quick example ?\n - <b>[Enter  3]</b> Do you want to get a link to the VERTICAPY github ?\n - <b>[Enter  4]</b> Do you want to know how to display the Virtual DataFrame SQL code generation and the time elapsed to run the query ?\n - <b>[Enter  5]</b> Do you want to know how to load your own dataset inside Vertica ?\n - <b>[Enter 6]</b> Do you want to know how you writing direct SQL queries in Jupyter ?\n - <b>[Enter -1]</b> Exit"
+    message += (
+        "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
+        "\n\nFrom here, you can learn connect to Vertica, "
+        "how to create a Virtual DataFrame, load your data, and more\n "
+        "- <b>[Enter  0]</b> Overview of the library\n "
+        "- <b>[Enter  1]</b> Load an example dataset\n "
+        "- <b>[Enter  2]</b> View an example of data analysis with VerticaPy\n "
+        "- <b>[Enter  3]</b> Contribute on GitHub\n "
+        "- <b>[Enter  4]</b> View the SQL code generated by a vDataFrame and "
+        "the time elapsed for the query\n "
+        "- <b>[Enter  5]</b> Load your own dataset into Vertica \n "
+        "- <b>[Enter  6]</b> Write SQL queries in Jupyter\n "
+        "- <b>[Enter -1]</b> Exit"
+    )
     if not (isnotebook()):
         message = (
             message.replace("<b>", "")
@@ -2347,28 +2412,36 @@ VERTICAPY Interactive Help (FAQ).
             )
             return
     if response == 0:
-        message = "# VerticaPy\nNowadays, The 'Big Data' (Tb of data) is one of the main topics in the Data Science World. Data Scientists are now very important for any organisation. Becoming Data-Driven is mandatory to survive. Vertica is the first real analytic columnar Database and is still the fastest in the market. However, SQL is not enough flexible to be very popular for Data Scientists. Python flexibility is priceless and provides to any user a very nice experience. The level of abstraction is so high that it is enough to think about a function to notice that it already exists. Many Data Science APIs were created during the last 15 years and were directly adopted by the Data Science community (examples: pandas and scikit-learn). However, Python is only working in-memory for a single node process. Even if some famous highly distributed programming languages exist to face this challenge, they are still in-memory and most of the time they can not process on all the data. Besides, moving the data can become very expensive. Data Scientists must also find a way to deploy their data preparation and their models. We are far away from easiness and the entire process can become time expensive. \nThe idea behind VERTICAPY is simple: Combining the Scalability of VERTICA with the Flexibility of Python to give to the community what they need *Bringing the logic to the data and not the opposite*. This version 1.0 is the work of 3 years of new ideas and improvement.\nMain Advantages:\n - easy Data Exploration.\n - easy Data Preparation.\n - easy Data Modeling.\n - easy Model Evaluation.\n - easy Model Deployment.\n - most of what pandas.DataFrame can do, verticapy.vdataframe can do (and even much more)\n - easy ML model creation and evaluation.\n - many scikit functions and algorithms are available (and scalable!).\n\n&#9888; Please read the VERTICAPY Documentation. If you do not have time just read below.\n\n&#9888; The previous API is really nothing compare to the new version and many methods and functions totally changed. Consider this API as a totally new one.\nIf you have any feedback about the library, please contact me: <a href=\"mailto:badr.ouali@vertica.com\">badr.ouali@vertica.com</a>"
+        message = ""
     elif response == 1:
-        message = "In VERTICAPY many datasets (titanic, iris, smart_meters, amazon, winequality) are already available to be ingested in your Vertica Database.\n\nTo ingest a dataset you can use the associated load function.\n\n<b>Example:</b>\n\n```python\nfrom vertica_python.learn.datasets import load_titanic\nvdf = load_titanic()\n```"
+        message = ""
     elif response == 2:
-        message = '## Quick Start\nInstall the library using the <b>pip</b> command.\n```\nroot@ubuntu:~$ pip3 install verticapy\n```\nInstall vertica_python to create a database cursor.\n```shell\nroot@ubuntu:~$ pip3 install vertica_python\n```\nCreate a vertica connection\n```python\nfrom verticapy import vertica_conn\ncur = vertica_conn("VerticaDSN").cursor()\n```\nCreate the Virtual DataFrame of your relation:\n```python\nfrom verticapy import vDataFrame\nvdf = vDataFrame("my_relation")\n```\nIf you don\'t have data to play with, you can easily load well known datasets\n```python\nfrom verticapy.datasets import load_titanic\nvdf = load_titanic(cursor = cur)\n```\nExamine your data:\n```python\nvdf.describe()\n# Output\n               min       25%        50%        75%   \nage           0.33      21.0       28.0       39.0   \nbody           1.0     79.25      160.5      257.5   \nfare           0.0    7.8958    14.4542    31.3875   \nparch          0.0       0.0        0.0        0.0   \npclass         1.0       1.0        3.0        3.0   \nsibsp          0.0       0.0        0.0        1.0   \nsurvived       0.0       0.0        0.0        1.0   \n                   max    unique  \nage               80.0        96  \nbody             328.0       118  \nfare          512.3292       277  \nparch              9.0         8  \npclass             3.0         3  \nsibsp              8.0         7  \nsurvived           1.0         2 \n```\nPrint the SQL query with the <b>set_display_parameters</b> method:\n```python\nset_option(\'sql_on\', True)\nvdf.describe()\n# Output\n## Compute the descriptive statistics of all the numerical columns ##\nSELECT\n\tSUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()\nFROM public.titanic\n```\nWith VerticaPy, it is now possible to solve a ML problem with few lines of code.\n```python\nfrom verticapy.learn.model_selection import cross_validate\nfrom verticapy.learn.ensemble import RandomForestClassifier\n# Data Preparation\nvdf["sex"].label_encode()["boat"].fillna(method = "0ifnull")["name"].str_extract(\' ([A-Za-z]+)\\.\').eval("family_size", expr = "parch + sibsp + 1").drop(columns = ["cabin", "body", "ticket", "home.dest"])["fare"].fill_outliers().fillna().to_db("titanic_clean")\n# Model Evaluation\ncross_validate(RandomForestClassifier("rf_titanic", cur, max_leaf_nodes = 100, n_estimators = 30), "titanic_clean", ["age", "family_size", "sex", "pclass", "fare", "boat"], "survived", cutoff = 0.35)\n# Output\n                           auc               prc_auc   \n1-fold      0.9877114427860691    0.9530465915039339   \n2-fold      0.9965555014605642    0.7676485351425721   \n3-fold      0.9927239216549301    0.6419135521132449   \navg             0.992330288634        0.787536226253   \nstd           0.00362128464093         0.12779562393   \n                     accuracy              log_loss   \n1-fold      0.971291866028708    0.0502052541223871   \n2-fold      0.983253588516746    0.0298167751798457   \n3-fold      0.964824120603015    0.0392745694400433   \navg            0.973123191716       0.0397655329141   \nstd           0.0076344236729      0.00833079837099   \n                     precision                recall   \n1-fold                    0.96                  0.96   \n2-fold      0.9556962025316456                   1.0   \n3-fold      0.9647887323943662    0.9383561643835616   \navg             0.960161644975        0.966118721461   \nstd           0.00371376912311        0.025535200301   \n                      f1-score                   mcc   \n1-fold      0.9687259282082884    0.9376119402985075   \n2-fold      0.9867172675521821    0.9646971010878469   \n3-fold      0.9588020287309097    0.9240569687684576   \navg              0.97141507483        0.942122003385   \nstd            0.0115538960753       0.0168949813163   \n                  informedness            markedness   \n1-fold      0.9376119402985075    0.9376119402985075   \n2-fold      0.9737827715355807    0.9556962025316456   \n3-fold      0.9185148945422918    0.9296324823943662   \navg             0.943303202125        0.940980208408   \nstd            0.0229190954261       0.0109037699717   \n                           csi  \n1-fold      0.9230769230769231  \n2-fold      0.9556962025316456  \n3-fold      0.9072847682119205  \navg             0.928685964607  \nstd            0.0201579224026\n```\nEnjoy!'
+        message = ""
     elif response == 3:
         if not (isnotebook()):
             message = "Please go to https://github.com/vertica/VerticaPy/"
         else:
-            message = "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>https://github.com/vertica/VerticaPy/</a>"
+            message = (
+                "Please go to <a href='https://github.com/vertica/VerticaPy/wiki'>"
+                "https://github.com/vertica/Verti)caPy/</a>"
+            )
     elif response == 4:
-        message = "You can Display the SQL Code generation & elapsed time of the Virtual DataFrame using the <b>set_option</b> function.\nIt is also possible to print the current Virtual DataFrame relation using the <b>current_relation</b> method.\n"
+        message = ""
     elif response == 5:
-        message = "VERTICAPY allows you many ways to ingest data file. It is using Vertica Flex Tables to identify the columns types and store the data inside Vertica. These functions will also return the associated Virtual DataFrame.\n\nLet's load the data from the 'data.csv' file.\n\n\n```python\nfrom verticapy import read_csv\nvdf = read_csv('data.csv', db_cursor)\n```\n\nThe same applies to json. Let's consider the file 'data.json'.\n\n\n```python\nfrom verticapy import read_json\nvdf = read_json('data.json', db_cursor)\n```\n\n"
+        message = ""
     elif response == 6:
-        message = "VerticaPy SQL Magic offers you a nice way to interact with Vertica. You can load the extension using the following command:\n```\n%load_ext verticapy.sql\n```\nYou can then run your own SQL queries.\n```\n%%sql\nSELECT * FROM public.titanic\n```"
+        message = ""
     elif response == -1:
-        message = "Thank you for using the VERTICAPY help."
+        message = "Thank you for using the VerticaPy help module."
     elif response == 666:
-        message = "Thank you so much for using this library. My only purpose is to solve real Big Data problems in the context of Data Science. I worked years to be able to create this API and give you a real way to analyse your data.\n\nYour devoted Data Scientist: <i>Badr Ouali</i>"
+        message = (
+            "Thank you so much for using this library. My only purpose is to solve "
+            "real Big Data problems in the context of Data Science. I worked years "
+            "to be able to create this API and give you a real way to analyze your "
+            "data.\n\nYour devoted Data Scientist: <i>Badr Ouali</i>"
+        )
     else:
-        message = "The choice is incorrect.\nPlease enter a number between 0 and 11."
+        message = "Invalid choice.\nPlease enter a number between 0 and 11."
     if not (isnotebook()):
         message = (
             message.replace("<b>", "")

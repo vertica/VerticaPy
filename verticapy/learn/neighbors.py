@@ -399,6 +399,8 @@ p: int, optional
             labels = self.classes_
         return classification_report(cutoff=cutoff, estimator=self, labels=labels)
 
+    report = classification_report
+
     # ---#
     def cutoff_curve(
         self, pos_label: Union[int, float, str] = None, ax=None, **style_kwds
@@ -584,10 +586,9 @@ p: int, optional
         vdf: Union[str, vDataFrame],
         X: list = [],
         name: str = "",
+        cutoff: float = 0.5,
         inplace: bool = True,
-        cutoff: float = -1,
-        all_classes: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
@@ -597,21 +598,19 @@ p: int, optional
     ----------
     vdf: str/vDataFrame
         Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example "(SELECT 1) x" 
-        is correct whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+        relation, but you must enclose it with an alias. For example,  
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
     X: list, optional
         List of the columns used to deploy the models. If empty, the model
         predictors will be used.
     name: str, optional
         Name of the added vcolumn. If empty, a name will be generated.
+    cutoff: float, optional
+        Cutoff for which the tested category will be accepted as a prediction.
+        This parameter is only used for binary classification.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
-    cutoff: float, optional
-        The cutoff used for binary classification and represents the probability to
-        accept category 1.
-    all_classes: bool, optional
-        If True, the probabilities of all classes will be generated (one column per 
-        category).
 
     Returns
     -------
@@ -622,14 +621,16 @@ p: int, optional
             X = [X]
         check_types(
             [
-                ("cutoff", cutoff, [int, float]),
-                ("all_classes", all_classes, [bool]),
                 ("name", name, [str]),
                 ("cutoff", cutoff, [int, float]),
                 ("X", X, [list]),
                 ("inplace", inplace, [bool]),
                 ("vdf", vdf, [str, vDataFrame]),
             ],
+        )
+        assert 0 <= cutoff <= 1, ParameterError(
+            "Incorrect parameter 'cutoff'.\nThe cutoff "
+            "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
             vdf = vdf_from_relation(relation=vdf)
@@ -639,64 +640,139 @@ p: int, optional
             key_columns_arg = None
         else:
             key_columns_arg = key_columns
-        name = (
-            "{}_".format(self.type) + "".join(ch for ch in self.name if ch.isalnum())
-            if not (name)
-            else name
-        )
-        if all_classes:
-            predict = [
-                "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{}', proba_predict, NULL))) AS \"{}_{}\"".format(
-                    elem, name, elem
-                )
-                for elem in self.classes_
-            ]
-            sql = "SELECT {}{}, {} FROM {} GROUP BY {}".format(
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        if (
+            len(self.classes_) == 2
+            and self.classes_[0] in [0, "0"]
+            and self.classes_[1] in [1, "1"]
+        ):
+            sql = (
+                "(SELECT {0}{1}, (CASE WHEN proba_predict > {2} THEN '{3}' ELSE '{4}' END)"
+                " AS {5} FROM {6} WHERE predict_neighbors = '{3}') VERTICAPY_SUBTABLE"
+            ).format(
                 ", ".join(X),
                 ", " + ", ".join(key_columns) if key_columns else "",
-                ", ".join(predict),
+                cutoff,
+                self.classes_[1],
+                self.classes_[0],
+                name,
                 self.deploySQL(
                     X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
                 ),
-                ", ".join(X + key_columns),
             )
         else:
-            if (len(self.classes_) == 2) and (cutoff <= 1 and cutoff >= 0):
-                sql = "SELECT {}{}, (CASE WHEN proba_predict > {} THEN '{}' ELSE '{}' END) AS {} FROM {} WHERE predict_neighbors = '{}'".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    cutoff,
-                    self.classes_[1],
-                    self.classes_[0],
-                    name,
-                    self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                    ),
-                    self.classes_[1],
-                )
-            elif len(self.classes_) == 2:
-                sql = "SELECT {}{}, proba_predict AS {} FROM {} WHERE predict_neighbors = '{}'".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    name,
-                    self.deploySQL(
-                        X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
-                    ),
-                    self.classes_[1],
-                )
-            else:
-                sql = "SELECT {}{}, predict_neighbors AS {} FROM {}".format(
-                    ", ".join(X),
-                    ", " + ", ".join(key_columns) if key_columns else "",
-                    name,
-                    self.deploySQL(
-                        X=X,
-                        test_relation=vdf.__genSQL__(),
-                        key_columns=key_columns_arg,
-                        predict=True,
-                    ),
-                )
-        sql = "({}) VERTICAPY_SUBTABLE".format(sql)
+            sql = "(SELECT {0}{1}, predict_neighbors AS {2} FROM {3}) VERTICAPY_SUBTABLE".format(
+                ", ".join(X),
+                ", " + ", ".join(key_columns) if key_columns else "",
+                name,
+                self.deploySQL(
+                    X=X,
+                    test_relation=vdf.__genSQL__(),
+                    key_columns=key_columns_arg,
+                    predict=True,
+                ),
+            )
+        if inplace:
+            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
+        else:
+            return vdf_from_relation(name="Neighbors", relation=sql)
+
+    # ---#
+    def predict_proba(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        pos_label: Union[int, str, float] = None,
+        inplace: bool = True,
+        **kwargs,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the model's probabilities using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example, "(SELECT 1) x" 
+        is correct, whereas "(SELECT 1)" and "SELECT 1" are incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the additional prediction vColumn. If unspecified, a name is 
+	generated based on the model and class names.
+    pos_label: int/float/str, optional
+        Class label, the class for which the probability is calculated. 
+	If name is specified and pos_label is unspecified, the probability column 
+	names use the following format: name_class1, name_class2, etc.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the vDataFrame of the prediction
+        """
+        # Inititalization
+        if isinstance(X, str):
+            X = [X]
+        check_types(
+            [
+                ("name", name, [str]),
+                ("X", X, [list]),
+                ("inplace", inplace, [bool]),
+                ("vdf", vdf, [str, vDataFrame]),
+                ("pos_label", pos_label, [int, float, str]),
+            ],
+        )
+        assert pos_label is None or pos_label in self.classes_, ParameterError(
+            (
+                "Incorrect parameter 'pos_label'.\nThe class label "
+                "must be in [{0}]. Found '{1}'."
+            ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
+        )
+        if isinstance(vdf, str):
+            vdf = vdf_from_relation(relation=vdf)
+        X = [quote_ident(elem) for elem in X] if (X) else self.X
+        key_columns = vdf.get_columns(exclude_columns=X)
+        if not (name):
+            name = gen_name([self.type, self.name])
+        if "key_columns" in kwargs:
+            key_columns_arg = None
+        else:
+            key_columns_arg = key_columns
+
+        # Generating the probabilities
+        if pos_label == None:
+            predict = [
+                (
+                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
+                    "proba_predict, NULL))) AS {1}"
+                ).format(elem, gen_name([name, elem]))
+                for elem in self.classes_
+            ]
+        else:
+            predict = [
+                (
+                    "ZEROIFNULL(AVG(DECODE(predict_neighbors, '{0}', "
+                    "proba_predict, NULL))) AS {1}"
+                ).format(pos_label, name)
+            ]
+        sql = "(SELECT {0}{1}, {2} FROM {3} GROUP BY {4}) VERTICAPY_SUBTABLE".format(
+            ", ".join(X),
+            ", " + ", ".join(key_columns) if key_columns else "",
+            ", ".join(predict),
+            self.deploySQL(
+                X=X, test_relation=vdf.__genSQL__(), key_columns=key_columns_arg
+            ),
+            ", ".join(X + key_columns),
+        )
+
+        # Result
         if inplace:
             return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
         else:
@@ -887,7 +963,7 @@ xlim: list, optional
         min_samples_leaf: int = 1,
         nbins: int = 5,
         xlim: list = [],
-        **kwargs
+        **kwargs,
     ):
         check_types(
             [
@@ -972,21 +1048,19 @@ xlim: list, optional
                 for elem in columns:
                     if not (vdf[elem].isnum()):
                         raise TypeError(
-                            "Cannot compute KDE for non-numerical columns. {} is not numerical.".format(
-                                elem
-                            )
+                            f"Cannot compute KDE for non-numerical columns. {elem} is not numerical."
                         )
                 if kernel == "gaussian":
-                    fkernel = "EXP(-1 / 2 * POWER({}, 2)) / SQRT(2 * PI())"
+                    fkernel = "EXP(-1 / 2 * POWER({0}, 2)) / SQRT(2 * PI())"
 
                 elif kernel == "logistic":
-                    fkernel = "1 / (2 + EXP({}) + EXP(-{}))"
+                    fkernel = "1 / (2 + EXP({0}) + EXP(-{0}))"
 
                 elif kernel == "sigmoid":
-                    fkernel = "2 / (PI() * (EXP({}) + EXP(-{})))"
+                    fkernel = "2 / (PI() * (EXP({0}) + EXP(-{0})))"
 
                 elif kernel == "silverman":
-                    fkernel = "EXP(-1 / SQRT(2) * ABS({})) / 2 * SIN(ABS({}) / SQRT(2) + PI() / 4)"
+                    fkernel = "EXP(-1 / SQRT(2) * ABS({0})) / 2 * SIN(ABS({0}) / SQRT(2) + PI() / 4)"
 
                 else:
                     raise ParameterError(
@@ -1001,15 +1075,13 @@ xlim: list, optional
                         distance = []
                         for i in range(len(columns)):
                             distance += [
-                                "POWER({} - {}, {})".format(columns[i], elem[i], p)
+                                "POWER({0} - {1}, {2})".format(columns[i], elem[i], p)
                             ]
                         distance = " + ".join(distance)
-                        distance = "POWER({}, {})".format(distance, 1.0 / p)
-                        fkernel_tmp = fkernel.replace(
-                            "{}", "{} / {}".format(distance, h)
-                        )
-                        L += ["SUM({}) / ({} * {})".format(fkernel_tmp, h, N)]
-                    query = "SELECT {} FROM {}".format(", ".join(L), vdf.__genSQL__())
+                        distance = "POWER({0}, {1})".format(distance, 1.0 / p)
+                        fkernel_tmp = fkernel.format(f"{distance} / {h}")
+                        L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
+                    query = "SELECT {0} FROM {1}".format(", ".join(L), vdf.__genSQL__())
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1027,21 +1099,18 @@ xlim: list, optional
                         x_min, x_max = self.parameters["xlim"][idx]
                         N = vdf[column].count()
                     except:
-                        warning_message = "Wrong xlim for the vcolumn {}.\nThe max and the min will be used instead.".format(
-                            column,
+                        warning_message = (
+                            f"Wrong xlim for the vcolumn {column}.\n"
+                            "The max and the min will be used instead."
                         )
                         warnings.warn(warning_message, Warning)
-                        x_min, x_max, N = (
-                            vdf[column].min(),
-                            vdf[column].max(),
-                            vdf[column].count(),
-                        )
+                        x_min, x_max, N = vdf.agg(
+                            func=["min", "max", "count"], columns=[column]
+                        ).transpose()[column]
                 else:
-                    x_min, x_max, N = (
-                        vdf[column].min(),
-                        vdf[column].max(),
-                        vdf[column].count(),
-                    )
+                    x_min, x_max, N = vdf.agg(
+                        func=["min", "max", "count"], columns=[column]
+                    ).transpose()[column]
                 x_vars += [
                     [(x_max - x_min) * i / nbins + x_min for i in range(0, nbins + 1)]
                 ]
@@ -1065,7 +1134,11 @@ xlim: list, optional
             self.parameters["p"],
         )
         if self.verticapy_store:
-            query = "CREATE TABLE {}_KernelDensity_Map AS SELECT {}, 0.0::float AS KDE FROM {} LIMIT 0".format(
+            query = """CREATE TABLE {0}_KernelDensity_Map AS    
+                            SELECT 
+                                {1}, 0.0::float AS KDE 
+                            FROM {2} 
+                            LIMIT 0""".format(
                 self.name.replace('"', ""), ", ".join(X), vdf.__genSQL__()
             )
             executeSQL(query, print_time_sql=False)
@@ -1075,22 +1148,23 @@ xlim: list, optional
                 m = min(r + 100, len(y))
                 for i in range(r, m):
                     values += ["SELECT " + str(x[i] + (y[i],))[1:-1]]
-                query = "INSERT INTO {}_KernelDensity_Map ({}, KDE) {}".format(
+                query = "INSERT INTO {0}_KernelDensity_Map ({1}, KDE) {2}".format(
                     self.name.replace('"', ""), ", ".join(X), " UNION ".join(values)
                 )
-                executeSQL(query, "Computing the KDE [Step {}].".format(idx))
+                executeSQL(query, f"Computing the KDE [Step {idx}].")
                 executeSQL("COMMIT;", print_time_sql=False)
                 r += 100
                 idx += 1
             self.X, self.input_relation = X, input_relation
-            self.map = "{}_KernelDensity_Map".format(self.name.replace('"', ""))
-            self.tree_name = "{}_KernelDensity_Tree".format(self.name.replace('"', ""))
+            self.map = "{0}_KernelDensity_Map".format(self.name.replace('"', ""))
+            self.tree_name = "{0}_KernelDensity_Tree".format(self.name.replace('"', ""))
             self.y = "KDE"
 
             from verticapy.learn.tree import DecisionTreeRegressor
 
             model = DecisionTreeRegressor(
                 name=self.tree_name,
+                max_features=len(self.X),
                 max_leaf_nodes=self.parameters["max_leaf_nodes"],
                 max_depth=self.parameters["max_depth"],
                 min_samples_leaf=self.parameters["min_samples_leaf"],
@@ -1383,7 +1457,7 @@ p: int, optional
         X: list = [],
         name: str = "",
         inplace: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """
     ---------------------------------------------------------------------------
@@ -1556,9 +1630,7 @@ p: int, optional
                     self.input_relation,
                     " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
                 )
-                drop_if_exists(
-                    "v_temp_schema.{}".format(tmp_main_table_name), method="table"
-                )
+                drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
                 executeSQL(sql, print_time_sql=False)
             else:
                 main_table = self.input_relation
@@ -1584,9 +1656,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_distance_table_name, sql
             )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 0].")
             kdistance = "(SELECT node_id, nn_id, distance AS distance FROM v_temp_schema.{} WHERE knn = {}) AS kdistance_table".format(
                 tmp_distance_table_name, n_neighbors + 1
@@ -1597,9 +1667,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lrd_table_name, lrd
             )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 1].")
             sql = "SELECT x.node_id, SUM(y.lrd) / (MAX(x.node_lrd) * {}) AS LOF FROM (SELECT n_table.node_id, n_table.nn_id, lrd_table.lrd AS node_lrd FROM v_temp_schema.{} AS n_table LEFT JOIN v_temp_schema.{} AS lrd_table ON n_table.node_id = lrd_table.node_id) x LEFT JOIN v_temp_schema.{} AS y ON x.nn_id = y.node_id GROUP BY 1".format(
                 n_neighbors,
@@ -1610,9 +1678,7 @@ p: int, optional
             sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS {}".format(
                 tmp_lof_table_name, sql
             )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
             executeSQL(sql, "Computing the LOF [Step 2].")
             sql = "SELECT {}, (CASE WHEN lof > 1e100 OR lof != lof THEN 0 ELSE lof END) AS lof_score FROM {} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
                 ", ".join(X + self.key_columns), main_table, tmp_lof_table_name, index
@@ -1629,20 +1695,12 @@ p: int, optional
                 print_time_sql=False,
             )
         except:
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_main_table_name), method="table"
-            )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_distance_table_name), method="table"
-            )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_lrd_table_name), method="table"
-            )
-            drop_if_exists(
-                "v_temp_schema.{}".format(tmp_lof_table_name), method="table"
-            )
+            drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
+            drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
             raise
-        drop_if_exists("v_temp_schema.{}".format(tmp_main_table_name), method="table")
+        drop("v_temp_schema.{}".format(tmp_main_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_distance_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_lrd_table_name), method="table")
         drop("v_temp_schema.{}".format(tmp_lof_table_name), method="table")
