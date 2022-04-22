@@ -234,6 +234,7 @@ def sql(line, cell="", local_ns=None):
                 error = ""
                 try:
                     result = vDataFrameSQL("({}) x".format(query))
+
                 except:
                     try:
                         final_result = executeSQL(
