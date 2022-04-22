@@ -61,7 +61,7 @@ class TestLinearSVC:
 
         assert cls_rep1["auc"][0] == pytest.approx(0.687468030690537, 1e-2)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453, 1e-2)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491, 1e-2)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.6536144578313253, 1e-2)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
         assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
         assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444, 1e-2)
@@ -79,7 +79,7 @@ class TestLinearSVC:
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert conf_mat1[0][0] == 747
+        assert conf_mat1[0][0] == 568
         assert conf_mat1[0][1] == 367
         assert conf_mat1[1][0] == 37
         assert conf_mat1[1][1] == 83
@@ -199,10 +199,8 @@ class TestLinearSVC:
         vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         model.predict(vdf, name="prediction_vertica_sql", cutoff=0.5)
-        model.predict(vdf, name="prediction_proba_vertica_sql_1")
-        vdf["prediction_proba_vertica_sql_0"] = (
-            1 - vdf["prediction_proba_vertica_sql_1"]
-        )
+        model.predict_proba(vdf, pos_label=0, name="prediction_proba_vertica_sql_0")
+        model.predict_proba(vdf, pos_label=1, name="prediction_proba_vertica_sql_1")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
         score = vdf.score(
@@ -282,7 +280,7 @@ class TestLinearSVC:
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
 
-        model.predict(titanic_copy, name="pred_probability")
+        model.predict_proba(titanic_copy, name="pred_probability", pos_label=1)
         assert titanic_copy["pred_probability"].min() == pytest.approx(0.33841486903496)
 
         model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
@@ -315,7 +313,7 @@ class TestLinearSVC:
 
     def test_score(self, model):
         assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
-            0.6474878444084279
+            0.6224899598393574
         )
         assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
             0.4619124797406807

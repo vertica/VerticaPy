@@ -237,13 +237,13 @@ class TestDummyTreeClassifier:
             ['"Gender"', '"owned cars"', '"cost"', '"income"']
         )[2]
         model.predict(vdf, name="prediction_vertica_sql")
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
         )
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
         )
-        model.predict(
+        model.predict_proba(
             vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
         )
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")

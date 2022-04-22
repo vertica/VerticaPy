@@ -64,7 +64,6 @@ class TestNearestCentroid:
         m_att = model.get_attr("classes")
         assert m_att == model.classes_
 
-    # TODO
     def test_contour(self, titanic_vd):
         model_test = NearestCentroid("model_contour",)
         model_test.drop()
@@ -135,10 +134,10 @@ class TestNearestCentroid:
         titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
         titanic = model.predict(titanic, name="prediction_vertica_sql", cutoff=0.5)
-        titanic = model.predict(
+        titanic = model.predict_proba(
             titanic, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
         )
-        titanic = model.predict(
+        titanic = model.predict_proba(
             titanic, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
         )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
