@@ -361,13 +361,13 @@ class TestXGBC:
     def test_predict_proba(self, xgbc_data_vd, model):
         xgbc_data_copy = xgbc_data_vd.copy()
 
-        model.predict_proba(xgbc_data_copy, name="pred")
-        assert xgbc_data_copy["prob_bus"].avg() == 0.0
-        assert xgbc_data_copy["prob_train"].avg() == 0.0
-        assert xgbc_data_copy["prob_car"].avg() == 0.0
+        model.predict_proba(xgbc_data_copy, name="prob")
+        assert xgbc_data_copy["prob_bus"].avg() == 0.4
+        assert xgbc_data_copy["prob_train"].avg() == 0.3
+        assert xgbc_data_copy["prob_car"].avg() == 0.3
 
         model.predict_proba(xgbc_data_copy, name="pred_bus_2", pos_label="Bus")
-        assert xgbc_data_copy["prob_bus_2"].avg() == 0.0
+        assert xgbc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Train", nbins=1000)
