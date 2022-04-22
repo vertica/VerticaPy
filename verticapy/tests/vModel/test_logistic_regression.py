@@ -65,11 +65,11 @@ class TestLogisticRegression:
         assert cls_rep1["log_loss"][0] == pytest.approx(0.271495668573431)
         assert cls_rep1["precision"][0] == pytest.approx(0.6758620689655173)
         assert cls_rep1["recall"][0] == pytest.approx(0.2506393861892583)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.32941176470588235)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.2359133929510658)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.15782879818594098)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.35262974573319417)
-        assert cls_rep1["csi"][0] == pytest.approx(0.19718309859154928)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.3656716417910448)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.2394674439996513)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.17295343577603517)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.3315612464038251)
+        assert cls_rep1["csi"][0] == pytest.approx(0.2237442922374429)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.5)
 
         cls_rep2 = model.classification_report(cutoff=0.2).transpose()
@@ -86,8 +86,8 @@ class TestLogisticRegression:
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2[0][0] == 182
-        assert conf_mat2[0][1] == 59
+        assert conf_mat2[0][0] == 3
+        assert conf_mat2[0][1] == 0
         assert conf_mat2[1][0] == 602
         assert conf_mat2[1][1] == 391
 
@@ -328,7 +328,7 @@ class TestLogisticRegression:
             0.6295180722891566
         )
         assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
-            0.5429497568881686
+            0.4929718875502008
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
             0.6941239880788826
@@ -339,19 +339,19 @@ class TestLogisticRegression:
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.3602)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.3602)
         assert model.score(cutoff=0.7, method="bm") == pytest.approx(
-            0.06498299319727896
+            0.07164507197057768
         )
         assert model.score(cutoff=0.3, method="bm") == pytest.approx(
-            0.19256802721088428
+            0.13453108156665472
         )
         assert model.score(cutoff=0.7, method="csi") == pytest.approx(
-            0.0835117773019272
+            0.09558823529411764
         )
         assert model.score(cutoff=0.3, method="csi") == pytest.approx(
-            0.38762214983713356
+            0.41415313225058004
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.1541501976284585)
-        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5586854460093896)
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.17449664429530198)
+        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5857260049220673)
         assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
             0.271495668573431
         )
@@ -359,15 +359,15 @@ class TestLogisticRegression:
             0.271495668573431
         )
         assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
-            0.15027866941483783
+            0.15187785294188016
         )
         assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
-            0.19727419700681625
+            0.17543607019922353
         )
         assert model.score(cutoff=0.7, method="mk") == pytest.approx(
-            0.34753213679359685
+            0.32196048632218854
         )
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.202095380880988)
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.22877846790890288)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.6964285714285714
         )
@@ -387,10 +387,10 @@ class TestLogisticRegression:
             0.4311594202898551
         )
         assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
-            0.9783163265306123
+            0.971900826446281
         )
         assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
-            0.399234693877551
+            0.22148760330578512
         )
 
     def test_set_params(self, model):

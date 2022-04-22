@@ -59,17 +59,17 @@ class TestLinearSVC:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.687468030690537, 1e-2)
+        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788, 1e-2)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453, 1e-2)
         assert cls_rep1["accuracy"][0] == pytest.approx(0.6536144578313253, 1e-2)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
         assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
         assert cls_rep1["recall"][0] == pytest.approx(0.21227621483375958, 1e-2)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.29122807017543856, 1e-2)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555, 1e-2)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408, 1e-2)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453, 1e-2)
-        assert cls_rep1["csi"][0] == pytest.approx(0.1704312114989733, 1e-2)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.324853228962818, 1e-2)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.22669555629341528, 1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.151119190040371, 1e-2)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.34006849315068477, 1e-2)
+        assert cls_rep1["csi"][0] == pytest.approx(0.1939252336448598, 1e-2)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.5, 1e-2)
 
         cls_rep2 = model.classification_report(cutoff=0.2).transpose()
@@ -86,8 +86,8 @@ class TestLinearSVC:
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2[0][0] == 179
-        assert conf_mat2[0][1] == 59
+        assert conf_mat2[0][0] == 0
+        assert conf_mat2[0][1] == 0
         assert conf_mat2[1][0] == 605
         assert conf_mat2[1][1] == 391
 
@@ -327,19 +327,19 @@ class TestLinearSVC:
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.7, method="bm") == pytest.approx(
-            0.03712018140589568
+            0.041981780135697866
         )
         assert model.score(cutoff=0.3, method="bm") == pytest.approx(
-            0.09720521541950111
+            0.0
         )
         assert model.score(cutoff=0.7, method="csi") == pytest.approx(
-            0.04185022026431718
+            0.04810126582278481
         )
         assert model.score(cutoff=0.3, method="csi") == pytest.approx(
-            0.3706161137440758
+            0.392570281124498
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.080338266384778)
-        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5408022130013832)
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.09178743961352658)
+        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5638067772170151)
         assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
             0.279724470067258
         )
@@ -347,14 +347,14 @@ class TestLinearSVC:
             0.279724470067258
         )
         assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
-            0.13211082012086103
+            0.13649180522208684
         )
         assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
-            0.11858662456854734
+            0.0
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.4701827451261984)
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.44376424326377406)
         assert model.score(cutoff=0.3, method="mk") == pytest.approx(
-            0.14467112146063243
+            -0.607429718875502
         )
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.8260869565217391
@@ -373,10 +373,10 @@ class TestLinearSVC:
             0.392570281124498
         )
         assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
-            0.9948979591836735
+            0.9933884297520661
         )
         assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
-            0.22831632653061223
+            0.0
         )
 
     def test_set_params(self, model):

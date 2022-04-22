@@ -1755,23 +1755,23 @@ def contour_plot(
             vdf_tmp["verticapy_predict"] = func
         else:
             if func.type in (
+                "XGBoostClassifier",
                 "RandomForestClassifier",
                 "NaiveBayes",
                 "NearestCentroid",
                 "KNeighborsClassifier",
             ):
                 if func.type in ("NearestCentroid", "KNeighborsClassifier"):
-                    vdf_tmp = func.predict(
+                    vdf_tmp = func.predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
                         name="verticapy_predict",
                         inplace=False,
-                        all_classes=True,
                         key_columns=None,
                     )
-                    y = "verticapy_predict_{}".format(pos_label)
+                    y = f"verticapy_predict_{pos_label}"
                 else:
-                    vdf_tmp = func.predict(
+                    vdf_tmp = func.predict_proba(
                         vdf=vdf_tmp,
                         X=columns,
                         name="verticapy_predict",
