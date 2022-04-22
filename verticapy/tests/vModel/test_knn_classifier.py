@@ -149,7 +149,7 @@ class TestKNeighborsClassifier:
 
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
-        
+
         titanic_copy = model.predict(
             titanic_copy, X=["age", "fare"], name="predicted_quality", inplace=False,
         )
@@ -162,7 +162,11 @@ class TestKNeighborsClassifier:
         titanic_copy = titanic_vd.copy()
 
         titanic_copy = model.predict_proba(
-            titanic_copy, X=["age", "fare"], name="prob_quality", inplace=False, pos_label=1,
+            titanic_copy,
+            X=["age", "fare"],
+            name="prob_quality",
+            inplace=False,
+            pos_label=1,
         )
         assert titanic_copy["prob_quality"].mean() == pytest.approx(
             0.378313253012048, abs=1e-6

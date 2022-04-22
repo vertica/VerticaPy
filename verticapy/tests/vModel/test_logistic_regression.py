@@ -300,9 +300,7 @@ class TestLogisticRegression:
         titanic_copy = titanic_vd.copy()
 
         model.predict_proba(titanic_copy, name="probability", pos_label=1)
-        assert titanic_copy["probability"].min() == pytest.approx(
-            0.182718648793846
-        )
+        assert titanic_copy["probability"].min() == pytest.approx(0.182718648793846)
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(nbins=1000)
@@ -353,7 +351,9 @@ class TestLogisticRegression:
         assert model.score(cutoff=0.3, method="csi") == pytest.approx(
             0.41415313225058004
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.17449664429530198)
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(
+            0.17449664429530198
+        )
         assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5857260049220673)
         assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
             0.271495668573431
@@ -370,7 +370,9 @@ class TestLogisticRegression:
         assert model.score(cutoff=0.7, method="mk") == pytest.approx(
             0.32196048632218854
         )
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(0.22877846790890288)
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
+            0.22877846790890288
+        )
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.6964285714285714
         )

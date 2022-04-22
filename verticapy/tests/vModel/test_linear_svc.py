@@ -332,16 +332,14 @@ class TestLinearSVC:
         assert model.score(cutoff=0.7, method="bm") == pytest.approx(
             0.041981780135697866
         )
-        assert model.score(cutoff=0.3, method="bm") == pytest.approx(
-            0.0
-        )
+        assert model.score(cutoff=0.3, method="bm") == pytest.approx(0.0)
         assert model.score(cutoff=0.7, method="csi") == pytest.approx(
             0.04810126582278481
         )
-        assert model.score(cutoff=0.3, method="csi") == pytest.approx(
-            0.392570281124498
+        assert model.score(cutoff=0.3, method="csi") == pytest.approx(0.392570281124498)
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(
+            0.09178743961352658
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.09178743961352658)
         assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5638067772170151)
         assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
             0.279724470067258
@@ -352,13 +350,11 @@ class TestLinearSVC:
         assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
             0.13649180522208684
         )
-        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
-            0.0
+        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(0.0)
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
+            0.44376424326377406
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.44376424326377406)
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
-            -0.607429718875502
-        )
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(-0.607429718875502)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.8260869565217391
         )
@@ -378,9 +374,7 @@ class TestLinearSVC:
         assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
             0.9933884297520661
         )
-        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
-            0.0
-        )
+        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(0.0)
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})

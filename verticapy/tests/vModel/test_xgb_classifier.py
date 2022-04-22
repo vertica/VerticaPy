@@ -55,7 +55,21 @@ def model(xgbc_data_vd):
     current_cursor().execute("DROP MODEL IF EXISTS xgbc_model_test")
 
     current_cursor().execute(
-        "SELECT xgb_classifier('xgbc_model_test', 'public.xgbc_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, TransPortation', min_split_loss=0.1, max_ntree=3, learning_rate=0.2, sampling_size=1, max_depth=6, nbins=40, seed=1, id_column='id')"
+        """SELECT xgb_classifier(
+                    'xgbc_model_test', 
+                    'public.xgbc_data', 
+                    'TransPortation', 
+                    '*' 
+                    USING PARAMETERS 
+                    exclude_columns='id, TransPortation', 
+                    min_split_loss=0.1, 
+                    max_ntree=3, 
+                    learning_rate=0.2, 
+                    sampling_size=1, 
+                    max_depth=6, 
+                    nbins=40, 
+                    seed=1, 
+                    id_column='id')"""
     )
 
     # I could use load_model but it is buggy
@@ -140,7 +154,10 @@ class TestXGBC:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_XGB_CLASSIFIER(Gender, \"owned cars\", cost, income USING PARAMETERS model_name = 'xgbc_model_test', match_by_pos = 'true')"
+        expected_sql = (
+            'PREDICT_XGB_CLASSIFIER(Gender, "owned cars", cost, income '
+            "USING PARAMETERS model_name = 'xgbc_model_test', match_by_pos = 'true')"
+        )
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -366,7 +383,7 @@ class TestXGBC:
         assert xgbc_data_copy["prob_train"].avg() == 0.3199195
         assert xgbc_data_copy["prob_car"].avg() == 0.3360605
 
-        model.predict_proba(xgbc_data_copy, name="pred_bus_2", pos_label="Bus")
+        model.predict_proba(xgbc_data_copy, name="prob_bus_2", pos_label="Bus")
         assert xgbc_data_copy["prob_bus_2"].avg() == 0.3440198
 
     def test_roc_curve(self, model):
