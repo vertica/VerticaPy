@@ -181,7 +181,7 @@ vColumns : vColumn
             # Cleaning the Query
             sql_tmp = re.sub("--.+\n", "", sql)
             sql_tmp = sql_tmp.replace("\t", " ").replace("\n", " ")
-            sql_tmp = re.sub(" +", " ", queries)
+            sql_tmp = re.sub(" +", " ", sql_tmp)
 
             while len(sql_tmp) > 0 and (sql_tmp[-1] in (";", " ")):
                 sql_tmp = sql_tmp[0:-1]

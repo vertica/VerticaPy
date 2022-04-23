@@ -549,7 +549,9 @@ class TestvDFUtilities:
                  FROM titanic 
                  WHERE age IS NOT NULL;;"""
         vdf = vDataFrame(sql=sql)
-        assert vdf.shape() == (996, 2)
+        assert vdf.shape() == (997, 2)
+        vdf = vDataFrame(sql=sql, usecols=["age"])
+        assert vdf.shape() == (997, 1)
 
     def test_vDF_store_usage(self, titanic_vd):
         result = titanic_vd["age"].store_usage()
