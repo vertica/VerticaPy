@@ -2260,6 +2260,9 @@ Returns
 vDataFrame
 	The vDataFrame associated to the input relation.
 	"""
+    # Initialization
+    from verticapy import vDataFrame
+
     check_types(
         [
             ("relation", relation, [str]),
@@ -2269,11 +2272,9 @@ vDataFrame
             ("saving", saving, [list]),
         ]
     )
-    if vdf:
+    if isinstance(vdf, vDataFrame):
         vdf.__init__("", empty=True)
     else:
-        from verticapy import vDataFrame
-
         vdf = vDataFrame("", empty=True)
     vdf._VERTICAPY_VARIABLES_["input_relation"] = name
     vdf._VERTICAPY_VARIABLES_["main_relation"] = relation
@@ -2283,8 +2284,10 @@ vDataFrame
     vdf._VERTICAPY_VARIABLES_["exclude_columns"] = []
     vdf._VERTICAPY_VARIABLES_["history"] = history
     vdf._VERTICAPY_VARIABLES_["saving"] = saving
-    dtypes = get_data_types("SELECT * FROM {} LIMIT 0".format(relation))
+    dtypes = get_data_types(f"SELECT * FROM {relation} LIMIT 0")
     vdf._VERTICAPY_VARIABLES_["columns"] = ['"' + item[0] + '"' for item in dtypes]
+
+    # Creating the vColumns
     for column, ctype in dtypes:
         if '"' in column:
             warning_message = (
@@ -2307,6 +2310,7 @@ vDataFrame
         )
         setattr(vdf, '"{}"'.format(column.replace('"', "_")), new_vColumn)
         setattr(vdf, column.replace('"', "_"), new_vColumn)
+
     return vdf
 
 

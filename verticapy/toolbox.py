@@ -49,7 +49,7 @@
 # Modules
 #
 # Standard Python Modules
-import shutil, re, sys, warnings, random, itertools, datetime, time
+import shutil, re, sys, warnings, random, itertools, datetime, time, html
 from collections.abc import Iterable
 
 # VerticaPy Modules
@@ -716,11 +716,7 @@ def print_table(
             for j in range(m):
                 val = data_columns[j][i]
                 if isinstance(val, str):
-                    val = val.replace("<", "&lt;")
-                    val = val.replace(">", "&gt;")
-                    val = val.replace("'", "&apos;")
-                    val = val.replace(" ", "&nbsp;")
-                    val = val.replace('"', "&quot;")
+                    val = html.escape(val)
                 if val == None:
                     val = "[null]"
                     color = "#999999"

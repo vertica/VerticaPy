@@ -175,6 +175,9 @@ vColumns : vColumn
                 ("empty", empty, [bool]),
             ]
         )
+        self._VERTICAPY_VARIABLES_ = {}
+        self._VERTICAPY_VARIABLES_["count"] = -1
+        self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
 
         if sql:
 
@@ -196,94 +199,92 @@ vColumns : vColumn
                 usecols_tmp = ", ".join([quote_ident(col) for col in usecols])
                 sql_tmp = f"(SELECT {usecols_tmp} FROM {sql_tmp}) VERTICAPY_SUBTABLE"
 
-            # Returning the vDataFrame of the Query
-            return vDataFrameSQL(sql_tmp, name="", schema=schema)
+            # vDataFrame of the Query
+            vDataFrameSQL(sql_tmp, name="", schema=schema, vdf=self)
 
-        self._VERTICAPY_VARIABLES_ = {}
-        self._VERTICAPY_VARIABLES_["count"] = -1
-        self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
-        if not (empty):
-            if not (schema):
-                schema, input_relation = schema_relation(input_relation)
-            self._VERTICAPY_VARIABLES_["schema"] = schema.replace('"', "")
-            self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
-                '"', ""
-            )
-            where = (
-                " AND LOWER(column_name) IN ({})".format(
-                    ", ".join(
-                        [
-                            "'{}'".format(elem.lower().replace("'", "''"))
-                            for elem in usecols
-                        ]
+        elif not (empty):
+            
+                if not (schema):
+                    schema, input_relation = schema_relation(input_relation)
+                self._VERTICAPY_VARIABLES_["schema"] = schema.replace('"', "")
+                self._VERTICAPY_VARIABLES_["input_relation"] = input_relation.replace(
+                    '"', ""
+                )
+                where = (
+                    " AND LOWER(column_name) IN ({})".format(
+                        ", ".join(
+                            [
+                                "'{}'".format(elem.lower().replace("'", "''"))
+                                for elem in usecols
+                            ]
+                        )
+                    )
+                    if (usecols)
+                    else ""
+                )
+                query = (
+                    "SELECT column_name, data_type FROM ((SELECT column_name, "
+                    "data_type, ordinal_position FROM columns WHERE table_name "
+                    "= '{0}' AND table_schema = '{1}'{2})"
+                ).format(
+                    self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
+                    self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
+                    where,
+                )
+                query += (
+                    " UNION (SELECT column_name, data_type, ordinal_position "
+                    "FROM view_columns WHERE table_name = '{0}' AND table_schema "
+                    "= '{1}'{2})) x ORDER BY ordinal_position"
+                ).format(
+                    self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
+                    self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
+                    where,
+                )
+                columns_dtype = executeSQL(
+                    query, title="Getting the data types.", method="fetchall"
+                )
+                columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
+                columns = [
+                    '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
+                ]
+                if not (usecols):
+                    self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
+                assert columns != [], MissingRelation(
+                    "No table or views '{}' found.".format(
+                        self._VERTICAPY_VARIABLES_["input_relation"]
                     )
                 )
-                if (usecols)
-                else ""
-            )
-            query = (
-                "SELECT column_name, data_type FROM ((SELECT column_name, "
-                "data_type, ordinal_position FROM columns WHERE table_name "
-                "= '{0}' AND table_schema = '{1}'{2})"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            query += (
-                " UNION (SELECT column_name, data_type, ordinal_position "
-                "FROM view_columns WHERE table_name = '{0}' AND table_schema "
-                "= '{1}'{2})) x ORDER BY ordinal_position"
-            ).format(
-                self._VERTICAPY_VARIABLES_["input_relation"].replace("'", "''"),
-                self._VERTICAPY_VARIABLES_["schema"].replace("'", "''"),
-                where,
-            )
-            columns_dtype = executeSQL(
-                query, title="Getting the data types.", method="fetchall"
-            )
-            columns_dtype = [(str(item[0]), str(item[1])) for item in columns_dtype]
-            columns = [
-                '"{}"'.format(elem[0].replace('"', "_")) for elem in columns_dtype
-            ]
-            if not (usecols):
-                self._VERTICAPY_VARIABLES_["allcols_ind"] = len(columns)
-            assert columns != [], MissingRelation(
-                "No table or views '{}' found.".format(
-                    self._VERTICAPY_VARIABLES_["input_relation"]
+                self._VERTICAPY_VARIABLES_["columns"] = [elem for elem in columns]
+                for col_dtype in columns_dtype:
+                    column, dtype = col_dtype[0], col_dtype[1]
+                    if '"' in column:
+                        warning_message = (
+                            'A double quote " was found in the column {0}, '
+                            "its alias was changed using underscores '_' to {1}."
+                        ).format(column, column.replace('"', "_"))
+                        warnings.warn(warning_message, Warning)
+                    new_vColumn = vColumn(
+                        '"{}"'.format(column.replace('"', "_")),
+                        parent=self,
+                        transformations=[
+                            (
+                                '"{}"'.format(column.replace('"', '""')),
+                                dtype,
+                                get_category_from_vertica_type(dtype),
+                            )
+                        ],
+                    )
+                    setattr(self, '"{}"'.format(column.replace('"', "_")), new_vColumn)
+                    setattr(self, column.replace('"', "_"), new_vColumn)
+                self._VERTICAPY_VARIABLES_["exclude_columns"] = []
+                self._VERTICAPY_VARIABLES_["where"] = []
+                self._VERTICAPY_VARIABLES_["order_by"] = {}
+                self._VERTICAPY_VARIABLES_["history"] = []
+                self._VERTICAPY_VARIABLES_["saving"] = []
+                self._VERTICAPY_VARIABLES_["main_relation"] = '"{}"."{}"'.format(
+                    self._VERTICAPY_VARIABLES_["schema"],
+                    self._VERTICAPY_VARIABLES_["input_relation"],
                 )
-            )
-            self._VERTICAPY_VARIABLES_["columns"] = [elem for elem in columns]
-            for col_dtype in columns_dtype:
-                column, dtype = col_dtype[0], col_dtype[1]
-                if '"' in column:
-                    warning_message = (
-                        'A double quote " was found in the column {0}, '
-                        "its alias was changed using underscores '_' to {1}."
-                    ).format(column, column.replace('"', "_"))
-                    warnings.warn(warning_message, Warning)
-                new_vColumn = vColumn(
-                    '"{}"'.format(column.replace('"', "_")),
-                    parent=self,
-                    transformations=[
-                        (
-                            '"{}"'.format(column.replace('"', '""')),
-                            dtype,
-                            get_category_from_vertica_type(dtype),
-                        )
-                    ],
-                )
-                setattr(self, '"{}"'.format(column.replace('"', "_")), new_vColumn)
-                setattr(self, column.replace('"', "_"), new_vColumn)
-            self._VERTICAPY_VARIABLES_["exclude_columns"] = []
-            self._VERTICAPY_VARIABLES_["where"] = []
-            self._VERTICAPY_VARIABLES_["order_by"] = {}
-            self._VERTICAPY_VARIABLES_["history"] = []
-            self._VERTICAPY_VARIABLES_["saving"] = []
-            self._VERTICAPY_VARIABLES_["main_relation"] = '"{}"."{}"'.format(
-                self._VERTICAPY_VARIABLES_["schema"],
-                self._VERTICAPY_VARIABLES_["input_relation"],
-            )
 
     # ---#
     def __abs__(self):
