@@ -148,9 +148,21 @@ dsn: str, optional
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
-    verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
-    verticapy.options["connection"]["dsn"] = dsn
-    verticapy.options["connection"]["section"] = section
+    try:
+        verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
+        verticapy.options["connection"]["dsn"] = dsn
+        verticapy.options["connection"]["section"] = section
+    except Exception as e:
+        if "The DSN Section" in str(e):
+            raise ConnectionError(
+                f"The connection '{section}' does not exist. To create "
+                "a new connection, you can use the 'new_connection' "
+                "function using your credentials: {'database': ..., "
+                "'host': ..., 'password': ..., 'user': ...}.\n"
+                "You can also look at the available connections by "
+                "using the 'available_connections' function."
+            )
+        raise (e)
 
 
 # ---#
