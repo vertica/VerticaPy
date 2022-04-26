@@ -156,11 +156,11 @@ dsn: str, optional
         if "The DSN Section" in str(e):
             raise ConnectionError(
                 f"The connection '{section}' does not exist. To create "
-                "a new connection, you can use the 'new_connection' "
-                "function using your credentials: {'database': ..., "
+                "a new connection, you use the 'new_connection' "
+                "function with your credentials: {'database': ..., "
                 "'host': ..., 'password': ..., 'user': ...}.\n"
-                "You can also look at the available connections by "
-                "using the 'available_connections' function."
+                "To view available connections, use the "
+                "the 'available_connections' function."
             )
         raise (e)
 
@@ -455,9 +455,10 @@ dict
 def set_connection(conn):
     """
 ---------------------------------------------------------------------------
-Set a customised connector. You can use this function if you want
-to manually set the connection (Example: setting an ODBC or JDBC
-connection).
+Saves a custom connection to the VerticaPy object. This allows you to 
+specify, for example, a JDBC or ODBC connection. This should not be 
+confused with a native VerticaPy connection created by the new_connection 
+function.
 
 Parameters
 ----------

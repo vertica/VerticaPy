@@ -956,8 +956,8 @@ VERTICAPY Interactive Help (FAQ).
     message = img1 if (isnotebook()) else img2
     message += (
         "\n\n&#128226; Welcome to the <b>VerticaPy</b> help module."
-        "\n\nFrom here, you can learn connect to Vertica, "
-        "how to create a Virtual DataFrame, load your data, and more.\n "
+        "\n\nFrom here, you can learn how to connect to Vertica, "
+        "create a Virtual DataFrame, load your data, and more.\n "
         "- <b>[Enter  0]</b> Overview of the library\n "
         "- <b>[Enter  1]</b> Load an example dataset\n "
         "- <b>[Enter  2]</b> View an example of data analysis with VerticaPy\n "
@@ -974,12 +974,12 @@ VERTICAPY Interactive Help (FAQ).
     try:
         response = int(input())
     except:
-        print("The choice is incorrect.\nPlease enter a number between 0 and 11.")
+        print("Invalid choice.\nPlease enter a number between 0 and 11.")
         try:
             response = int(input())
         except:
             print(
-                "The choice is still incorrect.\nRerun the help_start function "
+                "Invalid choice.\nRerun the help_start function "
                 "when you need help."
             )
             return
