@@ -305,17 +305,31 @@ bool
             return False
     query = ""
     if method == "model":
-        if "model_type" in kwds:
-            model_type = kwds["model_type"]
+        model_type = kwds["model_type"] if "model_type" in kwds else None
         try:
             query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 quote_ident(name).lower()
             )
-            model_type = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
+            result = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
             is_in_verticapy_schema = True
+            if not (model_type):
+                model_type = result
         except:
             model_type, is_in_verticapy_schema = None, False
-        if model_type in ("DBSCAN", "LocalOutlierFactor", "CountVectorizer", "KernelDensity", "AutoDataPrep", "KNeighborsRegressor", "KNeighborsClassifier", "NearestCentroid") or is_in_verticapy_schema:
+        if (
+            model_type
+            in (
+                "DBSCAN",
+                "LocalOutlierFactor",
+                "CountVectorizer",
+                "KernelDensity",
+                "AutoDataPrep",
+                "KNeighborsRegressor",
+                "KNeighborsClassifier",
+                "NearestCentroid",
+            )
+            or is_in_verticapy_schema
+        ):
             if model_type in ("DBSCAN", "LocalOutlierFactor"):
                 drop(name, method="table")
             elif model_type == "CountVectorizer":
@@ -334,16 +348,17 @@ bool
                 )
             elif model_type == "AutoDataPrep":
                 drop(self.name, method="table")
-            sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
-                quote_ident(name).lower()
-            )
-            executeSQL(sql, title="Deleting vModel.")
-            executeSQL("COMMIT;", title="Commit.")
-            sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
-                quote_ident(name).lower()
-            )
-            executeSQL(sql, title="Deleting vModel attributes.")
-            executeSQL("COMMIT;", title="Commit.")
+            if is_in_verticapy_schema:
+                sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
+                    quote_ident(name).lower()
+                )
+                executeSQL(sql, title="Deleting vModel.")
+                executeSQL("COMMIT;", title="Commit.")
+                sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
+                    quote_ident(name).lower()
+                )
+                executeSQL(sql, title="Deleting vModel attributes.")
+                executeSQL("COMMIT;", title="Commit.")
         else:
             query = f"DROP MODEL {name};"
     elif method == "table":
@@ -923,6 +938,7 @@ read_json : Ingests a JSON file into the Vertica database.
     drop(flex_name, method="table")
     return dtype
 
+
 # ---#
 def help_start():
     """
@@ -952,10 +968,7 @@ VERTICAPY Interactive Help (FAQ).
         "- <b>[Enter -1]</b> Exit"
     )
     if not (isnotebook()):
-        message = (
-            message.replace("<b>", "")
-            .replace("</b>", "")
-        )
+        message = message.replace("<b>", "").replace("</b>", "")
     display(Markdown(message)) if (isnotebook()) else print(message)
     try:
         response = int(input())
@@ -998,10 +1011,9 @@ VERTICAPY Interactive Help (FAQ).
         if not (isnotebook()):
             message = f"Please go to {link}"
         else:
-            message = (
-                f"Please go to <a href='{link}'>{link}</a>"
-            )
+            message = f"Please go to <a href='{link}'>{link}</a>"
     display(Markdown(message)) if (isnotebook()) else print(message)
+
 
 # ---#
 def pjson(path: str, ingest_local: bool = True):
@@ -1781,9 +1793,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             if res:
                 verticapy.options["temp_schema"] = str(value)
             else:
-                raise ParameterError(
-                    f"The schema '{value}' could not be found."
-                )
+                raise ParameterError(f"The schema '{value}' could not be found.")
     elif option == "time_on":
         check_types([("value", value, [bool])])
         if value in (True, False, None):
