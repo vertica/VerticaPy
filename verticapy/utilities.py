@@ -338,8 +338,9 @@ bool
                     "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
                     "AND attr_name = 'countvectorizer_table'"
                 ).format(quote_ident(name).lower())
-                res = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
-                drop(res, method="table")
+                res = executeSQL(query, print_time_sql=False, method="fetchrow")
+                if res:
+                    drop(res, method="table")
             elif model_type == "KernelDensity":
                 drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
                 drop(
