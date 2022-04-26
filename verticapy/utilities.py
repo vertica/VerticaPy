@@ -347,7 +347,7 @@ bool
                     method="model",
                 )
             elif model_type == "AutoDataPrep":
-                drop(self.name, method="table")
+                drop(name, method="table")
             if is_in_verticapy_schema:
                 sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                     quote_ident(name).lower()
