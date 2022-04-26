@@ -85,45 +85,42 @@ from verticapy.errors import *
 class vDataFrame:
     """
 ---------------------------------------------------------------------------
-Python object which will keep in mind all user modifications 
-in order to use the correct SQL code generation. It will send SQL 
-queries to the Vertica DB which will aggregate and return the final 
-result. vDataFrame will create for each column of the relation a 
-Virtual Column (vColumn) which will store the column alias and all 
-the user transformations. Thus, vDataFrame allows to do easy data 
-preparation and exploration without modifying the data.
+Python object that records all user modifications, allowing users to 
+manipulate the relation without mutating the underlying data in Vertica. 
+When changes are made, the vDataFrame queries the Vertica database, which 
+aggregates and returns the final result. The vDataFrame creates, for each ]
+column of the relation, a Virtual Column (vColumn) that stores the column 
+alias an all user transformations. 
 
 Parameters
 ----------
 input_relation: str, optional
     Relation (View, Table or Temporary Table) to use to create the object.
-    To get a specific schema relation, your string must include both
+    To specify a schema relation, your string must include both
     relation and schema: 'schema.relation' or '"schema"."relation"'.
-    You can also use the 'schema' parameter to be less ambiguous.
-    In this case input_relation must only be the relation name (it must 
-    not include a schema).
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
     to not include useless columns.
 schema: str, optional
-    Relation schema. It can be used to be less ambiguous and allow to 
-    create schema and relation name with dots '.' inside.
+    The schema of the relation. Specifying a schema allows you to specify a 
+    table within a particular schema, or to specify a schema and relation name 
+    that contain period '.' characters. If specified, the input_relation cannot 
+    include a schema.
 sql: str, optional
-    If used, the vDataFrame is created by using the input SQL query.
-    The parameter 'input_relation' must be empty. 
+    A SQL query used to create the vDataFrame. If specified, the parameter 
+    'input_relation' must be empty.
 empty: bool, optional
-    If set to True, the created object will be empty. It can be used to 
-    create customized vDataFrame without going through the initialization 
-    check.
+    If set to True, the vDataFrame will be empty. You can use this to create 
+    a custom vDataFrame and bypass the initialization check.
 
 Attributes
 ----------
 _VERTICAPY_VARIABLES_: dict
     Dictionary containing all vDataFrame attributes.
-        allcols_ind, int      : Int to use to optimize the SQL 
+        allcols_ind, int      : Integer, used to optimize the SQL 
                                 code generation.
-        columns, list         : List of the vColumns names.
+        columns, list         : List of the vColumn names.
         count, int            : Number of elements of the vDataFrame 
                                 (catalog).
         exclude_columns, list : vColumns to exclude from the final 
@@ -134,14 +131,14 @@ _VERTICAPY_VARIABLES_: dict
                                 (first floor).
         order_by, dict        : Dictionary of all rules to sort the 
                                 vDataFrame.
-        saving, list          : List to use to reconstruct the 
+        saving, list          : List used to reconstruct the 
                                 vDataFrame.
         schema, str           : Schema of the input relation.
         where, list           : List of all rules to filter the 
                                 vDataFrame.
 vColumns : vColumn
-    Each vColumn of the vDataFrame is accessible by entering its name 
-    between brackets. For example to access to "myVC", you can write 
+    Each vColumn of the vDataFrame is accessible by by specifying its name 
+    between brackets. For example, to access the vColumn "myVC": 
     vDataFrame["myVC"].
     """
 
