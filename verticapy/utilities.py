@@ -315,7 +315,7 @@ bool
             if not (model_type):
                 model_type = result
         except:
-            model_type, is_in_verticapy_schema = None, False
+            is_in_verticapy_schema = False
         if (
             model_type
             in (
