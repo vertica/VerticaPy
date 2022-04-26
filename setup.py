@@ -25,7 +25,7 @@ setuptools.setup(
     url="https://github.com/vertica/VerticaPy",
     keywords="vertica python ml data science machine learning statistics database",
     description=(
-        "VerticaPy simplifies data exploration, data cleaning and machine"
+        "VerticaPy simplifies data exploration, data cleaning, and machine"
         " learning in Vertica."
     ),
     long_description=long_description,
