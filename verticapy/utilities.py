@@ -339,8 +339,8 @@ bool
                     "AND attr_name = 'countvectorizer_table'"
                 ).format(quote_ident(name).lower())
                 res = executeSQL(query, print_time_sql=False, method="fetchrow")
-                if res:
-                    drop(res, method="table")
+                if res and res[0]:
+                    drop(res[0], method="table")
             elif model_type == "KernelDensity":
                 drop(name.replace('"', "") + "_KernelDensity_Map", method="table")
                 drop(
