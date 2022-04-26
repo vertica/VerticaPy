@@ -249,6 +249,10 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         current_print_info = verticapy.options["print_info"]
         verticapy.options["print_info"] = False
         assert not (by) or (ts), ParameterError(
@@ -517,6 +521,10 @@ model_: object
     object
         clustering model
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
@@ -747,6 +755,10 @@ model_grid_ : tablesample
     object
         model grid
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if not (X):
             if not (y):
                 exclude_columns = []

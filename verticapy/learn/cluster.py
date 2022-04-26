@@ -229,7 +229,10 @@ p: int, optional
                 ("index", index, [str]),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()

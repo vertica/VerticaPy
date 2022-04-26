@@ -125,7 +125,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -327,7 +330,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1018,7 +1024,10 @@ xlim: list, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1421,7 +1430,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1594,7 +1606,10 @@ p: int, optional
                 ("index", index, [str], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()

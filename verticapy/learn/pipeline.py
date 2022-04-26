@@ -157,6 +157,10 @@ steps: list
             vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):

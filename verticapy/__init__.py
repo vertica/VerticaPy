@@ -82,6 +82,7 @@ verticapy.options = {
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,
+    "overwrite_model": True,
     "percent_bar": None,
     "print_info": True,
     "sql_on": False,

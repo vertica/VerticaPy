@@ -54,6 +54,7 @@ import numpy as np
 from typing import Union
 
 # VerticaPy Modules
+import verticapy
 from verticapy import vDataFrame
 from verticapy.learn.mlplot import *
 from verticapy.learn.model_selection import *
@@ -310,10 +311,7 @@ Main Class for Vertica Model
 	---------------------------------------------------------------------------
 	Drops the model from the Vertica database.
 		"""
-        if self.type == "AutoDataPrep":
-            drop(self.name, method="table")
-        else:
-            drop(self.name, method="model")
+        drop(self.name, method="model", model_type=self.type)
 
     # ---#
     def features_importance(
@@ -2732,6 +2730,10 @@ class Supervised(vModel):
                 ("test_relation", test_relation, [str, vDataFrame]),
             ]
         )
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         self.X = [quote_ident(column) for column in X]
         self.y = quote_ident(y)
         if (self.type == "NaiveBayes") and (
@@ -4536,7 +4538,10 @@ class Unsupervised(vModel):
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
         if self.type in ("BisectingKMeans",) and isinstance(
             verticapy.options["random_state"], int
