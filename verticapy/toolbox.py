@@ -149,6 +149,13 @@ def clean_query(query: str):
     res = re.sub("--.+\n", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
     res = re.sub(" +", " ", res)
+
+    while len(res) > 0 and (res[-1] in (";", " ")):
+        res = res[0:-1]
+
+    while len(res) > 0 and (res[0] in (";", " ")):
+        res = res[1:]
+        
     return res
 
 

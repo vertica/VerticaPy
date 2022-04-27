@@ -93,12 +93,6 @@ def hchart(line, cell, local_ns=None):
     query = clean_query(query)
     query = replace_vars_in_query(query, locals()["local_ns"])
 
-    while len(query) > 0 and (query[-1] in (";", " ")):
-        query = query[0:-1]
-
-    while len(query) > 0 and (query[0] in (";", " ")):
-        query = query[1:]
-
     # Drawing the graphic and displaying the info
     start_time = time.time()
     chart = hchartSQL(query, options["type"])

@@ -179,16 +179,7 @@ vColumns : vColumn
         if sql:
 
             # Cleaning the Query
-            sql_tmp = re.sub("--.+\n", "", sql)
-            sql_tmp = sql_tmp.replace("\t", " ").replace("\n", " ")
-            sql_tmp = re.sub(" +", " ", sql_tmp)
-
-            while len(sql_tmp) > 0 and (sql_tmp[-1] in (";", " ")):
-                sql_tmp = sql_tmp[0:-1]
-
-            while len(sql_tmp) > 0 and (sql_tmp[0] in (";", " ")):
-                sql_tmp = sql_tmp[1:]
-
+            sql_tmp = clean_query(sql)
             sql_tmp = f"({sql_tmp}) VERTICAPY_SUBTABLE"
 
             # Filtering some columns
