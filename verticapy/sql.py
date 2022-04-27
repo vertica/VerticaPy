@@ -76,6 +76,8 @@ from verticapy import (
     vDataFrame,
     set_option,
     tablesample,
+    clean_query,
+    replace_vars_in_query,
 )
 
 
@@ -124,20 +126,8 @@ def sql(line, cell="", local_ns=None):
             f.close()
 
         # Cleaning the Query
-        queries = re.sub("--.+\n", "", queries)
-        queries = queries.replace("\t", " ").replace("\n", " ")
-        queries = re.sub(" +", " ", queries)
-        variables = re.findall(":[A-Za-z0-9_]+", queries)
-
-        for v in variables:
-            val = locals()["local_ns"][v[1:]]
-            if isinstance(val, vDataFrame):
-                val = val.__genSQL__()
-            elif isinstance(val, tablesample):
-                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
-            elif isinstance(val, pd.DataFrame):
-                val = pandas_to_vertica(val).__genSQL__()
-            queries = queries.replace(v, str(val))
+        queries = clean_query(queries)
+        queries = replace_vars_in_query(queries, locals()["local_ns"])
 
         n, i, all_split = len(queries), 0, []
 

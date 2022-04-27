@@ -90,8 +90,9 @@ class TestCountVectorizer:
             "           token, \n                          COUNT(*)"
             " AS cnt, \n                          RANK() OVER (ORDER"
             " BY COUNT(*) DESC) AS rnk \n                       FROM"
-            " model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE"
-            " \n                       WHERE (df BETWEEN 0.0 AND 1.0)"
+            " model_test_countvectorizer GROUP BY 1) VERTICAPY_SUBTABLE)"
+            " VERTICAPY_SUBTABLE \n                       WHERE (df "
+            "BETWEEN 0.0 AND 1.0)"
         )
         result_sql = model.deploySQL()
 

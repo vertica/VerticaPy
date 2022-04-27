@@ -143,6 +143,13 @@ def check_types(types_list: list = []):
                     ).format(elem[0], elem[2], type(elem[1]))
                     warnings.warn(warning_message, Warning)
 
+# ---#
+def clean_query(query: str):
+    res = re.sub("--.+\n", "", query)
+    res = res.replace("\t", " ").replace("\n", " ")
+    res = re.sub(" +", " ", res)
+    return res
+
 
 # ---#
 def color_dict(d: dict, idx: int = 0):
@@ -192,6 +199,7 @@ def executeSQL(
     )
     from verticapy.connect import current_cursor
 
+    query = clean_query(query)
     cursor = current_cursor()
     if verticapy.options["sql_on"] and print_time_sql:
         print_query(query, title)
@@ -875,6 +883,22 @@ def quote_ident(column: str):
         tmp_column = tmp_column[1:-1]
     return '"{}"'.format(str(tmp_column).replace('"', '""'))
 
+# ---#
+def replace_vars_in_query(query: str, locals_dict: dict):
+    from verticapy import vDataFrame, tablesample, pandas_to_vertica
+    import pandas as pd
+
+    variables, query_tmp = re.findall(":[A-Za-z0-9_]+", query), query
+    for v in variables:
+        val = locals_dict[v[1:]]
+        if isinstance(val, vDataFrame):
+            val = val.__genSQL__()
+        elif isinstance(val, tablesample):
+            val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+        elif isinstance(val, pd.DataFrame):
+            val = pandas_to_vertica(val).__genSQL__()
+        query_tmp = query_tmp.replace(v, str(val))
+    return query_tmp
 
 # ---#
 def reverse_score(metric: str):

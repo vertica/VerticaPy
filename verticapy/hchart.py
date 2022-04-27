@@ -56,7 +56,7 @@ import re
 import pandas as pd
 
 # VerticaPy
-from verticapy import vDataFrame, tablesample
+from verticapy import vDataFrame, tablesample, clean_query, replace_vars_in_query
 
 
 def hchart(line, cell):
@@ -81,20 +81,8 @@ def hchart(line, cell):
                 )
 
     # Cleaning the Query
-    query = re.sub("--.+\n", "", query)
-    query = query.replace("\t", " ").replace("\n", " ")
-    query = re.sub(" +", " ", query)
-    variables = re.findall(":[A-Za-z0-9_]+", query)
-
-    for v in variables:
-        val = locals()["local_ns"][v[1:]]
-        if isinstance(val, vDataFrame):
-            val = val.__genSQL__()
-        elif isinstance(val, tablesample):
-            val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
-        elif isinstance(val, pd.DataFrame):
-            val = pandas_to_vertica(val).__genSQL__()
-        variables = variables.replace(v, str(val))
+    query = clean_query(query)
+    query = replace_vars_in_query(query, locals()["local_ns"])
 
     while len(query) > 0 and (query[-1] in (";", " ")):
         query = query[0:-1]
