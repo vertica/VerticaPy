@@ -68,7 +68,7 @@ from verticapy.highchart import hchartSQL
 
 # ---#
 @needs_local_scope
-def hchart(line, cell):
+def hchart(line, cell, local_ns=None):
 
     # Initialization
     options = {"type": "auto"}
