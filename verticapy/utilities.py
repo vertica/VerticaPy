@@ -979,9 +979,7 @@ VERTICAPY Interactive Help (FAQ).
         try:
             response = int(input())
         except:
-            print(
-                "Invalid choice.\nRerun the help_start function when you need help."
-            )
+            print("Invalid choice.\nRerun the help_start function when you need help.")
             return
     if response == 0:
         link = "https://www.vertica.com/python/quick-start.php"

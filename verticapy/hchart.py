@@ -46,17 +46,25 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 # ---#
-from verticapy import get_magic_options
-from verticapy.highchart import hchartSQL
+# Jupyter Modules
+from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
-import time
-import re
+
+# Standard Python Modules
+import re, time
 
 # Other Modules
 import pandas as pd
 
 # VerticaPy
-from verticapy import vDataFrame, tablesample, clean_query, replace_vars_in_query
+from verticapy import (
+    vDataFrame,
+    tablesample,
+    clean_query,
+    replace_vars_in_query,
+    get_magic_options,
+)
+from verticapy.highchart import hchartSQL
 
 # ---#
 @needs_local_scope
