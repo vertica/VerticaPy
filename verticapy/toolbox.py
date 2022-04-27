@@ -143,6 +143,7 @@ def check_types(types_list: list = []):
                     ).format(elem[0], elem[2], type(elem[1]))
                     warnings.warn(warning_message, Warning)
 
+
 # ---#
 def clean_query(query: str):
     res = re.sub("--.+\n", "", query)
@@ -883,6 +884,7 @@ def quote_ident(column: str):
         tmp_column = tmp_column[1:-1]
     return '"{}"'.format(str(tmp_column).replace('"', '""'))
 
+
 # ---#
 def replace_vars_in_query(query: str, locals_dict: dict):
     from verticapy import vDataFrame, tablesample, pandas_to_vertica
@@ -899,6 +901,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
             val = pandas_to_vertica(val).__genSQL__()
         query_tmp = query_tmp.replace(v, str(val))
     return query_tmp
+
 
 # ---#
 def reverse_score(metric: str):

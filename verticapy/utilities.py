@@ -692,35 +692,40 @@ def pandas_to_vertica(
 ):
     """
 ---------------------------------------------------------------------------
-Ingests a pandas DataFrame into the Vertica database by creating a CSV file 
-and then using flex tables to load the data.
+Ingests a pandas DataFrame into the Vertica database by creating a 
+CSV file and then using flex tables to load the data.
 
 Parameters
 ----------
 df: pandas.DataFrame
     The pandas.DataFrame to ingest.
 name: str, optional
-    Name of the new relation or the relation in which to insert the data. 
-    If unspecified, a temporary local table is created. This temporary table is
-    dropped at the end of the local session.
+    Name of the new relation or the relation in which to insert the 
+    data. If unspecified, a temporary local table is created. This 
+    temporary table is dropped at the end of the local session.
 schema: str, optional
-    Schema of the new relation. If empty, a temporary schema is used. To
-    modify the temporary schema, use the 'set_option' function.
+    Schema of the new relation. If empty, a temporary schema is used. 
+    To modify the temporary schema, use the 'set_option' function.
 dtype: dict, optional
-    Dictionary of input types. Providing a dictionary can increase ingestion 
-    speed and precision. If specified, rather than parsing the intermediate CSV 
-    and guessing the input types, VerticaPy uses the specified input types instead.
+    Dictionary of input types. Providing a dictionary can increase 
+    ingestion speed and precision. If specified, rather than parsing 
+    the intermediate CSV and guessing the input types, VerticaPy uses 
+    the specified input types instead.
 parse_n_lines: int, optional
-    If this parameter is greater than 0, VerticaPy creates and ingests a temporary file 
-    containing 'parse_n_lines' number of lines to determine the input data types before
-    ingesting the intermediate CSV file containing the rest of the data. This method of 
-    data type identification is less accurate, but is much faster for large datasets.
+    If this parameter is greater than 0, VerticaPy creates and 
+    ingests a temporary file containing 'parse_n_lines' number 
+    of lines to determine the input data types before ingesting 
+    the intermediate CSV file containing the rest of the data. 
+    This method of data type identification is less accurate, 
+    but is much faster for large datasets.
 temp_path: str, optional
-    The path to which to write the intermediate CSV file. This is useful
-    in cases where the user does not have write permissions on the current directory.
+    The path to which to write the intermediate CSV file. This 
+    is useful in cases where the user does not have write 
+    permissions on the current directory.
 insert: bool, optional
-    If set to True, the data are ingested into the input relation.
-    The column names of your table and the pandas.DataFrame must match.
+    If set to True, the data are ingested into the input relation. 
+    The column names of your table and the pandas.DataFrame must 
+    match.
     
 Returns
 -------
@@ -729,7 +734,7 @@ vDataFrame
 
 See Also
 --------
-read_csv  : Ingests a CSV file into the Vertica database.
+read_csv  : Ingests a  CSV file into the Vertica database.
 read_json : Ingests a JSON file into the Vertica database.
     """
     check_types(
@@ -766,11 +771,7 @@ read_json : Ingests a JSON file into the Vertica database.
         if str_cols:
             tmp_df = df.copy()
             for c in str_cols:
-                tmp_df[c] = (
-                    '"'
-                    + tmp_df[c].str.replace("\\", "\\\\").str.replace('"', '\\"')
-                    + '"'
-                )
+                tmp_df[c] = '"' + tmp_df[c].str.replace('"', '""') + '"'
             clear = True
         else:
             tmp_df = df
@@ -979,8 +980,7 @@ VERTICAPY Interactive Help (FAQ).
             response = int(input())
         except:
             print(
-                "Invalid choice.\nRerun the help_start function "
-                "when you need help."
+                "Invalid choice.\nRerun the help_start function when you need help."
             )
             return
     if response == 0:
