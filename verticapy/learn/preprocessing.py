@@ -172,7 +172,19 @@ max_text_size: int, optional
     str/list
         the SQL code needed to deploy the model.
         """
-        sql = "SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN {} AND {})".format(
+        sql = """SELECT 
+                    * 
+                 FROM (SELECT 
+                          token, 
+                          cnt / SUM(cnt) OVER () AS df, 
+                          cnt, 
+                          rnk 
+                 FROM (SELECT 
+                          token, 
+                          COUNT(*) AS cnt, 
+                          RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
+                       FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                       WHERE (df BETWEEN {1} AND {2})""".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
         if self.parameters["max_features"] > 0:
@@ -222,7 +234,9 @@ max_text_size: int, optional
             self.drop()
         except:
             pass
-        sql = "CREATE TABLE {}(id identity(2000) primary key, text varchar({})) ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"
+        sql = """CREATE TABLE {0}(id identity(2000) primary key, 
+                                  text varchar({1})) 
+                 ORDER BY id SEGMENTED BY HASH(id) ALL NODES KSAFE;"""
         executeSQL(
             sql.format(tmp_name, self.parameters["max_text_size"]),
             title="Computing the CountVectorizer [Step 0].",
@@ -242,7 +256,20 @@ max_text_size: int, optional
             self.name, tmp_name
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 2].")
-        stop_words = "SELECT token FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM {} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE not(df BETWEEN {} AND {})".format(
+        stop_words = """SELECT 
+                            token 
+                        FROM 
+                            (SELECT 
+                                token, 
+                                cnt / SUM(cnt) OVER () AS df, 
+                                rnk 
+                            FROM 
+                                (SELECT 
+                                    token, 
+                                    COUNT(*) AS cnt, 
+                                    RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk 
+                                 FROM {0} GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE 
+                                 WHERE not(df BETWEEN {1} AND {2})""".format(
             self.name, self.parameters["min_df"], self.parameters["max_df"]
         )
         if self.parameters["max_features"] > 0:
