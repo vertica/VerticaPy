@@ -61,7 +61,7 @@ from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
 
 # Standard Python Modules
-import warnings
+import warnings, re, time
 
 # Other modules
 import pandas as pd
@@ -80,10 +80,7 @@ from verticapy import (
     replace_vars_in_query,
 )
 
-
-import re, time
-
-
+# ---#
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
 

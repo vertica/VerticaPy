@@ -3257,7 +3257,7 @@ class BinaryClassifier(Classifier):
                 ("X", X, [list]),
                 ("vdf", vdf, [str, vDataFrame]),
                 ("inplace", inplace, [bool]),
-                ("pos_label", pos_label, [bool]),
+                ("pos_label", pos_label, [int, str, float]),
             ],
         )
         assert pos_label in [1, 0, "0", "1", None], ParameterError(

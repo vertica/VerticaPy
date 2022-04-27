@@ -58,7 +58,8 @@ import pandas as pd
 # VerticaPy
 from verticapy import vDataFrame, tablesample, clean_query, replace_vars_in_query
 
-
+# ---#
+@needs_local_scope
 def hchart(line, cell):
 
     # Initialization
