@@ -46,15 +46,31 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 # ---#
-from verticapy import get_magic_options
-from verticapy.highchart import hchartSQL
+# Jupyter Modules
+from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
-import time
-import re
 
+# Standard Python Modules
+import re, time
 
-def hchart(line, cell):
+# Other Modules
+import pandas as pd
 
+# VerticaPy
+from verticapy import (
+    vDataFrame,
+    tablesample,
+    clean_query,
+    replace_vars_in_query,
+    get_magic_options,
+)
+from verticapy.highchart import hchartSQL
+
+# ---#
+@needs_local_scope
+def hchart(line, cell, local_ns=None):
+
+    # Initialization
     options = {"type": "auto"}
     query = cell
 
@@ -73,15 +89,11 @@ def hchart(line, cell):
                     " doesn't exist, it was skipped."
                 )
 
-    query = query.replace("\t", " ").replace("\n", " ")
-    query = re.sub(" +", " ", query)
+    # Cleaning the Query
+    query = clean_query(query)
+    query = replace_vars_in_query(query, locals()["local_ns"])
 
-    while len(query) > 0 and (query[-1] in (";", " ")):
-        query = query[0:-1]
-
-    while len(query) > 0 and (query[0] in (";", " ")):
-        query = query[1:]
-
+    # Drawing the graphic and displaying the info
     start_time = time.time()
     chart = hchartSQL(query, options["type"])
     elapsed_time = time.time() - start_time

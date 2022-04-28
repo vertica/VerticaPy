@@ -160,7 +160,7 @@ Attributes
                 index_start,
                 limit,
             )
-            return vdf_from_relation(query)
+            return vDataFrameSQL(query)
         elif isinstance(index, int):
             cast = "::float" if self.category() == "float" else ""
             if index < 0:

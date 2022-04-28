@@ -154,9 +154,13 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(relation=input_relation)
+            vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -227,7 +231,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -317,7 +321,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -360,7 +364,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):

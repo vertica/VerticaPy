@@ -357,7 +357,7 @@ model
         ]
     )
     if isinstance(vdf, str):
-        vdf_tmp = vdf_from_relation(vdf)
+        vdf_tmp = vDataFrameSQL(vdf)
     else:
         vdf_tmp = vdf.copy()
     vdf.are_namecols_in(ts)
@@ -564,7 +564,7 @@ tablesample
     query = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(X), vdf.__genSQL__()
     )
-    vdf_lags = vdf_from_relation(query)
+    vdf_lags = vDataFrameSQL(query)
     from verticapy.learn.linear_model import LinearRegression
 
     name = gen_tmp_name(schema=verticapy.options["temp_schema"], name="linear_reg")
@@ -796,7 +796,7 @@ tablesample
     query = "(SELECT {}, POWER({}, 2) AS v_eps2 FROM {}) VERTICAPY_SUBTABLE".format(
         ", ".join(variables), eps, vdf.__genSQL__()
     )
-    vdf_white = vdf_from_relation(query)
+    vdf_white = vDataFrameSQL(query)
 
     from verticapy.learn.linear_model import LinearRegression
 
@@ -1213,7 +1213,7 @@ vDataFrame
         vdf.format_colnames(by),
     )
     if rule:
-        vdf_tmp = vdf.asfreq(ts=ts, rule=period, method={column: "linear"}, by=by)
+        vdf_tmp = vdf.interpolate(ts=ts, rule=period, method={column: "linear"}, by=by)
     else:
         vdf_tmp = vdf[[ts, column]]
     trend_name, seasonal_name, epsilon_name = (

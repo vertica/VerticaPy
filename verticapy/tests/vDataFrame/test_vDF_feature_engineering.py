@@ -495,9 +495,9 @@ class TestvDFFeatureEngineering:
         titanic_copy.analytic(func="var", columns="age", name="var")
         assert titanic_copy["var"].median() == pytest.approx(208.378019758472)
 
-    def test_vDF_asfreq(self, smart_meters_vd):
+    def test_vDF_interpolate(self, smart_meters_vd):
         # bfill method
-        result1 = smart_meters_vd.asfreq(
+        result1 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "bfill"}, by=["id"]
         )
         result1.sort({"id": "asc", "time": "asc"})
@@ -508,7 +508,7 @@ class TestvDFFeatureEngineering:
         assert result1["val"][2] == pytest.approx(0.277)
 
         # ffill
-        result2 = smart_meters_vd.asfreq(
+        result2 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "ffill"}, by=["id"]
         )
         result2.sort({"id": "asc", "time": "asc"})
@@ -519,7 +519,7 @@ class TestvDFFeatureEngineering:
         assert result2["val"][2] == pytest.approx(0.029)
 
         # linear method
-        result3 = smart_meters_vd.asfreq(
+        result3 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "linear"}, by=["id"]
         )
         result3.sort({"id": "asc", "time": "asc"})

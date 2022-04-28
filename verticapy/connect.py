@@ -148,9 +148,21 @@ dsn: str, optional
         dsn = get_connection_file()
     if prev_conn and not (prev_conn.closed()):
         prev_conn.close()
-    verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
-    verticapy.options["connection"]["dsn"] = dsn
-    verticapy.options["connection"]["section"] = section
+    try:
+        verticapy.options["connection"]["conn"] = vertica_connection(section, dsn)
+        verticapy.options["connection"]["dsn"] = dsn
+        verticapy.options["connection"]["section"] = section
+    except Exception as e:
+        if "The DSN Section" in str(e):
+            raise ConnectionError(
+                f"The connection '{section}' does not exist. To create "
+                "a new connection, you use the 'new_connection' "
+                "function with your credentials: {'database': ..., "
+                "'host': ..., 'password': ..., 'user': ...}.\n"
+                "To view available connections, use the "
+                "the 'available_connections' function."
+            )
+        raise (e)
 
 
 # ---#
@@ -437,6 +449,31 @@ dict
     else:
 
         raise NameError(f"The DSN Section '{section}' doesn't exist.")
+
+
+# ---#
+def set_connection(conn):
+    """
+---------------------------------------------------------------------------
+Saves a custom connection to the VerticaPy object. This allows you to 
+specify, for example, a JDBC or ODBC connection. This should not be 
+confused with a native VerticaPy connection created by the new_connection 
+function.
+
+Parameters
+----------
+conn: object
+    Connection object.
+    """
+    try:
+        conn.cursor().execute("SELECT 1;")
+        res = conn.cursor().fetchone()[0]
+        assert res == 1
+    except:
+        ParameterError("The input connector is not working properly.")
+    verticapy.options["connection"]["conn"] = conn
+    verticapy.options["connection"]["dsn"] = None
+    verticapy.options["connection"]["section"] = None
 
 
 # ---#

@@ -249,13 +249,17 @@ final_relation_: vDataFrame
     object
         the cleaned relation
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         current_print_info = verticapy.options["print_info"]
         verticapy.options["print_info"] = False
         assert not (by) or (ts), ParameterError(
             "Parameter 'by' must be empty if 'ts' is not defined."
         )
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(input_relation)
+            vdf = vDataFrameSQL(input_relation)
         else:
             vdf = input_relation.copy()
         if not (X):
@@ -396,7 +400,7 @@ final_relation_: vDataFrame
                         method[elem] = "linear"
                     else:
                         method[elem] = "ffill"
-            vdf = vdf.asfreq(ts=ts, rule=rule, method=method, by=by)
+            vdf = vdf.interpolate(ts=ts, rule=rule, method=method, by=by)
             vdf.dropna()
         self.X_in = [elem for elem in X]
         self.X_out = vdf.get_columns(
@@ -517,6 +521,10 @@ model_: object
     object
         clustering model
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if self.parameters["print_info"]:
             print(f"\033[1m\033[4mStarting AutoClustering\033[0m\033[0m\n")
         if self.parameters["preprocess_data"]:
@@ -747,13 +755,17 @@ model_grid_ : tablesample
     object
         model grid
         """
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if not (X):
             if not (y):
                 exclude_columns = []
             else:
                 exclude_columns = [y]
             if not (isinstance(input_relation, vDataFrame)):
-                X = vdf_from_relation(input_relation).get_columns(
+                X = vDataFrameSQL(input_relation).get_columns(
                     exclude_columns=exclude_columns
                 )
             else:
@@ -767,7 +779,7 @@ model_grid_ : tablesample
             modeltype = None
             estimator_method = self.parameters["estimator"]
             if not (isinstance(input_relation, vDataFrame)):
-                vdf = vdf_from_relation(input_relation)
+                vdf = vDataFrameSQL(input_relation)
             else:
                 vdf = input_relation
             if self.parameters["estimator_type"].lower() == "binary" or (
@@ -1032,7 +1044,7 @@ model_grid_ : tablesample
         self.parameters["reverse"] = not (reverse)
         if self.preprocess_ != None:
             self.preprocess_.drop()
-            self.preprocess_.final_relation_ = vdf_from_relation(self.preprocess_.sql_)
+            self.preprocess_.final_relation_ = vDataFrameSQL(self.preprocess_.sql_)
         return self.model_grid_
 
     # ---#

@@ -37,7 +37,7 @@ def titanic_vd():
 @pytest.fixture(scope="module")
 def model(titanic_vd):
     create_verticapy_schema()
-    model_class = CountVectorizer("model_test",)
+    model_class = CountVectorizer("model_test_countvectorizer",)
     model_class.drop()
     model_class.fit("public.titanic", ["name"])
     yield model_class
@@ -81,7 +81,19 @@ class TestCountVectorizer:
         assert m_att == model.parameters["stop_words"]
 
     def test_deploySQL(self, model):
-        expected_sql = "SELECT * FROM (SELECT token, cnt / SUM(cnt) OVER () AS df, cnt, rnk FROM (SELECT token, COUNT(*) AS cnt, RANK() OVER (ORDER BY COUNT(*) DESC) AS rnk FROM model_test GROUP BY 1) VERTICAPY_SUBTABLE) VERTICAPY_SUBTABLE WHERE (df BETWEEN 0.0 AND 1.0)"
+        expected_sql = (
+            "SELECT \n                    * \n                 FROM"
+            " (SELECT \n                          token, \n        "
+            "                  cnt / SUM(cnt) OVER () AS df, \n    "
+            "                      cnt, \n                         "
+            " rnk \n                 FROM (SELECT \n               "
+            "           token, \n                          COUNT(*)"
+            " AS cnt, \n                          RANK() OVER (ORDER"
+            " BY COUNT(*) DESC) AS rnk \n                       FROM"
+            " model_test_countvectorizer GROUP BY 1) VERTICAPY_SUBTABLE)"
+            " VERTICAPY_SUBTABLE \n                       WHERE (df "
+            "BETWEEN 0.0 AND 1.0)"
+        )
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql

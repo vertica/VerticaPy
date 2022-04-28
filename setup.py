@@ -19,35 +19,35 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="0.9.0-beta",
+    version="0.9.0",
     author="Badr Ouali",
     author_email="badr.ouali@vertica.com",
     url="https://github.com/vertica/VerticaPy",
     keywords="vertica python ml data science machine learning statistics database",
-    description="VerticaPy simplifies data exploration, data cleaning and machine learning in Vertica.",
+    description=(
+        "VerticaPy simplifies data exploration, data cleaning, and machine"
+        " learning in Vertica."
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     python_requires=">=3.6",
     install_requires=[
         "matplotlib>=2.0",
-        "vertica-python>=0.11.0",
-        "scipy>=1.0.0",
         "numpy>=1.11.0",
+        "pandas>=0.23.0",
+        "python-highcharts>=0.4.1",
+        "scipy>=1.0.0",
+        "tqdm>=4.0.0",
+        "vertica-python>=0.11.0",
     ],
     extras_require={
         "all": [
-            "tqdm>=4.0.0",
-            "graphviz>=0.9.0",
-            "python-highcharts>=0.4.1",
-            "geopandas>=0.8.0",
             "descartes>=1.0.0",
+            "geopandas>=0.8.0",
+            "graphviz>=0.9.0",
             "shapely>=1.6.0",
-            "pandas>=0.23.0",
         ],
-        "plot": ["graphviz>=0.9.0", "python-highcharts>=0.4.1",],
-        "geo": ["geopandas>=0.8.0", "descartes>=1.0.0", "shapely>=1.6.0"],
-        "ml": ["tqdm>=4.0.0", "pandas>=0.23.0",],
     },
     package_data={"": ["*.csv", "*.json"]},
     classifiers=[

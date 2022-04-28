@@ -346,7 +346,10 @@ papprox_ma: int, optional
             ]
         )
         # Initialization
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -758,7 +761,7 @@ papprox_ma: int, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation)
+            vdf = vDataFrameSQL(relation=self.input_relation)
         check_types(
             [
                 ("limit", limit, [int, float]),
@@ -1097,7 +1100,7 @@ papprox_ma: int, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "SARIMAX")
+        result = vDataFrameSQL(final_relation, "SARIMAX")
         if nlead > 0:
             result[y].apply(
                 "CASE WHEN {} >= '{}' THEN NULL ELSE {} END".format(ts, first_t, "{}")
@@ -1218,7 +1221,7 @@ solver: str, optional
         for idx, elem in enumerate(self.X):
             relation = relation.replace("[X{}]".format(idx), elem)
         min_max = (
-            vdf_from_relation(relation=self.input_relation)
+            vDataFrameSQL(relation=self.input_relation)
             .agg(func=["min", "max"], columns=self.X)
             .transpose()
         )
@@ -1282,7 +1285,10 @@ solver: str, optional
             ]
         )
         # Initialization
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         self.input_relation = (
             input_relation
             if isinstance(input_relation, str)
@@ -1457,7 +1463,7 @@ solver: str, optional
         Matplotlib axes object
         """
         if not (vdf):
-            vdf = vdf_from_relation(relation=self.input_relation)
+            vdf = vDataFrameSQL(relation=self.input_relation)
         check_types(
             [
                 ("limit", limit, [int, float]),
@@ -1777,7 +1783,7 @@ solver: str, optional
         final_relation = "(SELECT {} FROM {}) VERTICAPY_SUBTABLE".format(
             ", ".join(columns), transform_relation.format(relation)
         )
-        result = vdf_from_relation(final_relation, "VAR")
+        result = vDataFrameSQL(final_relation, "VAR")
         if nlead > 0:
             for elem in X:
                 result[elem].apply(

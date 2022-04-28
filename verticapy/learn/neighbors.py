@@ -125,7 +125,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         func = "APPROXIMATE_MEDIAN" if (self.parameters["p"] == 1) else "AVG"
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
@@ -327,7 +330,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -633,7 +639,7 @@ p: int, optional
             "must be between 0 and 1, inclusive."
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -675,9 +681,9 @@ p: int, optional
                 ),
             )
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
+            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql)
+            return vDataFrameSQL(name="Neighbors", relation=sql)
 
     # ---#
     def predict_proba(
@@ -736,7 +742,7 @@ p: int, optional
             ).format("|".join(["{}".format(c) for c in self.classes_]), pos_label)
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf)
+            vdf = vDataFrameSQL(relation=vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if not (name):
@@ -774,9 +780,9 @@ p: int, optional
 
         # Result
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
+            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql)
+            return vDataFrameSQL(name="Neighbors", relation=sql)
 
     # ---#
     def roc_curve(
@@ -1018,7 +1024,10 @@ xlim: list, optional
         check_types(
             [("input_relation", input_relation, [str, vDataFrame]), ("X", X, [list])]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             if not (X):
                 X = input_relation.numcol()
@@ -1028,7 +1037,7 @@ xlim: list, optional
             try:
                 vdf = vDataFrame(input_relation)
             except:
-                vdf = vdf_from_relation(input_relation)
+                vdf = vDataFrameSQL(input_relation)
             if not (X):
                 X = vdf.numcol()
         vdf.are_namecols_in(X)
@@ -1421,7 +1430,10 @@ p: int, optional
                 ("test_relation", test_relation, [str, vDataFrame], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()
         else:
@@ -1493,7 +1505,7 @@ p: int, optional
             ],
         )
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(vdf)
+            vdf = vDataFrameSQL(vdf)
         X = [quote_ident(elem) for elem in X] if (X) else self.X
         key_columns = vdf.get_columns(exclude_columns=X)
         if "key_columns" in kwargs:
@@ -1515,9 +1527,9 @@ p: int, optional
             ),
         )
         if inplace:
-            return vdf_from_relation(name="Neighbors", relation=sql, vdf=vdf)
+            return vDataFrameSQL(name="Neighbors", relation=sql, vdf=vdf)
         else:
-            return vdf_from_relation(name="Neighbors", relation=sql)
+            return vDataFrameSQL(name="Neighbors", relation=sql)
 
 
 # ---#
@@ -1594,7 +1606,10 @@ p: int, optional
                 ("index", index, [str], False),
             ]
         )
-        does_model_exist(name=self.name, raise_error=True)
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         self.key_columns = [quote_ident(column) for column in key_columns]
         if isinstance(input_relation, vDataFrame):
             self.input_relation = input_relation.__genSQL__()

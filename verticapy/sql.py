@@ -61,24 +61,26 @@ from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
 
 # Standard Python Modules
-import warnings
+import warnings, re, time
+
+# Other modules
+import pandas as pd
 
 # VerticaPy Modules
 import verticapy
 from verticapy.errors import QueryError
 from verticapy import (
     executeSQL,
-    vdf_from_relation,
+    vDataFrameSQL,
     get_magic_options,
     vDataFrame,
     set_option,
     tablesample,
+    clean_query,
+    replace_vars_in_query,
 )
 
-
-import re, time
-
-
+# ---#
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
 
@@ -90,6 +92,7 @@ def sql(line, cell="", local_ns=None):
 
     try:
 
+        # Initialization + Options
         queries = line if (not (cell) and (line)) else cell
 
         has_option = (len(queries) > 1 and queries[0] == "-" and queries[1] != "-") or (
@@ -119,25 +122,9 @@ def sql(line, cell="", local_ns=None):
             queries = f.read()
             f.close()
 
-        queries = re.sub("--.+\n", "", queries)
-        queries = queries.replace("\t", " ").replace("\n", " ")
-        queries = re.sub(" +", " ", queries)
-        variables = re.findall(":[A-Za-z0-9_]+", queries)
-        for v in variables:
-            val = locals()["local_ns"][v[1:]]
-            try:
-                import pandas as pd
-
-                pandas_import = True
-            except:
-                pandas_import = False
-            if isinstance(val, vDataFrame):
-                val = val.__genSQL__()
-            elif isinstance(val, tablesample):
-                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
-            elif pandas_import and isinstance(val, pd.DataFrame):
-                val = pandas_to_vertica(val).__genSQL__()
-            queries = queries.replace(v, str(val))
+        # Cleaning the Query
+        queries = clean_query(queries)
+        queries = replace_vars_in_query(queries, locals()["local_ns"])
 
         n, i, all_split = len(queries), 0, []
 
@@ -189,6 +176,8 @@ def sql(line, cell="", local_ns=None):
         queries, n = queries_tmp, len(queries_tmp)
         result, start_time = None, time.time()
 
+        # Executing the Queries
+
         for i in range(n):
 
             query = queries[i]
@@ -231,7 +220,8 @@ def sql(line, cell="", local_ns=None):
 
                 error = ""
                 try:
-                    result = vdf_from_relation("({}) x".format(query))
+                    result = vDataFrameSQL("({}) x".format(query))
+
                 except:
                     try:
                         final_result = executeSQL(
@@ -247,10 +237,14 @@ def sql(line, cell="", local_ns=None):
                 if error:
                     raise QueryError(error)
 
+        # Displaying the information
+
         elapsed_time = round(time.time() - start_time, 3)
 
         if verticapy.options["print_info"]:
             display(HTML(f"<div><b>Execution: </b> {elapsed_time}s</div>"))
+
+        # Exporting the result
 
         if isinstance(result, vDataFrame) and "o" in options:
 
