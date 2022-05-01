@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -3892,11 +3892,11 @@ class MulticlassClassifier(Classifier):
         predictors will be used.
     name: str, optional
         Name of the additional prediction vColumn. If unspecified, a name is 
-	generated based on the model and class names.
+	    generated based on the model and class names.
     pos_label: int/float/str, optional
         Class label, the class for which the probability is calculated. 
-	If name is specified and pos_label is unspecified, the probability column 
-	names use the following format: name_class1, name_class2, etc.
+	    If name is specified and pos_label is unspecified, the probability 
+        column names use the following format: name_class1, name_class2, etc.
     inplace: bool, optional
         If set to True, the prediction will be added to the vDataFrame.
 

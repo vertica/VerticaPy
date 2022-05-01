@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -65,12 +65,12 @@ import vertica_python
 def available_connections():
     """
 ---------------------------------------------------------------------------
-Displays all the available auto connections.
+Displays all the available connections.
 
 Returns
 -------
 list
-	all the available auto connections.
+	all the available connections.
 	"""
     path = get_connection_file()
     confparser = ConfigParser()
@@ -137,7 +137,7 @@ Connects to the database.
 
 Parameters
 ----------
-section: str / connector
+section: str
     Name of the section in the configuration file.
 dsn: str, optional
     Path to the file containing the credentials. If empty, the 
@@ -302,11 +302,11 @@ Parameters
 ----------
 conn_info: dict
 	Dictionnary containing the information to set up the connection.
-		database : Database Name
-		host     : Server ID
-		password : User Password
-		port     : Database Port (optional, default: 5433)
-		user     : User ID (optional, default: dbadmin)
+		database : Database Name.
+		host     : Server ID.
+		password : User Password.
+		port     : Database Port (optional, default: 5433).
+		user     : User ID (optional, default: dbadmin).
         ...
 name: str, optional
 	Name of the connection.
@@ -383,15 +383,7 @@ dict
     confparser.optionxform = str
 
     if not dsn:
-        if "VERTICAPY_CONNECTIONS" in os.environ:
-            dsn = os.environ["VERTICAPY_CONNECTIONS"]
-        else:
-            raise EnvironmentError(
-                "The environment variable 'VERTICAPY_CONNECTIONS'"
-                " does not exist. Alternatively, you can manually"
-                "specify the path to a DSN configuration file with"
-                "the 'dsn' variable."
-            )
+        dsn = get_connection_file()
 
     confparser.read(dsn)
 

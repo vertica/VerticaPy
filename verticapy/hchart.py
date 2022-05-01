@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -104,4 +104,4 @@ def hchart(line, cell, local_ns=None):
 
 # ---#
 def load_ipython_extension(ipython):
-    ipython.register_magic_function(vCharts, "cell")
+    ipython.register_magic_function(hchart, "cell")

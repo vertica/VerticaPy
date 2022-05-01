@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -952,7 +952,7 @@ VERTICAPY Interactive Help (FAQ).
     except:
         pass
     path = os.path.dirname(verticapy.__file__)
-    img1 = verticapy.gen_verticapy_logo()
+    img1 = verticapy.gen_verticapy_logo_html(size="10%")
     img2 = verticapy.gen_verticapy_logo_str()
     message = img1 if (isnotebook()) else img2
     message += (
@@ -2007,7 +2007,7 @@ The tablesample attributes are the same than the parameters.
 
         Parameters
         ----------
-        tbs: tablesample, optional
+        tbs: tablesample
             Tablesample to append.
 
         Returns
@@ -2052,7 +2052,7 @@ The tablesample attributes are the same than the parameters.
 
         Parameters
         ----------
-        tbs: tablesample, optional
+        tbs: tablesample
             Tablesample to merge.
 
         Returns
@@ -2066,8 +2066,10 @@ The tablesample attributes are the same than the parameters.
             "The input and target tablesamples must have the same number of rows."
             f" Expected {n1}, Found {n2}."
         )
-        for col in tbs:
+        for col in tbs.values:
             if col != "index":
+                if col not in self.values:
+                    self.values[col] = []
                 self.values[col] += tbs.values[col]
         return self
 
@@ -2075,7 +2077,7 @@ The tablesample attributes are the same than the parameters.
     def shape(self):
         """
     ---------------------------------------------------------------------------
-    Transposes the tablesample.
+    Computes the tablesample shape.
 
     Returns
     -------
@@ -2090,7 +2092,7 @@ The tablesample attributes are the same than the parameters.
     def sort(self, column: str, desc: bool = False):
         """
         ---------------------------------------------------------------------------
-        Sort the tablesample using the input column.
+        Sorts the tablesample using the input column.
 
         Parameters
         ----------
@@ -2352,7 +2354,7 @@ schema: str, optional
 	Relation schema. It can be to use to be less ambiguous and allow to 
     create schema and relation name with dots '.' inside.
 history: list, optional
-	vDataFrame history (user modifications). to use to keep the previous 
+	vDataFrame history (user modifications). To use to keep the previous 
     vDataFrame history.
 saving: list, optional
 	List to use to reconstruct the vDataFrame from previous transformations.
