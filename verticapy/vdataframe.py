@@ -1890,6 +1890,7 @@ vColumns : vColumn
     func: list
         List of the different aggregations.
             aad            : average absolute deviation
+            approx_median  : approximate median
             approx_q%      : approximate q quantile 
                              (ex: approx_50% for the approximate median)
             approx_unique  : approximative cardinality
@@ -1927,7 +1928,7 @@ vColumns : vColumn
     ncols_block: int, optional
         Number of columns used per query. Setting this parameter divides
         what would otherwise be one large query into many smaller queries called
-        "blocks." The size of each block is determined by the ncols_block parmeter.
+        "blocks." The size of each block is determined by the ncols_block parameter.
     processes: int, optional
         Number of child processes to create. Setting this with the ncols_block parameter
         lets you parallelize a single query into many smaller queries, where each child 

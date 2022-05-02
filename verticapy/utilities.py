@@ -1013,7 +1013,7 @@ VERTICAPY Interactive Help (FAQ).
             message = f"Please go to <a href='{link}'>{link}</a>"
     display(Markdown(message)) if (isnotebook()) else print(message)
 
-
+vHelp = help_start
 # ---#
 def pjson(path: str, ingest_local: bool = True):
     """
@@ -1867,6 +1867,11 @@ The tablesample attributes are the same than the parameters.
                 self.dtype[column] = "undefined"
 
     # ---#
+    def __iter__(self):
+        columns = self.values
+        return (elem for elem in columns)
+
+    # ---#
     def __getitem__(self, key):
         all_cols = [elem for elem in self.values]
         for elem in all_cols:
@@ -2417,7 +2422,7 @@ vDataFrame
 
     return vdf
 
-
+vdf_from_relation = vDataFrameSQL
 # ---#
 def version(condition: list = []):
     """
