@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -146,7 +146,7 @@ def check_types(types_list: list = []):
 
 # ---#
 def clean_query(query: str):
-    res = re.sub("--.+\n", "", query)
+    res = re.sub("--.+(\n|\Z)", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
     res = re.sub(" +", " ", res)
 
@@ -839,7 +839,7 @@ def print_table(
                         ctype, missing_values, category = "", "", ""
                     if (i == 0) and (j == 0):
                         if dtype and (verticapy.options["mode"] in ("full", None)):
-                            val = verticapy.gen_verticapy_logo_html()
+                            val = verticapy.gen_verticapy_logo_html(size="45px")
                         else:
                             val = ""
                     elif cell_width[j] > 240:

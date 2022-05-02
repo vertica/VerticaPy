@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -95,9 +95,11 @@ alias an all user transformations.
 Parameters
 ----------
 input_relation: str, optional
-    Relation (View, Table or Temporary Table) to use to create the object.
-    To specify a schema relation, your string must include both
-    relation and schema: 'schema.relation' or '"schema"."relation"'.
+    Relation (view, table, or temporary table) used to create the object. 
+    To get a specific schema relation, your string must include both the 
+    relation and schema: 'schema.relation' or '"schema"."relation"'. 
+    Alternatively, you can use the 'schema' parameter, in which case 
+    the input_relation must exclude the schema name.
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
@@ -1888,6 +1890,7 @@ vColumns : vColumn
     func: list
         List of the different aggregations.
             aad            : average absolute deviation
+            approx_median  : approximate median
             approx_q%      : approximate q quantile 
                              (ex: approx_50% for the approximate median)
             approx_unique  : approximative cardinality
@@ -1925,7 +1928,7 @@ vColumns : vColumn
     ncols_block: int, optional
         Number of columns used per query. Setting this parameter divides
         what would otherwise be one large query into many smaller queries called
-        "blocks." The size of each block is determined by the ncols_block parmeter.
+        "blocks." The size of each block is determined by the ncols_block parameter.
     processes: int, optional
         Number of child processes to create. Setting this with the ncols_block parameter
         lets you parallelize a single query into many smaller queries, where each child 
@@ -2251,7 +2254,7 @@ vColumns : vColumn
                             if column in exact_percent:
                                 expr = format_magic(exact_percent[column][0])
                             else:
-                                expr = "PERCENTILE_CONT({0}) WITHIN GROUP (ORDER BY {1}{2})".format(
+                                expr = "PERCENTILE_CONT({0}) WITHIN GROUP (ORDER BY {1}{2}) OVER ()".format(
                                     float(fun[0:-1]) / 100, column, cast
                                 )
                     except:
@@ -4707,6 +4710,8 @@ vColumns : vColumn
     desc: bool, optional
         If set to True and 'sort_result' is set to True, the result will be 
         sorted in descending order.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -10108,7 +10113,8 @@ vColumns : vColumn
     ):
         """
     ---------------------------------------------------------------------------
-    Creates a CSV file or folder of CSV files of the current vDataFrame relation.
+    Creates a CSV file or folder of CSV files of the current vDataFrame 
+    relation.
 
     Parameters
     ----------
@@ -10136,7 +10142,8 @@ vColumns : vColumn
         Integer greater than or equal to 1, the number of CSV files to generate.
         If n_files is greater than 1, you must also set order_by to sort the data,
         ideally with a column with unique values (e.g. ID).
-        Greater values of n_files decrease memory usage, but increase execution time.
+        Greater values of n_files decrease memory usage, but increase execution 
+        time.
 
     Returns
     -------
