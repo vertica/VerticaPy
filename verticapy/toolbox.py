@@ -897,7 +897,7 @@ def replace_vars_in_query(query: str, locals_dict: dict):
     from verticapy import vDataFrame, tablesample, pandas_to_vertica
     import pandas as pd
 
-    variables, query_tmp = re.findall(":[A-Za-z0-9_]+", query), query
+    variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_]+", query), query
     for v in variables:
         val = locals_dict[v[1:]]
         if isinstance(val, vDataFrame):
