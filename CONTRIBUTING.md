@@ -152,6 +152,100 @@ For more usages about [tox](https://tox.readthedocs.io), see the Python document
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
 
+### Useful Functions to know
+
+The following functions will be well explained in the next section and can be used when you implement new features.
+
+You can check if a list of columns belongs to the vDataFrame using the following function:
+```python
+# import
+from verticapy import vDataFrame
+
+# Function
+vDataFrame.are_namecols_in(columns: Union[str, list]):
+    """
+---------------------------------------------------------------------------
+Method used to check if the input column names are used by the vDataFrame.
+If not, the function raises an error.
+
+Parameters
+----------
+columns: list/str
+    List of columns names.
+    """
+
+# Example
+# if vDataFrame 'vdf' has two columns named respectively 'A' and 'B'
+# vDataFrame.are_namecols_in(['A', 'B']) will work.
+# vDataFrame.are_namecols_in(['A', 'C']) will raise an error.
+```
+
+You can format a list  by using the vDataFrame columns' names with the following function:
+```python
+# import
+from verticapy import vDataFrame
+
+# Function
+vDataFrame.format_colnames(self, columns: Union[str, list]):
+    """
+---------------------------------------------------------------------------
+Method used to format the input columns by using the vDataFrame columns'
+names.
+
+Parameters
+----------
+columns: list/str
+    List of columns' names to format.
+
+Returns
+-------
+list
+    Formatted columns' names.
+    """
+
+# Example
+# if vDataFrame 'vdf' has two columns named respectively 'CoLuMn A' and 'CoLumnB'
+# vDataFrame.format_colnames(['column a', 'columnb']) == ['CoLuMn A', 'CoLumnB']
+```
+
+When writing a SQL query, some elements need to be formatted. The following function will help you to format correctly a column's name for example.
+```python
+# import
+from verticapy import quote_ident
+
+# Function
+def quote_ident(column: str):
+  """
+---------------------------------------------------------------------------
+Returns the specified string argument in the format that is required in
+order to use that string as an identifier in an SQL statement.
+
+Parameters
+----------
+column: str
+    Column's name.
+
+Returns
+-------
+str
+    Formatted column' name.
+  """
+
+# Example
+# quote_ident('my column name') == '"my column name"'
+```
+
+The two following functions will generate the VerticaPy logo as a string or as an HTML object.
+```python
+# import
+from verticapy.logo import gen_verticapy_logo_html
+from verticapy.logo import gen_verticapy_logo_str
+
+# Functions
+def gen_verticapy_logo_html() # VerticaPy HTML Logo
+def gen_verticapy_logo_str()  # VerticaPy Python STR Logo
+```
+
 ### Feature Example
 
 The vDataFrame a powerful Python object that lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.

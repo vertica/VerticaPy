@@ -886,6 +886,21 @@ def print_time(elapsed_time: float):
 
 # ---#
 def quote_ident(column: str):
+    """
+    ---------------------------------------------------------------------------
+    Returns the specified string argument in the format that is required in
+    order to use that string as an identifier in an SQL statement.
+
+    Parameters
+    ----------
+    column: str
+        Column's name.
+
+    Returns
+    -------
+    str
+        Formatted column' name.
+    """
     tmp_column = str(column)
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
