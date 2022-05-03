@@ -1781,9 +1781,9 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, [str])])
         if isinstance(value, str):
             query = """SELECT 
-                          table_schema 
-                       FROM columns 
-                       WHERE table_schema = '{}' LIMIT 1;""".format(
+                          schema_name 
+                       FROM v_catalog.schemata 
+                       WHERE schema_name = '{}' LIMIT 1;""".format(
                 value.replace("'", "''")
             )
             res = executeSQL(
