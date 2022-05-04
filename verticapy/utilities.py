@@ -1222,7 +1222,7 @@ read_json : Ingests a JSON file into the Vertica database.
     result = executeSQL(
         query, title="Looking if the relation exists.", method="fetchall"
     )
-    if (result != []) and not (insert):
+    if (result != []) and not (insert) and not (genSQL):
         raise NameError(
             'The table "{}"."{}" already exists !'.format(schema, table_name)
         )
@@ -1336,7 +1336,7 @@ read_json : Ingests a JSON file into the Vertica database.
             skip,
         )
         if genSQL:
-            return [query1, query2]
+            return [clean_query(query1), clean_query(query2)]
         else:
             if query1:
                 executeSQL(query1, "Creating the table.")
