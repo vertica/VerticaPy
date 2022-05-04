@@ -152,11 +152,11 @@ For more usages about [tox](https://tox.readthedocs.io), see the Python document
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
 
-### Useful Functions to know
+### Useful Functions
 
-The following functions will be well explained in the next section and can be used when you implement new features.
+This section is an overview of some useful functions. You can use these to implement new features.
 
-You can check if a list of columns belongs to the vDataFrame using the following function:
+To check if a list of columns belongs to the vDataFrame:
 ```python
 # import
 from verticapy import vDataFrame
@@ -180,7 +180,7 @@ columns: list/str
 # vDataFrame.are_namecols_in(['A', 'C']) will raise an error.
 ```
 
-You can format a list  by using the vDataFrame columns' names with the following function:
+To format a list using the columns of the vDataFrame:
 ```python
 # import
 from verticapy import vDataFrame
@@ -189,18 +189,18 @@ from verticapy import vDataFrame
 vDataFrame.format_colnames(self, columns: Union[str, list]):
     """
 ---------------------------------------------------------------------------
-Method used to format the input columns by using the vDataFrame columns'
-names.
+Method used to format a list of columns with the column names of the 
+vDataFrame.
 
 Parameters
 ----------
 columns: list/str
-    List of columns' names to format.
+    List of column names to format.
 
 Returns
 -------
 list
-    Formatted columns' names.
+    Formatted column names.
     """
 
 # Example
@@ -208,27 +208,28 @@ list
 # vDataFrame.format_colnames(['column a', 'columnb']) == ['CoLuMn A', 'CoLumnB']
 ```
 
-When writing a SQL query, some elements need to be formatted. The following function will help you to format correctly a column's name for example.
+Identifiers in a SQL query must be formatted a certain way. You can use the following function to get a properly formatted identifier:
+
 ```python
-# import
+# import 
 from verticapy import quote_ident
 
 # Function
 def quote_ident(column: str):
   """
 ---------------------------------------------------------------------------
-Returns the specified string argument in the format that is required in
-order to use that string as an identifier in an SQL statement.
+Returns the specified string argument in the required format to use it as 
+an identifier in a SQL query.
 
 Parameters
 ----------
 column: str
-    Column's name.
+    Column name.
 
 Returns
 -------
 str
-    Formatted column' name.
+    Formatted column name.
   """
 
 # Example

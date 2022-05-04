@@ -2,7 +2,7 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
 
-:loudspeaker: 2020-06-27: VerticaPy is the new name for Vertica-ML-Python.
+:loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
 # VerticaPy
 
@@ -15,7 +15,7 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
 </p>
 
-VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
+VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 <br><br>
@@ -91,23 +91,17 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 
 ## Connecting to the Database
 
-VerticaPy is compatible with several clients. You can see all the possibilities in the connection page: <br>
+VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
 
-https://www.vertica.com/python/connection.php
+## Quickstart
 
-## Quick Start
+The following example follows the <a href='https://www.vertica.com/python/quick-start.php'>VerticaPy quickstart guide</a>.
 
-You can find many elements on how to start using VerticaPy by clicking on the following link:
-
-https://www.vertica.com/python/quick-start.php
-
-Otherwise, you can follow the next steps:
-
-Install the library using the <b>pip</b> command.
+Install the library using with <b>pip</b>.
 ```shell
 root@ubuntu:~$ pip3 install verticapy[all]
 ```
-Create a new vertica connection.
+Create a new Vertica connection:
 ```python
 import verticapy as vp
 vp.new_connection({"host": "10.211.55.14", 
@@ -117,16 +111,16 @@ vp.new_connection({"host": "10.211.55.14",
                    "user": "dbadmin"},
                    name = "Vertica_New_Connection")
 ```
-Use your connection (the previous step is not needed if the connection is already created).
+Use the newly created connection:
 ```python
 vp.connect("Vertica_New_Connection")
 ```
-Create the Virtual DataFrame of your relation.
+Create a vDataFrame of your relation:
 ```python
 from verticapy import vDataFrame
 vdf = vDataFrame("my_relation")
 ```
-If you don't have data on hand, you can easily import well-known datasets.
+Load a sample dataset:
 ```python
 from verticapy.datasets import load_titanic
 vdf = load_titanic()
@@ -154,7 +148,7 @@ vdf.describe()
 "body"               79.25         160.5         257.5       328.0  
 Rows: 1-7 | Columns: 9
 ```
-Print the SQL query with the <b>set_option</b> function:
+Print the SQL query with <b>set_option</b>:
 ```python
 set_option("sql_on", True)
 vdf.describe()
