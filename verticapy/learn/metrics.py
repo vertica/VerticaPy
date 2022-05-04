@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -133,7 +133,7 @@ def compute_tn_fn_fp_tp(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -701,7 +701,7 @@ def accuracy_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = None,
+    pos_label: Union[int, float, str] = None,
 ):
     """
 ---------------------------------------------------------------------------
@@ -761,7 +761,7 @@ def auc(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
     nbins: int = 10000,
 ):
     """
@@ -976,7 +976,7 @@ def confusion_matrix(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1048,7 +1048,7 @@ def critical_success_index(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1083,7 +1083,7 @@ def f1_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1124,7 +1124,7 @@ def informedness(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1160,7 +1160,7 @@ def log_loss(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1199,7 +1199,7 @@ def markedness(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1235,7 +1235,7 @@ def matthews_corrcoef(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1342,7 +1342,7 @@ def negative_predictive_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1377,7 +1377,7 @@ def prc_auc(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
     nbins: int = 10000,
 ):
     """
@@ -1419,7 +1419,7 @@ def precision_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1454,7 +1454,7 @@ def recall_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1489,7 +1489,7 @@ def specificity_score(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    pos_label: (int, float, str) = 1,
+    pos_label: Union[int, float, str] = 1,
 ):
     """
 ---------------------------------------------------------------------------

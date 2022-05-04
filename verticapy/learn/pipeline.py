@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -79,13 +79,15 @@ steps: list
         for idx, elem in enumerate(steps):
             if len(elem) != 2:
                 raise ParameterError(
-                    "The steps of the Pipeline must be composed of 2 elements (name, transform). Found {}.".format(
+                    "The steps of the Pipeline must be composed of 2 elements "
+                    "(name, transform). Found {}.".format(
                         len(elem)
                     )
                 )
             elif not (isinstance(elem[0], str)):
                 raise ParameterError(
-                    "The steps 'name' of the Pipeline must be of type str. Found {}.".format(
+                    "The steps 'name' of the Pipeline must be of "
+                    "type str. Found {}.".format(
                         type(elem[0])
                     )
                 )
@@ -97,11 +99,13 @@ steps: list
                 except:
                     if idx < len(steps) - 1:
                         raise ParameterError(
-                            "The estimators of the Pipeline must have a 'transform' and a 'fit' method."
+                            "The estimators of the Pipeline must have a "
+                            "'transform' and a 'fit' method."
                         )
                     else:
                         raise ParameterError(
-                            "The last estimator of the Pipeline must have a 'fit' method."
+                            "The last estimator of the Pipeline must have a "
+                            "'fit' method."
                         )
             self.steps += [elem]
 
@@ -357,9 +361,8 @@ steps: list
                 self.steps[idx][1].inverse_transform
         except:
             raise ModelError(
-                "The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(
-                    idx
-                )
+                f"The estimator [{idx}] of the Pipeline has "
+                "no 'inverse_transform' method."
             )
         if not (vdf):
             vdf = self.input_relation
@@ -383,8 +386,8 @@ steps: list
     Parameters
     ----------
     parameters: dict, optional
-        New parameters. It must be a dictionary with as keys the Pipeline names
-        and as value the parameters dictionary.
+        New parameters. It must be a dictionary with as keys the Pipeline 
+        names and as value the parameters dictionary.
         """
         for param in parameters:
             for step in self.steps:
@@ -401,8 +404,8 @@ steps: list
     ):
         """
     ---------------------------------------------------------------------------
-    Returns the Python code needed to deploy the pipeline without using built-in
-    Vertica functions.
+    Returns the Python code needed to deploy the pipeline without using 
+    built-in Vertica functions.
 
     Parameters
     ----------
@@ -412,8 +415,8 @@ steps: list
         If set to True and the model is a classifier, the function will return 
         the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroids, the function 
-        will return the model clusters distances.
+        If set to True and the model type is KMeans or NearestCentroids, the 
+        function will return the model clusters distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
