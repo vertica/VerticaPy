@@ -3024,7 +3024,7 @@ class BinaryClassifier(Classifier):
 	cutoff: float, optional
 		Probability cutoff.
     nbins: int, optional
-        [Only used to compute ROC AUC, PRC AUC and the best cutoff]
+        [Used to compute ROC AUC, PRC AUC and the best cutoff]
         An integer value that determines the number of decision boundaries. 
         Decision boundaries are set at equally spaced intervals between 0 and 1, 
         inclusive. Greater values for nbins give more precise estimations of the 
@@ -3484,7 +3484,7 @@ class MulticlassClassifier(Classifier):
 	labels: list, optional
 		List of the different labels to be used during the computation.
     nbins: int, optional
-        [Only used to compute ROC AUC, PRC AUC and the best cutoff]
+        [Used to compute ROC AUC, PRC AUC and the best cutoff]
         An integer value that determines the number of decision boundaries. 
         Decision boundaries are set at equally spaced intervals between 0 and 1, 
         inclusive. Greater values for nbins give more precise estimations of the 

@@ -833,7 +833,7 @@ cutoff: float/list, optional
 estimator: object, optional
 	Estimator to use to compute the classification report.
 nbins: int, optional
-    [Only used to compute ROC AUC, PRC AUC and the best cutoff]
+    [Used to compute ROC AUC, PRC AUC and the best cutoff]
     An integer value that determines the number of decision boundaries. 
     Decision boundaries are set at equally spaced intervals between 0 and 1, 
     inclusive. Greater values for nbins give more precise estimations of the 

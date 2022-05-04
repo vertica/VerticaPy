@@ -146,7 +146,7 @@ def check_types(types_list: list = []):
 
 # ---#
 def clean_query(query: str):
-    res = re.sub("--.+\n", "", query)
+    res = re.sub(r"--.+(\n|\Z)", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
     res = re.sub(" +", " ", res)
 
