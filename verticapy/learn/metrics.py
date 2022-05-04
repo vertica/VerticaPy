@@ -806,6 +806,7 @@ def classification_report(
     labels: list = [],
     cutoff: (float, list) = [],
     estimator=None,
+    nbins: int = 10000,
 ):
     """
 ---------------------------------------------------------------------------
@@ -827,10 +828,17 @@ labels: list, optional
 	List of the response column categories to use.
 cutoff: float/list, optional
 	Cutoff for which the tested category will be accepted as prediction. 
-	For multiclass classification, the list will represent the the classes threshold. 
-    If it is empty, the best cutoff will be used.
+	For multiclass classification, the list will represent the the classes 
+    threshold. If it is empty, the best cutoff will be used.
 estimator: object, optional
 	Estimator to use to compute the classification report.
+nbins: int, optional
+    [Only used to compute ROC AUC, PRC AUC and the best cutoff]
+    An integer value that determines the number of decision boundaries. 
+    Decision boundaries are set at equally spaced intervals between 0 and 1, 
+    inclusive. Greater values for nbins give more precise estimations of the 
+    metrics, but can potentially decrease performance. The maximum value 
+    is 999,999. If negative, the maximum value is used.
 
 Returns
 -------
@@ -845,6 +853,7 @@ tablesample
             ("input_relation", input_relation, [str, vDataFrame]),
             ("labels", labels, [list]),
             ("cutoff", cutoff, [int, float, list]),
+            ("nbins", nbins, [int]),
         ]
     )
     if estimator:
@@ -875,7 +884,7 @@ tablesample
         if estimator:
             if not (cutoff):
                 current_cutoff = estimator.score(
-                    method="best_cutoff", pos_label=pos_label
+                    method="best_cutoff", pos_label=pos_label, nbins=nbins
                 )
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:
@@ -924,9 +933,9 @@ tablesample
         accuracy = (tp + tn) / (tp + tn + fp + fn)
         if estimator:
             auc_score, logloss, prc_auc_score = (
-                estimator.score(pos_label=pos_label, method="auc"),
+                estimator.score(pos_label=pos_label, method="auc", nbins=nbins),
                 estimator.score(pos_label=pos_label, method="log_loss"),
-                estimator.score(pos_label=pos_label, method="prc_auc"),
+                estimator.score(pos_label=pos_label, method="prc_auc", nbins=nbins),
             )
         else:
             auc_score = auc(y_t, y_s, input_relation, 1)
@@ -935,7 +944,7 @@ tablesample
             logloss = log_loss(y_t, y_s, input_relation, 1)
             if not (cutoff):
                 current_cutoff = roc_curve(
-                    y_t, y_p, input_relation, best_threshold=True, nbins=10000
+                    y_t, y_s, input_relation, best_threshold=True, nbins=nbins,
                 )
             elif isinstance(cutoff, Iterable):
                 if len(cutoff) == 1:

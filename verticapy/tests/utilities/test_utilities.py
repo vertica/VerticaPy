@@ -323,12 +323,12 @@ class TestUtilities:
         )
         assert result.shape() == (1234, 14)
         drop("public.titanic_verticapy_test_csv", method="table")
-        # parse_n_lines
+        # parse_nrows
         result = read_csv(
             path,
             table_name="titanic_verticapy_test_csv",
             schema="public",
-            parse_n_lines=100,
+            parse_nrows=100,
         )
         assert result.shape() == (1234, 14)
         # insert

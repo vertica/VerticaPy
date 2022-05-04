@@ -686,7 +686,7 @@ def pandas_to_vertica(
     name: str = "",
     schema: str = "",
     dtype: dict = {},
-    parse_n_lines: int = 10000,
+    parse_nrows: int = 10000,
     temp_path: str = "",
     insert: bool = False,
 ):
@@ -711,10 +711,10 @@ dtype: dict, optional
     ingestion speed and precision. If specified, rather than parsing 
     the intermediate CSV and guessing the input types, VerticaPy uses 
     the specified input types instead.
-parse_n_lines: int, optional
+parse_nrows: int, optional
     If this parameter is greater than 0, VerticaPy creates and 
-    ingests a temporary file containing 'parse_n_lines' number 
-    of lines to determine the input data types before ingesting 
+    ingests a temporary file containing 'parse_nrows' number 
+    of rows to determine the input data types before ingesting 
     the intermediate CSV file containing the rest of the data. 
     This method of data type identification is less accurate, 
     but is much faster for large datasets.
@@ -741,7 +741,7 @@ read_json : Ingests a JSON file into the Vertica database.
         [
             ("name", name, [str]),
             ("schema", schema, [str]),
-            ("parse_n_lines", parse_n_lines, [int]),
+            ("parse_nrows", parse_nrows, [int]),
             ("dtype", dtype, [dict]),
             ("temp_path", temp_path, [str]),
             ("insert", insert, [bool]),
@@ -806,7 +806,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 table_name=tmp_name,
                 dtype=dtype,
                 temporary_local_table=True,
-                parse_n_lines=parse_n_lines,
+                parse_nrows=parse_nrows,
                 escape="\027",
             )
         else:
@@ -816,7 +816,7 @@ read_json : Ingests a JSON file into the Vertica database.
                 dtype=dtype,
                 schema=schema,
                 temporary_local_table=False,
-                parse_n_lines=parse_n_lines,
+                parse_nrows=parse_nrows,
                 escape="\027",
             )
         os.remove(path)
@@ -1080,7 +1080,7 @@ def read_csv(
     quotechar: str = '"',
     escape: str = "\027",
     genSQL: bool = False,
-    parse_n_lines: int = -1,
+    parse_nrows: int = -1,
     insert: bool = False,
     temporary_table: bool = False,
     temporary_local_table: bool = True,
@@ -1121,8 +1121,8 @@ genSQL: bool, optional
 	If set to True, the SQL code for creating the final table will be 
 	generated but not executed. It is a good way to change the final
 	relation types or to customize the data ingestion.
-parse_n_lines: int, optional
-	If this parameter is greater than 0. A new file of 'parse_n_lines' lines
+parse_nrows: int, optional
+	If this parameter is greater than 0. A new file of 'parse_nrows' rows
 	will be created and ingested first to identify the data types. It will be
 	then dropped and the entire file will be ingested. The data types identification
 	will be less precise but this parameter can make the process faster if the
@@ -1165,7 +1165,7 @@ read_json : Ingests a JSON file into the Vertica database.
             ("quotechar", quotechar, [str]),
             ("escape", escape, [str]),
             ("genSQL", genSQL, [bool]),
-            ("parse_n_lines", parse_n_lines, [int, float]),
+            ("parse_nrows", parse_nrows, [int, float]),
             ("insert", insert, [bool]),
             ("temporary_table", temporary_table, [bool]),
             ("temporary_local_table", temporary_local_table, [bool]),
@@ -1282,10 +1282,10 @@ read_json : Ingests a JSON file into the Vertica database.
                 "ucol{}".format(i + len(header_names))
                 for i in range(len(file_header) - len(header_names))
             ]
-        if (parse_n_lines > 0) and not (insert):
+        if (parse_nrows > 0) and not (insert):
             f = open(path, "r")
             f2 = open(path[0:-4] + "verticapy_copy.csv", "w")
-            for i in range(parse_n_lines + int(header)):
+            for i in range(parse_nrows + int(header)):
                 line = f.readline()
                 f2.write(line)
             f.close()
@@ -1306,7 +1306,7 @@ read_json : Ingests a JSON file into the Vertica database.
                     escape,
                     ingest_local=ingest_local,
                 )
-            if parse_n_lines > 0:
+            if parse_nrows > 0:
                 os.remove(path[0:-4] + "verticapy_copy.csv")
             dtype_sorted = {}
             for elem in header_names:

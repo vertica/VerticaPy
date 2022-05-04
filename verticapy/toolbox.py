@@ -155,7 +155,7 @@ def clean_query(query: str):
 
     while len(res) > 0 and (res[0] in (";", " ")):
         res = res[1:]
-        
+
     return res
 
 
