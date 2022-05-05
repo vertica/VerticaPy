@@ -22,6 +22,7 @@ from highcharts.highcharts.highcharts import Highchart
 from highcharts.highstock.highstock import Highstock
 
 # VerticaPy
+import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_amazon
 from verticapy.hchart import hchart

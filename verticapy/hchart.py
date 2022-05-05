@@ -70,7 +70,7 @@ from verticapy.highchart import hchartSQL
 
 # ---#
 @needs_local_scope
-def hchart(line, cell, local_ns=None):
+def hchart(line, cell="", local_ns=None):
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell
@@ -144,5 +144,5 @@ def hchart(line, cell, local_ns=None):
 
 # ---#
 def load_ipython_extension(ipython):
-    ipython.register_magic_function(sql, "cell")
-    ipython.register_magic_function(sql, "line")
+    ipython.register_magic_function(hchart, "cell")
+    ipython.register_magic_function(hchart, "line")
