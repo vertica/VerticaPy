@@ -2752,6 +2752,8 @@ class Supervised(vModel):
                     new_types[elem] = "float"
             if not (isinstance(input_relation, vDataFrame)):
                 input_relation = vDataFrameSQL(input_relation)
+            else:
+                input_relation.copy()
             input_relation.astype(new_types)
         does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
@@ -3009,7 +3011,9 @@ class BinaryClassifier(Classifier):
     classes_ = [0, 1]
 
     # ---#
-    def classification_report(self, cutoff: float = 0.5):
+    def classification_report(
+        self, cutoff: float = 0.5, nbins: int = 10000,
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -3019,6 +3023,13 @@ class BinaryClassifier(Classifier):
 	----------
 	cutoff: float, optional
 		Probability cutoff.
+    nbins: int, optional
+        [Used to compute ROC AUC, PRC AUC and the best cutoff]
+        An integer value that determines the number of decision boundaries. 
+        Decision boundaries are set at equally spaced intervals between 0 and 1, 
+        inclusive. Greater values for nbins give more precise estimations of the 
+        metrics, but can potentially decrease performance. The maximum value 
+        is 999,999. If negative, the maximum value is used.
 
 	Returns
 	-------
@@ -3026,7 +3037,7 @@ class BinaryClassifier(Classifier):
 		An object containing the result. For more information, see
 		utilities.tablesample.
 		"""
-        check_types([("cutoff", cutoff, [int, float])])
+        check_types([("cutoff", cutoff, [int, float]), ("nbins", nbins, [int])])
         if cutoff > 1 or cutoff < 0:
             cutoff = self.score(method="best_cutoff")
         return classification_report(
@@ -3034,6 +3045,7 @@ class BinaryClassifier(Classifier):
             [self.deploySQL(), self.deploySQL(cutoff)],
             self.test_relation,
             cutoff=cutoff,
+            nbins=nbins,
         )
 
     report = classification_report
@@ -3453,7 +3465,9 @@ class BinaryClassifier(Classifier):
 class MulticlassClassifier(Classifier):
 
     # ---#
-    def classification_report(self, cutoff: Union[float, list] = [], labels: list = []):
+    def classification_report(
+        self, cutoff: Union[float, list] = [], labels: list = [], nbins: int = 10000,
+    ):
         """
 	---------------------------------------------------------------------------
 	Computes a classification report using multiple metrics to evaluate the model
@@ -3469,6 +3483,13 @@ class MulticlassClassifier(Classifier):
 		represent the classes threshold. If it is empty, the best cutoff will be used.
 	labels: list, optional
 		List of the different labels to be used during the computation.
+    nbins: int, optional
+        [Used to compute ROC AUC, PRC AUC and the best cutoff]
+        An integer value that determines the number of decision boundaries. 
+        Decision boundaries are set at equally spaced intervals between 0 and 1, 
+        inclusive. Greater values for nbins give more precise estimations of the 
+        metrics, but can potentially decrease performance. The maximum value 
+        is 999,999. If negative, the maximum value is used.
 
 	Returns
 	-------
@@ -3479,11 +3500,17 @@ class MulticlassClassifier(Classifier):
         if isinstance(labels, str):
             labels = [labels]
         check_types(
-            [("cutoff", cutoff, [int, float, list]), ("labels", labels, [list])]
+            [
+                ("cutoff", cutoff, [int, float, list]),
+                ("labels", labels, [list]),
+                ("nbins", nbins, [int]),
+            ]
         )
         if not (labels):
             labels = self.classes_
-        return classification_report(cutoff=cutoff, estimator=self, labels=labels)
+        return classification_report(
+            cutoff=cutoff, estimator=self, labels=labels, nbins=nbins,
+        )
 
     report = classification_report
 

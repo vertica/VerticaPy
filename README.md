@@ -2,7 +2,9 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/logo.png' width="180px">
 </p>
 
-:loudspeaker: 2020-06-27: VerticaPy is the new name for Vertica-ML-Python.
+:loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
+
+:warning: VerticaPy 0.9.0 includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
 
 # VerticaPy
 
@@ -15,7 +17,7 @@
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/benefits.png' width="92%">
 </p>
 
-VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. It supports the entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
+VerticaPy is a Python library with scikit-like functionality used to conduct data science projects on data stored in Vertica, taking advantage Vertica’s speed and built-in analytics and machine learning features. VerticaPy offers robust support for the entire data science life cycle, uses a 'pipeline' mechanism to sequentialize data transformation operations, and offers beautiful graphical options.
 <br><br>
 Nowadays, 'Big Data' is one of the main topics in the data science world, and data scientists are often at the center of any organization. The benefits of becoming more data-driven are undeniable and are often needed to survive in the industry.
 <br><br>
@@ -45,7 +47,7 @@ Main Advantages:
 To install <b>VerticaPy</b> with pip:
 ```shell
 # Latest release version
-root@ubuntu:~$ pip3 install verticapy
+root@ubuntu:~$ pip3 install verticapy[all]
 
 # Latest commit on master branch
 root@ubuntu:~$ pip3 install git+https://github.com/vertica/verticapy.git@master
@@ -75,6 +77,25 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
+## SQL Magic
+
+You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation_last/extensions/sql/'>SQL Magic</a>:
+
+### Example
+
+Load the SQL extension.
+```python
+%load_ext verticapy.sql
+```
+Execute your SQL queries.
+```python
+%%sql
+SELECT version();
+
+# Output
+# Vertica Analytic Database v11.0.1-0
+```
+
 ## Charts
 
 A gallery of VerticaPy-generated charts is available at:<br>
@@ -91,129 +112,68 @@ For a short guide on contribution standards, see <a href='https://github.com/ver
 
 ## Connecting to the Database
 
-VerticaPy is compatible with several clients.
+VerticaPy is compatible with several clients. For details, see the <a href='https://www.vertica.com/python/connection.php'>connection page</a>.<br>
 
-### Native Client (Recommended)
+## Quickstart
 
-```python
-import vertica_python
+The following example follows the <a href='https://www.vertica.com/python/quick-start.php'>VerticaPy quickstart guide</a>.
 
-# Connection using all the DSN information
-conn_info = {'host': "10.211.55.14", 
-             'port': 5433, 
-             'user': "dbadmin", 
-             'password': "XxX", 
-             'database': "testdb"}
-cur = vertica_python.connect(** conn_info).cursor()
-
-# Connection using directly the DSN
-from verticapy.utilities import to_vertica_python_format # This function will parse the odbc.ini file
-dsn = "VerticaDSN"
-cur = vertica_python.connect(** to_vertica_python_format(dsn)).cursor()
-```
-
-To save time and avoid creating extra cursors, you can save your credentials in an auto connection:
-
-```python
-from verticapy.connect import *
-# Save a new connection
-new_auto_connection({"host": "10.211.55.14", 
-                     "port": "5433", 
-                     "database": "testdb", 
-                     "password": "XxX", 
-                     "user": "dbadmin"},
-                     name = "VerticaDSN")
-```
-
-### ODBC
-
-```python
-import pyodbc
-
-# Connection using all the DSN information
-driver = "/Library/Vertica/ODBC/lib/libverticaodbc.dylib"
-server = "10.211.55.14"
-database = "testdb"
-port = "5433"
-uid = "dbadmin"
-pwd = "XxX"
-dsn = ("DRIVER={}; SERVER={}; DATABASE={}; PORT={}; UID={}; PWD={};").format(driver, server, database, port, uid, pwd)
-cur = pyodbc.connect(dsn).cursor()
-
-# Connection using directly the DSN
-dsn = ("DSN=VerticaDSN")
-cur = pyodbc.connect(dsn).cursor()
-```
-
-### JDBC
- 
-```python
-import jaydebeapi
-
-# Vertica Server Details
-database = "testdb"
-hostname = "10.211.55.14"
-port = "5433"
-uid = "dbadmin"
-pwd = "XxX"
-
-# Vertica JDBC class name
-jdbc_driver_name = "com.vertica.jdbc.Driver"
-
-# Vertica JDBC driver path
-jdbc_driver_loc = "/Library/Vertica/JDBC/vertica-jdbc-9.3.1-0.jar"
-
-# JDBC connection string
-connection_string = 'jdbc:vertica://' + hostname + ':' + port + '/' + database
-url = '{}:user={};password={}'.format(connection_string, uid, pwd)
-conn = jaydebeapi.connect(jdbc_driver_name, connection_string, {'user': uid, 'password': pwd}, jars = jdbc_driver_loc)
-cur = conn.cursor()
-```
-
-## Quick Start
-
-Install the library using the <b>pip</b> command.
+Install the library using with <b>pip</b>.
 ```shell
-root@ubuntu:~$ pip3 install verticapy
+root@ubuntu:~$ pip3 install verticapy[all]
 ```
-Create a vertica cursor.
+Create a new Vertica connection:
 ```python
-from verticapy import vertica_conn
-cur = vertica_conn("VerticaDSN").cursor()
+import verticapy as vp
+vp.new_connection({"host": "10.211.55.14", 
+                   "port": "5433", 
+                   "database": "testdb", 
+                   "password": "XxX", 
+                   "user": "dbadmin"},
+                   name = "Vertica_New_Connection")
 ```
-Create the Virtual DataFrame of your relation.
+Use the newly created connection:
+```python
+vp.connect("Vertica_New_Connection")
+```
+Create a VerticaPy schema for native VerticaPy models (that is, models available in VerticaPy, but not Vertica itself):
+```python
+vp.create_verticapy_schema()
+```
+Create a vDataFrame of your relation:
 ```python
 from verticapy import vDataFrame
-vdf = vDataFrame("my_relation", cursor = cur)
+vdf = vDataFrame("my_relation")
 ```
-If you don't have data on hand, you can easily import well-known datasets.
+Load a sample dataset:
 ```python
 from verticapy.datasets import load_titanic
-vdf = load_titanic(cursor = cur)
+vdf = load_titanic()
 ```
 Examine your data:
 ```python
 vdf.describe()
 
 # Output
-               min       25%        50%        75%   
-age           0.33      21.0       28.0       39.0   
-body           1.0     79.25      160.5      257.5   
-fare           0.0    7.8958    14.4542    31.3875   
-parch          0.0       0.0        0.0        0.0   
-pclass         1.0       1.0        3.0        3.0   
-sibsp          0.0       0.0        0.0        1.0   
-survived       0.0       0.0        0.0        1.0   
-                   max    unique  
-age               80.0        96  
-body             328.0       118  
-fare          512.3292       277  
-parch              9.0         8  
-pclass             3.0         3  
-sibsp              8.0         7  
-survived           1.0         2 
+                count                 mean                  std     min
+"pclass"         1234     2.28444084278768    0.842485636190292     1.0 
+"survived"       1234    0.364667747163696    0.481532018641288     0.0
+"age"             997     30.1524573721163     14.4353046299159    0.33
+"sibsp"          1234    0.504051863857374     1.04111727241629     0.0 
+"parch"          1234    0.378444084278768    0.868604707790393     0.0 
+"fare"           1233      33.963793673966     52.6460729831293     0.0 
+"body"            118      164.14406779661     96.5760207557808     1.0 
+                approx_25%    approx_50%    approx_75%         max  
+"pclass"               1.0           3.0           3.0         3.0  
+"survived"             0.0           0.0           1.0         1.0  
+"age"                 21.0          28.0          39.0        80.0  
+"sibsp"                0.0           0.0           1.0         8.0  
+"parch"                0.0           0.0           0.0         9.0  
+"fare"              7.8958       14.4542       31.3875    512.3292  
+"body"               79.25         160.5         257.5       328.0  
+Rows: 1-7 | Columns: 9
 ```
-Print the SQL query with the <b>set_option</b> function:
+Print the SQL query with <b>set_option</b>:
 ```python
 set_option("sql_on", True)
 vdf.describe()
@@ -222,7 +182,7 @@ vdf.describe()
 ## Compute the descriptive statistics of all the numerical columns ##
 
 SELECT 
-  SUMMARIZE_NUMCOL("age","body","survived","pclass","parch","fare","sibsp") OVER ()
+  SUMMARIZE_NUMCOL("pclass", "survived", "age", "sibsp", "parch", "fare", "body") OVER ()
 FROM public.titanic
 ```
 With VerticaPy, it is now possible to solve a ML problem with few lines of code.

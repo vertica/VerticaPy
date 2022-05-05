@@ -792,7 +792,7 @@ model_grid_ : tablesample
                     NaiveBayes(self.name),
                 ]
                 if estimator_method in ("native", "all"):
-                    if v[0] >= 10 and v[1] >= 1:
+                    if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
                         self.parameters["estimator"] += [XGBoostClassifier(self.name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [
@@ -815,7 +815,7 @@ model_grid_ : tablesample
                     Lasso(self.name),
                 ]
                 if estimator_method in ("native", "all"):
-                    if v[0] >= 10 and v[1] >= 1:
+                    if v[0] > 10 or (v[0] == 10 and v[1] >= 1):
                         self.parameters["estimator"] += [XGBoostRegressor(self.name)]
                     if v[0] >= 9:
                         self.parameters["estimator"] += [

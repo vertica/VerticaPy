@@ -146,7 +146,7 @@ def check_types(types_list: list = []):
 
 # ---#
 def clean_query(query: str):
-    res = re.sub("--.+(\n|\Z)", "", query)
+    res = re.sub(r"--.+(\n|\Z)", "", query)
     res = res.replace("\t", " ").replace("\n", " ")
     res = re.sub(" +", " ", res)
 
@@ -155,7 +155,7 @@ def clean_query(query: str):
 
     while len(res) > 0 and (res[0] in (";", " ")):
         res = res[1:]
-        
+
     return res
 
 
@@ -370,18 +370,37 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 # ---#
 def get_magic_options(line: str):
 
-    line = re.sub(" +", " ", line)
-    all_options_tmp = line.split(" ")
-    all_options = []
-
-    for elem in all_options_tmp:
-        if elem != "":
-            all_options += [elem]
-
-    n, i, all_options_dict = len(all_options), 0, {}
-
+	# parsing the line
+    i, n, splits = 0, len(line), []
     while i < n:
-        all_options_dict[all_options[i]] = all_options[i + 1]
+        while i < n and line[i] == " ":
+            i += 1
+        if i < n:
+	        k = i
+	        op = line[i]
+	        if op in ('"', "'"):
+	            i += 1
+	            while i < n - 1:
+	                if line[i] == op and line[i + 1] != op:
+	                    break
+	                i += 1
+	            i += 1
+	            quote_in = True
+	        else:
+	            while i < n and line[i] != " ":
+	                i += 1
+	            quote_in = False
+	        if quote_in:
+	            splits += [line[k+1:i-1]]
+	        else:
+	            splits += [line[k:i]]
+
+    # Creating the dictionary
+    n, i, all_options_dict = len(splits), 0, {}
+    while i < n:
+        if splits[i][0] != '-':
+            raise ParsingError("Can not parse option '{0}'. Options must start with '-'.".format(splits[i][0]))
+        all_options_dict[splits[i]] = splits[i + 1]
         i += 2
 
     return all_options_dict
@@ -886,6 +905,21 @@ def print_time(elapsed_time: float):
 
 # ---#
 def quote_ident(column: str):
+    """
+    ---------------------------------------------------------------------------
+    Returns the specified string argument in the format that is required in
+    order to use that string as an identifier in an SQL statement.
+
+    Parameters
+    ----------
+    column: str
+        Column's name.
+
+    Returns
+    -------
+    str
+        Formatted column' name.
+    """
     tmp_column = str(column)
     if len(tmp_column) >= 2 and (tmp_column[0] == tmp_column[-1] == '"'):
         tmp_column = tmp_column[1:-1]
@@ -897,16 +931,40 @@ def replace_vars_in_query(query: str, locals_dict: dict):
     from verticapy import vDataFrame, tablesample, pandas_to_vertica
     import pandas as pd
 
-    variables, query_tmp = re.findall(":[A-Za-z0-9_]+", query), query
+    variables, query_tmp = re.findall("(?<!:):[A-Za-z0-9_\[\]]+", query), query
     for v in variables:
-        val = locals_dict[v[1:]]
-        if isinstance(val, vDataFrame):
-            val = val.__genSQL__()
-        elif isinstance(val, tablesample):
-            val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
-        elif isinstance(val, pd.DataFrame):
-            val = pandas_to_vertica(val).__genSQL__()
-        query_tmp = query_tmp.replace(v, str(val))
+        try:
+            var = v[1:]
+            n, splits = var.count("["), []
+            if var.count("]") == n and n > 0:
+                i, size = 0, len(var)
+                while i < size:
+                    if var[i] == "[":
+                        k = i + 1
+                        while i < size and var[i] != "]":
+                            i += 1
+                        splits += [(k, i)]
+                    i += 1
+                var = var[:splits[0][0]-1]
+            val = locals_dict[var]
+            if splits:
+                for s in splits:
+                    val = val[int(v[s[0] + 1: s[1] + 1])]
+            fail = False
+        except Exception as e:
+            warning_message = "Failed to replace variables in the query.\nError: {0}".format(e)
+            warnings.warn(warning_message, Warning)
+            fail = True
+        if not(fail):
+            if isinstance(val, vDataFrame):
+                val = val.__genSQL__()
+            elif isinstance(val, tablesample):
+                val = "({0}) VERTICAPY_SUBTABLE".format(val.to_sql())
+            elif isinstance(val, pd.DataFrame):
+                val = pandas_to_vertica(val).__genSQL__()
+            elif isinstance(val, list):
+                val = ", ".join(["NULL" if elem is None else str(elem) for elem in val])
+            query_tmp = query_tmp.replace(v, str(val))
     return query_tmp
 
 

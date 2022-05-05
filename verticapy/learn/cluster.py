@@ -52,7 +52,7 @@
 import os
 
 # VerticaPy Modules
-import vertica_python
+import vertica_python, verticapy
 from verticapy import vDataFrame
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
@@ -252,35 +252,64 @@ p: int, optional
         try:
             if not (index):
                 index = "id"
-                drop("v_temp_schema.{}".format(name_main), method="table")
-                sql = "CREATE LOCAL TEMPORARY TABLE {} ON COMMIT PRESERVE ROWS AS SELECT ROW_NUMBER() OVER() AS id, {} FROM {} WHERE {}".format(
+                drop(f"v_temp_schema.{name_main}", method="table")
+                sql = """CREATE LOCAL TEMPORARY TABLE {0} 
+                         ON COMMIT PRESERVE ROWS AS 
+                         SELECT 
+                            ROW_NUMBER() OVER() AS id, 
+                            {1} 
+                         FROM {2} 
+                         WHERE {3}""".format(
                     name_main,
                     ", ".join(X + key_columns),
                     self.input_relation,
-                    " AND ".join(["{} IS NOT NULL".format(item) for item in X]),
+                    " AND ".join([f"{item} IS NOT NULL" for item in X]),
                 )
                 executeSQL(sql, title="Computing the DBSCAN Table [Step 0]")
             else:
                 executeSQL(
-                    "SELECT {} FROM {} LIMIT 10".format(
+                    "SELECT {0} FROM {1} LIMIT 10".format(
                         ", ".join(X + key_columns + [index]), self.input_relation
                     ),
                     print_time_sql=False,
                 )
                 name_main = self.input_relation
             sql = [
-                "POWER(ABS(x.{} - y.{}), {})".format(X[i], X[i], self.parameters["p"])
+                "POWER(ABS(x.{0} - y.{0}), {1})".format(X[i], self.parameters["p"])
                 for i in range(len(X))
             ]
-            distance = "POWER({}, 1 / {})".format(" + ".join(sql), self.parameters["p"])
-            sql = "SELECT x.{} AS node_id, y.{} AS nn_id, {} AS distance FROM {} AS x CROSS JOIN {} AS y".format(
-                index, index, distance, name_main, name_main
+            distance = "POWER({0}, 1 / {1})".format(
+                " + ".join(sql), self.parameters["p"]
             )
-            sql = "SELECT node_id, nn_id, SUM(CASE WHEN distance <= {} THEN 1 ELSE 0 END) OVER (PARTITION BY node_id) AS density, distance FROM ({}) distance_table".format(
+            sql = """SELECT 
+                        x.{0} AS node_id, 
+                        y.{0} AS nn_id, 
+                        {1} AS distance 
+                     FROM {2} AS x 
+                     CROSS JOIN {2} AS y""".format(
+                index, distance, name_main
+            )
+            sql = """SELECT 
+                        node_id, 
+                        nn_id, 
+                        SUM(CASE WHEN distance <= {0} THEN 1 ELSE 0 END) 
+                            OVER (PARTITION BY node_id) AS density, 
+                        distance 
+                     FROM ({1}) distance_table""".format(
                 self.parameters["eps"], sql
             )
-            sql = "SELECT node_id, nn_id FROM ({}) VERTICAPY_SUBTABLE WHERE density > {} AND distance < {} AND node_id != nn_id".format(
-                sql, self.parameters["min_samples"], self.parameters["eps"]
+            if isinstance(verticapy.options["random_state"], int):
+                order_by = "ORDER BY node_id, nn_id"
+            else:
+                order_by = ""
+            sql = """SELECT 
+                        node_id, 
+                        nn_id 
+                     FROM ({0}) VERTICAPY_SUBTABLE 
+                     WHERE density > {1} 
+                        AND distance < {2} 
+                        AND node_id != nn_id {3}""".format(
+                sql, self.parameters["min_samples"], self.parameters["eps"], order_by,
             )
             graph = executeSQL(
                 sql, title="Computing the DBSCAN Table [Step 1]", method="fetchall"
@@ -312,35 +341,44 @@ p: int, optional
                 f.close()
                 drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
                 executeSQL(
-                    "CREATE LOCAL TEMPORARY TABLE {}(node_id int, cluster int) ON COMMIT PRESERVE ROWS".format(
-                        name_dbscan_clusters
+                    (
+                        f"CREATE LOCAL TEMPORARY TABLE {name_dbscan_clusters}"
+                        "(node_id int, cluster int) ON COMMIT PRESERVE ROWS"
                     ),
                     print_time_sql=False,
                 )
                 if isinstance(current_cursor(), vertica_python.vertica.cursor.Cursor):
                     executeSQL(
-                        "COPY v_temp_schema.{}(node_id, cluster) FROM STDIN DELIMITER ',' ESCAPE AS '\\';".format(
-                            name_dbscan_clusters
+                        (
+                            f"COPY v_temp_schema.{name_dbscan_clusters}(node_id, cluster)"
+                            " FROM STDIN DELIMITER ',' ESCAPE AS '\\';"
                         ),
                         method="copy",
                         print_time_sql=False,
-                        path="./{}.csv".format(name_dbscan_clusters),
+                        path=f"./{name_dbscan_clusters}.csv",
                     )
                 else:
                     executeSQL(
-                        "COPY v_temp_schema.{}(node_id, cluster) FROM LOCAL './{}.csv' DELIMITER ',' ESCAPE AS '\\';".format(
-                            name_dbscan_clusters, name_dbscan_clusters
+                        """COPY v_temp_schema.{0}(node_id, cluster) 
+                           FROM LOCAL './{0}.csv' DELIMITER ',' ESCAPE AS '\\';""".format(
+                            name_dbscan_clusters
                         ),
                         print_time_sql=False,
                     )
                 executeSQL("COMMIT;", print_time_sql=False)
-                os.remove("{}.csv".format(name_dbscan_clusters))
+                os.remove(f"{name_dbscan_clusters}.csv")
             except:
-                os.remove("{}.csv".format(name_dbscan_clusters))
+                os.remove(f"{name_dbscan_clusters}.csv")
                 raise
             self.n_cluster_ = i
             executeSQL(
-                "CREATE TABLE {} AS SELECT {}, COALESCE(cluster, -1) AS dbscan_cluster FROM v_temp_schema.{} AS x LEFT JOIN v_temp_schema.{} AS y ON x.{} = y.node_id".format(
+                """CREATE TABLE {0} AS 
+                   SELECT 
+                        {1}, 
+                        COALESCE(cluster, -1) AS dbscan_cluster 
+                   FROM v_temp_schema.{2} AS x 
+                   LEFT JOIN v_temp_schema.{3} AS y 
+                   ON x.{4} = y.node_id""".format(
                     self.name,
                     ", ".join(self.X + self.key_columns),
                     name_main,
@@ -350,16 +388,16 @@ p: int, optional
                 title="Computing the DBSCAN Table [Step 2]",
             )
             self.n_noise_ = executeSQL(
-                "SELECT COUNT(*) FROM {} WHERE dbscan_cluster = -1".format(self.name),
+                "SELECT COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(self.name),
                 method="fetchfirstelem",
                 print_time_sql=False,
             )
         except:
-            drop("v_temp_schema.{}".format(name_main), method="table")
-            drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+            drop(f"v_temp_schema.{name_main}", method="table")
+            drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
             raise
-        drop("v_temp_schema.{}".format(name_main), method="table")
-        drop("v_temp_schema.{}".format(name_dbscan_clusters), method="table")
+        drop(f"v_temp_schema.{name_main}", method="table")
+        drop(f"v_temp_schema.{name_dbscan_clusters}", method="table")
         model_save = {
             "type": "DBSCAN",
             "input_relation": self.input_relation,
@@ -478,7 +516,7 @@ tol: float, optional
                 plot_crosses=plot_crosses,
                 ax=ax,
                 max_nb_points=max_nb_points,
-                **style_kwds
+                **style_kwds,
             )
         else:
             raise Exception("Voronoi Plots are only available in 2D")

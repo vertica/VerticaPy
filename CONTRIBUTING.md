@@ -152,6 +152,101 @@ For more usages about [tox](https://tox.readthedocs.io), see the Python document
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first.
 
+### Useful Functions
+
+This section is an overview of some useful functions. You can use these to implement new features.
+
+To check if a list of columns belongs to the vDataFrame:
+```python
+# import
+from verticapy import vDataFrame
+
+# Function
+vDataFrame.are_namecols_in(columns: Union[str, list]):
+    """
+---------------------------------------------------------------------------
+Method used to check if the input column names are used by the vDataFrame.
+If not, the function raises an error.
+
+Parameters
+----------
+columns: list/str
+    List of columns names.
+    """
+
+# Example
+# if vDataFrame 'vdf' has two columns named respectively 'A' and 'B'
+# vDataFrame.are_namecols_in(['A', 'B']) will work.
+# vDataFrame.are_namecols_in(['A', 'C']) will raise an error.
+```
+
+To format a list using the columns of the vDataFrame:
+```python
+# import
+from verticapy import vDataFrame
+
+# Function
+vDataFrame.format_colnames(self, columns: Union[str, list]):
+    """
+---------------------------------------------------------------------------
+Method used to format a list of columns with the column names of the 
+vDataFrame.
+
+Parameters
+----------
+columns: list/str
+    List of column names to format.
+
+Returns
+-------
+list
+    Formatted column names.
+    """
+
+# Example
+# if vDataFrame 'vdf' has two columns named respectively 'CoLuMn A' and 'CoLumnB'
+# vDataFrame.format_colnames(['column a', 'columnb']) == ['CoLuMn A', 'CoLumnB']
+```
+
+Identifiers in a SQL query must be formatted a certain way. You can use the following function to get a properly formatted identifier:
+
+```python
+# import 
+from verticapy import quote_ident
+
+# Function
+def quote_ident(column: str):
+  """
+---------------------------------------------------------------------------
+Returns the specified string argument in the required format to use it as 
+an identifier in a SQL query.
+
+Parameters
+----------
+column: str
+    Column name.
+
+Returns
+-------
+str
+    Formatted column name.
+  """
+
+# Example
+# quote_ident('my column name') == '"my column name"'
+```
+
+The two following functions will generate the VerticaPy logo as a string or as an HTML object.
+```python
+# import
+from verticapy.logo import gen_verticapy_logo_html
+from verticapy.logo import gen_verticapy_logo_str
+
+# Functions
+def gen_verticapy_logo_html() # VerticaPy HTML Logo
+def gen_verticapy_logo_str()  # VerticaPy Python STR Logo
+```
+
 ### Feature Example
 
 The vDataFrame a powerful Python object that lies at the heart of VerticaPy. vDataFrames consist of vColumn objects that represent columns in the dataset.
@@ -162,9 +257,9 @@ You can find the vDataFrame's many methods in vdataframe.py under the '# Methods
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/vdf_file.png' width="60%">
 </p>
 
-You can define any new vDataFrame function after this comment. The same applies to vColumns.
+You can define any new vDataFrame method after this comment. The same applies to vColumns.
 
-For any function definition, you should note the type hints for every variable. For variables of multiple types, use the union operator.
+For any method definition, you should note the type hints for every variable. For variables of multiple types, use the union operator.
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/function.png' width="60%">
@@ -176,7 +271,7 @@ Be sure to write a detailed description for each function that explains how it w
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/description.png' width="60%">
 </p>
 
-Uses the check_types() function to verify the types of each parameter, columns_check() to verify that the specified column belongs to the main vDataFrame, and vdf_columns_names() to format column names.
+Uses the check_types() function to verify the types of each parameter, vDataFrame.are_namecols_in() to verify that the specified column belongs to the main vDataFrame, and vDataFrame.format_colnames() to format column names.
 
 <p align="center">
 <img src='https://raw.githubusercontent.com/vertica/VerticaPy/master/img/check_types.png' width="60%">
@@ -222,7 +317,7 @@ check_types([("x", x, ["potato", "tomato", "salad"])])
   warnings.warn(warning_message, Warning)
 ```
 
-Remember: the columns_check() and vdf_columns_names() functions are essential for correctly formated input column names.
+Remember: the vDataFrame.are_namecols_in() and vDataFrame.format_colnames() functions are essential for correctly formated input column names.
 
 ```python
 # Displaying columns from the titanic dataset
@@ -248,30 +343,30 @@ titanic.get_columns()
 ```
 ```python
 # Verify that the 'boat' column is inside the vDataFrame
-columns_check(["boat"], titanic)
+titanic.are_namecols_in(["boat"])
 ```
 ```python
 # Verify that the 'wrong_name' column is not inside the vDataFrame
-columns_check(["wrong_name"], titanic)
+titanic.are_namecols_in(["wrong_name"])
 ```
 ```
 ---------------------------------------------------------------------------
 MissingColumn                             Traceback (most recent call last)
-<ipython-input-7-cc3ed6e11e0c> in <module>()
-----> 1 columns_check(["wrong_name"], titanic)
+<ipython-input-5-532ff8a7a7a7> in <module>()
+----> 1 titanic.are_namecols_in(["wrong_name"])
 
-~/Library/Python/3.6/lib/python/site-packages/verticapy/toolbox.py in columns_check(columns, vdf, columns_nb)
-    288             raise MissingColumn(
-    289                 "The Virtual Column '{}' doesn't exist{}.".format(
---> 290                     column.lower().replace('"', ""), e
-    291                 )
-    292             )
+/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/verticapy/vdataframe.py in are_namecols_in(self, columns)
+   1456                 raise MissingColumn(
+   1457                     "The Virtual Column '{}' doesn't exist{}.".format(
+-> 1458                         column.lower().replace('"', ""), e
+   1459                     )
+   1460                 )
 
 MissingColumn: The Virtual Column 'wrong_name' doesn't exist.
 ```
 ```python
-# vdf_columns_names() automatically formats names
-vdf_columns_names(["BoAt"], titanic)
+# vDataFrame.format_colnames() automatically formats names
+titanic.format_colnames(["BoAt"])
 ```
 ```
 ['"boat"']
@@ -283,16 +378,17 @@ titanic.__genSQL__()
 ```
 '"public"."titanic"'
 ```
-And the \_executeSQL\_ method to execute a SQL query.
+And the \_executeSQL\_ function to execute a SQL query.
 ```python
-titanic.__executeSQL__("SELECT * FROM {} LIMIT 2".format(titanic.__genSQL__()))
+from verticapy import executeSQL
+executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()))
 ```
 ```
 <vertica_python.vertica.cursor.Cursor at 0x115f972e8>
 ```
-The result of the query is accessible using the cursor stored in the \_VERTICAPY_VARIABLES\_ attribute.
+The result of the query is accessible using one of the methods of the 'executeSQL' parameter.
 ```python
-titanic._VERTICAPY_VARIABLES_["cursor"].fetchall()
+executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fetchall")
 ```
 ```
 [[1,
@@ -355,19 +451,19 @@ def pearson(self, column1: str, column2: str):
     check_types([("column1", column1, [str]),
                  ("column2", column2, [str]),])
     # Check if the columns belong to the vDataFrame
-    columns_check([column1, column2], self)
+    self.are_namecols_in([column1, column2])
     # Format the columns
-    column1, column2 = vdf_columns_names([column1, column2], self)
+    column1, column2 = self.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = self.__genSQL__()
     # Create the SQL statement
     query = f"SELECT CORR({column1}, {column2}) FROM {table};"
-    # Execute the SQL query
-    self.__executeSQL__(query, title = "Computing Pearson coefficient")
-    # Get the result
-    result = self._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Execute the SQL query and get the result
+    result = executeSQL(query, 
+                        title = "Computing Pearson coefficient", 
+                        method="fetchfirstelem")
     # Return the result
-    return result[0]
+    return result
 ```
 Same can be done with vColumn methods.
 ```python
@@ -399,21 +495,21 @@ def pearson(self, column: str,):
     check_types([("column", column, [str]),])
     # Check if the column belongs to the vDataFrame 
     # self.parent represents the vColumn parent
-    columns_check([column], self.parent)
+    self.parent.are_namecols_in([column])
     # Format the column
-    column1 = vdf_columns_names([column], self)[0]
+    column1 = self.parent.format_colnames([column])[0]
     # Get the current vColumn name
     column2 = self.alias
     # Get the current vDataFrame relation
     table = self.parent.__genSQL__()
     # Create the SQL statement
     query = f"SELECT CORR({column1}, {column2}) FROM {table};"
-    # Execute the SQL query
-    self.parent.__executeSQL__(query, title = "Computing Pearson coefficient")
-    # Get the result
-    result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Execute the SQL query and get the result
+    result = executeSQL(query, 
+                        title = "Computing Pearson coefficient", 
+                        method="fetchfirstelem")
     # Return the result
-    return result[0]
+    return result
 ```
 Functions will work exactly the same.
 ```python
@@ -449,21 +545,20 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
                  ("column1", column1, [str]),
                  ("column2", column2, [str]),])
     # Check if the columns belong to the vDataFrame
-    columns_check([column1, column2], vdf)
+    vdf.are_namecols_in([column1, column2])
     # Format the columns
-    column1, column2 = vdf_columns_names([column1, column2], vdf)
+    column1, column2 = vdf.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = vdf.__genSQL__()
     # Create the SQL statement
     query = f"SELECT CORR({column1}, {column2}) FROM {table};"
-    # Execute the SQL query
-    vdf.__executeSQL__(query, title = "Computing Pearson coefficient")
-    # Get the result
-    result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchone()
+    # Execute the SQL query and get the result
+    result = executeSQL(query, 
+                        title = "Computing Pearson coefficient", 
+                        method="fetchfirstelem")
     # Return the result
-    return result[0]
+    return result
 ```
-If you need a database cursor but can't retrieve one from the input parameters, you can also add a 'cursor' parameter.
 
 Functions must include unit tests. Unit tests are located in the 'tests' folder and sorted by theme. Unit tests can be tested with the default VerticaPy datasets.
 

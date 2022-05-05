@@ -830,6 +830,7 @@ p: int, optional
         method: str = "accuracy",
         pos_label: Union[int, float, str] = None,
         cutoff: float = -1,
+        nbins: int = 10000,
     ):
         """
     ---------------------------------------------------------------------------
@@ -857,17 +858,30 @@ p: int, optional
             prc_auc     : Area Under the Curve (PRC)
             precision   : Precision = tp / (tp + fp)
             recall      : Recall = tp / (tp + fn)
-            specificity : Specificity = tn / (tn + fp) 
+            specificity : Specificity = tn / (tn + fp)
+    nbins: int, optional
+        [Only when method is set to auc|prc_auc|best_cutoff] 
+        An integer value that determines the number of decision boundaries. 
+        Decision boundaries are set at equally spaced intervals between 0 and 1, 
+        inclusive. Greater values for nbins give more precise estimations of the AUC, 
+        but can potentially decrease performance. The maximum value is 999,999. 
+        If negative, the maximum value is used.
 
     Returns
     -------
     float
         score
         """
-        check_types([("cutoff", cutoff, [int, float]), ("method", method, [str])])
+        check_types(
+            [
+                ("cutoff", cutoff, [int, float]),
+                ("method", method, [str]),
+                ("nbins", nbins, [int]),
+            ]
+        )
         if pos_label == None and len(self.classes_) == 2:
             pos_label = self.classes_[1]
-        input_relation = "(SELECT * FROM {} WHERE predict_neighbors = '{}') final_centroids_relation".format(
+        input_relation = "(SELECT * FROM {0} WHERE predict_neighbors = '{1}') final_centroids_relation".format(
             self.deploySQL(), pos_label
         )
         y_score = "(CASE WHEN proba_predict > {} THEN 1 ELSE 0 END)".format(cutoff)
@@ -892,11 +906,13 @@ p: int, optional
                     y_true, y_score, input_relation, pos_label=pos_label
                 )
         elif method == "auc":
-            return auc(y_true, y_proba, input_relation)
+            return auc(y_true, y_proba, input_relation, nbins=nbins)
         elif method == "prc_auc":
-            return prc_auc(y_true, y_proba, input_relation)
+            return prc_auc(y_true, y_proba, input_relation, nbins=nbins)
         elif method in ("best_cutoff", "best_threshold"):
-            return roc_curve(y_true, y_proba, input_relation, best_threshold=True)
+            return roc_curve(
+                y_true, y_proba, input_relation, best_threshold=True, nbins=nbins
+            )
         elif method in ("recall", "tpr"):
             return recall_score(y_true, y_score, input_relation)
         elif method in ("precision", "ppv"):
@@ -919,7 +935,9 @@ p: int, optional
             return critical_success_index(y_true, y_score, input_relation)
         else:
             raise ParameterError(
-                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|recall|precision|log_loss|negative_predictive_value|specificity|mcc|informedness|markedness|critical_success_index"
+                "The parameter 'method' must be in accuracy|auc|prc_auc|best_cutoff|"
+                "recall|precision|log_loss|negative_predictive_value|specificity|"
+                "mcc|informedness|markedness|critical_success_index"
             )
 
 

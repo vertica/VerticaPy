@@ -14,11 +14,15 @@
 # Pytest
 import pytest
 
+# Standard Python Modules
+import os
+
 # Other Modules
 from highcharts.highcharts.highcharts import Highchart
 from highcharts.highstock.highstock import Highstock
 
 # VerticaPy
+import verticapy
 from verticapy import drop, set_option
 from verticapy.datasets import load_titanic, load_amazon
 from verticapy.hchart import hchart
@@ -42,36 +46,101 @@ def amazon_vd():
 
 class Test_hchart:
     def test_hchart(self, titanic_vd, amazon_vd):
-        result = hchart("-type pearson", "SELECT * FROM titanic;")
+
+        # Test -k
+        result = hchart("-k pearson", "SELECT * FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type scatter", "SELECT age, fare FROM titanic;")
+        result = hchart("--kind scatter", "SELECT age, fare FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type scatter", "SELECT age, fare, pclass FROM titanic;")
+        result = hchart("    -k     scatter", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
         result = hchart(
-            "-type scatter", "SELECT age, fare, parch, pclass FROM titanic;"
+            "-k scatter", "SELECT age, fare, parch, pclass FROM titanic;"
         )
         assert isinstance(result, Highchart)
-        result = hchart("-type bubble", "SELECT age, fare, pclass FROM titanic;")
+        result = hchart("   --kind bubble", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type bubble", "SELECT age, fare, parch, pclass FROM titanic;")
+        result = hchart("-k bubble", "SELECT age, fare, parch, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type auto", "SELECT age, fare, pclass FROM titanic;")
+        result = hchart("-k auto", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart("-type auto", "SELECT age, fare, parch, pclass FROM titanic;")
+        result = hchart("-k auto", "SELECT age, fare, parch, pclass FROM titanic;")
         assert isinstance(result, Highchart)
         result = hchart(
-            "-type auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;"
+            "-k auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;"
         )
         assert isinstance(result, Highchart)
         result = hchart(
-            "-type auto",
+            "-k auto",
             "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
         )
         assert isinstance(result, Highchart)
-        result = hchart("-type auto", "SELECT date, number FROM amazon;")
+        result = hchart("-k auto", "SELECT date, number FROM amazon;")
         assert isinstance(result, Highstock)
-        result = hchart("-type auto", "SELECT date, number, state FROM amazon;")
+        result = hchart("    --kind auto", "SELECT date, number, state FROM amazon;")
         assert isinstance(result, Highstock)
-        result = hchart("-type line", "SELECT date, number, state FROM amazon;")
+        result = hchart("-k line", "SELECT date, number, state FROM amazon;")
         assert isinstance(result, Highstock)
+
+        # Test -f
+        result = hchart(
+            "   -k line  -f   {}/tests/hchart/queries.sql".format(os.path.dirname(verticapy.__file__)),
+            "",
+        )
+        assert isinstance(result, Highstock)
+        result = hchart(
+            "   -k line  --file     {}/tests/hchart/queries.sql  ".format(os.path.dirname(verticapy.__file__)),
+            "",
+        )
+        assert isinstance(result, Highstock)
+
+        # Test -c
+        result = hchart(
+            "   -k line  -c   'SELECT date, number, state FROM amazon;'",
+            "",
+        )
+        assert isinstance(result, Highstock)
+        result = hchart(
+            '   -k line  --command   "SELECT date, number, state FROM amazon;"',
+            "",
+        )
+        assert isinstance(result, Highstock)
+
+        # Export to HTML --output
+        result = hchart(
+            "  --output   verticapy_test_hchart",
+            "SELECT date, number, state FROM amazon;",
+        )
+        try:
+            file = open("verticapy_test_hchart.html", "r")
+            result = file.read()
+            assert "<!DOCTYPE html>" in result
+        except:
+            os.remove("verticapy_test_hchart.html")
+            file.close()
+            raise
+        os.remove("verticapy_test_hchart.html")
+        file.close()
+
+        # Export to HTML -o
+        result = hchart(
+            "  -o   verticapy_test_hchart",
+            "SELECT date, number, state FROM amazon;",
+        )
+        try:
+            file = open("verticapy_test_hchart.html", "r")
+            result = file.read()
+            assert "<!DOCTYPE html>" in result
+        except:
+            os.remove("verticapy_test_hchart.html")
+            file.close()
+            raise
+        os.remove("verticapy_test_hchart.html")
+        file.close()
+
+
+
+
+
+
+
