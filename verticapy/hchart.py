@@ -103,13 +103,13 @@ def hchart(line, cell, local_ns=None):
         elif verticapy.options["print_info"]:
             warning_message = (
                 f"\u26A0 Warning : The option '{option}' doesn't "
-                "exist, it was skipped."
+                "exist - skipping."
             )
             warnings.warn(warning_message, Warning)
 
     if "-f" in options and "-c" in options:
-        raise ParameterError("Do not find which query to run: One of "
-                             "the options '-f' and '-c' must be empty.")
+        raise ParameterError("Could not find a query to run; the options"
+                             "'-f' and '-c' cannot be used together.")
 
     if cell and ("-f" in options or "-c" in options):
         raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
