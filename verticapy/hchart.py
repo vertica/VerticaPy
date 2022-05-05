@@ -51,12 +51,14 @@ from IPython.core.magic import needs_local_scope
 from IPython.core.display import HTML, display
 
 # Standard Python Modules
-import re, time
+import re, time, warnings
 
 # Other Modules
 import pandas as pd
 
 # VerticaPy
+import verticapy
+from verticapy.errors import ParameterError
 from verticapy import (
     vDataFrame,
     tablesample,
@@ -71,23 +73,57 @@ from verticapy.highchart import hchartSQL
 def hchart(line, cell, local_ns=None):
 
     # Initialization
-    options = {"type": "auto"}
-    query = cell
+    query = "" if (not (cell) and (line)) else cell
 
-    if line:
+    # Options
+    options = {}
+    all_options_dict = get_magic_options(line)
 
-        all_options_dict = get_magic_options(line)
+    for option in all_options_dict:
 
-        for option in all_options_dict:
+        if option.lower() in ("-f", "--file", "-o", "--output", "-c", "--command", "-k", "--kind"):
 
-            if option.lower() == "-type":
-                options["type"] = all_options_dict[option]
+            if option.lower() in ("-f", "--file"):
+                if "-f" in options:
+                    raise ParameterError("Duplicate option '-f'.")
+                options["-f"] = all_options_dict[option]
+            elif option.lower() in ("-o", "--output"):
+                if "-o" in options:
+                    raise ParameterError("Duplicate option '-o'.")
+                options["-o"] = all_options_dict[option]
+            elif option.lower() in ("-c", "--command"):
+                if "-c" in options:
+                    raise ParameterError("Duplicate option '-c'.")
+                options["-c"] = all_options_dict[option]
+            elif option.lower() in ("-k", "--kind"):
+                if "-k" in options:
+                    raise ParameterError("Duplicate option '-k'.")
+                options["-k"] = all_options_dict[option]
 
-            else:
-                print(
-                    f"\u26A0 Warning : option '{option}'"
-                    " doesn't exist, it was skipped."
-                )
+        elif verticapy.options["print_info"]:
+            warning_message = (
+                f"\u26A0 Warning : The option '{option}' doesn't "
+                "exist, it was skipped."
+            )
+            warnings.warn(warning_message, Warning)
+
+    if "-f" in options and "-c" in options:
+        raise ParameterError("Do not find which query to run: One of "
+                             "the options '-f' and '-c' must be empty.")
+
+    if cell and ("-f" in options or "-c" in options):
+        raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
+
+    if "-f" in options:
+        f = open(options["-f"], "r")
+        query = f.read()
+        f.close()
+
+    elif "-c" in options:
+        query = options["-c"]
+
+    if "-k" not in options:
+        options["-k"] = "auto"
 
     # Cleaning the Query
     query = clean_query(query)
@@ -95,13 +131,18 @@ def hchart(line, cell, local_ns=None):
 
     # Drawing the graphic and displaying the info
     start_time = time.time()
-    chart = hchartSQL(query, options["type"])
+    chart = hchartSQL(query, options["-k"])
     elapsed_time = time.time() - start_time
     display(HTML("<div><b>Execution: </b> {0}s</div>".format(round(elapsed_time, 3))))
+
+    # export graphic
+    if "-o" in options:
+        chart.save_file(options["-o"])
 
     return chart
 
 
 # ---#
 def load_ipython_extension(ipython):
-    ipython.register_magic_function(hchart, "cell")
+    ipython.register_magic_function(sql, "cell")
+    ipython.register_magic_function(sql, "line")

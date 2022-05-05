@@ -1830,6 +1830,8 @@ offset: int, optional
 	dataset. It is used only for rendering purposes.
 percent: dict, optional
     Dictionary of missing values (Used to display the percent bars)
+max_columns: int, optional
+    Maximum number of columns to display.
 
 Attributes
 ----------
@@ -1847,6 +1849,7 @@ The tablesample attributes are the same than the parameters.
         count: int = 0,
         offset: int = 0,
         percent: dict = {},
+        max_columns: int = -1,
     ):
         check_types(
             [
@@ -1855,6 +1858,7 @@ The tablesample attributes are the same than the parameters.
                 ("count", count, [int]),
                 ("offset", offset, [int]),
                 ("percent", percent, [dict]),
+                ("max_columns", max_columns, [int]),
             ]
         )
         self.values = values
@@ -1862,6 +1866,7 @@ The tablesample attributes are the same than the parameters.
         self.count = count
         self.offset = offset
         self.percent = percent
+        self.max_columns = max_columns
         for column in values:
             if column not in dtype:
                 self.dtype[column] = "undefined"
@@ -1886,16 +1891,17 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        if n < verticapy.options["max_columns"]:
+        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
-            k = int(verticapy.options["max_columns"] / 2)
+            k = int(max_columns / 2)
             columns = [elem for elem in self.values]
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
                 [columns[i]] + self.values[columns[i]]
-                for i in range(n - verticapy.options["max_columns"] + k, n)
+                for i in range(n - max_columns + k, n)
             ]
             data_columns = values0 + values1 + values2
             dtype["..."] = "undefined"
@@ -1950,16 +1956,17 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        if n < verticapy.options["max_columns"]:
+        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
-            k = int(verticapy.options["max_columns"] / 2)
+            k = int(max_columns / 2)
             columns = [elem for elem in self.values]
             values0 = [[columns[i]] + self.values[columns[i]] for i in range(k)]
             values1 = [["..." for i in range(len(self.values[columns[0]]) + 1)]]
             values2 = [
                 [columns[i]] + self.values[columns[i]]
-                for i in range(n - verticapy.options["max_columns"] + k, n)
+                for i in range(n - max_columns + k, n)
             ]
             data_columns = values0 + values1 + values2
             dtype["..."] = "undefined"
@@ -2287,7 +2294,7 @@ The tablesample attributes are the same than the parameters.
 
 
 # ---#
-def to_tablesample(query: str, title: str = ""):
+def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
     """
 	---------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
@@ -2298,6 +2305,8 @@ def to_tablesample(query: str, title: str = ""):
 		SQL Query.
 	title: str, optional
 		Query title when the query is displayed.
+    max_columns: int, optional
+        Maximum number of columns to display.
 
  	Returns
  	-------
@@ -2308,7 +2317,7 @@ def to_tablesample(query: str, title: str = ""):
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str])])
+    check_types([("query", query, [str]), ("max_columns", max_columns, [int]),])
     if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -2331,7 +2340,7 @@ def to_tablesample(query: str, title: str = ""):
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values, dtype=dtype).decimal_to_float()
+    return tablesample(values=values, dtype=dtype, max_columns=max_columns,).decimal_to_float()
 
 
 # ---#

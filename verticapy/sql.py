@@ -68,7 +68,7 @@ import pandas as pd
 
 # VerticaPy Modules
 import verticapy
-from verticapy.errors import QueryError
+from verticapy.errors import QueryError, ParameterError
 from verticapy import (
     executeSQL,
     vDataFrameSQL,
@@ -92,35 +92,59 @@ def sql(line, cell="", local_ns=None):
 
     try:
 
-        # Initialization + Options
-        queries = line if (not (cell) and (line)) else cell
+        # Initialization
+        queries = "" if (not (cell) and (line)) else cell
 
-        has_option = (len(queries) > 1 and queries[0] == "-" and queries[1] != "-") or (
-            (cell) and (line)
-        )
+        # Options
         options = {}
+        all_options_dict = get_magic_options(line)
 
-        if has_option:
+        for option in all_options_dict:
 
-            all_options_dict = get_magic_options(line)
+            if option.lower() in ("-f", "--file", "-o", "--output", "-nrows", "-ncols", "-c", "--command"):
 
-            for option in all_options_dict:
+                if option.lower() in ("-f", "--file"):
+                    if "-f" in options:
+                        raise ParameterError("Duplicate option '-f'.")
+                    options["-f"] = all_options_dict[option]
+                elif option.lower() in ("-o", "--output"):
+                    if "-o" in options:
+                        raise ParameterError("Duplicate option '-o'.")
+                    options["-o"] = all_options_dict[option]
+                elif option.lower() in ("-c", "--command"):
+                    if "-c" in options:
+                        raise ParameterError("Duplicate option '-c'.")
+                    options["-c"] = all_options_dict[option]
+                elif option.lower() in ("-nrows",):
+                    if "-nrows" in options:
+                        raise ParameterError("Duplicate option '-nrows'.")
+                    options["-nrows"] = int(all_options_dict[option])
+                elif option.lower() in ("-ncols",):
+                    if "-ncols" in options:
+                        raise ParameterError("Duplicate option '-ncols'.")
+                    options["-ncols"] = int(all_options_dict[option])
 
-                if option.lower() in ("-i", "-o",):
-                    x = option.lower()[1:]
-                    options[x] = all_options_dict[option]
+            elif verticapy.options["print_info"]:
+                warning_message = (
+                    f"\u26A0 Warning : The option '{option}' doesn't "
+                    "exist, it was skipped."
+                )
+                warnings.warn(warning_message, Warning)
 
-                elif verticapy.options["print_info"]:
-                    warning_message = (
-                        f"\u26A0 Warning : The option '{option}' doesn't "
-                        "exist, it was skipped."
-                    )
-                    warnings.warn(warning_message, Warning)
+        if "-f" in options and "-c" in options:
+            raise ParameterError("Do not find which query to run: One of "
+                                 "the options '-f' and '-c' must be empty.")
 
-        if "i" in options:
-            f = open(options["i"], "r")
+        if cell and ("-f" in options or "-c" in options):
+            raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
+
+        if "-f" in options:
+            f = open(options["-f"], "r")
             queries = f.read()
             f.close()
+
+        elif "-c" in options:
+            queries = options["-c"]
 
         # Cleaning the Query
         queries = clean_query(queries)
@@ -221,6 +245,11 @@ def sql(line, cell="", local_ns=None):
                 error = ""
                 try:
                     result = vDataFrameSQL("({}) x".format(query))
+                    # Display parameters
+                    if "-nrows" in options:
+                        result._VERTICAPY_VARIABLES_["max_rows"] = options["-nrows"]
+                    if "-ncols" in options:
+                        result._VERTICAPY_VARIABLES_["max_columns"] = options["-ncols"]
 
                 except:
                     try:
@@ -246,12 +275,16 @@ def sql(line, cell="", local_ns=None):
 
         # Exporting the result
 
-        if isinstance(result, vDataFrame) and "o" in options:
+        if isinstance(result, vDataFrame) and "-o" in options:
 
-            if options["o"][-4:] == "json":
-                result.to_json(options["o"])
+            if options["-o"][-4:] == "json":
+                result.to_json(options["-o"])
             else:
-                result.to_csv(options["o"])
+                result.to_csv(options["-o"])
+
+        # we load the previous configuration before returning the result.
+        set_option("sql_on", sql_on)
+        set_option("time_on", time_on)
 
         return result
 
@@ -260,6 +293,7 @@ def sql(line, cell="", local_ns=None):
         # If it fails, we load the previous configuration before raising the error.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
+        
         raise
 
 

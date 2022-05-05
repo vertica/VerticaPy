@@ -138,6 +138,8 @@ _VERTICAPY_VARIABLES_: dict
         schema, str           : Schema of the input relation.
         where, list           : List of all rules to filter the 
                                 vDataFrame.
+        max_colums, int       : Maximum number of columns to display.
+        max_rows, int         : Maximum number of rows to display.
 vColumns : vColumn
     Each vColumn of the vDataFrame is accessible by by specifying its name 
     between brackets. For example, to access the vColumn "myVC": 
@@ -177,6 +179,8 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_ = {}
         self._VERTICAPY_VARIABLES_["count"] = -1
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
+        self._VERTICAPY_VARIABLES_["max_rows"] = -1
+        self._VERTICAPY_VARIABLES_["max_columns"] = -1
 
         if sql:
 
@@ -377,11 +381,17 @@ vColumns : vColumn
 
     # ---#
     def __repr__(self):
-        return self.head(limit=verticapy.options["max_rows"]).__repr__()
+        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        if max_rows <= 0:
+            max_rows = verticapy.options["max_rows"]
+        return self.head(limit=max_rows).__repr__()
 
     # ---#
     def _repr_html_(self):
-        return self.head(limit=verticapy.options["max_rows"])._repr_html_()
+        max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
+        if max_rows <= 0:
+            max_rows = verticapy.options["max_rows"]
+        return self.head(limit=max_rows)._repr_html_()
 
     # ---#
     def __round__(self, n):
@@ -6918,6 +6928,7 @@ vColumns : vColumn
                 offset,
             ),
             title=title,
+            max_columns=self._VERTICAPY_VARIABLES_["max_columns"],
         )
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -10515,10 +10526,10 @@ vColumns : vColumn
             for row in result:
                 tmp_row = []
                 for i, item in enumerate(row):
-                    if isinstance(item, str):
-                        tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
+                    if isinstance(item, (float, int, decimal.Decimal)):
+                        tmp_row += ['{}: {}'.format(quote_ident(columns[i]), item)]
                     elif item != None:
-                        tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
+                        tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
                 file.write("{" + ", ".join(tmp_row) + "},\n")
             current_nb_rows_written += limit
             file_id += 1
