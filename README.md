@@ -4,6 +4,8 @@
 
 :loudspeaker: 2020-06-27: Vertica-ML-Python has been renamed to VerticaPy.
 
+:warning: VerticaPy 0.9.0 includes several significant changes and is therefore not backward compatible with older versions. For details, see the <a href='https://www.vertica.com/python/documentation_last/whats-new.php'>changelog</a>.
+
 # VerticaPy
 
 [![PyPI version](https://badge.fury.io/py/verticapy.svg)](https://badge.fury.io/py/verticapy)
@@ -75,6 +77,25 @@ https://www.vertica.com/python/examples/
 <img src="https://raw.githubusercontent.com/vertica/VerticaPy/master/img/examples.gif" width="92%">
 </p>
 
+## SQL Magic
+
+You can use VerticaPy to execute SQL queries directly from a Jupyter notebook. For details, see <a href='https://www.vertica.com/python/documentation_last/extensions/sql/'>SQL Magic</a>:
+
+### Example
+
+Load the SQL extension.
+```python
+%load_ext verticapy.sql
+```
+Execute your SQL queries.
+```python
+%%sql
+SELECT version();
+
+# Output
+# Vertica Analytic Database v11.0.1-0
+```
+
 ## Charts
 
 A gallery of VerticaPy-generated charts is available at:<br>
@@ -114,6 +135,10 @@ vp.new_connection({"host": "10.211.55.14",
 Use the newly created connection:
 ```python
 vp.connect("Vertica_New_Connection")
+```
+Create a VerticaPy schema for native VerticaPy models (that is, models available in VerticaPy, but not Vertica itself):
+```python
+vp.create_verticapy_schema()
 ```
 Create a vDataFrame of your relation:
 ```python

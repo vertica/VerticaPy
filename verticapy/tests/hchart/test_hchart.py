@@ -14,6 +14,9 @@
 # Pytest
 import pytest
 
+# Standard Python Modules
+import os
+
 # Other Modules
 from highcharts.highcharts.highcharts import Highchart
 from highcharts.highstock.highstock import Highstock
