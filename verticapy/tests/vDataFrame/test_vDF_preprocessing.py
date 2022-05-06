@@ -129,7 +129,7 @@ class TestvDFPreprocessing:
         titanic_copy["age"].discretize(
             method="smart",
             response="survived",
-            bins=6,
+            nbins=6,
             RFmodel_params={"n_estimators": 100, "nbins": 100},
         )
         assert len(titanic_copy["age"].distinct()) == 6

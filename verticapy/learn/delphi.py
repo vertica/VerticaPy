@@ -330,7 +330,7 @@ final_relation_: vDataFrame
                     ):
                         vdf[elem].discretize(
                             method=self.parameters["num_method"],
-                            bins=self.parameters["nbins"],
+                            nbins=self.parameters["nbins"],
                         )
                     elif vdf[elem].nunique() > self.parameters["cat_topk"] and not (
                         vdf[elem].isnum()
