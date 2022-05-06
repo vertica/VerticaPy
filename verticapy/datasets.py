@@ -200,13 +200,13 @@ vDataFrame
 
     for idx, param in enumerate(features_ranges):
 
-        bins = 100
+        nbins = 100
         if "nbins" in features_ranges[param]:
-            bins = features_ranges[param]["nbins"]
+            nbins = features_ranges[param]["nbins"]
         ts_table = (
             f"(SELECT DAY(tm - '03-11-1993'::TIMESTAMP) AS tm FROM "
             "(SELECT '03-11-1993'::TIMESTAMP AS t UNION ALL SELECT"
-            f" '03-11-1993'::TIMESTAMP + INTERVAL '{bins} days' AS t)"
+            f" '03-11-1993'::TIMESTAMP + INTERVAL '{nbins} days' AS t)"
             " x TIMESERIES tm AS '1 day' OVER(ORDER BY t)) y"
         )
 
@@ -226,7 +226,7 @@ vDataFrame
         elif features_ranges[param]["type"] == float:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
-            h = (upper - lower) / bins
+            h = (upper - lower) / nbins
             sql += [
                 f'(SELECT ({lower} + {h} * tm)::FLOAT AS "{param}" '
                 f"FROM {ts_table}) x{idx}"
@@ -235,7 +235,7 @@ vDataFrame
         elif features_ranges[param]["type"] == int:
             val = features_ranges[param]["range"]
             lower, upper = val[0], val[1]
-            h = (upper - lower) / bins
+            h = (upper - lower) / nbins
             sql += [
                 f'(SELECT ({lower} + {h} * tm)::INT AS "{param}" '
                 f"FROM {ts_table}) x{idx}"
@@ -244,7 +244,7 @@ vDataFrame
         elif features_ranges[param]["type"] == datetime.date:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
-            h = number_of_days / bins
+            h = number_of_days / nbins
             sql += [
                 f"(SELECT ('{start_date}'::DATE + {h} * tm)::DATE"
                 f' AS "{param}" FROM {ts_table}) x{idx}'
@@ -253,7 +253,7 @@ vDataFrame
         elif features_ranges[param]["type"] == datetime.datetime:
             val = features_ranges[param]["range"]
             start_date, number_of_days = val[0], val[1]
-            h = number_of_days / bins
+            h = number_of_days / nbins
             sql += [
                 f"(SELECT ('{start_date}'::DATE + {h} * tm)::TIMESTAMP "
                 f'AS "{param}" FROM {ts_table}) x{idx}'

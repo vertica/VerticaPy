@@ -106,14 +106,14 @@ class TestvDFPreprocessing:
 
         # expected exception
         with pytest.raises(AssertionError) as exception_info:
-            titanic_copy["age"].discretize(method="same_freq", bins=1)
+            titanic_copy["age"].discretize(method="same_freq", nbins=1)
         # checking the error message
         assert exception_info.match(
-            "Parameter 'bins' must be greater or equals to 2 in case "
+            "Parameter 'nbins' must be greater or equals to 2 in case "
             "of discretization using the method 'same_freq'"
         )
 
-        titanic_copy["age"].discretize(method="same_freq", bins=5)
+        titanic_copy["age"].discretize(method="same_freq", nbins=5)
         assert titanic_copy["age"].distinct() == [
             "[0.330;19.000]",
             "[19.000;25.000]",
@@ -129,7 +129,7 @@ class TestvDFPreprocessing:
         titanic_copy["age"].discretize(
             method="smart",
             response="survived",
-            bins=6,
+            nbins=6,
             RFmodel_params={"n_estimators": 100, "nbins": 100},
         )
         assert len(titanic_copy["age"].distinct()) == 6

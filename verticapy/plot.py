@@ -808,13 +808,13 @@ def bar(
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     ax=None,
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method=method, of=of, max_cardinality=max_cardinality, bins=bins, h=h
+        vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
     )
     if not (ax):
         fig, ax = plt.subplots()
@@ -1852,7 +1852,7 @@ def compute_plot_variables(
     method: str = "density",
     of: str = "",
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     pie: bool = False,
 ):
@@ -1974,16 +1974,16 @@ def compute_plot_variables(
         is_categorical = True
     # case when date
     elif is_date:
-        if (h <= 0) and (bins <= 0):
+        if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
-        elif bins > 0:
+        elif nbins > 0:
             query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
                 vdf.alias, vdf.alias
             )
             query_result = executeSQL(
                 query=query, title="Computing the histogram interval", method="fetchrow"
             )
-            h = float(query_result[0]) / bins
+            h = float(query_result[0]) / nbins
         min_date = vdf.min()
         converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
         query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
@@ -2013,10 +2013,10 @@ def compute_plot_variables(
         is_categorical = True
     # case when numerical
     else:
-        if (h <= 0) and (bins <= 0):
+        if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
-        elif bins > 0:
-            h = float(vdf.max() - vdf.min()) / bins
+        elif nbins > 0:
+            h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
         query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
@@ -2212,13 +2212,13 @@ def hist(
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     ax=None,
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method, of, max_cardinality, bins, h
+        vdf, method, of, max_cardinality, nbins, h
     )
     is_numeric = vdf.isnum()
     if not (ax):
