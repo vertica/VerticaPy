@@ -611,7 +611,7 @@ Attributes
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        bins: int = 0,
+        nbins: int = 0,
         h: float = 0,
         ax=None,
         **style_kwds,
@@ -637,8 +637,8 @@ Attributes
 	max_cardinality: int, optional
  		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
- 	bins: int, optional
- 		Number of bins. If empty, an optimized number of bins will be computed.
+ 	nbins: int, optional
+ 		Number of nbins. If empty, an optimized number of nbins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
@@ -660,7 +660,7 @@ Attributes
                 ("method", method, [str]),
                 ("of", of, [str]),
                 ("max_cardinality", max_cardinality, [int, float]),
-                ("bins", bins, [int, float]),
+                ("nbins", nbins, [int, float]),
                 ("h", h, [int, float]),
             ]
         )
@@ -669,7 +669,7 @@ Attributes
             of = self.parent.format_colnames(of)
         from verticapy.plot import bar
 
-        return bar(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds)
+        return bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     def boxplot(
@@ -1251,7 +1251,7 @@ Attributes
         self,
         method: str = "auto",
         h: float = 0,
-        bins: int = -1,
+        nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
         RFmodel_params: dict = {},
@@ -1277,7 +1277,7 @@ Attributes
  	h: float, optional
  		The interval size to convert to use to convert the vColumn. If this parameter 
  		is equal to 0, an optimised interval will be computed.
- 	bins: int, optional
+ 	nbins: int, optional
  		Number of bins used for the discretization (must be > 1)
  	k: int, optional
  		The integer k of the 'topk' method.
@@ -1314,7 +1314,7 @@ Attributes
                 ("return_enum_trans", return_enum_trans, [bool]),
                 ("h", h, [int, float]),
                 ("response", response, [str]),
-                ("bins", bins, [int, float]),
+                ("nbins", nbins, [int, float]),
                 (
                     "method",
                     method,
@@ -1330,8 +1330,8 @@ Attributes
                 schema = "public"
             tmp_view_name = gen_tmp_name(schema=schema, name="view")
             tmp_model_name = gen_tmp_name(schema=schema, name="model")
-            assert bins >= 2, ParameterError(
-                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case of discretization using the method 'smart'."
             )
             assert response, ParameterError(
                 "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
@@ -1362,11 +1362,11 @@ Attributes
                     for i in range(parameters["n_estimators"])
                 ]
                 query = "SELECT split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
-                    " UNION ALL ".join(query), bins - 1
+                    " UNION ALL ".join(query), nbins - 1
                 )
                 result = executeSQL(
                     query=query,
-                    title="Computing the optimized histogram bins using Random Forest.",
+                    title="Computing the optimized histogram nbins using Random Forest.",
                     method="fetchall",
                 )
                 result = [elem[0] for elem in result]
@@ -1398,16 +1398,16 @@ Attributes
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            assert bins >= 2, ParameterError(
-                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
             )
             count = self.count()
-            nb = int(float(count / int(bins)))
+            nb = int(float(count / int(nbins)))
             assert nb != 0, Exception(
                 "Not enough values to compute the Equal Frequency discretization"
             )
             total, query, nth_elems = nb, [], []
-            while total < int(float(count / int(bins))) * int(bins):
+            while total < int(float(count / int(nbins))) * int(nbins):
                 nth_elems += [str(total)]
                 total += nb
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
@@ -1429,10 +1429,10 @@ Attributes
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
             if not (h) or h <= 0:
-                if bins <= 0:
+                if nbins <= 0:
                     h = self.numh()
                 else:
-                    h = (self.max() - self.min()) * 1.01 / bins
+                    h = (self.max() - self.min()) * 1.01 / nbins
                 if h > 0.01:
                     h = round(h, 2)
                 elif h > 0.0001:
@@ -2176,7 +2176,7 @@ Attributes
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        bins: int = 0,
+        nbins: int = 0,
         h: float = 0,
         ax=None,
         **style_kwds,
@@ -2202,7 +2202,7 @@ Attributes
 	max_cardinality: int, optional
  		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
- 	bins: int, optional
+ 	nbins: int, optional
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
@@ -2226,7 +2226,7 @@ Attributes
                 ("of", of, [str]),
                 ("max_cardinality", max_cardinality, [int, float]),
                 ("h", h, [int, float]),
-                ("bins", bins, [int, float]),
+                ("nbins", nbins, [int, float]),
             ]
         )
         if of:
@@ -2234,7 +2234,7 @@ Attributes
             of = self.parent.format_colnames(of)
         from verticapy.plot import hist
 
-        return hist(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds)
+        return hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -2365,7 +2365,7 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
-    def iv_woe(self, y: str, bins: int = 10):
+    def iv_woe(self, y: str, nbins: int = 10):
         """
     ---------------------------------------------------------------------------
     Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
@@ -2376,8 +2376,8 @@ Attributes
     ----------
     y: str
         Response vColumn.
-    bins: int, optional
-        Maximum number of bins used for the discretization (must be > 1)
+    nbins: int, optional
+        Maximum number of nbins used for the discretization (must be > 1)
 
     Returns
     -------
@@ -2389,7 +2389,7 @@ Attributes
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        check_types([("y", y, [str]), ("bins", bins, [int])])
+        check_types([("y", y, [str]), ("nbins", nbins, [int])])
         self.parent.are_namecols_in(y)
         y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
@@ -2403,8 +2403,8 @@ Attributes
         self.parent[y].distinct()
         trans = self.discretize(
             method="same_width" if self.isnum() else "topk",
-            bins=bins,
-            k=bins,
+            nbins=nbins,
+            k=nbins,
             new_category="Others",
             return_enum_trans=True,
         )[0].replace("{}", self.alias)

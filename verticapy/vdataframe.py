@@ -3996,7 +3996,7 @@ vColumns : vColumn
             if vdf[elem].isbool():
                 vdf[elem].astype("int")
             elif vdf[elem].isnum():
-                vdf[elem].discretize(bins=nbins)
+                vdf[elem].discretize(nbins=nbins)
                 columns_to_drop += [elem]
             elif vdf[elem].isdate():
                 vdf[elem].drop()
@@ -8145,7 +8145,7 @@ vColumns : vColumn
             if vdf[col].isnum():
                 vdf[col].discretize(
                     method=method,
-                    bins=nbins,
+                    nbins=nbins,
                     response=response,
                     RFmodel_params=RFmodel_params,
                 )
@@ -10943,7 +10943,7 @@ vColumns : vColumn
 
     # ---#
     def iv_woe(
-        self, y: str, columns: list = [], bins: int = 10, show: bool = True, ax=None
+        self, y: str, columns: list = [], nbins: int = 10, show: bool = True, ax=None
     ):
         """
     ---------------------------------------------------------------------------
@@ -10957,7 +10957,7 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all vColumns except the response 
         will be used.
-    bins: int, optional
+    nbins: int, optional
         Maximum number of bins used for the discretization (must be > 1).
     show: bool, optional
         If set to True, the IV Plot will be drawn using Matplotlib.
@@ -10982,7 +10982,7 @@ vColumns : vColumn
             [
                 ("y", y, [str]),
                 ("columns", columns, [list]),
-                ("bins", bins, [int]),
+                ("nbins", nbins, [int]),
                 ("show", show, [bool]),
             ]
         )
@@ -10993,7 +10993,7 @@ vColumns : vColumn
             columns = self.get_columns(exclude_columns=[y])
         coeff_importances = {}
         for elem in columns:
-            coeff_importances[elem] = self[elem].iv_woe(y=y, bins=bins)["iv"][-1]
+            coeff_importances[elem] = self[elem].iv_woe(y=y, nbins=nbins)["iv"][-1]
         if show:
             from verticapy.learn.mlplot import plot_importance
 

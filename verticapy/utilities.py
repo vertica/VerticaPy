@@ -207,7 +207,7 @@ Parameters
 name: str, optional
     Relation name. If empty, it will drop all VerticaPy temporary 
     elements.
-method: str, optional
+method / relation_type: str, optional
     Method used to drop.
         auto   : identifies the table/view/index/model to drop. 
                  It will never drop an entire schema unless the 
@@ -226,6 +226,8 @@ Returns
 bool
     True if the relation was dropped, False otherwise.
     """
+    if "relation_type" in kwds and method == "auto":
+        method = kwds["relation_type"]
     if isinstance(method, str):
         method = method.lower()
     check_types(
