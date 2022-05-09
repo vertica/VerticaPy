@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,82 +11,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import RandomForestRegressor
-from verticapy import vDataFrame, drop, set_option, vertica_conn
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+)
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_winequality, load_dataset_reg
+from verticapy.learn.ensemble import RandomForestRegressor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
-    from verticapy.datasets import load_winequality
-
-    winequality = load_winequality(cursor=base.cursor)
+def winequality_vd():
+    winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality",)
+
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
+
 
 @pytest.fixture(scope="module")
-def rfr_data_vd(base):
-    base.cursor.execute("DROP TABLE IF EXISTS public.rfr_data")
-    base.cursor.execute(
-        'CREATE TABLE IF NOT EXISTS public.rfr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    base.cursor.execute("INSERT INTO rfr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')")
-    base.cursor.execute("INSERT INTO rfr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
-    )
-    base.cursor.execute("INSERT INTO rfr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute("COMMIT")
-
-    rfr_data = vDataFrame(input_relation="public.rfr_data", cursor=base.cursor)
+def rfr_data_vd():
+    rfr_data = load_dataset_reg(table_name="rfr_data", schema="public")
     yield rfr_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.rfr_data", cursor=base.cursor)
+    drop(name="public.rfr_data", method="table")
 
 
 @pytest.fixture(scope="module")
-def model(base, rfr_data_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS rfr_model_test")
+def model(rfr_data_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS rfr_model_test")
 
-    base.cursor.execute(
+    current_cursor().execute(
         "SELECT rf_regressor('rfr_model_test', 'public.rfr_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, transportation', mtry=4, ntree=3, max_breadth=100, sampling_size=1, max_depth=6, min_leaf_size=1, min_info_gain=0.0, nbins=40, seed=1, id_column='id')"
     )
 
     # I could use load_model but it is buggy
     model_class = RandomForestRegressor(
         "rfr_model_test",
-        cursor=base.cursor,
         n_estimators=3,
         max_features=4,
         max_leaf_nodes=100,
@@ -112,43 +87,41 @@ class TestRFR:
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestRegressor>"
 
-    def test_contour(self, base, titanic_vd):
-        model_test = RandomForestRegressor("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = RandomForestRegressor("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare",],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'rfr_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_RF_REGRESSOR("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'rfr_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS rfr_model_test_drop")
-        model_test = RandomForestRegressor("rfr_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS rfr_model_test_drop")
+        model_test = RandomForestRegressor("rfr_model_test_drop",)
         model_test.fit(
             "public.rfr_data",
             ["Gender", '"owned cars"', "cost", "income"],
             "TransPortation",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfr_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "rfr_model_test_drop"
+        assert current_cursor().fetchone()[0] == "rfr_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfr_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         fim = model.features_importance()
@@ -192,7 +165,7 @@ class TestRFR:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_regressor('public.rfr_model_test', 'public.rfr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_regressor('public.rfr_model_test', 'public.rfr_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):
@@ -207,62 +180,52 @@ class TestRFR:
             "nbins": 40,
         }
 
-    def test_get_plot(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = RandomForestRegressor("model_test_plot", cursor=base.cursor)
+    def test_get_plot(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = RandomForestRegressor("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot()
         assert len(result.get_default_bbox_extra_artists()) == 9
         plt.close("all")
         model_test.drop()
 
-    @pytest.mark.skip(reason="sklearn tree only work for numerical values.")
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([["Male", 0, "Cheap", "Low"]])[0])
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([['Male', 0, 'Cheap', 'Low']])[0])
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+        )
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
                 model.name, model.to_sql()
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
-                              ['Female', 1, 'Expensive', 'Low']])
-        res_py = model.to_python()([['Male', 0, 'Cheap', 'Low'],
-                                    ['Female', 1, 'Expensive', 'Low']])
+        res = mmodel.predict(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
+        res_py = model.to_python()(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame("public.rfr_data", cursor = model.cursor)
-        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf = vDataFrame("public.rfr_data")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, rfr_data_vd, model):
         rfr_data_copy = rfr_data_vd.copy()
@@ -345,45 +308,37 @@ class TestRFR:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_features": 1000})
 
         assert model.get_params()["max_features"] == 1000
 
-    def test_model_from_vDF(self, base, rfr_data_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS rfr_from_vDF")
-        model_test = RandomForestRegressor("rfr_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, rfr_data_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS rfr_from_vDF")
+        model_test = RandomForestRegressor("rfr_from_vDF",)
         model_test.fit(rfr_data_vd, ["gender"], "transportation")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfr_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "rfr_from_vDF"
+        assert current_cursor().fetchone()[0] == "rfr_from_vDF"
 
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_1 = model.to_graphviz(tree_id = 1,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_1 = model.to_graphviz(
+            tree_id=1,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled"},
+            arrow_style={"color": "blue"},
+            leaf_style={"shape": "circle", "style": "filled"},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
-        assert '0 -> 1' in gvz_tree_1
-        
+        assert "0 -> 1" in gvz_tree_1
+
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
 

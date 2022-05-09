@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,42 +15,59 @@ import vertica_python, pytest, os, verticapy
 from .base import VerticaPyTestBase
 from configparser import ConfigParser
 
-def create_conn_file():
-	base_test = VerticaPyTestBase()
-	base_test.setUp()
 
-	if not (
-	    os.path.isfile(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
-	):
-		path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
-		confparser = ConfigParser()
-		confparser.optionxform = str
-		confparser.read(path)
-		if confparser.has_section("vp_test_config"):
-		    confparser.remove_section("vp_test_config")
-		confparser.add_section("vp_test_config")
-		for elem in base_test.test_config:
-		    if elem != "log_level":
-		        confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
-		f = open(path, "w+")
-		confparser.write(f)
-		f.close()
+def create_conn_file():
+    base_test = VerticaPyTestBase()
+    base_test.setUp()
+
+    if not (
+        os.path.isfile(
+            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
+        )
+    ):
+        path = os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf"
+        confparser = ConfigParser()
+        confparser.optionxform = str
+        confparser.read(path)
+        if confparser.has_section("vp_test_config"):
+            confparser.remove_section("vp_test_config")
+        confparser.add_section("vp_test_config")
+        for elem in base_test.test_config:
+            if elem != "log_level":
+                confparser.set("vp_test_config", elem, str(base_test.test_config[elem]))
+        f = open(path, "w+")
+        confparser.write(f)
+        f.close()
+
 
 def delete_conn_file():
-	os.remove(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
+    os.remove(os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf")
+
 
 def get_version():
     base_class = VerticaPyTestBase()
     base_class.setUp()
-    result = verticapy.version(base_class.cursor)
+    create_conn_file()
+    verticapy.connect(
+        "vp_test_config",
+        os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+    )
+    result = verticapy.version()
     base_class.tearDown()
+    delete_conn_file()
     return result
+
 
 @pytest.fixture(scope="session")
 def base():
     base_class = VerticaPyTestBase()
     base_class.setUp()
     create_conn_file()
+    verticapy.connect(
+        "vp_test_config",
+        os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
+    )
     yield base_class
     base_class.tearDown()
     delete_conn_file()
+    verticapy.close_connection()

@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,36 +11,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop, set_option, tablesample
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_winequality
 from verticapy.learn.linear_model import LinearRegression, LogisticRegression
 from verticapy.learn.preprocessing import StandardScaler, MinMaxScaler
 from verticapy.learn.pipeline import Pipeline
-from verticapy.utilities import tablesample
-from verticapy import drop, set_option, vertica_conn
-import matplotlib.pyplot as plt
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
-    from verticapy.datasets import load_winequality
-
-    winequality = load_winequality(cursor=base.cursor)
+def winequality_vd():
+    winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
-def model(base, winequality_vd):
+def model(winequality_vd):
     model_class = Pipeline(
         [
-            ("NormalizerWine", StandardScaler("std_model_test", cursor=base.cursor)),
-            (
-                "LinearRegressionWine",
-                LinearRegression("linreg_model_test", cursor=base.cursor),
-            ),
+            ("NormalizerWine", StandardScaler("std_model_test",)),
+            ("LinearRegressionWine", LinearRegression("linreg_model_test",)),
         ]
     )
     model_class.drop()
@@ -56,30 +53,24 @@ class TestPipeline:
         assert model[0].type == "Normalizer"
         assert model[0:][0][0] == "NormalizerWine"
 
-    def test_drop(self, base, winequality_vd):
+    def test_drop(self, winequality_vd):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("std_model_test_drop", cursor=base.cursor),
-                ),
-                (
-                    "LinearRegressionWine",
-                    LinearRegression("linreg_model_test_drop", cursor=base.cursor),
-                ),
+                ("NormalizerWine", StandardScaler("std_model_test_drop",),),
+                ("LinearRegressionWine", LinearRegression("linreg_model_test_drop",),),
             ]
         )
         model_class.drop()
         model_class.fit(winequality_vd, ["alcohol"], "quality")
-        model_class.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name IN ('linreg_model_test_drop', 'std_model_test_drop')"
         )
-        assert len(model_class.cursor.fetchall()) == 2
+        assert len(current_cursor().fetchall()) == 2
         model_class.drop()
-        model_class.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name IN ('linreg_model_test_drop', 'std_model_test_drop')"
         )
-        assert model_class.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -97,21 +88,11 @@ class TestPipeline:
         assert model.get_params()["NormalizerWine"] == {"method": "robust_zscore"}
         model.set_params({"NormalizerWine": {"method": "zscore"}})
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        test_record = tablesample(
-            {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
-        ).to_vdf(cursor=model.cursor)
-        prediction = model.predict(
-            test_record, ["citric_acid", "residual_sugar", "alcohol"]
-        )[0][-1]
-        assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
-
     def test_to_python(self, model):
         predict_function = model.to_python()
         test_record = tablesample(
             {"citric_acid": [3.0], "residual_sugar": [11.0], "alcohol": [93.0]}
-        ).to_vdf(cursor=model.cursor)
+        ).to_vdf()
         prediction = model.predict(
             test_record, ["citric_acid", "residual_sugar", "alcohol"]
         )[0][-1]
@@ -157,14 +138,8 @@ class TestPipeline:
 
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test", cursor=model.cursor),
-                ),
-                (
-                    "LogisticRegressionWine",
-                    LogisticRegression("logreg_model_test", cursor=model.cursor),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("LogisticRegressionWine", LogisticRegression("logreg_model_test"),),
             ]
         )
         model_class.drop()
@@ -209,33 +184,17 @@ class TestPipeline:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-3339.65156943384, abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test", cursor=model.cursor),
-                ),
-                (
-                    "NormalizerWine",
-                    MinMaxScaler("logmm_model_test", cursor=model.cursor),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
         model_class.fit("public.winequality", ["alcohol"])
         winequality_copy = winequality_vd.copy()
-        winequality_copy = model_class.transform(winequality_copy, X=["alcohol"],)
+        winequality_copy = model_class.transform(winequality_copy, X=["alcohol"])
         assert winequality_copy["alcohol"].mean() == pytest.approx(
             0.361130555239542, abs=1e-6
         )
@@ -245,14 +204,8 @@ class TestPipeline:
     def test_inverse_transform(self, winequality_vd, model):
         model_class = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("logstd_model_test", cursor=model.cursor),
-                ),
-                (
-                    "NormalizerWine",
-                    MinMaxScaler("logmm_model_test", cursor=model.cursor),
-                ),
+                ("NormalizerWine", StandardScaler("logstd_model_test"),),
+                ("NormalizerWine", MinMaxScaler("logmm_model_test"),),
             ]
         )
         model_class.drop()
@@ -267,25 +220,19 @@ class TestPipeline:
 
         model_class.drop()
 
-    def test_model_from_vDF(self, base, winequality_vd):
+    def test_model_from_vDF(self, winequality_vd):
         model_test = Pipeline(
             [
-                (
-                    "NormalizerWine",
-                    StandardScaler("std_model_test_vdf", cursor=base.cursor),
-                ),
-                (
-                    "LinearRegressionWine",
-                    LinearRegression("linreg_model_test_vdf", cursor=base.cursor),
-                ),
+                ("NormalizerWine", StandardScaler("std_model_test_vdf",),),
+                ("LinearRegressionWine", LinearRegression("linreg_model_test_vdf",),),
             ]
         )
         model_test.drop()
         model_test.fit(
             winequality_vd, ["citric_acid", "residual_sugar", "alcohol"], "quality"
         )
-        model_test.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name IN ('std_model_test_vdf', 'linreg_model_test_vdf')"
         )
-        assert len(base.cursor.fetchall()) == 2
+        assert len(current_cursor().fetchall()) == 2
         model_test.drop()

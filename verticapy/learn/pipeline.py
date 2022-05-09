@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -72,22 +72,22 @@ steps: list
     in the order in which they are chained, with the last object an estimator.
 	"""
 
-    def __init__(
-        self, steps: list,
-    ):
-        check_types([("steps", steps, [list],)])
+    def __init__(self, steps: list):
+        check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []
         for idx, elem in enumerate(steps):
             if len(elem) != 2:
                 raise ParameterError(
-                    "The steps of the Pipeline must be composed of 2 elements (name, transform). Found {}.".format(
+                    "The steps of the Pipeline must be composed of 2 elements "
+                    "(name, transform). Found {}.".format(
                         len(elem)
                     )
                 )
             elif not (isinstance(elem[0], str)):
                 raise ParameterError(
-                    "The steps 'name' of the Pipeline must be of type str. Found {}.".format(
+                    "The steps 'name' of the Pipeline must be of "
+                    "type str. Found {}.".format(
                         type(elem[0])
                     )
                 )
@@ -99,14 +99,15 @@ steps: list
                 except:
                     if idx < len(steps) - 1:
                         raise ParameterError(
-                            "The estimators of the Pipeline must have a 'transform' and a 'fit' method."
+                            "The estimators of the Pipeline must have a "
+                            "'transform' and a 'fit' method."
                         )
                     else:
                         raise ParameterError(
-                            "The last estimator of the Pipeline must have a 'fit' method."
+                            "The last estimator of the Pipeline must have a "
+                            "'fit' method."
                         )
             self.steps += [elem]
-        self.cursor = self.steps[-1][1].cursor
 
     # ---#
     def __getitem__(self, index):
@@ -157,11 +158,13 @@ steps: list
         if isinstance(X, str):
             X = [X]
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(
-                relation=input_relation, cursor=self.steps[0][1].cursor
-            )
+            vdf = vDataFrameSQL(relation=input_relation)
         else:
             vdf = input_relation
+        if verticapy.options["overwrite_model"]:
+            self.drop()
+        else:
+            does_model_exist(name=self.name, raise_error=True)
         X_new = [elem for elem in X]
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -199,7 +202,7 @@ steps: list
 
     # ---#
     def predict(
-        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator",
+        self, vdf: Union[str, vDataFrame] = None, X: list = [], name: str = "estimator"
     ):
         """
     ---------------------------------------------------------------------------
@@ -232,7 +235,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -322,7 +325,7 @@ steps: list
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx, step in enumerate(self.steps):
@@ -358,14 +361,13 @@ steps: list
                 self.steps[idx][1].inverse_transform
         except:
             raise ModelError(
-                "The estimator [{}] of the Pipeline has no 'inverse_transform' method.".format(
-                    idx
-                )
+                f"The estimator [{idx}] of the Pipeline has "
+                "no 'inverse_transform' method."
             )
         if not (vdf):
             vdf = self.input_relation
         if isinstance(vdf, str):
-            vdf = vdf_from_relation(relation=vdf, cursor=self.steps[0][1].cursor)
+            vdf = vDataFrameSQL(relation=vdf)
         X_new, X_all = [elem for elem in X], []
         current_vdf = vdf
         for idx in range(1, len(self.steps) + 1):
@@ -376,27 +378,6 @@ steps: list
         return current_vdf
 
     # ---#
-    def set_cursor(self, cursor):
-        """
-    ---------------------------------------------------------------------------
-    Sets a new database cursor. It can be very usefull if the connection to the DB is 
-    lost.
-
-    Parameters
-    ----------
-    cursor: DBcursor
-        New cursor.
-
-    Returns
-    -------
-    model
-        self
-        """
-        for step in self.steps:
-            step[1].set_cursor(cursor)
-        return self
-
-    # ---#
     def set_params(self, parameters: dict = {}):
         """
     ---------------------------------------------------------------------------
@@ -405,8 +386,8 @@ steps: list
     Parameters
     ----------
     parameters: dict, optional
-        New parameters. It must be a dictionary with as keys the Pipeline names
-        and as value the parameters dictionary.
+        New parameters. It must be a dictionary with as keys the Pipeline 
+        names and as value the parameters dictionary.
         """
         for param in parameters:
             for step in self.steps:
@@ -414,15 +395,17 @@ steps: list
                     step[1].set_params(parameters[param])
 
     # ---#
-    def to_python(self, 
-                  name: str = "predict", 
-                  return_proba: bool = False, 
-                  return_distance_clusters: bool = False, 
-                  return_str: bool = False,):
+    def to_python(
+        self,
+        name: str = "predict",
+        return_proba: bool = False,
+        return_distance_clusters: bool = False,
+        return_str: bool = False,
+    ):
         """
     ---------------------------------------------------------------------------
-    Returns the Python code needed to deploy the pipeline without using built-in
-    Vertica functions.
+    Returns the Python code needed to deploy the pipeline without using 
+    built-in Vertica functions.
 
     Parameters
     ----------
@@ -432,8 +415,8 @@ steps: list
         If set to True and the model is a classifier, the function will return 
         the model probabilities.
     return_distance_clusters: bool, optional
-        If set to True and the model type is KMeans or NearestCentroids, the function 
-        will return the model clusters distances.
+        If set to True and the model type is KMeans or NearestCentroids, the 
+        function will return the model clusters distances.
     return_str: bool, optional
         If set to True, the function str will be returned.
 
@@ -443,37 +426,31 @@ steps: list
     str / func
         Python function
         """
-        if not(return_str):
-            func = self.to_python(name=name, return_proba=return_proba, return_distance_clusters=return_distance_clusters, return_str=True,)
+        if not (return_str):
+            func = self.to_python(
+                name=name,
+                return_proba=return_proba,
+                return_distance_clusters=return_distance_clusters,
+                return_str=True,
+            )
             _locals = locals()
             exec(func, globals(), _locals)
             return _locals[name]
         str_representation = "def {}(X):\n".format(name)
         final_function = "X"
         for idx, step in enumerate(self.steps):
-            str_representation += "\t" + step[1].to_python(name=step[0],
-                                                           return_proba=return_proba,
-                                                           return_distance_clusters=return_distance_clusters,
-                                                           return_str=True).replace("\n", "\n\t") + "\n"
-            final_function = step[0]+"({})".format(final_function)
+            str_representation += (
+                "\t"
+                + step[1]
+                .to_python(
+                    name=step[0],
+                    return_proba=return_proba,
+                    return_distance_clusters=return_distance_clusters,
+                    return_str=True,
+                )
+                .replace("\n", "\n\t")
+                + "\n"
+            )
+            final_function = step[0] + "({})".format(final_function)
         str_representation += "\treturn {}".format(final_function)
         return str_representation
-
-
-    # ---#
-    def to_sklearn(self):
-        """
-    ---------------------------------------------------------------------------
-    Converts the Vertica Model to sklearn model.
-
-    Returns
-    -------
-    object
-        sklearn model.
-        """
-        import sklearn.pipeline as skp
-
-        steps = []
-        for step in self.steps:
-            steps += [(step[0], step[1].to_sklearn())]
-        return skp.Pipeline(steps)

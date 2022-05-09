@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,8 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, math, os, verticapy
-from verticapy.udf import *
+# Pytest
+import pytest
+
+# Standard Python Modules
+import math, os
+
+# VerticaPy
+import verticapy
+from verticapy.udf import create_lib_udf
 
 
 def normalize_titanic(age, fare):

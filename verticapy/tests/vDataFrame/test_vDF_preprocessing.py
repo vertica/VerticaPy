@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,40 +11,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
+# Pytest
+import pytest
+
+# VerticaPy
 from verticapy import vDataFrame, drop, errors, set_option, tablesample
+from verticapy.datasets import load_titanic, load_iris, load_market
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
-    from verticapy.datasets import load_iris
-
-    iris = load_iris(cursor=base.cursor)
+def iris_vd():
+    iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+    drop(name="public.iris",)
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
-    from verticapy.datasets import load_market
-
-    market = load_market(cursor=base.cursor)
+def market_vd():
+    market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.market", cursor=base.cursor)
+    drop(name="public.market",)
 
 
 class TestvDFPreprocessing:
@@ -55,12 +50,18 @@ class TestvDFPreprocessing:
         assert train.shape() == (pytest.approx(827), 14)
         assert test.shape() == (pytest.approx(407), 14)
 
-    def test_vDF_add_duplicates(self, base):
-        names = tablesample({"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}).to_vdf(cursor=base.cursor)
-        result = names.add_duplicates("weight").groupby("name", "COUNT(*) AS cnt").sort("cnt")
-        assert result[0] == ['Badr', 1]
-        assert result[1] == ['Waqas', 2]
-        assert result[2] == ['Pratibha', 3]
+    def test_vDF_add_duplicates(self):
+        names = tablesample(
+            {"name": ["Badr", "Waqas", "Pratibha"], "weight": [2, 4, 6]}
+        ).to_vdf()
+        result = (
+            names.add_duplicates("weight")
+            .groupby("name", "COUNT(*) AS cnt")
+            .sort("cnt")
+        )
+        assert result[0] == ["Badr", 1]
+        assert result[1] == ["Waqas", 2]
+        assert result[2] == ["Pratibha", 3]
 
     def test_vDF_cdt(self, titanic_vd):
         result = titanic_vd[["age", "fare", "pclass", "boat"]].cdt()
@@ -70,11 +71,13 @@ class TestvDFPreprocessing:
     def test_vDF_cut(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].cut([0, 15, 80])
-        assert sorted(titanic_copy["age"].distinct()) == ['[0;15]', ']15;80]']
-        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False,)
-        assert sorted(titanic_copy["fare"].distinct()) == ['[15;800[', ']0;15[']
-        titanic_copy["parch"].cut([0, 5, 10], right=False, include_lowest=False, labels=["small", "big"],)
-        assert sorted(titanic_copy["parch"].distinct()) == ['big', 'small']
+        assert sorted(titanic_copy["age"].distinct()) == ["[0;15]", "]15;80]"]
+        titanic_copy["fare"].cut([0, 15, 800], right=False, include_lowest=False)
+        assert sorted(titanic_copy["fare"].distinct()) == ["[15;800[", "]0;15["]
+        titanic_copy["parch"].cut(
+            [0, 5, 10], right=False, include_lowest=False, labels=["small", "big"]
+        )
+        assert sorted(titanic_copy["parch"].distinct()) == ["big", "small"]
 
     def test_vDF_decode(self, titanic_vd):
         titanic_copy = titanic_vd.copy()
@@ -103,19 +106,21 @@ class TestvDFPreprocessing:
 
         # expected exception
         with pytest.raises(AssertionError) as exception_info:
-            titanic_copy["age"].discretize(method="same_freq", bins=1)
+            titanic_copy["age"].discretize(method="same_freq", nbins=1)
         # checking the error message
         assert exception_info.match(
-            "Parameter 'bins' must be greater or equals to 2 in case "
+            "Parameter 'nbins' must be greater or equals to 2 in case "
             "of discretization using the method 'same_freq'"
         )
 
-        titanic_copy["age"].discretize(method="same_freq", bins=5)
-        assert titanic_copy["age"].distinct() == ['[0.330;19.000]',
-                                                  '[19.000;25.000]',
-                                                  '[25.000;31.000]',
-                                                  '[31.000;42.000]',
-                                                  '[42.000;80.000]']
+        titanic_copy["age"].discretize(method="same_freq", nbins=5)
+        assert titanic_copy["age"].distinct() == [
+            "[0.330;19.000]",
+            "[19.000;25.000]",
+            "[25.000;31.000]",
+            "[31.000;42.000]",
+            "[42.000;80.000]",
+        ]
 
         ### method = "smart"
         titanic_copy = titanic_vd.copy()
@@ -124,7 +129,7 @@ class TestvDFPreprocessing:
         titanic_copy["age"].discretize(
             method="smart",
             response="survived",
-            bins=6,
+            nbins=6,
             RFmodel_params={"n_estimators": 100, "nbins": 100},
         )
         assert len(titanic_copy["age"].distinct()) == 6
@@ -247,7 +252,7 @@ class TestvDFPreprocessing:
         # Testing vDataFrame.dropna
         titanic_copy = titanic_vd.copy()
         titanic_copy.dropna(columns=["fare", "embarked", "age"])
-        result = titanic_copy.count(columns=["fare", "embarked", "age"])
+        result = titanic_copy.count_percent(columns=["fare", "embarked", "age"])
 
         assert result["count"][0] == 994
         assert result["count"][1] == 994
@@ -256,7 +261,7 @@ class TestvDFPreprocessing:
         # Testing vDataFrame[].dropna
         titanic_copy = titanic_vd.copy()
         titanic_copy["age"].dropna()
-        assert titanic_copy.count(["age"])["count"][0] == 997
+        assert titanic_copy.count_percent(["age"])["count"][0] == 997
 
     def test_vDF_fillna(self, titanic_vd):
         # Testing vDataFrame.fillna
@@ -272,7 +277,7 @@ class TestvDFPreprocessing:
             },
         )
 
-        result = titanic_copy.count(
+        result = titanic_copy.count_percent(
             ["age", "fare", "embarked", "boat", "cabin", "body"]
         )
 
@@ -417,7 +422,9 @@ class TestvDFPreprocessing:
         with pytest.raises(errors.ConversionError) as exception_info:
             titanic_copy["sex"].astype("int")
         # checking the error message
-        assert exception_info.match('Could not convert "female" from column titanic.sex to an int8')
+        assert exception_info.match(
+            'Could not convert "female" from column titanic.sex to an int8'
+        )
 
         titanic_copy["sex"].astype("varchar(10)")
         assert titanic_copy["sex"].dtype() == "varchar(10)"

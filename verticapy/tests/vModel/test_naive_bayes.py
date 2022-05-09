@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,46 +11,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.naive_bayes import NaiveBayes, BernoulliNB, CategoricalNB, GaussianNB, MultinomialNB
-from verticapy import drop, set_option, vertica_conn
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_winequality, load_titanic, load_iris
+from verticapy.learn.naive_bayes import *
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
-    from verticapy.datasets import load_iris
-
-    iris = load_iris(cursor=base.cursor)
+def iris_vd():
+    iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+    drop(name="public.iris",)
+
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
-    from verticapy.datasets import load_winequality
-
-    winequality = load_winequality(cursor=base.cursor)
+def winequality_vd():
+    winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality",)
+
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def model(base, iris_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS nb_model_test")
-    model_class = NaiveBayes("nb_model_test", cursor=base.cursor)
+def model(iris_vd):
+    model_class = NaiveBayes("nb_model_test",)
+    model_class.drop()
     model_class.fit(
         "public.iris",
         ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
@@ -67,59 +67,26 @@ class TestNB:
         model_repr.drop()
         assert model_repr.__repr__() == "<NaiveBayes>"
 
-    @pytest.mark.skip(reason="to_sklearn fails: new sklearn version does not allow changing attributes.")
     def test_NB_subclasses(self, winequality_vd):
         model_test = BernoulliNB("model_test")
         assert model_test.parameters["nbtype"] == "bernoulli"
         model_test.drop()
         model_test.fit(winequality_vd, ["good"], "quality")
-        md = model_test.to_sklearn()
-        model_test.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES(True USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model_test.name
-            )
-        )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[True]])[0][0])
         model_test.drop()
         model_test = CategoricalNB("model_test")
         assert model_test.parameters["nbtype"] == "categorical"
         model_test.drop()
         model_test.fit(winequality_vd, ["color"], "quality")
-        md = model_test.to_sklearn()
-        model_test.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES('red' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model_test.name
-            )
-        )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[0]])[0][0])
         model_test.drop()
         model_test = GaussianNB("model_test")
         assert model_test.parameters["nbtype"] == "gaussian"
         model_test.drop()
-        model_test.fit(winequality_vd, ["residual_sugar", "alcohol",], "quality")
-        md = model_test.to_sklearn()
-        model_test.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES(0.0, 14.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model_test.name
-            )
-        )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[0.0, 14.0]])[0][0])
+        model_test.fit(winequality_vd, ["residual_sugar", "alcohol"], "quality")
         model_test.drop()
         model_test = MultinomialNB("model_test")
         assert model_test.parameters["nbtype"] == "multinomial"
         model_test.drop()
         model_test.fit(winequality_vd, ["good"], "quality")
-        md = model_test.to_sklearn()
-        model_test.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES(0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model_test.name
-            )
-        )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[0]])[0][0])
         model_test.drop()
 
     def test_classification_report(self, model):
@@ -155,13 +122,11 @@ class TestNB:
         assert conf_mat2["Iris-versicolor"] == [0, 47, 3]
         assert conf_mat2["Iris-virginica"] == [0, 3, 47]
 
-    def test_contour(self, base, titanic_vd):
-        model_test = NaiveBayes("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = NaiveBayes("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare",],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 36
@@ -173,25 +138,25 @@ class TestNB:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS nb_model_test_drop")
-        model_test = NaiveBayes("nb_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS nb_model_test_drop")
+        model_test = NaiveBayes("nb_model_test_drop",)
         model_test.fit(
             "public.iris",
             ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
             "Species",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'nb_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "nb_model_test_drop"
+        assert current_cursor().fetchone()[0] == "nb_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'nb_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_lift_chart(self, model):
         lift_ch = model.lift_chart(pos_label="Iris-versicolor", nbins=1000)
@@ -204,21 +169,10 @@ class TestNB:
         assert lift_ch["lift"][900] == pytest.approx(2.57894736842105)
         plt.close()
 
-    @pytest.mark.skip(reason="to_sklearn fails: new sklearn version does not allow changing attributes.")
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES(1.1, 2.2, 3.3, 4.4 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == md.predict([[1.1, 2.2, 3.3, 4.4]])[0]
-
-    def test_to_python(self, titanic_vd, base):
+    def test_to_python(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["has_children"] = "parch > 0"
-        model_class = NaiveBayes("nb_model_test_to_python", cursor=base.cursor)
+        model_class = NaiveBayes("nb_model_test_to_python",)
         model_class.drop()
         model_class.fit(
             titanic,
@@ -226,36 +180,40 @@ class TestNB:
             "embarked",
         )
         predict_function = model_class.to_python()
-        model_class.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_NAIVE_BAYES(30.0, 200.0, 1, 2, 'female', True USING PARAMETERS model_name = 'nb_model_test_to_python', match_by_pos=True)"
         )
-        prediction = model_class.cursor.fetchone()[0]
-        assert prediction == predict_function([[30, 200, 1, 2, 'female', True]])[0]
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == predict_function([[30, 200, 1, 2, "female", True]])[0]
         predict_function = model_class.to_python(return_proba=True)
-        model_class.cursor.execute(
-            "SELECT PREDICT_NAIVE_BAYES(30.0, 200.0, 1, 2, 'female', True USING PARAMETERS model_name = 'nb_model_test_to_python', match_by_pos=True, type='probability', class='{}')".format(model_class.classes_[0])
+        current_cursor().execute(
+            "SELECT PREDICT_NAIVE_BAYES(30.0, 200.0, 1, 2, 'female', True USING PARAMETERS model_name = 'nb_model_test_to_python', match_by_pos=True, type='probability', class='{}')".format(
+                model_class.classes_[0]
+            )
         )
-        prediction = model_class.cursor.fetchone()[0]
-        assert float(prediction) == pytest.approx(float(predict_function([[30, 200, 1, 2, 'female', True]])[0][0]))
+        prediction = current_cursor().fetchone()[0]
+        assert float(prediction) == pytest.approx(
+            float(predict_function([[30, 200, 1, 2, "female", True]])[0][0])
+        )
         model_class.drop()
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = NaiveBayes("rfc_sql_test", cursor=model.cursor)
+        model_test = NaiveBayes("rfc_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex", "pclass"], "survived")
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_NAIVE_BAYES(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True)::int, {}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex, 1 AS pclass) x".format(
                 model_test.to_sql()
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1], 1e-3)
         model_test.drop()
 
-    def test_to_memmodel(self, titanic_vd, base,):
+    def test_to_memmodel(self, titanic_vd):
         titanic = titanic_vd.copy()
         titanic["has_children"] = "parch > 0"
-        model_class = NaiveBayes("nb_model_test_to_memmodel", cursor=base.cursor)
+        model_class = NaiveBayes("nb_model_test_to_memmodel",)
         model_class.drop()
         model_class.fit(
             titanic,
@@ -263,37 +221,67 @@ class TestNB:
             "embarked",
         )
         mmodel = model_class.to_memmodel()
-        res = mmodel.predict([[11., 1993., 1, 3, 'male', False],
-                              [1., 1999., 1, 1, 'female', True]])
-        res_py = model_class.to_python()([[11., 1993., 1, 3, 'male', False],
-                                          [1., 1999., 1, 1, 'female', True]])
+        res = mmodel.predict(
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+        )
+        res_py = model_class.to_python()(
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[11., 1993., 1, 3, 'male', False],
-                                    [1., 1999., 1, 1, 'female', True]])
-        res_py = model_class.to_python(return_proba = True)([[11., 1993., 1, 3, 'male', False],
-                                                             [1., 1999., 1, 1, 'female', True]])
+        res = mmodel.predict_proba(
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+        )
+        res_py = model_class.to_python(return_proba=True)(
+            [[11.0, 1993.0, 1, 3, "male", False], [1.0, 1999.0, 1, 1, "female", True]]
+        )
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[0][2] == res_py[0][2]
         assert res[1][0] == res_py[1][0]
         assert res[1][1] == res_py[1][1]
         assert res[1][2] == res_py[1][2]
-        titanic["prediction_sql"] = mmodel.predict_sql(["age", "fare", "survived", "pclass", "sex", "has_children"])
-        titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare", "survived", "pclass", "sex", "has_children"])[0]
-        titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare", "survived", "pclass", "sex", "has_children"])[1]
-        titanic["prediction_proba_sql_2"] = mmodel.predict_proba_sql(["age", "fare", "survived", "pclass", "sex", "has_children"])[2]
-        model_class.predict(titanic, name = "prediction_vertica_sql")
-        model_class.predict(titanic, name = "prediction_proba_vertica_sql_0", pos_label = model_class.classes_[0])
-        model_class.predict(titanic, name = "prediction_proba_vertica_sql_1", pos_label = model_class.classes_[1])
-        model_class.predict(titanic, name = "prediction_proba_vertica_sql_2", pos_label = model_class.classes_[2])
+        titanic["prediction_sql"] = mmodel.predict_sql(
+            ["age", "fare", "survived", "pclass", "sex", "has_children"]
+        )
+        titanic["prediction_proba_sql_0"] = mmodel.predict_proba_sql(
+            ["age", "fare", "survived", "pclass", "sex", "has_children"]
+        )[0]
+        titanic["prediction_proba_sql_1"] = mmodel.predict_proba_sql(
+            ["age", "fare", "survived", "pclass", "sex", "has_children"]
+        )[1]
+        titanic["prediction_proba_sql_2"] = mmodel.predict_proba_sql(
+            ["age", "fare", "survived", "pclass", "sex", "has_children"]
+        )[2]
+        model_class.predict(titanic, name="prediction_vertica_sql")
+        model_class.predict_proba(
+            titanic,
+            name="prediction_proba_vertica_sql_0",
+            pos_label=model_class.classes_[0],
+        )
+        model_class.predict_proba(
+            titanic,
+            name="prediction_proba_vertica_sql_1",
+            pos_label=model_class.classes_[1],
+        )
+        model_class.predict_proba(
+            titanic,
+            name="prediction_proba_vertica_sql_2",
+            pos_label=model_class.classes_[2],
+        )
         score = titanic.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
-        score = titanic.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = titanic.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = titanic.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = titanic.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = titanic.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
+        score = titanic.score(
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+        )
         assert score == pytest.approx(1.0)
 
     def test_get_attr(self, model):
@@ -466,33 +454,23 @@ class TestNB:
             cutoff=0.9, method="specificity", pos_label="Iris-virginica"
         ) == pytest.approx(1.0)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"alpha": 0.5})
 
         assert model.get_params()["alpha"] == 0.5
 
-    def test_model_from_vDF(self, base, iris_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS nb_from_vDF")
-        model_test = NaiveBayes("nb_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, iris_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS nb_from_vDF")
+        model_test = NaiveBayes("nb_from_vDF",)
         model_test.fit(
             iris_vd,
             ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"],
             "Species",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'nb_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "nb_from_vDF"
+        assert current_cursor().fetchone()[0] == "nb_from_vDF"
 
         model_test.drop()

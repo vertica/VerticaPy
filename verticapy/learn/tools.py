@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -60,7 +60,9 @@ from typing import Union
 
 #
 # ---#
-def does_model_exist(name: str, cursor=None, raise_error: bool = False, return_model_type: bool = False):
+def does_model_exist(
+    name: str, raise_error: bool = False, return_model_type: bool = False
+):
     """
 ---------------------------------------------------------------------------
 Checks if the model already exists.
@@ -69,8 +71,6 @@ Parameters
 ----------
 name: str
     Model name.
-cursor: DBcursor, optional
-    Vertica database cursor.
 raise_error: bool, optional
     If set to True and an error occurs, it raises the error.
 return_model_type: bool, optional
@@ -83,41 +83,48 @@ int
     1 if the model exists and is native.
     2 if the model exists and is not native.
     """
-    check_types([("name", name, [str],)])
-    cursor, conn = check_cursor(cursor)[0:2]
+    check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], model_name[1:-1]
-    cursor.execute("SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1")
-    result = cursor.fetchone()
+    result = executeSQL(
+        "SELECT * FROM columns WHERE table_schema = 'verticapy' AND table_name = 'models' LIMIT 1",
+        method="fetchrow",
+        print_time_sql=False,
+    )
     if result:
-        cursor.execute(
+        result = executeSQL(
             "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = LOWER('{}') LIMIT 1".format(
-                str_column(name)
-            )
+                quote_ident(name)
+            ),
+            method="fetchrow",
+            print_time_sql=False,
         )
-        result = cursor.fetchone()
         if result:
             model_type = result[0]
             result = 2
-    if not(result):
-        cursor.execute("SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(model_name, schema))
-        result = cursor.fetchone()
+    if not (result):
+        result = executeSQL(
+            "SELECT model_type FROM MODELS WHERE LOWER(model_name)=LOWER('{}') AND LOWER(schema_name)=LOWER('{}') LIMIT 1".format(
+                model_name, schema
+            ),
+            method="fetchrow",
+            print_time_sql=False,
+        )
         if result:
             model_type = result[0]
             result = 1
         else:
             result = 0
-    if conn:
-        conn.close()
     if raise_error and result:
         raise NameError("The model '{}' already exists !".format(name))
     if return_model_type:
         return model_type
     return result
 
+
 # ---#
-def load_model(name: str, cursor=None, input_relation: str = "", test_relation: str = ""):
+def load_model(name: str, input_relation: str = "", test_relation: str = ""):
     """
 ---------------------------------------------------------------------------
 Loads a Vertica model and returns the associated object.
@@ -126,8 +133,6 @@ Parameters
 ----------
 name: str
     Model Name.
-cursor: DBcursor, optional
-    Vertica database cursor.
 input_relation: str, optional
     Some automated functions may depend on the input relation. If the 
     load_model function cannot find the input relation from the call string, 
@@ -141,21 +146,25 @@ Returns
 model
     The model.
     """
-    check_types([("name", name, [str],), 
-                 ("test_relation", test_relation, [str],),
-                 ("input_relation", input_relation, [str],),])
-    cursor = check_cursor(cursor)[0]
-    does_exist = does_model_exist(name=name, cursor=cursor, raise_error=False)
+    check_types(
+        [
+            ("name", name, [str]),
+            ("test_relation", test_relation, [str]),
+            ("input_relation", input_relation, [str]),
+        ]
+    )
+    does_exist = does_model_exist(name=name, raise_error=False)
     schema, model_name = schema_relation(name)
     schema, model_name = schema[1:-1], name[1:-1]
     assert does_exist, NameError("The model '{}' doesn't exist.".format(name))
     if does_exist == 2:
-        cursor.execute(
+        result = executeSQL(
             "SELECT attr_name, value FROM verticapy.attr WHERE LOWER(model_name) = LOWER('{}')".format(
-                str_column(name.lower())
-            )
+                quote_ident(name.lower())
+            ),
+            method="fetchall",
+            print_time_sql=False,
         )
-        result = cursor.fetchall()
         model_save = {}
         for elem in result:
             ldic = {}
@@ -178,28 +187,27 @@ model
         if model_save["type"] == "NearestCentroid":
             from verticapy.learn.neighbors import NearestCentroid
 
-            model = NearestCentroid(name, cursor, model_save["p"])
+            model = NearestCentroid(name, model_save["p"])
             model.centroids_ = tablesample(model_save["centroids"])
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsClassifier":
             from verticapy.learn.neighbors import KNeighborsClassifier
 
             model = KNeighborsClassifier(
-                name, cursor, model_save["n_neighbors"], model_save["p"]
+                name, model_save["n_neighbors"], model_save["p"]
             )
             model.classes_ = model_save["classes"]
         elif model_save["type"] == "KNeighborsRegressor":
             from verticapy.learn.neighbors import KNeighborsRegressor
 
             model = KNeighborsRegressor(
-                name, cursor, model_save["n_neighbors"], model_save["p"]
+                name, model_save["n_neighbors"], model_save["p"]
             )
         elif model_save["type"] == "KernelDensity":
             from verticapy.learn.neighbors import KernelDensity
 
             model = KernelDensity(
                 name,
-                cursor,
                 model_save["bandwidth"],
                 model_save["kernel"],
                 model_save["p"],
@@ -215,19 +223,13 @@ model
         elif model_save["type"] == "LocalOutlierFactor":
             from verticapy.learn.neighbors import LocalOutlierFactor
 
-            model = LocalOutlierFactor(
-                name, cursor, model_save["n_neighbors"], model_save["p"]
-            )
+            model = LocalOutlierFactor(name, model_save["n_neighbors"], model_save["p"])
             model.n_errors_ = model_save["n_errors"]
         elif model_save["type"] == "DBSCAN":
             from verticapy.learn.cluster import DBSCAN
 
             model = DBSCAN(
-                name,
-                cursor,
-                model_save["eps"],
-                model_save["min_samples"],
-                model_save["p"],
+                name, model_save["eps"], model_save["min_samples"], model_save["p"]
             )
             model.n_cluster_ = model_save["n_cluster"]
             model.n_noise_ = model_save["n_noise"]
@@ -236,7 +238,6 @@ model
 
             model = CountVectorizer(
                 name,
-                cursor,
                 model_save["lowercase"],
                 model_save["max_df"],
                 model_save["min_df"],
@@ -251,7 +252,6 @@ model
 
             model = SARIMAX(
                 name,
-                cursor,
                 model_save["p"],
                 model_save["d"],
                 model_save["q"],
@@ -280,7 +280,6 @@ model
 
             model = VAR(
                 name,
-                cursor,
                 model_save["p"],
                 model_save["tol"],
                 model_save["max_iter"],
@@ -293,7 +292,7 @@ model
             model.ts = model_save["ts"]
             model.deploy_predict_ = model_save["deploy_predict"]
             model.X = model_save["X"]
-            if not(input_relation):
+            if not (input_relation):
                 model.input_relation = model_save["input_relation"]
             else:
                 model.input_relation = input_relation
@@ -309,23 +308,24 @@ model
             elif model_save["type"] not in ("CountVectorizer", "VAR"):
                 model.key_columns = model_save["key_columns"]
     else:
-        model_type = does_model_exist(name=name, cursor=cursor, raise_error=False, return_model_type=True,)
+        model_type = does_model_exist(
+            name=name, raise_error=False, return_model_type=True
+        )
         if model_type.lower() == "kmeans":
-            cursor.execute(
+            info = executeSQL(
                 "SELECT GET_MODEL_SUMMARY (USING PARAMETERS model_name = '"
                 + name
-                + "')"
-            )
-            info = cursor.fetchone()[0].replace("\n", " ")
+                + "')",
+                method="fetchfirstelem",
+                print_time_sql=False,
+            ).replace("\n", " ")
             info = "kmeans(" + info.split("kmeans(")[1]
         elif model_type.lower() == "normalize_fit":
             from verticapy.learn.preprocessing import Normalizer
 
-            model = Normalizer(name, cursor)
+            model = Normalizer(name)
             model.param_ = model.get_attr("details")
-            model.X = [
-                '"' + item + '"' for item in model.param_.values["column_name"]
-            ]
+            model.X = ['"' + item + '"' for item in model.param_.values["column_name"]]
             if "avg" in model.param_.values:
                 model.parameters["method"] = "zscore"
             elif "max" in model.param_.values:
@@ -334,19 +334,23 @@ model
                 model.parameters["method"] = "robust_zscore"
             return model
         else:
-            cursor.execute(
+            info = executeSQL(
                 "SELECT GET_MODEL_ATTRIBUTE (USING PARAMETERS model_name = '"
                 + name
-                + "', attr_name = 'call_string')"
-            )
-            info = cursor.fetchone()[0].replace("\n", " ")
+                + "', attr_name = 'call_string')",
+                method="fetchfirstelem",
+                print_time_sql=False,
+            ).replace("\n", " ")
         if "SELECT " in info:
             info = info.split("SELECT ")[1].split("(")
         else:
             info = info.split("(")
         model_type = info[0].lower()
         info = info[1].split(")")[0].replace(" ", "").split("USINGPARAMETERS")
-        if model_type == "svm_classifier" and "class_weights='none'" not in " ".join(info).lower():
+        if (
+            model_type == "svm_classifier"
+            and "class_weights='none'" not in " ".join(info).lower()
+        ):
             parameters = "".join(info[1].split("class_weights=")[1].split("'"))
             parameters = parameters[3 : len(parameters)].split(",")
             del parameters[0]
@@ -379,7 +383,6 @@ model
 
             model = RandomForestRegressor(
                 name,
-                cursor,
                 int(parameters_dict["ntree"]),
                 int(parameters_dict["mtry"]),
                 int(parameters_dict["max_breadth"]),
@@ -394,7 +397,6 @@ model
 
             model = RandomForestClassifier(
                 name,
-                cursor,
                 int(parameters_dict["ntree"]),
                 int(parameters_dict["mtry"]),
                 int(parameters_dict["max_breadth"]),
@@ -409,7 +411,6 @@ model
 
             model = XGBoostClassifier(
                 name,
-                cursor,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
                 int(parameters_dict["nbins"]),
@@ -425,7 +426,6 @@ model
 
             model = XGBoostRegressor(
                 name,
-                cursor,
                 int(parameters_dict["max_ntree"]),
                 int(parameters_dict["max_depth"]),
                 int(parameters_dict["nbins"]),
@@ -441,7 +441,6 @@ model
 
             model = LogisticRegression(
                 name,
-                cursor,
                 parameters_dict["regularization"],
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["lambda"]),
@@ -456,10 +455,10 @@ model
                 Ridge,
                 ElasticNet,
             )
+
             if parameters_dict["regularization"] == "none":
                 model = LinearRegression(
                     name,
-                    cursor,
                     float(parameters_dict["epsilon"]),
                     int(parameters_dict["max_iterations"]),
                     parameters_dict["optimizer"],
@@ -467,7 +466,6 @@ model
             elif parameters_dict["regularization"] == "l1":
                 model = Lasso(
                     name,
-                    cursor,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
                     int(parameters_dict["max_iterations"]),
@@ -476,7 +474,6 @@ model
             elif parameters_dict["regularization"] == "l2":
                 model = Ridge(
                     name,
-                    cursor,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
                     int(parameters_dict["max_iterations"]),
@@ -485,7 +482,6 @@ model
             else:
                 model = ElasticNet(
                     name,
-                    cursor,
                     float(parameters_dict["epsilon"]),
                     float(parameters_dict["lambda"]),
                     int(parameters_dict["max_iterations"]),
@@ -495,13 +491,12 @@ model
         elif model_type == "naive_bayes":
             from verticapy.learn.naive_bayes import NaiveBayes
 
-            model = NaiveBayes(name, cursor, float(parameters_dict["alpha"]))
+            model = NaiveBayes(name, float(parameters_dict["alpha"]))
         elif model_type == "svm_regressor":
             from verticapy.learn.svm import LinearSVR
 
             model = LinearSVR(
                 name,
-                cursor,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["C"]),
                 True,
@@ -521,7 +516,6 @@ model
                     class_weights[idx] = None
             model = LinearSVC(
                 name,
-                cursor,
                 float(parameters_dict["epsilon"]),
                 float(parameters_dict["C"]),
                 True,
@@ -535,7 +529,6 @@ model
 
             model = KMeans(
                 name,
-                cursor,
                 int(info.split(",")[-1]),
                 parameters_dict["init_method"],
                 int(parameters_dict["max_iterations"]),
@@ -553,12 +546,18 @@ model
                 ]
             }
             values["value"] = [
-                float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]),
+                float(
+                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                ),
                 float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 float(
-                    result.split("Total Within-Cluster Sum of Squares: ")[1].split("\n")[0]
+                    result.split("Total Within-Cluster Sum of Squares: ")[1].split(
+                        "\n"
+                    )[0]
                 ),
-                float(result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0])
+                float(
+                    result.split("Between-Cluster Sum of Squares: ")[1].split("\n")[0]
+                )
                 / float(result.split("Total Sum of Squares: ")[1].split("\n")[0]),
                 result.split("Converged: ")[1].split("\n")[0] == "True",
             ]
@@ -568,7 +567,6 @@ model
 
             model = BisectingKMeans(
                 name,
-                cursor,
                 int(info.split(",")[-1]),
                 int(parameters_dict["bisection_iterations"]),
                 parameters_dict["split_method"],
@@ -583,33 +581,32 @@ model
         elif model_type == "pca":
             from verticapy.learn.decomposition import PCA
 
-            model = PCA(name, cursor, 0, bool(parameters_dict["scale"]))
+            model = PCA(name, 0, bool(parameters_dict["scale"]))
             model.components_ = model.get_attr("principal_components")
             model.explained_variance_ = model.get_attr("singular_values")
             model.mean_ = model.get_attr("columns")
         elif model_type == "svd":
             from verticapy.learn.decomposition import SVD
 
-            model = SVD(name, cursor)
+            model = SVD(name)
             model.singular_values_ = model.get_attr("right_singular_vectors")
             model.explained_variance_ = model.get_attr("singular_values")
         elif model_type == "one_hot_encoder_fit":
             from verticapy.learn.preprocessing import OneHotEncoder
 
-            model = OneHotEncoder(name, cursor)
+            model = OneHotEncoder(name)
             try:
                 model.param_ = to_tablesample(
                     query="SELECT category_name, category_level::varchar, category_level_index FROM (SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'integer_categories')) VERTICAPY_SUBTABLE UNION ALL SELECT GET_MODEL_ATTRIBUTE(USING PARAMETERS model_name = '{}', attr_name = 'varchar_categories')".format(
                         model.name, model.name
                     ),
-                    cursor=model.cursor,
                 )
             except:
                 try:
                     model.param_ = model.get_attr("integer_categories")
                 except:
                     model.param_ = model.get_attr("varchar_categories")
-        if not(input_relation):
+        if not (input_relation):
             model.input_relation = info.split(",")[1].replace("'", "").replace("\\", "")
         else:
             model.input_relation = input_relation
@@ -630,34 +627,230 @@ model
             model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
-                cursor.execute(
+                classes = executeSQL(
                     "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
                         model.y, model.input_relation, model.y
-                    )
+                    ),
+                    method="fetchall",
+                    print_time_sql=False,
                 )
-                classes = cursor.fetchall()
                 model.classes_ = [item[0] for item in classes]
             except:
                 model.classes_ = [0, 1]
         elif model_type in ("svm_classifier", "logistic_reg"):
             model.classes_ = [0, 1]
-        if model_type in ("svm_classifier", "svm_regressor", "logistic_reg", "linear_reg",):
+        if model_type in (
+            "svm_classifier",
+            "svm_regressor",
+            "logistic_reg",
+            "linear_reg",
+        ):
             model.coef_ = model.get_attr("details")
-        if model_type in ("xgb_classifier", "xgb_regressor",):
-            v = version(cursor = cursor)
-            v = (v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1)))
+        if model_type in ("xgb_classifier", "xgb_regressor"):
+            v = version()
+            v = v[0] > 11 or (v[0] == 11 and (v[1] >= 1 or v[2] >= 1))
             if v:
-                model.set_params({"col_sample_by_tree": float(parameters_dict["col_sample_by_tree"]),
-                                  "col_sample_by_node": float(parameters_dict["col_sample_by_node"]),})
+                model.set_params(
+                    {
+                        "col_sample_by_tree": float(
+                            parameters_dict["col_sample_by_tree"]
+                        ),
+                        "col_sample_by_node": float(
+                            parameters_dict["col_sample_by_node"]
+                        ),
+                    }
+                )
     return model
+
+
+# ---#
+def get_model_category(model_type: str):
+    if model_type in ["LogisticRegression", "LinearSVC"]:
+        return ("classifier", "binary")
+    elif model_type in [
+        "NaiveBayes",
+        "RandomForestClassifier",
+        "KNeighborsClassifier",
+        "NearestCentroid",
+        "XGBoostClassifier",
+    ]:
+        return ("classifier", "multiclass")
+    elif model_type in [
+        "LinearRegression",
+        "LinearSVR",
+        "RandomForestRegressor",
+        "KNeighborsRegressor",
+        "XGBoostRegressor",
+    ]:
+        return ("regressor", "")
+    elif model_type in ["KMeans", "DBSCAN", "BisectingKMeans"]:
+        return ("unsupervised", "clustering")
+    elif model_type in ["PCA", "SVD", "MCA"]:
+        return ("unsupervised", "decomposition")
+    elif model_type in ["Normalizer", "OneHotEncoder"]:
+        return ("unsupervised", "preprocessing")
+    elif model_type in ["LocalOutlierFactor"]:
+        return ("unsupervised", "anomaly_detection")
+    else:
+        return ("", "")
+
+
+# ---#
+def get_model_init_params(model_type: str):
+    if model_type == "LogisticRegression":
+        return {
+            "penalty": "L2",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "CGD",
+            "l1_ratio": 0.5,
+        }
+    elif model_type == "KernelDensity":
+        return {
+            "bandwidth": 1,
+            "kernel": "gaussian",
+            "p": 2,
+            "max_leaf_nodes": 1e9,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "nbins": 5,
+            "xlim": [],
+        }
+    elif model_type == "LinearRegression":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+        }
+    elif model_type == "SARIMAX":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+            "d": 0,
+            "q": 0,
+            "P": 0,
+            "D": 0,
+            "Q": 0,
+            "s": 0,
+            "max_pik": 100,
+            "papprox_ma": 200,
+        }
+    elif model_type == "VAR":
+        return {
+            "penalty": "None",
+            "tol": 1e-4,
+            "C": 1,
+            "max_iter": 100,
+            "solver": "Newton",
+            "l1_ratio": 0.5,
+            "p": 1,
+        }
+    elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
+        return {
+            "n_estimators": 10,
+            "max_features": "auto",
+            "max_leaf_nodes": 1e9,
+            "sample": 0.632,
+            "max_depth": 5,
+            "min_samples_leaf": 1,
+            "min_info_gain": 0.0,
+            "nbins": 32,
+        }
+    elif model_type in ("XGBoostClassifier", "XGBoostRegressor"):
+        return {
+            "max_ntree": 10,
+            "max_depth": 5,
+            "nbins": 32,
+            "split_proposal_method": "global",
+            "tol": 0.001,
+            "learning_rate": 0.1,
+            "min_split_loss": 0.0,
+            "weight_reg": 0.0,
+            "sample": 1.0,
+            "col_sample_by_tree": 1.0,
+            "col_sample_by_node": 1.0,
+        }
+    elif model_type in ("SVD"):
+        return {"n_components": 0, "method": "lapack"}
+    elif model_type in ("PCA"):
+        return {"n_components": 0, "scale": False, "method": "lapack"}
+    elif model_type in ("MCA"):
+        return {}
+    elif model_type == "OneHotEncoder":
+        return {
+            "extra_levels": {},
+            "drop_first": True,
+            "ignore_null": True,
+            "separator": "_",
+            "column_naming": "indices",
+            "null_column_name": "null",
+        }
+    elif model_type in ("Normalizer"):
+        return {"method": "zscore"}
+    elif model_type == "LinearSVR":
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "acceptable_error_margin": 0.1,
+            "max_iter": 100,
+        }
+    elif model_type == "LinearSVC":
+        return {
+            "C": 1.0,
+            "tol": 1e-4,
+            "fit_intercept": True,
+            "intercept_scaling": 1.0,
+            "intercept_mode": "regularized",
+            "class_weight": [1, 1],
+            "max_iter": 100,
+        }
+    elif model_type == "NaiveBayes":
+        return {
+            "alpha": 1.0,
+            "nbtype": "auto",
+        }
+    elif model_type == "KMeans":
+        return {"n_cluster": 8, "init": "kmeanspp", "max_iter": 300, "tol": 1e-4}
+    elif model_type in ("BisectingKMeans"):
+        return {
+            "n_cluster": 8,
+            "bisection_iterations": 1,
+            "split_method": "sum_squares",
+            "min_divisible_cluster_size": 2,
+            "distance_method": "euclidean",
+            "init": "kmeanspp",
+            "max_iter": 300,
+            "tol": 1e-4,
+        }
+    elif model_type in ("KNeighborsClassifier", "KNeighborsRegressor"):
+        return {
+            "n_neighbors": 5,
+            "p": 2,
+        }
+    elif model_type == "NearestCentroid":
+        return {
+            "p": 2,
+        }
+    elif model_type == "DBSCAN":
+        return {"eps": 0.5, "min_samples": 5, "p": 2}
+
 
 # ---#
 # This piece of code was taken from
 # https://en.wikipedia.org/wiki/Talk:Varimax_rotation
-def matrix_rotation(Phi: list, 
-					gamma: float = 1.0, 
-					q: int = 20, 
-					tol: float = 1e-6):
+def matrix_rotation(Phi: list, gamma: float = 1.0, q: int = 20, tol: float = 1e-6):
     """
 ---------------------------------------------------------------------------
 Performs a Oblimin (Varimax, Quartimax) rotation on the the model's 
@@ -682,19 +875,30 @@ Returns
 model
     The model.
     """
-    check_types([("Phi", Phi, [list,],),
-    			 ("gamma", gamma, [int, float,],),
-    			 ("q", q, [int, float,],),
-    			 ("tol", tol, [int, float,],),])
+    check_types(
+        [
+            ("Phi", Phi, [list]),
+            ("gamma", gamma, [int, float]),
+            ("q", q, [int, float]),
+            ("tol", tol, [int, float]),
+        ]
+    )
     Phi = np.array(Phi)
-    p,k = Phi.shape
+    p, k = Phi.shape
     R = eye(k)
-    d=0
+    d = 0
     for i in range(q):
         d_old = d
         Lambda = dot(Phi, R)
-        u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
-        R = dot(u,vh)
+        u, s, vh = svd(
+            dot(
+                Phi.T,
+                asarray(Lambda) ** 3
+                - (gamma / p) * dot(Lambda, diag(diag(dot(Lambda.T, Lambda)))),
+            )
+        )
+        R = dot(u, vh)
         d = sum(s)
-        if d_old!=0 and d/d_old < 1 + tol: break
+        if d_old != 0 and d / d_old < 1 + tol:
+            break
     return dot(Phi, R)

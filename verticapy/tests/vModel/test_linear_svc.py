@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,38 +11,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, math, sys, os, verticapy
-from verticapy.learn.svm import LinearSVC
-from verticapy import drop, set_option, vertica_conn
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_winequality
+from verticapy.learn.svm import LinearSVC
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
-    from verticapy.datasets import load_winequality
-
-    winequality = load_winequality(cursor=base.cursor)
+def winequality_vd():
+    winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
-def model(base, titanic_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS lsvc_model_test")
-    model_class = LinearSVC("lsvc_model_test", cursor=base.cursor)
+def model(titanic_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS lsvc_model_test")
+    model_class = LinearSVC("lsvc_model_test",)
     model_class.fit("public.titanic", ["age", "fare"], "survived")
     yield model_class
     model_class.drop()
@@ -58,17 +59,17 @@ class TestLinearSVC:
     def test_classification_report(self, model):
         cls_rep1 = model.classification_report().transpose()
 
-        assert cls_rep1["auc"][0] == pytest.approx(0.687468030690537, 1e-2)
+        assert cls_rep1["auc"][0] == pytest.approx(0.6933968844454788, 1e-2)
         assert cls_rep1["prc_auc"][0] == pytest.approx(0.5976470350144453, 1e-2)
-        assert cls_rep1["accuracy"][0] == pytest.approx(0.6726094003241491, 1e-2)
+        assert cls_rep1["accuracy"][0] == pytest.approx(0.6536144578313253, 1e-2)
         assert cls_rep1["log_loss"][0] == pytest.approx(0.279724470067258, 1e-2)
         assert cls_rep1["precision"][0] == pytest.approx(0.6916666666666667, 1e-2)
-        assert cls_rep1["recall"][0] == pytest.approx(0.18444444444444444, 1e-2)
-        assert cls_rep1["f1_score"][0] == pytest.approx(0.29122807017543856, 1e-2)
-        assert cls_rep1["mcc"][0] == pytest.approx(0.22296937510796555, 1e-2)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.13725056689342408, 1e-2)
-        assert cls_rep1["markedness"][0] == pytest.approx(0.36222321962896453, 1e-2)
-        assert cls_rep1["csi"][0] == pytest.approx(0.1704312114989733, 1e-2)
+        assert cls_rep1["recall"][0] == pytest.approx(0.21227621483375958, 1e-2)
+        assert cls_rep1["f1_score"][0] == pytest.approx(0.324853228962818, 1e-2)
+        assert cls_rep1["mcc"][0] == pytest.approx(0.22669555629341528, 1e-2)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.151119190040371, 1e-2)
+        assert cls_rep1["markedness"][0] == pytest.approx(0.34006849315068477, 1e-2)
+        assert cls_rep1["csi"][0] == pytest.approx(0.1939252336448598, 1e-2)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.5, 1e-2)
 
         cls_rep2 = model.classification_report(cutoff=0.2).transpose()
@@ -78,25 +79,23 @@ class TestLinearSVC:
     def test_confusion_matrix(self, model):
         conf_mat1 = model.confusion_matrix()
 
-        assert conf_mat1[0][0] == 747
-        assert conf_mat1[0][1] == 367
+        assert conf_mat1[0][0] == 568
+        assert conf_mat1[0][1] == 308
         assert conf_mat1[1][0] == 37
         assert conf_mat1[1][1] == 83
 
         conf_mat2 = model.confusion_matrix(cutoff=0.2)
 
-        assert conf_mat2[0][0] == 179
-        assert conf_mat2[0][1] == 59
+        assert conf_mat2[0][0] == 0
+        assert conf_mat2[0][1] == 0
         assert conf_mat2[1][0] == 605
         assert conf_mat2[1][1] == 391
 
-    def test_contour(self, base, titanic_vd):
-        model_test = LinearSVC("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = LinearSVC("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare",],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
@@ -108,21 +107,21 @@ class TestLinearSVC:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS lsvc_model_test_drop")
-        model_test = LinearSVC("lsvc_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS lsvc_model_test_drop")
+        model_test = LinearSVC("lsvc_model_test_drop",)
         model_test.fit("public.titanic", ["age", "fare"], "survived")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'lsvc_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "lsvc_model_test_drop"
+        assert current_cursor().fetchone()[0] == "lsvc_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'lsvc_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         f_imp = model.features_importance()
@@ -142,9 +141,9 @@ class TestLinearSVC:
         assert lift_ch["lift"][900] == pytest.approx(1.0)
         plt.close("all")
 
-    def test_get_plot(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LinearSVC("model_test_plot", cursor=base.cursor)
+    def test_get_plot(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = LinearSVC("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "good")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 11
@@ -155,50 +154,42 @@ class TestLinearSVC:
         assert len(result.get_default_bbox_extra_artists()) == 11
         plt.close("all")
         model_test.drop()
-        model_test.fit(winequality_vd, ["alcohol", "residual_sugar", "fixed_acidity"], "good")
+        model_test.fit(
+            winequality_vd, ["alcohol", "residual_sugar", "fixed_acidity"], "good"
+        )
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 5
         plt.close("all")
         model_test.drop()
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_SVM_CLASSIFIER(11.0, 1993. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[11.0, 1993.0]])[0])
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0,]])[0])
-        model.cursor.execute(
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0]])[0]
+        )
+        current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', type='probability', class=1, match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_proba=True, return_str=False)([[3.0, 11.0,]])[0][1])
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_proba=True, return_str=False)([[3.0, 11.0]])[0][1]
+        )
 
     def test_to_memmodel(self, model, titanic_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0,],
-                              [11.0, 1.0,]])
-        res_py = model.to_python()([[3.0, 11.0,],
-                                   [11.0, 1.0,]])
+        res = mmodel.predict([[3.0, 11.0], [11.0, 1.0]])
+        res_py = model.to_python()([[3.0, 11.0], [11.0, 1.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([[3.0, 11.0,],
-                                    [11.0, 1.0,]])
-        res_py = model.to_python(return_proba = True)([[3.0, 11.0,],
-                                                       [11.0, 1.0,]])
+        res = mmodel.predict_proba([[3.0, 11.0], [11.0, 1.0]])
+        res_py = model.to_python(return_proba=True)([[3.0, 11.0], [11.0, 1.0]])
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[1][0] == res_py[1][0]
@@ -207,29 +198,28 @@ class TestLinearSVC:
         vdf["prediction_sql"] = mmodel.predict_sql(["age", "fare"])
         vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(["age", "fare"])[0]
         vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(["age", "fare"])[1]
-        model.predict(vdf, name = "prediction_vertica_sql", cutoff = 0.5)
-        model.predict(vdf, name = "prediction_proba_vertica_sql_1")
-        vdf["prediction_proba_vertica_sql_0"] = 1 - vdf["prediction_proba_vertica_sql_1"]
+        model.predict(vdf, name="prediction_vertica_sql", cutoff=0.5)
+        model.predict_proba(vdf, pos_label=0, name="prediction_proba_vertica_sql_0")
+        model.predict_proba(vdf, pos_label=1, name="prediction_proba_vertica_sql_1")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_SVM_CLASSIFIER(3.0, 11.0 USING PARAMETERS model_name = '{}', match_by_pos=True), {}".format(
                 model.name, model.to_sql([3.0, 11.0])
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
-    
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -274,7 +264,6 @@ class TestLinearSVC:
             "intercept_scaling": 1.0,
             "intercept_mode": "regularized",
             "class_weight": [1, 1],
-            "penalty": "l2",
         }
 
     def test_prc_curve(self, model):
@@ -291,14 +280,17 @@ class TestLinearSVC:
     def test_predict(self, titanic_vd, model):
         titanic_copy = titanic_vd.copy()
 
-        model.predict(titanic_copy, name="pred_probability")
-        assert titanic_copy["pred_probability"].min() == pytest.approx(0.33841486903496)
-
         model.predict(titanic_copy, name="pred_class1", cutoff=0.7)
         assert titanic_copy["pred_class1"].sum() == 23.0
 
         model.predict(titanic_copy, name="pred_class2", cutoff=0.3)
         assert titanic_copy["pred_class2"].sum() == 996.0
+
+    def test_predict_proba(self, titanic_vd, model):
+        titanic_copy = titanic_vd.copy()
+
+        model.predict_proba(titanic_copy, name="probability", pos_label=1)
+        assert titanic_copy["probability"].min() == pytest.approx(0.33841486903496)
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(nbins=1000)
@@ -324,10 +316,10 @@ class TestLinearSVC:
 
     def test_score(self, model):
         assert model.score(cutoff=0.7, method="accuracy") == pytest.approx(
-            0.6474878444084279
+            0.6224899598393574
         )
         assert model.score(cutoff=0.3, method="accuracy") == pytest.approx(
-            0.4619124797406807
+            0.392570281124498
         )
         assert model.score(cutoff=0.7, method="auc") == pytest.approx(
             0.6933968844454788
@@ -338,19 +330,17 @@ class TestLinearSVC:
         assert model.score(cutoff=0.7, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.3, method="best_cutoff") == pytest.approx(0.431)
         assert model.score(cutoff=0.7, method="bm") == pytest.approx(
-            0.03712018140589568
+            0.041981780135697866
         )
-        assert model.score(cutoff=0.3, method="bm") == pytest.approx(
-            0.09720521541950111
-        )
+        assert model.score(cutoff=0.3, method="bm") == pytest.approx(0.0)
         assert model.score(cutoff=0.7, method="csi") == pytest.approx(
-            0.04185022026431718
+            0.04810126582278481
         )
-        assert model.score(cutoff=0.3, method="csi") == pytest.approx(
-            0.3706161137440758
+        assert model.score(cutoff=0.3, method="csi") == pytest.approx(0.392570281124498)
+        assert model.score(cutoff=0.7, method="f1") == pytest.approx(
+            0.09178743961352658
         )
-        assert model.score(cutoff=0.7, method="f1") == pytest.approx(0.080338266384778)
-        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5408022130013832)
+        assert model.score(cutoff=0.3, method="f1") == pytest.approx(0.5638067772170151)
         assert model.score(cutoff=0.7, method="logloss") == pytest.approx(
             0.279724470067258
         )
@@ -358,15 +348,13 @@ class TestLinearSVC:
             0.279724470067258
         )
         assert model.score(cutoff=0.7, method="mcc") == pytest.approx(
-            0.13211082012086103
+            0.13649180522208684
         )
-        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(
-            0.11858662456854734
+        assert model.score(cutoff=0.3, method="mcc") == pytest.approx(0.0)
+        assert model.score(cutoff=0.7, method="mk") == pytest.approx(
+            0.44376424326377406
         )
-        assert model.score(cutoff=0.7, method="mk") == pytest.approx(0.4701827451261984)
-        assert model.score(cutoff=0.3, method="mk") == pytest.approx(
-            0.14467112146063243
-        )
+        assert model.score(cutoff=0.3, method="mk") == pytest.approx(-0.607429718875502)
         assert model.score(cutoff=0.7, method="npv") == pytest.approx(
             0.8260869565217391
         )
@@ -384,35 +372,23 @@ class TestLinearSVC:
             0.392570281124498
         )
         assert model.score(cutoff=0.7, method="specificity") == pytest.approx(
-            0.9948979591836735
+            0.9933884297520661
         )
-        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(
-            0.22831632653061223
-        )
-
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
+        assert model.score(cutoff=0.3, method="specificity") == pytest.approx(0.0)
 
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
 
         assert model.get_params()["max_iter"] == 1000
 
-    def test_model_from_vDF(self, base, titanic_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS lsvc_from_vDF")
-        model_test = LinearSVC("lsvc_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, titanic_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS lsvc_from_vDF")
+        model_test = LinearSVC("lsvc_from_vDF",)
         model_test.fit(titanic_vd, ["age", "fare"], "survived")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'lsvc_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "lsvc_from_vDF"
+        assert current_cursor().fetchone()[0] == "lsvc_from_vDF"
 
         model_test.drop()

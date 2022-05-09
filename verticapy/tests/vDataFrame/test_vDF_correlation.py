@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,37 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-import matplotlib.pyplot as plt
-from verticapy import vDataFrame, drop
+# Pytest
+import pytest
 
-from verticapy import set_option
+# Other Modules
+import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.datasets import load_titanic, load_amazon
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.titanic", cursor=base.cursor,
-        )
+    drop(name="public.titanic")
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
-    from verticapy.datasets import load_amazon
-
-    amazon = load_amazon(cursor=base.cursor)
+def amazon_vd():
+    amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+    drop(name="public.amazon")
 
 
 class TestvDFCorrelation:
@@ -111,24 +105,44 @@ class TestvDFCorrelation:
         assert result4["value"][6] == pytest.approx(-0.06, 1e-2)
         assert result4["confidence"][6] == pytest.approx(0.05273251493184901, 1e-2)
 
+        # spearmanD method
+        result5 = amazon_vd.acf(
+            ts="date",
+            column="number",
+            p=20,
+            by=["state"],
+            unit="month",
+            method="spearmanD",
+        )
+        plt.close("all")
+        assert result5["value"][0] == pytest.approx(1)
+        assert result5["confidence"][0] == pytest.approx(0.024396841824873748, 1e-2)
+        assert result5.values["value"][10] == pytest.approx(0.5, 1e-2)
+        assert result5.values["confidence"][10] == pytest.approx(
+            0.06977116419369607, 1e-2
+        )
+
     def test_vDF_chaid(self, titanic_vd):
-        result = titanic_vd.chaid("survived",
-                                  ["age", "fare", "sex",])
+        result = titanic_vd.chaid("survived", ["age", "fare", "sex"])
         tree = result.attributes_["tree"]
         assert tree["chi2"] == pytest.approx(345.12775126385327)
         assert tree["children"]["female"]["chi2"] == pytest.approx(10.472532457814179)
-        assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(3.479525088868805)
-        assert tree["children"]["female"]["children"][127.6]["children"][19.0]["prediction"][0] == pytest.approx(0.325581395348837)
-        assert tree["children"]["female"]["children"][127.6]["children"][38.0]["prediction"][1] == pytest.approx(0.720496894409938)
-        assert not(tree["split_is_numerical"])
+        assert tree["children"]["female"]["children"][127.6]["chi2"] == pytest.approx(
+            3.479525088868805
+        )
+        assert tree["children"]["female"]["children"][127.6]["children"][19.0][
+            "prediction"
+        ][0] == pytest.approx(0.325581395348837)
+        assert tree["children"]["female"]["children"][127.6]["children"][38.0][
+            "prediction"
+        ][1] == pytest.approx(0.720496894409938)
+        assert not (tree["split_is_numerical"])
         assert tree["split_predictor"] == '"sex"'
         assert tree["split_predictor_idx"] == 2
-        pred = result.predict([[3., 11., 'male'],
-                               [11., 1., 'female']])
+        pred = result.predict([[3.0, 11.0, "male"], [11.0, 1.0, "female"]])
         assert pred[0] == 0
         assert pred[1] == 1
-        pred = result.predict_proba([[3., 11., 'male'],
-                                     [11., 1., 'female']])
+        pred = result.predict_proba([[3.0, 11.0, "male"], [11.0, 1.0, "female"]])
         assert pred[0][0] == pytest.approx(0.75968992)
         assert pred[0][1] == pytest.approx(0.24031008)
         assert pred[1][0] == pytest.approx(0.3255814)
@@ -154,7 +168,7 @@ class TestvDFCorrelation:
         assert result1["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'pearson') with focus
-        result1_f = titanic_vd.corr(method="pearson", focus="survived",)
+        result1_f = titanic_vd.corr(method="pearson", focus="survived")
         plt.close("all")
         assert result1_f["survived"][1] == pytest.approx(-0.336, 1e-2)
         assert result1_f["survived"][2] == pytest.approx(0.264, 1e-2)
@@ -173,7 +187,7 @@ class TestvDFCorrelation:
             ["survived"], ["AVG(age) AS age", "AVG(fare) AS fare"]
         )
         result2 = titanic_vd_gb.corr(
-            columns=["survived", "age", "fare"],  method="spearman",
+            columns=["survived", "age", "fare"], method="spearman",
         )
         plt.close("all")
         assert result2["survived"][0] == 1.0
@@ -187,7 +201,7 @@ class TestvDFCorrelation:
         assert result2["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'spearman') with focus
-        result2_f = titanic_vd_gb.corr(focus="survived", method="spearman",)
+        result2_f = titanic_vd_gb.corr(focus="survived", method="spearman")
         plt.close("all")
         assert result2_f["survived"][1] == pytest.approx(0.425515947467167, 1e-2)
         assert result2_f["survived"][2] == pytest.approx(-0.221388367729831, 1e-2)
@@ -211,7 +225,7 @@ class TestvDFCorrelation:
         assert result3["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'kendall') with focus
-        result3_f = titanic_vd.corr(focus="survived", method="kendall",)
+        result3_f = titanic_vd.corr(focus="survived", method="kendall")
         plt.close("all")
         assert result3_f["survived"][1] == pytest.approx(-0.317426126117454, 1e-2)
         assert result3_f["survived"][2] == pytest.approx(0.264138930414481, 1e-2)
@@ -233,7 +247,7 @@ class TestvDFCorrelation:
         assert result4["fare"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'biserial') with focus
-        result4_f = titanic_vd.corr(focus="survived", method="biserial",)
+        result4_f = titanic_vd.corr(focus="survived", method="biserial")
         plt.close("all")
         assert result4_f["survived"][1] == pytest.approx(-0.335720838027055, 1e-2)
         assert result4_f["survived"][2] == pytest.approx(0.264043222121672, 1e-2)
@@ -257,10 +271,34 @@ class TestvDFCorrelation:
         assert result5["embarked"][2] == 1.0
 
         # testing vDataFrame.corr (method = 'cramer') with focus
-        result5_f = titanic_vd.corr(focus="survived", method="cramer",)
+        result5_f = titanic_vd.corr(focus="survived", method="cramer")
         plt.close("all")
         assert result5_f["survived"][1] == pytest.approx(0.73190924565401, 1e-2)
         assert result5_f["survived"][2] == pytest.approx(0.6707486879228794, 1e-2)
+
+        #
+        # DENSE SPEARMAN
+        #
+        # testing vDataFrame.corr (method = 'spearmanD')
+        result6 = titanic_vd_gb.corr(
+            columns=["survived", "age", "fare"], method="spearmanD",
+        )
+        plt.close("all")
+        assert result6["survived"][0] == 1.0
+        assert result6["survived"][1] == pytest.approx(-0.221388367729831, 1e-2)
+        assert result6["survived"][2] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6["age"][0] == pytest.approx(-0.221388367729831, 1e-2)
+        assert result6["age"][1] == 1.0
+        assert result6["age"][2] == pytest.approx(0.287617260787992, 1e-2)
+        assert result6["fare"][0] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6["fare"][1] == pytest.approx(0.287617260787992, 1e-2)
+        assert result6["fare"][2] == 1.0
+
+        # testing vDataFrame.corr (method = 'spearmanD') with focus
+        result6_f = titanic_vd_gb.corr(focus="survived", method="spearmanD")
+        plt.close("all")
+        assert result6_f["survived"][1] == pytest.approx(0.425515947467167, 1e-2)
+        assert result6_f["survived"][2] == pytest.approx(-0.221388367729831, 1e-2)
 
     def test_vDF_corr_pvalue(self, titanic_vd):
         assert titanic_vd.corr_pvalue("age", "fare", "pearson") == (
@@ -268,6 +306,10 @@ class TestvDFCorrelation:
             pytest.approx(1.3923308548466764e-08, 1e-2),
         )
         assert titanic_vd.corr_pvalue("age", "fare", "spearman") == (
+            pytest.approx(0.0045193585753828, 1e-2),
+            pytest.approx(0.8899833744540833, 1e-2),
+        )
+        assert titanic_vd.corr_pvalue("age", "fare", "spearmanD") == (
             pytest.approx(0.0045193585753828, 1e-2),
             pytest.approx(0.8899833744540833, 1e-2),
         )
@@ -294,7 +336,7 @@ class TestvDFCorrelation:
 
     def test_vDF_cov(self, titanic_vd):
         # testing vDataFrame.cov
-        result = titanic_vd.cov(columns=["survived", "age", "fare"],)
+        result = titanic_vd.cov(columns=["survived", "age", "fare"])
         plt.close("all")
         assert result["survived"][0] == pytest.approx(0.231685181342251, 1e-2)
         assert result["survived"][1] == pytest.approx(-0.297583583247234, 1e-2)
@@ -317,13 +359,13 @@ class TestvDFCorrelation:
 
     def test_vDF_iv_woe(self, titanic_vd):
         # testing vDataFrame.iv_woe
-        result = titanic_vd.iv_woe("survived",)
+        result = titanic_vd.iv_woe("survived")
         plt.close("all")
         assert result["iv"][0] == pytest.approx(1.272254799126849)
         assert result["iv"][1] == pytest.approx(1.148751293230747)
         assert result["iv"][2] == pytest.approx(0.4951028280802058)
         # testing vDataFrame[].iv_woe
-        result2 = titanic_vd["pclass"].iv_woe("survived",)
+        result2 = titanic_vd["pclass"].iv_woe("survived")
         assert result2["iv"][-1] == pytest.approx(0.4951028280802058)
         assert result2["non_events"][-1] == pytest.approx(784)
 
@@ -357,9 +399,7 @@ class TestvDFCorrelation:
 
     def test_vDF_pacf(self, amazon_vd):
         # testing vDataFrame.pacf
-        result = amazon_vd.pacf(
-            column="number", ts="date", by=["state"], p=5,
-        )
+        result = amazon_vd.pacf(column="number", ts="date", by=["state"], p=5,)
         plt.close("all")
         assert result["value"][0] == 1.0
         assert result["value"][1] == pytest.approx(0.672667529541858, 1e-2)
@@ -370,9 +410,7 @@ class TestvDFCorrelation:
 
     def test_vDF_regr(self, titanic_vd):
         # testing vDataFrame.regr (method = 'alpha')
-        result1 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="alpha",
-        )
+        result1 = titanic_vd.regr(columns=["survived", "age", "fare"], method="alpha",)
         plt.close("all")
         assert result1["survived"][0] == 0.0
         assert result1["survived"][1] == pytest.approx(0.435280333103508, 1e-2)
@@ -385,9 +423,7 @@ class TestvDFCorrelation:
         assert result1["fare"][2] == 0.0
 
         # testing vDataFrame.regr (method = 'beta')
-        result2 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="beta"
-        )
+        result2 = titanic_vd.regr(columns=["survived", "age", "fare"], method="beta")
         plt.close("all")
         assert result2["survived"][0] == 1.0
         assert result2["survived"][1] == pytest.approx(-0.00142952871080426, 1e-2)
@@ -400,9 +436,7 @@ class TestvDFCorrelation:
         assert result2["fare"][2] == 1.0
 
         # testing vDataFrame.regr (method = 'r2')
-        result3 = titanic_vd.regr(
-            columns=["survived", "age", "fare"], method="r2",
-        )
+        result3 = titanic_vd.regr(columns=["survived", "age", "fare"], method="r2",)
         plt.close("all")
         assert result3["survived"][0] == 1.0
         assert result3["survived"][1] == pytest.approx(0.00178460779712559, 1e-2)

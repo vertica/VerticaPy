@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,21 +36,21 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
 #
 # Standard Python Modules
 import statistics, random, time
-from collections import Iterable
+from collections.abc import Iterable
 from itertools import product
 import numpy as np
 from typing import Union
@@ -62,7 +62,7 @@ from verticapy.utilities import *
 from verticapy.toolbox import *
 from verticapy.errors import *
 from verticapy.plot import gen_colors
-from verticapy.learn.tools import does_model_exist
+from verticapy.learn.tools import does_model_exist, get_model_category
 from verticapy.learn.mlplot import plot_bubble_ml, plot_stepwise_ml, plot_importance
 
 # Other Python Modules
@@ -98,7 +98,7 @@ forest model to estimate a probable optimal set of parameters.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -172,8 +172,10 @@ tablesample
     """
     if print_info:
         print(f"\033[1m\033[4mStarting Bayesian Search\033[0m\033[0m\n")
-        print(f"\033[1m\033[4mStep 1 - Computing Random Models using Grid Search\033[0m\033[0m\n")
-    if not(param_grid):
+        print(
+            f"\033[1m\033[4mStep 1 - Computing Random Models using Grid Search\033[0m\033[0m\n"
+        )
+    if not (param_grid):
         param_grid = gen_params_grid(estimator, random_nbins, len(X), lmax, 0)
     param_gs = grid_search_cv(
         estimator,
@@ -196,8 +198,8 @@ tablesample
             params += [elem for elem in param_grid]
         all_params = list(dict.fromkeys(params))
     else:
-        all_params = ["C", "l1_ratio",]
-    if not(bayesian_nbins):
+        all_params = ["C", "l1_ratio"]
+    if not (bayesian_nbins):
         bayesian_nbins = max(int(np.exp(np.log(nrows) / len(all_params))), 1)
     result = {}
     for elem in all_params:
@@ -209,7 +211,7 @@ tablesample
             else:
                 result[item] += [None]
     result["score"] = param_gs["avg_score"]
-    if 'max_features' in result:
+    if "max_features" in result:
         for idx, elem in enumerate(result["max_features"]):
             if elem == "auto":
                 result["max_features"][idx] = int(np.floor(np.sqrt(len(X))) + 1)
@@ -217,37 +219,56 @@ tablesample
                 result["max_features"][idx] = int(len(X))
     result = tablesample(result).to_sql()
     schema = verticapy.options["temp_schema"]
-    relation = "{}.verticapy_temp_table_bayesian_{}".format(schema, get_session(estimator.cursor))
-    model_name = "{}.verticapy_temp_rf_{}".format(schema, get_session(estimator.cursor))
-    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
-    estimator.cursor.execute("CREATE TABLE {} AS {}".format(relation, result))
+    relation = gen_tmp_name(schema=schema, name="bayesian")
+    model_name = gen_tmp_name(schema=schema, name="rf")
+    drop(relation, method="table")
+    executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False)
     if print_info:
-        print(f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n")
+        print(
+            f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n"
+        )
     if verticapy.options["tqdm"] and print_info:
         from tqdm.auto import tqdm
+
         loop = tqdm(range(1))
     else:
         loop = range(1)
     for j in loop:
         if "enet" not in kwargs:
-            model_grid = gen_params_grid(estimator, nbins=bayesian_nbins, max_nfeatures=len(all_params), optimized_grid=-666)
+            model_grid = gen_params_grid(
+                estimator,
+                nbins=bayesian_nbins,
+                max_nfeatures=len(all_params),
+                optimized_grid=-666,
+            )
         else:
-            model_grid = {"C": {"type": float, "range": [0.0, 10], "nbins": bayesian_nbins}, "l1_ratio": {"type": float, "range": [0.0, 1.0], "nbins": bayesian_nbins},}
+            model_grid = {
+                "C": {"type": float, "range": [0.0, 10], "nbins": bayesian_nbins},
+                "l1_ratio": {
+                    "type": float,
+                    "range": [0.0, 1.0],
+                    "nbins": bayesian_nbins,
+                },
+            }
         all_params = list(dict.fromkeys(model_grid))
         from verticapy.learn.ensemble import RandomForestRegressor
-        hyper_param_estimator = RandomForestRegressor(name=estimator.name, cursor=estimator.cursor, **RFmodel_params,)
+
+        hyper_param_estimator = RandomForestRegressor(
+            name=estimator.name, **RFmodel_params
+        )
         hyper_param_estimator.fit(relation, all_params, "score")
         from verticapy.datasets import gen_meshgrid, gen_dataset
+
         if random_grid:
-            vdf = gen_dataset(model_grid, estimator.cursor, nrows=nrows,)
+            vdf = gen_dataset(model_grid, nrows=nrows)
         else:
-            vdf = gen_meshgrid(model_grid, estimator.cursor,)
-        estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
+            vdf = gen_meshgrid(model_grid)
+        drop(relation, method="table")
         vdf.to_db(relation, relation_type="table", inplace=True)
         vdf = hyper_param_estimator.predict(vdf, name="score")
         reverse = reverse_score(metric)
         vdf.sort({"score": "desc" if reverse else "asc"})
-        result = vdf.head(limit = k_tops)
+        result = vdf.head(limit=k_tops)
         new_param_grid = []
         for i in range(k_tops):
             param_tmp_grid = {}
@@ -256,7 +277,9 @@ tablesample
                     param_tmp_grid[elem] = result[elem][i]
             new_param_grid += [param_tmp_grid]
     if print_info:
-        print(f"\033[1m\033[4mStep 3 - Computing Most Probable Good Models using Grid Search\033[0m\033[0m\n")
+        print(
+            f"\033[1m\033[4mStep 3 - Computing Most Probable Good Models using Grid Search\033[0m\033[0m\n"
+        )
     result = grid_search_cv(
         estimator,
         new_param_grid,
@@ -284,16 +307,17 @@ tablesample
     hyper_param_estimator.drop()
     if print_info:
         print("\033[1mBayesian Search Selected Model\033[0m")
-        print(f"Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
-    estimator.cursor.execute("DROP TABLE IF EXISTS {}".format(relation))
-
+        print(
+            f"Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+        )
+    drop(relation, method="table")
     return result
+
 
 # ---#
 def best_k(
     input_relation: Union[str, vDataFrame],
     X: list = [],
-    cursor=None,
     n_cluster: Union[tuple, list] = (1, 100),
     init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
@@ -312,8 +336,6 @@ input_relation: str/vDataFrame
 X: list, optional
 	List of the predictor columns. If empty, all numerical columns will
     be used.
-cursor: DBcursor, optional
-	Vertica database cursor.
 n_cluster: tuple/list, optional
 	Tuple representing the number of clusters to start and end with.
     This can also be customized list with various k values to test.
@@ -340,19 +362,18 @@ int
         X = [X]
     check_types(
         [
-            ("X", X, [list],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("n_cluster", n_cluster, [list],),
-            ("init", init, ["kmeanspp", "random"],),
-            ("max_iter", max_iter, [int, float],),
-            ("tol", tol, [int, float],),
-            ("elbow_score_stop", elbow_score_stop, [int, float],),
+            ("X", X, [list]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("n_cluster", n_cluster, [list]),
+            ("init", init, ["kmeanspp", "random"]),
+            ("max_iter", max_iter, [int, float]),
+            ("tol", tol, [int, float]),
+            ("elbow_score_stop", elbow_score_stop, [int, float]),
         ]
     )
 
     from verticapy.learn.cluster import KMeans
 
-    cursor, conn = check_cursor(cursor, input_relation)[0:2]
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
@@ -361,34 +382,24 @@ int
     schema, relation = schema_relation(input_relation)
     if not (schema):
         schema = verticapy.options["temp_schema"]
-    schema = str_column(schema)
-    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
+    schema = quote_ident(schema)
+    if verticapy.options["tqdm"] and (
+        "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
+    ):
         from tqdm.auto import tqdm
 
         loop = tqdm(L)
     else:
         loop = L
     for i in loop:
-        cursor.execute(
-            "DROP MODEL IF EXISTS {}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(
-                schema, get_session(cursor)
-            )
-        )
-        model = KMeans(
-            "{}.__VERTICAPY_TEMP_MODEL_KMEANS_{}__".format(schema, get_session(cursor)),
-            cursor,
-            i,
-            init,
-            max_iter,
-            tol,
-        )
+        model_name = gen_tmp_name(schema=schema, name="kmeans")
+        drop(model_name, method="model")
+        model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         score = model.metrics_.values["value"][3]
         if score > elbow_score_stop:
             return i
         score_prev = score
-    if conn:
-        conn.close()
     print(
         "\u26A0 The K was not found. The last K (= {}) is returned with an elbow score of {}".format(
             i, score
@@ -418,7 +429,7 @@ Computes the K-Fold cross validation of an estimator.
 Parameters
 ----------
 estimator: object
-	Vertica estimator with a fit method and a database cursor.
+	Vertica estimator with a fit method.
 input_relation: str/vDataFrame
 	Relation to use to train the model.
 X: list
@@ -476,19 +487,19 @@ tablesample
         X = [X]
     check_types(
         [
-            ("X", X, [list],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("y", y, [str],),
-            ("metric", metric, [str, list],),
-            ("cv", cv, [int, float],),
-            ("cutoff", cutoff, [int, float],),
+            ("X", X, [list]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("y", y, [str]),
+            ("metric", metric, [str, list]),
+            ("cv", cv, [int, float]),
+            ("cutoff", cutoff, [int, float]),
         ]
     )
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
+        input_relation = vDataFrameSQL(input_relation)
     if cv < 2:
         raise ParameterError("Cross Validation is only possible with at least 2 folds")
-    if category_from_model_type(estimator.type)[0] == "regressor":
+    if get_model_category(estimator.type)[0] == "regressor":
         all_metrics = [
             "explained_variance",
             "max_error",
@@ -501,7 +512,7 @@ tablesample
             "aic",
             "bic",
         ]
-    elif category_from_model_type(estimator.type)[0] == "classifier":
+    elif get_model_category(estimator.type)[0] == "classifier":
         all_metrics = [
             "auc",
             "prc_auc",
@@ -529,7 +540,9 @@ tablesample
     if training_score:
         result_train = {"index": final_metrics}
     total_time = []
-    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])):
+    if verticapy.options["tqdm"] and (
+        "tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])
+    ):
         from tqdm.auto import tqdm
 
         loop = tqdm(range(cv))
@@ -552,7 +565,7 @@ tablesample
             train, X, y, test,
         )
         total_time += [time.time() - start_time]
-        if category_from_model_type(estimator.type)[0] == "regressor":
+        if get_model_category(estimator.type)[0] == "regressor":
             if metric == "all":
                 result["{}-fold".format(i + 1)] = estimator.regression_report().values[
                     "value"
@@ -697,7 +710,6 @@ tablesample
 def elbow(
     input_relation: Union[str, vDataFrame],
     X: list = [],
-    cursor=None,
     n_cluster: Union[tuple, list] = (1, 15),
     init: Union[str, list] = "kmeanspp",
     max_iter: int = 50,
@@ -716,8 +728,6 @@ input_relation: str/vDataFrame
 X: list, optional
     List of the predictor columns. If empty all the numerical vcolumns will
     be used.
-cursor: DBcursor, optional
-    Vertica database cursor.
 n_cluster: tuple/list, optional
     Tuple representing the number of cluster to start with and to end with.
     It can also be customized list with the different K to test.
@@ -747,23 +757,22 @@ tablesample
         X = [X]
     check_types(
         [
-            ("X", X, [list],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("n_cluster", n_cluster, [list],),
-            ("init", init, ["kmeanspp", "random"],),
-            ("max_iter", max_iter, [int, float],),
-            ("tol", tol, [int, float],),
+            ("X", X, [list]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("n_cluster", n_cluster, [list]),
+            ("init", init, ["kmeanspp", "random"]),
+            ("max_iter", max_iter, [int, float]),
+            ("tol", tol, [int, float]),
         ]
     )
-    cursor, conn = check_cursor(cursor, input_relation)[0:2]
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0])
     if isinstance(n_cluster, tuple):
         L = range(n_cluster[0], n_cluster[1])
     else:
         L = n_cluster
         L.sort()
     schema, relation = schema_relation(input_relation)
-    all_within_cluster_SS = []
+    all_within_cluster_SS, model_name = [], gen_tmp_name(schema=schema, name="kmeans")
     if isinstance(n_cluster, tuple):
         L = [i for i in range(n_cluster[0], n_cluster[1])]
     else:
@@ -776,26 +785,13 @@ tablesample
     else:
         loop = L
     for i in loop:
-        cursor.execute(
-            "DROP MODEL IF EXISTS {}.VERTICAPY_KMEANS_TMP_{}".format(
-                schema, get_session(cursor)
-            )
-        )
+        drop(model_name, method="model")
         from verticapy.learn.cluster import KMeans
 
-        model = KMeans(
-            "{}.VERTICAPY_KMEANS_TMP_{}".format(schema, get_session(cursor)),
-            cursor,
-            i,
-            init,
-            max_iter,
-            tol,
-        )
+        model = KMeans(model_name, i, init, max_iter, tol)
         model.fit(input_relation, X)
         all_within_cluster_SS += [float(model.metrics_.values["value"][3])]
         model.drop()
-    if conn:
-        conn.close()
     if not (ax):
         fig, ax = plt.subplots()
         if isnotebook():
@@ -808,9 +804,7 @@ tablesample
         "markersize": 7,
         "markeredgecolor": "black",
     }
-    ax.plot(
-        L, all_within_cluster_SS, **updated_dict(param, style_kwds),
-    )
+    ax.plot(L, all_within_cluster_SS, **updated_dict(param, style_kwds))
     ax.set_title("Elbow Curve")
     ax.set_xlabel("Number of Clusters")
     ax.set_ylabel("Between-Cluster SS / Total SS")
@@ -827,7 +821,6 @@ def enet_search_cv(
     cv: int = 3,
     estimator_type: str = "auto",
     cutoff: float = -1,
-    cursor=None,
     print_info: bool = True,
     **kwargs,
 ):
@@ -879,8 +872,6 @@ estimator_type: str, optional
         enet : ElasticNet
 cutoff: float, optional
     The model cutoff (logit only).
-cursor: DBcursor, optional
-    Vertica database cursor.
 print_info: bool, optional
     If set to True, prints the model information at each step.
 
@@ -890,18 +881,25 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types([("estimator_type", estimator_type, ["logit", "enet", "auto",]),])
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    param_grid = parameter_grid({"solver": ["cgd",], 
-                                 "penalty": ["enet",],
-                                 "C": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 5.0, 10.0, 50.0, 100.0] if "small" not in kwargs else [1e-1, 1.0, 10.0,],
-                                 "l1_ratio": [0.1 * i for i in range(0, 10)] if "small" not in kwargs else [0.1, 0.5, 0.9,]})
+    check_types([("estimator_type", estimator_type, ["logit", "enet", "auto"])])
+    param_grid = parameter_grid(
+        {
+            "solver": ["cgd"],
+            "penalty": ["enet"],
+            "C": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1.0, 5.0, 10.0, 50.0, 100.0]
+            if "small" not in kwargs
+            else [1e-1, 1.0, 10.0],
+            "l1_ratio": [0.1 * i for i in range(0, 10)]
+            if "small" not in kwargs
+            else [0.1, 0.5, 0.9],
+        }
+    )
 
     from verticapy.learn.linear_model import LogisticRegression, ElasticNet
 
     if estimator_type == "auto":
-        if not(isinstance(input_relation, vDataFrame)):
-            vdf = vdf_from_relation(input_relation, cursor=cursor)
+        if not (isinstance(input_relation, vDataFrame)):
+            vdf = vDataFrameSQL(input_relation)
         else:
             vdf = input_relation
         if sorted(vdf[y].distinct()) == [0, 1]:
@@ -909,9 +907,13 @@ tablesample
         else:
             estimator_type = "enet"
     if estimator_type == "logit":
-        estimator = LogisticRegression("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
+        estimator = LogisticRegression(
+            gen_tmp_name(schema=verticapy.options["temp_schema"], name="logit")
+        )
     else:
-        estimator = ElasticNet("\"{}\".verticapy_enet_search_{}".format(verticapy.options["temp_schema"], get_session(cursor),), cursor=cursor)
+        estimator = ElasticNet(
+            gen_tmp_name(schema=verticapy.options["temp_schema"], name="enet")
+        )
     result = bayesian_search_cv(
         estimator,
         input_relation,
@@ -927,17 +929,17 @@ tablesample
         print_info=print_info,
         enet=True,
     )
-    if conn:
-        conn.close()
     return result
 
 
 # ---#
-def gen_params_grid(estimator, 
-                    nbins: int = 10, 
-                    max_nfeatures: int = 3,
-                    lmax: int = -1,
-                    optimized_grid: int = 0,):
+def gen_params_grid(
+    estimator,
+    nbins: int = 10,
+    max_nfeatures: int = 3,
+    lmax: int = -1,
+    optimized_grid: int = 0,
+):
     """
 ---------------------------------------------------------------------------
 Generates the estimator grid.
@@ -945,7 +947,7 @@ Generates the estimator grid.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 nbins: int, optional
     Number of bins used to discretize numberical features.
 max_nfeatures: int, optional
@@ -966,284 +968,497 @@ tablesample
     """
     from verticapy.learn.cluster import KMeans, BisectingKMeans, DBSCAN
     from verticapy.learn.decomposition import PCA, SVD
-    from verticapy.learn.ensemble import RandomForestRegressor, RandomForestClassifier, XGBoostRegressor, XGBoostClassifier
-    from verticapy.learn.linear_model import LinearRegression, ElasticNet, Lasso, Ridge, LogisticRegression
+    from verticapy.learn.ensemble import (
+        RandomForestRegressor,
+        RandomForestClassifier,
+        XGBoostRegressor,
+        XGBoostClassifier,
+    )
+    from verticapy.learn.linear_model import (
+        LinearRegression,
+        ElasticNet,
+        Lasso,
+        Ridge,
+        LogisticRegression,
+    )
     from verticapy.learn.naive_bayes import NaiveBayes
-    from verticapy.learn.neighbors import KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor, NearestCentroid
+    from verticapy.learn.neighbors import (
+        KNeighborsRegressor,
+        KNeighborsClassifier,
+        LocalOutlierFactor,
+        NearestCentroid,
+    )
     from verticapy.learn.preprocessing import Normalizer, OneHotEncoder
     from verticapy.learn.svm import LinearSVC, LinearSVR
-    from verticapy.learn.tree import DummyTreeRegressor, DummyTreeClassifier, DecisionTreeRegressor, DecisionTreeClassifier
+    from verticapy.learn.tree import (
+        DummyTreeRegressor,
+        DummyTreeClassifier,
+        DecisionTreeRegressor,
+        DecisionTreeClassifier,
+    )
 
     params_grid = {}
-    if isinstance(estimator, (DummyTreeRegressor, DummyTreeClassifier, OneHotEncoder,)):
+    if isinstance(estimator, (DummyTreeRegressor, DummyTreeClassifier, OneHotEncoder)):
         return params_grid
-    elif isinstance(estimator, (RandomForestRegressor, RandomForestClassifier, DecisionTreeRegressor, DecisionTreeClassifier,)):
+    elif isinstance(
+        estimator,
+        (
+            RandomForestRegressor,
+            RandomForestClassifier,
+            DecisionTreeRegressor,
+            DecisionTreeClassifier,
+        ),
+    ):
         if optimized_grid == 0:
-            params_grid = {"max_features": ["auto", "max"] + list(range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))),
-                           "max_leaf_nodes": list(range(1, int(1e9), math.ceil(int(1e9) / nbins))),
-                           "max_depth": list(range(1, 100, math.ceil(100 / nbins))),
-                           "min_samples_leaf": list(range(1, int(1e6), math.ceil(int(1e6) / nbins))),
-                           "min_info_gain": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           "nbins": list(range(2, 100, math.ceil(100 / nbins))),}
-            if isinstance(RandomForestRegressor, RandomForestClassifier,):
-                params_grid["sample"] = [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))]
-                params_grid["n_estimators"] = list(range(1, 100, math.ceil(100 / nbins)))
+            params_grid = {
+                "max_features": ["auto", "max"]
+                + list(range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))),
+                "max_leaf_nodes": list(range(1, int(1e9), math.ceil(int(1e9) / nbins))),
+                "max_depth": list(range(1, 100, math.ceil(100 / nbins))),
+                "min_samples_leaf": list(
+                    range(1, int(1e6), math.ceil(int(1e6) / nbins))
+                ),
+                "min_info_gain": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ],
+                "nbins": list(range(2, 100, math.ceil(100 / nbins))),
+            }
+            if isinstance(RandomForestRegressor, RandomForestClassifier):
+                params_grid["sample"] = [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ]
+                params_grid["n_estimators"] = list(
+                    range(1, 100, math.ceil(100 / nbins))
+                )
         elif optimized_grid == 1:
-            params_grid = {"max_features": ["auto", "max"],
-                           "max_leaf_nodes": [32, 64, 128, 1000, 1e4, 1e6, 1e9],
-                           "max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50],
-                           "min_samples_leaf": [1, 2, 3, 4, 5],
-                           "min_info_gain": [0.0, 0.1, 0.2],
-                           "nbins": [10, 15, 20, 25, 30, 35, 40],}
-            if isinstance(RandomForestRegressor, RandomForestClassifier,):
-                params_grid["sample"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            params_grid = {
+                "max_features": ["auto", "max"],
+                "max_leaf_nodes": [32, 64, 128, 1000, 1e4, 1e6, 1e9],
+                "max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50],
+                "min_samples_leaf": [1, 2, 3, 4, 5],
+                "min_info_gain": [0.0, 0.1, 0.2],
+                "nbins": [10, 15, 20, 25, 30, 35, 40],
+            }
+            if isinstance(RandomForestRegressor, RandomForestClassifier):
+                params_grid["sample"] = [
+                    0.1,
+                    0.2,
+                    0.3,
+                    0.4,
+                    0.5,
+                    0.6,
+                    0.7,
+                    0.8,
+                    0.9,
+                    1.0,
+                ]
                 params_grid["n_estimators"] = [1, 5, 10, 15, 20, 30, 40, 50, 100]
         elif optimized_grid == 2:
-            params_grid = {"max_features": ["auto", "max"],
-                           "max_leaf_nodes": [32, 64, 128, 1000,],
-                           "max_depth": [4, 5, 6,],
-                           "min_samples_leaf": [1, 2,],
-                           "min_info_gain": [0.0,],
-                           "nbins": [32,],}
-            if isinstance(RandomForestRegressor, RandomForestClassifier,):
-                params_grid["sample"] = [0.7,]
-                params_grid["n_estimators"] = [20,]
+            params_grid = {
+                "max_features": ["auto", "max"],
+                "max_leaf_nodes": [32, 64, 128, 1000],
+                "max_depth": [4, 5, 6],
+                "min_samples_leaf": [1, 2],
+                "min_info_gain": [0.0],
+                "nbins": [32],
+            }
+            if isinstance(RandomForestRegressor, RandomForestClassifier):
+                params_grid["sample"] = [0.7]
+                params_grid["n_estimators"] = [20]
         elif optimized_grid == -666:
-            result = {"max_features": {"type": int, "range": [1, max_nfeatures,], "nbins": nbins,},
-                      "max_leaf_nodes": {"type": int, "range": [32, 1e9,], "nbins": nbins,},
-                      "max_depth": {"type": int, "range": [2, 30,], "nbins": nbins,},
-                      "min_samples_leaf": {"type": int, "range": [1, 15,], "nbins": nbins,},
-                      "min_info_gain": {"type": float, "range": [0.0, 0.1,], "nbins": nbins,},
-                      "nbins": {"type": int, "range": [10, 1000,], "nbins": nbins,},}
-            if isinstance(RandomForestRegressor, RandomForestClassifier,):
-                result["sample"] = {"type": float, "range": [0.1, 1.0,], "nbins": nbins,}
-                result["n_estimators"] = {"type": int, "range": [1, 100,], "nbins": nbins,}
+            result = {
+                "max_features": {
+                    "type": int,
+                    "range": [1, max_nfeatures],
+                    "nbins": nbins,
+                },
+                "max_leaf_nodes": {"type": int, "range": [32, 1e9], "nbins": nbins},
+                "max_depth": {"type": int, "range": [2, 30], "nbins": nbins},
+                "min_samples_leaf": {"type": int, "range": [1, 15], "nbins": nbins},
+                "min_info_gain": {"type": float, "range": [0.0, 0.1], "nbins": nbins},
+                "nbins": {"type": int, "range": [10, 1000], "nbins": nbins},
+            }
+            if isinstance(RandomForestRegressor, RandomForestClassifier):
+                result["sample"] = {"type": float, "range": [0.1, 1.0], "nbins": nbins}
+                result["n_estimators"] = {
+                    "type": int,
+                    "range": [1, 100],
+                    "nbins": nbins,
+                }
             return result
-    elif isinstance(estimator, (LinearSVC, LinearSVR,)):
+    elif isinstance(estimator, (LinearSVC, LinearSVR)):
         if optimized_grid == 0:
-            params_grid = {"tol": [1e-4, 1e-6, 1e-8],
-                           "C": [elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))],
-                           "fit_intercept": [False, True],
-                           "intercept_mode": ["regularized", "unregularized"],
-                           "max_iter": [100, 500, 1000],}
+            params_grid = {
+                "tol": [1e-4, 1e-6, 1e-8],
+                "C": [elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))],
+                "fit_intercept": [False, True],
+                "intercept_mode": ["regularized", "unregularized"],
+                "max_iter": [100, 500, 1000],
+            }
         elif optimized_grid == 1:
-            params_grid = {"tol": [1e-6],
-                           "C": [1e-1, 0.0, 1.0, 10.0,],
-                           "fit_intercept": [True],
-                           "intercept_mode": ["regularized", "unregularized"],
-                           "max_iter": [100],}
+            params_grid = {
+                "tol": [1e-6],
+                "C": [1e-1, 0.0, 1.0, 10.0],
+                "fit_intercept": [True],
+                "intercept_mode": ["regularized", "unregularized"],
+                "max_iter": [100],
+            }
         elif optimized_grid == 2:
-            params_grid = {"tol": [1e-6],
-                           "C": [0.0, 1.0,],
-                           "fit_intercept": [True],
-                           "intercept_mode": ["regularized", "unregularized"],
-                           "max_iter": [100],}
+            params_grid = {
+                "tol": [1e-6],
+                "C": [0.0, 1.0],
+                "fit_intercept": [True],
+                "intercept_mode": ["regularized", "unregularized"],
+                "max_iter": [100],
+            }
         elif optimized_grid == -666:
-            return {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
-                    "C": {"type": float, "range": [0.0, 1000.0,], "nbins": nbins,},
-                    "fit_intercept": {"type": bool,},
-                    "intercept_mode": {"type": str, "values": ["regularized", "unregularized"]},
-                    "max_iter": {"type": int, "range": [10, 1000,], "nbins": nbins,},}
-    elif isinstance(estimator, (XGBoostClassifier, XGBoostRegressor,)):
+            return {
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "C": {"type": float, "range": [0.0, 1000.0], "nbins": nbins},
+                "fit_intercept": {"type": bool},
+                "intercept_mode": {
+                    "type": str,
+                    "values": ["regularized", "unregularized"],
+                },
+                "max_iter": {"type": int, "range": [10, 1000], "nbins": nbins},
+            }
+    elif isinstance(estimator, (XGBoostClassifier, XGBoostRegressor)):
         if optimized_grid == 0:
-            params_grid = {"nbins": list(range(2, 100, math.ceil(100 / nbins))),
-                           "max_depth": list(range(1, 20, math.ceil(100 / nbins))),
-                           "weight_reg": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           "min_split_loss": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           "learning_rate": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           #"sample": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           "tol": [1e-4, 1e-6, 1e-8],
-                           "max_ntree": list(range(1, 100, math.ceil(100 / nbins)))}
+            params_grid = {
+                "nbins": list(range(2, 100, math.ceil(100 / nbins))),
+                "max_depth": list(range(1, 20, math.ceil(100 / nbins))),
+                "weight_reg": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ],
+                "min_split_loss": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ],
+                "learning_rate": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ],
+                # "sample": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
+                "tol": [1e-4, 1e-6, 1e-8],
+                "max_ntree": list(range(1, 100, math.ceil(100 / nbins))),
+            }
         elif optimized_grid == 1:
-            params_grid = {"nbins": [10, 15, 20, 25, 30, 35, 40],
-                           "max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20,],
-                           "weight_reg": [0.0, 0.5, 1.0, 2.0],
-                           "min_split_loss": [0.0, 0.1, 0.25],
-                           "learning_rate": [0.01, 0.05, 0.1, 1.0],
-                           #"sample": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-                           "tol": [1e-8],
-                           "max_ntree": [1, 10, 20, 30, 40, 50, 100]}
+            params_grid = {
+                "nbins": [10, 15, 20, 25, 30, 35, 40],
+                "max_depth": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20],
+                "weight_reg": [0.0, 0.5, 1.0, 2.0],
+                "min_split_loss": [0.0, 0.1, 0.25],
+                "learning_rate": [0.01, 0.05, 0.1, 1.0],
+                # "sample": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                "tol": [1e-8],
+                "max_ntree": [1, 10, 20, 30, 40, 50, 100],
+            }
         elif optimized_grid == 2:
-            params_grid = {"nbins": [32,],
-                           "max_depth": [3, 4, 5,],
-                           "weight_reg": [0.0, 0.25,],
-                           "min_split_loss": [0.0,],
-                           "learning_rate": [0.05, 0.1, 1.0,],
-                           #"sample": [0.5, 0.6, 0.7,],
-                           "tol": [1e-8],
-                           "max_ntree": [20,]}
+            params_grid = {
+                "nbins": [32],
+                "max_depth": [3, 4, 5],
+                "weight_reg": [0.0, 0.25],
+                "min_split_loss": [0.0],
+                "learning_rate": [0.05, 0.1, 1.0],
+                # "sample": [0.5, 0.6, 0.7],
+                "tol": [1e-8],
+                "max_ntree": [20],
+            }
         elif optimized_grid == -666:
-            return {"nbins": {"type": int, "range": [2, 100,], "nbins": nbins,},
-                    "max_depth": {"type": int, "range": [1, 20,], "nbins": nbins,},
-                    "weight_reg": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
-                    "min_split_loss": {"type": float, "values": [0.0, 0.25,], "nbins": nbins,},
-                    "learning_rate": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
-                    "sample": {"type": float, "range": [0.0, 1.0,], "nbins": nbins,},
-                    "tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
-                    "max_ntree": {"type": int, "range": [1, 20,], "nbins": nbins,},}
+            return {
+                "nbins": {"type": int, "range": [2, 100], "nbins": nbins},
+                "max_depth": {"type": int, "range": [1, 20], "nbins": nbins},
+                "weight_reg": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "min_split_loss": {
+                    "type": float,
+                    "values": [0.0, 0.25],
+                    "nbins": nbins,
+                },
+                "learning_rate": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "sample": {"type": float, "range": [0.0, 1.0], "nbins": nbins},
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_ntree": {"type": int, "range": [1, 20], "nbins": nbins},
+            }
     elif isinstance(estimator, NaiveBayes):
         if optimized_grid == 0:
-            params_grid = {"alpha": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))]}
+            params_grid = {
+                "alpha": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ]
+            }
         elif optimized_grid == 1:
-            params_grid = {"alpha": [0.01, 0.1, 1.0,  5.0, 10.0,]}
+            params_grid = {"alpha": [0.01, 0.1, 1.0, 5.0, 10.0]}
         elif optimized_grid == 2:
-            params_grid = {"alpha": [0.01, 1.0,  10.0,]}
+            params_grid = {"alpha": [0.01, 1.0, 10.0]}
         elif optimized_grid == -666:
-            return {"alpha": {"type": float, "range": [0.00001, 1000.0,], "nbins": nbins,},}
+            return {
+                "alpha": {"type": float, "range": [0.00001, 1000.0], "nbins": nbins}
+            }
     elif isinstance(estimator, (PCA, SVD)):
         if optimized_grid == 0:
-            params_grid = {"max_features": list(range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))),}
-        if isinstance(estimator, (PCA,)):
+            params_grid = {
+                "max_features": list(
+                    range(1, max_nfeatures, math.ceil(max_nfeatures / nbins))
+                )
+            }
+        if isinstance(estimator, (PCA)):
             params_grid["scale"] = [False, True]
         if optimized_grid == -666:
-            return {"scale": {"type": bool,}, "max_features": {"type": int, "range": [1, max_nfeatures,], "nbins": nbins,},}
-    elif isinstance(estimator, (Normalizer,)):
+            return {
+                "scale": {"type": bool},
+                "max_features": {
+                    "type": int,
+                    "range": [1, max_nfeatures],
+                    "nbins": nbins,
+                },
+            }
+    elif isinstance(estimator, (Normalizer)):
         params_grid = {"method": ["minmax", "robust_zscore", "zscore"]}
         if optimized_grid == -666:
-            return {"method": {"type": str, "values": ["minmax", "robust_zscore", "zscore"]},}
-    elif isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor, NearestCentroid,)):
+            return {
+                "method": {"type": str, "values": ["minmax", "robust_zscore", "zscore"]}
+            }
+    elif isinstance(
+        estimator,
+        (
+            KNeighborsRegressor,
+            KNeighborsClassifier,
+            LocalOutlierFactor,
+            NearestCentroid,
+        ),
+    ):
         if optimized_grid == 0:
-            params_grid = {"p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),}
-            if isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor,)):
-                params_grid["n_neighbors"] =  list(range(1, 100, math.ceil(100 / (nbins))))
+            params_grid = {
+                "p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2))))
+            }
+            if isinstance(
+                estimator,
+                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+            ):
+                params_grid["n_neighbors"] = list(
+                    range(1, 100, math.ceil(100 / (nbins)))
+                )
         elif optimized_grid == 1:
-            params_grid = {"p": [1, 2, 3, 4],}
-            if isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor,)):
-                params_grid["n_neighbors"] =  [1, 2, 3, 4, 5, 10, 20, 100]
+            params_grid = {"p": [1, 2, 3, 4]}
+            if isinstance(
+                estimator,
+                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+            ):
+                params_grid["n_neighbors"] = [1, 2, 3, 4, 5, 10, 20, 100]
         elif optimized_grid == 2:
-            params_grid = {"p": [1, 2,],}
-            if isinstance(estimator, (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor,)):
-                params_grid["n_neighbors"] =  [5, 10,]
+            params_grid = {"p": [1, 2]}
+            if isinstance(
+                estimator,
+                (KNeighborsRegressor, KNeighborsClassifier, LocalOutlierFactor),
+            ):
+                params_grid["n_neighbors"] = [5, 10]
         elif optimized_grid == -666:
-            return {"p": {"type": int, "range": [1, 10,], "nbins": nbins,},
-                    "n_neighbors": {"type": int, "range": [1, 100,], "nbins": nbins,},}
-    elif isinstance(estimator, (DBSCAN,)):
+            return {
+                "p": {"type": int, "range": [1, 10], "nbins": nbins},
+                "n_neighbors": {"type": int, "range": [1, 100], "nbins": nbins},
+            }
+    elif isinstance(estimator, (DBSCAN)):
         if optimized_grid == 0:
-            params_grid = {"p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),
-                           "eps": [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))],
-                           "min_samples": list(range(1, 1000, math.ceil(1000 / nbins))),}
+            params_grid = {
+                "p": [1, 2] + list(range(3, 100, math.ceil(100 / (nbins - 2)))),
+                "eps": [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ],
+                "min_samples": list(range(1, 1000, math.ceil(1000 / nbins))),
+            }
         elif optimized_grid == 1:
-            params_grid = {"p": [1, 2, 3, 4],
-                           "min_samples": [1, 2, 3, 4, 5, 10, 100],}
+            params_grid = {"p": [1, 2, 3, 4], "min_samples": [1, 2, 3, 4, 5, 10, 100]}
         elif optimized_grid == 2:
-            params_grid = {"p": [1, 2,],
-                           "min_samples": [5, 10,],}
+            params_grid = {"p": [1, 2], "min_samples": [5, 10]}
         elif optimized_grid == -666:
-            return {"p": {"type": int, "range": [1, 10,], "nbins": nbins,},
-                    "min_samples": {"type": int, "range": [1, 100,], "nbins": nbins,},}
-    elif isinstance(estimator, (LogisticRegression, LinearRegression, ElasticNet, Lasso, Ridge,)):
+            return {
+                "p": {"type": int, "range": [1, 10], "nbins": nbins},
+                "min_samples": {"type": int, "range": [1, 100], "nbins": nbins},
+            }
+    elif isinstance(
+        estimator, (LogisticRegression, LinearRegression, ElasticNet, Lasso, Ridge)
+    ):
         if optimized_grid == 0:
-            params_grid = {"tol": [1e-4, 1e-6, 1e-8],
-                           "max_iter": [100, 500, 1000],}
+            params_grid = {"tol": [1e-4, 1e-6, 1e-8], "max_iter": [100, 500, 1000]}
             if isinstance(estimator, LogisticRegression):
-                params_grid["penalty"] = ["none", "l1", "l2", "enet",]
+                params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
-                params_grid["solver"] = ["newton", "bfgs",]
+                params_grid["solver"] = ["newton", "bfgs"]
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
-                params_grid["solver"] = ["newton", "bfgs", "cgd",]
+                params_grid["solver"] = ["newton", "bfgs", "cgd"]
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                params_grid["C"] = [elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))]
+                params_grid["C"] = [
+                    elem / 1000 for elem in range(1, 5000, math.ceil(5000 / nbins))
+                ]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
-                params_grid["l1_ratio"] = [elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))]
+                params_grid["l1_ratio"] = [
+                    elem / 1000 for elem in range(1, 1000, math.ceil(1000 / nbins))
+                ]
         elif optimized_grid == 1:
-            params_grid = {"tol": [1e-6],
-                           "max_iter": [100],}
+            params_grid = {"tol": [1e-6], "max_iter": [100]}
             if isinstance(estimator, LogisticRegression):
-                params_grid["penalty"] = ["none", "l1", "l2", "enet",]
+                params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
-                params_grid["solver"] = ["newton", "bfgs",]
+                params_grid["solver"] = ["newton", "bfgs"]
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
-                params_grid["solver"] = ["newton", "bfgs", "cgd",]
+                params_grid["solver"] = ["newton", "bfgs", "cgd"]
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                params_grid["C"] = [1e-1, 0.0, 1.0, 10.0,]
-            if isinstance(estimator, (LogisticRegression,)):
+                params_grid["C"] = [1e-1, 0.0, 1.0, 10.0]
+            if isinstance(estimator, (LogisticRegression)):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
                 params_grid["l1_ratio"] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
         elif optimized_grid == 2:
-            params_grid = {"tol": [1e-6],
-                           "max_iter": [100],}
+            params_grid = {"tol": [1e-6], "max_iter": [100]}
             if isinstance(estimator, LogisticRegression):
-                params_grid["penalty"] = ["none", "l1", "l2", "enet",]
+                params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, LinearRegression):
-                params_grid["solver"] = ["newton", "bfgs",]
+                params_grid["solver"] = ["newton", "bfgs"]
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
-                params_grid["solver"] = ["bfgs", "cgd",]
+                params_grid["solver"] = ["bfgs", "cgd"]
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                params_grid["C"] = [1.0,]
-            if isinstance(estimator, (LogisticRegression,)):
+                params_grid["C"] = [1.0]
+            if isinstance(estimator, (LogisticRegression)):
                 params_grid["penalty"] = ["none", "l1", "l2", "enet"]
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
-                params_grid["l1_ratio"] = [0.5,]
+                params_grid["l1_ratio"] = [0.5]
         elif optimized_grid == -666:
-            result = {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
-                      "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},}
+            result = {
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
+            }
             if isinstance(estimator, LogisticRegression):
-                result["penalty"] = {"type": str, "values": ["none", "l1", "l2", "enet",]}
+                result["penalty"] = {
+                    "type": str,
+                    "values": ["none", "l1", "l2", "enet"],
+                }
             if isinstance(estimator, LinearRegression):
-                result["solver"] = {"type": str, "values": ["newton", "bfgs",]}
+                result["solver"] = {"type": str, "values": ["newton", "bfgs"]}
             elif isinstance(estimator, (Lasso, LogisticRegression, ElasticNet)):
-                result["solver"] = {"type": str, "values": ["bfgs", "cgd",]}
+                result["solver"] = {"type": str, "values": ["bfgs", "cgd"]}
             if isinstance(estimator, (Lasso, Ridge, ElasticNet, LogisticRegression)):
-                result["C"] = {"type": float, "range": [0.0, 1000.0,], "nbins": nbins,}
-            if isinstance(estimator, (LogisticRegression,)):
-                result["penalty"] = {"type": str, "values": ["none", "l1", "l2", "enet",]}
+                result["C"] = {"type": float, "range": [0.0, 1000.0], "nbins": nbins}
+            if isinstance(estimator, (LogisticRegression)):
+                result["penalty"] = {
+                    "type": str,
+                    "values": ["none", "l1", "l2", "enet"],
+                }
             if isinstance(estimator, (LogisticRegression, ElasticNet)):
-                result["l1_ratio"] = {"type": float, "range": [0.0, 1.0,], "nbins": nbins,}
+                result["l1_ratio"] = {
+                    "type": float,
+                    "range": [0.0, 1.0],
+                    "nbins": nbins,
+                }
             return result
     elif isinstance(estimator, KMeans):
         if optimized_grid == 0:
-            params_grid = {"n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
-                           "init": ["kmeanspp", "random"],
-                           "max_iter": [100, 500, 1000],
-                           "tol": [1e-4, 1e-6, 1e-8],}
+            params_grid = {
+                "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
+                "init": ["kmeanspp", "random"],
+                "max_iter": [100, 500, 1000],
+                "tol": [1e-4, 1e-6, 1e-8],
+            }
         elif optimized_grid == 1:
-            params_grid = {"n_cluster": [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 50, 100, 200, 300, 1000],
-                           "init": ["kmeanspp", "random"],
-                           "max_iter": [1000],
-                           "tol": [1e-8],}
+            params_grid = {
+                "n_cluster": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    15,
+                    20,
+                    50,
+                    100,
+                    200,
+                    300,
+                    1000,
+                ],
+                "init": ["kmeanspp", "random"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+            }
         elif optimized_grid == 2:
-            params_grid = {"n_cluster": [2, 3, 4, 5, 10, 20, 100,],
-                           "init": ["kmeanspp",],
-                           "max_iter": [1000],
-                           "tol": [1e-8],}
+            params_grid = {
+                "n_cluster": [2, 3, 4, 5, 10, 20, 100],
+                "init": ["kmeanspp"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+            }
         elif optimized_grid == -666:
-            return {"tol": {"type": float, "range": [1e-2, 1e-8,], "nbins": nbins,},
-                    "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},
-                    "n_cluster": {"type": int, "range": [1, 10000,], "nbins": nbins,},
-                    "init": {"type": str, "values": ["kmeanspp", "random"],},}
+            return {
+                "tol": {"type": float, "range": [1e-2, 1e-8], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
+                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
+                "init": {"type": str, "values": ["kmeanspp", "random"]},
+            }
     elif isinstance(estimator, BisectingKMeans):
         if optimized_grid == 0:
-            params_grid = {"n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
-                           "bisection_iterations": list(range(10, 1000, math.ceil(1000 / nbins))),
-                           "split_method": ["size", "sum_squares"],
-                           "min_divisible_cluster_size": list(range(2, 100, math.ceil(100 / nbins))),
-                           "init": ["kmeanspp", "pseudo"],
-                           "max_iter": [100, 500, 1000],
-                           "tol": [1e-4, 1e-6, 1e-8],}
+            params_grid = {
+                "n_cluster": list(range(2, 100, math.ceil(100 / nbins))),
+                "bisection_iterations": list(range(10, 1000, math.ceil(1000 / nbins))),
+                "split_method": ["size", "sum_squares"],
+                "min_divisible_cluster_size": list(
+                    range(2, 100, math.ceil(100 / nbins))
+                ),
+                "init": ["kmeanspp", "pseudo"],
+                "max_iter": [100, 500, 1000],
+                "tol": [1e-4, 1e-6, 1e-8],
+            }
         elif optimized_grid == 1:
-            params_grid = {"n_cluster": [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 50, 100, 200, 300, 1000],
-                           "bisection_iterations": list(range(10, 1000, math.ceil(1000 / nbins))),
-                           "split_method": ["size", "sum_squares"],
-                           "min_divisible_cluster_size": list(range(2, 100, math.ceil(100 / nbins))),
-                           "init": ["kmeanspp", "pseudo"],
-                           "max_iter": [1000],
-                           "tol": [1e-8],}
+            params_grid = {
+                "n_cluster": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    15,
+                    20,
+                    50,
+                    100,
+                    200,
+                    300,
+                    1000,
+                ],
+                "bisection_iterations": list(range(10, 1000, math.ceil(1000 / nbins))),
+                "split_method": ["size", "sum_squares"],
+                "min_divisible_cluster_size": list(
+                    range(2, 100, math.ceil(100 / nbins))
+                ),
+                "init": ["kmeanspp", "pseudo"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+            }
         elif optimized_grid == 2:
-            params_grid = {"n_cluster": [2, 3, 4, 5, 10, 20, 100,],
-                           "bisection_iterations": [1, 2, 3,],
-                           "split_method": ["sum_squares",],
-                           "min_divisible_cluster_size": [2, 3, 4,],
-                           "init": ["kmeanspp",],
-                           "max_iter": [1000],
-                           "tol": [1e-8],}
+            params_grid = {
+                "n_cluster": [2, 3, 4, 5, 10, 20, 100],
+                "bisection_iterations": [1, 2, 3],
+                "split_method": ["sum_squares"],
+                "min_divisible_cluster_size": [2, 3, 4],
+                "init": ["kmeanspp"],
+                "max_iter": [1000],
+                "tol": [1e-8],
+            }
         elif optimized_grid == -666:
-            return {"tol": {"type": float, "range": [1e-8, 1e-2,], "nbins": nbins,},
-                    "max_iter": {"type": int, "range": [1, 1000,], "nbins": nbins,},
-                    "bisection_iterations": {"type": int, "range": [1, 1000,], "nbins": nbins,},
-                    "split_method": {"type": str, "values": ["sum_squares",],},
-                    "n_cluster": {"type": int, "range": [1, 10000,], "nbins": nbins,},
-                    "init": {"type": str, "values": ["kmeanspp", "pseudo"],},}
+            return {
+                "tol": {"type": float, "range": [1e-8, 1e-2], "nbins": nbins},
+                "max_iter": {"type": int, "range": [1, 1000], "nbins": nbins},
+                "bisection_iterations": {
+                    "type": int,
+                    "range": [1, 1000],
+                    "nbins": nbins,
+                },
+                "split_method": {"type": str, "values": ["sum_squares"]},
+                "n_cluster": {"type": int, "range": [1, 10000], "nbins": nbins},
+                "init": {"type": str, "values": ["kmeanspp", "pseudo"]},
+            }
     params_grid = parameter_grid(params_grid)
     final_param_grid = []
     for param in params_grid:
@@ -1254,13 +1469,17 @@ tablesample
             if "penalty" in param:
                 param["penalty"] = "none"
         if "penalty" in param:
-            if param["penalty"] in ("none", "l2") and "solver" in param and param["solver"] == "cgd":
+            if (
+                param["penalty"] in ("none", "l2")
+                and "solver" in param
+                and param["solver"] == "cgd"
+            ):
                 param["solver"] = "bfgs"
             if param["penalty"] in ("none", "l1", "l2") and "l1_ratio" in param:
                 del param["l1_ratio"]
-            if param["penalty"] in ("none",) and "C" in param:
+            if param["penalty"] == "none" and "C" in param:
                 del param["C"]
-            if param["penalty"] in ("l1", "enet",) and "solver" in param:
+            if param["penalty"] in ("l1", "enet") and "solver" in param:
                 param["solver"] = "cgd"
         if param not in final_param_grid:
             final_param_grid += [param]
@@ -1292,7 +1511,7 @@ Computes the k-fold grid search of an estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 param_grid: dict/list
     Dictionary of the parameters to test. It can also be a list of the
     different combinations.
@@ -1355,11 +1574,11 @@ tablesample
             ("metric", metric, [str]),
             ("param_grid", param_grid, [dict, list]),
             ("training_score", training_score, [bool]),
-            ("skip_error", skip_error, [bool, str,]),
-            ("print_info", print_info, [bool,]),
+            ("skip_error", skip_error, [bool, str]),
+            ("print_info", print_info, [bool]),
         ]
     )
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -1384,7 +1603,11 @@ tablesample
     data = []
     if all_configuration == []:
         all_configuration = [{}]
-    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])) and print_info:
+    if (
+        verticapy.options["tqdm"]
+        and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
+        and print_info
+    ):
         from tqdm.auto import tqdm
 
         loop = tqdm(all_configuration)
@@ -1419,7 +1642,9 @@ tablesample
                     )
                 ]
                 if print_info:
-                    print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;")
+                    print(
+                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;"
+                    )
             else:
                 keys = [elem for elem in current_cv.values]
                 data += [
@@ -1431,13 +1656,15 @@ tablesample
                     )
                 ]
                 if print_info:
-                    print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;")
+                    print(
+                        f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;"
+                    )
         except Exception as e:
             if skip_error and skip_error != "no_print":
                 print(e)
-            elif not(skip_error):
+            elif not (skip_error):
                 raise (e)
-    if not(data):
+    if not (data):
         if training_score:
             return tablesample(
                 {
@@ -1451,12 +1678,7 @@ tablesample
             )
         else:
             return tablesample(
-                {
-                    "parameters": [],
-                    "avg_score": [],
-                    "avg_time": [],
-                    "score_std": [],
-                }
+                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
@@ -1471,9 +1693,13 @@ tablesample
                 "score_train_std": [elem[5] for elem in data],
             }
         )
-        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
             print("\033[1mGrid Search Selected Model\033[0m")
-            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+            )
     else:
         result = tablesample(
             {
@@ -1483,9 +1709,13 @@ tablesample
                 "score_std": [elem[3] for elem in data],
             }
         )
-        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
             print("\033[1mGrid Search Selected Model\033[0m")
-            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Parameters: {result['parameters'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+            )
     return result
 
 
@@ -1512,7 +1742,7 @@ Draws the learning curve.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -1574,19 +1804,17 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-    check_types(
-        [("method", method, ["efficiency", "performance", "scalability"],),]
-    )
+    check_types([("method", method, ["efficiency", "performance", "scalability"])])
     from verticapy.plot import range_curve
 
     for s in sizes:
         assert 0 < s <= 1, ParameterError("Each size must be in ]0,1].")
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
     if isinstance(input_relation, str):
-        input_relation = vdf_from_relation(input_relation, cursor=estimator.cursor)
+        input_relation = vDataFrameSQL(input_relation)
     lc_result_final = []
     sizes = sorted(set(sizes))
     if verticapy.options["tqdm"]:
@@ -1598,7 +1826,17 @@ tablesample
     for s in loop:
         relation = input_relation.sample(x=s)
         lc_result = cross_validate(
-            estimator, relation, X, y, metric, cv, pos_label, cutoff, True, True, tqdm=False,
+            estimator,
+            relation,
+            X,
+            y,
+            metric,
+            cv,
+            pos_label,
+            cutoff,
+            True,
+            True,
+            tqdm=False,
         )
         lc_result_final += [
             (
@@ -1696,9 +1934,7 @@ tablesample
         x_label = "n"
         y_label = "time"
         labels = []
-    range_curve(
-        X, Y, x_label, y_label, ax, labels, **style_kwds,
-    )
+    range_curve(X, Y, x_label, y_label, ax, labels, **style_kwds)
     return result
 
 
@@ -1707,7 +1943,6 @@ def lift_chart(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     ax=None,
@@ -1724,12 +1959,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the Lift Chart, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -1749,20 +1981,26 @@ tablesample
     """
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("nbins", nbins, [int, float],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("nbins", nbins, [int, float]),
         ]
     )
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0])
     query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the Lift Table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query = query.format(
+        nbins,
+        y_true,
+        pos_label,
+        y_score,
+        input_relation
+        if isinstance(input_relation, str)
+        else input_relation.__genSQL__(),
+    )
+    query_result = executeSQL(
+        query, title="Computing the Lift Table.", method="fetchall"
+    )
     decision_boundary, positive_prediction_ratio, lift = (
         [item[0] for item in query_result],
         [item[1] for item in query_result],
@@ -1777,9 +2015,7 @@ tablesample
     max_value = max([0 if elem != elem else elem for elem in lift])
     lift = [max_value if elem != elem else elem for elem in lift]
     param1 = {"color": gen_colors()[0]}
-    ax.plot(
-        decision_boundary, lift, **updated_dict(param1, style_kwds, 0),
-    )
+    ax.plot(decision_boundary, lift, **updated_dict(param1, style_kwds, 0))
     param2 = {"color": gen_colors()[1]}
     ax.plot(
         decision_boundary,
@@ -1812,12 +2048,12 @@ tablesample
             "decision_boundary": decision_boundary,
             "positive_prediction_ratio": positive_prediction_ratio,
             "lift": lift,
-        },
+        }
     )
 
 
 # ---#
-def parameter_grid(param_grid: dict,):
+def parameter_grid(param_grid: dict):
     """
 ---------------------------------------------------------------------------
 Generates the list of the different combinations of input parameters.
@@ -1832,8 +2068,10 @@ Returns
 list of dict
     List of the different combinations.
     """
-    check_types([("param_grid", param_grid, [dict]),])
-    return [dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())]
+    check_types([("param_grid", param_grid, [dict])])
+    return [
+        dict(zip(param_grid.keys(), values)) for values in product(*param_grid.values())
+    ]
 
 
 # ---#
@@ -1878,11 +2116,11 @@ tablesample
         by = [by]
     check_types(
         [
-            ("column", column, [str],),
-            ("ts", ts, [str],),
-            ("by", by, [list],),
-            ("p", p, [int, float],),
-            ("vdf", vdf, [vDataFrame,],),
+            ("column", column, [str]),
+            ("ts", ts, [str]),
+            ("by", by, [list]),
+            ("p", p, [int, float]),
+            ("vdf", vdf, [vDataFrame]),
         ]
     )
     tmp_style = {}
@@ -1893,9 +2131,9 @@ tablesample
         color = style_kwds["color"]
     else:
         color = gen_colors()[0]
-    columns_check([column, ts] + by, vdf)
-    by = vdf_columns_names(by, vdf)
-    column, ts = vdf_columns_names([column, ts], vdf)
+    vdf.are_namecols_in([column, ts] + by)
+    by = vdf.format_colnames(by)
+    column, ts = vdf.format_colnames([column, ts])
     acf = vdf.acf(ts=ts, column=column, by=by, p=p, show=False)
     pacf = vdf.pacf(ts=ts, column=column, by=by, p=p, show=False)
     result = tablesample(
@@ -1904,7 +2142,7 @@ tablesample
             "acf": acf.values["value"],
             "pacf": pacf.values["value"],
             "confidence": pacf.values["confidence"],
-        },
+        }
     )
     fig = plt.figure(figsize=(10, 6)) if isnotebook() else plt.figure(figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "#FCFCFC"
@@ -1915,9 +2153,7 @@ tablesample
         result.values["confidence"],
     )
     plt.xlim(-1, x[-1] + 1)
-    ax1.bar(
-        x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0,
-    )
+    ax1.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
     param = {
         "s": 90,
         "marker": "o",
@@ -1925,14 +2161,9 @@ tablesample
         "edgecolors": "black",
         "zorder": 2,
     }
-    ax1.scatter(
-        x, y, **updated_dict(param, tmp_style,),
-    )
+    ax1.scatter(x, y, **updated_dict(param, tmp_style))
     ax1.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
+        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
     )
     ax1.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax1.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -1940,14 +2171,9 @@ tablesample
     y = result.values["pacf"]
     ax2 = fig.add_subplot(212)
     ax2.bar(x, y, width=0.007 * len(x), color="#444444", zorder=1, linewidth=0)
-    ax2.scatter(
-        x, y, **updated_dict(param, tmp_style,),
-    )
+    ax2.scatter(x, y, **updated_dict(param, tmp_style))
     ax2.plot(
-        [-1] + x + [x[-1] + 1],
-        [0 for elem in range(len(x) + 2)],
-        color=color,
-        zorder=0,
+        [-1] + x + [x[-1] + 1], [0 for elem in range(len(x) + 2)], color=color, zorder=0
     )
     ax2.fill_between(x, confidence, color="#FE5016", alpha=0.1)
     ax2.fill_between(x, [-elem for elem in confidence], color="#FE5016", alpha=0.1)
@@ -1961,7 +2187,6 @@ def prc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_prc: bool = False,
@@ -1979,12 +2204,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -2007,23 +2229,29 @@ tablesample
     """
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("nbins", nbins, [int, float],),
-            ("auc_prc", auc_prc, [bool],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("nbins", nbins, [int, float]),
+            ("auc_prc", auc_prc, [bool]),
         ]
     )
     if nbins < 0:
         nbins = 999999
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[9, 1, 0])
+    version(condition=[9, 1, 0])
     query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the PRC table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query = query.format(
+        nbins,
+        y_true,
+        pos_label,
+        y_score,
+        input_relation
+        if isinstance(input_relation, str)
+        else input_relation.__genSQL__(),
+    )
+    query_result = executeSQL(
+        query, title="Computing the PRC table.", method="fetchall"
+    )
     threshold, recall, precision = (
         [0] + [item[0] for item in query_result] + [1],
         [1] + [item[1] for item in query_result] + [0],
@@ -2071,7 +2299,7 @@ tablesample
     ax.set_axisbelow(True)
     ax.grid()
     return tablesample(
-        values={"threshold": threshold, "recall": recall, "precision": precision},
+        values={"threshold": threshold, "recall": recall, "precision": precision}
     )
 
 
@@ -2100,7 +2328,7 @@ the model.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2161,12 +2389,12 @@ tablesample
         [
             ("metric", metric, [str]),
             ("training_score", training_score, [bool]),
-            ("skip_error", skip_error, [bool, str,]),
-            ("print_info", print_info, [bool,]),
-            ("comb_limit", comb_limit, [int,]),
+            ("skip_error", skip_error, [bool, str]),
+            ("print_info", print_info, [bool]),
+            ("comb_limit", comb_limit, [int]),
         ]
     )
-    if category_from_model_type(estimator.type)[0] == "regressor" and metric == "auto":
+    if get_model_category(estimator.type)[0] == "regressor" and metric == "auto":
         metric = "rmse"
     elif metric == "auto":
         metric = "logloss"
@@ -2180,7 +2408,11 @@ tablesample
             config = sorted(random.sample(X, random.randint(1, len(X))))
             if config not in all_configuration:
                 all_configuration += [config]
-    if verticapy.options["tqdm"] and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"])) and print_info:
+    if (
+        verticapy.options["tqdm"]
+        and ("tqdm" not in kwargs or ("tqdm" in kwargs and kwargs["tqdm"]))
+        and print_info
+    ):
         from tqdm.auto import tqdm
 
         loop = tqdm(all_configuration)
@@ -2217,7 +2449,9 @@ tablesample
                         )
                     ]
                     if print_info:
-                        print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;")
+                        print(
+                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[0][keys[1]][cv]}\033[0m; \033[92mTrain_score: {current_cv[1][keys[1]][cv]}\033[0m; \033[94mTime: {current_cv[0][keys[2]][cv]}\033[0m;"
+                        )
                 else:
                     keys = [elem for elem in current_cv.values]
                     data += [
@@ -2229,13 +2463,15 @@ tablesample
                         )
                     ]
                     if print_info:
-                        print(f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;")
+                        print(
+                            f"Model: {str(estimator.__class__).split('.')[-1][:-2]}; Features: {config}; \033[91mTest_score: {current_cv[keys[1]][cv]}\033[0m; \033[94mTime:{current_cv[keys[2]][cv]}\033[0m;"
+                        )
             except Exception as e:
                 if skip_error and skip_error != "no_print":
                     print(e)
-                elif not(skip_error):
+                elif not (skip_error):
                     raise (e)
-    if not(data):
+    if not (data):
         if training_score:
             return tablesample(
                 {
@@ -2249,12 +2485,7 @@ tablesample
             )
         else:
             return tablesample(
-                {
-                    "parameters": [],
-                    "avg_score": [],
-                    "avg_time": [],
-                    "score_std": [],
-                }
+                {"parameters": [], "avg_score": [], "avg_time": [], "score_std": [],}
             )
     reverse = reverse_score(metric)
     data.sort(key=lambda tup: tup[1], reverse=reverse)
@@ -2269,9 +2500,13 @@ tablesample
                 "score_train_std": [elem[5] for elem in data],
             }
         )
-        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
             print("\033[1mRandomized Features Search Selected Model\033[0m")
-            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[92mTrain_score: {result['avg_train_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+            )
     else:
         result = tablesample(
             {
@@ -2281,9 +2516,13 @@ tablesample
                 "score_std": [elem[3] for elem in data],
             }
         )
-        if print_info and ("final_print" not in kwargs or kwargs["final_print"] != "no_print"):
+        if print_info and (
+            "final_print" not in kwargs or kwargs["final_print"] != "no_print"
+        ):
             print("\033[1mRandomized Features Search Selected Model\033[0m")
-            print(f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;")
+            print(
+                f"{str(estimator.__class__).split('.')[-1][:-2]}; Features: {result['features'][0]}; \033[91mTest_score: {result['avg_score'][0]}\033[0m; \033[94mTime: {result['avg_time'][0]}\033[0m;"
+            )
     return result
 
 
@@ -2309,7 +2548,7 @@ Computes the K-Fold randomized search of an estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2389,7 +2628,6 @@ def roc_curve(
     y_true: str,
     y_score: str,
     input_relation: Union[str, vDataFrame],
-    cursor=None,
     pos_label: Union[int, float, str] = 1,
     nbins: int = 30,
     auc_roc: bool = False,
@@ -2409,12 +2647,9 @@ y_true: str
 y_score: str
     Prediction Probability.
 input_relation: str/vDataFrame
-    Relation to use to do the scoring. The relation can be a view or a table
-    or even a customized relation. For example, you could write:
-    "(SELECT ... FROM ...) x" as long as an alias is given at the end of the
-    relation.
-cursor: DBcursor, optional
-    Vertica database cursor.
+    Relation to use for scoring. This relation can be a view, table, or a 
+    customized relation (if an alias is used at the end of the relation). 
+    For example: (SELECT ... FROM ...) x
 pos_label: int/float/str, optional
     To compute the PRC Curve, one of the response column classes must be the
     positive one. The parameter 'pos_label' represents this class.
@@ -2443,25 +2678,31 @@ tablesample
     """
     check_types(
         [
-            ("y_true", y_true, [str],),
-            ("y_score", y_score, [str],),
-            ("input_relation", input_relation, [str, vDataFrame],),
-            ("nbins", nbins, [int, float],),
-            ("auc_roc", auc_roc, [bool],),
-            ("best_threshold", best_threshold, [bool],),
-            ("cutoff_curve", cutoff_curve, [bool],),
+            ("y_true", y_true, [str]),
+            ("y_score", y_score, [str]),
+            ("input_relation", input_relation, [str, vDataFrame]),
+            ("nbins", nbins, [int, float]),
+            ("auc_roc", auc_roc, [bool]),
+            ("best_threshold", best_threshold, [bool]),
+            ("cutoff_curve", cutoff_curve, [bool]),
         ]
     )
     if nbins < 0:
         nbins = 999999
-    cursor, conn, input_relation = check_cursor(cursor, input_relation)
-    version(cursor=cursor, condition=[8, 0, 0])
+    version(condition=[8, 0, 0])
     query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
-    query = query.format(nbins, y_true, pos_label, y_score, input_relation)
-    executeSQL(cursor, query, "Computing the ROC Table.")
-    query_result = cursor.fetchall()
-    if conn:
-        conn.close()
+    query = query.format(
+        nbins,
+        y_true,
+        pos_label,
+        y_score,
+        input_relation
+        if isinstance(input_relation, str)
+        else input_relation.__genSQL__(),
+    )
+    query_result = executeSQL(
+        query, title="Computing the ROC Table.", method="fetchall"
+    )
     threshold, false_positive, true_positive = (
         [item[0] for item in query_result],
         [item[1] for item in query_result],
@@ -2555,7 +2796,7 @@ tablesample
             "threshold": threshold,
             "false_positive": false_positive,
             "true_positive": true_positive,
-        },
+        }
     )
 
 
@@ -2584,7 +2825,7 @@ when fitting the estimator.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 input_relation: str/vDataFrame
     Relation to use to train the model.
 X: list
@@ -2634,27 +2875,37 @@ tablesample
     assert len(X) >= 1, ParameterError("Vector X must have at least one element.")
     check_types(
         [
-            ("criterion", criterion, ["aic", "bic",]),
-            ("direction", direction, ["forward", "backward",]),
-            ("max_steps", max_steps, [int, float,]),
-            ("print_info", print_info, [bool,]),
-            ("x_order", x_order, ["pearson", "spearman", "random", "none",]),
+            ("criterion", criterion, ["aic", "bic"]),
+            ("direction", direction, ["forward", "backward"]),
+            ("max_steps", max_steps, [int, float]),
+            ("print_info", print_info, [bool]),
+            ("x_order", x_order, ["pearson", "spearman", "random", "none"]),
         ]
     )
-    does_model_exist(name=estimator.name, cursor=estimator.cursor, raise_error=True)
+    does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
-    table = input_relation if isinstance(input_relation, str) else input_relation.__genSQL__()
-    estimator.cursor.execute(f"SELECT AVG({y}) FROM {table}")
-    avg = estimator.cursor.fetchone()[0]
+    table = (
+        input_relation
+        if isinstance(input_relation, str)
+        else input_relation.__genSQL__()
+    )
+    avg = executeSQL(
+        f"SELECT AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False
+    )
     k = 0 if criterion == "aic" else 1
     if x_order == "random":
         random.shuffle(X)
     elif x_order in ("spearman", "pearson"):
         if isinstance(input_relation, str):
-            vdf = vdf_from_relation(input_relation, cursor=estimator.cursor)
+            vdf = vDataFrameSQL(input_relation)
         else:
             vdf = input_relation
-        X = [elem for elem in vdf.corr(method=x_order, focus=y, columns=X, show=False,)["index"]]
+        X = [
+            elem
+            for elem in vdf.corr(method=x_order, focus=y, columns=X, show=False)[
+                "index"
+            ]
+        ]
         if direction == "backward":
             X.reverse()
     if print_info:
@@ -2674,7 +2925,9 @@ tablesample
         result += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
-                print(f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+                print(
+                    f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}"
+                )
             if current_step >= max_steps:
                 break
             X_test = [elem for elem in X_current]
@@ -2682,9 +2935,9 @@ tablesample
             if len(X_test) != 0:
                 estimator.drop()
                 estimator.fit(input_relation, X_test, y)
-                test_score = estimator.score(criterion,)
+                test_score = estimator.score(criterion)
             else:
-                test_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+                test_score = aic_bic(y, str(avg), input_relation, 0)[k]
             score_diff = test_score - current_score
             if test_score - current_score < criterion_threshold:
                 sign = "-"
@@ -2692,24 +2945,28 @@ tablesample
                 current_score = test_score
                 X_current = [elem for elem in X_test]
                 if print_info:
-                    print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(-) Variable: {X[idx]}\033[0m")
+                    print(
+                        f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(-) Variable: {X[idx]}\033[0m"
+                    )
             else:
                 sign = "+"
             result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     else:
         X_current = []
-        current_score = aic_bic(y, str(avg), input_relation, estimator.cursor, 0)[k]
+        current_score = aic_bic(y, str(avg), input_relation, 0)[k]
         result += [(X_current, current_score, None, None, 0, None)]
         for idx in loop:
             if print_info and idx == 0:
-                print(f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+                print(
+                    f"\033[1m[Model 0]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}"
+                )
             if current_step >= max_steps:
                 break
             X_test = [elem for elem in X_current] + [X[idx]]
             estimator.drop()
             estimator.fit(input_relation, X_test, y)
-            test_score = estimator.score(criterion,)
+            test_score = estimator.score(criterion)
             score_diff = current_score - test_score
             if current_score - test_score > criterion_threshold:
                 sign = "+"
@@ -2717,31 +2974,55 @@ tablesample
                 current_score = test_score
                 X_current = [elem for elem in X_test]
                 if print_info:
-                    print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(+) Variable: {X[idx]}\033[0m")
+                    print(
+                        f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {test_score}\033[0m; \033[91m(+) Variable: {X[idx]}\033[0m"
+                    )
             else:
                 sign = "-"
             result += [(X_test, test_score, sign, X[idx], idx + 1, score_diff)]
             current_step += 1
     if print_info:
         print(f"\033[1m\033[4mSelected Model\033[0m\033[0m\n")
-        print(f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}")
+        print(
+            f"\033[1m[Model {model_id}]\033[0m \033[92m{criterion}: {current_score}\033[0m; Variables: {X_current}"
+        )
     features = [elem[0] for elem in result]
     for idx, elem in enumerate(features):
-        features[idx] = [item.replace('"', '') for item in elem]
+        features[idx] = [item.replace('"', "") for item in elem]
     importance = [elem[5] if (elem[5]) and elem[5] > 0 else 0 for elem in result]
     importance = [100 * elem / sum(importance) for elem in importance]
-    result = tablesample({"index": [elem[4] for elem in result], "features": features, criterion: [elem[1] for elem in result], "change": [elem[2] for elem in result], "variable": [elem[3] for elem in result], "importance": importance})
+    result = tablesample(
+        {
+            "index": [elem[4] for elem in result],
+            "features": features,
+            criterion: [elem[1] for elem in result],
+            "change": [elem[2] for elem in result],
+            "variable": [elem[3] for elem in result],
+            "importance": importance,
+        }
+    )
     estimator.drop()
-    if not(drop_final_estimator):
+    if not (drop_final_estimator):
         estimator.fit(input_relation, X_current, y)
     result.best_list_ = X_current
     if show:
-        plot_stepwise_ml([len(elem) for elem in result["features"]], result[criterion], result["variable"], result["change"], [result["features"][0], X_current], x_label="n_features", y_label=criterion, direction=direction, ax=ax, **style_kwds,)
+        plot_stepwise_ml(
+            [len(elem) for elem in result["features"]],
+            result[criterion],
+            result["variable"],
+            result["change"],
+            [result["features"][0], X_current],
+            x_label="n_features",
+            y_label=criterion,
+            direction=direction,
+            ax=ax,
+            **style_kwds,
+        )
         coeff_importances = {}
         for idx in range(len(importance)):
             if result["variable"][idx] != None:
                 coeff_importances[result["variable"][idx]] = importance[idx]
-        plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds,)
+        plot_importance(coeff_importances, print_legend=False, ax=ax, **style_kwds)
     return result
 
 
@@ -2768,7 +3049,7 @@ Draws the validation curve.
 Parameters
 ----------
 estimator: object
-    Vertica estimator with a fit method and a database cursor.
+    Vertica estimator with a fit method.
 param_name: str
     Parameter name.
 param_range: list
@@ -2829,7 +3110,7 @@ tablesample
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):
         param_range = [param_range]
     from verticapy.plot import range_curve
-    
+
     gs_result = grid_search_cv(
         estimator,
         {param_name: param_range},
@@ -2879,7 +3160,5 @@ tablesample
             "test_score_upper": Y[1][2],
         }
     )
-    range_curve(
-        X, Y, param_name, metric, ax, ["train", "test"], **style_kwds,
-    )
+    range_curve(X, Y, param_name, metric, ax, ["train", "test"], **style_kwds)
     return result

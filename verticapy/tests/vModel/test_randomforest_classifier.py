@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,79 +11,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.ensemble import RandomForestClassifier
-from verticapy import vDataFrame, drop, set_option, vertica_conn
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+)
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_dataset_cl
+from verticapy.learn.ensemble import RandomForestClassifier
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def rfc_data_vd(base):
-    base.cursor.execute("DROP TABLE IF EXISTS public.rfc_data")
-    base.cursor.execute(
-        'CREATE TABLE IF NOT EXISTS public.rfc_data(Id INT, transportation VARCHAR, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (1, 'Bus', 'Male', 0, 'Cheap', 'Low')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (2, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (3, 'Train', 'Female', 1, 'Cheap', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (4, 'Bus', 'Female', 0, 'Cheap', 'Low')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (5, 'Bus', 'Male', 1, 'Cheap', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (6, 'Train', 'Male', 0, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (7, 'Train', 'Female', 1, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (8, 'Car', 'Female', 1, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (9, 'Car', 'Male', 2, 'Expensive', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO rfc_data VALUES (10, 'Car', 'Female', 2, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute("COMMIT")
+def rfc_data_vd():
+    rfc_data_vd = load_dataset_cl(table_name="rfc_data", schema="public")
+    yield rfc_data_vd
+    drop(name="public.rfc_data", method="table")
 
-    rfc_data = vDataFrame(input_relation="public.rfc_data", cursor=base.cursor)
-    yield rfc_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.rfc_data", cursor=base.cursor)
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def model(base, rfc_data_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS rfc_model_test")
+def model(rfc_data_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS rfc_model_test")
 
-    base.cursor.execute(
+    current_cursor().execute(
         "SELECT rf_classifier('rfc_model_test', 'public.rfc_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, TransPortation', mtry=4, ntree=3, max_breadth=100, sampling_size=1, max_depth=6, nbins=40, seed=1, id_column='id')"
     )
 
     # I could use load_model but it is buggy
     model_class = RandomForestClassifier(
         "rfc_model_test",
-        cursor=base.cursor,
         n_estimators=3,
         max_features=4,
         max_leaf_nodes=100,
@@ -96,13 +67,13 @@ def model(base, rfc_data_vd):
     model_class.input_relation = "public.rfc_data"
     model_class.test_relation = model_class.input_relation
     model_class.X = ['"Gender"', '"owned cars"', '"cost"', '"income"']
-    model_class.y = '"TransPortation"'
-    base.cursor.execute(
+    model_class.y = "TransPortation"
+    current_cursor().execute(
         "SELECT DISTINCT {} FROM {} WHERE {} IS NOT NULL ORDER BY 1".format(
             model_class.y, model_class.input_relation, model_class.y
         )
     )
-    classes = base.cursor.fetchall()
+    classes = current_cursor().fetchall()
     model_class.classes_ = [item[0] for item in classes]
 
     yield model_class
@@ -111,7 +82,10 @@ def model(base, rfc_data_vd):
 
 class TestRFC:
     def test_repr(self, model):
-        assert "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);" in model.__repr__()
+        assert (
+            "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            in model.__repr__()
+        )
         model_repr = RandomForestClassifier("RF_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestClassifier>"
@@ -149,43 +123,41 @@ class TestRFC:
         assert conf_mat2["Car"] == [0, 3, 0]
         assert conf_mat2["Train"] == [0, 0, 3]
 
-    def test_contour(self, base, titanic_vd):
-        model_test = RandomForestClassifier("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = RandomForestClassifier("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare",],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 38
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_CLASSIFIER(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'rfc_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_RF_CLASSIFIER("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'rfc_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS rfc_model_test_drop")
-        model_test = RandomForestClassifier("rfc_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS rfc_model_test_drop")
+        model_test = RandomForestClassifier("rfc_model_test_drop",)
         model_test.fit(
             "public.rfc_data",
             ["Gender", '"owned cars"', "cost", "income"],
             "TransPortation",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfc_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "rfc_model_test_drop"
+        assert current_cursor().fetchone()[0] == "rfc_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfc_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         f_imp = model.features_importance()
@@ -206,91 +178,99 @@ class TestRFC:
         assert lift_ch["lift"][900] == pytest.approx(2.5)
         plt.close("all")
 
-    @pytest.mark.skip(
-        reason="Model Conversion for RandomForestClassifier is not yet supported."
-    )
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_RF_CLASSIFIER('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(
-            md.predict([["Bus", "Male", 0, "Cheap", "Low"]])[0]
-        )
-
-        # 'predict_proba'
-
     def test_to_python(self, model, titanic_vd):
-        model_test = RandomForestClassifier("rfc_python_test", cursor=model.cursor)
+        model_test = RandomForestClassifier("rfc_python_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "embarked")
-        model_test.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 45.0, 'male' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == model_test.to_python(return_str=False)([[30.0, 45.0, 'male']])[0]
-        model_test.cursor.execute(
+        prediction = current_cursor().fetchone()[0]
+        assert (
+            prediction
+            == model_test.to_python(return_str=False)([[30.0, 45.0, "male"]])[0]
+        )
+        current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(30.0, 145.0, 'female' USING PARAMETERS model_name = 'rfc_python_test', match_by_pos=True)"
         )
-        prediction = model_test.cursor.fetchone()[0]
-        assert prediction == model_test.to_python(return_str=False)([[30.0, 145.0, 'female']])[0]
+        prediction = current_cursor().fetchone()[0]
+        assert (
+            prediction
+            == model_test.to_python(return_str=False)([[30.0, 145.0, "female"]])[0]
+        )
 
     def test_to_sql(self, model, titanic_vd):
-        model_test = RandomForestClassifier("rfc_sql_test", cursor=model.cursor)
+        model_test = RandomForestClassifier("rfc_sql_test")
         model_test.drop()
         model_test.fit(titanic_vd, ["age", "fare", "sex"], "survived")
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_CLASSIFIER(* USING PARAMETERS model_name = 'rfc_sql_test', match_by_pos=True)::int, {}::int FROM (SELECT 30.0 AS age, 45.0 AS fare, 'male' AS sex) x".format(
                 model_test.to_sql()
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
         model_test.drop()
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([["Male", 0, "Cheap", "Low",],
-                              ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python()([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
+        res_py = model.to_python()(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        res = mmodel.predict_proba([["Male", 0, "Cheap", "Low",],
-                                    ["Female", 3, "Expensive", "Hig",]])
-        res_py = model.to_python(return_proba = True)([["Male", 0, "Cheap", "Low",],
-                                                       ["Female", 3, "Expensive", "Hig",]])
+        res = mmodel.predict_proba(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
+        res_py = model.to_python(return_proba=True)(
+            [["Male", 0, "Cheap", "Low"], ["Female", 3, "Expensive", "Hig"]]
+        )
         assert res[0][0] == res_py[0][0]
         assert res[0][1] == res_py[0][1]
         assert res[0][2] == res_py[0][2]
         assert res[1][0] == res_py[1][0]
         assert res[1][1] == res_py[1][1]
         assert res[1][2] == res_py[1][2]
-        vdf = vDataFrame("public.rfc_data", cursor = model.cursor)
-        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
-        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[0]
-        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[1]
-        vdf["prediction_proba_sql_2"] = mmodel.predict_proba_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])[2]
-        model.predict(vdf, name = "prediction_vertica_sql")
-        model.predict(vdf, name = "prediction_proba_vertica_sql_0", pos_label = model.classes_[0])
-        model.predict(vdf, name = "prediction_proba_vertica_sql_1", pos_label = model.classes_[1])
-        model.predict(vdf, name = "prediction_proba_vertica_sql_2", pos_label = model.classes_[2])
+        vdf = vDataFrame("public.rfc_data")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )
+        vdf["prediction_proba_sql_0"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[0]
+        vdf["prediction_proba_sql_1"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[1]
+        vdf["prediction_proba_sql_2"] = mmodel.predict_proba_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )[2]
+        model.predict(vdf, name="prediction_vertica_sql")
+        model.predict_proba(
+            vdf, name="prediction_proba_vertica_sql_0", pos_label=model.classes_[0]
+        )
+        model.predict_proba(
+            vdf, name="prediction_proba_vertica_sql_1", pos_label=model.classes_[1]
+        )
+        model.predict_proba(
+            vdf, name="prediction_proba_vertica_sql_2", pos_label=model.classes_[2]
+        )
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "accuracy")
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_0", "prediction_proba_vertica_sql_0", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_1", "prediction_proba_vertica_sql_1", "r2"
+        )
         assert score == pytest.approx(1.0)
-        score = vdf.score("prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2")
+        score = vdf.score(
+            "prediction_proba_sql_2", "prediction_proba_vertica_sql_2", "r2"
+        )
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(-0.22667938806360247)
 
     def test_get_attr(self, model):
         attr = model.get_attr()
@@ -324,7 +304,7 @@ class TestRFC:
         assert model.get_attr("tree_count")["tree_count"][0] == 3
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_classifier('public.rfc_model_test', 'public.rfc_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, TransPortation', ntree=3, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):
@@ -355,14 +335,25 @@ class TestRFC:
     def test_predict(self, rfc_data_vd, model):
         rfc_data_copy = rfc_data_vd.copy()
 
-        model.predict(rfc_data_copy, name="pred_probability")
-        assert rfc_data_copy["pred_probability"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred")
+        assert rfc_data_copy["pred"].mode() == "Bus"
 
-        model.predict(rfc_data_copy, name="pred_class1", cutoff=0.7)
-        assert rfc_data_copy["pred_class1"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred1", cutoff=0.7)
+        assert rfc_data_copy["pred1"].mode() == "Bus"
 
-        model.predict(rfc_data_copy, name="pred_class2", cutoff=0.3)
-        assert rfc_data_copy["pred_class2"].mode() == "Bus"
+        model.predict(rfc_data_copy, name="pred2", cutoff=0.3)
+        assert rfc_data_copy["pred2"].mode() == "Bus"
+
+    def test_predict_proba(self, rfc_data_vd, model):
+        rfc_data_copy = rfc_data_vd.copy()
+
+        model.predict_proba(rfc_data_copy, name="prob")
+        assert rfc_data_copy["prob_bus"].avg() == 0.4
+        assert rfc_data_copy["prob_train"].avg() == 0.3
+        assert rfc_data_copy["prob_car"].avg() == 0.3
+
+        model.predict_proba(rfc_data_copy, name="prob_bus_2", pos_label="Bus")
+        assert rfc_data_copy["prob_bus_2"].avg() == 0.4
 
     def test_roc_curve(self, model):
         roc = model.roc_curve(pos_label="Train", nbins=1000)
@@ -462,47 +453,39 @@ class TestRFC:
             cutoff=0.1, method="specificity", pos_label="Train"
         ) == pytest.approx(1.0)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"nbins": 1000})
 
         assert model.get_params()["nbins"] == 1000
 
-    def test_model_from_vDF(self, base, rfc_data_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS rfc_from_vDF")
-        model_test = RandomForestClassifier("rfc_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, rfc_data_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS rfc_from_vDF")
+        model_test = RandomForestClassifier("rfc_from_vDF",)
         model_test.fit(
             rfc_data_vd, ["Gender", '"owned cars"', "cost", "income"], "TransPortation"
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'rfc_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "rfc_from_vDF"
+        assert current_cursor().fetchone()[0] == "rfc_from_vDF"
 
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_1 = model.to_graphviz(tree_id = 1,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_1 = model.to_graphviz(
+            tree_id=1,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled"},
+            arrow_style={"color": "blue"},
+            leaf_style={"shape": "circle", "style": "filled"},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_1
-        assert '0 -> 1' in gvz_tree_1
-        
+        assert "0 -> 1" in gvz_tree_1
+
     def test_get_tree(self, model):
         tree_1 = model.get_tree(tree_id=1)
 

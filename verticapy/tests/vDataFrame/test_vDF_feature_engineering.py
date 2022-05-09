@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,54 +11,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, datetime, warnings
-from verticapy import vDataFrame, drop, errors
+# Pytest
+import pytest
 
-from verticapy import set_option
+# Standard Python Modules
+import datetime
+
+# VerticaPy
+from verticapy import drop, errors, set_option
+from verticapy.datasets import load_amazon, load_iris, load_smart_meters, load_titanic
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
-    from verticapy.datasets import load_amazon
-
-    amazon = load_amazon(cursor=base.cursor)
+def amazon_vd():
+    amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+    drop(name="public.amazon")
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
-    from verticapy.datasets import load_iris
-
-    iris = load_iris(cursor=base.cursor)
+def iris_vd():
+    iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+    drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
-def smart_meters_vd(base):
-    from verticapy.datasets import load_smart_meters
-
-    smart_meters = load_smart_meters(cursor=base.cursor)
+def smart_meters_vd():
+    smart_meters = load_smart_meters()
     yield smart_meters
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.smart_meters", cursor=base.cursor)
+    drop(name="public.smart_meters")
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic")
 
 
 class TestvDFFeatureEngineering:
@@ -504,9 +495,9 @@ class TestvDFFeatureEngineering:
         titanic_copy.analytic(func="var", columns="age", name="var")
         assert titanic_copy["var"].median() == pytest.approx(208.378019758472)
 
-    def test_vDF_asfreq(self, smart_meters_vd):
+    def test_vDF_interpolate(self, smart_meters_vd):
         # bfill method
-        result1 = smart_meters_vd.asfreq(
+        result1 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "bfill"}, by=["id"]
         )
         result1.sort({"id": "asc", "time": "asc"})
@@ -517,7 +508,7 @@ class TestvDFFeatureEngineering:
         assert result1["val"][2] == pytest.approx(0.277)
 
         # ffill
-        result2 = smart_meters_vd.asfreq(
+        result2 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "ffill"}, by=["id"]
         )
         result2.sort({"id": "asc", "time": "asc"})
@@ -528,7 +519,7 @@ class TestvDFFeatureEngineering:
         assert result2["val"][2] == pytest.approx(0.029)
 
         # linear method
-        result3 = smart_meters_vd.asfreq(
+        result3 = smart_meters_vd.interpolate(
             ts="time", rule="1 hour", method={"val": "linear"}, by=["id"]
         )
         result3.sort({"id": "asc", "time": "asc"})

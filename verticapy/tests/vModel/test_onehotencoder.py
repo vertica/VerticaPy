@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,27 +11,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
+# Pytest
+import pytest
+
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic
 from verticapy.learn.preprocessing import OneHotEncoder
-from verticapy import drop, set_option, vertica_conn
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
-
-    titanic = load_titanic(cursor=base.cursor)
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 @pytest.fixture(scope="module")
-def model(base, titanic_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS ohe_model_test")
-    model_class = OneHotEncoder("ohe_model_test", cursor=base.cursor, drop_first=False)
+def model(titanic_vd):
+    model_class = OneHotEncoder("ohe_model_test", drop_first=False)
+    model_class.drop()
     model_class.fit("public.titanic", ["pclass", "sex", "embarked"])
     yield model_class
     model_class.drop()
@@ -50,21 +52,21 @@ class TestOneHotEncoder:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS ohe_model_test_drop")
-        model_test = OneHotEncoder("ohe_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS ohe_model_test_drop")
+        model_test = OneHotEncoder("ohe_model_test_drop",)
         model_test.fit("public.titanic", ["pclass", "embarked"])
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'ohe_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "ohe_model_test_drop"
+        assert current_cursor().fetchone()[0] == "ohe_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'ohe_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_get_attr(self, model):
         m_att = model.get_attr()
@@ -105,49 +107,43 @@ class TestOneHotEncoder:
             "separator": "_",
         }
 
-    @pytest.mark.skip(reason="The function is DEPRECATED.")
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()
-        assert prediction == pytest.approx(
-            md.transform([[1, "female", "S"]]).toarray()[0]
-        )
-
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=True) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
                 model.name
             )
         )
-        prediction = [float(elem) for elem in model.cursor.fetchone()]
-        model.cursor.execute(
+        prediction = [float(elem) for elem in current_cursor().fetchone()]
+        current_cursor().execute(
             "SELECT pclass_1, pclass_2, sex_1, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
                 ", ".join([", ".join(elem) for elem in model.to_sql()])
             )
         )
-        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
 
     def test_to_memmodel(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
                 model.name
             )
         )
-        prediction = [float(elem) for elem in model.cursor.fetchone()]
-        model.cursor.execute(
+        prediction = [float(elem) for elem in current_cursor().fetchone()]
+        current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2 FROM (SELECT {} FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
-                ", ".join([", ".join(elem) for elem in model.to_memmodel().transform_sql(["pclass", "sex", "embarked"])])
+                ", ".join(
+                    [
+                        ", ".join(elem)
+                        for elem in model.to_memmodel().transform_sql(
+                            ["pclass", "sex", "embarked"]
+                        )
+                    ]
+                )
             )
         )
-        prediction2 = [float(elem) for elem in model.cursor.fetchone()]
+        prediction2 = [float(elem) for elem in current_cursor().fetchone()]
         assert prediction == pytest.approx(prediction2)
-        prediction3 = model.to_memmodel().transform([[1, 'female', 'S']])
+        prediction3 = model.to_memmodel().transform([[1, "female", "S"]])
         assert prediction[0] == pytest.approx(prediction3[0][0])
         assert prediction[1] == pytest.approx(prediction3[0][1])
         assert prediction[2] == pytest.approx(prediction3[0][2])
@@ -158,13 +154,13 @@ class TestOneHotEncoder:
         assert prediction[7] == pytest.approx(prediction3[0][7])
 
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT pclass_0, pclass_1, pclass_2, sex_0, sex_1, embarked_0, embarked_1, embarked_2, 0 FROM (SELECT APPLY_ONE_HOT_ENCODER(pclass, sex, embarked USING PARAMETERS model_name = '{}', match_by_pos=True, drop_first=False) FROM (SELECT 1 AS pclass, 'female' AS sex, 'S' AS embarked) x) x".format(
                 model.name
             )
         )
-        prediction = [int(elem) for elem in model.cursor.fetchone()]
-        prediction2 = model.to_python(return_str=False)([[1, 'female', 'S']])[0]
+        prediction = [int(elem) for elem in current_cursor().fetchone()]
+        prediction2 = model.to_python(return_str=False)([[1, "female", "S"]])[0]
         assert len(prediction) == len(prediction2)
         assert prediction[0] == prediction2[0]
         assert prediction[1] == prediction2[1]
@@ -191,26 +187,16 @@ class TestOneHotEncoder:
     def test_get_inverse_transform(self, titanic_vd, model):
         pass
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"ignore_null": False})
         assert model.get_params()["ignore_null"] == False
 
-    def test_model_from_vDF(self, base, titanic_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS ohe_vDF")
-        model_test = OneHotEncoder("ohe_vDF", cursor=base.cursor, drop_first=False)
+    def test_model_from_vDF(self, titanic_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS ohe_vDF")
+        model_test = OneHotEncoder("ohe_vDF", drop_first=False)
         model_test.fit(titanic_vd, ["pclass", "embarked"])
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'ohe_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "ohe_vDF"
+        assert current_cursor().fetchone()[0] == "ohe_vDF"
         model_test.drop()

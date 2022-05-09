@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,46 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings
-from verticapy import vDataFrame, drop
+# Pytest
+import pytest
 
-from verticapy import set_option
+# VerticaPy
+from vertica_python.errors import VerticaSyntaxError
+from verticapy import drop, set_option
+from verticapy.datasets import load_iris, load_market, load_amazon
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def iris_vd(base):
-    from verticapy.datasets import load_iris
-
-    iris = load_iris(cursor=base.cursor)
+def iris_vd():
+    iris = load_iris()
     yield iris
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.iris", cursor=base.cursor)
+    drop(name="public.iris")
 
 
 @pytest.fixture(scope="module")
-def market_vd(base):
-    from verticapy.datasets import load_market
-
-    market = load_market(cursor=base.cursor)
+def market_vd():
+    market = load_market()
     yield market
-    with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.market", cursor=base.cursor,
-        )
+    drop(name="public.market")
 
 
 @pytest.fixture(scope="module")
-def amazon_vd(base):
-    from verticapy.datasets import load_amazon
-
-    amazon = load_amazon(cursor=base.cursor)
+def amazon_vd():
+    amazon = load_amazon()
     yield amazon
-    with warnings.catch_warnings(record=True) as w:
-        drop(
-            name="public.amazon", cursor=base.cursor,
-        )
+    drop(name="public.amazon")
 
 
 class TestvDFCombineJoinSort:
@@ -92,8 +82,6 @@ class TestvDFCombineJoinSort:
             159,
             4,
         ), "testing vDataFrame.groupby(columns, expr) failed"
-
-        from vertica_python.errors import VerticaSyntaxError
 
         with pytest.raises(VerticaSyntaxError) as exception_info:
             result2 = market_vd.groupby(
@@ -205,9 +193,7 @@ class TestvDFCombineJoinSort:
             expr2=["Name AS Name2"],
         )
         assert table_join.shape() == (194, 2)
-        drop(
-            "v_temp_schema.not_dried", not_dried._VERTICAPY_VARIABLES_["cursor"],
-        )
+        drop("v_temp_schema.not_dried")
 
     def test_vDF_narrow(self, amazon_vd):
         amazon_pivot = amazon_vd.pivot(
@@ -247,6 +233,8 @@ class TestvDFCombineJoinSort:
         assert result4["PetalLengthCm"][0] == 6.9
         assert result4["SepalWidthCm"][0] == 2.6
 
-    @pytest.mark.skip(reason="this test will be implemented later. It should test a combination of operation like joins, imputing missing values...")
-    def test_multiple_operation(self, base):
+    @pytest.mark.skip(
+        reason="this test will be implemented later. It should test a combination of operation like joins, imputing missing values..."
+    )
+    def test_multiple_operation(self):
         pass

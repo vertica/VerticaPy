@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,64 +11,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.tree import DecisionTreeRegressor
-from verticapy import vDataFrame, drop, set_option, vertica_conn
+# Pytest
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import (
+    vDataFrame,
+    drop,
+    set_option,
+)
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_titanic, load_dataset_reg
+from verticapy.learn.tree import DecisionTreeRegressor
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def tr_data_vd(base):
-    base.cursor.execute("DROP TABLE IF EXISTS public.tr_data")
-    base.cursor.execute(
-        'CREATE TABLE IF NOT EXISTS public.tr_data(Id INT, transportation INT, gender VARCHAR, "owned cars" INT, cost VARCHAR, income CHAR(4))'
-    )
-    base.cursor.execute("INSERT INTO tr_data VALUES (1, 0, 'Male', 0, 'Cheap', 'Low')")
-    base.cursor.execute("INSERT INTO tr_data VALUES (2, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (3, 1, 'Female', 1, 'Cheap', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (4, 0, 'Female', 0, 'Cheap', 'Low')"
-    )
-    base.cursor.execute("INSERT INTO tr_data VALUES (5, 0, 'Male', 1, 'Cheap', 'Med')")
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (6, 1, 'Male', 0, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (7, 1, 'Female', 1, 'Standard', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (8, 2, 'Female', 1, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (9, 2, 'Male', 2, 'Expensive', 'Med')"
-    )
-    base.cursor.execute(
-        "INSERT INTO tr_data VALUES (10, 2, 'Female', 2, 'Expensive', 'Hig')"
-    )
-    base.cursor.execute("COMMIT")
-
-    tr_data = vDataFrame(input_relation="public.tr_data", cursor=base.cursor)
+def tr_data_vd():
+    tr_data = load_dataset_reg(table_name="tr_data", schema="public")
     yield tr_data
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.tr_data", cursor=base.cursor)
+    drop(name="public.tr_data", method="table")
 
 
 @pytest.fixture(scope="module")
-def model(base, tr_data_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS tr_model_test")
+def model(tr_data_vd):
+    current_cursor().execute("DROP MODEL IF EXISTS tr_model_test")
 
-    base.cursor.execute(
+    current_cursor().execute(
         "SELECT rf_regressor('tr_model_test', 'public.tr_data', 'TransPortation', '*' USING PARAMETERS exclude_columns='id, transportation', mtry=4, ntree=1, max_breadth=100, sampling_size=1, max_depth=6, min_leaf_size=1, min_info_gain=0.0, nbins=40, seed=1, id_column='id')"
     )
 
     # I could use load_model but it is buggy
     model_class = DecisionTreeRegressor(
         "tr_model_test",
-        cursor=base.cursor,
         max_features=4,
         max_leaf_nodes=100,
         max_depth=6,
@@ -84,14 +63,12 @@ def model(base, tr_data_vd):
     yield model_class
     model_class.drop()
 
-@pytest.fixture(scope="module")
-def titanic_vd(base):
-    from verticapy.datasets import load_titanic
 
-    titanic = load_titanic(cursor=base.cursor)
+@pytest.fixture(scope="module")
+def titanic_vd():
+    titanic = load_titanic()
     yield titanic
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.titanic", cursor=base.cursor)
+    drop(name="public.titanic",)
 
 
 class TestDecisionTreeRegressor:
@@ -101,43 +78,41 @@ class TestDecisionTreeRegressor:
         model_repr.drop()
         assert model_repr.__repr__() == "<RandomForestRegressor>"
 
-    def test_contour(self, base, titanic_vd):
-        model_test = DecisionTreeRegressor("model_contour", cursor=base.cursor)
+    def test_contour(self, titanic_vd):
+        model_test = DecisionTreeRegressor("model_contour",)
         model_test.drop()
         model_test.fit(
-            titanic_vd,
-            ["age", "fare",],
-            "survived",
+            titanic_vd, ["age", "fare"], "survived",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 34
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = "PREDICT_RF_REGRESSOR(\"Gender\", \"owned cars\", \"cost\", \"income\" USING PARAMETERS model_name = 'tr_model_test', match_by_pos = 'true')"
+        expected_sql = 'PREDICT_RF_REGRESSOR("Gender", "owned cars", "cost", "income" USING PARAMETERS model_name = \'tr_model_test\', match_by_pos = \'true\')'
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS tr_model_test_drop")
-        model_test = DecisionTreeRegressor("tr_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS tr_model_test_drop")
+        model_test = DecisionTreeRegressor("tr_model_test_drop",)
         model_test.fit(
             "public.tr_data",
             ["Gender", '"owned cars"', "cost", "income"],
             "TransPortation",
         )
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'tr_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "tr_model_test_drop"
+        assert current_cursor().fetchone()[0] == "tr_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'tr_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         fim = model.features_importance()
@@ -181,7 +156,7 @@ class TestDecisionTreeRegressor:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "SELECT rf_regressor('public.tr_model_test', 'public.tr_data', '\"transportation\"', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
+            == "SELECT rf_regressor('public.tr_model_test', 'public.tr_data', 'transportation', '*' USING PARAMETERS exclude_columns='id, transportation', ntree=1, mtry=4, sampling_size=1, max_depth=6, max_breadth=100, min_leaf_size=1, min_info_gain=0, nbins=40);"
         )
 
     def test_get_params(self, model):
@@ -196,77 +171,43 @@ class TestDecisionTreeRegressor:
             "nbins": 40,
         }
 
-    @pytest.mark.skip(reason="pb with sklearn trees")
-    def test_to_sklearn(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS tr_model_sk_test")
-
-        base.cursor.execute(
-            "SELECT rf_regressor('tr_model_sk_test', 'public.tr_data', 'TransPortation', '\"owned cars\"' USING PARAMETERS mtry=1, ntree=1, max_breadth=100, sampling_size=1, max_depth=6, min_leaf_size=1, min_info_gain=0.0, nbins=40, seed=1, id_column='id')"
-        )
-
-        # I could use load_model but it is buggy
-        model_sk = DecisionTreeRegressor(
-            "tr_model_sk_test",
-            cursor=base.cursor,
-            max_features=1,
-            max_leaf_nodes=100,
-            max_depth=6,
-            min_samples_leaf=1,
-            min_info_gain=0.0,
-            nbins=40,
-        )
-        model_sk.input_relation = "public.tr_data"
-        model_sk.test_relation = model_sk.input_relation
-        model_sk.X = ['"owned cars"']
-        model_sk.y = "TransPortation"
-
-        md = model_sk.to_sklearn()
-        model_sk.cursor.execute(
-            "SELECT PREDICT_RF_REGRESSOR(1 USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model_sk.name
-            )
-        )
-        prediction = model_sk.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([1])[0])
-
-        model_sk.drop()
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR('Male', 0, 'Cheap', 'Low' USING PARAMETERS model_name = '{}', match_by_pos=True)::float".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([['Male', 0, 'Cheap', 'Low']])[0])
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low"]])[0]
+        )
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_RF_REGRESSOR(* USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float FROM (SELECT 'Male' AS \"Gender\", 0 AS \"owned cars\", 'Cheap' AS \"cost\", 'Low' AS \"income\") x".format(
                 model.name, model.to_sql()
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
-    def test_to_memmodel(self, model,):
+    def test_to_memmodel(self, model):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([['Male', 0, 'Cheap', 'Low'],
-                              ['Female', 1, 'Expensive', 'Low']])
-        res_py = model.to_python()([['Male', 0, 'Cheap', 'Low'],
-                                    ['Female', 1, 'Expensive', 'Low']])
+        res = mmodel.predict(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
+        res_py = model.to_python()(
+            [["Male", 0, "Cheap", "Low"], ["Female", 1, "Expensive", "Low"]]
+        )
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
-        vdf = vDataFrame("public.tr_data", cursor = model.cursor)
-        vdf["prediction_sql"] = mmodel.predict_sql(['"Gender"', '"owned cars"', '"cost"', '"income"'])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf = vDataFrame("public.tr_data")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ['"Gender"', '"owned cars"', '"cost"', '"income"']
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="not yet available")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, tr_data_vd, model):
         tr_data_copy = tr_data_vd.copy()
@@ -349,44 +290,36 @@ class TestDecisionTreeRegressor:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-float("inf"), abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_features": 1000})
 
         assert model.get_params()["max_features"] == 1000
 
-    def test_model_from_vDF(self, base, tr_data_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS tr_from_vDF")
-        model_test = DecisionTreeRegressor("tr_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, tr_data_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS tr_from_vDF")
+        model_test = DecisionTreeRegressor("tr_from_vDF",)
         model_test.fit(tr_data_vd, ["gender"], "transportation")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'tr_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "tr_from_vDF"
+        assert current_cursor().fetchone()[0] == "tr_from_vDF"
 
         model_test.drop()
 
     def test_to_graphviz(self, model):
-        gvz_tree_0 = model.to_graphviz(tree_id = 0,
-                                       classes_color = ["red", "blue", "green"],
-                                       round_pred = 4,
-                                       percent = True,
-                                       vertical = False,
-                                       node_style = {"shape": "box", "style": "filled",},
-                                       arrow_style = {"color": "blue",},
-                                       leaf_style = {"shape": "circle", "style": "filled",})
+        gvz_tree_0 = model.to_graphviz(
+            tree_id=0,
+            classes_color=["red", "blue", "green"],
+            round_pred=4,
+            percent=True,
+            vertical=False,
+            node_style={"shape": "box", "style": "filled"},
+            arrow_style={"color": "blue"},
+            leaf_style={"shape": "circle", "style": "filled"},
+        )
         assert 'digraph Tree{\ngraph [rankdir = "LR"];\n0' in gvz_tree_0
-        assert '0 -> 1' in gvz_tree_0
+        assert "0 -> 1" in gvz_tree_0
 
     def test_get_tree(self, model):
         tree_0 = model.get_tree()

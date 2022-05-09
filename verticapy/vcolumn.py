@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,21 +36,21 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
 #
 # Standard Python Modules
 import math, re, decimal, warnings, datetime
-from collections import Iterable
+from collections.abc import Iterable
 from typing import Union
 
 # VerticaPy Modules
@@ -115,6 +115,7 @@ Attributes
             "cov": {},
             "pearson": {},
             "spearman": {},
+            "spearmand": {},
             "kendall": {},
             "cramer": {},
             "biserial": {},
@@ -134,7 +135,9 @@ Attributes
     # ---#
     def __getitem__(self, index):
         if isinstance(index, slice):
-            assert index.step in (1, None), ValueError("vColumn doesn't allow slicing having steps different than 1.")
+            assert index.step in (1, None), ValueError(
+                "vColumn doesn't allow slicing having steps different than 1."
+            )
             index_stop = index.stop
             index_start = index.start
             if not (isinstance(index_start, int)):
@@ -153,13 +156,11 @@ Attributes
             query = "(SELECT {} FROM {}{} OFFSET {}{}) VERTICAPY_SUBTABLE".format(
                 self.alias,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 index_start,
                 limit,
             )
-            return vdf_from_relation(
-                query, cursor=self.parent._VERTICAPY_VARIABLES_["cursor"]
-            )
+            return vDataFrameSQL(query)
         elif isinstance(index, int):
             cast = "::float" if self.category() == "float" else ""
             if index < 0:
@@ -168,11 +169,14 @@ Attributes
                 self.alias,
                 cast,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 index,
             )
-            self.parent.__executeSQL__(query=query, title="Gets the vColumn element.")
-            return self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
+            return executeSQL(
+                query=query,
+                title="Getting the vColumn element.",
+                method="fetchfirstelem",
+            )
         else:
             return getattr(self, index)
 
@@ -195,14 +199,6 @@ Attributes
     # ---#
     def __setattr__(self, attr, val):
         self.__dict__[attr] = val
-
-    # ---#
-    def __executeSQL__(self, query: str, title: str = ""):
-        """
-		Same as parent.__executeSQL__
-		It is to use to simplify the execution of some methods.
-		"""
-        return self.parent.__executeSQL__(query=query, title=title)
 
     #
     # Methods
@@ -262,7 +258,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float],)])
+        check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, {}, {})".format(x, "{}"))
         else:
@@ -288,10 +284,14 @@ Attributes
 	--------
 	vDataFrame.eval : Evaluates a customized expression.
 		"""
-        check_types([("name", name, [str],)])
-        name = str_column(name.replace('"', "_"))
-        assert name.replace('"', ""), EmptyParameter("The parameter 'name' must not be empty")
-        assert not(column_check_ambiguous(name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue.")
+        check_types([("name", name, [str])])
+        name = quote_ident(name.replace('"', "_"))
+        assert name.replace('"', ""), EmptyParameter(
+            "The parameter 'name' must not be empty"
+        )
+        assert not (self.parent.is_colname_in(name)), NameError(
+            f"A vColumn has already the alias {name}.\nBy changing the parameter 'name', you'll be able to solve this issue."
+        )
         new_vColumn = vColumn(
             name,
             parent=self.parent,
@@ -389,9 +389,7 @@ Attributes
 		"""
         if isinstance(func, str_sql):
             func = str(func)
-        check_types(
-            [("func", func, [str],), ("copy_name", copy_name, [str],),]
-        )
+        check_types([("func", func, [str]), ("copy_name", copy_name, [str])])
         try:
             try:
                 ctype = get_data_types(
@@ -400,7 +398,6 @@ Attributes
                         self.parent.__genSQL__(),
                         self.alias,
                     ),
-                    self.parent._VERTICAPY_VARIABLES_["cursor"],
                     "apply_test_feature",
                 )
             except:
@@ -410,19 +407,20 @@ Attributes
                         self.parent.__genSQL__(),
                         self.alias,
                     ),
-                    self.parent._VERTICAPY_VARIABLES_["cursor"],
                     "apply_test_feature",
                 )
-            category = category_from_type(ctype=ctype)
+            category = get_category_from_vertica_type(ctype=ctype)
             all_cols, max_floor = self.parent.get_columns(), 0
             for column in all_cols:
                 try:
-                    if (str_column(column) in func) or (
+                    if (quote_ident(column) in func) or (
                         re.search(
                             re.compile("\\b{}\\b".format(column.replace('"', ""))), func
                         )
                     ):
-                        max_floor = max(len(self.parent[column].transformations), max_floor)
+                        max_floor = max(
+                            len(self.parent[column].transformations), max_floor
+                        )
                 except:
                     pass
             max_floor -= len(self.transformations)
@@ -534,7 +532,7 @@ Attributes
                         "tanh",
                     ],
                 ),
-                ("x", x, [int, float],),
+                ("x", x, [int, float]),
             ]
         )
         if func not in ("log", "mod", "pow", "round"):
@@ -563,14 +561,18 @@ Attributes
 	--------
 	vDataFrame.astype : Converts the vColumns to the input type.
 		"""
-        check_types([("dtype", dtype, [str],)])
+        check_types([("dtype", dtype, [str])])
         try:
             query = "SELECT {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
                 self.alias, dtype, self.alias, self.parent.__genSQL__(), self.alias
             )
-            self.parent._VERTICAPY_VARIABLES_["cursor"].execute(query)
+            executeSQL(query, title="Testing the Type casting.")
             self.transformations += [
-                ("{}::{}".format("{}", dtype), dtype, category_from_type(ctype=dtype))
+                (
+                    "{}::{}".format("{}", dtype),
+                    dtype,
+                    get_category_from_vertica_type(ctype=dtype),
+                )
             ]
             self.parent.__add_to_history__(
                 "[AsType]: The vColumn {} was converted to {}.".format(
@@ -609,7 +611,7 @@ Attributes
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        bins: int = 0,
+        nbins: int = 0,
         h: float = 0,
         ax=None,
         **style_kwds,
@@ -635,8 +637,8 @@ Attributes
 	max_cardinality: int, optional
  		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
- 	bins: int, optional
- 		Number of bins. If empty, an optimized number of bins will be computed.
+ 	nbins: int, optional
+ 		Number of nbins. If empty, an optimized number of nbins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
     ax: Matplotlib axes object, optional
@@ -655,19 +657,19 @@ Attributes
 		"""
         check_types(
             [
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("bins", bins, [int, float],),
-                ("h", h, [int, float],),
+                ("method", method, [str]),
+                ("of", of, [str]),
+                ("max_cardinality", max_cardinality, [int, float]),
+                ("nbins", nbins, [int, float]),
+                ("h", h, [int, float]),
             ]
         )
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import bar
 
-        return bar(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
+        return bar(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     def boxplot(
@@ -715,18 +717,18 @@ Attributes
             cat_priority = [cat_priority]
         check_types(
             [
-                ("by", by, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("h", h, [int, float],),
-                ("cat_priority", cat_priority, [list],),
+                ("by", by, [str]),
+                ("max_cardinality", max_cardinality, [int, float]),
+                ("h", h, [int, float]),
+                ("cat_priority", cat_priority, [list]),
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
         from verticapy.plot import boxplot
 
-        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds,)
+        return boxplot(self, by, h, max_cardinality, cat_priority, ax=ax, **style_kwds)
 
     # ---#
     def category(self):
@@ -770,10 +772,10 @@ Attributes
  	--------
  	vDataFrame[].fill_outliers : Fills the vColumn outliers using the input method.
 		"""
-        check_types(
-            [("lower", lower, [float, int,],), ("upper", upper, [float, int,],),]
+        check_types([("lower", lower, [float, int]), ("upper", upper, [float, int])])
+        assert (lower != None) or (upper != None), ParameterError(
+            "At least 'lower' or 'upper' must have a numerical value"
         )
-        assert (lower != None) or (upper != None), ParameterError("At least 'lower' or 'upper' must have a numerical value")
         lower_when = (
             "WHEN {} < {} THEN {} ".format("{}", lower, lower)
             if (isinstance(lower, (float, int)))
@@ -806,11 +808,13 @@ Attributes
         return self.aggregate(["count"]).values[self.alias][0]
 
     # ---#
-    def cut(self, 
-            breaks: list, 
-            labels: list = [], 
-            include_lowest: bool = True,
-            right: bool = True):
+    def cut(
+        self,
+        breaks: list,
+        labels: list = [],
+        include_lowest: bool = True,
+        right: bool = True,
+    ):
         """
     ---------------------------------------------------------------------------
     Discretizes the vColumn using the input list. 
@@ -836,13 +840,23 @@ Attributes
     --------
     vDataFrame[].apply : Applies a function to the input vColumn.
         """
-        check_types([("breaks", breaks, [list],),
-                     ("labels", labels, [list],),
-                     ("include_lowest", include_lowest, [bool],),
-                     ("right", right, [bool],),])
-        assert self.isnum() or self.isdate(), TypeError("cut only works on numerical / date-like vColumns.")
-        assert len(breaks) >= 2, ParameterError("Length of parameter 'breaks' must be greater or equal to 2.")
-        assert len(breaks) == len(labels) + 1 or not(labels), ParameterError("Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty.")
+        check_types(
+            [
+                ("breaks", breaks, [list]),
+                ("labels", labels, [list]),
+                ("include_lowest", include_lowest, [bool]),
+                ("right", right, [bool]),
+            ]
+        )
+        assert self.isnum() or self.isdate(), TypeError(
+            "cut only works on numerical / date-like vColumns."
+        )
+        assert len(breaks) >= 2, ParameterError(
+            "Length of parameter 'breaks' must be greater or equal to 2."
+        )
+        assert len(breaks) == len(labels) + 1 or not (labels), ParameterError(
+            "Length of parameter breaks must be equal to the length of parameter 'labels' + 1 or parameter 'labels' must be empty."
+        )
         conditions, column = [], self.alias
         for idx in range(len(breaks) - 1):
             first_elem, second_elem = breaks[idx], breaks[idx + 1]
@@ -858,7 +872,9 @@ Attributes
                 label = labels[idx]
             else:
                 label = f"{close_l}{first_elem};{second_elem}{close_r}"
-            conditions += [f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"]
+            conditions += [
+                f"'{first_elem}' {op1} {column} AND {column} {op2} '{second_elem}' THEN '{label}'"
+            ]
         expr = "CASE WHEN " + " WHEN ".join(conditions) + " END"
         self.apply(func=expr)
 
@@ -982,15 +998,15 @@ Attributes
 		"""
         check_types(
             [
-                ("by", by, [str],),
-                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"],),
-                ("bandwidth", bandwidth, [int, float],),
-                ("nbins", nbins, [float, int],),
+                ("by", by, [str]),
+                ("kernel", kernel, ["gaussian", "logistic", "sigmoid", "silverman"]),
+                ("bandwidth", bandwidth, [int, float]),
+                ("nbins", nbins, [float, int]),
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
             from verticapy.plot import gen_colors
             from matplotlib.lines import Line2D
 
@@ -1034,19 +1050,17 @@ Attributes
             return ax
         kernel = kernel.lower()
         from verticapy.learn.neighbors import KernelDensity
+
         schema = verticapy.options["temp_schema"]
         if not (schema):
             schema = "public"
-        name = "{}.VERTICAPY_TEMP_MODEL_KDE_{}".format(
-            schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
-        )
+        name = gen_tmp_name(schema=schema, name="kde")
         if isinstance(xlim, (tuple, list)):
             xlim_tmp = [xlim]
         else:
             xlim_tmp = []
         model = KernelDensity(
             name,
-            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
             bandwidth=bandwidth,
             kernel=kernel,
             nbins=nbins,
@@ -1055,7 +1069,7 @@ Attributes
         )
         try:
             result = model.fit(self.parent.__genSQL__(), [self.alias]).plot(
-                ax=ax, **style_kwds,
+                ax=ax, **style_kwds
             )
             model.drop()
             return result
@@ -1065,7 +1079,7 @@ Attributes
 
     # ---#
     def describe(
-        self, method: str = "auto", max_cardinality: int = 6, numcol: str = "",
+        self, method: str = "auto", max_cardinality: int = 6, numcol: str = ""
     ):
         """
 	---------------------------------------------------------------------------
@@ -1100,14 +1114,16 @@ Attributes
 		"""
         check_types(
             [
-                ("method", method, ["auto", "numerical", "categorical", "cat_stats"],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("numcol", numcol, [str],),
+                ("method", method, ["auto", "numerical", "categorical", "cat_stats"]),
+                ("max_cardinality", max_cardinality, [int, float]),
+                ("numcol", numcol, [str]),
             ]
         )
 
         method = method.lower()
-        assert (method != "cat_stats") or (numcol), ParameterError("The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'")
+        assert (method != "cat_stats") or (numcol), ParameterError(
+            "The parameter 'numcol' must be a vDataFrame column if the method is 'cat_stats'"
+        )
         distinct_count, is_numeric, is_date = (
             self.nunique(),
             self.isnum(),
@@ -1118,8 +1134,10 @@ Attributes
             index = result.values["index"]
             result = result.values[self.alias]
         elif (method == "cat_stats") and (numcol != ""):
-            numcol = vdf_columns_names([numcol], self.parent)[0]
-            assert self.parent[numcol].category() in ("float", "int"), TypeError("The column 'numcol' must be numerical")
+            numcol = self.parent.format_colnames(numcol)
+            assert self.parent[numcol].category() in ("float", "int"), TypeError(
+                "The column 'numcol' must be numerical"
+            )
             cast = "::int" if (self.parent[numcol].isbool()) else ""
             query, cat = [], self.distinct()
             if len(cat) == 1:
@@ -1127,37 +1145,32 @@ Attributes
             else:
                 lp, rp = "", ""
             for category in cat:
-                tmp_query = "SELECT '{}' AS 'index', COUNT({}) AS count, 100 * COUNT({}) / {} AS percent, AVG({}{}) AS mean, STDDEV({}{}) AS std, MIN({}{}) AS min, APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.1) AS '10%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.25) AS '25%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.5) AS '50%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.75) AS '75%', APPROXIMATE_PERCENTILE ({}{} USING PARAMETERS percentile = 0.9) AS '90%', MAX({}{}) AS max FROM vdf_table"
-                tmp_query = tmp_query.format(
-                    category,
-                    self.alias,
-                    self.alias,
-                    self.parent.shape()[0],
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
-                    numcol,
-                    cast,
+                tmp_query = """SELECT 
+                                    '{0}' AS 'index', 
+                                    COUNT({1}) AS count, 
+                                    100 * COUNT({1}) / {2} AS percent, 
+                                    AVG({3}{4}) AS mean, 
+                                    STDDEV({3}{4}) AS std, 
+                                    MIN({3}{4}) AS min, 
+                                    APPROXIMATE_PERCENTILE ({3}{4} 
+                                        USING PARAMETERS percentile = 0.1) AS 'approx_10%', 
+                                    APPROXIMATE_PERCENTILE ({3}{4} 
+                                        USING PARAMETERS percentile = 0.25) AS 'approx_25%', 
+                                    APPROXIMATE_PERCENTILE ({3}{4} 
+                                        USING PARAMETERS percentile = 0.5) AS 'approx_50%', 
+                                    APPROXIMATE_PERCENTILE ({3}{4} 
+                                        USING PARAMETERS percentile = 0.75) AS 'approx_75%', 
+                                    APPROXIMATE_PERCENTILE ({3}{4} 
+                                        USING PARAMETERS percentile = 0.9) AS 'approx_90%', 
+                                    MAX({3}{4}) AS max 
+                               FROM vdf_table""".format(
+                    category, self.alias, self.parent.shape()[0], numcol, cast,
                 )
                 tmp_query += (
                     " WHERE {} IS NULL".format(self.alias)
                     if (category in ("None", None))
                     else " WHERE {} = '{}'".format(
-                        convert_special_type(self.category(), False, self.alias),
-                        category,
+                        bin_spatial_to_str(self.category(), self.alias), category,
                     )
                 )
                 query += [lp + tmp_query + rp]
@@ -1167,29 +1180,35 @@ Attributes
             title = "Describes the statics of {} partitioned by {}.".format(
                 numcol, self.alias
             )
-            values = to_tablesample(
-                query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
-            ).values
+            values = to_tablesample(query, title=title).values
         elif (
             ((distinct_count < max_cardinality + 1) and (method != "numerical"))
             or not (is_numeric)
             or (method == "categorical")
         ):
-            query = "(SELECT {} || '', COUNT(*) FROM vdf_table GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {})".format(
-                self.alias, self.alias, max_cardinality
+            query = """(SELECT 
+                            {0} || '', 
+                            COUNT(*) 
+                        FROM vdf_table 
+                        GROUP BY {0} 
+                        ORDER BY COUNT(*) DESC 
+                        LIMIT {1})""".format(
+                self.alias, max_cardinality
             )
             if distinct_count > max_cardinality:
                 query += (
-                    "UNION ALL (SELECT 'Others', SUM(count) FROM (SELECT COUNT(*) AS count FROM vdf_table WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC OFFSET {}) VERTICAPY_SUBTABLE) ORDER BY count DESC"
-                ).format(self.alias, self.alias, max_cardinality + 1)
+                    "UNION ALL (SELECT 'Others', SUM(count) FROM (SELECT COUNT(*) AS count"
+                    " FROM vdf_table WHERE {0} IS NOT NULL GROUP BY {0} ORDER BY COUNT(*)"
+                    " DESC OFFSET {1}) VERTICAPY_SUBTABLE) ORDER BY count DESC"
+                ).format(self.alias, max_cardinality + 1)
             query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
                 self.parent.__genSQL__(), query
             )
-            self.parent.__executeSQL__(
+            query_result = executeSQL(
                 query=query,
-                title="Computes the descriptive statistics of {}.".format(self.alias),
+                title="Computing the descriptive statistics of {}.".format(self.alias),
+                method="fetchall",
             )
-            query_result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
             result = [distinct_count, self.count()] + [item[1] for item in query_result]
             index = ["unique", "count"] + [item[0] for item in query_result]
         else:
@@ -1207,9 +1226,9 @@ Attributes
                 "mean",
                 "std",
                 "min",
-                "25%",
-                "50%",
-                "75%",
+                "approx_25%",
+                "approx_50%",
+                "approx_75%",
                 "max",
             ]
         if method != "cat_stats":
@@ -1232,7 +1251,7 @@ Attributes
         self,
         method: str = "auto",
         h: float = 0,
-        bins: int = -1,
+        nbins: int = -1,
         k: int = 6,
         new_category: str = "Others",
         RFmodel_params: dict = {},
@@ -1258,7 +1277,7 @@ Attributes
  	h: float, optional
  		The interval size to convert to use to convert the vColumn. If this parameter 
  		is equal to 0, an optimised interval will be computed.
- 	bins: int, optional
+ 	nbins: int, optional
  		Number of bins used for the discretization (must be > 1)
  	k: int, optional
  		The integer k of the 'topk' method.
@@ -1291,17 +1310,17 @@ Attributes
 		"""
         check_types(
             [
-                ("RFmodel_params", RFmodel_params, [dict],),
-                ("return_enum_trans", return_enum_trans, [bool],),
-                ("h", h, [int, float],),
-                ("response", response, [str],),
-                ("bins", bins, [int, float],),
+                ("RFmodel_params", RFmodel_params, [dict]),
+                ("return_enum_trans", return_enum_trans, [bool]),
+                ("h", h, [int, float]),
+                ("response", response, [str]),
+                ("nbins", nbins, [int, float]),
                 (
                     "method",
                     method,
                     ["auto", "smart", "same_width", "same_freq", "topk"],
                 ),
-                ("return_enum_trans", return_enum_trans, [bool],),
+                ("return_enum_trans", return_enum_trans, [bool]),
             ]
         )
         method = method.lower()
@@ -1309,107 +1328,86 @@ Attributes
             schema = verticapy.options["temp_schema"]
             if not (schema):
                 schema = "public"
-            temp_information = (
-                "{}.VERTICAPY_TEMP_VIEW_{}".format(
-                    schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
-                ),
-                "{}.VERTICAPY_TEMP_MODEL_{}".format(
-                    schema, get_session(self.parent._VERTICAPY_VARIABLES_["cursor"])
-                ),
-            )
-            assert bins >= 2, ParameterError(
-                "Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'smart'."
+            tmp_view_name = gen_tmp_name(schema=schema, name="view")
+            tmp_model_name = gen_tmp_name(schema=schema, name="model")
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case of discretization using the method 'smart'."
             )
             assert response, ParameterError(
                 "Parameter 'response' can not be empty in case of discretization using the method 'smart'."
             )
-            columns_check([response], self.parent)
-            response = vdf_columns_names([response], self.parent)[0]
-
-            def drop_temp_elem(self, temp_information):
-                with warnings.catch_warnings(record=True) as w:
-                    try:
-                        drop(
-                            temp_information[1],
-                            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                            method="model",
-                        )
-                    except:
-                        pass
-                    try:
-                        drop(
-                            temp_information[0],
-                            cursor=self.parent._VERTICAPY_VARIABLES_["cursor"],
-                            method="view",
-                        )
-                    except:
-                        pass
-
-            drop_temp_elem(self, temp_information)
-            self.parent.to_db(temp_information[0])
+            self.parent.are_namecols_in(response)
+            response = self.parent.format_colnames(response)
+            drop(tmp_view_name, method="view")
+            self.parent.to_db(tmp_view_name)
             from verticapy.learn.ensemble import (
                 RandomForestClassifier,
                 RandomForestRegressor,
             )
 
+            drop(tmp_model_name, method="model")
             if self.parent[response].category() == "float":
-                model = RandomForestRegressor(
-                    temp_information[1], self.parent._VERTICAPY_VARIABLES_["cursor"],
-                )
+                model = RandomForestRegressor(tmp_model_name)
             else:
-                model = RandomForestClassifier(
-                    temp_information[1], self.parent._VERTICAPY_VARIABLES_["cursor"],
-                )
+                model = RandomForestClassifier(tmp_model_name)
             model.set_params({"n_estimators": 20, "max_depth": 8, "nbins": 100})
             model.set_params(RFmodel_params)
             parameters = model.get_params()
             try:
-                model.fit(temp_information[0], [self.alias], response)
+                model.fit(tmp_view_name, [self.alias], response)
                 query = [
                     "(SELECT READ_TREE(USING PARAMETERS model_name = '{}', tree_id = {}, format = 'tabular'))".format(
-                        temp_information[1], i
+                        tmp_model_name, i
                     )
                     for i in range(parameters["n_estimators"])
                 ]
                 query = "SELECT split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
-                    " UNION ALL ".join(query), bins - 1
+                    " UNION ALL ".join(query), nbins - 1
                 )
-                self.parent.__executeSQL__(
+                result = executeSQL(
                     query=query,
-                    title="Computes the optimized histogram bins using Random Forest.",
+                    title="Computing the optimized histogram nbins using Random Forest.",
+                    method="fetchall",
                 )
-                result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
                 result = [elem[0] for elem in result]
             except:
-                drop_temp_elem(self, temp_information)
+                drop(tmp_view_name, method="view")
+                drop(tmp_model_name, method="model")
                 raise
-            drop_temp_elem(self, temp_information)
+            drop(tmp_view_name, method="view")
+            drop(tmp_model_name, method="model")
             result = [self.min()] + result + [self.max()]
         elif method == "topk":
-            assert k >= 2, ParameterError("Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'")
+            assert k >= 2, ParameterError(
+                "Parameter 'k' must be greater or equals to 2 in case of discretization using the method 'topk'"
+            )
             distinct = self.topk(k).values["index"]
             trans = (
                 "(CASE WHEN {} IN ({}) THEN {} || '' ELSE '{}' END)".format(
-                    convert_special_type(self.category(), False),
+                    bin_spatial_to_str(self.category()),
                     ", ".join(
                         [
                             "'{}'".format(str(elem).replace("'", "''"))
                             for elem in distinct
                         ]
                     ),
-                    convert_special_type(self.category(), False),
+                    bin_spatial_to_str(self.category()),
                     new_category.replace("'", "''"),
                 ),
                 "varchar",
                 "text",
             )
         elif self.isnum() and method == "same_freq":
-            assert bins >= 2, ParameterError("Parameter 'bins' must be greater or equals to 2 in case of discretization using the method 'same_freq'")
+            assert nbins >= 2, ParameterError(
+                "Parameter 'nbins' must be greater or equals to 2 in case of discretization using the method 'same_freq'"
+            )
             count = self.count()
-            nb = int(float(count / int(bins)))
-            assert nb != 0, Exception("Not enough values to compute the Equal Frequency discretization")
+            nb = int(float(count / int(nbins)))
+            assert nb != 0, Exception(
+                "Not enough values to compute the Equal Frequency discretization"
+            )
             total, query, nth_elems = nb, [], []
-            while total < int(float(count / int(bins))) * int(bins):
+            while total < int(float(count / int(nbins))) * int(nbins):
                 nth_elems += [str(total)]
                 total += nb
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
@@ -1423,17 +1421,18 @@ Attributes
                 self.alias,
                 where,
             )
-            self.parent.__executeSQL__(
-                query=query, title="Computes the equal frequency histogram bins."
+            result = executeSQL(
+                query=query,
+                title="Computing the equal frequency histogram bins.",
+                method="fetchall",
             )
-            result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
             result = [elem[0] for elem in result]
         elif self.isnum() and method in ("same_width", "auto"):
             if not (h) or h <= 0:
-                if bins <= 0:
+                if nbins <= 0:
                     h = self.numh()
                 else:
-                    h = (self.max() - self.min()) * 1.01 / bins
+                    h = (self.max() - self.min()) * 1.01 / nbins
                 if h > 0.01:
                     h = round(h, 2)
                 elif h > 0.0001:
@@ -1504,7 +1503,7 @@ Attributes
 		"""
         if "agg" not in kwargs:
             query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
-                convert_special_type(self.category(), True, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
                 self.alias,
@@ -1514,17 +1513,17 @@ Attributes
         else:
             query = "SELECT {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
                 self.alias,
-                convert_special_type(self.category(), True, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 kwargs["agg"],
                 self.parent.__genSQL__(),
                 self.alias,
             )
-        self.parent.__executeSQL__(
+        query_result = executeSQL(
             query=query,
-            title="Computes the distinct categories of {}.".format(self.alias),
+            title="Computing the distinct categories of {}.".format(self.alias),
+            method="fetchall",
         )
-        query_result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
         return [item for sublist in query_result for item in sublist]
 
     # ---#
@@ -1547,7 +1546,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float],)])
+        check_types([("x", x, [int, float])])
         assert x != 0, ValueError("Division by 0 is forbidden !")
         return self.apply(func="{} / ({})".format("{}", x))
 
@@ -1575,17 +1574,18 @@ Attributes
 	--------
 	vDataFrame.drop: Drops the input vColumns from the vDataFrame.
 		"""
-        check_types([("add_history", add_history, [bool],)])
+        check_types([("add_history", add_history, [bool])])
         try:
             parent = self.parent
             force_columns = [
                 column for column in self.parent._VERTICAPY_VARIABLES_["columns"]
             ]
             force_columns.remove(self.alias)
-            self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
+            executeSQL(
                 "SELECT * FROM {} LIMIT 10".format(
                     self.parent.__genSQL__(force_columns=force_columns)
-                )
+                ),
+                print_time_sql=False,
             )
             self.parent._VERTICAPY_VARIABLES_["columns"].remove(self.alias)
             delattr(self.parent, self.alias)
@@ -1599,7 +1599,7 @@ Attributes
 
     # ---#
     def drop_outliers(
-        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05,
+        self, threshold: float = 4.0, use_threshold: bool = True, alpha: float = 0.05
     ):
         """
 	---------------------------------------------------------------------------
@@ -1630,9 +1630,9 @@ Attributes
 		"""
         check_types(
             [
-                ("alpha", alpha, [int, float],),
-                ("use_threshold", use_threshold, [bool],),
-                ("threshold", threshold, [int, float],),
+                ("alpha", alpha, [int, float]),
+                ("use_threshold", use_threshold, [bool]),
+                ("threshold", threshold, [int, float]),
             ]
         )
         if use_threshold:
@@ -1640,7 +1640,7 @@ Attributes
             self.parent.filter(
                 "ABS({} - {}) / {} < {}".format(
                     self.alias, result["avg"][0], result["std"][0], threshold
-                ),
+                )
             )
         else:
             p_alpha, p_1_alpha = (
@@ -1649,7 +1649,7 @@ Attributes
                 .values[self.alias]
             )
             self.parent.filter(
-                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha),
+                "({} BETWEEN {} AND {})".format(self.alias, p_alpha, p_1_alpha)
             )
         return self.parent
 
@@ -1718,10 +1718,10 @@ Attributes
             method = method.lower()
         check_types(
             [
-                ("method", method, ["winsorize", "null", "mean"],),
-                ("alpha", alpha, [int, float],),
-                ("use_threshold", use_threshold, [bool],),
-                ("threshold", threshold, [int, float],),
+                ("method", method, ["winsorize", "null", "mean"]),
+                ("alpha", alpha, [int, float]),
+                ("use_threshold", use_threshold, [bool]),
+                ("threshold", threshold, [int, float]),
             ]
         )
         if use_threshold:
@@ -1734,13 +1734,11 @@ Attributes
             query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
                 alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
             )
-            self.parent.__executeSQL__(
+            p_alpha, p_1_alpha = executeSQL(
                 query=query,
-                title="Computes the quantiles of {}.".format(self.alias),
+                title="Computing the quantiles of {}.".format(self.alias),
+                method="fetchrow",
             )
-            p_alpha, p_1_alpha = self.parent._VERTICAPY_VARIABLES_[
-                "cursor"
-            ].fetchone()
         if method == "winsorize":
             self.clip(lower=p_alpha, upper=p_1_alpha)
         elif method == "null":
@@ -1759,15 +1757,15 @@ Attributes
                 self.alias,
                 p_1_alpha,
             )
-            self.parent.__executeSQL__(
-                query=query,
-                title="Computes the average of the {}'s lower and upper outliers.".format(
-                    self.alias
-                ),
-            )
             mean_alpha, mean_1_alpha = [
                 item[0]
-                for item in self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+                for item in executeSQL(
+                    query=query,
+                    title="Computing the average of the {}'s lower and upper outliers.".format(
+                        self.alias
+                    ),
+                    method="fetchall",
+                )
             ]
             if mean_alpha == None:
                 mean_alpha = "NULL"
@@ -1844,14 +1842,14 @@ Attributes
                         "backfill",
                     ],
                 ),
-                ("expr", expr, [str],),
-                ("by", by, [list],),
-                ("order_by", order_by, [list],),
+                ("expr", expr, [str]),
+                ("by", by, [list]),
+                ("order_by", order_by, [list]),
             ]
         )
         method = method.lower()
-        columns_check([elem for elem in order_by] + by, self.parent)
-        by = vdf_columns_names(by, self.parent)
+        self.parent.are_namecols_in([elem for elem in order_by] + by)
+        by = self.parent.format_colnames(by)
         if method == "auto":
             method = "mean" if (self.isnum() and self.nunique(True) > 6) else "mode"
         total = self.count()
@@ -1886,10 +1884,11 @@ Attributes
                     query = "SELECT {}, {}({}) FROM {} GROUP BY {};".format(
                         by[0], fun, self.alias, self.parent.__genSQL__(), by[0]
                     )
-                    self.parent.__executeSQL__(
-                        query, title="Computes the different aggregations."
+                    result = executeSQL(
+                        query,
+                        title="Computing the different aggregations.",
+                        method="fetchall",
                     )
-                    result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
                     for idx, elem in enumerate(result):
                         result[idx][0] = (
                             "NULL"
@@ -1904,10 +1903,11 @@ Attributes
                             ["{}, {}".format(elem[0], elem[1]) for elem in result]
                         ),
                     )
-                    self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
+                    executeSQL(
                         "SELECT {} FROM {} LIMIT 1".format(
                             new_column.format(self.alias), self.parent.__genSQL__()
-                        )
+                        ),
+                        print_time_sql=False,
                     )
                 except:
                     new_column = "COALESCE({}, {}({}) OVER (PARTITION BY {}))".format(
@@ -1918,16 +1918,18 @@ Attributes
                     "{}", fun, "{}", ", ".join(by)
                 )
         elif method in ("ffill", "pad", "bfill", "backfill"):
-            assert order_by, ParameterError("If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data")
+            assert order_by, ParameterError(
+                "If the method is in ffill|pad|bfill|backfill then 'order_by' must be a list of at least one element to use to order the data"
+            )
             desc = "" if (method in ("ffill", "pad")) else " DESC"
             partition_by = (
                 "PARTITION BY {}".format(
-                    ", ".join([str_column(column) for column in by])
+                    ", ".join([quote_ident(column) for column in by])
                 )
                 if (by)
                 else ""
             )
-            order_by_ts = ", ".join([str_column(column) + desc for column in order_by])
+            order_by_ts = ", ".join([quote_ident(column) + desc for column in order_by])
             new_column = "COALESCE({}, LAST_VALUE({} IGNORE NULLS) OVER ({} ORDER BY {}))".format(
                 "{}", "{}", partition_by, order_by_ts
             )
@@ -1987,9 +1989,7 @@ Attributes
         return self.parent
 
     # ---#
-    def geo_plot(
-        self, *args, **kwargs,
-    ):
+    def geo_plot(self, *args, **kwargs):
         """
     ---------------------------------------------------------------------------
     Draws the Geospatial object.
@@ -2016,8 +2016,8 @@ Attributes
         else:
             check = False
         if check:
-            columns_check([column], self.parent)
-            column = vdf_columns_names([column], self.parent)[0]
+            self.parent.are_namecols_in(column)
+            column = self.parent.format_colnames(column)
             columns += [column]
             if not ("cmap" in kwargs):
                 from verticapy.plot import gen_cmap
@@ -2032,7 +2032,7 @@ Attributes
             kwargs["legend"] = True
         if not ("figsize" in kwargs):
             kwargs["figsize"] = (14, 10)
-        return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs,)
+        return self.parent[columns].to_geopandas(self.alias).plot(*args, **kwargs)
 
     # ---#
     def get_dummies(
@@ -2071,10 +2071,10 @@ Attributes
 		"""
         check_types(
             [
-                ("prefix", prefix, [str],),
-                ("prefix_sep", prefix_sep, [str],),
-                ("drop_first", drop_first, [bool],),
-                ("use_numbers_as_suffix", use_numbers_as_suffix, [bool],),
+                ("prefix", prefix, [str]),
+                ("prefix_sep", prefix_sep, [str]),
+                ("drop_first", drop_first, [bool]),
+                ("use_numbers_as_suffix", use_numbers_as_suffix, [bool]),
             ]
         )
         distinct_elements = self.distinct()
@@ -2086,7 +2086,6 @@ Attributes
                 else prefix.replace('"', "_") + prefix_sep.replace('"', "_")
             )
             n = 1 if drop_first else 0
-            columns = self.parent.get_columns()
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2095,7 +2094,13 @@ Attributes
                         prefix, str(distinct_elements[k]).replace('"', "_")
                     )
                 )
-                assert not(column_check_ambiguous(name, columns)), NameError(f"A vColumn has already the alias of one of the dummies ({name}).\nIt can be the result of using previously the method on the vColumn or simply because of ambiguous columns naming.\nBy changing one of the parameters ('prefix', 'prefix_sep'), you'll be able to solve this issue.")
+                assert not (self.parent.is_colname_in(name)), NameError(
+                    f"A vColumn has already the alias of one of the dummies ({name}).\n"
+                    "It can be the result of using previously the method on the vColumn "
+                    "or simply because of ambiguous columns naming.\nBy changing one of "
+                    "the parameters ('prefix', 'prefix_sep'), you'll be able to solve this "
+                    "issue."
+                )
             for k in range(len(distinct_elements) - n):
                 name = (
                     '"{}{}"'.format(prefix, k)
@@ -2171,7 +2176,7 @@ Attributes
         method: str = "density",
         of: str = "",
         max_cardinality: int = 6,
-        bins: int = 0,
+        nbins: int = 0,
         h: float = 0,
         ax=None,
         **style_kwds,
@@ -2197,7 +2202,7 @@ Attributes
 	max_cardinality: int, optional
  		Maximum number of the vColumn distinct elements to be used as categorical 
  		(No h will be picked or computed)
- 	bins: int, optional
+ 	nbins: int, optional
  		Number of bins. If empty, an optimized number of bins will be computed.
  	h: float, optional
  		Interval width of the bar. If empty, an optimized h will be computed.
@@ -2217,19 +2222,19 @@ Attributes
 		"""
         check_types(
             [
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("h", h, [int, float],),
-                ("bins", bins, [int, float],),
+                ("method", method, [str]),
+                ("of", of, [str]),
+                ("max_cardinality", max_cardinality, [int, float]),
+                ("h", h, [int, float]),
+                ("nbins", nbins, [int, float]),
             ]
         )
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import hist
 
-        return hist(self, method, of, max_cardinality, bins, h, ax=ax, **style_kwds,)
+        return hist(self, method, of, max_cardinality, nbins, h, ax=ax, **style_kwds)
 
     # ---#
     def iloc(self, limit: int = 5, offset: int = 0):
@@ -2255,22 +2260,19 @@ Attributes
     vDataFrame[].head : Returns the head of the vColumn.
     vDataFrame[].tail : Returns the tail of the vColumn.
         """
-        check_types(
-            [("limit", limit, [int, float],), ("offset", offset, [int, float],),]
-        )
+        check_types([("limit", limit, [int, float]), ("offset", offset, [int, float])])
         if offset < 0:
             offset = max(0, self.parent.shape()[0] - limit)
         title = "Reads {}.".format(self.alias)
         tail = to_tablesample(
             "SELECT {} AS {} FROM {}{} LIMIT {} OFFSET {}".format(
-                convert_special_type(self.category(), False, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
-                last_order_by(self.parent),
+                self.parent.__get_last_order_by__(),
                 limit,
                 offset,
             ),
-            self.parent._VERTICAPY_VARIABLES_["cursor"],
             title=title,
         )
         tail.count = self.parent.shape()[0]
@@ -2316,9 +2318,7 @@ Attributes
         return self.category() == "date"
 
     # ---#
-    def isin(
-        self, val: list, *args,
-    ):
+    def isin(self, val: list, *args):
         """
 	---------------------------------------------------------------------------
 	Looks if some specific records are in the vColumn and it returns the new 
@@ -2342,7 +2342,7 @@ Attributes
         if isinstance(val, str) or not (isinstance(val, Iterable)):
             val = [val]
         val += list(args)
-        check_types([("val", val, [list],)])
+        check_types([("val", val, [list])])
         val = {self.alias: val}
         return self.parent.isin(val)
 
@@ -2365,9 +2365,7 @@ Attributes
         return self.category() in ("float", "int")
 
     # ---#
-    def iv_woe(
-        self, y: str, bins: int = 10,
-    ):
+    def iv_woe(self, y: str, nbins: int = 10):
         """
     ---------------------------------------------------------------------------
     Computes the Information Value (IV) / Weight Of Evidence (WOE) Table. It tells 
@@ -2378,8 +2376,8 @@ Attributes
     ----------
     y: str
         Response vColumn.
-    bins: int, optional
-        Maximum number of bins used for the discretization (must be > 1)
+    nbins: int, optional
+        Maximum number of nbins used for the discretization (must be > 1)
 
     Returns
     -------
@@ -2391,9 +2389,9 @@ Attributes
     --------
     vDataFrame.iv_woe : Computes the Information Value (IV) Table.
         """
-        check_types([("y", y, [str],), ("bins", bins, [int],)])
-        columns_check([y], self.parent)
-        y = vdf_columns_names([y], self.parent)[0]
+        check_types([("y", y, [str]), ("nbins", nbins, [int])])
+        self.parent.are_namecols_in(y)
+        y = self.parent.format_colnames(y)
         assert self.parent[y].nunique() == 2, TypeError(
             "vColumn {} must be binary to use iv_woe.".format(y)
         )
@@ -2405,8 +2403,8 @@ Attributes
         self.parent[y].distinct()
         trans = self.discretize(
             method="same_width" if self.isnum() else "topk",
-            bins=bins,
-            k=bins,
+            nbins=nbins,
+            k=nbins,
             new_category="Others",
             return_enum_trans=True,
         )[0].replace("{}", self.alias)
@@ -2423,9 +2421,7 @@ Attributes
             self.alias, query,
         )
         title = "Computing WOE & IV of {} (response = {}).".format(self.alias, y)
-        result = to_tablesample(
-            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
-        )
+        result = to_tablesample(query, title=title)
         result.values["index"] += ["total"]
         result.values["non_events"] += [sum(result["non_events"])]
         result.values["events"] += [sum(result["events"])]
@@ -2556,21 +2552,19 @@ Attributes
 	vDataFrame[].label_encode : Encodes the vColumn with Label Encoding.
 	vDataFrame[].get_dummies  : Encodes the vColumn with One-Hot Encoding.
 		"""
-        check_types([("response", response, [str],)])
-        columns_check([response], self.parent)
-        response = vdf_columns_names([response], self.parent)[0]
-        assert self.parent[response].isnum(), TypeError("The response column must be numerical to use a mean encoding")
+        check_types([("response", response, [str])])
+        self.parent.are_namecols_in(response)
+        response = self.parent.format_colnames(response)
+        assert self.parent[response].isnum(), TypeError(
+            "The response column must be numerical to use a mean encoding"
+        )
         max_floor = len(self.parent[response].transformations) - len(
             self.transformations
         )
         for k in range(max_floor):
             self.transformations += [("{}", self.ctype(), self.category())]
         self.transformations += [
-            (
-                "AVG({}) OVER (PARTITION BY {})".format(response, "{}"),
-                "int",
-                "float",
-            )
+            ("AVG({}) OVER (PARTITION BY {})".format(response, "{}"), "int", "float")
         ]
         self.parent.__update_catalog__(erase=True, columns=[self.alias])
         self.parent.__add_to_history__(
@@ -2583,10 +2577,18 @@ Attributes
         return self.parent
 
     # ---#
-    def median(self):
+    def median(
+        self, approx: bool = True,
+    ):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vColumn using 'median'.
+
+    Parameters
+    ----------
+    approx: bool, optional
+        If set to True, the approximate median is returned. By setting this 
+        parameter to False, the function's performance can drastically decrease.
 
  	Returns
  	-------
@@ -2597,7 +2599,7 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        return self.quantile(0.5)
+        return self.quantile(0.5, approx=approx)
 
     # ---#
     def memory_usage(self):
@@ -2666,7 +2668,7 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("dropna", dropna, [bool],), ("n", n, [int, float],)])
+        check_types([("dropna", dropna, [bool]), ("n", n, [int, float])])
         if n == 1:
             pre_comp = self.parent.__get_catalog_value__(self.alias, "top")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
@@ -2674,15 +2676,14 @@ Attributes
                     return pre_comp
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
-        self.parent.__executeSQL__(
+        result = executeSQL(
             "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
                 self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n
-            )
+            ),
+            title="Computing the mode.",
+            method="fetchall",
         )
-        try:
-            top = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
-        except:
-            top = None
+        top = None if not (result) else result[0][0]
         if not (dropna):
             n = "" if (n == 1) else str(int(n))
             if isinstance(top, decimal.Decimal):
@@ -2712,7 +2713,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float],)])
+        check_types([("x", x, [int, float])])
         return self.apply(func="{} * ({})".format("{}", x))
 
     # ---#
@@ -2736,14 +2737,12 @@ Attributes
 	--------
 	vDataFrame[].nsmallest : Returns the n smallest elements in the vColumn.
 		"""
-        check_types([("n", n, [int, float],)])
+        check_types([("n", n, [int, float])])
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} DESC LIMIT {}".format(
             self.parent.__genSQL__(), self.alias, self.alias, n
         )
         title = "Reads {} {} largest elements.".format(self.alias, n)
-        return to_tablesample(
-            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
-        )
+        return to_tablesample(query, title=title)
 
     # ---#
     def normalize(
@@ -2782,20 +2781,24 @@ Attributes
             by = [by]
         check_types(
             [
-                ("method", method, ["zscore", "robust_zscore", "minmax"],),
-                ("by", by, [list],),
-                ("return_trans", return_trans, [bool],),
+                ("method", method, ["zscore", "robust_zscore", "minmax"]),
+                ("by", by, [list]),
+                ("return_trans", return_trans, [bool]),
             ]
         )
         method = method.lower()
-        columns_check(by, self.parent)
-        by = vdf_columns_names(by, self.parent)
+        self.parent.are_namecols_in(by)
+        by = self.parent.format_colnames(by)
         nullifzero, n = 1, len(by)
         if self.isbool():
+
             warning_message = "Normalize doesn't work on booleans".format(self.alias)
             warnings.warn(warning_message, Warning)
+
         elif self.isnum():
+
             if method == "zscore":
+
                 if n == 0:
                     nullifzero = 0
                     avg, stddev = self.aggregate(["avg", "std"]).values[self.alias]
@@ -2807,7 +2810,7 @@ Attributes
                         return self
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
-                        self.parent.__executeSQL__(
+                        result = executeSQL(
                             "SELECT {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
                                 by[0],
                                 self.alias,
@@ -2815,9 +2818,9 @@ Attributes
                                 self.parent.__genSQL__(),
                                 by[0],
                             ),
-                            title="Computes the different categories to normalize.",
+                            title="Computing the different categories to normalize.",
+                            method="fetchall",
                         )
-                        result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
                         for i in range(len(result)):
                             if result[i][2] == None:
                                 pass
@@ -2853,10 +2856,11 @@ Attributes
                                 ]
                             ),
                         )
-                        self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
+                        executeSQL(
                             "SELECT {}, {} FROM {} LIMIT 1".format(
                                 avg, stddev, self.parent.__genSQL__()
-                            )
+                            ),
+                            print_time_sql=False,
                         )
                     except:
                         avg, stddev = (
@@ -2890,12 +2894,14 @@ Attributes
                             "float",
                         )
                     ]
+
             elif method == "robust_zscore":
+
                 if n > 0:
                     warning_message = "The method 'robust_zscore' is available only if the parameter 'by' is empty\nIf you want to normalize by grouping by elements, please use a method in zscore|minmax"
                     warnings.warn(warning_message, Warning)
                     return self
-                mad, med = self.aggregate(["mad", "median"]).values[self.alias]
+                mad, med = self.aggregate(["mad", "approx_median"]).values[self.alias]
                 mad *= 1.4826
                 if mad != 0:
                     if return_trans:
@@ -2914,7 +2920,9 @@ Attributes
                     )
                     warnings.warn(warning_message, Warning)
                     return self
+
             elif method == "minmax":
+
                 if n == 0:
                     nullifzero = 0
                     cmin, cmax = self.aggregate(["min", "max"]).values[self.alias]
@@ -2926,7 +2934,7 @@ Attributes
                         return self
                 elif n == 1:
                     try:
-                        self.parent.__executeSQL__(
+                        result = executeSQL(
                             "SELECT {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
                                 by[0],
                                 self.alias,
@@ -2934,11 +2942,11 @@ Attributes
                                 self.parent.__genSQL__(),
                                 by[0],
                             ),
-                            title="Computes the different categories {} to normalize.".format(
+                            title="Computing the different categories {} to normalize.".format(
                                 by[0]
                             ),
+                            method="fetchall",
                         )
-                        result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
                         cmin = "DECODE({}, {}, NULL)".format(
                             by[0],
                             ", ".join(
@@ -2969,10 +2977,11 @@ Attributes
                                 ]
                             ),
                         )
-                        self.parent._VERTICAPY_VARIABLES_["cursor"].execute(
+                        executeSQL(
                             "SELECT {}, {} FROM {} LIMIT 1".format(
                                 cmax, cmin, self.parent.__genSQL__()
-                            )
+                            ),
+                            print_time_sql=False,
                         )
                     except:
                         cmax, cmin = (
@@ -3014,6 +3023,7 @@ Attributes
                             "float",
                         )
                     ]
+
             if method != "robust_zscore":
                 max_floor = 0
                 for elem in by:
@@ -3028,19 +3038,23 @@ Attributes
                 sauv[elem] = self.catalog[elem]
             self.parent.__update_catalog__(erase=True, columns=[self.alias])
             try:
+
                 if "count" in sauv:
                     self.catalog["count"] = sauv["count"]
                     self.catalog["percent"] = (
                         100 * sauv["count"] / self.parent.shape()[0]
                     )
+
                 for elem in sauv:
+
                     if "top" in elem:
+
                         if "percent" in elem:
                             self.catalog[elem] = sauv[elem]
                         elif elem == None:
                             self.catalog[elem] = None
                         elif method == "robust_zscore":
-                            self.catalog[elem] = (sauv[elem] - sauv["50%"]) / (
+                            self.catalog[elem] = (sauv[elem] - sauv["approx_50%"]) / (
                                 1.4826 * sauv["mad"]
                             )
                         elif method == "zscore":
@@ -3051,6 +3065,7 @@ Attributes
                             self.catalog[elem] = (sauv[elem] - sauv["min"]) / (
                                 sauv["max"] - sauv["min"]
                             )
+
             except:
                 pass
             if method == "robust_zscore":
@@ -3092,14 +3107,12 @@ Attributes
 	--------
 	vDataFrame[].nlargest : Returns the n largest vColumn elements.
 		"""
-        check_types([("n", n, [int, float],)])
+        check_types([("n", n, [int, float])])
         query = "SELECT * FROM {} WHERE {} IS NOT NULL ORDER BY {} ASC LIMIT {}".format(
             self.parent.__genSQL__(), self.alias, self.alias, n
         )
         title = "Reads {} {} smallest elements.".format(n, self.alias)
-        return to_tablesample(
-            query, self.parent._VERTICAPY_VARIABLES_["cursor"], title=title,
-        )
+        return to_tablesample(query, title=title)
 
     # ---#
     def numh(self, method: str = "auto"):
@@ -3121,14 +3134,16 @@ Attributes
  		optimal bar width.
 		"""
         check_types(
-            [("method", method, ["sturges", "freedman_diaconis", "fd", "auto"],)]
+            [("method", method, ["sturges", "freedman_diaconis", "fd", "auto"])]
         )
         method = method.lower()
         if method == "auto":
             pre_comp = self.parent.__get_catalog_value__(self.alias, "numh")
             if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
                 return pre_comp
-        assert self.isnum() or self.isdate(), ParameterError("numh is only available on type numeric|date")
+        assert self.isnum() or self.isdate(), ParameterError(
+            "numh is only available on type numeric|date"
+        )
         if self.isnum():
             result = (
                 self.parent.describe(
@@ -3152,10 +3167,11 @@ Attributes
             query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
                 self.alias, self.alias, self.alias, self.alias, self.alias, table
             )
-            self.parent.__executeSQL__(
-                query, title="Different aggregations to compute the optimal h."
+            result = executeSQL(
+                query,
+                title="Different aggregations to compute the optimal h.",
+                method="fetchrow",
             )
-            result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
             count, vColumn_min, vColumn_025, vColumn_075, vColumn_max = result
         sturges = max(
             float(vColumn_max - vColumn_min) / int(math.floor(math.log(count, 2) + 2)),
@@ -3174,7 +3190,7 @@ Attributes
         return best_h
 
     # ---#
-    def nunique(self, approx: bool = False):
+    def nunique(self, approx: bool = True):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vColumn using 'unique' (cardinality).
@@ -3182,8 +3198,9 @@ Attributes
 	Parameters
  	----------
  	approx: bool, optional
- 		If set to True, the method will compute the approximate count distinct 
- 		instead of the exact one.
+ 		If set to True, the approximate cardinality is returned. By setting 
+        this parameter to False, the function's performance can drastically 
+        decrease.
 
  	Returns
  	-------
@@ -3194,7 +3211,7 @@ Attributes
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("approx", approx, [bool],)])
+        check_types([("approx", approx, [bool])])
         if approx:
             return self.aggregate(func=["approx_unique"]).values[self.alias][0]
         else:
@@ -3258,18 +3275,18 @@ Attributes
             pie_type = pie_type.lower()
         check_types(
             [
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [int, float],),
-                ("h", h, [int, float],),
+                ("method", method, [str]),
+                ("of", of, [str]),
+                ("max_cardinality", max_cardinality, [int, float]),
+                ("h", h, [int, float]),
                 ("pie_type", pie_type, ["auto", "donut", "rose"]),
             ]
         )
         donut = True if pie_type == "donut" else False
         rose = True if pie_type == "rose" else False
         if of:
-            columns_check([of], self.parent)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import pie
 
         return pie(
@@ -3325,19 +3342,19 @@ Attributes
 		"""
         check_types(
             [
-                ("ts", ts, [str],),
-                ("by", by, [str],),
-                ("start_date", start_date, [str, datetime.datetime, datetime.date,],),
-                ("end_date", end_date, [str, datetime.datetime, datetime.date,],),
-                ("area", area, [bool],),
-                ("step", step, [bool],),
+                ("ts", ts, [str]),
+                ("by", by, [str]),
+                ("start_date", start_date, [str, datetime.datetime, datetime.date]),
+                ("end_date", end_date, [str, datetime.datetime, datetime.date]),
+                ("area", area, [bool]),
+                ("step", step, [bool]),
             ]
         )
-        columns_check([ts], self.parent)
-        ts = vdf_columns_names([ts], self.parent)[0]
+        self.parent.are_namecols_in(ts)
+        ts = self.parent.format_colnames(ts)
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
         from verticapy.plot import ts_plot
 
         return ts_plot(
@@ -3364,7 +3381,7 @@ Attributes
     prod = product
 
     # ---#
-    def quantile(self, x: float):
+    def quantile(self, x: float, approx: bool = True):
         """
 	---------------------------------------------------------------------------
 	Aggregates the vColumn using an input 'quantile'.
@@ -3374,18 +3391,24 @@ Attributes
  	x: float
  		A float between 0 and 1 that represents the quantile.
         For example: 0.25 represents Q1.
+    approx: bool, optional
+        If set to True, the approximate quantile is returned. By setting this 
+        parameter to False, the function's performance can drastically decrease.
 
  	Returns
  	-------
  	float
- 		quantile
+ 		quantile (or approximate quantile).
 
 	See Also
 	--------
 	vDataFrame.aggregate : Computes the vDataFrame input aggregations.
 		"""
-        check_types([("x", x, [int, float],)])
-        return self.aggregate(func=["{}%".format(x * 100)]).values[self.alias][0]
+        check_types([("x", x, [int, float], ("approx", approx, [bool]))])
+        prefix = "approx_" if approx else ""
+        return self.aggregate(func=[prefix + "{}%".format(x * 100)]).values[self.alias][
+            0
+        ]
 
     # ---#
     def range_plot(
@@ -3434,23 +3457,23 @@ Attributes
         """
         check_types(
             [
-                ("ts", ts, [str],),
-                ("q", q, [tuple],),
+                ("ts", ts, [str]),
+                ("q", q, [tuple]),
                 (
                     "start_date",
                     start_date,
-                    [str, datetime.datetime, datetime.date, int, float,],
+                    [str, datetime.datetime, datetime.date, int, float],
                 ),
                 (
                     "end_date",
                     end_date,
-                    [str, datetime.datetime, datetime.date, int, float,],
+                    [str, datetime.datetime, datetime.date, int, float],
                 ),
-                ("plot_median", plot_median, [bool],),
+                ("plot_median", plot_median, [bool]),
             ]
         )
-        columns_check([ts], self.parent)
-        ts = vdf_columns_names([ts], self.parent)[0]
+        self.parent.are_namecols_in(ts)
+        ts = self.parent.format_colnames(ts)
         from verticapy.plot import range_curve_vdf
 
         return range_curve_vdf(
@@ -3482,10 +3505,12 @@ Attributes
 	--------
 	vDataFrame.add_copy : Creates a copy of the vColumn.
 		"""
-        check_types([("new_name", new_name, [str],)])
-        old_name = str_column(self.alias)
+        check_types([("new_name", new_name, [str])])
+        old_name = quote_ident(self.alias)
         new_name = new_name.replace('"', "")
-        assert not(column_check_ambiguous(new_name, self.parent.get_columns())), NameError(f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue.")
+        assert not (self.parent.is_colname_in(new_name)), NameError(
+            f"A vColumn has already the alias {new_name}.\nBy changing the parameter 'new_name', you'll be able to solve this issue."
+        )
         self.add_copy(new_name)
         parent = self.drop(add_history=False)
         parent.__add_to_history__(
@@ -3513,7 +3538,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("n", n, [int, float],)])
+        check_types([("n", n, [int, float])])
         return self.apply(func="ROUND({}, {})".format("{}", n))
 
     # ---#
@@ -3578,9 +3603,9 @@ Attributes
 		"""
         check_types(
             [
-                ("length", length, [int, float],),
-                ("unit", unit, [str],),
-                ("start", start, [bool],),
+                ("length", length, [int, float]),
+                ("unit", unit, [str]),
+                ("start", start, [bool]),
             ]
         )
         start_or_end = "START" if (start) else "END"
@@ -3644,22 +3669,22 @@ Attributes
         """
         check_types(
             [
-                ("by", by, [str],),
-                ("method", method, [str],),
-                ("of", of, [str],),
-                ("max_cardinality", max_cardinality, [list],),
-                ("h", h, [list, float, int],),
+                ("by", by, [str]),
+                ("method", method, [str]),
+                ("of", of, [str]),
+                ("max_cardinality", max_cardinality, [list]),
+                ("h", h, [list, float, int]),
             ]
         )
         if by:
-            columns_check([by], self.parent)
-            by = vdf_columns_names([by], self.parent)[0]
+            self.parent.are_namecols_in(by)
+            by = self.parent.format_colnames(by)
             columns = [self.alias, by]
         else:
             columns = [self.alias]
         if of:
-            columns_check([of], self)
-            of = vdf_columns_names([of], self.parent)[0]
+            self.parent.are_namecols_in(of)
+            of = self.parent.format_colnames(of)
         from verticapy.plot import spider as spider_plot
 
         return spider_plot(
@@ -3702,14 +3727,14 @@ Attributes
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
-        self.parent.__executeSQL__(
+        store_usage = executeSQL(
             "SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
-                convert_special_type(self.category(), False, self.alias),
+                bin_spatial_to_str(self.category(), self.alias),
                 self.parent.__genSQL__(),
             ),
-            title="Computes the Store Usage of the vColumn {}.".format(self.alias),
+            title="Computing the Store Usage of the vColumn {}.".format(self.alias),
+            method="fetchfirstelem",
         )
-        store_usage = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()[0]
         self.parent.__update_catalog__(
             {"index": ["store_usage"], self.alias: [store_usage]}
         )
@@ -3742,7 +3767,7 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice   : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str],)])
+        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}') > 0".format("{}", pat.replace("'", "''"))
         )
@@ -3774,7 +3799,7 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str],)])
+        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_COUNT({}, '{}')".format("{}", pat.replace("'", "''"))
         )
@@ -3806,7 +3831,7 @@ Attributes
 		vColumn records by an input value.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("pat", pat, [str],)])
+        check_types([("pat", pat, [str])])
         return self.apply(
             func="REGEXP_SUBSTR({}, '{}')".format("{}", pat.replace("'", "''"))
         )
@@ -3840,7 +3865,7 @@ Attributes
 		vColumn.
 	vDataFrame[].str_slice    : Slices the vColumn.
 		"""
-        check_types([("to_replace", to_replace, [str],), ("value", value, [str],)])
+        check_types([("to_replace", to_replace, [str]), ("value", value, [str])])
         return self.apply(
             func="REGEXP_REPLACE({}, '{}', '{}')".format(
                 "{}", to_replace.replace("'", "''"), value.replace("'", "''")
@@ -3876,7 +3901,7 @@ Attributes
 	vDataFrame[].str_replace  : Replaces the regular expression matches in each of the 
 		vColumn records by an input value.
 		"""
-        check_types([("start", start, [int, float],), ("step", step, [int, float],)])
+        check_types([("start", start, [int, float]), ("step", step, [int, float])])
         return self.apply(func="SUBSTR({}, {}, {})".format("{}", start, step))
 
     # ---#
@@ -3900,7 +3925,7 @@ Attributes
 	--------
 	vDataFrame[].apply : Applies a function to the input vColumn.
 		"""
-        check_types([("x", x, [int, float],)])
+        check_types([("x", x, [int, float])])
         if self.isdate():
             return self.apply(func="TIMESTAMPADD(SECOND, -({}), {})".format(x, "{}"))
         else:
@@ -3969,11 +3994,11 @@ Attributes
 	--------
 	vDataFrame[].describe : Computes the vColumn descriptive statistics.
 		"""
-        check_types([("k", k, [int, float],), ("dropna", dropna, [bool],)])
+        check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
         query = "SELECT {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
-            convert_special_type(self.category(), True, self.alias),
+            bin_spatial_to_str(self.category(), self.alias),
             self.alias,
             self.parent.shape()[0],
             self.parent.__genSQL__(),
@@ -3981,13 +4006,13 @@ Attributes
             self.alias,
             topk,
         )
-        self.parent.__executeSQL__(
+        result = executeSQL(
             query,
-            title="Computes the top{} categories of {}.".format(
+            title="Computing the top{} categories of {}.".format(
                 k if k > 0 else "", self.alias
             ),
+            method="fetchall",
         )
-        result = self.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
         values = {
             "index": [item[0] for item in result],
             "count": [int(item[1]) for item in result],

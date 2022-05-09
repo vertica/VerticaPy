@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -36,14 +36,14 @@
 # \  / _  __|_. _ _ |_)
 #  \/ (/_|  | |(_(_|| \/
 #                     /
-# VerticaPy is a Python library with scikit-like functionality to use to conduct
+# VerticaPy is a Python library with scikit-like functionality for conducting
 # data science projects on data stored in Vertica, taking advantage Vertica’s
 # speed and built-in analytics and machine learning features. It supports the
 # entire data science life cycle, uses a ‘pipeline’ mechanism to sequentialize
 # data transformation operations, and offers beautiful graphical options.
 #
-# VerticaPy aims to solve all of these problems. The idea is simple: instead
-# of moving data around for processing, VerticaPy brings the logic to the data.
+# VerticaPy aims to do all of the above. The idea is simple: instead of moving
+# data around for processing, VerticaPy brings the logic to the data.
 #
 #
 # Modules
@@ -115,7 +115,7 @@ def acf_plot(
             "zorder": 2,
         }
         ax.scatter(
-            x, y, **updated_dict(param, tmp_style,),
+            x, y, **updated_dict(param, tmp_style),
         )
         ax.plot(
             [-1] + x + [x[-1] + 1],
@@ -137,6 +137,7 @@ def acf_plot(
     ax.set_xlabel("lag")
     return ax
 
+
 # ---#
 def animated_bar(
     vdf,
@@ -149,7 +150,7 @@ def animated_bar(
     limit: int = 1000000,
     fixed_xy_lim: bool = False,
     date_in_title: bool = False,
-    date_f = None,
+    date_f=None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
@@ -158,13 +159,21 @@ def animated_bar(
     ax=None,
     **style_kwds,
 ):
-    if not(date_style_dict):
-        date_style_dict = {"fontsize": 50, "alpha": 0.6, "color": "gray", "ha": 'right', "va": 'center',}
+    if not (date_style_dict):
+        date_style_dict = {
+            "fontsize": 50,
+            "alpha": 0.6,
+            "color": "gray",
+            "ha": "right",
+            "va": "center",
+        }
     if by:
         columns += [by]
     if date_f == None:
+
         def date_f(x):
             return str(x)
+
     if "color" in style_kwds:
         colors = style_kwds["color"]
         del style_kwds["color"]
@@ -184,14 +193,28 @@ def animated_bar(
         all_cats = vdf[columns[0]].distinct(agg="MAX({})".format(columns[1]))
         for idx, elem in enumerate(all_cats):
             colors_map[elem] = colors[idx % len(colors)]
-    where = " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
-    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
-    query = "SELECT * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(order_by, ", ".join(columns), vdf.__genSQL__(), order_by, " AND ".join([f"{elem} IS NOT NULL" for elem in columns]) + where, limit_over, order_by, columns[1], order_by, columns[1], limit,)
-    vdf.__executeSQL__(
-        query=query,
-        title="Select points to draw the animated bar chart."
+    where = (
+        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
     )
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
+    query = "SELECT * FROM (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} LIMIT {} OVER (PARTITION BY {} ORDER BY {} DESC)) x ORDER BY {} ASC, {} ASC LIMIT {}".format(
+        order_by,
+        ", ".join(columns),
+        vdf.__genSQL__(),
+        order_by,
+        " AND ".join([f"{elem} IS NOT NULL" for elem in columns]) + where,
+        limit_over,
+        order_by,
+        columns[1],
+        order_by,
+        columns[1],
+        limit,
+    )
+    query_result = executeSQL(
+        query=query,
+        title="Selecting points to draw the animated bar chart.",
+        method="fetchall",
+    )
     order_by_values = [item[0] for item in query_result]
     column1 = [item[1] for item in query_result]
     column2 = [float(item[2]) for item in query_result]
@@ -206,11 +229,15 @@ def animated_bar(
     n = len(order_by_values)
     for idx, elem in enumerate(order_by_values):
         if elem != current_ts or idx == n - 1:
-            bar_values += [{"y": column1[ts_idx:idx], 
-                            "width": column2[ts_idx:idx], 
-                            "c": color[ts_idx:idx], 
-                            "x": column3[ts_idx:idx], 
-                            "date": current_ts}]
+            bar_values += [
+                {
+                    "y": column1[ts_idx:idx],
+                    "width": column2[ts_idx:idx],
+                    "c": color[ts_idx:idx],
+                    "x": column3[ts_idx:idx],
+                    "date": current_ts,
+                }
+            ]
             current_ts, ts_idx = elem, idx
     if not (ax):
         fig, ax = plt.subplots()
@@ -221,16 +248,29 @@ def animated_bar(
                 fig.set_size_inches(9, 6)
         ax.xaxis.grid()
         ax.set_axisbelow(True)
+
     def animate(i):
         ax.clear()
-        if not(pie):
+        if not (pie):
             ax.xaxis.grid()
             ax.set_axisbelow(True)
             min_x, max_x = min(bar_values[i]["width"]), max(bar_values[i]["width"])
             delta_x = max_x - min_x
-            ax.barh(y=bar_values[i]["y"], width=bar_values[i]["width"], color=bar_values[i]["c"], alpha=0.6, **style_kwds,)
+            ax.barh(
+                y=bar_values[i]["y"],
+                width=bar_values[i]["width"],
+                color=bar_values[i]["c"],
+                alpha=0.6,
+                **style_kwds,
+            )
             if bar_values[i]["width"][0] > 0:
-                ax.barh(y=bar_values[i]["y"], width=[- 0.3 * delta_x for elem in bar_values[i]["y"]], color=bar_values[i]["c"], alpha=0.6, **style_kwds,)
+                ax.barh(
+                    y=bar_values[i]["y"],
+                    width=[-0.3 * delta_x for elem in bar_values[i]["y"]],
+                    color=bar_values[i]["c"],
+                    alpha=0.6,
+                    **style_kwds,
+                )
             if fixed_xy_lim:
                 ax.set_xlim(min(column2), max(column2))
             else:
@@ -238,59 +278,124 @@ def animated_bar(
             all_text = []
             for k in range(len(bar_values[i]["y"])):
                 tmp_txt = []
-                tmp_txt += [ax.text(bar_values[i]["width"][k], k + 0.1, bar_values[i]["y"][k], ha="right", fontweight="bold", size=10,)]
+                tmp_txt += [
+                    ax.text(
+                        bar_values[i]["width"][k],
+                        k + 0.1,
+                        bar_values[i]["y"][k],
+                        ha="right",
+                        fontweight="bold",
+                        size=10,
+                    )
+                ]
                 width_format = bar_values[i]["width"][k]
                 if width_format - int(width_format) == 0:
                     width_format = int(width_format)
-                width_format = f'{width_format:,}'
-                tmp_txt += [ax.text(bar_values[i]["width"][k] + 0.005 * delta_x, k - 0.15, width_format, ha="left", size=10,)]
+                width_format = f"{width_format:}"
+                tmp_txt += [
+                    ax.text(
+                        bar_values[i]["width"][k] + 0.005 * delta_x,
+                        k - 0.15,
+                        width_format,
+                        ha="left",
+                        size=10,
+                    )
+                ]
                 if len(columns) >= 3:
-                    tmp_txt += [ax.text(bar_values[i]["width"][k], k - 0.3, bar_values[i]["x"][k], ha="right", size=10, color="#333333",)]
+                    tmp_txt += [
+                        ax.text(
+                            bar_values[i]["width"][k],
+                            k - 0.3,
+                            bar_values[i]["x"][k],
+                            ha="right",
+                            size=10,
+                            color="#333333",
+                        )
+                    ]
                 all_text += [tmp_txt]
             if date_in_title:
                 ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(max_x + 0.27 * delta_x, int(limit_over / 2), date_f(bar_values[i]["date"]), **date_style_dict,)
+                my_text = ax.text(
+                    max_x + 0.27 * delta_x,
+                    int(limit_over / 2),
+                    date_f(bar_values[i]["date"]),
+                    **date_style_dict,
+                )
             ax.xaxis.tick_top()
-            ax.xaxis.set_label_position('top')
+            ax.xaxis.set_label_position("top")
             ax.set_xlabel(columns[1])
             ax.set_yticks([])
         else:
-            param={"wedgeprops": {"edgecolor":"white", "alpha": 0.5,}, "textprops": {'fontsize': 10, 'fontweight': 'bold'}, "autopct": '%1.1f%%'}
+            param = {
+                "wedgeprops": {"edgecolor": "white", "alpha": 0.5},
+                "textprops": {"fontsize": 10, "fontweight": "bold"},
+                "autopct": "%1.1f%%",
+            }
+
             def autopct(val):
-                a  = val / 100. * sum(bar_values[i]["width"])
-                return f'{a:,}'
-            pie_chart = ax.pie(x=bar_values[i]["width"], labels=bar_values[i]["y"], colors=bar_values[i]["c"], **updated_dict(param, style_kwds),)
+                a = val / 100.0 * sum(bar_values[i]["width"])
+                return f"{a:}"
+
+            pie_chart = ax.pie(
+                x=bar_values[i]["width"],
+                labels=bar_values[i]["y"],
+                colors=bar_values[i]["c"],
+                **updated_dict(param, style_kwds),
+            )
             for elem in pie_chart[2]:
-                elem.set_fontweight('normal')
+                elem.set_fontweight("normal")
             if date_in_title:
                 ax.set_title(date_f(bar_values[i]["date"]))
             else:
-                my_text = ax.text(1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict,)
+                my_text = ax.text(
+                    1.8, 1, date_f(bar_values[i]["date"]), **date_style_dict
+                )
             all_categories = []
             custom_lines = []
             if len(columns) >= 3:
                 for idx, elem in enumerate(bar_values[i]["x"]):
                     if elem not in all_categories:
                         all_categories += [elem]
-                        custom_lines += [Line2D([0], [0], color=bar_values[i]["c"][idx], lw=6, alpha=updated_dict(param, style_kwds)["wedgeprops"]["alpha"],)]
-                leg = ax.legend(custom_lines,
-                                all_categories,
-                                title=by,
-                                loc="center left", 
-                                bbox_to_anchor=[1, 0.5],)
-        return ax,
+                        custom_lines += [
+                            Line2D(
+                                [0],
+                                [0],
+                                color=bar_values[i]["c"][idx],
+                                lw=6,
+                                alpha=updated_dict(param, style_kwds)["wedgeprops"][
+                                    "alpha"
+                                ],
+                            )
+                        ]
+                leg = ax.legend(
+                    custom_lines,
+                    all_categories,
+                    title=by,
+                    loc="center left",
+                    bbox_to_anchor=[1, 0.5],
+                )
+        return (ax,)
 
     import matplotlib.animation as animation
 
-    myAnimation = animation.FuncAnimation(fig, animate, frames=range(0, len(bar_values)), interval=interval, blit=False, repeat=repeat)
+    myAnimation = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=range(0, len(bar_values)),
+        interval=interval,
+        blit=False,
+        repeat=repeat,
+    )
     if isnotebook() and return_html:
         from IPython.display import HTML
+
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
     else:
         return myAnimation
+
 
 # ---#
 def animated_bubble_plot(
@@ -308,7 +413,7 @@ def animated_bubble_plot(
     bbox: list = [],
     img: str = "",
     date_in_title: bool = False,
-    date_f = None,
+    date_f=None,
     date_style_dict: dict = {},
     interval: int = 10,
     repeat: bool = True,
@@ -316,11 +421,19 @@ def animated_bubble_plot(
     ax=None,
     **style_kwds,
 ):
-    if not(date_style_dict):
-        date_style_dict = {"fontsize": 100, "alpha": 0.6, "color": "gray", "ha": 'center', "va": 'center',}
+    if not (date_style_dict):
+        date_style_dict = {
+            "fontsize": 100,
+            "alpha": 0.6,
+            "color": "gray",
+            "ha": "center",
+            "va": "center",
+        }
     if date_f == None:
+
         def date_f(x):
             return str(x)
+
     if len(columns) == 2:
         columns += [1]
     if "color" in style_kwds:
@@ -349,7 +462,7 @@ def animated_bubble_plot(
                 colors_map[elem] = colors[idx % len(colors)]
     else:
         by = 1
-    if (label_name):
+    if label_name:
         columns += [label_name]
     count = vdf.shape()[0]
     if not (ax):
@@ -363,7 +476,9 @@ def animated_bubble_plot(
     count = vdf.shape()[0]
     if columns[2] != 1:
         max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
-    where = " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
+    where = (
+        " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
+    )
     where += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
     query = "SELECT * FROM (SELECT {}, {}, {} FROM {} WHERE  {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL{} LIMIT {} OVER (PARTITION BY {} ORDER BY {}, {} DESC)) x ORDER BY {}, 4 DESC, 3 DESC, 2 DESC LIMIT {}"
     query = query.format(
@@ -384,16 +499,22 @@ def animated_bubble_plot(
         order_by,
         limit,
     )
-    vdf.__executeSQL__(
+    query_result = executeSQL(
         query=query,
-        title="Select points to draw the animated bubble plot."
+        title="Selecting points to draw the animated bubble plot.",
+        method="fetchall",
     )
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
     size = 50
     order_by_values = [item[0] for item in query_result]
     if columns[2] != 1:
-        size = [1000 * (float(item[3]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
-    column1, column2 = [float(item[1]) for item in query_result], [float(item[2]) for item in query_result]
+        size = [
+            1000 * (float(item[3]) - min_size) / max((max_size - min_size), 1e-50)
+            for item in query_result
+        ]
+    column1, column2 = (
+        [float(item[1]) for item in query_result],
+        [float(item[2]) for item in query_result],
+    )
     if label_name:
         label_columns = [item[-2] for item in query_result]
     if "cmap" in param:
@@ -414,34 +535,62 @@ def animated_bubble_plot(
     n = len(order_by_values)
     for idx, elem in enumerate(order_by_values):
         if elem != current_ts or idx == n - 1:
-            scatter_values += [{"x": column1[ts_idx:idx], 
-                                "y": column2[ts_idx:idx], 
-                                "c": c[ts_idx:idx] if isinstance(c, list) else c, 
-                                "s": size if isinstance(size, (float, int)) else size[ts_idx:idx],
-                                "date": current_ts,}]
+            scatter_values += [
+                {
+                    "x": column1[ts_idx:idx],
+                    "y": column2[ts_idx:idx],
+                    "c": c[ts_idx:idx] if isinstance(c, list) else c,
+                    "s": size if isinstance(size, (float, int)) else size[ts_idx:idx],
+                    "date": current_ts,
+                }
+            ]
             if label_name:
                 scatter_values[-1]["label"] = label_columns[ts_idx:idx]
             current_ts, ts_idx = elem, idx
-    im = ax.scatter(scatter_values[0]["x"], scatter_values[0]["y"], c=scatter_values[0]["c"], s=scatter_values[0]["s"], **updated_dict(param, style_kwds),)
+    im = ax.scatter(
+        scatter_values[0]["x"],
+        scatter_values[0]["y"],
+        c=scatter_values[0]["c"],
+        s=scatter_values[0]["s"],
+        **updated_dict(param, style_kwds),
+    )
     if label_name:
         text_plots = []
         for idx in range(lim_labels):
-            text_plots += [ax.text(scatter_values[0]["x"][idx], scatter_values[0]["y"][idx], scatter_values[0]["label"][idx], ha="right", va="bottom")]
+            text_plots += [
+                ax.text(
+                    scatter_values[0]["x"][idx],
+                    scatter_values[0]["y"][idx],
+                    scatter_values[0]["label"][idx],
+                    ha="right",
+                    va="bottom",
+                )
+            ]
     ax.set_xlabel(columns[0])
     ax.set_ylabel(columns[1])
     if bbox:
         ax.set_xlim(bbox[0], bbox[1])
         ax.set_ylim(bbox[2], bbox[3])
-        if not(date_in_title):
-            my_text = ax.text((bbox[0] + bbox[1]) / 2, (bbox[2] + bbox[3]) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
-    elif (fixed_xy_lim):
+        if not (date_in_title):
+            my_text = ax.text(
+                (bbox[0] + bbox[1]) / 2,
+                (bbox[2] + bbox[3]) / 2,
+                date_f(scatter_values[0]["date"]),
+                **date_style_dict,
+            )
+    elif fixed_xy_lim:
         min_x, max_x = min(column1), max(column1)
         min_y, max_y = min(column2), max(column2)
         delta_x, delta_y = max_x - min_x, max_y - min_y
         ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
         ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
-        if not(date_in_title):
-            my_text = ax.text((max_x + min_x) / 2, (max_y + min_y) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+        if not (date_in_title):
+            my_text = ax.text(
+                (max_x + min_x) / 2,
+                (max_y + min_y) / 2,
+                date_f(scatter_values[0]["date"]),
+                **date_style_dict,
+            )
     if img:
         bim = plt.imread(img)
         if not (bbox):
@@ -449,8 +598,13 @@ def animated_bubble_plot(
             ax.set_xlim(bbox[0], bbox[1])
             ax.set_ylim(bbox[2], bbox[3])
         ax.imshow(bim, extent=bbox)
-    elif not(date_in_title):
-        my_text = ax.text((max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2, (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2, date_f(scatter_values[0]["date"]), **date_style_dict,)
+    elif not (date_in_title):
+        my_text = ax.text(
+            (max(scatter_values[0]["x"]) + min(scatter_values[0]["x"])) / 2,
+            (max(scatter_values[0]["y"]) + min(scatter_values[0]["y"])) / 2,
+            date_f(scatter_values[0]["date"]),
+            **date_style_dict,
+        )
     if "cmap" in param:
         fig.colorbar(im, ax=ax).set_label(by)
     elif label_name:
@@ -458,12 +612,19 @@ def animated_bubble_plot(
             custom_lines,
             all_categories,
             title=by,
-            loc="center left", 
-            bbox_to_anchor=[1, 0.5],)
+            loc="center left",
+            bbox_to_anchor=[1, 0.5],
+        )
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
     def animate(i):
-        array = np.array([(scatter_values[i]["x"][j], scatter_values[i]["y"][j]) for j in range(len(scatter_values[i]["x"]))])
+        array = np.array(
+            [
+                (scatter_values[i]["x"][j], scatter_values[i]["y"][j])
+                for j in range(len(scatter_values[i]["x"]))
+            ]
+        )
         im.set_offsets(array)
         if columns[2] != 1:
             im.set_sizes(np.array(scatter_values[i]["s"]))
@@ -475,32 +636,43 @@ def animated_bubble_plot(
             im.set_edgecolor(updated_dict(param, style_kwds)["edgecolors"])
         if label_name:
             for k in range(lim_labels):
-                text_plots[k].set_position((scatter_values[i]["x"][k], scatter_values[i]["y"][k]))
+                text_plots[k].set_position(
+                    (scatter_values[i]["x"][k], scatter_values[i]["y"][k])
+                )
                 text_plots[k].set_text(scatter_values[i]["label"][k])
         min_x, max_x = min(scatter_values[i]["x"]), max(scatter_values[i]["x"])
         min_y, max_y = min(scatter_values[i]["y"]), max(scatter_values[i]["y"])
         delta_x, delta_y = max_x - min_x, max_y - min_y
-        if not(fixed_xy_lim):
+        if not (fixed_xy_lim):
             ax.set_xlim(min_x - 0.02 * delta_x, max_x + 0.02 * delta_x)
             ax.set_ylim(min_y - 0.02 * delta_y, max_y + 0.02 * delta_y)
-            if not(date_in_title):
+            if not (date_in_title):
                 my_text.set_position([(max_x + min_x) / 2, (max_y + min_y) / 2])
-        if not(date_in_title):
+        if not (date_in_title):
             my_text.set_text(date_f(scatter_values[i]["date"]))
         else:
             ax.set_title(date_f(scatter_values[i]["date"]))
-        return ax,
+        return (ax,)
 
     import matplotlib.animation as animation
 
-    myAnimation = animation.FuncAnimation(fig, animate, frames=range(1, len(scatter_values)), interval=interval, blit=False, repeat=repeat)
+    myAnimation = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=range(1, len(scatter_values)),
+        interval=interval,
+        blit=False,
+        repeat=repeat,
+    )
     if isnotebook() and return_html:
         from IPython.display import HTML
+
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
     else:
         return myAnimation
+
 
 # ---#
 def animated_ts_plot(
@@ -530,9 +702,11 @@ def animated_ts_plot(
                 warnings.warn(warning_message, Warning)
             columns.remove(column)
     if not (columns):
-        raise EmptyParameter("No numerical columns found to draw the animated multi TS plot")
+        raise EmptyParameter(
+            "No numerical columns found to draw the animated multi TS plot"
+        )
     query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL".format(
-        order_by, ", ".join(columns), vdf.__genSQL__(), order_by,
+        order_by, ", ".join(columns), vdf.__genSQL__(), order_by
     )
     query += (
         " AND {} > '{}'".format(order_by, order_by_start) if (order_by_start) else ""
@@ -544,8 +718,11 @@ def animated_ts_plot(
     query += " ORDER BY {}".format(order_by)
     if limit:
         query += " LIMIT {}".format(limit)
-    vdf.__executeSQL__(query=query, title="Select the needed points to draw the curves")
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(
+        query=query,
+        title="Selecting the needed points to draw the curves",
+        method="fetchall",
+    )
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -566,29 +743,35 @@ def animated_ts_plot(
     all_plots = []
     colors = gen_colors()
     for i in range(0, len(columns)):
-        param = {"linewidth": 1, "label": columns[i], "linewidth": 2, "color": colors[i % len(colors)]}
-        all_plots += [ax.plot([], [], **updated_dict(param, style_kwds, i),)[0]]
+        param = {
+            "linewidth": 1,
+            "label": columns[i],
+            "linewidth": 2,
+            "color": colors[i % len(colors)],
+        }
+        all_plots += [ax.plot([], [], **updated_dict(param, style_kwds, i))[0]]
     if len(columns) > 1:
         ax.legend(loc="center left", bbox_to_anchor=[1, 0.5])
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.set_xlabel(order_by)
-    if (fixed_xy_lim):
+    if fixed_xy_lim:
         ax.set_xlim(order_by_values[0], order_by_values[-1])
         y_tmp = []
         for m in range(0, len(columns)):
             y_tmp += [item[m + 1] for item in query_result]
         ax.set_ylim(min(y_tmp), max(y_tmp))
+
     def animate(i):
         k = max(i - window_size, 0)
         x = [elem for elem in order_by_values]
         all_y = []
         for m in range(0, len(columns)):
             y = [item[m + 1] for item in query_result]
-            all_plots[m].set_xdata(x[0:i],)
-            all_plots[m].set_ydata(y[0:i],)
+            all_plots[m].set_xdata(x[0:i])
+            all_plots[m].set_ydata(y[0:i])
             all_y += y[0:i]
-        if not(fixed_xy_lim):
+        if not (fixed_xy_lim):
             if i > 0:
                 ax.set_ylim(min(all_y), max(all_y))
             if i > window_size:
@@ -597,18 +780,27 @@ def animated_ts_plot(
                 ax.set_xlim(x[0], x[window_size])
         for tick in ax.get_xticklabels():
             tick.set_rotation(90)
-        return ax,
+        return (ax,)
 
     import matplotlib.animation as animation
 
-    myAnimation = animation.FuncAnimation(fig, animate, frames=range(0, len(order_by_values) - 1, step), interval=interval, blit=False, repeat=repeat)
+    myAnimation = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=range(0, len(order_by_values) - 1, step),
+        interval=interval,
+        blit=False,
+        repeat=repeat,
+    )
     if isnotebook() and return_html:
         from IPython.display import HTML
+
         anim = myAnimation.to_jshtml()
         plt.close("all")
         return HTML(anim)
     else:
         return myAnimation
+
 
 # ---#
 def bar(
@@ -616,13 +808,13 @@ def bar(
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     ax=None,
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method=method, of=of, max_cardinality=max_cardinality, bins=bins, h=h
+        vdf, method=method, of=of, max_cardinality=max_cardinality, nbins=nbins, h=h
     )
     if not (ax):
         fig, ax = plt.subplots()
@@ -631,9 +823,7 @@ def bar(
         ax.xaxis.grid()
         ax.set_axisbelow(True)
     param = {"color": gen_colors()[0], "alpha": 0.86}
-    ax.barh(
-        x, y, h, **updated_dict(param, style_kwds, 0),
-    )
+    ax.barh(x, y, h, **updated_dict(param, style_kwds, 0))
     ax.set_ylabel(vdf.alias)
     if is_categorical:
         if vdf.category() == "text":
@@ -683,7 +873,7 @@ def bar2D(
     if density:
         if method != "density":
             raise ParameterError("Pyramid Bar works only with the 'density' method.")
-        unique = vdf.nunique(columns)["unique"]
+        unique = vdf.nunique(columns)["approx_unique"]
         if unique[1] != 2 and unique[0] != 2:
             raise ParameterError(
                 "One of the 2 columns must have 2 categories to draw a Pyramid Bar."
@@ -760,7 +950,7 @@ def bar2D(
                 [
                     elem + bar_width / 2 - bar_width / 2 / (n - 1)
                     for elem in range(n_groups)
-                ],
+                ]
             )
             ax.set_yticklabels(all_columns[0][1:m])
         ax.set_ylabel(columns[0])
@@ -889,9 +1079,7 @@ def boxplot(
             **style_kwds,
         )
         for median in box["medians"]:
-            median.set(
-                color="black", linewidth=1,
-            )
+            median.set(color="black", linewidth=1)
         for patch in box["boxes"]:
             patch.set_facecolor(colors[0])
         ax.set_axisbelow(True)
@@ -923,9 +1111,11 @@ def boxplot(
                 query = "SELECT {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY COUNT(*) DESC LIMIT {}".format(
                     by, table, vdf.alias, by, max_cardinality
                 )
-                query_result = vdf.__executeSQL__(
-                    query=query, title="Compute the categories of {}".format(by)
-                ).fetchall()
+                query_result = executeSQL(
+                    query=query,
+                    title="Computing the categories of {}".format(by),
+                    method="fetchall",
+                )
                 cat_priority = [item for sublist in query_result for item in sublist]
             with_summarize = False
             query = []
@@ -954,11 +1144,11 @@ def boxplot(
                 table, " UNION ALL ".join(query)
             )
             try:
-                vdf.__executeSQL__(
+                query_result = executeSQL(
                     query=query,
-                    title="Compute all the descriptive statistics for each category to draw the box plot",
+                    title="Computing all the descriptive statistics for each category to draw the box plot",
+                    method="fetchall",
                 )
-                query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
             except:
                 query_result = []
                 for idx, category in enumerate(cat_priority):
@@ -983,12 +1173,12 @@ def boxplot(
                             by, str(category).replace("'", "''")
                         )
                     )
-                    vdf.__executeSQL__(
-                        query=tmp_query,
-                        title="Compute all the descriptive statistics for each category to draw the box plot, one at a time",
-                    )
                     query_result += [
-                        vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
+                        executeSQL(
+                            query=tmp_query,
+                            title="Computing all the descriptive statistics for each category to draw the box plot, one at a time",
+                            method="fetchrow",
+                        )
                     ]
             cat_priority = [item[-1] for item in query_result]
             result = [[float(item[i]) for i in range(0, 5)] for item in query_result]
@@ -1153,7 +1343,9 @@ def bubble(
     ax=None,
     **style_kwds,
 ):
-    assert not(catcol) or not(cmap_col), ParameterError("Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both.")
+    assert not (catcol) or not (cmap_col), ParameterError(
+        "Bubble Plot only accepts either a cmap column or a categorical column. It can not accept both."
+    )
     if len(columns) == 2:
         columns += [1]
     if "color" in style_kwds:
@@ -1164,7 +1356,7 @@ def bubble(
         colors = gen_colors()
     if isinstance(colors, str):
         colors = [colors]
-    if not(catcol) and not(cmap_col):
+    if not (catcol) and not (cmap_col):
         tablesample = max_nb_points / vdf.shape()[0]
         query = "SELECT {}, {}, {} FROM {} WHERE __verticapy_split__ < {} AND {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             columns[0],
@@ -1177,15 +1369,23 @@ def bubble(
             columns[2],
             max_nb_points,
         )
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select random points to draw the scatter plot"
-        ).fetchall()
+        query_result = executeSQL(
+            query=query,
+            title="Selecting random points to draw the scatter plot",
+            method="fetchall",
+        )
         size = 50
         if columns[2] != 1:
             max_size = max([float(item[2]) for item in query_result])
             min_size = min([float(item[2]) for item in query_result])
-            size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
-        column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
+            size = [
+                1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50)
+                for item in query_result
+            ]
+        column1, column2 = (
+            [float(item[0]) for item in query_result],
+            [float(item[1]) for item in query_result],
+        )
         if not (ax):
             fig, ax = plt.subplots()
             if isnotebook():
@@ -1275,7 +1475,10 @@ def bubble(
         count = vdf.shape()[0]
         tablesample = 0.1 if (count > 10000) else 0.9
         if columns[2] != 1:
-            max_size, min_size = float(vdf[columns[2]].max()), float(vdf[columns[2]].min())
+            max_size, min_size = (
+                float(vdf[columns[2]].max()),
+                float(vdf[columns[2]].min()),
+            )
         custom_lines = []
         if catcol:
             all_categories = vdf[catcol].distinct()
@@ -1295,24 +1498,36 @@ def bubble(
                     columns[2],
                     int(max_nb_points / len(all_categories)),
                 )
-                vdf.__executeSQL__(
+                query_result = executeSQL(
                     query=query,
-                    title="Select random points to draw the bubble plot (category = '{}')".format(
+                    title="Selecting random points to draw the bubble plot (category = '{}')".format(
                         str(category)
                     ),
+                    method="fetchall",
                 )
-                query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
                 size = 50
                 if columns[2] != 1:
-                    size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
-                column1, column2 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result]
+                    size = [
+                        1000
+                        * (float(item[2]) - min_size)
+                        / max((max_size - min_size), 1e-50)
+                        for item in query_result
+                    ]
+                column1, column2 = (
+                    [float(item[0]) for item in query_result],
+                    [float(item[1]) for item in query_result],
+                )
                 param = {
                     "alpha": 0.8,
                     "color": colors[idx % len(colors)],
                     "edgecolors": "black",
                 }
-                ax.scatter(column1, column2, s=size, **updated_dict(param, style_kwds, idx),)
-                custom_lines += [Line2D([0], [0], color=colors[idx % len(colors)], lw=6)]
+                ax.scatter(
+                    column1, column2, s=size, **updated_dict(param, style_kwds, idx)
+                )
+                custom_lines += [
+                    Line2D([0], [0], color=colors[idx % len(colors)], lw=6)
+                ]
             for idx, item in enumerate(all_categories):
                 if len(str(item)) > 20:
                     all_categories[idx] = str(item)[0:20] + "..."
@@ -1331,21 +1546,32 @@ def bubble(
                 cmap_col,
                 max_nb_points,
             )
-            vdf.__executeSQL__(
+            query_result = executeSQL(
                 query=query,
-                title="Select random points to draw the bubble plot with cmap expr."
+                title="Selecting random points to draw the bubble plot with cmap expr.",
+                method="fetchall",
             )
-            query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
             size = 50
             if columns[2] != 1:
-                size = [1000 * (float(item[2]) - min_size) / max((max_size - min_size), 1e-50) for item in query_result]
-            column1, column2, column3 = [float(item[0]) for item in query_result], [float(item[1]) for item in query_result], [float(item[3]) for item in query_result]
+                size = [
+                    1000
+                    * (float(item[2]) - min_size)
+                    / max((max_size - min_size), 1e-50)
+                    for item in query_result
+                ]
+            column1, column2, column3 = (
+                [float(item[0]) for item in query_result],
+                [float(item[1]) for item in query_result],
+                [float(item[3]) for item in query_result],
+            )
             param = {
                 "alpha": 0.8,
                 "cmap": gen_cmap()[0],
                 "edgecolors": "black",
             }
-            im = ax.scatter(column1, column2, c=column3, s=size, **updated_dict(param, style_kwds),)
+            im = ax.scatter(
+                column1, column2, c=column3, s=size, **updated_dict(param, style_kwds)
+            )
         if columns[2] != 1:
             if catcol:
                 bbox_to_anchor = [1, 0.5]
@@ -1463,10 +1689,10 @@ def cmatrix(
     else:
         try:
             im = ax.imshow(
-                matrix_array, extent=extent, **updated_dict(param, style_kwds),
+                matrix_array, extent=extent, **updated_dict(param, style_kwds)
             )
         except:
-            im = ax.imshow(matrix_array, **updated_dict(param, style_kwds),)
+            im = ax.imshow(matrix_array, **updated_dict(param, style_kwds))
     fig.colorbar(im, ax=ax).set_label(colorbar)
     if not (extent):
         ax.set_yticks([i for i in range(0, n)])
@@ -1494,12 +1720,15 @@ def contour_plot(
     ax=None,
     **style_kwds,
 ):
-    if not(cbar_title) and str(type(func)) in ("<class 'function'>", "<class 'method'>",):
+    if not (cbar_title) and str(type(func)) in (
+        "<class 'function'>",
+        "<class 'method'>",
+    ):
         cbar_title = func.__name__
     all_agg = vdf.agg(["min", "max"], columns)
     min_x, min_y = all_agg["min"]
     max_x, max_y = all_agg["max"]
-    if str(type(func)) in ("<class 'function'>", "<class 'method'>",):
+    if str(type(func)) in ("<class 'function'>", "<class 'method'>"):
         xlist = np.linspace(min_x, max_x, nbins)
         ylist = np.linspace(min_y, max_y, nbins)
         X, Y = np.meshgrid(xlist, ylist)
@@ -1507,24 +1736,60 @@ def contour_plot(
     else:
         from verticapy.datasets import gen_meshgrid
 
-        vdf_tmp = gen_meshgrid({str_column(columns[1])[1:-1]: {"type": float, "range": [min_y, max_y], "nbins": nbins},
-                                       str_column(columns[0])[1:-1]: {"type": float, "range": [min_x, max_x], "nbins": nbins},},
-                                       cursor=vdf._VERTICAPY_VARIABLES_["cursor"])
+        vdf_tmp = gen_meshgrid(
+            {
+                quote_ident(columns[1])[1:-1]: {
+                    "type": float,
+                    "range": [min_y, max_y],
+                    "nbins": nbins,
+                },
+                quote_ident(columns[0])[1:-1]: {
+                    "type": float,
+                    "range": [min_x, max_x],
+                    "nbins": nbins,
+                },
+            }
+        )
         y = "verticapy_predict"
-        if isinstance(func, (str, str_sql,)):
+        if isinstance(func, (str, str_sql)):
             vdf_tmp["verticapy_predict"] = func
         else:
-            if func.type in ("RandomForestClassifier", "NaiveBayes", "NearestCentroid", "KNeighborsClassifier",):
-                if func.type in ("NearestCentroid", "KNeighborsClassifier",):
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", inplace=False, all_classes=True, key_columns=None,)
-                    y = "verticapy_predict_{}".format(pos_label)
+            if func.type in (
+                "XGBoostClassifier",
+                "RandomForestClassifier",
+                "NaiveBayes",
+                "NearestCentroid",
+                "KNeighborsClassifier",
+            ):
+                if func.type in ("NearestCentroid", "KNeighborsClassifier"):
+                    vdf_tmp = func.predict_proba(
+                        vdf=vdf_tmp,
+                        X=columns,
+                        name="verticapy_predict",
+                        inplace=False,
+                        key_columns=None,
+                    )
+                    y = f"verticapy_predict_{pos_label}"
                 else:
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", pos_label=pos_label)
+                    vdf_tmp = func.predict_proba(
+                        vdf=vdf_tmp,
+                        X=columns,
+                        name="verticapy_predict",
+                        pos_label=pos_label,
+                    )
             else:
-                if func.type in ("KNeighborsRegressor",):
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict", inplace=False, key_columns=None,)
+                if func.type == "KNeighborsRegressor":
+                    vdf_tmp = func.predict(
+                        vdf=vdf_tmp,
+                        X=columns,
+                        name="verticapy_predict",
+                        inplace=False,
+                        key_columns=None,
+                    )
                 else:
-                    vdf_tmp = func.predict(vdf=vdf_tmp, X=columns, name="verticapy_predict",)
+                    vdf_tmp = func.predict(
+                        vdf=vdf_tmp, X=columns, name="verticapy_predict"
+                    )
         dataset = vdf_tmp[[columns[1], columns[0], y]].sort(columns).to_numpy()
         i, y_start, y_new = 0, dataset[0][1], dataset[0][1]
         n = len(dataset)
@@ -1533,11 +1798,17 @@ def contour_plot(
             x_tmp, y_tmp, z_tmp = [], [], []
             j, last_non_null_value = 0, 0
             while y_start == y_new and i < n and j < nbins:
-                if (dataset[i][2] != None):
+                if dataset[i][2] != None:
                     last_non_null_value = float(dataset[i][2])
                 x_tmp += [float(dataset[i][0])]
                 y_tmp += [float(dataset[i][1])]
-                z_tmp += [float(dataset[i][2] if (dataset[i][2] != None) else last_non_null_value)]
+                z_tmp += [
+                    float(
+                        dataset[i][2]
+                        if (dataset[i][2] != None)
+                        else last_non_null_value
+                    )
+                ]
                 y_new = dataset[i][1]
                 j += 1
                 i += 1
@@ -1550,26 +1821,30 @@ def contour_plot(
             Y += [y_tmp]
             Z += [z_tmp]
         X, Y, Z = np.array(Y), np.array(X), np.array(Z)
-    if not(ax):
+    if not (ax):
         fig, ax = plt.subplots()
         fig.set_size_inches(8, 6)
     else:
         fig = plt
-    param = {"linewidths": 0.5, "levels": 14, "colors": 'k',}
+    param = {"linewidths": 0.5, "levels": 14, "colors": "k"}
     param = updated_dict(param, style_kwds)
     if "cmap" in param:
         del param["cmap"]
-    ax.contour(X, Y, Z, **param,)
-    param = {"cmap": gen_cmap([gen_colors()[2], "#FFFFFF", gen_colors()[0],]), "levels": 14,}
+    ax.contour(X, Y, Z, **param)
+    param = {
+        "cmap": gen_cmap([gen_colors()[2], "#FFFFFF", gen_colors()[0]]),
+        "levels": 14,
+    }
     param = updated_dict(param, style_kwds)
-    for elem in ["colors", "color", "linewidths", "linestyles",]:
+    for elem in ["colors", "color", "linewidths", "linestyles"]:
         if elem in param:
             del param[elem]
-    cp = ax.contourf(X, Y, Z, **param,)
+    cp = ax.contourf(X, Y, Z, **param)
     fig.colorbar(cp).set_label(cbar_title)
     ax.set_xlabel(columns[0])
     ax.set_ylabel(columns[1])
     return ax
+
 
 # ---#
 def compute_plot_variables(
@@ -1577,7 +1852,7 @@ def compute_plot_variables(
     method: str = "density",
     of: str = "",
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     pie: bool = False,
 ):
@@ -1598,10 +1873,10 @@ def compute_plot_variables(
         or (method.lower() and method[-1] == "%")
     ) and (of):
         if method.lower() in ["avg", "min", "max", "sum"]:
-            aggregate = "{}({})".format(method.upper(), str_column(of))
+            aggregate = "{}({})".format(method.upper(), quote_ident(of))
         elif method and method[-1] == "%":
             aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-                str_column(of), float(method[0:-1]) / 100
+                quote_ident(of), float(method[0:-1]) / 100
             )
         else:
             raise ParameterError(
@@ -1626,7 +1901,7 @@ def compute_plot_variables(
     cardinality, count, is_numeric, is_date, is_categorical = (
         vdf.nunique(True),
         vdf.parent.shape()[0],
-        vdf.isnum() and not(vdf.isbool()),
+        vdf.isnum() and not (vdf.isbool()),
         (vdf.category() == "date"),
         False,
     )
@@ -1661,11 +1936,11 @@ def compute_plot_variables(
                     enum_trans + other_columns, table
                 )
             query = "(SELECT {} AS {}, {} FROM {} GROUP BY {} ORDER BY 2 DESC LIMIT {})".format(
-                convert_special_type(vdf.category(), True, vdf.alias),
+                bin_spatial_to_str(vdf.category(), vdf.alias),
                 vdf.alias,
                 aggregate,
                 table,
-                convert_special_type(vdf.category(), True, vdf.alias),
+                bin_spatial_to_str(vdf.category(), vdf.alias),
                 max_cardinality,
             )
             if cardinality > max_cardinality:
@@ -1683,8 +1958,9 @@ def compute_plot_variables(
                     aggregate,
                     max_cardinality,
                 )
-        vdf.__executeSQL__(query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(
+            query, title="Computing the histogram heights", method="fetchall"
+        )
         if query_result[-1][1] == None:
             del query_result[-1]
         z = [item[0] for item in query_result]
@@ -1698,22 +1974,24 @@ def compute_plot_variables(
         is_categorical = True
     # case when date
     elif is_date:
-        if (h <= 0) and (bins <= 0):
+        if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
-        elif bins > 0:
+        elif nbins > 0:
             query = "SELECT DATEDIFF('second', MIN({}), MAX({})) FROM ".format(
                 vdf.alias, vdf.alias
             )
-            vdf.__executeSQL__(query=query, title="Compute the histogram interval")
-            query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchone()
-            h = float(query_result[0]) / bins
+            query_result = executeSQL(
+                query=query, title="Computing the histogram interval", method="fetchrow"
+            )
+            h = float(query_result[0]) / nbins
         min_date = vdf.min()
         converted_date = "DATEDIFF('second', '{}', {})".format(min_date, vdf.alias)
         query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1".format(
             converted_date, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
-        vdf.__executeSQL__(query=query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(
+            query=query, title="Computing the histogram heights", method="fetchall"
+        )
         x = [float(item[0]) for item in query_result]
         y = (
             [item[1] / float(count) for item in query_result]
@@ -1727,25 +2005,27 @@ def compute_plot_variables(
             )
         query = query[7:-1] + ")"
         h = 0.94 * h
-        vdf.parent._VERTICAPY_VARIABLES_["cursor"].execute(query)
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(
+            query, title="Computing the datetime intervals.", method="fetchall"
+        )
         z = [item[0] for item in query_result]
         z.sort()
         is_categorical = True
     # case when numerical
     else:
-        if (h <= 0) and (bins <= 0):
+        if (h <= 0) and (nbins <= 0):
             h = vdf.numh()
-        elif bins > 0:
-            h = float(vdf.max() - vdf.min()) / bins
+        elif nbins > 0:
+            h = float(vdf.max() - vdf.min()) / nbins
         if (vdf.ctype == "int") or (h == 0):
             h = max(1.0, h)
         query = "SELECT FLOOR({} / {}) * {}, {} FROM {} WHERE {} IS NOT NULL GROUP BY 1 ORDER BY 1"
         query = query.format(
             vdf.alias, h, h, aggregate, vdf.parent.__genSQL__(), vdf.alias
         )
-        vdf.__executeSQL__(query=query, title="Compute the histogram heights")
-        query_result = vdf.parent._VERTICAPY_VARIABLES_["cursor"].fetchall()
+        query_result = executeSQL(
+            query=query, title="Computing the histogram heights", method="fetchall"
+        )
         y = (
             [item[1] / float(count) for item in query_result]
             if (method.lower() == "density")
@@ -1782,39 +2062,39 @@ def gen_colors():
         isinstance(verticapy.options["colors"], list)
     ):
         if verticapy.options["color_style"] == "sunset":
-            colors = ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589",]
+            colors = ["#36688D", "#F3CD05", "#F49F05", "#F18904", "#BDA589"]
         elif verticapy.options["color_style"] == "rgb":
-            colors = ["red", "green", "blue", "orange", "yellow", "gray",]
+            colors = ["red", "green", "blue", "orange", "yellow", "gray"]
         elif verticapy.options["color_style"] == "retro":
-            colors = ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838",]
+            colors = ["#A7414A", "#282726", "#6A8A82", "#A37C27", "#563838"]
         elif verticapy.options["color_style"] == "shimbg":
-            colors = ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674",]
+            colors = ["#0444BF", "#0584F2", "#0AAFF1", "#EDF259", "#A79674"]
         elif verticapy.options["color_style"] == "swamp":
-            colors = ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837",]
+            colors = ["#6465A5", "#6975A6", "#F3E96B", "#F28A30", "#F05837"]
         elif verticapy.options["color_style"] == "med":
-            colors = ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887",]
+            colors = ["#ABA6BF", "#595775", "#583E2E", "#F1E0D6", "#BF9887"]
         elif verticapy.options["color_style"] == "orchid":
-            colors = ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104",]
+            colors = ["#192E5B", "#1D65A6", "#72A2C0", "#00743F", "#F2A104"]
         elif verticapy.options["color_style"] == "magenta":
-            colors = ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806",]
+            colors = ["#DAA2DA", "#DBB4DA", "#DE8CF0", "#BED905", "#93A806"]
         elif verticapy.options["color_style"] == "orange":
-            colors = ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E",]
+            colors = ["#A3586D", "#5C4A72", "#F3B05A", "#F4874B", "#F46A4E"]
         elif verticapy.options["color_style"] == "vintage":
-            colors = ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A",]
+            colors = ["#80ADD7", "#0ABDA0", "#EBF2EA", "#D4DCA9", "#BF9D7A"]
         elif verticapy.options["color_style"] == "vivid":
-            colors = ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B",]
+            colors = ["#C0334D", "#D6618F", "#F3D4A0", "#F1931B", "#8F715B"]
         elif verticapy.options["color_style"] == "berries":
-            colors = ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC",]
+            colors = ["#BB1924", "#EE6C81", "#F092A5", "#777CA8", "#AFBADC"]
         elif verticapy.options["color_style"] == "refreshing":
-            colors = ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640",]
+            colors = ["#003D73", "#0878A4", "#1ECFD6", "#EDD170", "#C05640"]
         elif verticapy.options["color_style"] == "summer":
-            colors = ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06",]
+            colors = ["#728CA3", "#73C0F4", "#E6EFF3", "#F3E4C6", "#8F4F06"]
         elif verticapy.options["color_style"] == "tropical":
-            colors = ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C",]
+            colors = ["#7B8937", "#6B7436", "#F4D9C1", "#D72F01", "#F09E8C"]
         elif verticapy.options["color_style"] == "india":
-            colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625",]
+            colors = ["#F1445B", "#65734B", "#94A453", "#D9C3B1", "#F03625"]
         else:
-            colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F",]
+            colors = ["#FE5016", "#263133", "#0073E7", "#FDE159", "#33C180", "#FF454F"]
         all_colors = [item for item in plt_colors.cnames]
         shuffle(all_colors)
         for c in all_colors:
@@ -1845,7 +2125,7 @@ def hexbin(
     if (
         (method.lower() in ["avg", "min", "max", "sum"])
         and (of)
-        and ((of in vdf.get_columns()) or (str_column(of) in vdf.get_columns()))
+        and ((of in vdf.get_columns()) or (quote_ident(of) in vdf.get_columns()))
     ):
         aggregate = "{}({})".format(method, of)
         others_aggregate = method
@@ -1878,9 +2158,11 @@ def hexbin(
         columns[0],
         columns[1],
     )
-    query_result = vdf.__executeSQL__(
-        query=query, title="Group all the elements for the Hexbin Plot"
-    ).fetchall()
+    query_result = executeSQL(
+        query=query,
+        title="Grouping all the elements for the Hexbin Plot",
+        method="fetchall",
+    )
     column1, column2, column3 = [], [], []
     for item in query_result:
         if (item[0] != None) and (item[1] != None) and (item[2] != None):
@@ -1930,13 +2212,13 @@ def hist(
     method: str = "density",
     of=None,
     max_cardinality: int = 6,
-    bins: int = 0,
+    nbins: int = 0,
     h: float = 0,
     ax=None,
     **style_kwds,
 ):
     x, y, z, h, is_categorical = compute_plot_variables(
-        vdf, method, of, max_cardinality, bins, h,
+        vdf, method, of, max_cardinality, nbins, h
     )
     is_numeric = vdf.isnum()
     if not (ax):
@@ -1946,9 +2228,7 @@ def hist(
         ax.set_axisbelow(True)
         ax.yaxis.grid()
     param = {"color": gen_colors()[0], "alpha": 0.86}
-    ax.bar(
-        x, y, h, **updated_dict(param, style_kwds),
-    )
+    ax.bar(x, y, h, **updated_dict(param, style_kwds))
     ax.set_xlabel(vdf.alias)
     if is_categorical:
         if not (is_numeric):
@@ -2285,8 +2565,11 @@ def multi_ts_plot(
         ["{} IS NOT NULL".format(column) for column in columns]
     )
     query += " ORDER BY {}".format(order_by)
-    vdf.__executeSQL__(query=query, title="Select the needed points to draw the curves")
-    query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
+    query_result = executeSQL(
+        query=query,
+        title="Selecting the needed points to draw the curves",
+        method="fetchall",
+    )
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -2350,13 +2633,9 @@ def multi_ts_plot(
         if "color" in style_kwds and len(order_by_values) < 20:
             param["markerfacecolor"] = color_dict(style_kwds, i)
         if kind == "step":
-            ax.step(
-                order_by_values, points, **param,
-            )
+            ax.step(order_by_values, points, **param)
         else:
-            ax.plot(
-                order_by_values, points, **param,
-            )
+            ax.plot(order_by_values, points, **param)
         if kind not in ("line", "step"):
             tmp_style = {}
             for elem in style_kwds:
@@ -2367,7 +2646,7 @@ def multi_ts_plot(
                 if not (isinstance(tmp_style["color"], str)):
                     tmp_style["color"] = tmp_style["color"][i % len(tmp_style["color"])]
             ax.fill_between(
-                order_by_values, prec, points, label=columns[i], **tmp_style,
+                order_by_values, prec, points, label=columns[i], **tmp_style
             )
             prec = points
     for tick in ax.get_xticklabels():
@@ -2420,9 +2699,7 @@ def range_curve(
             X, elem[2], alpha=alpha2, **updated_dict(param, style_kwds, i),
         )
         if plot_median:
-            ax.plot(
-                X, elem[1], label=label, **updated_dict(param, style_kwds, i),
-            )
+            ax.plot(X, elem[1], label=label, **updated_dict(param, style_kwds, i))
         if (not (without_scatter) or len(X) < 20) and plot_median:
             ax.scatter(
                 X, elem[1], c="white", marker="o", s=60, edgecolors="black", zorder=3
@@ -2466,9 +2743,9 @@ def range_curve_vdf(
     )
     query += " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
     query += " GROUP BY 1 ORDER BY 1"
-    query_result = vdf.__executeSQL__(
-        query=query, title="Select points to draw the curve"
-    ).fetchall()
+    query_result = executeSQL(
+        query=query, title="Selecting points to draw the curve", method="fetchall"
+    )
     order_by_values = [item[0] for item in query_result]
     try:
         if isinstance(order_by_values[0], str):
@@ -2787,7 +3064,7 @@ def pie(
         except:
             pass
         ax.legend(
-            [Line2D([0], [0], color=color,) for color in colors],
+            [Line2D([0], [0], color=color) for color in colors],
             z,
             bbox_to_anchor=[1.1, 0.5],
             loc="center left",
@@ -2809,6 +3086,7 @@ def pivot_table(
     max_cardinality: tuple = (20, 20),
     show: bool = True,
     with_numbers: bool = True,
+    fill_none: float = 0.0,
     ax=None,
     return_ax: bool = False,
     extent: list = [],
@@ -2827,10 +3105,10 @@ def pivot_table(
             "Parameter 'of' must be empty when using customized aggregations."
         )
     if (method.lower() in ["avg", "min", "max", "sum"]) and (of):
-        aggregate = "{}({})".format(method.upper(), str_column(of))
+        aggregate = "{}({})".format(method.upper(), quote_ident(of))
     elif method.lower() and method[-1] == "%":
         aggregate = "APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {})".format(
-            str_column(of), float(method[0:-1]) / 100
+            quote_ident(of), float(method[0:-1]) / 100
         )
     elif method.lower() in ["density", "count"]:
         aggregate = "COUNT(*)"
@@ -2842,7 +3120,7 @@ def pivot_table(
         raise ParameterError(
             "The parameter 'method' must be in [count|density|avg|mean|min|max|sum|q%]"
         )
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     all_columns = []
     is_column_date = [False, False]
     timestampadd = ["", ""]
@@ -2922,7 +3200,7 @@ def pivot_table(
             if len(distinct) < max_cardinality[idx]:
                 where += [
                     "({} IN ({}))".format(
-                        convert_special_type(vdf[column].category(), False, column),
+                        bin_spatial_to_str(vdf[column].category(), column),
                         ", ".join(
                             [
                                 "'{}'".format(str(elem).replace("'", "''"))
@@ -2937,7 +3215,7 @@ def pivot_table(
     if len(columns) == 1:
         over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
         query = "SELECT {} AS {}, {}{} FROM {}{} GROUP BY 1 {}".format(
-            convert_special_type(vdf[columns[0]].category(), True, all_columns[-1]),
+            bin_spatial_to_str(vdf[columns[0]].category(), all_columns[-1]),
             columns[0],
             aggregate,
             over,
@@ -2945,8 +3223,8 @@ def pivot_table(
             where,
             order_by,
         )
-        return to_tablesample(query, vdf._VERTICAPY_VARIABLES_["cursor"])
-    alias = ", " + str_column(of) + " AS " + str_column(of) if of else ""
+        return to_tablesample(query)
+    alias = ", " + quote_ident(of) + " AS " + quote_ident(of) if of else ""
     aggr = ", " + of if (of) else ""
     subtable = "(SELECT {} AS {}, {} AS {}{}{} FROM {}{}) pivot_table".format(
         all_columns[0],
@@ -2992,7 +3270,7 @@ def pivot_table(
     over = "/" + str(vdf.shape()[0]) if (method.lower() == "density") else ""
     cast = []
     for column in columns:
-        cast += [convert_special_type(vdf[column].category(), True, column)]
+        cast += [bin_spatial_to_str(vdf[column].category(), column)]
     query = "SELECT {} AS {}, {} AS {}, {}{} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY {}, {} ORDER BY {}, {} ASC".format(
         cast[0],
         columns[0],
@@ -3008,12 +3286,11 @@ def pivot_table(
         columns[0],
         columns[1],
     )
-    vdf.__executeSQL__(
-        query=query, title="Group the features to compute the pivot table"
+    query_result = executeSQL(
+        query=query,
+        title="Grouping the features to compute the pivot table",
+        method="fetchall",
     )
-    query_result = vdf.__executeSQL__(
-        query=query, title="Group the features to compute the pivot table"
-    ).fetchall()
     # Column0 sorted categories
     all_column0_categories = list(set([str(item[0]) for item in query_result]))
     all_column0_categories.sort()
@@ -3045,7 +3322,8 @@ def pivot_table(
     except:
         pass
     all_columns = [
-        ["" for item in all_column0_categories] for item in all_column1_categories
+        [fill_none for item in all_column0_categories]
+        for item in all_column1_categories
     ]
     for item in query_result:
         j, i = (
@@ -3086,7 +3364,7 @@ def pivot_table(
     del all_columns[0]
     for column in all_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values,)
+    return tablesample(values=values)
 
 
 # ---#
@@ -3095,7 +3373,7 @@ def scatter_matrix(
 ):
     for column in columns:
         if (column not in vdf.get_columns()) and (
-            str_column(column) not in vdf.get_columns()
+            quote_ident(column) not in vdf.get_columns()
         ):
             raise MissingColumn("The Virtual Column {} doesn't exist".format(column))
     if not (columns):
@@ -3114,13 +3392,15 @@ def scatter_matrix(
             figsize=(min(int((n + 1) / 1.1), 500), min(int((n + 1) / 1.1), 500)),
         )
     )
-    random_func = random_function()
+    random_func = get_random_function()
     query = "SELECT {}, {} AS rand FROM {} WHERE __verticapy_split__ < 0.5 ORDER BY rand LIMIT 1000".format(
         ", ".join(columns), random_func, vdf.__genSQL__(True)
     )
-    all_scatter_points = vdf.__executeSQL__(
-        query=query, title="Select random points to draw the scatter plot"
-    ).fetchall()
+    all_scatter_points = executeSQL(
+        query=query,
+        title="Selecting random points to draw the scatter plot",
+        method="fetchall",
+    )
     all_scatter_columns = []
     for i in range(n):
         all_scatter_columns += [[item[i] for item in all_scatter_points]]
@@ -3172,7 +3452,7 @@ def scatter2D(
 ):
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     if (bbox) and len(bbox) != 4:
         warning_message = "Parameter 'bbox' must be a list of 4 numerics containing the 'xlim' and 'ylim'.\nIt was ignored."
         warnings.warn(warning_message, Warning)
@@ -3195,9 +3475,11 @@ def scatter2D(
             columns[1],
             max_nb_points,
         )
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select random points to draw the scatter plot"
-        ).fetchall()
+        query_result = executeSQL(
+            query=query,
+            title="Selecting random points to draw the scatter plot",
+            method="fetchall",
+        )
         column1, column2 = (
             [item[0] for item in query_result],
             [item[1] for item in query_result],
@@ -3243,9 +3525,11 @@ def scatter2D(
                 column_groupby,
                 max_cardinality,
             )
-            query_result = vdf.__executeSQL__(
-                query=query, title="Compute {} categories".format(column_groupby)
-            ).fetchall()
+            query_result = executeSQL(
+                query=query,
+                title="Computing {} categories".format(column_groupby),
+                method="fetchall",
+            )
             query_result = [item for sublist in query_result for item in sublist]
         all_columns, all_scatter, all_categories = [query_result], [], query_result
         if not (ax):
@@ -3295,13 +3579,13 @@ def scatter2D(
                 columns[1],
                 int(max_nb_points / len(all_categories)),
             )
-            vdf.__executeSQL__(
+            query_result = executeSQL(
                 query=query,
-                title="Select random points to draw the scatter plot (category = '{}')".format(
+                title="Selecting random points to draw the scatter plot (category = '{}')".format(
                     str(category)
                 ),
+                method="fetchall",
             )
-            query_result = vdf._VERTICAPY_VARIABLES_["cursor"].fetchall()
             column1, column2 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3330,10 +3614,11 @@ def scatter2D(
                 tablesample,
                 int(max_nb_points / len(all_categories)),
             )
-            query_result = vdf.__executeSQL__(
+            query_result = executeSQL(
                 query=query,
-                title="Select random points to draw the scatter plot (category = 'others')",
-            ).fetchall()
+                title="Selecting random points to draw the scatter plot (category = 'others')",
+                method="fetchall",
+            )
             column1, column2 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3377,7 +3662,7 @@ def scatter3D(
     ax=None,
     **style_kwds,
 ):
-    columns = [str_column(column) for column in columns]
+    columns = [quote_ident(column) for column in columns]
     colors = gen_colors()
     markers = ["^", "o", "+", "*", "h", "x", "D", "1"] * 10
     if (len(columns) < 3) or (len(columns) > 4):
@@ -3408,9 +3693,11 @@ def scatter3D(
                 columns[2],
                 max_nb_points,
             )
-            query_result = vdf.__executeSQL__(
-                query=query, title="Select random points to draw the scatter plot"
-            ).fetchall()
+            query_result = executeSQL(
+                query=query,
+                title="Selecting random points to draw the scatter plot",
+                method="fetchall",
+            )
             column1, column2, column3 = (
                 [float(item[0]) for item in query_result],
                 [float(item[1]) for item in query_result],
@@ -3425,9 +3712,7 @@ def scatter3D(
                 "s": 50,
                 "edgecolors": "black",
             }
-            ax.scatter(
-                column1, column2, column3, **updated_dict(param, style_kwds),
-            )
+            ax.scatter(column1, column2, column3, **updated_dict(param, style_kwds))
             ax.set_xlabel(columns[0])
             ax.set_ylabel(columns[1])
             ax.set_zlabel(columns[2])
@@ -3448,12 +3733,13 @@ def scatter3D(
                     column_groupby,
                     max_cardinality,
                 )
-                query_result = vdf.__executeSQL__(
+                query_result = executeSQL(
                     query=query,
-                    title="Compute the vcolumn {} distinct categories".format(
+                    title="Computing the vcolumn {} distinct categories".format(
                         column_groupby
                     ),
-                ).fetchall()
+                    method="fetchall",
+                )
                 query_result = [item for sublist in query_result for item in sublist]
             all_columns, all_scatter, all_categories = [query_result], [], query_result
             if not (ax):
@@ -3486,12 +3772,13 @@ def scatter3D(
                     columns[2],
                     int(max_nb_points / len(all_categories)),
                 )
-                query_result = vdf.__executeSQL__(
+                query_result = executeSQL(
                     query=query,
-                    title="Select random points to draw the scatter plot (category = '{}')".format(
+                    title="Selecting random points to draw the scatter plot (category = '{}')".format(
                         category
                     ),
-                ).fetchall()
+                    method="fetchall",
+                )
                 column1, column2, column3 = (
                     [float(item[0]) for item in query_result],
                     [float(item[1]) for item in query_result],
@@ -3528,10 +3815,11 @@ def scatter3D(
                     tablesample,
                     int(max_nb_points / len(all_categories)),
                 )
-                query_result = vdf.__executeSQL__(
+                query_result = executeSQL(
                     query=query,
-                    title="Select random points to draw the scatter plot (category = 'others')",
-                ).fetchall()
+                    title="Selecting random points to draw the scatter plot (category = 'others')",
+                    method="fetchall",
+                )
                 column1, column2 = (
                     [float(item[0]) for item in query_result],
                     [float(item[1]) for item in query_result],
@@ -3582,7 +3870,7 @@ def spider(
     ax=None,
     **style_kwds,
 ):
-    unique = vdf[columns[0]].nunique()
+    unique = vdf[columns[0]].nunique(True)
     if unique < 3:
         raise ParameterError(
             f"The first column of the Spider Plot must have at least 3 categories. Found {int(unique)}."
@@ -3673,9 +3961,9 @@ def ts_plot(
             " AND {} < '{}'".format(order_by, order_by_end) if (order_by_end) else ""
         )
         query += " ORDER BY {}, {}".format(order_by, vdf.alias)
-        query_result = vdf.__executeSQL__(
-            query=query, title="Select points to draw the curve"
-        ).fetchall()
+        query_result = executeSQL(
+            query=query, title="Selecting points to draw the curve", method="fetchall"
+        )
         order_by_values = [item[0] for item in query_result]
         try:
             if isinstance(order_by_values[0], str):
@@ -3706,13 +3994,9 @@ def ts_plot(
                 "linewidth": 2,
             }
         if step:
-            ax.step(
-                order_by_values, column_values, **updated_dict(param, style_kwds),
-            )
+            ax.step(order_by_values, column_values, **updated_dict(param, style_kwds))
         else:
-            ax.plot(
-                order_by_values, column_values, **updated_dict(param, style_kwds),
-            )
+            ax.plot(order_by_values, column_values, **updated_dict(param, style_kwds))
         if area and not (step):
             if "color" in updated_dict(param, style_kwds):
                 color = updated_dict(param, style_kwds)["color"]
@@ -3725,7 +4009,7 @@ def ts_plot(
         return ax
     else:
         colors = gen_colors()
-        by = str_column(by)
+        by = quote_ident(by)
         cat = vdf.parent[by].distinct()
         all_data = []
         for column in cat:
@@ -3744,9 +4028,11 @@ def ts_plot(
             )
             query += " AND {} = '{}'".format(by, str(column).replace("'", "''"))
             query += " ORDER BY {}, {}".format(order_by, vdf.alias)
-            query_result = vdf.__executeSQL__(
-                query=query, title="Select points to draw the curve"
-            ).fetchall()
+            query_result = executeSQL(
+                query=query,
+                title="Selecting points to draw the curve",
+                method="fetchall",
+            )
             all_data += [
                 [
                     [item[0] for item in query_result],

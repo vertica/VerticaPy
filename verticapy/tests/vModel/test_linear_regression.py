@@ -1,4 +1,4 @@
-# (c) Copyright [2018-2021] Micro Focus or one of its affiliates.
+# (c) Copyright [2018-2022] Micro Focus or one of its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,28 +11,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest, warnings, sys, os, verticapy
-from verticapy.learn.linear_model import LinearRegression
-from verticapy import drop, set_option, vertica_conn
+# Standard Python Modules
+import pytest
+
+# Other Modules
 import matplotlib.pyplot as plt
+
+# VerticaPy
+from verticapy import drop, set_option
+from verticapy.connect import current_cursor
+from verticapy.datasets import load_winequality
+from verticapy.learn.linear_model import LinearRegression
 
 set_option("print_info", False)
 
 
 @pytest.fixture(scope="module")
-def winequality_vd(base):
-    from verticapy.datasets import load_winequality
-
-    winequality = load_winequality(cursor=base.cursor)
+def winequality_vd():
+    winequality = load_winequality()
     yield winequality
-    with warnings.catch_warnings(record=True) as w:
-        drop(name="public.winequality", cursor=base.cursor)
+    drop(name="public.winequality",)
 
 
 @pytest.fixture(scope="module")
-def model(base, winequality_vd):
-    base.cursor.execute("DROP MODEL IF EXISTS linreg_model_test")
-    model_class = LinearRegression("linreg_model_test", cursor=base.cursor)
+def model(winequality_vd):
+    model_class = LinearRegression("linreg_model_test",)
+    model_class.drop()
     model_class.fit(
         "public.winequality", ["citric_acid", "residual_sugar", "alcohol"], "quality"
     )
@@ -47,13 +51,11 @@ class TestLinearRegression:
         model_repr.drop()
         assert model_repr.__repr__() == "<LinearRegression>"
 
-    def test_contour(self, base, winequality_vd):
-        model_test = LinearRegression("model_contour", cursor=base.cursor)
+    def test_contour(self, winequality_vd):
+        model_test = LinearRegression("model_contour",)
         model_test.drop()
         model_test.fit(
-            winequality_vd,
-            ["citric_acid", "residual_sugar",],
-            "quality",
+            winequality_vd, ["citric_acid", "residual_sugar"], "quality",
         )
         result = model_test.contour()
         assert len(result.get_default_bbox_extra_artists()) == 32
@@ -65,21 +67,21 @@ class TestLinearRegression:
 
         assert result_sql == expected_sql
 
-    def test_drop(self, base):
-        base.cursor.execute("DROP MODEL IF EXISTS linreg_model_test_drop")
-        model_test = LinearRegression("linreg_model_test_drop", cursor=base.cursor)
+    def test_drop(self):
+        current_cursor().execute("DROP MODEL IF EXISTS linreg_model_test_drop")
+        model_test = LinearRegression("linreg_model_test_drop",)
         model_test.fit("public.winequality", ["alcohol"], "quality")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'linreg_model_test_drop'"
         )
-        assert base.cursor.fetchone()[0] == "linreg_model_test_drop"
+        assert current_cursor().fetchone()[0] == "linreg_model_test_drop"
 
         model_test.drop()
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'linreg_model_test_drop'"
         )
-        assert base.cursor.fetchone() is None
+        assert current_cursor().fetchone() is None
 
     def test_features_importance(self, model):
         fim = model.features_importance()
@@ -147,9 +149,9 @@ class TestLinearRegression:
             "tol": 1e-06,
         }
 
-    def test_get_plot(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS model_test_plot")
-        model_test = LinearRegression("model_test_plot", cursor=base.cursor)
+    def test_get_plot(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS model_test_plot")
+        model_test = LinearRegression("model_test_plot",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
         result = model_test.plot(color="r")
         assert len(result.get_default_bbox_extra_artists()) == 9
@@ -161,52 +163,39 @@ class TestLinearRegression:
         plt.close("all")
         model_test.drop()
 
-    def test_to_sklearn(self, model):
-        md = model.to_sklearn()
-        model.cursor.execute(
-            "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
-                model.name
-            )
-        )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(md.predict([[3.0, 11.0, 93.0]])[0][0])
-
     def test_to_python(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)".format(
                 model.name
             )
         )
-        prediction = model.cursor.fetchone()[0]
-        assert prediction == pytest.approx(model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0])
+        prediction = current_cursor().fetchone()[0]
+        assert prediction == pytest.approx(
+            model.to_python(return_str=False)([[3.0, 11.0, 93.0]])[0]
+        )
 
     def test_to_sql(self, model):
-        model.cursor.execute(
+        current_cursor().execute(
             "SELECT PREDICT_LINEAR_REG(3.0, 11.0, 93. USING PARAMETERS model_name = '{}', match_by_pos=True)::float, {}::float".format(
-                model.name, model.to_sql([3.0, 11.0, 93.])
+                model.name, model.to_sql([3.0, 11.0, 93.0])
             )
         )
-        prediction = model.cursor.fetchone()
+        prediction = current_cursor().fetchone()
         assert prediction[0] == pytest.approx(prediction[1])
 
     def test_to_memmodel(self, model, winequality_vd):
         mmodel = model.to_memmodel()
-        res = mmodel.predict([[3.0, 11.0, 93.],
-                              [11.0, 1.0, 99.]])
-        res_py = model.to_python()([[3.0, 11.0, 93.],
-                                   [11.0, 1.0, 99.]])
+        res = mmodel.predict([[3.0, 11.0, 93.0], [11.0, 1.0, 99.0]])
+        res_py = model.to_python()([[3.0, 11.0, 93.0], [11.0, 1.0, 99.0]])
         assert res[0] == res_py[0]
         assert res[1] == res_py[1]
         vdf = winequality_vd.copy()
-        vdf["prediction_sql"] = mmodel.predict_sql(["citric_acid", "residual_sugar", "alcohol"])
-        model.predict(vdf, name = "prediction_vertica_sql")
+        vdf["prediction_sql"] = mmodel.predict_sql(
+            ["citric_acid", "residual_sugar", "alcohol"]
+        )
+        model.predict(vdf, name="prediction_vertica_sql")
         score = vdf.score("prediction_sql", "prediction_vertica_sql", "r2")
         assert score == pytest.approx(1.0)
-
-    @pytest.mark.skip(reason="shap doesn't want to get installed.")
-    def test_shapExplainer(self, model):
-        explainer = model.shapExplainer()
-        assert explainer.expected_value[0] == pytest.approx(5.81837771)
 
     def test_get_predicts(self, winequality_vd, model):
         winequality_copy = winequality_vd.copy()
@@ -294,29 +283,19 @@ class TestLinearRegression:
         # method = "bic"
         assert model.score(method="bic") == pytest.approx(-3339.6515694338464, abs=1e-6)
 
-    def test_set_cursor(self, model):
-        cur = vertica_conn(
-            "vp_test_config",
-            os.path.dirname(verticapy.__file__) + "/tests/verticaPy_test_tmp.conf",
-        ).cursor()
-        model.set_cursor(cur)
-        model.cursor.execute("SELECT 1;")
-        result = model.cursor.fetchone()
-        assert result[0] == 1
-
     def test_set_params(self, model):
         model.set_params({"max_iter": 1000})
 
         assert model.get_params()["max_iter"] == 1000
 
-    def test_model_from_vDF(self, base, winequality_vd):
-        base.cursor.execute("DROP MODEL IF EXISTS linreg_from_vDF")
-        model_test = LinearRegression("linreg_from_vDF", cursor=base.cursor)
+    def test_model_from_vDF(self, winequality_vd):
+        current_cursor().execute("DROP MODEL IF EXISTS linreg_from_vDF")
+        model_test = LinearRegression("linreg_from_vDF",)
         model_test.fit(winequality_vd, ["alcohol"], "quality")
 
-        base.cursor.execute(
+        current_cursor().execute(
             "SELECT model_name FROM models WHERE model_name = 'linreg_from_vDF'"
         )
-        assert base.cursor.fetchone()[0] == "linreg_from_vDF"
+        assert current_cursor().fetchone()[0] == "linreg_from_vDF"
 
         model_test.drop()
