@@ -257,7 +257,7 @@ def sql(line, cell="", local_ns=None):
                             query, method="fetchfirstelem", print_time_sql=False
                         )
                         if final_result and verticapy.options["print_info"]:
-                            print(final_result[0])
+                            print(final_result)
                         elif verticapy.options["print_info"]:
                             print(query_type)
                     except Exception as e:

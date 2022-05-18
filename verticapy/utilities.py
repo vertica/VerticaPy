@@ -1769,7 +1769,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             verticapy.options["overwrite_model"] = value
     elif option == "random_state":
         check_types([("value", value, [int])])
-        if value < 0:
+        if isinstance(value, int) and (value < 0):
             raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int):
             verticapy.options["random_state"] = int(value)
