@@ -4030,7 +4030,7 @@ class MulticlassClassifier(Classifier):
         self,
         method: str = "accuracy",
         pos_label: Union[int, float, str] = None,
-        cutoff: float = -1,
+        cutoff: float = 0.5,
         nbins: int = 10000,
     ):
         """
@@ -4044,8 +4044,6 @@ class MulticlassClassifier(Classifier):
 		considered as negative for multiclass classification.
 	cutoff: float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
-		If the parameter is not between 0 and 1, an automatic cutoff is 
-		computed.
 	method: str, optional
 		The method to use to compute the score.
 			accuracy	: Accuracy
@@ -4091,8 +4089,6 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
-            cutoff = self.score("best_cutoff", pos_label, 0.5)
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
