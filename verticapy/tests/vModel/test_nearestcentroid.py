@@ -209,9 +209,9 @@ class TestNearestCentroid:
         assert cls_rep1["recall"][0] == pytest.approx(0.5549872122762148)
         assert cls_rep1["f1_score"][0] == pytest.approx(0.5614489003880982)
         assert cls_rep1["mcc"][0] == pytest.approx(0.28346499991292595)
-        assert cls_rep1["informedness"][0] == pytest.approx(0.25186954408065776)
+        assert cls_rep1["informedness"][0] == pytest.approx(0.282259939548942)
         assert cls_rep1["markedness"][0] == pytest.approx(0.28467520507529365)
-        assert cls_rep1["csi"][0] == pytest.approx(0.3902877697841727)
+        assert cls_rep1["csi"][0] == pytest.approx(0.325)
         assert cls_rep1["cutoff"][0] == pytest.approx(0.352)
 
     def test_score(self, model):
@@ -222,8 +222,8 @@ class TestNearestCentroid:
             0.39558232931726905
         )
         assert model.score(method="best_cutoff") == pytest.approx(0.352)
-        assert model.score(method="bm") == pytest.approx(0.25186954408065776)
-        assert model.score(method="csi") == pytest.approx(0.3902877697841727)
+        assert model.score(method="bm") == pytest.approx(0.282259939548942)
+        assert model.score(method="csi") == pytest.approx(0.325)
         assert model.score(method="f1") == pytest.approx(0.5614489003880982)
         assert model.score(method="logloss") == pytest.approx(0.282873255537287)
         assert model.score(method="mcc") == pytest.approx(0.28346499991292595)
