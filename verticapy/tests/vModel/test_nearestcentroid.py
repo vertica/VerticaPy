@@ -226,7 +226,7 @@ class TestNearestCentroid:
         assert model.score(method="csi") == pytest.approx(0.325)
         assert model.score(method="f1") == pytest.approx(0.49056603773584906)
         assert model.score(method="logloss") == pytest.approx(0.282873255537287)
-        assert model.score(method="mcc") == pytest.approx(0.28346499991292595)
+        assert model.score(method="mcc") == pytest.approx(0.28558718217018486)
         assert model.score(method="mk") == pytest.approx(0.28467520507529365)
         assert model.score(method="npv") == pytest.approx(0.5680628272251309)
         assert model.score(method="prc_auc") == pytest.approx(0.5442487908406839)
