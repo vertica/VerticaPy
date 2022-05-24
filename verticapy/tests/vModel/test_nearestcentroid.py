@@ -231,7 +231,7 @@ class TestNearestCentroid:
         assert model.score(method="npv") == pytest.approx(0.636734693877551)
         assert model.score(method="prc_auc") == pytest.approx(0.5442487908406839)
         assert model.score(method="precision") == pytest.approx(0.636734693877551)
-        assert model.score(method="specificity") == pytest.approx(0.7272727272727273)
+        assert model.score(method="specificity") == pytest.approx(0.8528925619834711)
 
     def test_set_params(self, model):
         model.set_params({"p": 1})
