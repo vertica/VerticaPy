@@ -87,7 +87,7 @@ from verticapy.errors import *
 class vDataFrame:
     """
 ---------------------------------------------------------------------------
-Python object that records all user modifications, allowing users to 
+An object that records all user modifications, allowing users to 
 manipulate the relation without mutating the underlying data in Vertica. 
 When changes are made, the vDataFrame queries the Vertica database, which 
 aggregates and returns the final result. The vDataFrame creates, for each ]
@@ -98,18 +98,17 @@ Parameters
 ----------
 input_relation: str / tablesample / pandas.DataFrame 
                    / list / numpy.ndarray / dict, optional
-    If it is of type str, it must represent the relation 
+    If the input_relation is of type str, it must represent the relation 
     (view, table, or temporary table) used to create the object. 
     To get a specific schema relation, your string must include both the 
     relation and schema: 'schema.relation' or '"schema"."relation"'. 
     Alternatively, you can use the 'schema' parameter, in which case 
     the input_relation must exclude the schema name.
     If it is a pandas.DataFrame, a temporary local table is created.
-    Otherwise, the vDataFrame is created using SQL code generation of
-    multiple UNIONs. 
+    Otherwise, the vDataFrame is created using the generated SQL code 
+    of multiple UNIONs. 
 columns: list, optional
-    List of columns' names. Only used when input relation is an array
-    like type.
+    List of column names. Only used when input_relation is an array-like type.
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
@@ -172,20 +171,20 @@ vColumns : vColumn
         # Intialization
         if not(isinstance(input_relation, (pd.DataFrame, np.ndarray))):
             assert input_relation or sql or empty, ParameterError(
-                "The parameters 'input_relation' and 'sql' can not be both empty."
+                "The parameters 'input_relation' and 'sql' cannot both be empty."
             )
             assert not (input_relation) or not (sql) or empty, ParameterError(
-                "Either 'sql' and 'input_relation' must be empty."
+                "Either 'sql' or 'input_relation' must be empty."
             )
         else:
             assert not (sql) or empty, ParameterError(
-                "Either 'sql' and 'input_relation' must be empty."
+                "Either 'sql' or 'input_relation' must be empty."
             )
         assert isinstance(input_relation, str) or not(schema), ParameterError(
             "schema must be empty when the 'input_relation' is not of type str."
         )
         assert not(sql) or not(schema), ParameterError(
-            "schema must be empty when the parameter'sql' is not empty."
+            "schema must be empty when the parameter 'sql' is not empty."
         )
         if isinstance(usecols, str):
             usecols = [usecols]
@@ -216,7 +215,7 @@ vColumns : vColumn
                     input_relation = np.array(input_relation)
 
                 assert len(input_relation.shape) == 2, ParameterError(
-                        "vDataFrame can only be created with 2 dimensional objects."
+                        "vDataFrames can only be created with two-dimensional objects."
                     )
 
                 tb = {}
