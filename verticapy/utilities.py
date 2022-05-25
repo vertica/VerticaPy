@@ -59,6 +59,7 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # Other Modules
+import pandas as pd
 try:
     from IPython.core.display import display
 except:
@@ -2224,8 +2225,6 @@ The tablesample attributes are the same than the parameters.
 	tablesample.to_sql : Generates the SQL query associated to the tablesample.
 	tablesample.to_vdf : Converts the tablesample to vDataFrame.
 		"""
-        import pandas as pd
-
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
             return df.drop(columns=["index"])
