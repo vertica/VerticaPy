@@ -170,7 +170,7 @@ vColumns : vColumn
         empty: bool = False,
     ):
         # Intialization
-        if not(isinstance(input_relation, pd.DataFrame)):
+        if not(isinstance(input_relation, (pd.DataFrame, np.ndarray))):
             assert input_relation or sql or empty, ParameterError(
                 "The parameters 'input_relation' and 'sql' can not be both empty."
             )
