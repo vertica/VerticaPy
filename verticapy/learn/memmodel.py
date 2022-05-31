@@ -2614,7 +2614,7 @@ attributes: dict
                 else [],
                 is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
                 is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
-                max_depth=self.attributes_["max_depth"],
+                max_depth=self.attributes_["max_depth"] if self.model_type_ == "BinaryTreeAnomaly" else -1,
             )
         elif self.model_type_ in (
             "RandomForestRegressor",
@@ -2716,7 +2716,7 @@ attributes: dict
                 else [],
                 is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
                 is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
-                max_depth=self.attributes_["max_depth"],
+                max_depth=self.attributes_["max_depth"] if self.model_type_ == "BinaryTreeAnomaly" else -1,
             )
         elif self.model_type_ in (
             "RandomForestRegressor",
