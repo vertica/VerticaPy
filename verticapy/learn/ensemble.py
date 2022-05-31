@@ -417,6 +417,54 @@ class XGBoost_utils:
 
 
 # ---#
+class IsolationForest(Clustering, Tree):
+    """
+---------------------------------------------------------------------------
+Creates an IsolationForest object using the Vertica IFOREST algorithm.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model will be stored in the DB.
+n_estimators: int, optional
+  The number of trees in the forest, an integer between 0 and 1000, inclusive.
+max_depth: int, optional
+    Maximum depth of each tree.
+nbins: int, optional
+    Number of bins to use for finding splits in each column, more 
+    splits leads to longer runtime but more fine-grained and possibly 
+    better splits.
+sample: float, optional
+  The portion of the input data set that is randomly picked for training each tree, 
+  a float between 0.0 and 1.0, inclusive. 
+col_sample_by_tree: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    chosen at random, to use when building each tree.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        n_estimators: int = 100,
+        max_depth: int = 10,
+        nbins: int = 32,
+        sample: float = 0.632,
+        col_sample_by_tree: float = 1.0,
+    ):
+        version(condition=[12, 0, 0])
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "IsolationForest", name
+        params = {
+            "n_estimators": n_estimators,
+            "max_depth": max_depth,
+            "nbins": nbins,
+            "sample": sample,
+            "col_sample_by_tree": col_sample_by_tree,
+        }
+        self.set_params(params)
+
+
+# ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
@@ -424,6 +472,7 @@ Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER
 function. It is one of the ensemble learning methods for classification 
 that operates by constructing a multitude of decision trees at 
 training-time and outputting a class with the mode.
+
 Parameters
 ----------
 name: str
@@ -493,6 +542,7 @@ Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR
 function. It is one of the ensemble learning methods for regression that 
 operates by constructing a multitude of decision trees at training-time 
 and outputting a class with the mode.
+
 Parameters
 ----------
 name: str
@@ -560,6 +610,7 @@ class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
 ---------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
+
 Parameters
 ----------
 name: str
@@ -644,6 +695,7 @@ class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
 ---------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
+
 Parameters
 ----------
 name: str
