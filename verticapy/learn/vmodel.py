@@ -2374,6 +2374,15 @@ Main Class for Vertica Model
                                     if p == 0.0:
                                         prob[idx2] = other_proba
                                 tree_attributes["value"][idx] = prob
+                    if tree_type == "BinaryTreeAnomaly":
+                        tree_attributes["psy"] = int(
+                            self.parameters["sample"]
+                            * int(
+                                self.get_attr("accepted_row_count")[
+                                    "accepted_row_count"
+                                ][0]
+                            )
+                        )
                     model = memModel(model_type=tree_type, attributes=tree_attributes)
                     if "return_tree" in kwds and kwds["return_tree"] == i:
                         return model
@@ -2390,8 +2399,6 @@ Main Class for Vertica Model
                     ]
                 else:
                     attributes["logodds"] = self.prior_.copy()
-            elif self.type == "IsolationForest":
-                attributes["max_depth"] = self.parameters["max_depth"]
         else:
             raise ModelError(
                 "Model type '{}' can not be converted to memModel.".format(self.type)
@@ -2676,20 +2683,13 @@ Main Class for Vertica Model
             if self.type in ("RandomForestRegressor", "XGBoostRegressor",):
                 func += "\t\t\treturn float(tree[4][node_id])\n"
             elif self.type == "IsolationForest":
-                func += "\t\t\tpsy = 0\n"
-                func += "\t\t\tfor elem in tree[4]:\n"
-                func += "\t\t\t\tif elem != None:\n"
-                func += "\t\t\t\t\tpsy += elem[1]\n"
-                func += "\t\t\tif tree[4][node_id][0] == {}:\n".format(
-                    self.parameters["max_depth"]
+                psy = int(
+                    self.parameters["sample"]
+                    * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
                 )
-                func += "\t\t\t\tn = tree[4][node_id][1]\n"
-                func += "\t\t\t\thx = {} + heuristic_length(n)\n".format(
-                    self.parameters["max_depth"]
+                func += "\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({})\n".format(
+                    psy
                 )
-                func += "\t\t\telse:\n"
-                func += "\t\t\t\thx = tree[4][node_id][0]\n"
-                func += "\t\t\treturn hx / heuristic_length(psy)\n"
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:

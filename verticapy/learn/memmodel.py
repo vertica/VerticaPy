@@ -562,7 +562,7 @@ def predict_from_binary_tree(
     return_proba: bool = False,
     is_regressor: bool = True,
     is_anomaly: bool = False,
-    max_depth: int = -1,
+    psy: int = -1,
 ) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
@@ -599,9 +599,8 @@ def predict_from_binary_tree(
         If set to True, the parameter 'value' corresponds to the result of
         an Isolation Forest (a tuple including leaf path length and training
         row count).
-    max_depth: int, optional
-        It represents the tree max depth which was set before the algorithm's
-        training. It is used to compute the Isolation Forest Score.
+    psy: int, optional
+        Sampling size. It is used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -620,7 +619,7 @@ def predict_from_binary_tree(
             ("return_proba", return_proba, [bool]),
             ("is_regressor", is_regressor, [bool]),
             ("is_anomaly", is_anomaly, [bool]),
-            ("max_depth", max_depth, [int]),
+            ("psy", psy, [int]),
         ]
     )
 
@@ -629,16 +628,9 @@ def predict_from_binary_tree(
     ):
         if children_left[node_id] == children_right[node_id]:
             if is_anomaly:
-                psy = 0
-                for elem in value:
-                    if elem != None:
-                        psy += elem[1]
-                if value[node_id][0] == max_depth:
-                    n = value[node_id][1]
-                    hx = max_depth + heuristic_length(n)
-                else:
-                    hx = value[node_id][0]
-                return hx / heuristic_length(psy)
+                return (
+                    value[node_id][0] + heuristic_length(value[node_id][1])
+                ) / heuristic_length(psy)
             elif (
                 not (is_regressor)
                 and not (return_proba)
@@ -698,7 +690,7 @@ def sql_from_binary_tree(
     return_proba: bool = False,
     is_regressor: bool = True,
     is_anomaly: bool = False,
-    max_depth: int = -1,
+    psy: int = -1,
 ) -> Union[list, str]:
     """
     ---------------------------------------------------------------------------
@@ -736,9 +728,8 @@ def sql_from_binary_tree(
         If set to True, the parameter 'value' corresponds to the result of
         an Isolation Forest (a tuple including leaf path length and training
         row count).
-    max_depth: int, optional
-        It represents the tree max depth which was set before the algorithm's
-        training. It is used to compute the Isolation Forest Score.
+    psy: int, optional
+        Sampling size. It is used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -757,7 +748,7 @@ def sql_from_binary_tree(
             ("return_proba", return_proba, [bool]),
             ("is_regressor", is_regressor, [bool]),
             ("is_anomaly", is_anomaly, [bool]),
-            ("max_depth", max_depth, [int]),
+            ("psy", psy, [int]),
         ]
     )
 
@@ -769,16 +760,9 @@ def sql_from_binary_tree(
                 return value[node_id][prob_ID]
             else:
                 if is_anomaly:
-                    psy = 0
-                    for elem in value:
-                        if elem != None:
-                            psy += elem[1]
-                    if value[node_id][0] == max_depth:
-                        n = value[node_id][1]
-                        hx = max_depth + heuristic_length(n)
-                    else:
-                        hx = value[node_id][0]
-                    return hx / heuristic_length(psy)
+                    return (
+                        value[node_id][0] + heuristic_length(value[node_id][1])
+                    ) / heuristic_length(psy)
                 elif (
                     not (is_regressor)
                     and isinstance(classes, Iterable)
@@ -856,6 +840,7 @@ def binary_tree_to_graphviz(
     node_style: dict = {},
     arrow_style: dict = {},
     leaf_style: dict = {},
+    psy: int = -1,
 ):
     """
     ---------------------------------------------------------------------------
@@ -906,6 +891,8 @@ def binary_tree_to_graphviz(
         Dictionary of options to customize each leaf of the tree. 
         For a list of options, see the Graphviz API: 
         https://graphviz.org/doc/info/attrs.html
+    psy: int, optional
+        Sampling size. It is used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -929,6 +916,7 @@ def binary_tree_to_graphviz(
             ("node_style", node_style, [dict]),
             ("arrow_style", arrow_style, [dict]),
             ("leaf_style", leaf_style, [dict]),
+            ("psy", psy, [int]),
         ]
     )
     empty_color = False
@@ -990,13 +978,35 @@ def binary_tree_to_graphviz(
             ):
                 if not (leaf_style):
                     leaf_style = {"shape": "none"}
-                color = classes_color[0]
+                color = classes_color[0] if not (empty_color) else "#eeeeee"
+                anomaly_score = float(
+                    2
+                    ** (
+                        -(value[i][0] + heuristic_length(value[i][1]))
+                        / heuristic_length(psy)
+                    )
+                )
+                if anomaly_score < 0.5:
+                    color_anomaly = "#ffffff"
+                else:
+                    rgb = [255, 0, 0]
+                    for idx in range(3):
+                        rgb[idx] = int(
+                            255 - 2 * (anomaly_score - 0.5) * (255 - rgb[idx])
+                        )
+                    color_anomaly = (
+                        "#"
+                        + str(hex(rgb[0]))[2:]
+                        + str(hex(rgb[1]))[2:]
+                        + str(hex(rgb[2]))[2:]
+                    )
                 label = (
                     '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" '
-                    f'bgcolor="{color}"><b> leaf </b></td></tr><tr><td port="port0" border="1" align="left"> '
+                    'bgcolor="{}"><b> leaf </b></td></tr><tr><td port="port0" border="1" align="left"> '
                     'leaf_path_length: {} </td></tr><tr><td port="port1" border="1" align="left"> '
-                    "training_row_count: {} </td></tr></table>>"
-                ).format(value[i][0], value[i][1])
+                    'training_row_count: {} </td></tr><tr><td port="port2" border="1" align="left" bgcolor="{}"> '
+                    "anomaly_score: {} </td></tr></table>>"
+                ).format(color, value[i][0], value[i][1], color_anomaly, anomaly_score)
             else:
                 if not (leaf_style):
                     leaf_style = {"shape": "none"}
@@ -1948,8 +1958,8 @@ attributes: dict
                              threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
-                             max_depth: [Only for Anomaly Detection] The tree's max depth. It is used
-                                        to compute the anomaly's score.
+                             psy: [Only for Anomaly Detection] Sampling size. 
+                                        It is used to compute the Isolation Forest Score.
         For CHAID:         {"tree": CHAID tree. This tree can be generated using the vDataFrame.chaid method.
                             "classes": The classes for the CHAID model.}
         For KMeans:        {"clusters": List of the model's cluster centers.
@@ -2227,12 +2237,14 @@ attributes: dict
                 check_types([("classes", attributes_["classes"], [list])])
                 represent += "\n\nclasses = {}".format(attributes_["classes"])
             if model_type == "BinaryTreeAnomaly":
-                if "max_depth" not in attributes:
-                    attributes_["max_depth"] = -1
+                if "psy" not in attributes:
+                    raise ParameterError(
+                        "BinaryTreeAnomaly's must include the sampling size 'psy'."
+                    )
                 else:
-                    attributes_["max_depth"] = attributes["max_depth"]
-                check_types([("max_depth", attributes_["max_depth"], [int])])
-                represent += "\n\nmax_depth = {}".format(attributes_["max_depth"])
+                    attributes_["psy"] = attributes["psy"]
+                check_types([("psy", attributes_["psy"], [int])])
+                represent += "\n\npsy = {}".format(attributes_["psy"])
         elif model_type == "CHAID":
             if "tree" not in attributes:
                 raise ParameterError(
@@ -2614,7 +2626,9 @@ attributes: dict
                 else [],
                 is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
                 is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
-                max_depth=self.attributes_["max_depth"] if self.model_type_ == "BinaryTreeAnomaly" else -1,
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
         elif self.model_type_ in (
             "RandomForestRegressor",
@@ -2716,7 +2730,9 @@ attributes: dict
                 else [],
                 is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
                 is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
-                max_depth=self.attributes_["max_depth"] if self.model_type_ == "BinaryTreeAnomaly" else -1,
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
         elif self.model_type_ in (
             "RandomForestRegressor",
@@ -3101,6 +3117,9 @@ attributes: dict
                 node_style=node_style,
                 arrow_style=arrow_style,
                 leaf_style=leaf_style,
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
         elif self.model_type_ == "BisectingKMeans":
             cluster_size = (
