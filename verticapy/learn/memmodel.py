@@ -597,10 +597,10 @@ def predict_from_binary_tree(
         a regression.
     is_anomaly: bool, optional
         If set to True, the parameter 'value' corresponds to the result of
-        an Isolation Forest (a tuple including leaf path length and training
-        row count).
+        an Isolation Forest (a tuple that includes leaf path length and 
+        training row count).
     psy: int, optional
-        Sampling size. It is used to compute the Isolation Forest Score.
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -726,10 +726,10 @@ def sql_from_binary_tree(
         a regression.
     is_anomaly: bool, optional
         If set to True, the parameter 'value' corresponds to the result of
-        an Isolation Forest (a tuple including leaf path length and training
-        row count).
+        an Isolation Forest (a tuple that includes leaf path length and 
+        training row count).
     psy: int, optional
-        Sampling size. It is used to compute the Isolation Forest Score.
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -892,7 +892,7 @@ def binary_tree_to_graphviz(
         For a list of options, see the Graphviz API: 
         https://graphviz.org/doc/info/attrs.html
     psy: int, optional
-        Sampling size. It is used to compute the Isolation Forest Score.
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -1958,8 +1958,8 @@ attributes: dict
                              threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
-                             psy: [Only for Anomaly Detection] Sampling size. 
-                                        It is used to compute the Isolation Forest Score.
+                             psy: [Only for Anomaly Detection] Sampling size used to compute the 
+                                        the Isolation Forest Score.
         For CHAID:         {"tree": CHAID tree. This tree can be generated using the vDataFrame.chaid method.
                             "classes": The classes for the CHAID model.}
         For KMeans:        {"clusters": List of the model's cluster centers.
