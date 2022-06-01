@@ -89,6 +89,18 @@ def get_tree_list_of_arrays(
             for elem in val:
                 all_val[elem.split(":")[0]] = float(elem.split(":")[1])
             tree.values["log_odds"][idx] = all_val
+    if model_type == "IsolationForest":
+        tree.values["prediction"], n = [], len(tree.values["leaf_path_length"])
+        for idx in range(n):
+            if tree.values["leaf_path_length"][idx] != None:
+                tree.values["prediction"] += [
+                    [
+                        int(float(tree.values["leaf_path_length"][idx])),
+                        int(float(tree.values["training_row_count"][idx])),
+                    ]
+                ]
+            else:
+                tree.values["prediction"] += [None]
     tree_list = [
         tree["left_child_id"],
         tree["right_child_id"],

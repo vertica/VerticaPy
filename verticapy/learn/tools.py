@@ -754,6 +754,14 @@ def get_model_init_params(model_type: str):
             "l1_ratio": 0.5,
             "p": 1,
         }
+    elif model_type in ("IsolationForest",):
+        return {
+            "n_estimators": 100,
+            "max_depth": 10,
+            "nbins": 32,
+            "sample": 0.632,
+            "col_sample_by_tree": 1.0,
+        }
     elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
         return {
             "n_estimators": 10,

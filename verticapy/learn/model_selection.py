@@ -2882,7 +2882,7 @@ tablesample
             ("x_order", x_order, ["pearson", "spearman", "random", "none"]),
         ]
     )
-    if not(verticapy.options["overwrite_model"]):
+    if not (verticapy.options["overwrite_model"]):
         does_model_exist(name=estimator.name, raise_error=True)
     result, current_step = [], 0
     table = (

@@ -599,7 +599,11 @@ def hchart_from_vdf(
             chart.set_dict_options(
                 {
                     "colorAxis": {
-                        "stops": [[0, "#FFFFFF"], [0.2, "#FFFFFF"], [1, gen_colors()[0]]],
+                        "stops": [
+                            [0, "#FFFFFF"],
+                            [0.2, "#FFFFFF"],
+                            [1, gen_colors()[0]],
+                        ],
                         "min": 0,
                     }
                 }

@@ -60,6 +60,7 @@ from verticapy.errors import *
 
 # Other Modules
 import pandas as pd
+
 try:
     from IPython.core.display import display
 except:
@@ -1016,6 +1017,7 @@ VERTICAPY Interactive Help (FAQ).
             message = f"Please go to <a href='{link}'>{link}</a>"
     display(Markdown(message)) if (isnotebook()) else print(message)
 
+
 vHelp = help_start
 # ---#
 def pjson(path: str, ingest_local: bool = True):
@@ -1894,7 +1896,11 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        max_columns = (
+            self.max_columns
+            if self.max_columns > 0
+            else verticapy.options["max_columns"]
+        )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
@@ -1959,7 +1965,11 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        max_columns = (
+            self.max_columns
+            if self.max_columns > 0
+            else verticapy.options["max_columns"]
+        )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
@@ -2295,7 +2305,9 @@ The tablesample attributes are the same than the parameters.
 
 
 # ---#
-def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
+def to_tablesample(
+    query: str, title: str = "", max_columns: int = -1,
+):
     """
 	---------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
@@ -2318,7 +2330,9 @@ def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str]), ("max_columns", max_columns, [int]),])
+    check_types(
+        [("query", query, [str]), ("max_columns", max_columns, [int]),]
+    )
     if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -2341,7 +2355,9 @@ def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values, dtype=dtype, max_columns=max_columns,).decimal_to_float()
+    return tablesample(
+        values=values, dtype=dtype, max_columns=max_columns,
+    ).decimal_to_float()
 
 
 # ---#
@@ -2431,6 +2447,7 @@ vDataFrame
         setattr(vdf, column.replace('"', "_"), new_vColumn)
 
     return vdf
+
 
 vdf_from_relation = vDataFrameSQL
 # ---#

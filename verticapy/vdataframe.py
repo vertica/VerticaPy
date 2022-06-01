@@ -169,7 +169,7 @@ vColumns : vColumn
         empty: bool = False,
     ):
         # Intialization
-        if not(isinstance(input_relation, (pd.DataFrame, np.ndarray))):
+        if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
             assert input_relation or sql or empty, ParameterError(
                 "The parameters 'input_relation' and 'sql' cannot both be empty."
             )
@@ -180,10 +180,10 @@ vColumns : vColumn
             assert not (sql) or empty, ParameterError(
                 "Either 'sql' or 'input_relation' must be empty."
             )
-        assert isinstance(input_relation, str) or not(schema), ParameterError(
+        assert isinstance(input_relation, str) or not (schema), ParameterError(
             "schema must be empty when the 'input_relation' is not of type str."
         )
-        assert not(sql) or not(schema), ParameterError(
+        assert not (sql) or not (schema), ParameterError(
             "schema must be empty when the parameter 'sql' is not empty."
         )
         if isinstance(usecols, str):
@@ -192,7 +192,11 @@ vColumns : vColumn
             columns = [columns]
         check_types(
             [
-                ("input_relation", input_relation, [str, pd.DataFrame, np.ndarray, list, tablesample, dict]),
+                (
+                    "input_relation",
+                    input_relation,
+                    [str, pd.DataFrame, np.ndarray, list, tablesample, dict],
+                ),
                 ("usecols", usecols, [list]),
                 ("columns", columns, [list]),
                 ("schema", schema, [str]),
@@ -215,8 +219,8 @@ vColumns : vColumn
                     input_relation = np.array(input_relation)
 
                 assert len(input_relation.shape) == 2, ParameterError(
-                        "vDataFrames can only be created with two-dimensional objects."
-                    )
+                    "vDataFrames can only be created with two-dimensional objects."
+                )
 
                 tb = {}
                 nb_cols = len(input_relation[0])
@@ -246,7 +250,7 @@ vColumns : vColumn
                 df = pandas_to_vertica(input_relation)
             schema = df._VERTICAPY_VARIABLES_["schema"]
             input_relation = df._VERTICAPY_VARIABLES_["input_relation"]
-            self.__init__(input_relation = input_relation, schema = schema)
+            self.__init__(input_relation=input_relation, schema=schema)
 
         elif sql:
 
@@ -10591,7 +10595,7 @@ vColumns : vColumn
                 tmp_row = []
                 for i, item in enumerate(row):
                     if isinstance(item, (float, int, decimal.Decimal)):
-                        tmp_row += ['{}: {}'.format(quote_ident(columns[i]), item)]
+                        tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
                     elif item != None:
                         tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
                 file.write("{" + ", ".join(tmp_row) + "},\n")
