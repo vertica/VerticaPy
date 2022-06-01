@@ -427,13 +427,13 @@ Parameters
 name: str
     Name of the the model. The model is stored in the DB.
 n_estimators: int, optional
-    The number of trees in the forest, an integer between 0 and 1000, inclusive.
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_depth: int, optional
-    Maximum depth of each tree.
+    Maximum depth of each tree, an integer between 1 and 100, inclusive.
 nbins: int, optional
     Number of bins used for finding splits in each column. A larger number 
     of splits leads to a longer runtime but results in more fine-grained and 
-    possibly better splits.
+    possibly better splits, an integer between 2 and 1000, inclusive.
 sample: float, optional
     The portion of the input data set that is randomly selected for training each tree, 
     a float between 0.0 and 1.0, inclusive. 
@@ -478,7 +478,7 @@ Parameters
 name: str
   Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
   The number of randomly chosen features from which to pick the best feature 
   to split on a given tree node. It can be an integer or one of the two following
@@ -548,7 +548,7 @@ Parameters
 name: str
   Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
   The number of randomly chosen features from which to pick the best feature 
   to split on a given tree node. It can be an integer or one of the two following
@@ -618,11 +618,11 @@ name: str
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
-    Maximum depth of each tree.
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
 nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
-    better splits.
+    better splits, an integer between 2 and 1000, inclusive.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
@@ -703,11 +703,11 @@ name: str
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
-    Maximum depth of each tree.
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
 nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
-    better splits.
+    better splits, an integer between 2 and 1000, inclusive.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
