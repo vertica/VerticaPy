@@ -208,6 +208,7 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
         self._VERTICAPY_VARIABLES_["max_rows"] = -1
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
+        self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
 
         if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
 
@@ -451,6 +452,9 @@ vColumns : vColumn
 
     # ---#
     def __repr__(self):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-12], verticapy.options["time_on"], verticapy.options["max_rows"]).__repr__()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -458,6 +462,9 @@ vColumns : vColumn
 
     # ---#
     def _repr_html_(self):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-11], verticapy.options["time_on"], verticapy.options["max_rows"])._repr_html_()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -7003,6 +7010,8 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
+        elif verticapy.options["count_on"]:
+            result.count = self.shape()[0]
         result.offset = offset
         result.name = self._VERTICAPY_VARIABLES_["input_relation"]
         columns = self.get_columns()
