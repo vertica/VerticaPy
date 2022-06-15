@@ -1650,10 +1650,11 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
         count_on       : bool
-            If set to true, the vDataFrames / tablesamples' total count will be 
-            computed and it will be displayed.
+            If set to True, the total number of rows in vDataFrames and tablesamples is  
+            computed and displayed in the footer (if footer_on is True).
         footer_on      : bool
-            If set to true, the vDataFrames / tablesamples' footer will be displayed.
+            If set to True, vDataFrames and tablesamples show a footer that includes information 
+	    about the displayed rows and columns.
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
