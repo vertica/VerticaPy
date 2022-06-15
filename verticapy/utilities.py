@@ -1654,7 +1654,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             computed and displayed in the footer (if footer_on is True).
         footer_on      : bool
             If set to True, vDataFrames and tablesamples show a footer that includes information 
-	    about the displayed rows and columns.
+            about the displayed rows and columns.
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
