@@ -1649,6 +1649,12 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
+        count_on       : bool
+            If set to True, the total number of rows in vDataFrames and tablesamples is  
+            computed and displayed in the footer (if footer_on is True).
+        footer_on      : bool
+            If set to True, vDataFrames and tablesamples show a footer that includes information 
+            about the displayed rows and columns.
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
@@ -1693,6 +1699,8 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "cache",
                     "colors",
                     "color_style",
+                    "count_on",
+                    "footer_on",
                     "max_columns",
                     "max_rows",
                     "mode",
@@ -1708,11 +1716,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             ),
         ]
     )
-    if option == "cache":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["cache"] = value
-    elif option == "colors":
+    if option == "colors":
         check_types([("value", value, [list])])
         if isinstance(value, list):
             verticapy.options["colors"] = [str(elem) for elem in value]
@@ -1758,18 +1762,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, ["light", "full"])])
         if value.lower() in ["light", "full", None]:
             verticapy.options["mode"] = value.lower()
-    elif option == "percent_bar":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["percent_bar"] = value
-    elif option == "print_info":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["print_info"] = value
-    elif option == "overwrite_model":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["overwrite_model"] = value
     elif option == "random_state":
         check_types([("value", value, [int])])
         if isinstance(value, int) and (value < 0):
@@ -1778,10 +1770,10 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             verticapy.options["random_state"] = int(value)
         elif value == None:
             verticapy.options["random_state"] = None
-    elif option == "sql_on":
+    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar"):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
-            verticapy.options["sql_on"] = value
+            verticapy.options[option] = value
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
@@ -1798,14 +1790,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                 verticapy.options["temp_schema"] = str(value)
             else:
                 raise ParameterError(f"The schema '{value}' could not be found.")
-    elif option == "time_on":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["time_on"] = value
-    elif option == "tqdm":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["tqdm"] = value
     else:
         raise ParameterError(f"Option '{option}' does not exist.")
 
@@ -1928,35 +1912,36 @@ The tablesample attributes are the same than the parameters.
             dtype=dtype,
             percent=percent,
         )
-        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
-        formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
-        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
-            rows = self.count
-        else:
-            if start > end:
-                rows = "0{}".format(
-                    " of {}".format(self.count) if (self.count > 0) else ""
-                )
+        if verticapy.options["footer_on"]:
+            formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
+            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+                rows = self.count
             else:
-                rows = "{}-{}{}".format(
-                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
-                )
-        if len(self.values) == 1:
-            column = list(self.values.keys())[0]
-            if self.offset > self.count:
-                formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
-                    column, self.dtype[column]
-                )
+                start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+                if start > end:
+                    rows = "0{}".format(
+                        " of {}".format(self.count) if (self.count > 0) else ""
+                    )
+                else:
+                    rows = "{}-{}{}".format(
+                        start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                    )
+            if len(self.values) == 1:
+                column = list(self.values.keys())[0]
+                if self.offset > self.count:
+                    formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
+                        column, self.dtype[column]
+                    )
+                else:
+                    formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
+                        rows, column, self.dtype[column]
+                    )
             else:
-                formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
-                    rows, column, self.dtype[column]
-                )
-        else:
-            if self.offset > self.count:
-                formatted_text += "<b>Columns:</b> {}".format(n)
-            else:
-                formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
-        formatted_text += "</div>"
+                if self.offset > self.count:
+                    formatted_text += "<b>Columns:</b> {}".format(n)
+                else:
+                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+            formatted_text += "</div>"
         return formatted_text
 
     # ---#

@@ -255,7 +255,8 @@ def sql(line, cell="", local_ns=None):
 
                 error = ""
                 try:
-                    result = vDataFrameSQL("({}) x".format(query))
+                    result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
+                    result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
                         result._VERTICAPY_VARIABLES_["max_rows"] = options["-nrows"]
