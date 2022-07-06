@@ -65,6 +65,7 @@ except:
 from verticapy.connect import current_cursor
 from verticapy.utilities import *
 from verticapy.toolbox import *
+from verticapy.plot import gen_colors
 
 #
 ##
@@ -550,7 +551,7 @@ def hchart_from_vdf(
     elif kind == "heatmap":
         chart = heatmap(query=query, width=width, height=height)
         chart.set_dict_options(
-            {"colorAxis": {"maxColor": "#FE5016", "minColor": "#FFFFFF"}}
+            {"colorAxis": {"maxColor": gen_colors()[0], "minColor": "#FFFFFF"}}
         )
         chart.set_dict_options(options)
         return chart
@@ -574,8 +575,8 @@ def hchart_from_vdf(
                 "xAxis": {"categories": narrow_data[1]},
                 "yAxis": {"categories": narrow_data[2]},
                 "colorAxis": {
-                    "minColor": "#0073E7",
-                    "maxColor": "#FE5016",
+                    "minColor": gen_colors()[1],
+                    "maxColor": gen_colors()[0],
                     "min": -1,
                     "max": 1,
                 },
@@ -586,10 +587,10 @@ def hchart_from_vdf(
                 {
                     "colorAxis": {
                         "stops": [
-                            [0, "#0073E7"],
+                            [0, gen_colors()[1]],
                             [0.45, "#FFFFFF"],
                             [0.55, "#FFFFFF"],
-                            [1, "#FE5016"],
+                            [1, gen_colors()[0]],
                         ]
                     }
                 }
@@ -598,7 +599,11 @@ def hchart_from_vdf(
             chart.set_dict_options(
                 {
                     "colorAxis": {
-                        "stops": [[0, "#FFFFFF"], [0.2, "#FFFFFF"], [1, "#FE5016"]],
+                        "stops": [
+                            [0, "#FFFFFF"],
+                            [0.2, "#FFFFFF"],
+                            [1, gen_colors()[0]],
+                        ],
                         "min": 0,
                     }
                 }
@@ -753,20 +758,7 @@ def bar(
             "yAxis": {"title": {"text": names[-1]}},
             "legend": {"enabled": False},
         }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     columns = data_to_columns(data, n)
     if n == 2:
@@ -831,20 +823,7 @@ def boxplot(
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     aggregations = ["min", "approx_25%", "approx_50%", "approx_75%", "max"]
     if (vdf) and not (by):
@@ -912,20 +891,7 @@ def candlestick(query: str, options: dict = {}, width: int = 600, height: int = 
             },
         ],
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(1, n):
@@ -972,20 +938,7 @@ def drilldown_chart(
             "pointFormat": '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b><br/>',
         },
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     if chart_type == "bar":
         chart.set_dict_options({"chart": {"inverted": True}})
@@ -1041,7 +994,7 @@ def heatmap(
         },
         "title": {"text": ""},
         "legend": {},
-        "colorAxis": {"minColor": "#FFFFFF", "maxColor": "#FE5016"},
+        "colorAxis": {"minColor": "#FFFFFF", "maxColor": gen_colors()[0]},
         "xAxis": {"title": {"text": ""}},
         "yAxis": {"title": {"text": ""}},
         "tooltip": {
@@ -1053,20 +1006,7 @@ def heatmap(
             )
         },
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     if query:
         data = executeSQL(
@@ -1194,20 +1134,7 @@ def line(
                 }
             },
         }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         if "datetime" in str(type(data[i][0])):
@@ -1297,7 +1224,7 @@ def line(
                 "area": {
                     "fillColor": {
                         "linearGradient": {"x1": 0, "y1": 0, "x2": 0, "y2": 1},
-                        "stops": [[0, "#FFFFFF"], [1, "#FE5016"]],
+                        "stops": [[0, "#FFFFFF"], [1, gen_colors()[0]]],
                     },
                     "marker": {"radius": 2},
                     "lineWidth": 1,
@@ -1352,20 +1279,7 @@ def negative_bar(query: str, options: dict = {}, width: int = 600, height: int =
             + "</b> : ' + Math.abs(this.point.y);}"
         },
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     dict_categories = {}
     for elem in all_categories:
@@ -1424,20 +1338,7 @@ def pie(
         "tooltip": {"pointFormat": str(names[1]) + ": <b>{point.y}</b>"},
     }
     if "3d" not in chart_type:
-        default_options["colors"] = [
-            "#263133",
-            "#FE5016",
-            "#0073E7",
-            "#19A26B",
-            "#FCDB1F",
-            "#000000",
-            "#2A6A74",
-            "#861889",
-            "#00B4E0",
-            "#90EE90",
-            "#FF7F50",
-            "#B03A89",
-        ]
+        default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     if "3d" in chart_type:
         chart.set_dict_options(
@@ -1518,20 +1419,7 @@ def scatter(
         },
     }
     if chart_type != "3d":
-        default_options["colors"] = [
-            "#263133",
-            "#FE5016",
-            "#0073E7",
-            "#19A26B",
-            "#FCDB1F",
-            "#000000",
-            "#2A6A74",
-            "#861889",
-            "#00B4E0",
-            "#90EE90",
-            "#FF7F50",
-            "#B03A89",
-        ]
+        default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     for i in range(len(data)):
         for j in range(n):
@@ -1713,20 +1601,7 @@ def spider(query: str, options: dict = {}, width: int = 600, height: int = 400):
             "layout": "vertical",
         },
     }
-    default_options["colors"] = [
-        "#263133",
-        "#FE5016",
-        "#0073E7",
-        "#19A26B",
-        "#FCDB1F",
-        "#000000",
-        "#2A6A74",
-        "#861889",
-        "#00B4E0",
-        "#90EE90",
-        "#FF7F50",
-        "#B03A89",
-    ]
+    default_options["colors"] = gen_colors()
     chart.set_dict_options(default_options)
     columns = data_to_columns(data, n)
     chart.set_dict_options({"xAxis": {"categories": columns[0]}})

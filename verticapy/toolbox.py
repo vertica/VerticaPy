@@ -56,6 +56,9 @@ from collections.abc import Iterable
 import verticapy
 from verticapy.errors import *
 
+# Other Modules
+import numpy as np
+
 #
 #
 # Functions to use to simplify the coding.
@@ -370,36 +373,40 @@ def get_narrow_tablesample(t, use_number_as_category: bool = False):
 # ---#
 def get_magic_options(line: str):
 
-	# parsing the line
+    # parsing the line
     i, n, splits = 0, len(line), []
     while i < n:
         while i < n and line[i] == " ":
             i += 1
         if i < n:
-	        k = i
-	        op = line[i]
-	        if op in ('"', "'"):
-	            i += 1
-	            while i < n - 1:
-	                if line[i] == op and line[i + 1] != op:
-	                    break
-	                i += 1
-	            i += 1
-	            quote_in = True
-	        else:
-	            while i < n and line[i] != " ":
-	                i += 1
-	            quote_in = False
-	        if quote_in:
-	            splits += [line[k+1:i-1]]
-	        else:
-	            splits += [line[k:i]]
+            k = i
+            op = line[i]
+            if op in ('"', "'"):
+                i += 1
+                while i < n - 1:
+                    if line[i] == op and line[i + 1] != op:
+                        break
+                    i += 1
+                i += 1
+                quote_in = True
+            else:
+                while i < n and line[i] != " ":
+                    i += 1
+                quote_in = False
+            if quote_in:
+                splits += [line[k + 1 : i - 1]]
+            else:
+                splits += [line[k:i]]
 
     # Creating the dictionary
     n, i, all_options_dict = len(splits), 0, {}
     while i < n:
-        if splits[i][0] != '-':
-            raise ParsingError("Can not parse option '{0}'. Options must start with '-'.".format(splits[i][0]))
+        if splits[i][0] != "-":
+            raise ParsingError(
+                "Can not parse option '{0}'. Options must start with '-'.".format(
+                    splits[i][0]
+                )
+            )
         all_options_dict[splits[i]] = splits[i + 1]
         i += 2
 
@@ -504,6 +511,17 @@ def get_verticapy_function(key: str, method: str = ""):
         elif key == "std":
             key = "stddev"
     return key
+
+
+# ---#
+def heuristic_length(i):
+    GAMMA = 0.5772156649
+    if i == 2:
+        return 1
+    elif i > 2:
+        return 2 * (np.log(i - 1) + GAMMA) - 2 * (i - 1) / i
+    else:
+        return 0
 
 
 # ---#
@@ -945,17 +963,19 @@ def replace_vars_in_query(query: str, locals_dict: dict):
                             i += 1
                         splits += [(k, i)]
                     i += 1
-                var = var[:splits[0][0]-1]
+                var = var[: splits[0][0] - 1]
             val = locals_dict[var]
             if splits:
                 for s in splits:
-                    val = val[int(v[s[0] + 1: s[1] + 1])]
+                    val = val[int(v[s[0] + 1 : s[1] + 1])]
             fail = False
         except Exception as e:
-            warning_message = "Failed to replace variables in the query.\nError: {0}".format(e)
+            warning_message = "Failed to replace variables in the query.\nError: {0}".format(
+                e
+            )
             warnings.warn(warning_message, Warning)
             fail = True
-        if not(fail):
+        if not (fail):
             if isinstance(val, vDataFrame):
                 val = val.__genSQL__()
             elif isinstance(val, tablesample):

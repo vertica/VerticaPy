@@ -59,6 +59,8 @@ from verticapy.toolbox import *
 from verticapy.errors import *
 
 # Other Modules
+import pandas as pd
+
 try:
     from IPython.core.display import display
 except:
@@ -1015,6 +1017,7 @@ VERTICAPY Interactive Help (FAQ).
             message = f"Please go to <a href='{link}'>{link}</a>"
     display(Markdown(message)) if (isnotebook()) else print(message)
 
+
 vHelp = help_start
 # ---#
 def pjson(path: str, ingest_local: bool = True):
@@ -1646,6 +1649,12 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
+        count_on       : bool
+            If set to True, the total number of rows in vDataFrames and tablesamples is  
+            computed and displayed in the footer (if footer_on is True).
+        footer_on      : bool
+            If set to True, vDataFrames and tablesamples show a footer that includes information 
+            about the displayed rows and columns.
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
@@ -1690,6 +1699,8 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "cache",
                     "colors",
                     "color_style",
+                    "count_on",
+                    "footer_on",
                     "max_columns",
                     "max_rows",
                     "mode",
@@ -1705,11 +1716,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             ),
         ]
     )
-    if option == "cache":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["cache"] = value
-    elif option == "colors":
+    if option == "colors":
         check_types([("value", value, [list])])
         if isinstance(value, list):
             verticapy.options["colors"] = [str(elem) for elem in value]
@@ -1755,30 +1762,18 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         check_types([("value", value, ["light", "full"])])
         if value.lower() in ["light", "full", None]:
             verticapy.options["mode"] = value.lower()
-    elif option == "percent_bar":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["percent_bar"] = value
-    elif option == "print_info":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["print_info"] = value
-    elif option == "overwrite_model":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["overwrite_model"] = value
     elif option == "random_state":
         check_types([("value", value, [int])])
-        if value < 0:
+        if isinstance(value, int) and (value < 0):
             raise ParameterError("Random State Value must be positive.")
         if isinstance(value, int):
             verticapy.options["random_state"] = int(value)
         elif value == None:
             verticapy.options["random_state"] = None
-    elif option == "sql_on":
+    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar"):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
-            verticapy.options["sql_on"] = value
+            verticapy.options[option] = value
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
@@ -1795,14 +1790,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                 verticapy.options["temp_schema"] = str(value)
             else:
                 raise ParameterError(f"The schema '{value}' could not be found.")
-    elif option == "time_on":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["time_on"] = value
-    elif option == "tqdm":
-        check_types([("value", value, [bool])])
-        if value in (True, False, None):
-            verticapy.options["tqdm"] = value
     else:
         raise ParameterError(f"Option '{option}' does not exist.")
 
@@ -1893,7 +1880,11 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        max_columns = (
+            self.max_columns
+            if self.max_columns > 0
+            else verticapy.options["max_columns"]
+        )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
@@ -1921,35 +1912,36 @@ The tablesample attributes are the same than the parameters.
             dtype=dtype,
             percent=percent,
         )
-        start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
-        formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
-        if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
-            rows = self.count
-        else:
-            if start > end:
-                rows = "0{}".format(
-                    " of {}".format(self.count) if (self.count > 0) else ""
-                )
+        if verticapy.options["footer_on"]:
+            formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
+            if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
+                rows = self.count
             else:
-                rows = "{}-{}{}".format(
-                    start, end, " of {}".format(self.count) if (self.count > 0) else "",
-                )
-        if len(self.values) == 1:
-            column = list(self.values.keys())[0]
-            if self.offset > self.count:
-                formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
-                    column, self.dtype[column]
-                )
+                start, end = self.offset + 1, len(data_columns[0]) - 1 + self.offset
+                if start > end:
+                    rows = "0{}".format(
+                        " of {}".format(self.count) if (self.count > 0) else ""
+                    )
+                else:
+                    rows = "{}-{}{}".format(
+                        start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                    )
+            if len(self.values) == 1:
+                column = list(self.values.keys())[0]
+                if self.offset > self.count:
+                    formatted_text += "<b>Column:</b> {} | <b>Type:</b> {}".format(
+                        column, self.dtype[column]
+                    )
+                else:
+                    formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
+                        rows, column, self.dtype[column]
+                    )
             else:
-                formatted_text += "<b>Rows:</b> {} | <b>Column:</b> {} | <b>Type:</b> {}".format(
-                    rows, column, self.dtype[column]
-                )
-        else:
-            if self.offset > self.count:
-                formatted_text += "<b>Columns:</b> {}".format(n)
-            else:
-                formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
-        formatted_text += "</div>"
+                if self.offset > self.count:
+                    formatted_text += "<b>Columns:</b> {}".format(n)
+                else:
+                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+            formatted_text += "</div>"
         return formatted_text
 
     # ---#
@@ -1958,7 +1950,11 @@ The tablesample attributes are the same than the parameters.
             return ""
         n = len(self.values)
         dtype = self.dtype
-        max_columns = self.max_columns if self.max_columns > 0 else verticapy.options["max_columns"]
+        max_columns = (
+            self.max_columns
+            if self.max_columns > 0
+            else verticapy.options["max_columns"]
+        )
         if n < max_columns:
             data_columns = [[column] + self.values[column] for column in self.values]
         else:
@@ -2224,8 +2220,6 @@ The tablesample attributes are the same than the parameters.
 	tablesample.to_sql : Generates the SQL query associated to the tablesample.
 	tablesample.to_vdf : Converts the tablesample to vDataFrame.
 		"""
-        import pandas as pd
-
         if "index" in self.values:
             df = pd.DataFrame(data=self.values, index=self.values["index"])
             return df.drop(columns=["index"])
@@ -2296,7 +2290,9 @@ The tablesample attributes are the same than the parameters.
 
 
 # ---#
-def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
+def to_tablesample(
+    query: str, title: str = "", max_columns: int = -1,
+):
     """
 	---------------------------------------------------------------------------
 	Returns the result of a SQL query as a tablesample object.
@@ -2319,7 +2315,9 @@ def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
 	--------
 	tablesample : Object in memory created for rendering purposes.
 	"""
-    check_types([("query", query, [str]), ("max_columns", max_columns, [int]),])
+    check_types(
+        [("query", query, [str]), ("max_columns", max_columns, [int]),]
+    )
     if verticapy.options["sql_on"]:
         print_query(query, title)
     start_time = time.time()
@@ -2342,7 +2340,9 @@ def to_tablesample(query: str, title: str = "", max_columns: int = -1,):
     values = {}
     for column in data_columns:
         values[column[0]] = column[1 : len(column)]
-    return tablesample(values=values, dtype=dtype, max_columns=max_columns,).decimal_to_float()
+    return tablesample(
+        values=values, dtype=dtype, max_columns=max_columns,
+    ).decimal_to_float()
 
 
 # ---#
@@ -2432,6 +2432,7 @@ vDataFrame
         setattr(vdf, column.replace('"', "_"), new_vColumn)
 
     return vdf
+
 
 vdf_from_relation = vDataFrameSQL
 # ---#

@@ -220,7 +220,9 @@ class TestvDFPlot:
         plt.close("all")
 
         # method=sum of=survived and nbins=5
-        result2 = titanic_vd["fare"].bar(method="sum", of="survived", nbins=5, color="b")
+        result2 = titanic_vd["fare"].bar(
+            method="sum", of="survived", nbins=5, color="b"
+        )
         assert result2.get_default_bbox_extra_artists()[0].get_width() == pytest.approx(
             391
         )

@@ -59,6 +59,8 @@ pickle.DEFAULT_PROTOCOL = 4
 # Other modules
 import multiprocessing
 from tqdm.auto import tqdm
+import pandas as pd
+import numpy as np
 
 # VerticaPy Modules
 import verticapy
@@ -85,7 +87,7 @@ from verticapy.errors import *
 class vDataFrame:
     """
 ---------------------------------------------------------------------------
-Python object that records all user modifications, allowing users to 
+An object that records all user modifications, allowing users to 
 manipulate the relation without mutating the underlying data in Vertica. 
 When changes are made, the vDataFrame queries the Vertica database, which 
 aggregates and returns the final result. The vDataFrame creates, for each ]
@@ -94,12 +96,19 @@ alias an all user transformations.
 
 Parameters
 ----------
-input_relation: str, optional
-    Relation (view, table, or temporary table) used to create the object. 
+input_relation: str / tablesample / pandas.DataFrame 
+                   / list / numpy.ndarray / dict, optional
+    If the input_relation is of type str, it must represent the relation 
+    (view, table, or temporary table) used to create the object. 
     To get a specific schema relation, your string must include both the 
     relation and schema: 'schema.relation' or '"schema"."relation"'. 
     Alternatively, you can use the 'schema' parameter, in which case 
     the input_relation must exclude the schema name.
+    If it is a pandas.DataFrame, a temporary local table is created.
+    Otherwise, the vDataFrame is created using the generated SQL code 
+    of multiple UNIONs. 
+columns: list, optional
+    List of column names. Only used when input_relation is an array-like type.
 usecols: list, optional
     List of columns to use to create the object. As Vertica is a columnar 
     DB including less columns makes the process faster. Do not hesitate 
@@ -153,25 +162,43 @@ vColumns : vColumn
     def __init__(
         self,
         input_relation: str = "",
+        columns: list = [],
         usecols: list = [],
         schema: str = "",
         sql: str = "",
         empty: bool = False,
     ):
-
         # Intialization
-        assert input_relation or sql or empty, ParameterError(
-            "The parameters 'input_relation' and 'sql' can not be both empty."
+        if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
+            assert input_relation or sql or empty, ParameterError(
+                "The parameters 'input_relation' and 'sql' cannot both be empty."
+            )
+            assert not (input_relation) or not (sql) or empty, ParameterError(
+                "Either 'sql' or 'input_relation' must be empty."
+            )
+        else:
+            assert not (sql) or empty, ParameterError(
+                "Either 'sql' or 'input_relation' must be empty."
+            )
+        assert isinstance(input_relation, str) or not (schema), ParameterError(
+            "schema must be empty when the 'input_relation' is not of type str."
         )
-        assert not (input_relation) or not (sql) or empty, ParameterError(
-            "Either 'sql' and 'input_relation' must be empty."
+        assert not (sql) or not (schema), ParameterError(
+            "schema must be empty when the parameter 'sql' is not empty."
         )
         if isinstance(usecols, str):
             usecols = [usecols]
+        if isinstance(columns, str):
+            columns = [columns]
         check_types(
             [
-                ("input_relation", input_relation, [str]),
+                (
+                    "input_relation",
+                    input_relation,
+                    [str, pd.DataFrame, np.ndarray, list, tablesample, dict],
+                ),
                 ("usecols", usecols, [list]),
+                ("columns", columns, [list]),
                 ("schema", schema, [str]),
                 ("empty", empty, [bool]),
             ]
@@ -181,8 +208,52 @@ vColumns : vColumn
         self._VERTICAPY_VARIABLES_["allcols_ind"] = -1
         self._VERTICAPY_VARIABLES_["max_rows"] = -1
         self._VERTICAPY_VARIABLES_["max_columns"] = -1
+        self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
 
-        if sql:
+        if isinstance(input_relation, (tablesample, list, np.ndarray, dict)):
+
+            tb = input_relation
+
+            if isinstance(input_relation, (list, np.ndarray)):
+
+                if isinstance(input_relation, list):
+                    input_relation = np.array(input_relation)
+
+                assert len(input_relation.shape) == 2, ParameterError(
+                    "vDataFrames can only be created with two-dimensional objects."
+                )
+
+                tb = {}
+                nb_cols = len(input_relation[0])
+                for idx in range(nb_cols):
+                    col_name = columns[idx] if idx < len(columns) else f"col{idx}"
+                    tb[col_name] = [l[idx] for l in input_relation]
+                tb = tablesample(tb)
+
+            elif isinstance(input_relation, dict):
+
+                tb = tablesample(tb)
+
+            if usecols:
+                tb_final = {}
+                for col in usecols:
+                    tb_final[col] = tb[col]
+                tb = tablesample(tb_final)
+
+            relation = "({}) sql_relation".format(tb.to_sql())
+            vDataFrameSQL(relation, name="", schema="", vdf=self)
+
+        elif isinstance(input_relation, pd.DataFrame):
+
+            if usecols:
+                df = pandas_to_vertica(input_relation[usecols])
+            else:
+                df = pandas_to_vertica(input_relation)
+            schema = df._VERTICAPY_VARIABLES_["schema"]
+            input_relation = df._VERTICAPY_VARIABLES_["input_relation"]
+            self.__init__(input_relation=input_relation, schema=schema)
+
+        elif sql:
 
             # Cleaning the Query
             sql_tmp = clean_query(sql)
@@ -194,7 +265,7 @@ vColumns : vColumn
                 sql_tmp = f"(SELECT {usecols_tmp} FROM {sql_tmp}) VERTICAPY_SUBTABLE"
 
             # vDataFrame of the Query
-            vDataFrameSQL(sql_tmp, name="", schema=schema, vdf=self)
+            vDataFrameSQL(sql_tmp, name="", schema="", vdf=self)
 
         elif not (empty):
 
@@ -381,6 +452,9 @@ vColumns : vColumn
 
     # ---#
     def __repr__(self):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-12], verticapy.options["time_on"], verticapy.options["max_rows"]).__repr__()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -388,6 +462,9 @@ vColumns : vColumn
 
     # ---#
     def _repr_html_(self):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-11], verticapy.options["time_on"], verticapy.options["max_rows"])._repr_html_()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -6933,6 +7010,8 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             result.count = pre_comp
+        elif verticapy.options["count_on"]:
+            result.count = self.shape()[0]
         result.offset = offset
         result.name = self._VERTICAPY_VARIABLES_["input_relation"]
         columns = self.get_columns()
@@ -10399,8 +10478,6 @@ vColumns : vColumn
     geopandas.GeoDataFrame
         The geopandas.GeoDataFrame of the current vDataFrame relation.
         """
-        import pandas as pd
-
         try:
             from geopandas import GeoDataFrame
             from shapely import wkt
@@ -10527,7 +10604,7 @@ vColumns : vColumn
                 tmp_row = []
                 for i, item in enumerate(row):
                     if isinstance(item, (float, int, decimal.Decimal)):
-                        tmp_row += ['{}: {}'.format(quote_ident(columns[i]), item)]
+                        tmp_row += ["{}: {}".format(quote_ident(columns[i]), item)]
                     elif item != None:
                         tmp_row += ['{}: "{}"'.format(quote_ident(columns[i]), item)]
                 file.write("{" + ", ".join(tmp_row) + "},\n")
@@ -10594,8 +10671,6 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        import pandas as pd
-
         query = "SELECT * FROM {}{}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )

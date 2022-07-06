@@ -406,6 +406,17 @@ model
                 float(parameters_dict["min_info_gain"]),
                 int(parameters_dict["nbins"]),
             )
+        elif model_type == "iforest":
+            from verticapy.learn.ensemble import IsolationForest
+
+            model = IsolationForest(
+                name,
+                int(parameters_dict["ntree"]),
+                int(parameters_dict["max_depth"]),
+                int(parameters_dict["nbins"]),
+                float(parameters_dict["sampling_size"]),
+                float(parameters_dict["col_sample_by_tree"]),
+            )
         elif model_type == "xgb_classifier":
             from verticapy.learn.ensemble import XGBoostClassifier
 
@@ -611,20 +622,13 @@ model
         else:
             model.input_relation = input_relation
         model.test_relation = test_relation if (test_relation) else model.input_relation
-        if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit"):
-            model.X = info.split(",")[3 : len(info.split(","))]
-            model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+        if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit", "bisectingkmeans", "iforest", "normalizer"):
+            start = 3
             model.y = info.split(",")[2].replace("'", "").replace("\\", "")
-        elif model_type in (
-            "svd",
-            "pca",
-            "one_hot_encoder_fit",
-            "normalizer",
-            "kmeans",
-            "bisectingkmeans",
-        ):
-            model.X = info.split(",")[2 : len(info.split(","))]
-            model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
+        else:
+            start = 2
+        model.X = info.split(",")[start : len(info.split(","))]
+        model.X = [item.replace("'", "").replace("\\", "") for item in model.X]
         if model_type in ("naive_bayes", "rf_classifier", "xgb_classifier"):
             try:
                 classes = executeSQL(
@@ -753,6 +757,14 @@ def get_model_init_params(model_type: str):
             "solver": "Newton",
             "l1_ratio": 0.5,
             "p": 1,
+        }
+    elif model_type in ("IsolationForest",):
+        return {
+            "n_estimators": 100,
+            "max_depth": 10,
+            "nbins": 32,
+            "sample": 0.632,
+            "col_sample_by_tree": 1.0,
         }
     elif model_type in ("RandomForestClassifier", "RandomForestRegressor"):
         return {

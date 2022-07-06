@@ -54,9 +54,7 @@ class Test_hchart:
         assert isinstance(result, Highchart)
         result = hchart("    -k     scatter", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart(
-            "-k scatter", "SELECT age, fare, parch, pclass FROM titanic;"
-        )
+        result = hchart("-k scatter", "SELECT age, fare, parch, pclass FROM titanic;")
         assert isinstance(result, Highchart)
         result = hchart("   --kind bubble", "SELECT age, fare, pclass FROM titanic;")
         assert isinstance(result, Highchart)
@@ -66,13 +64,10 @@ class Test_hchart:
         assert isinstance(result, Highchart)
         result = hchart("-k auto", "SELECT age, fare, parch, pclass FROM titanic;")
         assert isinstance(result, Highchart)
-        result = hchart(
-            "-k auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;"
-        )
+        result = hchart("-k auto", "SELECT pclass, COUNT(*) FROM titanic GROUP BY 1;")
         assert isinstance(result, Highchart)
         result = hchart(
-            "-k auto",
-            "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
+            "-k auto", "SELECT pclass, survived, COUNT(*) FROM titanic GROUP BY 1, 2;",
         )
         assert isinstance(result, Highchart)
         result = hchart("-k auto", "SELECT date, number FROM amazon;")
@@ -84,25 +79,27 @@ class Test_hchart:
 
         # Test -f
         result = hchart(
-            "   -k line  -f   {}/tests/hchart/queries.sql".format(os.path.dirname(verticapy.__file__)),
+            "   -k line  -f   {}/tests/hchart/queries.sql".format(
+                os.path.dirname(verticapy.__file__)
+            ),
             "",
         )
         assert isinstance(result, Highstock)
         result = hchart(
-            "   -k line  --file     {}/tests/hchart/queries.sql  ".format(os.path.dirname(verticapy.__file__)),
+            "   -k line  --file     {}/tests/hchart/queries.sql  ".format(
+                os.path.dirname(verticapy.__file__)
+            ),
             "",
         )
         assert isinstance(result, Highstock)
 
         # Test -c
         result = hchart(
-            "   -k line  -c   'SELECT date, number, state FROM amazon;'",
-            "",
+            "   -k line  -c   'SELECT date, number, state FROM amazon;'", "",
         )
         assert isinstance(result, Highstock)
         result = hchart(
-            '   -k line  --command   "SELECT date, number, state FROM amazon;"',
-            "",
+            '   -k line  --command   "SELECT date, number, state FROM amazon;"', "",
         )
         assert isinstance(result, Highstock)
 
@@ -124,8 +121,7 @@ class Test_hchart:
 
         # Export to HTML -o
         result = hchart(
-            "  -o   verticapy_test_hchart",
-            "SELECT date, number, state FROM amazon;",
+            "  -o   verticapy_test_hchart", "SELECT date, number, state FROM amazon;",
         )
         try:
             file = open("verticapy_test_hchart.html", "r")
@@ -137,10 +133,3 @@ class Test_hchart:
             raise
         os.remove("verticapy_test_hchart.html")
         file.close()
-
-
-
-
-
-
-
