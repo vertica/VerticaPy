@@ -19,7 +19,7 @@ from verticapy import drop, set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_titanic
 from verticapy.learn.decomposition import SVD
-from verticapy.learn.pcalg import PC
+from verticapy.learn.causal_model import PC
 
 set_option("print_info", False)
 
@@ -43,16 +43,69 @@ def titanic_vd():
 
 
 @pytest.fixture(scope="module")
-def model(winequality_vd):
-    model_class = PC()
-    #model_class.fit("public.winequality", ["citric_acid", "residual_sugar", "alcohol"])
+def model(titanic_vd):
+    model_class = PC(titanic_vd)
     yield model_class
-    #model_class.drop()
+    model_class.drop()    
 
-
-class TestSVD:
-    def test_repr(self, titanic_vd):
-        #assert "SVD" in model.__repr__()
-        model_repr = PC()
-        res = PC.build_skeleton(titanic_vd)
+class TestPC:
+    def test_model(self, model):
+        model.reformat(max_unique=5, method='same_freq')
+        res = model.build_skeleton(method='stable', max_cond_vars=2, significance_level=0.01)
         assert len(res) == 2
+        (skeleton, sepsets) = res   
+        temp = {'pclass': {'age', 'fare'},
+                'survived': {'boat', 'sex'},
+                'sex': {'age', 'fare', 'survived'},
+                'age': {'fare', 'parch', 'pclass', 'sex', 'sibsp'},
+                'sibsp': {'age', 'family_size', 'parch'},
+                'parch': {'age', 'family_size', 'sibsp'},
+                'fare': {'age', 'pclass', 'sex'},
+                'boat': {'survived'},
+                'family_size': {'parch', 'sibsp'}}
+        assert skeleton == temp
+        temp = set([
+                frozenset({'parch', 'pclass'}),
+                frozenset({'age', 'survived'}),
+                frozenset({'age', 'boat'}),
+                frozenset({'boat', 'sibsp'}),
+                frozenset({'fare', 'sibsp'}),
+                frozenset({'parch', 'survived'}),
+                frozenset({'family_size', 'survived'}),
+                frozenset({'fare', 'survived'}),
+                frozenset({'sibsp', 'survived'}),
+                frozenset({'boat', 'sex'}),
+                frozenset({'age', 'family_size'}),
+                frozenset({'boat', 'parch'}),
+                frozenset({'parch', 'sex'}),
+                frozenset({'boat', 'family_size'}),
+                frozenset({'boat', 'pclass'}),
+                frozenset({'pclass', 'survived'}),
+                frozenset({'family_size', 'pclass'}),
+                frozenset({'sex', 'sibsp'}),
+                frozenset({'fare', 'parch'}),
+                frozenset({'family_size', 'fare'}),
+                frozenset({'pclass', 'sex'}),
+                frozenset({'family_size', 'sex'}),
+                frozenset({'boat', 'fare'}),
+                frozenset({'pclass', 'sibsp'})])
+        assert set(sepsets.keys()) == temp
+        assert model.pdag == None
+        model.fit(method='stable', max_cond_vars=2, significance_level=0.01)
+        assert model.skeleton == skeleton
+        assert model.sepsets == sepsets
+        res = model.build_pdag()
+        assert model.pdag != None
+        assert model.pdag == res
+        temp = {'pclass': {'age', 'fare'},
+                'survived': {'boat', 'sex'},
+                'sex': set(),
+                'age': set(),
+                'sibsp': {'parch'},
+                'parch': {'age', 'family_size', 'sibsp'},
+                'fare': {'age', 'pclass', 'sex'},
+                'boat': {'survived'},
+                'family_size': {'parch', 'sibsp'}}
+        assert res == temp
+        
+        

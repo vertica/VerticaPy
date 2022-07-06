@@ -7,6 +7,8 @@ from tqdm.auto import tqdm
 from time import time
 from typing import Union
 
+import warnings
+
 from ..stats.tools import conditional_chi_square, is_dir_path
 import numpy as np
 from verticapy import plot
@@ -14,7 +16,15 @@ from verticapy import plot
 
 # ---#
 class CausalModel:
-	
+	"""
+-------------------------------------------------
+Main Class for Causal Models.
+
+Parameters
+----------
+input_relation: [str, vDataframe]
+	Name of original relation
+	"""	
  
 	# ---#
 	def __init__(self, input_relation : Union[str, vDataFrame]):
@@ -31,6 +41,7 @@ class CausalModel:
 		self.pdag : dict = None
 
 
+	# ---#
 	def reformat(self, input_columns:list = [], 
 					   exclude_columns:list = [], 
 					   max_unique: int = 5, 
@@ -93,29 +104,29 @@ class CausalModel:
 						method=method,
 						nbins=max_unique,
 					)
-		temp.dropna()
 		self.vdf = temp		
 
+	# ---#
+	def drop(self):
+		self.input_relation.drop()
+		self.vdf.drop()
+
+
+	# ---#
 	def visualize_skeleton(self):
 		if self.skeleton != None:
 			return CausalModel.visualize(self.skeleton, directed=False)
 
+	# ---#
 	def visualize_pdag(self):
 		if self.pdag != None:
 			return CausalModel.visualize(self.pdag, directed=True)
 
+	# ---#
 	@staticmethod
 	def visualize(adj_dict, directed=True):
 		nodes = list(adj_dict)
 		directed_edges = set([(x, y) for x in nodes for y in adj_dict[x]])
-		n = len(nodes)
-		matrix = np.zeros((n,n))
-		for i, name in enumerate(nodes):
-			for neighbor in adj_dict[name]:
-				j = nodes.index(neighbor)
-				matrix[j][i] = 1
-
-
 		try:
 			import networkx as nx
 			import matplotlib.pyplot as plt
@@ -127,7 +138,6 @@ class CausalModel:
 				G = nx.Graph()
 			G.add_nodes_from(nodes)
 			G.add_edges_from(directed_edges)
-			nx.draw_networkx(G)
 
 			try:
 				shell = get_ipython().__class__.__name__
@@ -137,28 +147,60 @@ class CausalModel:
 					notebook = False
 			except NameError:
 				notebook = False
+			
 			nt = Network('500px', '500px', notebook=notebook, directed = directed)
 			nt.from_nx(G)
-			nt.prep_notebook()
-			nt.show('nx.html')
+			nt.save_graph('nx.html')
+			
 			from IPython.display import IFrame
 			return IFrame(src='./nx.html', width=700, height=700)
 			
 		except ModuleNotFoundError:
-			print("Missing Module")
+			warnings.warn("Could not produce graph because one or more of the following modules are missing: [networkx, matplotlib, pyvis]")
 					
 
 
 class PC(CausalModel):
+	# ---#
 	def __init__(self, input_relation):
 		super().__init__(input_relation)
 
+	# ---#
 	def build_skeleton(self, method='stable', max_cond_vars=5, significance_level = 0.01, show_progress=True):
+		"""
+	----------------------------------------------------------------------------------------
+	Generate the skeleton for the causal network.
+	
+	Parameters
+	----------
+	method: str, optional
+		stable: Produces the same result despite the ordering of variables.
+		orig: Follows the original pc algorithm.
+
+	max_cond_vars: int, optional
+		non-zero value that determines how many conditional variables are used, representing
+		the expected number of parents any node has. The higher the number the longer the test
+		will take to run, but the more precise the result will be.
+
+	significance_level: float, optional
+		p-value that determines independence.
+
+	show_progress: bool, optional
+		The value to control if the progress bar is displayed.
+
+	Returns
+	--------
+	skeleton_edges: dict
+		undirected edges in an adjacency dictionary
+	sepsets: dict
+		maps frozenset edge pairs to there corresponding seperation set
+		"""
+
 		columns = [col[1:-1] for col in self.vdf._VERTICAPY_VARIABLES_['columns']]
 		all_pairs = set(itertools.combinations(columns, 2))
 		max_cond_vars = min(len(columns), max_cond_vars+1) 
 		sepsets = {} 
-		skeleton_edges = {x: set(columns) - set([x]) for x in columns} #adj list the actual connections in the graph
+		skeleton_edges = {x: set(columns) - set([x]) for x in columns}
 		
 		cit = conditional_chi_square # Conditional Independence Test
 		show_progress = show_progress and vp.options["tqdm"] # Verticapy Override option
@@ -213,8 +255,16 @@ class PC(CausalModel):
 
 		return (skeleton_edges, sepsets)
 
-
+	# ---#
 	def build_pdag(self):
+		"""
+		Builds the partially directed acyclic graph
+
+		Returns
+		-------
+		pdag: dict
+			directed egdes in an adjacency dictionary
+		"""
 		skeleton_edges = self.skeleton
 		sepsets = self.sepsets   
 		
@@ -260,6 +310,34 @@ class PC(CausalModel):
 		self.pdag = pdag	
 		return pdag	
 
+	# ---#
 	def fit(self, method='stable', max_cond_vars=5, significance_level = 0.01, show_progress=True):
+		"""
+	----------------------------------------------------------------------------------------
+	Generate the skeleton and pdag for the causal network.
+	
+	Parameters
+	----------
+	method: str, optional
+		stable: Produces the same result despite the ordering of variables.
+		orig: Follows the original pc algorithm.
+
+	max_cond_vars: int, optional
+		non-zero value that determines how many conditional variables are used, representing
+		the expected number of parents any node has. The higher the number the longer the test
+		will take to run, but the more precise the result will be.
+
+	significance_level: float, optional
+		p-value that determines independence.
+
+	show_progress: bool, optional
+		The value to control if the progress bar is displayed.
+
+	Returns
+	-------
+	pdag: dict
+		directed egdes in an adjacency dictionary
+
+		"""
 		self.build_skeleton(method, max_cond_vars, significance_level, show_progress)
 		return self.build_pdag()
