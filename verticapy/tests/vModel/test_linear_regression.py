@@ -138,7 +138,7 @@ class TestLinearRegression:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
+            == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
         )
 
     def test_get_params(self, model):

@@ -49,7 +49,7 @@ def model(iforest_data_vd):
         col_sample_by_tree=0.8,
     )
     model_class.drop()
-    X = ['Gender', 'owned cars', 'cost', 'income', 'TransPortation']
+    X = ['Gender', '"owned cars"', 'cost', 'income', 'TransPortation']
     model_class.fit("public.iforest_data", X)
 
     yield model_class
@@ -80,7 +80,7 @@ class TestIsolationForest:
             titanic_vd, ["age", "fare"],
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 38
+        assert len(result.get_default_bbox_extra_artists()) == 36
         model_test.drop()
 
     def test_deploySQL(self, model):

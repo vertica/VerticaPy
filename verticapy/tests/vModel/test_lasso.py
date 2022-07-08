@@ -144,7 +144,7 @@ class TestLasso:
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
         assert (
             model.get_attr("call_string")["call_string"][0]
-            == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1)"
+            == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1, fit_intercept=true)"
         )
 
     def test_get_params(self, model):
