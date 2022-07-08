@@ -387,11 +387,11 @@ vColumns : vColumn
         return self.head(limit=max_rows).__repr__()
 
     # ---#
-    def _repr_html_(self):
+    def _repr_html_(self, interactive=False):
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
-        return self.head(limit=max_rows)._repr_html_()
+        return self.head(limit=max_rows)._repr_html_(interactive)
 
     # ---#
     def __round__(self, n):
@@ -11007,6 +11007,15 @@ vColumns : vColumn
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
 
+    #
+    # Interactive display
+    #
+    # ---#
+    def idisplay(self):
+        """This method displays the interactive table. It is used when 
+        you don't want to activate interactive table for all vDataFrames."""
+        from IPython.core.display import HTML, display
+        return display(HTML(self.copy()._repr_html_(interactive=True)))
 
 #
 # Multiprocessing

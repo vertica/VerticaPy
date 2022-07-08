@@ -79,6 +79,7 @@ verticapy.options = {
     "colors": [],
     "color_style": "default",
     "connection": {"conn": None, "section": None, "dsn": None},
+    "interactive": False,
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,
