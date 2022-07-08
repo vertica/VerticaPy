@@ -80,16 +80,12 @@ steps: list
             if len(elem) != 2:
                 raise ParameterError(
                     "The steps of the Pipeline must be composed of 2 elements "
-                    "(name, transform). Found {}.".format(
-                        len(elem)
-                    )
+                    "(name, transform). Found {}.".format(len(elem))
                 )
             elif not (isinstance(elem[0], str)):
                 raise ParameterError(
                     "The steps 'name' of the Pipeline must be of "
-                    "type str. Found {}.".format(
-                        type(elem[0])
-                    )
+                    "type str. Found {}.".format(type(elem[0]))
                 )
             else:
                 try:

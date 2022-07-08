@@ -55,7 +55,7 @@ class TestSQL:
         assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
 
         # SQL Cell Test -nrows -ncols
-        result = sql('  -ncols 4    -nrows 70', "SELECT * FROM titanic;")
+        result = sql("  -ncols 4    -nrows 70", "SELECT * FROM titanic;")
         assert result.shape() == (1234, 14)
         assert result._VERTICAPY_VARIABLES_["max_columns"] == 4
         assert result._VERTICAPY_VARIABLES_["max_rows"] == 70
@@ -75,14 +75,18 @@ class TestSQL:
 
         # Test: Reading SQL file -f
         result = sql(
-            " -f   {}/tests/sql/queries.sql".format(os.path.dirname(verticapy.__file__)),
+            " -f   {}/tests/sql/queries.sql".format(
+                os.path.dirname(verticapy.__file__)
+            ),
             "",
         )
         assert result["predict"][0] == pytest.approx(0.395335892040411)
 
         # Test: Reading SQL file --file
         result = sql(
-            "   --file   {}/tests/sql/queries.sql".format(os.path.dirname(verticapy.__file__)),
+            "   --file   {}/tests/sql/queries.sql".format(
+                os.path.dirname(verticapy.__file__)
+            ),
             "",
         )
         assert result["predict"][0] == pytest.approx(0.395335892040411)

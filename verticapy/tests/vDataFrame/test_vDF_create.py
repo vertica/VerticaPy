@@ -15,8 +15,12 @@
 import pytest
 
 # VerticaPy
-from verticapy import vDataFrame, drop, set_option
+from verticapy import vDataFrame, drop, set_option, tablesample
 from verticapy.datasets import load_titanic
+
+# Other Modules
+import pandas as pd
+import numpy as np
 
 set_option("print_info", False)
 
@@ -43,3 +47,62 @@ class TestvDFCreate:
         tvdf = vDataFrame(input_relation="public.titanic", usecols=["age", "survived"],)
 
         assert tvdf["survived"].count() == 1234
+
+    def test_creating_vDF_using_pandas_dataframe(self, titanic_vd):
+        df = vDataFrame(input_relation="public.titanic").to_pandas()
+        tvdf = vDataFrame(df)
+
+        assert tvdf["survived"].count() == 1234
+
+    def test_creating_vDF_using_list(self):
+        tvdf = vDataFrame(
+            input_relation=[[1, "Badr", "Ouali"], [2, "Arash", "Fard"]],
+            columns=["id", "fname", "lname"],
+        )
+
+        assert tvdf.shape() == (2, 3)
+        assert tvdf["id"].avg() == 1.5
+
+    def test_creating_vDF_using_np_array(self):
+        tvdf = vDataFrame(
+            input_relation=np.array([[1, "Badr", "Ouali"], [2, "Arash", "Fard"]]),
+        )
+
+        assert tvdf.shape() == (2, 3)
+        assert tvdf["col0"].avg() == 1.5
+
+    def test_creating_vDF_using_tablesample(self):
+        tb = tablesample(
+            {"id": [1, 2], "fname": ["Badr", "Arash"], "lname": ["Ouali", "Fard"]}
+        )
+        tvdf = vDataFrame(input_relation=tb,)
+
+        assert tvdf.shape() == (2, 3)
+        assert tvdf["id"].avg() == 1.5
+
+        tvdf = vDataFrame(input_relation=tb, usecols=["id", "lname"])
+
+        assert tvdf.shape() == (2, 2)
+        assert tvdf.get_columns() == ['"id"', '"lname"']
+
+    def test_creating_vDF_using_dict(self):
+        tb = {"id": [1, 2], "fname": ["Badr", "Arash"], "lname": ["Ouali", "Fard"]}
+        tvdf = vDataFrame(input_relation=tb,)
+
+        assert tvdf.shape() == (2, 3)
+        assert tvdf["id"].avg() == 1.5
+
+        tvdf = vDataFrame(input_relation=tb, usecols=["id", "lname"])
+
+        assert tvdf.shape() == (2, 2)
+        assert tvdf.get_columns() == ['"id"', '"lname"']
+
+    def test_creating_vDF_from_sql(self, titanic_vd):
+        tvdf = vDataFrame(sql="SELECT * FROM public.titanic")
+
+        assert tvdf["survived"].count() == 1234
+
+        tvdf = vDataFrame(sql="SELECT * FROM public.titanic", usecols=["survived"])
+
+        assert tvdf["survived"].count() == 1234
+        assert tvdf.get_columns() == ['"survived"']

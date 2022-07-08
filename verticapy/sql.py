@@ -101,7 +101,16 @@ def sql(line, cell="", local_ns=None):
 
         for option in all_options_dict:
 
-            if option.lower() in ("-f", "--file", "-o", "--output", "-nrows", "-ncols", "-c", "--command"):
+            if option.lower() in (
+                "-f",
+                "--file",
+                "-o",
+                "--output",
+                "-nrows",
+                "-ncols",
+                "-c",
+                "--command",
+            ):
 
                 if option.lower() in ("-f", "--file"):
                     if "-f" in options:
@@ -132,8 +141,10 @@ def sql(line, cell="", local_ns=None):
                 warnings.warn(warning_message, Warning)
 
         if "-f" in options and "-c" in options:
-            raise ParameterError("Do not find which query to run: One of "
-                                 "the options '-f' and '-c' must be empty.")
+            raise ParameterError(
+                "Do not find which query to run: One of "
+                "the options '-f' and '-c' must be empty."
+            )
 
         if cell and ("-f" in options or "-c" in options):
             raise ParameterError("Cell must be empty when using options '-f' or '-c'.")
@@ -244,7 +255,8 @@ def sql(line, cell="", local_ns=None):
 
                 error = ""
                 try:
-                    result = vDataFrameSQL("({}) x".format(query))
+                    result = vDataFrameSQL("({}) VSQL_MAGIC".format(query))
+                    result._VERTICAPY_VARIABLES_["sql_magic_result"] = True
                     # Display parameters
                     if "-nrows" in options:
                         result._VERTICAPY_VARIABLES_["max_rows"] = options["-nrows"]
@@ -257,7 +269,7 @@ def sql(line, cell="", local_ns=None):
                             query, method="fetchfirstelem", print_time_sql=False
                         )
                         if final_result and verticapy.options["print_info"]:
-                            print(final_result[0])
+                            print(final_result)
                         elif verticapy.options["print_info"]:
                             print(query_type)
                     except Exception as e:
@@ -293,7 +305,7 @@ def sql(line, cell="", local_ns=None):
         # If it fails, we load the previous configuration before raising the error.
         set_option("sql_on", sql_on)
         set_option("time_on", time_on)
-        
+
         raise
 
 
