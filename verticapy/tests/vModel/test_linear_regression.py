@@ -18,6 +18,7 @@ import pytest
 import matplotlib.pyplot as plt
 
 # VerticaPy
+from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality
@@ -136,10 +137,17 @@ class TestLinearRegression:
         assert model.get_attr("iteration_count")["iteration_count"][0] == 1
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
-        )
+
+        if get_version()[0] < 12:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
+            )
+        else:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "linear_reg('public.linreg_model_test', 'public.winequality', '\"quality\"', '\"citric_acid\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
+            )
 
     def test_get_params(self, model):
         assert model.get_params() == {
