@@ -561,6 +561,8 @@ def predict_from_binary_tree(
     classes: Union[list, np.ndarray] = [],
     return_proba: bool = False,
     is_regressor: bool = True,
+    is_anomaly: bool = False,
+    psy: int = -1,
 ) -> np.ndarray:
     """
     ---------------------------------------------------------------------------
@@ -593,6 +595,12 @@ def predict_from_binary_tree(
     is_regressor: bool, optional
         If set to True, the parameter 'value' corresponds to the result of
         a regression.
+    is_anomaly: bool, optional
+        If set to True, the parameter 'value' corresponds to the result of
+        an Isolation Forest (a tuple that includes leaf path length and 
+        training row count).
+    psy: int, optional
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -610,6 +618,8 @@ def predict_from_binary_tree(
             ("classes", classes, [list, np.ndarray]),
             ("return_proba", return_proba, [bool]),
             ("is_regressor", is_regressor, [bool]),
+            ("is_anomaly", is_anomaly, [bool]),
+            ("psy", psy, [int]),
         ]
     )
 
@@ -617,7 +627,11 @@ def predict_from_binary_tree(
         children_left, children_right, feature, threshold, value, node_id, X
     ):
         if children_left[node_id] == children_right[node_id]:
-            if (
+            if is_anomaly:
+                return (
+                    value[node_id][0] + heuristic_length(value[node_id][1])
+                ) / heuristic_length(psy)
+            elif (
                 not (is_regressor)
                 and not (return_proba)
                 and isinstance(value, Iterable)
@@ -675,6 +689,8 @@ def sql_from_binary_tree(
     classes: Union[list, np.ndarray] = [],
     return_proba: bool = False,
     is_regressor: bool = True,
+    is_anomaly: bool = False,
+    psy: int = -1,
 ) -> Union[list, str]:
     """
     ---------------------------------------------------------------------------
@@ -708,6 +724,12 @@ def sql_from_binary_tree(
     is_regressor: bool, optional
         If set to True, the parameter 'value' corresponds to the result of
         a regression.
+    is_anomaly: bool, optional
+        If set to True, the parameter 'value' corresponds to the result of
+        an Isolation Forest (a tuple that includes leaf path length and 
+        training row count).
+    psy: int, optional
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -725,6 +747,8 @@ def sql_from_binary_tree(
             ("classes", classes, [list, np.ndarray]),
             ("return_proba", return_proba, [bool]),
             ("is_regressor", is_regressor, [bool]),
+            ("is_anomaly", is_anomaly, [bool]),
+            ("psy", psy, [int]),
         ]
     )
 
@@ -735,7 +759,11 @@ def sql_from_binary_tree(
             if return_proba:
                 return value[node_id][prob_ID]
             else:
-                if (
+                if is_anomaly:
+                    return (
+                        value[node_id][0] + heuristic_length(value[node_id][1])
+                    ) / heuristic_length(psy)
+                elif (
                     not (is_regressor)
                     and isinstance(classes, Iterable)
                     and len(classes) > 0
@@ -812,6 +840,7 @@ def binary_tree_to_graphviz(
     node_style: dict = {},
     arrow_style: dict = {},
     leaf_style: dict = {},
+    psy: int = -1,
 ):
     """
     ---------------------------------------------------------------------------
@@ -862,6 +891,8 @@ def binary_tree_to_graphviz(
         Dictionary of options to customize each leaf of the tree. 
         For a list of options, see the Graphviz API: 
         https://graphviz.org/doc/info/attrs.html
+    psy: int, optional
+        Sampling size used to compute the Isolation Forest Score.
 
     Returns
     -------
@@ -885,9 +916,12 @@ def binary_tree_to_graphviz(
             ("node_style", node_style, [dict]),
             ("arrow_style", arrow_style, [dict]),
             ("leaf_style", leaf_style, [dict]),
+            ("psy", psy, [int]),
         ]
     )
+    empty_color = False
     if len(classes_color) == 0:
+        empty_color = True
         classes_color = [
             "#87cefa",
             "#efc5b5",
@@ -936,6 +970,43 @@ def binary_tree_to_graphviz(
             color = ""
             if isinstance(value[i], float):
                 label = '"{}"'.format(value[i])
+            elif (
+                isinstance(value[i], list)
+                and (len(value[i]) == 2)
+                and (isinstance(value[i][0], int))
+                and (isinstance(value[i][1], int))
+            ):
+                if not (leaf_style):
+                    leaf_style = {"shape": "none"}
+                color = classes_color[0] if not (empty_color) else "#eeeeee"
+                anomaly_score = float(
+                    2
+                    ** (
+                        -(value[i][0] + heuristic_length(value[i][1]))
+                        / heuristic_length(psy)
+                    )
+                )
+                if anomaly_score < 0.5:
+                    color_anomaly = "#ffffff"
+                else:
+                    rgb = [255, 0, 0]
+                    for idx in range(3):
+                        rgb[idx] = int(
+                            255 - 2 * (anomaly_score - 0.5) * (255 - rgb[idx])
+                        )
+                    color_anomaly = (
+                        "#"
+                        + str(hex(rgb[0]))[2:]
+                        + str(hex(rgb[1]))[2:]
+                        + str(hex(rgb[2]))[2:]
+                    )
+                label = (
+                    '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" '
+                    'bgcolor="{}"><b> leaf </b></td></tr><tr><td port="port0" border="1" align="left"> '
+                    'leaf_path_length: {} </td></tr><tr><td port="port1" border="1" align="left"> '
+                    'training_row_count: {} </td></tr><tr><td port="port2" border="1" align="left" bgcolor="{}"> '
+                    "anomaly_score: {} </td></tr></table>>"
+                ).format(color, value[i][0], value[i][1], color_anomaly, anomaly_score)
             else:
                 if not (leaf_style):
                     leaf_style = {"shape": "none"}
@@ -945,9 +1016,10 @@ def binary_tree_to_graphviz(
                     else classes.copy()
                 )
                 color = classes_color[(np.argmax(value[i])) % len(classes_color)]
-                label = '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" bgcolor="{}"><b> prediction: {} </b></td></tr>'.format(
-                    color, classes_[np.argmax(value[i])]
-                )
+                label = (
+                    '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" '
+                    'bgcolor="{}"><b> prediction: {} </b></td></tr>'
+                ).format(color, classes_[np.argmax(value[i])])
                 for j in range(len(value[i])):
                     val = (
                         round(value[i][j] * 100, round_pred)
@@ -1155,8 +1227,9 @@ def bisecting_kmeans_to_graphviz(
                 color = node_style["color"]
             else:
                 color = "#efc5b5"
-            label = '<<table border="0" cellspacing="0"> <tr><td port="port1" border="1" bgcolor="{}"><b> cluster_id: {} </b></td></tr>'.format(
-                color, i
+            label = (
+                '<<table border="0" cellspacing="0"> <tr><td port="port1" '
+                f'border="1" bgcolor="{color}"><b> cluster_id: {i} </b></td></tr>'
             )
             if len(cluster_size) == n:
                 label += '<tr><td port="port2" border="1" align="left"> size: {} </td></tr>'.format(
@@ -1875,7 +1948,7 @@ attributes: dict
                             "left_child": List of the model's left children IDs.
                             "right_child": List of the model's right children IDs.
                             "p": The p corresponding to the one of the p-distances.}
-        For BinaryTreeClassifier, BinaryTreeRegressor:
+        For BinaryTreeClassifier, BinaryTreeRegressor, BinaryTreeAnomaly:
                             {children_left:  A list of node IDs, where children_left[i] is the node id 
                                              of the left child of node i.
                              children_right: A list of node IDs, where children_right[i] is the node id 
@@ -1885,6 +1958,8 @@ attributes: dict
                              threshold: threshold[i] is the threshold for the internal node i.
                              value: Contains the constant prediction value of each node.
                              classes: [Only for Classifier] The classes for the binary tree model.}
+                             psy: [Only for Anomaly Detection] Sampling size used to compute the 
+                                        the Isolation Forest Score.
         For CHAID:         {"tree": CHAID tree. This tree can be generated using the vDataFrame.chaid method.
                             "classes": The classes for the CHAID model.}
         For KMeans:        {"clusters": List of the model's cluster centers.
@@ -1949,9 +2024,9 @@ attributes: dict
                                              It can be set to 'indices' or 'values'.}
         For PCA:           {"principal_components": Matrix of the principal components.
                             "mean": List of the input predictors average.}
-        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor:
+        For RandomForestClassifier, RandomForestRegressor, XGBoostClassifier, XGBoostRegressor, IsolationForest:
                             {trees: list of memModels of type 'BinaryTreeRegressor' or 
-                                    'BinaryTreeClassifier'
+                                    'BinaryTreeClassifier' or 'BinaryTreeAnomaly'
                              learning_rate: [Only for XGBoostClassifier and XGBoostRegressor]
                                             Learning rate.
                              mean: [Only for XGBoostRegressor]
@@ -1987,12 +2062,14 @@ attributes: dict
                         "RandomForestClassifier",
                         "BinaryTreeClassifier",
                         "BinaryTreeRegressor",
+                        "BinaryTreeAnomaly",
                         "RandomForestRegressor",
                         "LinearSVR",
                         "LinearSVC",
                         "LogisticRegression",
                         "LinearRegression",
                         "NearestCentroid",
+                        "IsolationForest",
                     ],
                 ),
             ]
@@ -2042,6 +2119,7 @@ attributes: dict
             "XGBoostRegressor",
             "RandomForestClassifier",
             "XGBoostClassifier",
+            "IsolationForest",
         ):
             if "trees" not in attributes:
                 raise ParameterError(
@@ -2059,6 +2137,12 @@ attributes: dict
                 if model_type in ("RandomForestClassifier", "XGBoostClassifier"):
                     assert tree.model_type_ == "BinaryTreeClassifier", ParameterError(
                         "Each tree of the model must be a BinaryTreeClassifier, found '{}'.".format(
+                            tree.model_type_
+                        )
+                    )
+                elif model_type == "IsolationForest":
+                    assert tree.model_type_ == "BinaryTreeAnomaly", ParameterError(
+                        "Each tree of the model must be a BinaryTreeAnomaly, found '{}'.".format(
                             tree.model_type_
                         )
                     )
@@ -2100,7 +2184,11 @@ attributes: dict
                 represent += "\n\nlearning_rate = {}".format(
                     attributes_["learning_rate"]
                 )
-        elif model_type in ("BinaryTreeClassifier", "BinaryTreeRegressor"):
+        elif model_type in (
+            "BinaryTreeClassifier",
+            "BinaryTreeRegressor",
+            "BinaryTreeAnomaly",
+        ):
             if (
                 "children_left" not in attributes
                 or "children_right" not in attributes
@@ -2148,6 +2236,15 @@ attributes: dict
                     attributes_["classes"] = np.copy(attributes["classes"])
                 check_types([("classes", attributes_["classes"], [list])])
                 represent += "\n\nclasses = {}".format(attributes_["classes"])
+            if model_type == "BinaryTreeAnomaly":
+                if "psy" not in attributes:
+                    raise ParameterError(
+                        "BinaryTreeAnomaly's must include the sampling size 'psy'."
+                    )
+                else:
+                    attributes_["psy"] = attributes["psy"]
+                check_types([("psy", attributes_["psy"], [int])])
+                represent += "\n\npsy = {}".format(attributes_["psy"])
         elif model_type == "CHAID":
             if "tree" not in attributes:
                 raise ParameterError(
@@ -2436,7 +2533,9 @@ attributes: dict
             import graphviz
         except:
             raise ImportError(
-                "The graphviz module doesn't seem to be installed in your environment.\nTo be able to use this method, you'll have to install it.\n[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
+                "The graphviz module doesn't seem to be installed in your environment.\n"
+                "To be able to use this method, you'll have to install it.\n"
+                "[Tips] Run: 'pip3 install graphviz' in your terminal to install the module."
             )
         check_types([("pic_path", pic_path, [str])])
         graphviz_str = self.to_graphviz(
@@ -2510,7 +2609,11 @@ attributes: dict
                 self.attributes_["right_child"],
                 p=self.attributes_["p"],
             )
-        elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier"):
+        elif self.model_type_ in (
+            "BinaryTreeRegressor",
+            "BinaryTreeClassifier",
+            "BinaryTreeAnomaly",
+        ):
             return predict_from_binary_tree(
                 X,
                 self.attributes_["children_left"],
@@ -2519,14 +2622,25 @@ attributes: dict
                 self.attributes_["threshold"],
                 self.attributes_["value"],
                 self.attributes_["classes"]
-                if self.model_type_ in ("BinaryTreeClassifier")
+                if self.model_type_ == "BinaryTreeClassifier"
                 else [],
-                is_regressor=self.model_type_ in ("BinaryTreeRegressor"),
+                is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
+                is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
-        elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor"):
+        elif self.model_type_ in (
+            "RandomForestRegressor",
+            "XGBoostRegressor",
+            "IsolationForest",
+        ):
             result = [tree.predict(X) for tree in self.attributes_["trees"]]
-            if self.model_type_ == "RandomForestRegressor":
-                return np.average(np.column_stack(result), axis=1)
+            if self.model_type_ in ("RandomForestRegressor", "IsolationForest"):
+                res = np.average(np.column_stack(result), axis=1)
+                if self.model_type_ == "IsolationForest":
+                    res = 2 ** (-res)
+                return res
             else:
                 return (
                     np.sum(np.column_stack(result), axis=1)
@@ -2599,7 +2713,11 @@ attributes: dict
                 self.attributes_["right_child"],
                 p=self.attributes_["p"],
             )
-        elif self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier"):
+        elif self.model_type_ in (
+            "BinaryTreeRegressor",
+            "BinaryTreeClassifier",
+            "BinaryTreeAnomaly",
+        ):
             result = sql_from_binary_tree(
                 X,
                 self.attributes_["children_left"],
@@ -2608,14 +2726,24 @@ attributes: dict
                 self.attributes_["threshold"],
                 self.attributes_["value"],
                 self.attributes_["classes"]
-                if self.model_type_ in ("BinaryTreeClassifier")
+                if (self.model_type_ == "BinaryTreeClassifier")
                 else [],
                 is_regressor=(self.model_type_ == "BinaryTreeRegressor"),
+                is_anomaly=(self.model_type_ == "BinaryTreeAnomaly"),
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
-        elif self.model_type_ in ("RandomForestRegressor", "XGBoostRegressor"):
+        elif self.model_type_ in (
+            "RandomForestRegressor",
+            "XGBoostRegressor",
+            "IsolationForest",
+        ):
             result = [tree.predict_sql(X) for tree in self.attributes_["trees"]]
-            if self.model_type_ in ("RandomForestRegressor"):
+            if self.model_type_ in ("RandomForestRegressor", "IsolationForest"):
                 result = "(" + " + ".join(result) + ") / {}".format(len(result))
+                if self.model_type_ == "IsolationForest":
+                    result = f"POWER(2, - ({result}))"
             else:
                 result = (
                     "("
@@ -2955,11 +3083,23 @@ attributes: dict
         else:
             node_style = {"shape": "none"}
         classes = self.attributes_["classes"] if "classes" in self.attributes_ else []
-        if self.model_type_ in ("BinaryTreeRegressor", "BinaryTreeClassifier"):
+        if self.model_type_ in (
+            "BinaryTreeRegressor",
+            "BinaryTreeClassifier",
+            "BinaryTreeAnomaly",
+        ):
             prefix_pred = "prob"
             for elem in self.attributes_["value"]:
                 if isinstance(elem, list) and not (0.99 < sum(elem) <= 1.0):
                     prefix_pred = "logodds"
+                    break
+                elif (
+                    isinstance(elem, list)
+                    and len(elem) == 2
+                    and isinstance(elem[0], int)
+                    and isinstance(elem[1], int)
+                ):
+                    prefix_pred = "contamination"
                     break
             return binary_tree_to_graphviz(
                 children_left=self.attributes_["children_left"],
@@ -2977,6 +3117,9 @@ attributes: dict
                 node_style=node_style,
                 arrow_style=arrow_style,
                 leaf_style=leaf_style,
+                psy=self.attributes_["psy"]
+                if (self.model_type_ == "BinaryTreeAnomaly")
+                else -1,
             )
         elif self.model_type_ == "BisectingKMeans":
             cluster_size = (
@@ -3018,6 +3161,7 @@ attributes: dict
             "XGBoostClassifier",
             "RandomForestRegressor",
             "XGBoostRegressor",
+            "IsolationForest",
         ):
             return self.attributes_["trees"][tree_id].to_graphviz(
                 feature_names=feature_names,

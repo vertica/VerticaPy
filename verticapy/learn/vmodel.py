@@ -258,9 +258,12 @@ Main Class for Vertica Model
             return vDataFrameSQL(self.input_relation).contour(
                 self.X, self, cbar_title=self.y, nbins=nbins, ax=ax, **style_kwds
             )
-        elif self.type in ("KMeans", "BisectingKMeans"):
+        elif self.type in ("KMeans", "BisectingKMeans", "IsolationForest",):
+            cbar_title = "cluster"
+            if self.type == "IsolationForest":
+                cbar_title = "anomaly_score"
             return vDataFrameSQL(self.input_relation).contour(
-                self.X, self, cbar_title="cluster", nbins=nbins, ax=ax, **style_kwds
+                self.X, self, cbar_title=cbar_title, nbins=nbins, ax=ax, **style_kwds
             )
         else:
             return vDataFrameSQL(self.input_relation).contour(
@@ -298,8 +301,12 @@ Main Class for Vertica Model
             check_types([("X", X, [list])])
             X = [quote_ident(elem) for elem in X]
             fun = self.get_model_fun()[1]
-            sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')"
-            return sql.format(fun, ", ".join(self.X if not (X) else X), name)
+            sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
+                fun, ", ".join(self.X if not (X) else X), name
+            )
+            if self.type == "IsolationForest":
+                sql = f"({sql}).anomaly_score"
+            return sql
         else:
             raise FunctionError(
                 "Method 'deploySQL' for '{}' doesn't exist.".format(self.type)
@@ -623,6 +630,9 @@ Main Class for Vertica Model
         elif self.type == "LinearSVR":
             return ("SVM_REGRESSOR", "PREDICT_SVM_REGRESSOR", "")
 
+        elif self.type == "IsolationForest":
+            return ("IFOREST", "APPLY_IFOREST", "")
+
         elif self.type in ("RandomForestRegressor", "KernelDensity"):
             return ("RF_REGRESSOR", "PREDICT_RF_REGRESSOR", "")
 
@@ -840,14 +850,24 @@ Main Class for Vertica Model
                     ax=ax,
                     **style_kwds,
                 )
-        elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN"):
-            if self.type != "DBSCAN":
+        elif self.type in ("KMeans", "BisectingKMeans", "DBSCAN", "IsolationForest",):
+            if self.type in ("KMeans", "BisectingKMeans",):
                 vdf = vDataFrameSQL(self.input_relation)
                 self.predict(vdf, name="kmeans_cluster")
                 catcol = "kmeans_cluster"
-            else:
+            elif self.type == "DBSCAN":
                 vdf = vDataFrameSQL(self.name)
                 catcol = "dbscan_cluster"
+            elif self.type == "IsolationForest":
+                vdf = vDataFrameSQL(self.input_relation)
+                self.predict(vdf, name="anomaly_score")
+                return vdf.bubble(
+                    columns=self.X,
+                    cmap_col="anomaly_score",
+                    max_nb_points=max_nb_points,
+                    ax=ax,
+                    **style_kwds,
+                )
             return vdf.scatter(
                 columns=self.X,
                 catcol=catcol,
@@ -1211,7 +1231,11 @@ Main Class for Vertica Model
                 model_parameters["xlim"] = default_parameters["xlim"]
             else:
                 model_parameters["xlim"] = self.parameters["xlim"]
-        elif self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+        elif self.type in (
+            "RandomForestClassifier",
+            "RandomForestRegressor",
+            "IsolationForest",
+        ):
             if "n_estimators" in parameters:
                 check_types([("n_estimators", parameters["n_estimators"], [int])])
                 assert 0 <= parameters["n_estimators"] <= 1000, ParameterError(
@@ -1223,54 +1247,6 @@ Main Class for Vertica Model
                 model_parameters["n_estimators"] = default_parameters["n_estimators"]
             else:
                 model_parameters["n_estimators"] = self.parameters["n_estimators"]
-            if "max_features" in parameters:
-                check_types(
-                    [
-                        (
-                            "max_features",
-                            parameters["max_features"],
-                            [int, float, str],
-                            False,
-                        )
-                    ]
-                )
-                if isinstance(parameters["max_features"], str):
-                    assert str(parameters["max_features"]).lower() in [
-                        "max",
-                        "auto",
-                    ], ParameterError(
-                        "Incorrect parameter 'init'.\nThe maximum number of features "
-                        "to test must be in (max | auto) or an integer, found '{}'.".format(
-                            parameters["max_features"]
-                        )
-                    )
-                model_parameters["max_features"] = parameters["max_features"]
-            elif "max_features" not in self.parameters:
-                model_parameters["max_features"] = default_parameters["max_features"]
-            else:
-                model_parameters["max_features"] = self.parameters["max_features"]
-            if "max_leaf_nodes" in parameters:
-                check_types(
-                    [
-                        (
-                            "max_leaf_nodes",
-                            parameters["max_leaf_nodes"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
-                    "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
-                    "leaf nodes must be between 1 and 1e9, inclusive."
-                )
-                model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
-            elif "max_leaf_nodes" not in self.parameters:
-                model_parameters["max_leaf_nodes"] = default_parameters[
-                    "max_leaf_nodes"
-                ]
-            else:
-                model_parameters["max_leaf_nodes"] = self.parameters["max_leaf_nodes"]
             if "sample" in parameters:
                 check_types([("sample", parameters["sample"], [int, float])])
                 assert 0 <= parameters["sample"] <= 1, ParameterError(
@@ -1294,51 +1270,6 @@ Main Class for Vertica Model
                 model_parameters["max_depth"] = default_parameters["max_depth"]
             else:
                 model_parameters["max_depth"] = self.parameters["max_depth"]
-            if "min_samples_leaf" in parameters:
-                check_types(
-                    [
-                        (
-                            "min_samples_leaf",
-                            parameters["min_samples_leaf"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
-                    "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
-                    "of samples each branch must have after splitting a node must "
-                    "be between 1 and 1e6, inclusive."
-                )
-                model_parameters["min_samples_leaf"] = parameters["min_samples_leaf"]
-            elif "min_samples_leaf" not in self.parameters:
-                model_parameters["min_samples_leaf"] = default_parameters[
-                    "min_samples_leaf"
-                ]
-            else:
-                model_parameters["min_samples_leaf"] = self.parameters[
-                    "min_samples_leaf"
-                ]
-            if "min_info_gain" in parameters:
-                check_types(
-                    [
-                        (
-                            "min_info_gain",
-                            parameters["min_info_gain"],
-                            [int, float],
-                            False,
-                        )
-                    ]
-                )
-                assert 0 <= parameters["min_info_gain"] <= 1, ParameterError(
-                    "Incorrect parameter 'min_info_gain'.\nThe minimum threshold "
-                    "for including a split must be between 0.0 and 1.0, inclusive."
-                )
-                model_parameters["min_info_gain"] = parameters["min_info_gain"]
-            elif "min_info_gain" not in self.parameters:
-                model_parameters["min_info_gain"] = default_parameters["min_info_gain"]
-            else:
-                model_parameters["min_info_gain"] = self.parameters["min_info_gain"]
             if "nbins" in parameters:
                 check_types([("nbins", parameters["nbins"], [int, float])])
                 assert 2 <= parameters["nbins"] <= 1000, ParameterError(
@@ -1350,6 +1281,134 @@ Main Class for Vertica Model
                 model_parameters["nbins"] = default_parameters["nbins"]
             else:
                 model_parameters["nbins"] = self.parameters["nbins"]
+            if self.type in ("RandomForestClassifier", "RandomForestRegressor",):
+                if "max_features" in parameters:
+                    check_types(
+                        [
+                            (
+                                "max_features",
+                                parameters["max_features"],
+                                [int, float, str],
+                                False,
+                            )
+                        ]
+                    )
+                    if isinstance(parameters["max_features"], str):
+                        assert str(parameters["max_features"]).lower() in [
+                            "max",
+                            "auto",
+                        ], ParameterError(
+                            "Incorrect parameter 'init'.\nThe maximum number of features "
+                            "to test must be in (max | auto) or an integer, found '{}'.".format(
+                                parameters["max_features"]
+                            )
+                        )
+                    model_parameters["max_features"] = parameters["max_features"]
+                elif "max_features" not in self.parameters:
+                    model_parameters["max_features"] = default_parameters[
+                        "max_features"
+                    ]
+                else:
+                    model_parameters["max_features"] = self.parameters["max_features"]
+                if "max_leaf_nodes" in parameters:
+                    check_types(
+                        [
+                            (
+                                "max_leaf_nodes",
+                                parameters["max_leaf_nodes"],
+                                [int, float],
+                                False,
+                            )
+                        ]
+                    )
+                    assert 1 <= parameters["max_leaf_nodes"] <= 1e9, ParameterError(
+                        "Incorrect parameter 'max_leaf_nodes'.\nThe maximum number of "
+                        "leaf nodes must be between 1 and 1e9, inclusive."
+                    )
+                    model_parameters["max_leaf_nodes"] = parameters["max_leaf_nodes"]
+                elif "max_leaf_nodes" not in self.parameters:
+                    model_parameters["max_leaf_nodes"] = default_parameters[
+                        "max_leaf_nodes"
+                    ]
+                else:
+                    model_parameters["max_leaf_nodes"] = self.parameters[
+                        "max_leaf_nodes"
+                    ]
+                if "min_samples_leaf" in parameters:
+                    check_types(
+                        [
+                            (
+                                "min_samples_leaf",
+                                parameters["min_samples_leaf"],
+                                [int, float],
+                                False,
+                            )
+                        ]
+                    )
+                    assert 1 <= parameters["min_samples_leaf"] <= 1e6, ParameterError(
+                        "Incorrect parameter 'min_samples_leaf'.\nThe minimum number "
+                        "of samples each branch must have after splitting a node must "
+                        "be between 1 and 1e6, inclusive."
+                    )
+                    model_parameters["min_samples_leaf"] = parameters[
+                        "min_samples_leaf"
+                    ]
+                elif "min_samples_leaf" not in self.parameters:
+                    model_parameters["min_samples_leaf"] = default_parameters[
+                        "min_samples_leaf"
+                    ]
+                else:
+                    model_parameters["min_samples_leaf"] = self.parameters[
+                        "min_samples_leaf"
+                    ]
+                if "min_info_gain" in parameters:
+                    check_types(
+                        [
+                            (
+                                "min_info_gain",
+                                parameters["min_info_gain"],
+                                [int, float],
+                                False,
+                            )
+                        ]
+                    )
+                    assert 0 <= parameters["min_info_gain"] <= 1, ParameterError(
+                        "Incorrect parameter 'min_info_gain'.\nThe minimum threshold "
+                        "for including a split must be between 0.0 and 1.0, inclusive."
+                    )
+                    model_parameters["min_info_gain"] = parameters["min_info_gain"]
+                elif "min_info_gain" not in self.parameters:
+                    model_parameters["min_info_gain"] = default_parameters[
+                        "min_info_gain"
+                    ]
+                else:
+                    model_parameters["min_info_gain"] = self.parameters["min_info_gain"]
+            else:
+                if "col_sample_by_tree" in parameters:
+                    check_types(
+                        [
+                            (
+                                "col_sample_by_tree",
+                                parameters["col_sample_by_tree"],
+                                [int, float],
+                            )
+                        ]
+                    )
+                    assert 0 < parameters["col_sample_by_tree"] <= 1, ParameterError(
+                        "Incorrect parameter 'col_sample_by_tree'.\nThe parameter "
+                        "'col_sample_by_tree' must be between 0.0 and 1.0."
+                    )
+                    model_parameters["col_sample_by_tree"] = parameters[
+                        "col_sample_by_tree"
+                    ]
+                elif "col_sample_by_tree" not in self.parameters:
+                    model_parameters["col_sample_by_tree"] = default_parameters[
+                        "col_sample_by_tree"
+                    ]
+                else:
+                    model_parameters["col_sample_by_tree"] = self.parameters[
+                        "col_sample_by_tree"
+                    ]
         elif self.type in ("XGBoostClassifier", "XGBoostRegressor"):
             if "max_ntree" in parameters:
                 check_types([("max_ntree", parameters["max_ntree"], [int])])
@@ -2244,18 +2303,25 @@ Main Class for Vertica Model
             "XGBoostRegressor",
             "RandomForestClassifier",
             "RandomForestRegressor",
+            "IsolationForest",
         ):
-            if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+            if self.type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "IsolationForest",
+            ):
                 n = self.parameters["n_estimators"]
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
             trees = []
-            tree_type = (
-                "BinaryTreeRegressor"
-                if self.type in ("XGBoostRegressor", "RandomForestRegressor")
-                else "BinaryTreeClassifier"
-            )
+            if self.type in ("XGBoostRegressor", "RandomForestRegressor"):
+                tree_type = "BinaryTreeRegressor"
+            elif self.type in ("XGBoostClassifier", "RandomForestClassifier"):
+                tree_type = "BinaryTreeClassifier"
+            else:
+                tree_type = "BinaryTreeAnomaly"
             return_prob_rf = self.type == "RandomForestClassifier"
+            is_iforest = self.type == "IsolationForest"
             for i in range(n):
                 if ("return_tree" in kwds and kwds["return_tree"] == i) or (
                     "return_tree" not in kwds
@@ -2280,7 +2346,7 @@ Main Class for Vertica Model
                             )
                     if tree_type == "BinaryTreeClassifier":
                         tree_attributes["classes"] = self.classes_
-                    else:
+                    elif tree_type == "BinaryTreeRegressor":
                         tree_attributes["value"] = [
                             float(val) if isinstance(val, str) else val
                             for val in tree_attributes["value"]
@@ -2308,6 +2374,15 @@ Main Class for Vertica Model
                                     if p == 0.0:
                                         prob[idx2] = other_proba
                                 tree_attributes["value"][idx] = prob
+                    if tree_type == "BinaryTreeAnomaly":
+                        tree_attributes["psy"] = int(
+                            self.parameters["sample"]
+                            * int(
+                                self.get_attr("accepted_row_count")[
+                                    "accepted_row_count"
+                                ][0]
+                            )
+                        )
                     model = memModel(model_type=tree_type, attributes=tree_attributes)
                     if "return_tree" in kwds and kwds["return_tree"] == i:
                         return model
@@ -2572,9 +2647,14 @@ Main Class for Vertica Model
             "RandomForestRegressor",
             "XGBoostRegressor",
             "XGBoostClassifier",
+            "IsolationForest",
         ):
             result = []
-            if self.type in ("RandomForestClassifier", "RandomForestRegressor"):
+            if self.type in (
+                "RandomForestClassifier",
+                "RandomForestRegressor",
+                "IsolationForest",
+            ):
                 n = self.parameters["n_estimators"]
             else:
                 n = self.get_attr("tree_count")["tree_count"][0]
@@ -2589,10 +2669,27 @@ Main Class for Vertica Model
                 func += "\ttree_list += [{}]\n".format(
                     get_tree_list_of_arrays(tree, self.X, self.type)
                 )
+            if self.type == "IsolationForest":
+                func += "\tdef heuristic_length(i):\n"
+                func += "\t\tGAMMA = 0.5772156649\n"
+                func += "\t\tif i == 2:\n"
+                func += "\t\t\treturn 1\n"
+                func += "\t\telif i > 2:\n"
+                func += "\t\t\treturn 2 * (np.log(i - 1) + GAMMA) - 2 * (i - 1) / i\n"
+                func += "\t\telse:\n"
+                func += "\t\t\treturn 0\n"
             func += "\tdef predict_tree(tree, node_id, X):\n"
             func += "\t\tif tree[0][node_id] == tree[1][node_id]:\n"
-            if self.type in ("RandomForestRegressor", "XGBoostRegressor"):
+            if self.type in ("RandomForestRegressor", "XGBoostRegressor",):
                 func += "\t\t\treturn float(tree[4][node_id])\n"
+            elif self.type == "IsolationForest":
+                psy = int(
+                    self.parameters["sample"]
+                    * int(self.get_attr("accepted_row_count")["accepted_row_count"][0])
+                )
+                func += "\t\t\treturn (tree[4][node_id][0] + heuristic_length(tree[4][node_id][1])) / heuristic_length({})\n".format(
+                    psy
+                )
             elif self.type == "RandomForestClassifier":
                 func += "\t\t\treturn tree[4][node_id]\n"
             else:
@@ -2636,6 +2733,8 @@ Main Class for Vertica Model
                     func += "all_classes_score]\n"
             elif self.type == "RandomForestRegressor":
                 func += "\t\treturn np.mean(result)\n"
+            elif self.type == "IsolationForest":
+                func += "\t\treturn 2 ** ( - np.mean(result))\n"
             else:
                 func += "\t\tfor elem in result:\n"
                 func += "\t\t\tif elem in all_classes_score:\n"
@@ -4030,7 +4129,7 @@ class MulticlassClassifier(Classifier):
         self,
         method: str = "accuracy",
         pos_label: Union[int, float, str] = None,
-        cutoff: float = -1,
+        cutoff: float = 0.5,
         nbins: int = 10000,
     ):
         """
@@ -4044,8 +4143,6 @@ class MulticlassClassifier(Classifier):
 		considered as negative for multiclass classification.
 	cutoff: float, optional
 		Cutoff for which the tested category will be accepted as a prediction.
-		If the parameter is not between 0 and 1, an automatic cutoff is 
-		computed.
 	method: str, optional
 		The method to use to compute the score.
 			accuracy	: Accuracy
@@ -4091,8 +4188,6 @@ class MulticlassClassifier(Classifier):
             raise ParameterError(
                 "'pos_label' must be one of the response column classes"
             )
-        elif (cutoff >= 1 or cutoff <= 0) and (method != "accuracy"):
-            cutoff = self.score("best_cutoff", pos_label, 0.5)
         if self.type == "NearestCentroid":
             deploySQL_str = self.deploySQL(allSQL=True)[
                 get_match_index(pos_label, self.classes_, False)
@@ -4570,7 +4665,7 @@ class Unsupervised(vModel):
         else:
             does_model_exist(name=self.name, raise_error=True)
         id_column, id_column_name = "", gen_tmp_name(name="id_column")
-        if self.type in ("BisectingKMeans",) and isinstance(
+        if self.type in ("BisectingKMeans", "IsolationForest") and isinstance(
             verticapy.options["random_state"], int
         ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
@@ -4672,6 +4767,12 @@ class Unsupervised(vModel):
             verticapy.options["random_state"], int
         ):
             query += ", kmeans_seed={}, id_column='{}'".format(
+                verticapy.options["random_state"], id_column_name
+            )
+        elif self.type == "IsolationForest" and isinstance(
+            verticapy.options["random_state"], int
+        ):
+            query += ", seed={}, id_column='{}'".format(
                 verticapy.options["random_state"], id_column_name
             )
         query += ")"

@@ -81,6 +81,7 @@ list
     all_connections = confparser.sections()
     return all_connections
 
+
 available_auto_connection = available_connections
 # ---#
 def change_auto_connection(name: str):
@@ -342,6 +343,7 @@ overwrite: bool, optional
         change_auto_connection(name)
 
     connect(name, path)
+
 
 new_auto_connection = new_connection
 # ---#

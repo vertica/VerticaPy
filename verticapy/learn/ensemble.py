@@ -417,6 +417,54 @@ class XGBoost_utils:
 
 
 # ---#
+class IsolationForest(Clustering, Tree):
+    """
+---------------------------------------------------------------------------
+Creates an IsolationForest object using the Vertica IFOREST algorithm.
+
+Parameters
+----------
+name: str
+    Name of the the model. The model is stored in the DB.
+n_estimators: int, optional
+    The number of trees in the forest, an integer between 1 and 1000, inclusive.
+max_depth: int, optional
+    Maximum depth of each tree, an integer between 1 and 100, inclusive.
+nbins: int, optional
+    Number of bins used for finding splits in each column. A larger number 
+    of splits leads to a longer runtime but results in more fine-grained and 
+    possibly better splits, an integer between 2 and 1000, inclusive.
+sample: float, optional
+    The portion of the input data set that is randomly selected for training each tree, 
+    a float between 0.0 and 1.0, inclusive. 
+col_sample_by_tree: float, optional
+    Float in the range (0,1] that specifies the fraction of columns (features), 
+    which are chosen at random, used when building each tree.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        n_estimators: int = 100,
+        max_depth: int = 10,
+        nbins: int = 32,
+        sample: float = 0.632,
+        col_sample_by_tree: float = 1.0,
+    ):
+        version(condition=[12, 0, 0])
+        check_types([("name", name, [str], False)])
+        self.type, self.name = "IsolationForest", name
+        params = {
+            "n_estimators": n_estimators,
+            "max_depth": max_depth,
+            "nbins": nbins,
+            "sample": sample,
+            "col_sample_by_tree": col_sample_by_tree,
+        }
+        self.set_params(params)
+
+
+# ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
     """
 ---------------------------------------------------------------------------
@@ -424,12 +472,13 @@ Creates a RandomForestClassifier object using the Vertica RF_CLASSIFIER
 function. It is one of the ensemble learning methods for classification 
 that operates by constructing a multitude of decision trees at 
 training-time and outputting a class with the mode.
+
 Parameters
 ----------
 name: str
   Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
   The number of randomly chosen features from which to pick the best feature 
   to split on a given tree node. It can be an integer or one of the two following
@@ -493,12 +542,13 @@ Creates a RandomForestRegressor object using the Vertica RF_REGRESSOR
 function. It is one of the ensemble learning methods for regression that 
 operates by constructing a multitude of decision trees at training-time 
 and outputting a class with the mode.
+
 Parameters
 ----------
 name: str
   Name of the the model. The model will be stored in the DB.
 n_estimators: int, optional
-  The number of trees in the forest, an integer between 0 and 1000, inclusive.
+  The number of trees in the forest, an integer between 1 and 1000, inclusive.
 max_features: int/str, optional
   The number of randomly chosen features from which to pick the best feature 
   to split on a given tree node. It can be an integer or one of the two following
@@ -560,6 +610,7 @@ class XGBoostClassifier(MulticlassClassifier, Tree, XGBoost_utils):
 ---------------------------------------------------------------------------
 Creates an XGBoostClassifier object using the Vertica XGB_CLASSIFIER 
 algorithm.
+
 Parameters
 ----------
 name: str
@@ -567,11 +618,11 @@ name: str
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
-    Maximum depth of each tree.
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
 nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
-    better splits.
+    better splits, an integer between 2 and 1000, inclusive.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
@@ -644,6 +695,7 @@ class XGBoostRegressor(Regressor, Tree, XGBoost_utils):
 ---------------------------------------------------------------------------
 Creates an XGBoostRegressor object using the Vertica XGB_REGRESSOR 
 algorithm.
+
 Parameters
 ----------
 name: str
@@ -651,11 +703,11 @@ name: str
 max_ntree: int, optional
     Maximum number of trees that will be created.
 max_depth: int, optional
-    Maximum depth of each tree.
+    Maximum depth of each tree, an integer between 1 and 20, inclusive.
 nbins: int, optional
     Number of bins to use for finding splits in each column, more 
     splits leads to longer runtime but more fine-grained and possibly 
-    better splits.
+    better splits, an integer between 2 and 1000, inclusive.
 split_proposal_method: str, optional
     approximate splitting strategy. Can be 'global' or 'local'
     (not yet supported)
