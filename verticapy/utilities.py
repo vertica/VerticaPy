@@ -56,6 +56,7 @@ from typing import Union
 import vertica_python
 import verticapy
 from verticapy.toolbox import *
+from verticapy.javascript import datatables_repr
 from verticapy.errors import *
 
 # Other Modules
@@ -1649,6 +1650,9 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
+        interactive     :bool
+            If set to True, verticaPy outputs will be displayed 
+            on interactive tables. 
         count_on       : bool
             If set to True, the total number of rows in vDataFrames and tablesamples is  
             computed and displayed in the footer (if footer_on is True).
@@ -1699,6 +1703,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "cache",
                     "colors",
                     "color_style",
+                    "interactive",
                     "count_on",
                     "footer_on",
                     "max_columns",
@@ -1750,6 +1755,10 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         )
         if isinstance(value, str):
             verticapy.options["color_style"] = value
+    elif option == "interactive":
+        check_types([("value", value, [bool])])
+        if isinstance(value, bool):
+            verticapy.options["interactive"] = value
     elif option == "max_columns":
         check_types([("value", value, [int, float])])
         if value > 0:
@@ -1875,7 +1884,7 @@ The tablesample attributes are the same than the parameters.
         return self.values[key]
 
     # ---#
-    def _repr_html_(self):
+    def _repr_html_(self, interactive=False):
         if len(self.values) == 0:
             return ""
         n = len(self.values)
@@ -1903,15 +1912,25 @@ The tablesample attributes are the same than the parameters.
             if elem not in percent and (elem != "index"):
                 percent = {}
                 break
-        formatted_text = print_table(
-            data_columns,
-            is_finished=(self.count <= len(data_columns[0]) + self.offset),
-            offset=self.offset,
-            repeat_first_column=("index" in self.values),
-            return_html=True,
-            dtype=dtype,
-            percent=percent,
-        )
+        formatted_text = ""
+        # get interactive table if condition true
+        if verticapy.options["interactive"] or interactive:
+            formatted_text = datatables_repr(
+                data_columns,
+                repeat_first_column=("index" in self.values),
+                offset=self.offset,
+                dtype=dtype,
+            )
+        else:
+            formatted_text = print_table(
+                data_columns,
+                is_finished=(self.count <= len(data_columns[0]) + self.offset),
+                offset=self.offset,
+                repeat_first_column=("index" in self.values),
+                return_html=True,
+                dtype=dtype,
+                percent=percent,
+            )
         if verticapy.options["footer_on"]:
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
             if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
@@ -2499,3 +2518,7 @@ list
                 )
             )
     return result
+
+def init_interactive_mode(all_interactive=False):
+    """Activate the datatables representation for all the vDataFrames."""
+    set_option("interactive", all_interactive)

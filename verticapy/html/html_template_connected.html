@@ -1,0 +1,56 @@
+<table id="table_id"><thead><tr><th>A</th></tr></thead></table>
+<style></style>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+<script type="module">
+    // Import jquery and DataTable
+    import 'https://code.jquery.com/jquery-3.6.0.min.js';
+    import dt from 'https://cdn.datatables.net/1.12.1/js/jquery.dataTables.mjs';
+    dt($);
+
+    // Define the table data
+    const data = [];
+
+    // Define the dt_args
+    let dt_args = {
+            scrollY: 300,
+            scrollX: true,
+            scrollCollapse: true,
+            columnDefs: [
+                {
+                    "targets": '_all',
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        if ( cellData == "[null]" ) {
+                            $(td).css({'background-color': '#EEEEEE', 'color': '#999999'});
+                        }
+                    }
+                }
+            ]
+        };
+    dt_args["data"] = data;
+
+    var observer = window.ResizeObserver ? new ResizeObserver(function (entries) {
+        entries.forEach(function (entry) {
+            $(entry.target).DataTable().columns.adjust().draw();
+            });
+        }) : null;
+
+    // Function to add a datatable to the ResizeObserver entries array
+    var resizeHandler = function ($table) {
+        if (observer)
+            observer.observe($table[0]);
+    };
+
+    let resizeObserver = new ResizeObserver(() => {
+            console.log("The element was resized");
+            table.columns.adjust();
+        });
+    var table = {}
+
+    $(document).ready(function () {
+        // [pre-dt-code]
+        table = $('#table_id').DataTable(dt_args);
+        resizeObserver.observe($('#table_id')[0]);
+        
+        
+    });
+</script>
