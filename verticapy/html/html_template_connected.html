@@ -14,7 +14,17 @@
     let dt_args = {
             scrollY: 300,
             scrollX: true,
-            scrollCollapse: true
+            scrollCollapse: true,
+            columnDefs: [
+                {
+                    "targets": '_all',
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        if ( cellData == "[null]" ) {
+                            $(td).css({'background-color': '#EEEEEE', 'color': '#999999'});
+                        }
+                    }
+                }
+            ]
         };
     dt_args["data"] = data;
 
@@ -39,13 +49,6 @@
     $(document).ready(function () {
         // [pre-dt-code]
         table = $('#table_id').DataTable(dt_args);
-        var cell = $('#table_id td');
-        cell.each(function() {
-            var cell_value = $(this).html();
-            if(cell_value == '[null]') {
-                $(this).css({'background-color': '#EEEEEE', 'color': '#999999'});
-            }
-        });
         resizeObserver.observe($('#table_id')[0]);
         
         

@@ -20,6 +20,7 @@ tr td:nth-child(1) {
 
 tr td:nth-child(n+2) {
     border: 1px solid #DDDDDD;
+    max-width: 240px;
 }
 
 thead input {

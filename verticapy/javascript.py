@@ -111,17 +111,26 @@ def clean_data(data):
             if j == 0:
                 data[i][j] = f"<b>{data[i][j]}</b>"
                 continue
-            val = data[i][j]
-            if isinstance(val, bool):
-                val = (
-                            "<center>&#9989;</center>"
-                            if (val)
-                            else "<center>&#10060;</center>"
-                        )
-                data[i][j] = val
-                continue
-            if val == None:
-                data[i][j] = '[null]'
+            else:
+                val = data[i][j]
+                if isinstance(val, bool) is False and val != None:
+                    data[i][j] = ('<div style="background-color: transparent; '
+                                  'border: none; text-align: center; width: 100%;' 
+                                  'scrollbar-width: none; overflow-x: scroll; white-space: nowrap;">'
+                                  '{0}</div>').format(val)
+                    continue
+                
+                if isinstance(val, bool):
+                    val = (
+                                "<center>&#9989;</center>"
+                                if (val)
+                                else "<center>&#10060;</center>"
+                            )
+                    data[i][j] = val
+                    continue
+                if val == None:
+                    data[i][j] = '[null]'
+            
     return data
 
 # ---#
@@ -158,7 +167,7 @@ def datatables_repr(
         '<table id="table_id"><thead><tr><th>A</th></tr></thead></table>',
         table_header
     )
-    output = replace_value(output, "#table_id", f"#{tableId}", 3)
+    output = replace_value(output, "#table_id", f"#{tableId}", 2)
     output = replace_value(
         output,
         "<style></style>",
