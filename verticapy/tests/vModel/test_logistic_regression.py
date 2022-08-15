@@ -282,6 +282,7 @@ class TestLogisticRegression:
             "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
+            "fit_intercept": True,
         }
 
     def test_prc_curve(self, model):

@@ -4673,7 +4673,7 @@ class Unsupervised(vModel):
             verticapy.options["random_state"], int
         ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
-                ", ".join(X), id_column_name
+                ", ".join([quote_ident(column) for column in X]), id_column_name
             )
         if isinstance(input_relation, str) and self.type == "MCA":
             input_relation = vDataFrameSQL(input_relation)

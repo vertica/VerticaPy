@@ -163,6 +163,7 @@ class TestElasticNet:
             "l1_ratio": 0.5,
             "C": 1,
             "tol": 1e-6,
+            "fit_intercept": True,
         }
 
     def test_get_plot(self, winequality_vd):
