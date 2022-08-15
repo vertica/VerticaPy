@@ -80,7 +80,7 @@ class TestIsolationForest:
             titanic_vd, ["age", "fare"],
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 38
+        assert len(result.get_default_bbox_extra_artists()) == 36
         model_test.drop()
 
     def test_deploySQL(self, model):
@@ -200,7 +200,7 @@ class TestIsolationForest:
             name="anomaly",
         )
 
-        assert iforest_data_copy["anomaly"].mean() == pytest.approx(0.519300017817853, abs=1e-6)
+        assert iforest_data_copy["anomaly"].mean() == pytest.approx(0.516816506833607, abs=1e-6)
 
     def test_set_params(self, model):
         model.set_params({"n_estimators": 666})
@@ -238,10 +238,8 @@ class TestIsolationForest:
 
         assert tree_0["leaf_path_length"] == [
             None,
+            '1.000000',
             None,
-            None,
-            '2.000000',
-            '2.000000',
             '2.000000',
             None,
             '3.000000',

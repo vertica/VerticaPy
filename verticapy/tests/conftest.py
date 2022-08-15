@@ -54,7 +54,10 @@ def get_version():
     )
     result = verticapy.version()
     base_class.tearDown()
-    delete_conn_file()
+    try:
+        delete_conn_file()
+    except:
+        pass
     return result
 
 
@@ -69,5 +72,8 @@ def base():
     )
     yield base_class
     base_class.tearDown()
-    delete_conn_file()
+    try:
+        delete_conn_file()
+    except:
+        pass
     verticapy.close_connection()

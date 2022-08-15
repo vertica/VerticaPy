@@ -2739,7 +2739,7 @@ attributes: dict
             "XGBoostRegressor",
             "IsolationForest",
         ):
-            result = [tree.predict_sql(X) for tree in self.attributes_["trees"]]
+            result = [str(tree.predict_sql(X)) for tree in self.attributes_["trees"]]
             if self.model_type_ in ("RandomForestRegressor", "IsolationForest"):
                 result = "(" + " + ".join(result) + ") / {}".format(len(result))
                 if self.model_type_ == "IsolationForest":

@@ -75,6 +75,7 @@ class TestPipeline:
     def test_get_params(self, model):
         assert model.get_params() == {
             "LinearRegressionWine": {
+                'fit_intercept': True,
                 "max_iter": 100,
                 "penalty": "none",
                 "solver": "newton",
