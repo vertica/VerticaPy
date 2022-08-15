@@ -1650,15 +1650,15 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             "rgb", "sunset", "retro", "shimbg", "swamp", "med", "orchid", 
             "magenta", "orange", "vintage", "vivid", "berries", "refreshing", 
             "summer", "tropical", "india", "default".
-        interactive     :bool
-            If set to True, verticaPy outputs will be displayed 
-            on interactive tables. 
         count_on       : bool
             If set to True, the total number of rows in vDataFrames and tablesamples is  
             computed and displayed in the footer (if footer_on is True).
         footer_on      : bool
             If set to True, vDataFrames and tablesamples show a footer that includes information 
             about the displayed rows and columns.
+        interactive    : bool
+            If set to True, verticaPy outputs will be displayed 
+            on interactive tables. 
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
@@ -1755,10 +1755,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         )
         if isinstance(value, str):
             verticapy.options["color_style"] = value
-    elif option == "interactive":
-        check_types([("value", value, [bool])])
-        if isinstance(value, bool):
-            verticapy.options["interactive"] = value
     elif option == "max_columns":
         check_types([("value", value, [int, float])])
         if value > 0:
@@ -1779,7 +1775,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             verticapy.options["random_state"] = int(value)
         elif value == None:
             verticapy.options["random_state"] = None
-    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar"):
+    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar", "interactive"):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options[option] = value

@@ -2809,7 +2809,9 @@ attributes: dict
                     self.model_type_
                 )
             )
-        return result.replace("\xa0", " ")
+        if isinstance(result, str):
+            result = result.replace("\xa0", " ")
+        return result
 
     # ---#
     def predict_proba(self, X: list) -> np.ndarray:

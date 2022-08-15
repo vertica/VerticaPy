@@ -6399,22 +6399,23 @@ vColumns : vColumn
         if isinstance(expr, str):
             expr = [expr]
         check_types([("columns", columns, [list]), ("expr", expr, [list])])
+        columns_copy = [column for column in columns]
         for i in range(len(columns)):
             column = self.format_colnames([columns[i]])
             if column:
-                columns[i] = column[0]
+                columns_copy[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
-            ", ".join([str(elem) for elem in columns] + [str(elem) for elem in expr]),
+            ", ".join([str(elem) for elem in columns_copy] + [str(elem) for elem in expr]),
             self.__genSQL__(),
             ", ".join(
-                [str(i + 1) for i in range(len([str(elem) for elem in columns]))]
+                [str(i + 1) for i in range(len([str(elem) for elem in columns_copy]))]
             ),
         )
         return self.__vDataFrameSQL__(
             relation,
             "groupby",
             "[Groupby]: The columns were grouped by {}".format(
-                ", ".join([str(elem) for elem in columns])
+                ", ".join([str(elem) for elem in columns_copy])
             ),
         )
 
