@@ -562,6 +562,12 @@ list of tuples
 
 
 # ---#
+def init_interactive_mode(all_interactive=False):
+    """Activate the datatables representation for all the vDataFrames."""
+    set_option("interactive", all_interactive)
+
+
+# ---#
 def insert_into(
     table_name: str,
     data: list,
@@ -1775,7 +1781,18 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             verticapy.options["random_state"] = int(value)
         elif value == None:
             verticapy.options["random_state"] = None
-    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar", "interactive"):
+    elif option in (
+        "print_info",
+        "sql_on",
+        "time_on",
+        "count_on",
+        "cache",
+        "footer_on",
+        "tqdm",
+        "overwrite_model",
+        "percent_bar",
+        "interactive",
+    ):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options[option] = value
@@ -1939,7 +1956,9 @@ The tablesample attributes are the same than the parameters.
                     )
                 else:
                     rows = "{}-{}{}".format(
-                        start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                        start,
+                        end,
+                        " of {}".format(self.count) if (self.count > 0) else "",
                     )
             if len(self.values) == 1:
                 column = list(self.values.keys())[0]
@@ -1955,7 +1974,9 @@ The tablesample attributes are the same than the parameters.
                 if self.offset > self.count:
                     formatted_text += "<b>Columns:</b> {}".format(n)
                 else:
-                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(
+                        rows, n
+                    )
             formatted_text += "</div>"
         return formatted_text
 
@@ -2514,7 +2535,3 @@ list
                 )
             )
     return result
-
-def init_interactive_mode(all_interactive=False):
-    """Activate the datatables representation for all the vDataFrames."""
-    set_option("interactive", all_interactive)

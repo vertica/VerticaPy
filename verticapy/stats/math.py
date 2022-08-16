@@ -1017,6 +1017,7 @@ str_sql
     expr = format_magic(expr)
     return str_sql("ATAN({})".format(expr), "float")
 
+
 # ---#
 def atan2(quotient, divisor):
     """

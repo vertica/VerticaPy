@@ -104,9 +104,11 @@ fit_intercept: bool, optional
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not(fit_intercept):
-            raise ParameterError("The parameter fit_intercept is only available for Vertica "
-                                 "versions greater or equal to 12.")
+        if version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
         self.set_params(
             {
                 "penalty": "enet",
@@ -164,9 +166,11 @@ fit_intercept: bool, optional
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not(fit_intercept):
-            raise ParameterError("The parameter fit_intercept is only available for Vertica "
-                                 "versions greater or equal to 12.")
+        if version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
         self.set_params(
             {
                 "penalty": "l1",
@@ -211,16 +215,27 @@ fit_intercept: bool, optional
 	"""
 
     def __init__(
-        self, name: str, tol: float = 1e-6, max_iter: int = 100, solver: str = "Newton", fit_intercept: bool = True,
+        self,
+        name: str,
+        tol: float = 1e-6,
+        max_iter: int = 100,
+        solver: str = "Newton",
+        fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
         check_types(
-            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"]), ("fit_intercept", fit_intercept, [bool])]
+            [
+                ("name", name, [str]),
+                ("solver", solver.lower(), ["newton", "bfgs"]),
+                ("fit_intercept", fit_intercept, [bool]),
+            ]
         )
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not(fit_intercept):
-            raise ParameterError("The parameter fit_intercept is only available for Vertica "
-                                 "versions greater or equal to 12.")
+        if version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
         self.set_params(
             {
                 "penalty": "none",
@@ -288,9 +303,11 @@ fit_intercept: bool, optional
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LogisticRegression", name
-        if version()[0] < 12 and not(fit_intercept):
-            raise ParameterError("The parameter fit_intercept is only available for Vertica "
-                                 "versions greater or equal to 12.")
+        if version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
         self.set_params(
             {
                 "penalty": str(penalty).lower(),
@@ -356,12 +373,18 @@ fit_intercept: bool, optional
     ):
         version(condition=[8, 0, 0])
         check_types(
-            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"]), ("fit_intercept", fit_intercept, [bool])]
+            [
+                ("name", name, [str]),
+                ("solver", solver.lower(), ["newton", "bfgs"]),
+                ("fit_intercept", fit_intercept, [bool]),
+            ]
         )
         self.type, self.name = "LinearRegression", name
-        if version()[0] < 12 and not(fit_intercept):
-            raise ParameterError("The parameter fit_intercept is only available for Vertica "
-                                 "versions greater or equal to 12.")
+        if version()[0] < 12 and not (fit_intercept):
+            raise ParameterError(
+                "The parameter fit_intercept is only available for Vertica "
+                "versions greater or equal to 12."
+            )
         self.set_params(
             {
                 "penalty": "l2",
