@@ -84,6 +84,11 @@ solver: str, optional
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 
     regularization to provide.
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
 	"""
 
     def __init__(
@@ -94,10 +99,14 @@ l1_ratio: float, optional
         max_iter: int = 100,
         solver: str = "CGD",
         l1_ratio: float = 0.5,
+        fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
-        check_types([("name", name, [str])])
+        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
+        if version()[0] < 12 and not(fit_intercept):
+            raise ParameterError("The parameter fit_intercept is only available for Vertica "
+                                 "versions greater or equal to 12.")
         self.set_params(
             {
                 "penalty": "enet",
@@ -106,6 +115,7 @@ l1_ratio: float, optional
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
                 "l1_ratio": l1_ratio,
+                "fit_intercept": fit_intercept,
             }
         )
 
@@ -135,6 +145,11 @@ solver: str, optional
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
 		CGD    : Coordinate Gradient Descent
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
 	"""
 
     def __init__(
@@ -144,10 +159,14 @@ solver: str, optional
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "CGD",
+        fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
-        check_types([("name", name, [str])])
+        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
+        if version()[0] < 12 and not(fit_intercept):
+            raise ParameterError("The parameter fit_intercept is only available for Vertica "
+                                 "versions greater or equal to 12.")
         self.set_params(
             {
                 "penalty": "l1",
@@ -155,6 +174,7 @@ solver: str, optional
                 "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
+                "fit_intercept": fit_intercept,
             }
         )
         for elem in ["l1_ratio"]:
@@ -183,22 +203,31 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
 	"""
 
     def __init__(
-        self, name: str, tol: float = 1e-6, max_iter: int = 100, solver: str = "Newton"
+        self, name: str, tol: float = 1e-6, max_iter: int = 100, solver: str = "Newton", fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
         check_types(
-            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"])]
+            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"]), ("fit_intercept", fit_intercept, [bool])]
         )
         self.type, self.name = "LinearRegression", name
+        if version()[0] < 12 and not(fit_intercept):
+            raise ParameterError("The parameter fit_intercept is only available for Vertica "
+                                 "versions greater or equal to 12.")
         self.set_params(
             {
                 "penalty": "none",
                 "tol": tol,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
+                "fit_intercept": fit_intercept,
             }
         )
         for elem in ["l1_ratio", "C"]:
@@ -238,6 +267,11 @@ solver: str, optional
 l1_ratio: float, optional
 	ENet mixture parameter that defines how much L1 versus L2 regularization 
 	to provide.
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
 	"""
 
     def __init__(
@@ -249,10 +283,14 @@ l1_ratio: float, optional
         max_iter: int = 100,
         solver: str = "Newton",
         l1_ratio: float = 0.5,
+        fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
-        check_types([("name", name, [str])])
+        check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LogisticRegression", name
+        if version()[0] < 12 and not(fit_intercept):
+            raise ParameterError("The parameter fit_intercept is only available for Vertica "
+                                 "versions greater or equal to 12.")
         self.set_params(
             {
                 "penalty": str(penalty).lower(),
@@ -261,6 +299,7 @@ l1_ratio: float, optional
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
                 "l1_ratio": l1_ratio,
+                "fit_intercept": fit_intercept,
             }
         )
         if penalty.lower() == "none":
@@ -299,6 +338,11 @@ solver: str, optional
 	The optimizer method to use to train the model. 
 		Newton : Newton Method
 		BFGS   : Broyden Fletcher Goldfarb Shanno
+fit_intercept: bool, optional
+    Boolean, specifies whether the model includes an intercept. 
+    By setting to false, no intercept will be used in training the model. 
+    Note that setting fit_intercept to false does not work well with the 
+    BFGS optimizer.
 	"""
 
     def __init__(
@@ -308,12 +352,16 @@ solver: str, optional
         C: float = 1.0,
         max_iter: int = 100,
         solver: str = "Newton",
+        fit_intercept: bool = True,
     ):
         version(condition=[8, 0, 0])
         check_types(
-            [("name", name, [str], ("solver", solver.lower(), ["newton", "bfgs"]))]
+            [("name", name, [str]), ("solver", solver.lower(), ["newton", "bfgs"]), ("fit_intercept", fit_intercept, [bool])]
         )
         self.type, self.name = "LinearRegression", name
+        if version()[0] < 12 and not(fit_intercept):
+            raise ParameterError("The parameter fit_intercept is only available for Vertica "
+                                 "versions greater or equal to 12.")
         self.set_params(
             {
                 "penalty": "l2",
@@ -321,6 +369,7 @@ solver: str, optional
                 "C": C,
                 "max_iter": max_iter,
                 "solver": str(solver).lower(),
+                "fit_intercept": fit_intercept,
             }
         )
         for elem in ["l1_ratio"]:

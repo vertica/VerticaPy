@@ -165,6 +165,7 @@ class TestRidge:
             "max_iter": 100,
             "C": 1.0,
             "tol": 1e-06,
+            "fit_intercept": True,
         }
 
     def test_get_plot(self, winequality_vd):

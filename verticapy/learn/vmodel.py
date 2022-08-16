@@ -916,6 +916,10 @@ Main Class for Vertica Model
         model_parameters = {}
         default_parameters = get_model_init_params(self.type)
         if self.type in ("LinearRegression", "LogisticRegression", "SARIMAX", "VAR"):
+            if "fit_intercept" in parameters:
+                check_types([("fit_intercept", parameters["fit_intercept"], [bool])])
+                if version()[0] >= 12:
+                    model_parameters["fit_intercept"] = parameters["fit_intercept"]
             if "solver" in parameters:
                 check_types([("solver", parameters["solver"], [str])])
                 assert str(parameters["solver"]).lower() in [
@@ -4669,7 +4673,7 @@ class Unsupervised(vModel):
             verticapy.options["random_state"], int
         ):
             id_column = ", ROW_NUMBER() OVER (ORDER BY {0}) AS {1}".format(
-                ", ".join(X), id_column_name
+                ", ".join([quote_ident(column) for column in X]), id_column_name
             )
         if isinstance(input_relation, str) and self.type == "MCA":
             input_relation = vDataFrameSQL(input_relation)
