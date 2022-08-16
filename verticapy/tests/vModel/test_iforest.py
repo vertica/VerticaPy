@@ -31,6 +31,7 @@ from verticapy.learn.ensemble import IsolationForest
 set_option("print_info", False)
 set_option("random_state", 1)
 
+
 @pytest.fixture(scope="module")
 def iforest_data_vd():
     iforest_data = load_dataset_reg(table_name="iforest_data", schema="public")
@@ -49,7 +50,7 @@ def model(iforest_data_vd):
         col_sample_by_tree=0.8,
     )
     model_class.drop()
-    X = ['Gender', 'owned cars', 'cost', 'income', 'TransPortation']
+    X = ["Gender", "owned cars", "cost", "income", "TransPortation"]
     model_class.fit("public.iforest_data", X)
 
     yield model_class
@@ -62,13 +63,13 @@ def titanic_vd():
     yield titanic
     drop(name="public.titanic",)
 
+
 @pytest.mark.skipif(
-    get_version()[0] < 12,
-    reason="requires vertica 12.0 or higher",
+    get_version()[0] < 12, reason="requires vertica 12.0 or higher",
 )
 class TestIsolationForest:
     def test_repr(self, model):
-        assert "SELECT iforest(\'public.iforest_model_test\'," in model.__repr__()
+        assert "SELECT iforest('public.iforest_model_test'," in model.__repr__()
         model_repr = IsolationForest("iF_repr")
         model_repr.drop()
         assert model_repr.__repr__() == "<IsolationForest>"
@@ -84,10 +85,12 @@ class TestIsolationForest:
         model_test.drop()
 
     def test_deploySQL(self, model):
-        expected_sql = ('(APPLY_IFOREST("Gender", "owned cars", "cost", '
-                        '"income", "TransPortation" USING PARAMETERS '
-                        'model_name = \'iforest_model_test\', match_by_pos '
-                        '= \'true\')).anomaly_score')
+        expected_sql = (
+            '(APPLY_IFOREST("Gender", "owned cars", "cost", '
+            '"income", "TransPortation" USING PARAMETERS '
+            "model_name = 'iforest_model_test', match_by_pos "
+            "= 'true')).anomaly_score"
+        )
         result_sql = model.deploySQL()
 
         assert result_sql == expected_sql
@@ -132,7 +135,13 @@ class TestIsolationForest:
 
         m_att_details = model.get_attr(attr_name="details")
 
-        assert m_att_details["predictor"] == ["gender", "owned cars", "cost", "income", "transportation"]
+        assert m_att_details["predictor"] == [
+            "gender",
+            "owned cars",
+            "cost",
+            "income",
+            "transportation",
+        ]
         assert m_att_details["type"] == [
             "char or varchar",
             "int",
@@ -144,16 +153,19 @@ class TestIsolationForest:
         assert model.get_attr("tree_count")["tree_count"][0] == 100
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 10
-        assert "SELECT iforest(\'public.iforest_model_test\'," in model.get_attr("call_string")["call_string"][0]
+        assert (
+            "SELECT iforest('public.iforest_model_test',"
+            in model.get_attr("call_string")["call_string"][0]
+        )
 
     def test_get_params(self, model):
         assert model.get_params() == {
-                'n_estimators': 100,
-                'sample': 0.632,
-                'max_depth': 10,
-                'nbins': 32,
-                'col_sample_by_tree': 0.8
-            }
+            "n_estimators": 100,
+            "sample": 0.632,
+            "max_depth": 10,
+            "nbins": 32,
+            "col_sample_by_tree": 0.8,
+        }
 
     def test_to_python(self, model):
         current_cursor().execute(
@@ -163,7 +175,8 @@ class TestIsolationForest:
         )
         prediction = current_cursor().fetchone()[0]
         assert prediction == pytest.approx(
-            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low", 1]])[0], 10e-2
+            model.to_python(return_str=False)([["Male", 0, "Cheap", "Low", 1]])[0],
+            10e-2,
         )
 
     def test_to_sql(self, model):
@@ -200,7 +213,9 @@ class TestIsolationForest:
             name="anomaly",
         )
 
-        assert iforest_data_copy["anomaly"].mean() == pytest.approx(0.516816506833607, abs=1e-6)
+        assert iforest_data_copy["anomaly"].mean() == pytest.approx(
+            0.516816506833607, abs=1e-6
+        )
 
     def test_set_params(self, model):
         model.set_params({"n_estimators": 666})
@@ -238,12 +253,12 @@ class TestIsolationForest:
 
         assert tree_0["leaf_path_length"] == [
             None,
-            '1.000000',
+            "1.000000",
             None,
-            '2.000000',
+            "2.000000",
             None,
-            '3.000000',
-            '3.000000'
+            "3.000000",
+            "3.000000",
         ]
 
     def test_plot_tree(self, model):

@@ -64,12 +64,8 @@ from verticapy.toolbox import get_category_from_vertica_type
 #
 # ---#
 def _table_header(
-    head: list,
-    table_id,
-    style,
-    classes,
-    dtype: dict = {},
-):  
+    head: list, table_id, style, classes, dtype: dict = {},
+):
     """This function returns the HTML table header. Rows are not included."""
 
     head = beautiful_header(head, dtype=dtype,)
@@ -83,7 +79,7 @@ def _table_header(
             thead += f'<td style="{thead_style_first}">{logo}</td>'
         else:
             thead += f'<td style="{thead_style}">{head[i]}</td>'
-        #thead += f'<th style="border: 1px solid #AAAAAA;">{elmt}</th>'
+        # thead += f'<th style="border: 1px solid #AAAAAA;">{elmt}</th>'
     thead += "</tr>"
     thead += "<thead>"
     loading = "<td>Loading...</td>"
@@ -94,6 +90,7 @@ def _table_header(
         style = ""
     return f"""<div class="container"><table id="{table_id}" class="{classes}" {style}>{thead}<tbody>{tbody}</tbody></table></div>"""
 
+
 # ---#
 def replace_value(template, pattern, value, count=1):
     """Set the given pattern to the desired value in the template,
@@ -102,11 +99,12 @@ def replace_value(template, pattern, value, count=1):
     assert template.count(pattern) == count
     return template.replace(pattern, value)
 
+
 # ---#
 def clean_data(data):
     """Clean the data to improve the html display"""
 
-    for i in range(0,len(data)):
+    for i in range(0, len(data)):
         for j in range(0, len(data[0])):
             if j == 0:
                 data[i][j] = f"<b>{data[i][j]}</b>"
@@ -114,39 +112,37 @@ def clean_data(data):
             else:
                 val = data[i][j]
                 if isinstance(val, bool) is False and val != None:
-                    data[i][j] = ('<div style="background-color: transparent; '
-                                  'border: none; text-align: center; width: 100%;' 
-                                  'scrollbar-width: none; overflow-x: scroll; white-space: nowrap;">'
-                                  '{0}</div>').format(val)
+                    data[i][j] = (
+                        '<div style="background-color: transparent; '
+                        "border: none; text-align: center; width: 100%;"
+                        'scrollbar-width: none; overflow-x: scroll; white-space: nowrap;">'
+                        "{0}</div>"
+                    ).format(val)
                     continue
-                
+
                 if isinstance(val, bool):
                     val = (
-                                "<center>&#9989;</center>"
-                                if (val)
-                                else "<center>&#10060;</center>"
-                            )
+                        "<center>&#9989;</center>"
+                        if (val)
+                        else "<center>&#10060;</center>"
+                    )
                     data[i][j] = val
                     continue
                 if val == None:
-                    data[i][j] = '[null]'
-            
+                    data[i][j] = "[null]"
+
     return data
+
 
 # ---#
 def datatables_repr(
-    data_columns,
-    repeat_first_column: bool = False,
-    offset: int = 0,
-    dtype: dict = {},
+    data_columns, repeat_first_column: bool = False, offset: int = 0, dtype: dict = {},
 ):
     """Return the HTML/javascript representation of the table"""
 
     if not (repeat_first_column):
         index_column = list(range(1 + offset, len(data_columns[0]) + offset))
-        data_columns = [
-                    [""] + [i for i in index_column]
-                ] + data_columns
+        data_columns = [[""] + [i for i in index_column]] + data_columns
     columns = []
     data = []
     for dc in data_columns:
@@ -165,7 +161,7 @@ def datatables_repr(
     output = replace_value(
         output,
         '<table id="table_id"><thead><tr><th>A</th></tr></thead></table>',
-        table_header
+        table_header,
     )
     output = replace_value(output, "#table_id", f"#{tableId}", 2)
     output = replace_value(
@@ -180,11 +176,10 @@ def datatables_repr(
 
     return output
 
+
 # ---#
 def beautiful_header(
-    header,
-    dtype: dict = {},
-    percent: dict = {},
+    header, dtype: dict = {}, percent: dict = {},
 ):
     """Transform the header columns according to the type"""
 
@@ -207,13 +202,15 @@ def beautiful_header(
                 ):
                     category = '<div style="margin-bottom: 6px;">&#x1f30e;</div>'
                 elif type_val.lower() == "boolean":
-                    category = '<div style="margin-bottom: 6px; color: #0073E7;">010</div>'
-                elif category in ("int", "float", "binary", "uuid"):
-                    category = '<div style="margin-bottom: 6px; color: #19A26B;">123</div>'
-                elif category == "text":
                     category = (
-                        '<div style="margin-bottom: 6px;">Abc</div>'
+                        '<div style="margin-bottom: 6px; color: #0073E7;">010</div>'
                     )
+                elif category in ("int", "float", "binary", "uuid"):
+                    category = (
+                        '<div style="margin-bottom: 6px; color: #19A26B;">123</div>'
+                    )
+                elif category == "text":
+                    category = '<div style="margin-bottom: 6px;">Abc</div>'
                 elif category == "date":
                     category = '<div style="margin-bottom: 6px;">&#128197;</div>'
             else:
@@ -245,20 +242,25 @@ def beautiful_header(
         val = "{}<b>{}</b>{}{}".format(category, val, ctype, missing_values)
         header[i] = f'<div style="padding-left: 15px;">{val}</div>'
     return header
+
+
 # ---#
 def read_package_file(*path):
     """Return the content of a file from the itables package"""
     with open(find_package_file(*path), encoding="utf-8") as fp:
         return fp.read()
+
+
 # ---#
 def find_package_file(*path):
     """Return the full path to a file from the itables package"""
     current_path = os.path.dirname(__file__)
     return os.path.join(current_path, *path)
 
+
 # subclass JSONEncoder
 class DateTimeEncoder(JSONEncoder):
-        #Override the default method
-        def default(self, obj):
-            if isinstance(obj, (datetime.date, datetime.datetime)):
-                return obj.isoformat()
+    # Override the default method
+    def default(self, obj):
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return obj.isoformat()

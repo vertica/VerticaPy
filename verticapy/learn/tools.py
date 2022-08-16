@@ -622,7 +622,15 @@ model
         else:
             model.input_relation = input_relation
         model.test_relation = test_relation if (test_relation) else model.input_relation
-        if model_type not in ("kmeans", "pca", "svd", "one_hot_encoder_fit", "bisectingkmeans", "iforest", "normalizer"):
+        if model_type not in (
+            "kmeans",
+            "pca",
+            "svd",
+            "one_hot_encoder_fit",
+            "bisectingkmeans",
+            "iforest",
+            "normalizer",
+        ):
             start = 3
             model.y = info.split(",")[2].replace("'", "").replace("\\", "")
         else:

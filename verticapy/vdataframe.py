@@ -454,7 +454,11 @@ vColumns : vColumn
     def __repr__(self):
         if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-12], verticapy.options["time_on"], verticapy.options["max_rows"]).__repr__()
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                verticapy.options["time_on"],
+                verticapy.options["max_rows"],
+            ).__repr__()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -464,7 +468,11 @@ vColumns : vColumn
     def _repr_html_(self, interactive=False):
         if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-11], verticapy.options["time_on"], verticapy.options["max_rows"])._repr_html_()
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-11],
+                verticapy.options["time_on"],
+                verticapy.options["max_rows"],
+            )._repr_html_()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -1653,6 +1661,17 @@ vColumns : vColumn
                 if result[1] > d:
                     result = (elem, d)
         return result
+
+    #
+    # Interactive display
+    #
+    # ---#
+    def idisplay(self):
+        """This method displays the interactive table. It is used when 
+        you don't want to activate interactive table for all vDataFrames."""
+        from IPython.core.display import HTML, display
+
+        return display(HTML(self.copy()._repr_html_(interactive=True)))
 
     #
     # Methods
@@ -6405,7 +6424,9 @@ vColumns : vColumn
             if column:
                 columns_copy[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
-            ", ".join([str(elem) for elem in columns_copy] + [str(elem) for elem in expr]),
+            ", ".join(
+                [str(elem) for elem in columns_copy] + [str(elem) for elem in expr]
+            ),
             self.__genSQL__(),
             ", ".join(
                 [str(i + 1) for i in range(len([str(elem) for elem in columns_copy]))]
@@ -11083,15 +11104,6 @@ vColumns : vColumn
             {"index": [elem[0] for elem in data], "iv": [elem[1] for elem in data],}
         )
 
-    #
-    # Interactive display
-    #
-    # ---#
-    def idisplay(self):
-        """This method displays the interactive table. It is used when 
-        you don't want to activate interactive table for all vDataFrames."""
-        from IPython.core.display import HTML, display
-        return display(HTML(self.copy()._repr_html_(interactive=True)))
 
 #
 # Multiprocessing
