@@ -161,7 +161,7 @@ vColumns : vColumn
     # ---#
     def __init__(
         self,
-        input_relation: str = "",
+        input_relation = "",
         columns: list = [],
         usecols: list = [],
         schema: str = "",
@@ -7580,6 +7580,7 @@ vColumns : vColumn
             query, "narrow", "[Narrow]: Narrow table using index = {}".format(index),
         )
 
+    melt = narrow
     # ---#
     def normalize(self, columns: list = [], method: str = "zscore"):
         """

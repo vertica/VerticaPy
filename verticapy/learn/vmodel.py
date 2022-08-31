@@ -304,8 +304,6 @@ Main Class for Vertica Model
             sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true')".format(
                 fun, ", ".join(self.X if not (X) else X), name
             )
-            if self.type == "IsolationForest":
-                sql = f"({sql}).anomaly_score"
             return sql
         else:
             raise FunctionError(

@@ -463,6 +463,179 @@ col_sample_by_tree: float, optional
         }
         self.set_params(params)
 
+    # ---#
+    def decision_function(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        inplace: bool = True,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Returns the anomaly score using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the input object.
+        """
+        # Inititalization
+        check_types(
+            [
+                ("name", name, [str]),
+                ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool]),
+            ],
+        )
+        if isinstance(vdf, str):
+            vdf = vDataFrameSQL(relation=vdf)
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
+
+    # ---#
+    def deploySQL(self, X: list = [], cutoff: float = 0.7, contamination: float = None, return_score: bool = False):
+        """
+    ---------------------------------------------------------------------------
+    Returns the SQL code needed to deploy the model. 
+
+    Parameters
+    ----------
+    X: list, optional
+        List of the columns used to deploy the model. If empty, the model
+        predictors will be used.
+    cutoff: float, optional
+        Float in the range (0.0, 1.0), specifies the threshold that 
+        determines if a data point is an anomaly. If the anomaly_score 
+        for a data point is equal to or larger than the value of threshold, 
+        the data point is marked as an outlier.
+    contamination: float, optional
+        The valid range of the contamination parameter is (0,1). It is an 
+        approximate ratio of data points in the training data that should 
+        be labeled as anomaly. When it is specified, the cutoff parameter 
+        will be ignored.
+    return_score: bool, optional
+        If set to True, the anomaly score is returned. The parameters 'cutoff'
+        and 'contamination' are then ignored.
+
+    Returns
+    -------
+    str
+        the SQL code needed to deploy the model.
+        """
+        if isinstance(X, str):
+            X = [X]
+        check_types([("X", X, [list]), ("cutoff", cutoff, [float]), ("contamination", contamination, [float]), ("return_score", return_score, [bool])])
+        if contamination and not(return_score):
+            assert 0 < contamination < 1, ParameterError(
+                "Incorrect parameter 'contamination'.\nThe parameter "
+                "'contamination' must be between 0.0 and 1.0, exclusive."
+            )
+        elif not(return_score):
+            assert 0 < cutoff < 1, ParameterError(
+                "Incorrect parameter 'cutoff'.\nThe parameter "
+                "'cutoff' must be between 0.0 and 1.0, exclusive."
+            )
+        X = [quote_ident(elem) for elem in X]
+        if return_score:
+            other_parameters = ""
+        elif contamination:
+            other_parameters = f", contamination = {contamination}"
+        else:
+            other_parameters = f", threshold = {cutoff}"
+        fun = self.get_model_fun()[1]
+        sql = "{}({} USING PARAMETERS model_name = '{}', match_by_pos = 'true'{})".format(
+            fun, ", ".join(self.X if not (X) else X), self.name, other_parameters,
+        )
+        if return_score:
+            sql = f"({sql}).anomaly_score"
+        else:
+            sql = f"(({sql}).is_anomaly)::int"
+        return sql
+
+    # ---#
+    def predict(
+        self,
+        vdf: Union[str, vDataFrame],
+        X: list = [],
+        name: str = "",
+        cutoff: float = 0.7,
+        contamination: float = None,
+        inplace: bool = True,
+    ):
+        """
+    ---------------------------------------------------------------------------
+    Predicts using the input relation.
+
+    Parameters
+    ----------
+    vdf: str/vDataFrame
+        Object to use to run the prediction. You can also specify a customized 
+        relation, but you must enclose it with an alias. For example, 
+        "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
+        incorrect.
+    X: list, optional
+        List of the columns used to deploy the models. If empty, the model
+        predictors will be used.
+    name: str, optional
+        Name of the added vcolumn. If empty, a name will be generated.
+    cutoff: float, optional
+        Float in the range (0.0, 1.0), specifies the threshold that 
+        determines if a data point is an anomaly. If the anomaly_score 
+        for a data point is equal to or larger than the value of threshold, 
+        the data point is marked as an outlier.
+    contamination: float, optional
+        The valid range of the contamination parameter is (0,1). It is an 
+        approximate ratio of data points in the training data that should 
+        be labeled as anomaly. When it is specified, the cutoff parameter 
+        will be ignored.
+    inplace: bool, optional
+        If set to True, the prediction will be added to the vDataFrame.
+
+    Returns
+    -------
+    vDataFrame
+        the input object.
+        """
+        # Inititalization
+        check_types(
+            [
+                ("name", name, [str]),
+                ("vdf", vdf, [str, vDataFrame]),
+                ("inplace", inplace, [bool]),
+            ],
+        )
+        if isinstance(vdf, str):
+            vdf = vDataFrameSQL(relation=vdf)
+        if not (name):
+            name = gen_name([self.type, self.name])
+
+        # In Place
+        vdf_return = vdf if inplace else vdf.copy()
+
+        # Result
+        return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X))
 
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
