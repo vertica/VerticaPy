@@ -86,32 +86,32 @@ class TestIsolationForest:
 
     def test_deploySQL(self, model):
         expected_sql = (
-        '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
-        'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
-        'threshold = 0.7)).is_anomaly)::int'
-    )
-    result_sql = model.deploySQL()
+            '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
+            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
+            'threshold = 0.7)).is_anomaly)::int'
+        )
+        result_sql = model.deploySQL()
 
-    assert result_sql == expected_sql
+        assert result_sql == expected_sql
 
-    expected_sql = (
-        '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
-        'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
-        'contamination = 0.05)).is_anomaly)::int'
-    )
-    result_sql = model.deploySQL(contamination = 0.05)
+        expected_sql = (
+            '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
+            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
+            'contamination = 0.05)).is_anomaly)::int'
+        )
+        result_sql = model.deploySQL(contamination = 0.05)
 
-    assert result_sql == expected_sql
+        assert result_sql == expected_sql
 
-    expected_sql = (
-        '(APPLY_IFOREST("Gender", "owned cars", "cost", '
-        '"income", "TransPortation" USING PARAMETERS '
-        'model_name = \'iforest_model_test\', '
-        'match_by_pos = \'true\')).anomaly_score'
-    )
-    result_sql = model.deploySQL(return_score = True)
+        expected_sql = (
+            '(APPLY_IFOREST("Gender", "owned cars", "cost", '
+            '"income", "TransPortation" USING PARAMETERS '
+            'model_name = \'iforest_model_test\', '
+            'match_by_pos = \'true\')).anomaly_score'
+        )
+        result_sql = model.deploySQL(return_score = True)
 
-    assert result_sql == expected_sql
+        assert result_sql == expected_sql
 
     def test_drop(self, iforest_data_vd):
         current_cursor().execute("DROP MODEL IF EXISTS iforest_model_test_drop")
