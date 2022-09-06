@@ -595,8 +595,8 @@ col_sample_by_tree: float, optional
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
     X: list, optional
-        List of the columns to deploy the model. If empty, the model
-        predictors will be used.
+        List of the columns used to deploy the model. If empty, the model
+        predictors are used.
     name: str, optional
         Name of the additional vColumn. If empty, a name is generated.
     cutoff: float, optional
