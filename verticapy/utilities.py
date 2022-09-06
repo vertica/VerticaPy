@@ -56,6 +56,7 @@ from typing import Union
 import vertica_python
 import verticapy
 from verticapy.toolbox import *
+from verticapy.javascript import datatables_repr
 from verticapy.errors import *
 
 # Other Modules
@@ -561,6 +562,12 @@ list of tuples
 
 
 # ---#
+def init_interactive_mode(all_interactive=False):
+    """Activate the datatables representation for all the vDataFrames."""
+    set_option("interactive", all_interactive)
+
+
+# ---#
 def insert_into(
     table_name: str,
     data: list,
@@ -785,6 +792,15 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_df.to_csv(
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027"
         )
+        if str_cols:
+            # to_csv is adding an undesired special character
+            # we remove it
+            with open(path, 'r') as f:
+                filedata = f.read()
+            filedata = filedata.replace(',', ',')
+            with open(path, 'w') as f:
+                f.write(filedata)
+
         if insert:
             input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
             query = """COPY {0}({1}) 
@@ -1655,6 +1671,8 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         footer_on      : bool
             If set to True, vDataFrames and tablesamples show a footer that includes information 
             about the displayed rows and columns.
+        interactive    : bool
+            If set to True, verticaPy outputs will be displayed on interactive tables. 
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
@@ -1699,6 +1717,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
                     "cache",
                     "colors",
                     "color_style",
+                    "interactive",
                     "count_on",
                     "footer_on",
                     "max_columns",
@@ -1750,6 +1769,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         )
         if isinstance(value, str):
             verticapy.options["color_style"] = value
+            verticapy.options["colors"] = []
     elif option == "max_columns":
         check_types([("value", value, [int, float])])
         if value > 0:
@@ -1770,7 +1790,18 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             verticapy.options["random_state"] = int(value)
         elif value == None:
             verticapy.options["random_state"] = None
-    elif option in ("print_info", "sql_on", "time_on", "count_on", "cache", "footer_on", "tqdm", "overwrite_model", "percent_bar"):
+    elif option in (
+        "print_info",
+        "sql_on",
+        "time_on",
+        "count_on",
+        "cache",
+        "footer_on",
+        "tqdm",
+        "overwrite_model",
+        "percent_bar",
+        "interactive",
+    ):
         check_types([("value", value, [bool])])
         if value in (True, False, None):
             verticapy.options[option] = value
@@ -1875,7 +1906,7 @@ The tablesample attributes are the same than the parameters.
         return self.values[key]
 
     # ---#
-    def _repr_html_(self):
+    def _repr_html_(self, interactive=False):
         if len(self.values) == 0:
             return ""
         n = len(self.values)
@@ -1903,15 +1934,25 @@ The tablesample attributes are the same than the parameters.
             if elem not in percent and (elem != "index"):
                 percent = {}
                 break
-        formatted_text = print_table(
-            data_columns,
-            is_finished=(self.count <= len(data_columns[0]) + self.offset),
-            offset=self.offset,
-            repeat_first_column=("index" in self.values),
-            return_html=True,
-            dtype=dtype,
-            percent=percent,
-        )
+        formatted_text = ""
+        # get interactive table if condition true
+        if verticapy.options["interactive"] or interactive:
+            formatted_text = datatables_repr(
+                data_columns,
+                repeat_first_column=("index" in self.values),
+                offset=self.offset,
+                dtype=dtype,
+            )
+        else:
+            formatted_text = print_table(
+                data_columns,
+                is_finished=(self.count <= len(data_columns[0]) + self.offset),
+                offset=self.offset,
+                repeat_first_column=("index" in self.values),
+                return_html=True,
+                dtype=dtype,
+                percent=percent,
+            )
         if verticapy.options["footer_on"]:
             formatted_text += '<div style="margin-top:6px; font-size:1.02em">'
             if (self.offset == 0) and (len(data_columns[0]) - 1 == self.count):
@@ -1924,7 +1965,9 @@ The tablesample attributes are the same than the parameters.
                     )
                 else:
                     rows = "{}-{}{}".format(
-                        start, end, " of {}".format(self.count) if (self.count > 0) else "",
+                        start,
+                        end,
+                        " of {}".format(self.count) if (self.count > 0) else "",
                     )
             if len(self.values) == 1:
                 column = list(self.values.keys())[0]
@@ -1940,7 +1983,9 @@ The tablesample attributes are the same than the parameters.
                 if self.offset > self.count:
                     formatted_text += "<b>Columns:</b> {}".format(n)
                 else:
-                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(rows, n)
+                    formatted_text += "<b>Rows:</b> {} | <b>Columns:</b> {}".format(
+                        rows, n
+                    )
             formatted_text += "</div>"
         return formatted_text
 

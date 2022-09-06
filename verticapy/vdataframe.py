@@ -161,7 +161,7 @@ vColumns : vColumn
     # ---#
     def __init__(
         self,
-        input_relation: str = "",
+        input_relation = "",
         columns: list = [],
         usecols: list = [],
         schema: str = "",
@@ -452,23 +452,30 @@ vColumns : vColumn
 
     # ---#
     def __repr__(self):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
-            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-12], verticapy.options["time_on"], verticapy.options["max_rows"]).__repr__()
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"):
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                verticapy.options["time_on"],
+                verticapy.options["max_rows"],
+            ).__repr__()
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
         return self.head(limit=max_rows).__repr__()
 
     # ---#
-    def _repr_html_(self):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+    def _repr_html_(self, interactive=False):
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"):
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
-            return readSQL(self._VERTICAPY_VARIABLES_["main_relation"][1:-11], verticapy.options["time_on"], verticapy.options["max_rows"])._repr_html_()
+            return readSQL(
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
+                verticapy.options["time_on"],
+                verticapy.options["max_rows"],
+            )._repr_html_(interactive)
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
-        return self.head(limit=max_rows)._repr_html_()
+        return self.head(limit=max_rows)._repr_html_(interactive)
 
     # ---#
     def __round__(self, n):
@@ -1653,6 +1660,17 @@ vColumns : vColumn
                 if result[1] > d:
                     result = (elem, d)
         return result
+
+    #
+    # Interactive display
+    #
+    # ---#
+    def idisplay(self):
+        """This method displays the interactive table. It is used when 
+        you don't want to activate interactive table for all vDataFrames."""
+        from IPython.core.display import HTML, display
+
+        return display(HTML(self.copy()._repr_html_(interactive=True)))
 
     #
     # Methods
@@ -6399,22 +6417,25 @@ vColumns : vColumn
         if isinstance(expr, str):
             expr = [expr]
         check_types([("columns", columns, [list]), ("expr", expr, [list])])
+        columns_copy = [column for column in columns]
         for i in range(len(columns)):
             column = self.format_colnames([columns[i]])
             if column:
-                columns[i] = column[0]
+                columns_copy[i] = column[0]
         relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
-            ", ".join([str(elem) for elem in columns] + [str(elem) for elem in expr]),
+            ", ".join(
+                [str(elem) for elem in columns_copy] + [str(elem) for elem in expr]
+            ),
             self.__genSQL__(),
             ", ".join(
-                [str(i + 1) for i in range(len([str(elem) for elem in columns]))]
+                [str(i + 1) for i in range(len([str(elem) for elem in columns_copy]))]
             ),
         )
         return self.__vDataFrameSQL__(
             relation,
             "groupby",
             "[Groupby]: The columns were grouped by {}".format(
-                ", ".join([str(elem) for elem in columns])
+                ", ".join([str(elem) for elem in columns_copy])
             ),
         )
 
@@ -7558,6 +7579,7 @@ vColumns : vColumn
             query, "narrow", "[Narrow]: Narrow table using index = {}".format(index),
         )
 
+    melt = narrow
     # ---#
     def normalize(self, columns: list = [], method: str = "zscore"):
         """

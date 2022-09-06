@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.9.0-1"
+__version__ = "0.10.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
@@ -79,6 +79,7 @@ verticapy.options = {
     "colors": [],
     "color_style": "default",
     "connection": {"conn": None, "section": None, "dsn": None},
+    "interactive": False,
     "count_on": False,
     "footer_on": True,
     "max_columns": 50,

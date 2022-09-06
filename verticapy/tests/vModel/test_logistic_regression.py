@@ -18,6 +18,7 @@ import pytest
 import matplotlib.pyplot as plt
 
 # VerticaPy
+from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality, load_titanic
@@ -261,10 +262,17 @@ class TestLogisticRegression:
         assert model.get_attr("iteration_count")["iteration_count"][0] == 4
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 238
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 996
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
-        )
+
+        if get_version()[0] < 12:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5)"
+            )
+        else:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "logistic_reg('public.logreg_model_test', 'public.titanic', '\"survived\"', '\"age\", \"fare\"'\nUSING PARAMETERS optimizer='newton', epsilon=1e-06, max_iterations=100, regularization='none', lambda=1, alpha=0.5, fit_intercept=true)"
+            )
 
     def test_get_params(self, model):
         params = model.get_params()
@@ -274,6 +282,7 @@ class TestLogisticRegression:
             "penalty": "none",
             "max_iter": 100,
             "tol": 1e-06,
+            "fit_intercept": True,
         }
 
     def test_prc_curve(self, model):

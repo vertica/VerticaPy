@@ -397,6 +397,12 @@ class TestStats:
     def test_atan(self, titanic_vd):
         assert str(st.atan(titanic_vd["age"])) == 'ATAN("age")'
 
+    def test_atan2(self, titanic_vd):
+        assert (
+            str(st.atan2(titanic_vd["age"], titanic_vd["fare"]))
+            == 'ATAN2("age", "fare")'
+        )
+
     def test_case_when(self, titanic_vd):
         assert (
             str(st.case_when(titanic_vd["age"] > 5, 11, 1993))

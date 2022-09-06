@@ -1019,6 +1019,28 @@ str_sql
 
 
 # ---#
+def atan2(quotient, divisor):
+    """
+---------------------------------------------------------------------------
+Trigonometric Inverse Tangent of the arithmetic dividend of the arguments.
+
+Parameters
+----------
+quotient: object
+    Expression representing the quotient.
+divisor: object
+    Expression representing the divisor.
+
+Returns
+-------
+str_sql
+    SQL expression.
+    """
+    quotient, divisor = format_magic(quotient), format_magic(divisor)
+    return str_sql("ATAN2({}, {})".format(quotient, divisor), "float")
+
+
+# ---#
 def case_when(*argv):
     """
 ---------------------------------------------------------------------------

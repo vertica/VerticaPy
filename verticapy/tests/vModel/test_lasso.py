@@ -21,6 +21,7 @@ import warnings
 import matplotlib.pyplot as plt
 
 # VerticaPy
+from verticapy.tests.conftest import get_version
 from verticapy import drop, set_option
 from verticapy.connect import current_cursor
 from verticapy.datasets import load_winequality
@@ -142,10 +143,17 @@ class TestLasso:
         assert model.get_attr("iteration_count")["iteration_count"][0] == 1
         assert model.get_attr("rejected_row_count")["rejected_row_count"][0] == 0
         assert model.get_attr("accepted_row_count")["accepted_row_count"][0] == 6497
-        assert (
-            model.get_attr("call_string")["call_string"][0]
-            == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1)"
-        )
+
+        if get_version()[0] < 12:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1)"
+            )
+        else:
+            assert (
+                model.get_attr("call_string")["call_string"][0]
+                == "linear_reg('public.lasso_model_test', 'public.winequality', '\"quality\"', '\"total_sulfur_dioxide\", \"residual_sugar\", \"alcohol\"'\nUSING PARAMETERS optimizer='cgd', epsilon=1e-06, max_iterations=100, regularization='l1', lambda=1, alpha=1, fit_intercept=true)"
+            )
 
     def test_get_params(self, model):
         assert model.get_params() == {
@@ -154,6 +162,7 @@ class TestLasso:
             "max_iter": 100,
             "C": 1.0,
             "tol": 1e-06,
+            "fit_intercept": True,
         }
 
     def test_get_plot(self, winequality_vd):
