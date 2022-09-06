@@ -792,6 +792,15 @@ read_json : Ingests a JSON file into the Vertica database.
         tmp_df.to_csv(
             path, index=False, quoting=csv.QUOTE_NONE, quotechar="", escapechar="\027"
         )
+        if str_cols:
+            # to_csv is adding an undesired special character
+            # we remove it
+            with open(path, 'r') as f:
+                filedata = f.read()
+            filedata = filedata.replace(',', ',')
+            with open(path, 'w') as f:
+                f.write(filedata)
+
         if insert:
             input_relation = "{}.{}".format(quote_ident(schema), quote_ident(name))
             query = """COPY {0}({1}) 
@@ -1663,8 +1672,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
             If set to True, vDataFrames and tablesamples show a footer that includes information 
             about the displayed rows and columns.
         interactive    : bool
-            If set to True, verticaPy outputs will be displayed 
-            on interactive tables. 
+            If set to True, verticaPy outputs will be displayed on interactive tables. 
         max_columns    : int
             Maximum number of columns to display. If the parameter is incorrect, 
             nothing is changed.
@@ -1761,6 +1769,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         )
         if isinstance(value, str):
             verticapy.options["color_style"] = value
+            verticapy.options["colors"] = []
     elif option == "max_columns":
         check_types([("value", value, [int, float])])
         if value > 0:

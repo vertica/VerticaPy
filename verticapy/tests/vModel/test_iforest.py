@@ -81,17 +81,35 @@ class TestIsolationForest:
             titanic_vd, ["age", "fare"],
         )
         result = model_test.contour()
-        assert len(result.get_default_bbox_extra_artists()) == 36
+        assert len(result.get_default_bbox_extra_artists()) == 34
         model_test.drop()
 
     def test_deploySQL(self, model):
         expected_sql = (
-            '(APPLY_IFOREST("Gender", "owned cars", "cost", '
-            '"income", "TransPortation" USING PARAMETERS '
-            "model_name = 'iforest_model_test', match_by_pos "
-            "= 'true')).anomaly_score"
+            '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
+            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
+            'threshold = 0.7)).is_anomaly)::int'
         )
         result_sql = model.deploySQL()
+
+        assert result_sql == expected_sql
+
+        expected_sql = (
+            '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
+            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
+            'contamination = 0.05)).is_anomaly)::int'
+        )
+        result_sql = model.deploySQL(contamination = 0.05)
+
+        assert result_sql == expected_sql
+
+        expected_sql = (
+            '(APPLY_IFOREST("Gender", "owned cars", "cost", '
+            '"income", "TransPortation" USING PARAMETERS '
+            'model_name = \'iforest_model_test\', '
+            'match_by_pos = \'true\')).anomaly_score'
+        )
+        result_sql = model.deploySQL(return_score = True)
 
         assert result_sql == expected_sql
 
@@ -214,6 +232,20 @@ class TestIsolationForest:
         )
 
         assert iforest_data_copy["anomaly"].mean() == pytest.approx(
+            0.0, abs=1e-6
+        )
+
+        # TODO - contamination when v12.0.1 is in place
+
+    def test_get_decision_function(self, iforest_data_vd, model):
+        iforest_data_copy = iforest_data_vd.copy()
+        model.decision_function(
+            iforest_data_copy,
+            X=["Gender", '"owned cars"', "cost", "income", "TransPortation"],
+            name="anomaly_score",
+        )
+
+        assert iforest_data_copy["anomaly_score"].mean() == pytest.approx(
             0.516816506833607, abs=1e-6
         )
 

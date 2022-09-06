@@ -39,6 +39,7 @@ class TestSQL:
         # SQL line Test -c
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
+        assert result._VERTICAPY_VARIABLES_["main_relation"] == "(SELECT * FROM titanic) VSQL_MAGIC"
 
         # SQL line Test --command
         result = sql('  --command "SELECT * FROM titanic;"', "")
@@ -172,3 +173,6 @@ class TestSQL:
         # tb = tablesample({"x": [4, 5, 6], "y": [1, 2, 3]})
         # result = sql("", "SELECT AVG(x) FROM :tb;")
         # assert result == 5
+
+        # TODO: add a test to see if the order by works when
+        # dealing with multiple nodes

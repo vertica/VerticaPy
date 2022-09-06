@@ -161,7 +161,7 @@ vColumns : vColumn
     # ---#
     def __init__(
         self,
-        input_relation: str = "",
+        input_relation = "",
         columns: list = [],
         usecols: list = [],
         schema: str = "",
@@ -452,8 +452,7 @@ vColumns : vColumn
 
     # ---#
     def __repr__(self):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
-            self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"):
             return readSQL(
                 self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
                 verticapy.options["time_on"],
@@ -466,13 +465,13 @@ vColumns : vColumn
 
     # ---#
     def _repr_html_(self, interactive=False):
-        if self._VERTICAPY_VARIABLES_["sql_magic_result"]:
+        if self._VERTICAPY_VARIABLES_["sql_magic_result"] and (self._VERTICAPY_VARIABLES_["main_relation"][-10:] == "VSQL_MAGIC"):
             self._VERTICAPY_VARIABLES_["sql_magic_result"] = False
             return readSQL(
-                self._VERTICAPY_VARIABLES_["main_relation"][1:-11],
+                self._VERTICAPY_VARIABLES_["main_relation"][1:-12],
                 verticapy.options["time_on"],
                 verticapy.options["max_rows"],
-            )._repr_html_()
+            )._repr_html_(interactive)
         max_rows = self._VERTICAPY_VARIABLES_["max_rows"]
         if max_rows <= 0:
             max_rows = verticapy.options["max_rows"]
@@ -7580,6 +7579,7 @@ vColumns : vColumn
             query, "narrow", "[Narrow]: Narrow table using index = {}".format(index),
         )
 
+    melt = narrow
     # ---#
     def normalize(self, columns: list = [], method: str = "zscore"):
         """

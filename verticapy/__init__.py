@@ -46,7 +46,7 @@
 # data around for processing, VerticaPy brings the logic to the data.
 #
 #
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 __author__ = "Badr Ouali"
 __author_email__ = "badr.ouali@vertica.com"
 __description__ = (
