@@ -478,17 +478,17 @@ col_sample_by_tree: float, optional
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
+        Object to use for the prediction. You can specify a customized 
+        relation if it is enclosed with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
     X: list, optional
-        List of the columns used to deploy the models. If empty, the model
-        predictors will be used.
+        List of columns used to deploy the models. If empty, the model
+        predictors are used.
     name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
+        Name of the additional vColumn. If empty, a name is generated.
     inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
+        If True, the prediction is added to the vDataFrame.
 
     Returns
     -------
@@ -524,20 +524,19 @@ col_sample_by_tree: float, optional
     ----------
     X: list, optional
         List of the columns used to deploy the model. If empty, the model
-        predictors will be used.
+        predictors are used.
     cutoff: float, optional
         Float in the range (0.0, 1.0), specifies the threshold that 
         determines if a data point is an anomaly. If the anomaly_score 
-        for a data point is equal to or larger than the value of threshold, 
-        the data point is marked as an outlier.
+        for a data point is greater than or equal to the cutoff, 
+        the data point is marked as an anomaly.
     contamination: float, optional
-        The valid range of the contamination parameter is (0,1). It is an 
-        approximate ratio of data points in the training data that should 
-        be labeled as anomaly. When it is specified, the cutoff parameter 
-        will be ignored.
+        Float in the range (0,1), the approximate ratio of data points in the 
+        training data that should be labeled as anomalous. If this parameter is 
+        specified, the cutoff parameter is ignored.
     return_score: bool, optional
-        If set to True, the anomaly score is returned. The parameters 'cutoff'
-        and 'contamination' are then ignored.
+        If set to True, the anomaly score is returned, and the parameters 'cutoff'
+        and 'contamination' are ignored.
 
     Returns
     -------
@@ -591,27 +590,26 @@ col_sample_by_tree: float, optional
     Parameters
     ----------
     vdf: str/vDataFrame
-        Object to use to run the prediction. You can also specify a customized 
-        relation, but you must enclose it with an alias. For example, 
+        Object to use for the prediction. You can specify a customized 
+        relation if it is enclosed with an alias. For example, 
         "(SELECT 1) x" is correct, whereas "(SELECT 1)" and "SELECT 1" are 
         incorrect.
     X: list, optional
-        List of the columns used to deploy the models. If empty, the model
+        List of the columns to deploy the model. If empty, the model
         predictors will be used.
     name: str, optional
-        Name of the added vcolumn. If empty, a name will be generated.
+        Name of the additional vColumn. If empty, a name is be generated.
     cutoff: float, optional
         Float in the range (0.0, 1.0), specifies the threshold that 
         determines if a data point is an anomaly. If the anomaly_score 
-        for a data point is equal to or larger than the value of threshold, 
-        the data point is marked as an outlier.
+        for a data point is greater than or equal to the cutfoff, 
+        the data point is marked as an anomaly.
     contamination: float, optional
-        The valid range of the contamination parameter is (0,1). It is an 
-        approximate ratio of data points in the training data that should 
-        be labeled as anomaly. When it is specified, the cutoff parameter 
-        will be ignored.
+        Float in the range (0,1), the approximate ratio of data points in the
+        training data that should be labeled as anomalous. If this parameter is 
+        specified, the cutoff parameter is ignored.
     inplace: bool, optional
-        If set to True, the prediction will be added to the vDataFrame.
+        If set to True, the prediction is added to the vDataFrame.
 
     Returns
     -------
