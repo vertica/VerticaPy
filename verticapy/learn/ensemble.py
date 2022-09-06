@@ -598,7 +598,7 @@ col_sample_by_tree: float, optional
         List of the columns to deploy the model. If empty, the model
         predictors will be used.
     name: str, optional
-        Name of the additional vColumn. If empty, a name is be generated.
+        Name of the additional vColumn. If empty, a name is generated.
     cutoff: float, optional
         Float in the range (0.0, 1.0), specifies the threshold that 
         determines if a data point is an anomaly. If the anomaly_score 
