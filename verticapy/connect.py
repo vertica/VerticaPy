@@ -413,7 +413,7 @@ dict
 
             elif option_name == "backup_server_node":
                 backup_server_node = {}
-                exec(f"id_port = {option_val}", {}, backup_server_node)
+                exec(f"id_port = '{option_val}'", {}, backup_server_node)
                 conn_info["backup_server_node"] = backup_server_node["id_port"]
 
             elif option_name == "kerberosservicename":
