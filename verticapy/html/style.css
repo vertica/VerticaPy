@@ -2,6 +2,9 @@ table td {
     text-overflow: ellipsis;
     overflow: hidden;
     text-align: center !important;
+    background-color: #FAFAFA;
+}
+table tr:nth-child(1)  {
     background-color: #FFFFFF;
 }
 
@@ -29,3 +32,6 @@ thead input {
     box-sizing: border-box;
 }
 
+table thead tr td {
+    background-color: #FFFFFF;
+  }
