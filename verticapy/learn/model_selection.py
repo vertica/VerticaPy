@@ -222,7 +222,7 @@ tablesample
     relation = gen_tmp_name(schema=schema, name="bayesian")
     model_name = gen_tmp_name(schema=schema, name="rf")
     drop(relation, method="table")
-    executeSQL("CREATE TABLE {} AS {}".format(relation, result), print_time_sql=False)
+    executeSQL(f"CREATE TABLE {relation} AS {result}", print_time_sql=False)
     if print_info:
         print(
             f"\033[1m\033[4mStep 2 - Fitting the RF model with the hyperparameters data\033[0m\033[0m\n"
@@ -1988,7 +1988,7 @@ tablesample
         ]
     )
     version(condition=[8, 0, 0])
-    query = "SELECT LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
+    query = "SELECT /*+LABEL('learn.model_selection.lift_chart')*/ LIFT_TABLE(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
         y_true,
@@ -2239,7 +2239,7 @@ tablesample
     if nbins < 0:
         nbins = 999999
     version(condition=[9, 1, 0])
-    query = "SELECT PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
+    query = "SELECT /*+LABEL('learn.model_selection.prc_curve')*/ PRC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output"
     query = query.format(
         nbins,
         y_true,
@@ -2690,7 +2690,7 @@ tablesample
     if nbins < 0:
         nbins = 999999
     version(condition=[8, 0, 0])
-    query = "SELECT decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
+    query = "SELECT /*+LABEL('learn.model_selection.roc_curve')*/ decision_boundary, false_positive_rate, true_positive_rate FROM (SELECT ROC(obs, prob USING PARAMETERS num_bins = {}) OVER() FROM (SELECT (CASE WHEN {} = '{}' THEN 1 ELSE 0 END) AS obs, {}::float AS prob FROM {}) AS prediction_output) x"
     query = query.format(
         nbins,
         y_true,
@@ -2891,7 +2891,7 @@ tablesample
         else input_relation.__genSQL__()
     )
     avg = executeSQL(
-        f"SELECT AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False
+        f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False
     )
     k = 0 if criterion == "aic" else 1
     if x_order == "random":

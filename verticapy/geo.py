@@ -347,7 +347,7 @@ bool
     )
 
     query = (
-        f"SELECT STV_Rename_Index (USING PARAMETERS source = '{source}'"
+        f"SELECT /*+LABEL(rename_index)*/ STV_Rename_Index (USING PARAMETERS source = '{source}'"
         f", dest = '{dest}', overwrite = {overwrite}) OVER ();"
     )
 
@@ -388,7 +388,7 @@ vDataFrame
     """
     check_types([("p", p, [str]), ("nbins", nbins, [int])])
 
-    sql = """SELECT 
+    sql = """SELECT /*+LABEL(split_polygon_n)*/
                 MIN(ST_X(point)), 
                 MAX(ST_X(point)), 
                 MIN(ST_Y(point)), 

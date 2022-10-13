@@ -260,7 +260,7 @@ tablesample
             column, column, "PARTITION BY {}".format(", ".join(by)) if (by) else "", ts
         )
     ]
-    query = "CREATE VIEW {} AS SELECT {}, {} AS ts FROM {}".format(
+    query = "CREATE VIEW {} AS SELECT /*+LABEL('stats.tools.adfuller')*/ {}, {} AS ts FROM {}".format(
         relation_name,
         ", ".join(lag),
         "TIMESTAMPDIFF(SECOND, {}, MIN({}) OVER ())".format(ts, ts)
@@ -375,7 +375,7 @@ model
     eps_name = gen_tmp_name(name="eps")[1:-1]
     model.predict(vdf_tmp, X=X, name=prediction_name)
     vdf_tmp[eps_name] = vdf_tmp[y] - vdf_tmp[prediction_name]
-    query = "SELECT SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(
+    query = "SELECT /*+LABEL('stats.tools.cochrane_orcutt')*/ SUM(num) / SUM(den) FROM (SELECT {} * LAG({}) OVER (ORDER BY {}) AS num,  POWER({}, 2) AS den FROM {}) x".format(
         eps_name, eps_name, ts, eps_name, vdf_tmp.__genSQL__()
     )
     pho = executeSQL(
@@ -442,7 +442,7 @@ float
         vdf.__genSQL__(),
     )
     d = executeSQL(
-        "SELECT SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
+        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
         title="Computing the Durbin Watson d.",
         method="fetchfirstelem",
     )
@@ -1049,7 +1049,7 @@ tablesample
     column = vdf.format_colnames(column)
     ts = vdf.format_colnames(ts)
     table = "(SELECT {}, {} FROM {})".format(column, ts, vdf.__genSQL__())
-    query = "SELECT SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
+    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SUM(SIGN(y.{} - x.{})) FROM {} x CROSS JOIN {} y WHERE y.{} > x.{}".format(
         column, column, table, table, ts, ts
     )
     S = executeSQL(
@@ -1060,7 +1060,7 @@ tablesample
     except:
         S = None
     n = vdf[column].count()
-    query = "SELECT SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
+    query = "SELECT /*+LABEL('stats.tools.mkt')*/ SQRT(({} * ({} - 1) * (2 * {} + 5) - SUM(row * (row - 1) * (2 * row + 5))) / 18) FROM (SELECT MAX(row) AS row FROM (SELECT ROW_NUMBER() OVER (PARTITION BY {}) AS row FROM {}) VERTICAPY_SUBTABLE GROUP BY row) VERTICAPY_SUBTABLE".format(
         n, n, n, column, vdf.__genSQL__()
     )
     STDS = executeSQL(

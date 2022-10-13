@@ -101,7 +101,7 @@ def logit_plot(
         return 1 / (1 + math.exp(-x))
 
     if len(X) == 1:
-        query = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.logit_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
@@ -155,7 +155,7 @@ def logit_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
-        query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.logit_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
@@ -295,7 +295,7 @@ def lof_plot(
     }
     if len(columns) == 1:
         column = quote_ident(columns[0])
-        query = "SELECT {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
+        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {} FROM {} {} WHERE {} IS NOT NULL".format(
             column, lof, input_relation, tablesample, column
         )
         query_result = executeSQL(query, method="fetchall", print_time_sql=False)
@@ -325,7 +325,7 @@ def lof_plot(
         )
     elif len(columns) == 2:
         columns = [quote_ident(column) for column in columns]
-        query = "SELECT {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
+        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL".format(
             columns[0],
             columns[1],
             lof,
@@ -361,7 +361,7 @@ def lof_plot(
             color=colors[1],
         )
     elif len(columns) == 3:
-        query = "SELECT {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
+        query = "SELECT /*+LABEL('learn.mlplot.lof_plot')*/ {}, {}, {}, {} FROM {} {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL".format(
             columns[0],
             columns[1],
             columns[2],
@@ -868,7 +868,7 @@ def regression_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
+        query = "SELECT /*+LABEL('learn.mlplot.regression_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL LIMIT {}".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points)
         )
         all_points = executeSQL(query, method="fetchall", print_time_sql=False)
@@ -892,7 +892,7 @@ def regression_plot(
         ax.set_xlabel(X[0])
         ax.set_ylabel(y)
     elif len(X) == 2:
-        query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.regression_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
         )
         all_points = executeSQL(query, method="fetchall", print_time_sql=False)
@@ -952,7 +952,7 @@ def regression_tree_plot(
             ("max_nb_points", max_nb_points, [int, float]),
         ]
     )
-    query = "SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
+    query = "SELECT /*+LABEL('learn.mlplot.regression_tree_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
         X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points)
     )
     all_points = executeSQL(query, method="fetchall", print_time_sql=False)
@@ -1019,7 +1019,7 @@ def svm_classifier_plot(
         "edgecolors": "black",
     }
     if len(X) == 1:
-        query = "(SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], y, input_relation, X[0], y, int(max_nb_points / 2)
         )
         query += " UNION ALL (SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} = 1 LIMIT {})".format(
@@ -1060,7 +1060,7 @@ def svm_classifier_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 2:
-        query = "(SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0], X[1], y, input_relation, X[0], X[1], y, int(max_nb_points / 2)
         )
         query += " UNION (SELECT {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} = 1 LIMIT {})".format(
@@ -1104,7 +1104,7 @@ def svm_classifier_plot(
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     elif len(X) == 3:
-        query = "(SELECT {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
+        query = "(SELECT /*+LABEL('learn.mlplot.svm_classifier_plot')*/ {}, {}, {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL AND {} IS NOT NULL AND {} = 0 LIMIT {})".format(
             X[0],
             X[1],
             X[2],
@@ -1240,7 +1240,7 @@ def voronoi_plot(
     ax.xlim(min_x - 0.05 * (max_x - min_x), max_x + 0.05 * (max_x - min_x))
     ax.ylim(min_y - 0.05 * (max_y - min_y), max_y + 0.05 * (max_y - min_y))
     if max_nb_points > 0:
-        query = "SELECT {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
+        query = "SELECT /*+LABEL('learn.mlplot.voronoi_plot')*/ {}, {} FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL ORDER BY RANDOM() LIMIT {}".format(
             columns[0],
             columns[1],
             input_relation,

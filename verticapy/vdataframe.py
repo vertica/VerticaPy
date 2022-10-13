@@ -288,7 +288,7 @@ vColumns : vColumn
                 else ""
             )
             query = (
-                "SELECT column_name, data_type FROM ((SELECT column_name, "
+                "SELECT /*+LABEL('vDataframe.__init__')*/ column_name, data_type FROM ((SELECT column_name, "
                 "data_type, ordinal_position FROM columns WHERE table_name "
                 "= '{0}' AND table_schema = '{1}'{2})"
             ).format(
@@ -405,7 +405,7 @@ vColumns : vColumn
                     columns[idx] = "{}::float".format(elem)
             if index < 0:
                 index += self.shape()[0]
-            query = "SELECT {} FROM {}{} OFFSET {} LIMIT 1".format(
+            query = "SELECT /*+LABEL('vDataframe.__getitem__')*/ {} FROM {}{} OFFSET {} LIMIT 1".format(
                 ", ".join(columns),
                 self.__genSQL__(),
                 self.__get_last_order_by__(),
@@ -535,8 +535,8 @@ vColumns : vColumn
     See Also
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
-    vDataFrame.cov  : Computes the covariance matrix of the vDataFrame.
-    vDataFrame.regr : Computes the regression matrix of the vDataFrame.
+    vDataFrame.cov  : Computes the Covariance  Matrix of the vDataFrame.
+    vDataFrame.regr : Computes the Regression  Matrix of the vDataFrame.
         """
         method_name = "Correlation"
         method_type = " using the method = '{}'".format(method)
@@ -580,7 +580,7 @@ vColumns : vColumn
                         columns[0], columns[1], self.__genSQL__(),
                     )
                 )
-                query = "SELECT CORR({0}{1}, {2}{3}) FROM {4}".format(
+                query = "SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ CORR({0}{1}, {2}{3}) FROM {4}".format(
                     columns[0], cast_0, columns[1], cast_1, table
                 )
                 title = "Computes the {0} correlation between {1} and {2}.".format(
@@ -617,7 +617,7 @@ vColumns : vColumn
                     cast_b, cast_n = cast_0, cast_1
                 else:
                     return float("nan")
-                query = """SELECT 
+                query = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                                 (AVG(DECODE({0}{1}, 1, {2}{3}, NULL)) 
                                     - AVG(DECODE({0}{1}, 0, {2}{3}, NULL))) 
                                     / STDDEV({2}{3}) * SQRT(SUM({0}{1}) 
@@ -660,7 +660,7 @@ vColumns : vColumn
                              GROUP BY 1""".format(
                     columns[1], self.__genSQL__(), columns[0]
                 )
-                sql = """SELECT 
+                sql = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                             COUNT(*) AS n, 
                             APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
                             APPROXIMATE_COUNT_DISTINCT({1}) AS r 
@@ -672,7 +672,7 @@ vColumns : vColumn
                 n, k, r = executeSQL(
                     sql, title="Computing the columns cardinalities.", method="fetchrow"
                 )
-                chi2 = """SELECT 
+                chi2 = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                             SUM((nij - ni * nj / {0}) * (nij - ni * nj / {0}) 
                                 / ((ni * nj) / {0})) AS chi2 
                           FROM 
@@ -719,7 +719,7 @@ vColumns : vColumn
                 )
                 n_0 = f"{n_} * ({n_} - 1)/2"
                 tau_b = f"({n_c} - {n_d}) / sqrt(({n_0} - {n_1}) * ({n_0} - {n_2}))"
-                query = """SELECT 
+                query = """SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/
                                 {0} 
                            FROM 
                                 (SELECT 
@@ -736,7 +736,7 @@ vColumns : vColumn
                     "Computing the kendall correlation " "between {0} and {1}."
                 ).format(columns[0], columns[1])
             elif method == "cov":
-                query = "SELECT COVAR_POP({0}{1}, {2}{3}) FROM {4}".format(
+                query = "SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ COVAR_POP({0}{1}, {2}{3}) FROM {4}".format(
                     columns[0], cast_0, columns[1], cast_1, self.__genSQL__()
                 )
                 title = "Computing the covariance between {} and {}.".format(
@@ -784,7 +784,7 @@ vColumns : vColumn
                 )
                 version(condition=[9, 2, 1])
                 result = executeSQL(
-                    query="SELECT CORR_MATRIX({0}) OVER () FROM {1}".format(
+                    query="SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ CORR_MATRIX({0}) OVER () FROM {1}".format(
                         ", ".join(columns), table
                     ),
                     title=f"Computing the {method} Corr Matrix.",
@@ -893,13 +893,13 @@ vColumns : vColumn
                         table = self.__genSQL__()
                     if nb_precomputed == nb_loop:
                         result = executeSQL(
-                            "SELECT {}".format(", ".join(all_list)),
+                            "SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ {}".format(", ".join(all_list)),
                             print_time_sql=False,
                             method="fetchrow",
                         )
                     else:
                         result = executeSQL(
-                            query="SELECT {} FROM {}".format(
+                            query="SELECT /*+LABEL('vDataframe.__aggregate_matrix__')*/ {} FROM {}".format(
                                 ", ".join(all_list), table
                             ),
                             title=title_query,
@@ -1112,13 +1112,13 @@ vColumns : vColumn
                     table = self.__genSQL__()
                 if nb_precomputed == len(cols):
                     result = executeSQL(
-                        "SELECT {0}".format(", ".join(all_list)),
+                        "SELECT /*+LABEL('vDataframe.__aggregate_vector__')*/ {0}".format(", ".join(all_list)),
                         method="fetchrow",
                         print_time_sql=False,
                     )
                 else:
                     result = executeSQL(
-                        query="SELECT {0} FROM {1} LIMIT 1".format(
+                        query="SELECT /*+LABEL('vDataframe.__aggregate_vector__')*/ {0} FROM {1} LIMIT 1".format(
                             ", ".join(all_list), table
                         ),
                         title=f"Computing the Correlation Vector ({method})",
@@ -2431,7 +2431,7 @@ vColumns : vColumn
 
             if nb_precomputed == len(func) * len(columns):
                 res = executeSQL(
-                    "SELECT {}".format(
+                    "SELECT /*+LABEL('vDataframe.aggregate')*/ {}".format(
                         ", ".join([str(item) for sublist in agg for item in sublist])
                     ),
                     print_time_sql=False,
@@ -2439,7 +2439,7 @@ vColumns : vColumn
                 )
             else:
                 res = executeSQL(
-                    "SELECT {} FROM {} LIMIT 1".format(
+                    "SELECT /*+LABEL('vDataframe.aggregate')*/ {} FROM {} LIMIT 1".format(
                         ", ".join([str(item) for sublist in agg for item in sublist]),
                         self.__genSQL__(),
                     ),
@@ -2477,7 +2477,7 @@ vColumns : vColumn
                     if (len(query) != 1)
                     else query[0]
                 )
-                query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
+                query = "WITH vdf_table AS (SELECT /*+LABEL('vDataframe.aggregate')*/ * FROM {}) {}".format(
                     self.__genSQL__(), query
                 )
                 if nb_precomputed == len(func) * len(columns):
@@ -2501,7 +2501,7 @@ vColumns : vColumn
                         for fun in func:
                             pre_comp = self.__get_catalog_value__(columns[i], fun)
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
-                                query = "SELECT {} FROM {}".format(
+                                query = "SELECT /*+LABEL('vDataframe.aggregate')*/ {} FROM {}".format(
                                     ", ".join(
                                         [
                                             format_magic(
@@ -2535,7 +2535,7 @@ vColumns : vColumn
                         for j, agg_fun in enumerate(elem):
                             pre_comp = self.__get_catalog_value__(columns[i], func[j])
                             if pre_comp == "VERTICAPY_NOT_PRECOMPUTED":
-                                query = "SELECT {} FROM {}".format(
+                                query = "SELECT /*+LABEL('vDataframe.aggregate')*/ {} FROM {}".format(
                                     agg_fun, self.__genSQL__()
                                 )
                                 result = executeSQL(
@@ -4016,7 +4016,7 @@ vColumns : vColumn
         for column in self.get_columns():
             if (self[column].category() == "int") and not (self[column].isbool()):
                 is_cat = executeSQL(
-                    "SELECT (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(
+                    "SELECT /*+LABEL('vDataframe.catcol')*/ (APPROXIMATE_COUNT_DISTINCT({}) < {}) FROM {}".format(
                         column, max_cardinality, self.__genSQL__()
                     ),
                     title="Looking at columns with low cardinality.",
@@ -4226,7 +4226,7 @@ vColumns : vColumn
                     sql += "ELSE NULL END)::{} AS {}".format(ctype, split_predictor)
                 else:
                     sql = split_predictor
-                sql = "SELECT {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(
+                sql = "SELECT /*+LABEL('vDataframe.chaid')*/ {}, {}, (cnt / SUM(cnt) OVER (PARTITION BY {}))::float AS proba FROM (SELECT {}, {}, COUNT(*) AS cnt FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL GROUP BY 1, 2) x ORDER BY 1;".format(
                     split_predictor,
                     response,
                     split_predictor,
@@ -4661,7 +4661,7 @@ vColumns : vColumn
             kendall_type = None
         if (method == "kendall" and kendall_type == "b") or (method != "kendall"):
             val = self.corr(columns=[column1, column2], method=method)
-        sql = "SELECT COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
+        sql = "SELECT /*+LABEL('vDataframe.corr_pvalue')*/ COUNT(*) FROM {} WHERE {} IS NOT NULL AND {} IS NOT NULL;".format(
             self.__genSQL__(), column1, column2
         )
         n = executeSQL(
@@ -4688,7 +4688,7 @@ vColumns : vColumn
                 ", ".join([column1, column2]), self.__genSQL__(),
             )
             nc, nd = executeSQL(
-                f"SELECT {n_c}::float, {n_d}::float FROM {table};",
+                f"SELECT /*+LABEL('vDataframe.corr_pvalue')*/ {n_c}::float, {n_d}::float FROM {table};",
                 title="Computing nc and nd.",
                 method="fetchrow",
             )
@@ -4697,7 +4697,7 @@ vColumns : vColumn
                 Z = 3 * (nc - nd) / math.sqrt(n * (n - 1) * (2 * n + 5) / 2)
             elif kendall_type in ("b", "c"):
                 vt, v1_0, v2_0 = executeSQL(
-                    """SELECT 
+                    """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                             SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), 
                             SUM(verticapy_cnt * (verticapy_cnt - 1)), 
                             SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) 
@@ -4712,7 +4712,7 @@ vColumns : vColumn
                     method="fetchrow",
                 )
                 vu, v1_1, v2_1 = executeSQL(
-                    """SELECT 
+                    """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                             SUM(verticapy_cnt * (verticapy_cnt - 1) * (2 * verticapy_cnt + 5)), 
                             SUM(verticapy_cnt * (verticapy_cnt - 1)), 
                             SUM(verticapy_cnt * (verticapy_cnt - 1) * (verticapy_cnt - 2)) 
@@ -4731,7 +4731,7 @@ vColumns : vColumn
                 v2 = v2_0 * v2_1 / (9 * n * (n - 1) * (n - 2))
                 Z = (nc - nd) / math.sqrt((v0 - vt - vu) / 18 + v1 + v2)
                 if kendall_type == "c":
-                    sql = """SELECT 
+                    sql = """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                                 APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
                                 APPROXIMATE_COUNT_DISTINCT({1}) AS r 
                              FROM {2} 
@@ -4748,7 +4748,7 @@ vColumns : vColumn
                     val = 2 * (nc - nd) / (n * n * (m - 1) / m)
             pvalue = 2 * norm.sf(abs(Z))
         elif method == "cramer":
-            sql = """SELECT 
+            sql = """SELECT /*+LABEL('vDataframe.corr_pvalue')*/
                         APPROXIMATE_COUNT_DISTINCT({0}) AS k, 
                         APPROXIMATE_COUNT_DISTINCT({1}) AS r 
                      FROM {2} 
@@ -5398,7 +5398,7 @@ vColumns : vColumn
                         for fun in idx[1:]:
                             values[fun] += [self.__get_catalog_value__(column, fun)]
                 if col_to_compute:
-                    query = "SELECT SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(
+                    query = "SELECT /*+LABEL('vDataframe.describe')*/ SUMMARIZE_NUMCOL({}) OVER () FROM {}".format(
                         ", ".join(
                             [
                                 elem
@@ -5821,7 +5821,7 @@ vColumns : vColumn
             ", ".join(columns), self.__genSQL__()
         )
         total = executeSQL(
-            query="SELECT COUNT(*) FROM {}".format(query),
+            query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM {}".format(query),
             title="Computing the number of duplicates.",
             method="fetchfirstelem",
         )
@@ -5833,7 +5833,7 @@ vColumns : vColumn
             ),
         )
         result.count = executeSQL(
-            query="SELECT COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(
+            query="SELECT /*+LABEL('vDataframe.duplicated')*/ COUNT(*) FROM (SELECT {}, MAX(duplicated_index) AS occurrence FROM {} GROUP BY {}) t".format(
                 ", ".join(columns), query, ", ".join(columns)
             ),
             title="Computing the number of distinct duplicates.",
@@ -6066,7 +6066,7 @@ vColumns : vColumn
     str
         explain plan
         """
-        query = "EXPLAIN SELECT * FROM {}".format(self.__genSQL__())
+        query = "EXPLAIN SELECT /*+LABEL('vDataframe.explain')*/ * FROM {}".format(self.__genSQL__())
         result = executeSQL(
             query=query, title="Explaining the Current Relation", method="fetchall"
         )
@@ -6205,7 +6205,7 @@ vColumns : vColumn
             self._VERTICAPY_VARIABLES_["where"] += [(conditions, max_pos)]
             try:
                 new_count = executeSQL(
-                    "SELECT COUNT(*) FROM {}".format(self.__genSQL__()),
+                    "SELECT /*+LABEL('vDataframe.filter')*/ COUNT(*) FROM {}".format(self.__genSQL__()),
                     title="Computing the new number of elements.",
                     method="fetchfirstelem",
                 )
@@ -6264,7 +6264,7 @@ vColumns : vColumn
         """
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
         ts = self.format_colnames(ts)
-        query = "SELECT (MIN({}) + '{}'::interval)::varchar FROM {}".format(
+        query = "SELECT /*+LABEL('vDataframe.first')*/ (MIN({}) + '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         first_date = executeSQL(
@@ -7322,7 +7322,7 @@ vColumns : vColumn
         """
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
         ts = self.format_colnames(ts)
-        query = "SELECT (MAX({}) - '{}'::interval)::varchar FROM {}".format(
+        query = "SELECT /*+LABEL('vDataframe.last')*/ (MAX({}) - '{}'::interval)::varchar FROM {}".format(
             ts, offset, self.__genSQL__()
         )
         last_date = executeSQL(
@@ -7955,7 +7955,7 @@ vColumns : vColumn
             )
             try:
                 drop(tmp_view_name, method="view")
-                query = "CREATE VIEW {} AS SELECT * FROM {}".format(
+                query = "CREATE VIEW {} AS SELECT /*+LABEL('vDataframe.pacf')*/ * FROM {}".format(
                     tmp_view_name, relation
                 )
                 executeSQL(query, print_time_sql=False)
@@ -8925,13 +8925,13 @@ vColumns : vColumn
         try:
             if nb_precomputed == n * n:
                 result = executeSQL(
-                    "SELECT {}".format(", ".join(all_list)),
+                    "SELECT /*+LABEL('vDataframe.regr')*/ {}".format(", ".join(all_list)),
                     print_time_sql=False,
                     method="fetchrow",
                 )
             else:
                 result = executeSQL(
-                    query="SELECT {} FROM {}".format(
+                    query="SELECT /*+LABEL('vDataframe.regr')*/ {} FROM {}".format(
                         ", ".join(all_list), self.__genSQL__()
                     ),
                     title="Computing the {} Matrix.".format(method.upper()),
@@ -8946,7 +8946,7 @@ vColumns : vColumn
                 for j in range(0, n):
                     result += [
                         executeSQL(
-                            query="SELECT {}({}{}, {}{}) FROM {}".format(
+                            query="SELECT /*+LABEL('vDataframe.regr')*/ {}({}{}, {}{}) FROM {}".format(
                                 method.upper(),
                                 columns[i],
                                 cast_i,
@@ -9933,7 +9933,7 @@ vColumns : vColumn
         pre_comp = self.__get_catalog_value__("VERTICAPY_COUNT")
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return (pre_comp, m)
-        query = "SELECT COUNT(*) FROM {} LIMIT 1".format(self.__genSQL__())
+        query = "SELECT /*+LABEL('vDataframe.shape')*/ COUNT(*) FROM {} LIMIT 1".format(self.__genSQL__())
         self._VERTICAPY_VARIABLES_["count"] = executeSQL(
             query,
             title="Computing the total number of elements (COUNT(*))",
@@ -10319,7 +10319,7 @@ vColumns : vColumn
             elif header:
                 file.write(sep.join([column.replace('"', "") for column in columns]))
             result = executeSQL(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
+                "SELECT /*+LABEL('vDataframe.to_csv')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
                     ", ".join(columns),
                     self.__genSQL__(),
                     order_by,
@@ -10446,7 +10446,7 @@ vColumns : vColumn
                 self.__get_last_order_by__(),
             )
         else:
-            query = "CREATE {} {}{} AS SELECT {}{} FROM {}{}{}".format(
+            query = "CREATE {} {}{} AS SELECT /*+LABEL('vDataframe.to_db')*/ {}{} FROM {}{}{}".format(
                 relation_type.upper(),
                 name,
                 commit,
@@ -10515,7 +10515,7 @@ vColumns : vColumn
         if columns:
             columns += ", "
         columns += "ST_AsText({}) AS {}".format(geometry, geometry)
-        query = "SELECT {} FROM {}{}".format(
+        query = "SELECT /*+LABEL('vDataframe.to_geopandas')*/ {} FROM {}{}".format(
             columns, self.__genSQL__(), self.__get_last_order_by__()
         )
         data = executeSQL(
@@ -10612,7 +10612,7 @@ vColumns : vColumn
                 file = open("{0}/{1}.json".format(path, file_id), "w+")
             file.write("[\n")
             result = executeSQL(
-                "SELECT {} FROM {}{} LIMIT {} OFFSET {}".format(
+                "SELECT /*+LABEL('vDataframe.to_json')*/ {} FROM {}{} LIMIT {} OFFSET {}".format(
                     ", ".join(columns),
                     self.__genSQL__(),
                     order_by,
@@ -10649,7 +10649,7 @@ vColumns : vColumn
     List
         The list of the current vDataFrame relation.
         """
-        query = "SELECT * FROM {}{}".format(
+        query = "SELECT /*+LABEL('vDataframe.to_list')*/ * FROM {}{}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )
         result = executeSQL(
@@ -10693,7 +10693,7 @@ vColumns : vColumn
     pandas.DataFrame
         The pandas.DataFrame of the current vDataFrame relation.
         """
-        query = "SELECT * FROM {}{}".format(
+        query = "SELECT /*+LABEL('vDataframe.to_pandas')*/ * FROM {}{}".format(
             self.__genSQL__(), self.__get_last_order_by__()
         )
         data = executeSQL(
@@ -10911,7 +10911,7 @@ vColumns : vColumn
             ]
         )
         query = (
-            f"SELECT STV_SetExportShapefileDirectory(USING PARAMETERS path = '{path}');"
+            f"SELECT /*+LABEL('vDataframe.to_shp')*/ STV_SetExportShapefileDirectory(USING PARAMETERS path = '{path}');"
         )
         executeSQL(query=query, title="Setting SHP Export directory.")
         columns = (
@@ -10920,7 +10920,7 @@ vColumns : vColumn
             else [quote_ident(column) for column in usecols]
         )
         columns = ", ".join(columns)
-        query = f"SELECT STV_Export2Shapefile({columns} USING PARAMETERS shapefile = '{name}.shp', overwrite = {overwrite}, shape = '{shape}') OVER() FROM {self.__genSQL__()};"
+        query = f"SELECT /*+LABEL('vDataframe.to_shp')*/ STV_Export2Shapefile({columns} USING PARAMETERS shapefile = '{name}.shp', overwrite = {overwrite}, shape = '{shape}') OVER() FROM {self.__genSQL__()};"
         executeSQL(query=query, title="Exporting the SHP.")
         return self
 
@@ -10974,7 +10974,7 @@ vColumns : vColumn
             else random.randint(-10e6, 10e6)
         )
         random_func = "SEEDED_RANDOM({})".format(random_seed)
-        query = "SELECT APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(
+        query = "SELECT /*+LABEL('vDataframe.train_test_split')*/ APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = {}) FROM {}".format(
             random_func, test_size, self.__genSQL__()
         )
         q = executeSQL(

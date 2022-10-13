@@ -179,7 +179,7 @@ def hchart_from_vdf(
                     "{}", x
                 ) + " AS {}".format(x)
             else:
-                query = "SELECT {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
+                query = "SELECT /*+LABEL('highchart.hchart_from_vdf')*/ {}, {} FROM {} GROUP BY 1 ORDER BY 2 DESC LIMIT {}".format(
                     x, y, vdf.__genSQL__(), max_cardinality
                 )
                 result = executeSQL(
@@ -445,7 +445,7 @@ def hchart_from_vdf(
             else:
                 if len(y) == 1:
                     query = (
-                        "SELECT {0}, {1} FROM {2} "
+                        "SELECT /*+LABEL('highchart.hchart_from_vdf')*/ {0}, {1} FROM {2} "
                         "GROUP BY 1 ORDER BY 2 DESC LIMIT {3}"
                     ).format(x, y[0], vdf.__genSQL__(), max_cardinality)
                     result = executeSQL(
@@ -618,7 +618,7 @@ def hchartSQL(
 ):
     aggregate, stock = False, False
     data = executeSQL(
-        "SELECT * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query),
+        "SELECT /*+LABEL('highchart.hchartSQL')*/ * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query),
         method="fetchall",
         print_time_sql=False,
     )

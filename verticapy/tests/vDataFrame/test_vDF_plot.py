@@ -389,6 +389,7 @@ class TestvDFPlot:
         assert len(result.get_default_bbox_extra_artists()) == 32
         plt.close("all")
 
+    @pytest.mark.skip(reason="Python 3.6 VE could not install proper dependencies")
     def test_vDF_geo_plot(self, world_vd):
         assert (
             len(

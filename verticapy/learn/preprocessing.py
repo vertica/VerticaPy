@@ -103,7 +103,7 @@ vDataFrame
     )
     version(condition=[8, 1, 1])
     method = method.lower()
-    sql = "SELECT BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
+    sql = "SELECT /*+LABEL('learn.preprocessing.Balance')*/ BALANCE('{}', '{}', '{}', '{}_sampling' USING PARAMETERS sampling_ratio = {})".format(
         name, input_relation, y, method, ratio
     )
     executeSQL(sql, "Computing the Balanced Relation.")
@@ -248,7 +248,7 @@ max_text_size: int, optional
         )
         if self.parameters["ignore_special"]:
             text = "REGEXP_REPLACE({}, '[^a-zA-Z0-9\\s]+', '')".format(text)
-        sql = "INSERT INTO {}(text) SELECT {} FROM {}".format(
+        sql = "INSERT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/ INTO {}(text) SELECT {} FROM {}".format(
             tmp_name, text, self.input_relation
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 1].")
@@ -256,7 +256,7 @@ max_text_size: int, optional
             self.name, tmp_name
         )
         executeSQL(sql, "Computing the CountVectorizer [Step 2].")
-        stop_words = """SELECT 
+        stop_words = """SELECT /*+LABEL('learn.preprocessing.CountVectorizer.fit')*/
                             token 
                         FROM 
                             (SELECT 

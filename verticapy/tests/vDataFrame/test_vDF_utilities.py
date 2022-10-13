@@ -19,7 +19,7 @@ import os, pickle
 from math import ceil, floor
 
 # Other Modules
-import pandas, geopandas
+import pandas
 
 # VerticaPy
 from verticapy import (
@@ -306,7 +306,10 @@ class TestvDFUtilities:
         assert result_tmp.shape() == (20, 2)
         os.remove("save.p")
 
+    @pytest.mark.skip(reason="Python 3.6 VE could not install proper dependencies")
     def test_vDF_to_geopandas(self, world_vd):
+        import geopandas
+
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)
