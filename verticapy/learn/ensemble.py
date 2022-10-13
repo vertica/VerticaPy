@@ -386,7 +386,7 @@ class XGBoost_utils:
             len(self.classes_) == 2 and self.classes_[1] == 1 and self.classes_[0] == 0
         ):
             prior_ = executeSQL(
-                "SELECT AVG({}) FROM {} WHERE {}".format(
+                "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ AVG({}) FROM {} WHERE {}".format(
                     self.y, self.input_relation, " AND ".join(condition)
                 ),
                 method="fetchfirstelem",
@@ -396,14 +396,14 @@ class XGBoost_utils:
             prior_ = []
             for elem in self.classes_:
                 avg = executeSQL(
-                    "SELECT COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
+                    "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ COUNT(*) FROM {} WHERE {} AND {} = '{}'".format(
                         self.input_relation, " AND ".join(condition), self.y, elem
                     ),
                     method="fetchfirstelem",
                     print_time_sql=False,
                 )
                 avg /= executeSQL(
-                    "SELECT COUNT(*) FROM {} WHERE {}".format(
+                    "SELECT /*+LABEL('learn.ensemble.XGBoost_utils.get_prior')*/ COUNT(*) FROM {} WHERE {}".format(
                         self.input_relation, " AND ".join(condition)
                     ),
                     method="fetchfirstelem",

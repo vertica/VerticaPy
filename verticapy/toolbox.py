@@ -431,12 +431,12 @@ def get_random_function(rand_int=None):
 
 # ---#
 def get_session(add_username: bool = True):
-    query = "SELECT CURRENT_SESSION();"
+    query = "SELECT /*+LABEL(get_session)*/ CURRENT_SESSION();"
     result = executeSQL(query, method="fetchfirstelem", print_time_sql=False)
     result = result.split(":")[1]
     result = int(result, base=16)
     if add_username:
-        query = "SELECT USERNAME();"
+        query = "SELECT /*+LABEL(get_session)*/ USERNAME();"
         result = "{}_{}".format(
             executeSQL(query, method="fetchfirstelem", print_time_sql=False), result
         )
@@ -576,7 +576,7 @@ def insert_verticapy_schema(
     model_save: dict,
     category: str = "VERTICAPY_MODELS",
 ):
-    sql = "SELECT * FROM columns WHERE table_schema='verticapy';"
+    sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM columns WHERE table_schema='verticapy';"
     result = executeSQL(sql, method="fetchrow", print_time_sql=False)
     if not (result):
         warning_message = (
@@ -592,7 +592,7 @@ def insert_verticapy_schema(
         create_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         try:
             model_name = quote_ident(model_name)
-            sql = "SELECT * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+            sql = "SELECT /*+LABEL(insert_verticapy_schema)*/ * FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 model_name.lower()
             )
             result = executeSQL(sql, method="fetchrow", print_time_sql=False)
@@ -600,7 +600,7 @@ def insert_verticapy_schema(
                 raise NameError("The model named {} already exists.".format(model_name))
             else:
                 sql = (
-                    "INSERT INTO verticapy.models(model_name, category, "
+                    "INSERT /*+LABEL(insert_verticapy_schema)*/ INTO verticapy.models(model_name, category, "
                     "model_type, create_time, size) VALUES ('{}', '{}', '{}', "
                     "'{}', {});"
                 ).format(model_name, category, model_type, create_time, size)
@@ -608,7 +608,7 @@ def insert_verticapy_schema(
                 executeSQL("COMMIT;", print_time_sql=False)
                 for elem in model_save:
                     sql = (
-                        "INSERT INTO verticapy.attr(model_name, attr_name, value) "
+                        "INSERT /*+LABEL(insert_verticapy_schema)*/ INTO verticapy.attr(model_name, attr_name, value) "
                         "VALUES ('{0}', '{1}', '{2}');"
                     ).format(model_name, elem, str(model_save[elem]).replace("'", "''"))
                     executeSQL(sql, print_time_sql=False)

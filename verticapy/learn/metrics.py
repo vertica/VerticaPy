@@ -120,7 +120,7 @@ float or tuple of floats
         if isinstance(input_relation, str)
         else input_relation.__genSQL__()
     )
-    query = "SELECT {0} FROM {1} WHERE {2} IS NOT NULL AND {3} IS NOT NULL;".format(
+    query = "SELECT /*+LABEL('learn.metrics.compute_metric_query')*/ {0} FROM {1} WHERE {2} IS NOT NULL AND {3} IS NOT NULL;".format(
         metric.format(y_true, y_score), relation, y_true, y_score
     )
     return executeSQL(
@@ -263,7 +263,7 @@ tablesample
         if isinstance(input_relation, str)
         else input_relation.__genSQL__()
     )
-    query = """SELECT 
+    query = """SELECT /*+LABEL('learn.metrics.anova_table')*/
                   COUNT(*), 
                   AVG({0}) 
                FROM {2} 
@@ -274,7 +274,7 @@ tablesample
     n, avg = executeSQL(
         query, title="Computing n and the average of y.", method="fetchrow"
     )[0:2]
-    query = """SELECT 
+    query = """SELECT /*+LABEL('learn.metrics.anova_table')*/
                   SUM(POWER({0} - {2}, 2)), 
                   SUM(POWER({1} - {0}, 2)), 
                   SUM(POWER({1} - {2}, 2)) 
@@ -584,7 +584,7 @@ float
         "Computing the R2 Score.",
     )
     if adj and k > 0:
-        query = """SELECT COUNT(*) FROM {0} 
+        query = """SELECT /*+LABEL('learn.metrics.r2_score')*/ COUNT(*) FROM {0} 
                    WHERE {1} IS NOT NULL 
                      AND {2} IS NOT NULL;""".format(
             input_relation, y_true, y_score
@@ -638,7 +638,7 @@ tablesample
         if isinstance(input_relation, str)
         else input_relation.__genSQL__()
     )
-    query = """SELECT 
+    query = """SELECT /*+LABEL('learn.metrics.regression_report')*/
                     1 - VARIANCE({0} - {1}) / VARIANCE({0}), 
                     MAX(ABS({0} - {1})),
                     APPROXIMATE_MEDIAN(ABS({0} - {1})), 

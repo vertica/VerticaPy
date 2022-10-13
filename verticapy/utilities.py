@@ -251,13 +251,13 @@ bool
     if method == "auto":
         fail, end_conditions = False, False
         query = (
-            f"SELECT * FROM columns WHERE table_schema = '{schema}'"
+            f"SELECT /*+LABEL('utilities.drop')*/ * FROM columns WHERE table_schema = '{schema}'"
             f" AND table_name = '{relation}'"
         )
         result = executeSQL(query, print_time_sql=False, method="fetchrow")
         if not (result):
             query = (
-                f"SELECT * FROM view_columns WHERE table_schema = '{schema}'"
+                f"SELECT /*+LABEL('utilities.drop')*/ * FROM view_columns WHERE table_schema = '{schema}'"
                 f" AND table_name = '{relation}'"
             )
             result = executeSQL(query, print_time_sql=False, method="fetchrow")
@@ -267,7 +267,7 @@ bool
         if not (result):
             try:
                 query = (
-                    "SELECT model_type FROM verticapy.models WHERE "
+                    "SELECT /*+LABEL('utilities.drop')*/ model_type FROM verticapy.models WHERE "
                     "LOWER(model_name) = '{0}'"
                 ).format(quote_ident(name).lower())
                 result = executeSQL(query, print_time_sql=False, method="fetchrow")
@@ -277,14 +277,14 @@ bool
             method = "view"
             end_conditions = True
         if not (result):
-            query = f"SELECT * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
+            query = f"SELECT /*+LABEL('utilities.drop')*/ * FROM models WHERE schema_name = '{schema}' AND model_name = '{relation}'"
             result = executeSQL(query, print_time_sql=False, method="fetchrow")
         elif not (end_conditions):
             method = "model"
             end_conditions = True
         if not (result):
             query = (
-                "SELECT * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN "
+                "SELECT /*+LABEL('utilities.drop')*/ * FROM (SELECT STV_Describe_Index () OVER ()) x  WHERE name IN "
                 f"('{schema}.{relation}', '{relation}', '\"{schema}\".\"{relation}\"', "
                 f"'\"{relation}\"', '{schema}.\"{relation}\"', '\"{schema}\".{relation}')"
             )
@@ -294,7 +294,7 @@ bool
             end_conditions = True
         if not (result):
             try:
-                query = f'SELECT * FROM "{schema}"."{relation}" LIMIT 0;'
+                query = f'SELECT /*+LABEL(\'utilities.drop\')*/ * FROM "{schema}"."{relation}" LIMIT 0;'
                 executeSQL(query, print_time_sql=False)
                 method = "text"
             except:
@@ -312,7 +312,7 @@ bool
     if method == "model":
         model_type = kwds["model_type"] if "model_type" in kwds else None
         try:
-            query = "SELECT model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
+            query = "SELECT /*+LABEL('utilities.drop')*/ model_type FROM verticapy.models WHERE LOWER(model_name) = '{}'".format(
                 quote_ident(name).lower()
             )
             result = executeSQL(query, print_time_sql=False, method="fetchfirstelem")
@@ -340,7 +340,7 @@ bool
             elif model_type == "CountVectorizer":
                 drop(name, method="text")
                 query = (
-                    "SELECT value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
+                    "SELECT /*+LABEL('utilities.drop')*/ value FROM verticapy.attr WHERE LOWER(model_name) = '{0}' "
                     "AND attr_name = 'countvectorizer_table'"
                 ).format(quote_ident(name).lower())
                 res = executeSQL(query, print_time_sql=False, method="fetchrow")
@@ -355,12 +355,12 @@ bool
             elif model_type == "AutoDataPrep":
                 drop(name, method="table")
             if is_in_verticapy_schema:
-                sql = "DELETE FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
+                sql = "DELETE /*+LABEL('utilities.drop')*/ FROM verticapy.models WHERE LOWER(model_name) = '{}';".format(
                     quote_ident(name).lower()
                 )
                 executeSQL(sql, title="Deleting vModel.")
                 executeSQL("COMMIT;", title="Commit.")
-                sql = "DELETE FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
+                sql = "DELETE /*+LABEL('utilities.drop')*/ FROM verticapy.attr WHERE LOWER(model_name) = '{}';".format(
                     quote_ident(name).lower()
                 )
                 executeSQL(sql, title="Deleting vModel attributes.")
@@ -386,7 +386,7 @@ bool
                 raise
             result = False
     elif method == "temp":
-        sql = """SELECT 
+        sql = """SELECT /*+LABEL('utilities.drop')*/
                     table_schema, table_name 
                  FROM columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
@@ -397,7 +397,7 @@ bool
                 elem[0].replace('"', '""'), elem[1].replace('"', '""')
             )
             drop(table, method="table")
-        sql = """SELECT 
+        sql = """SELECT /*+LABEL('utilities.drop')*/
                     table_schema, table_name 
                  FROM view_columns 
                  WHERE LOWER(table_name) LIKE '%_verticapy_tmp_%' 
@@ -444,7 +444,7 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     count = executeSQL(
-        "SELECT COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query),
+        "SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query),
         method="fetchfirstelem",
         print_time_sql=False,
     )
@@ -545,7 +545,7 @@ list of tuples
         drop("{}.{}".format(schema, tmp_name), method="table")
         raise
     query = (
-        "SELECT column_name, data_type FROM columns WHERE {0}table_name = '{1}'"
+        "SELECT /*+LABEL('utilities.get_data_types')*/ column_name, data_type FROM columns WHERE {0}table_name = '{1}'"
         " AND table_schema = '{2}' ORDER BY ordinal_position"
     ).format(
         f"column_name = '{column_name}' AND " if (column_name) else "",
@@ -621,7 +621,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         schema = verticapy.options["temp_schema"]
     input_relation = "{}.{}".format(quote_ident(schema), quote_ident(table_name))
     if not (column_names):
-        query = f"""SELECT 
+        query = f"""SELECT /*+LABEL('utilities.insert_into')*/
                         column_name
                     FROM columns 
                     WHERE table_name = '{table_name}' 
@@ -638,7 +638,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
     cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
-        sql = "INSERT INTO {} ({}) VALUES ({})".format(
+        sql = "INSERT /*+LABEL('utilities.insert_into')*/ INTO {} ({}) VALUES ({})".format(
             input_relation,
             ", ".join(cols),
             ", ".join(["%s" for i in range(len(cols))]),
@@ -657,7 +657,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         if genSQL:
             sql = []
         i, n, total_rows = 0, len(data), 0
-        header = "INSERT INTO {} ({}) VALUES ".format(input_relation, ", ".join(cols))
+        header = "INSERT /*+LABEL('utilities.insert_into')*/ INTO {} ({}) VALUES ".format(input_relation, ", ".join(cols))
         for i in range(n):
             sql_tmp = "("
             for elem in data[i]:
@@ -932,18 +932,18 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Parsing the data.",
     )
     executeSQL(
-        f"SELECT compute_flextable_keys('{flex_name}');",
+        f"SELECT /*+LABEL('utilities.pcsv')*/ compute_flextable_keys('{flex_name}');",
         title="Guessing flex tables keys.",
     )
     result = executeSQL(
-        f"SELECT key_name, data_type_guess FROM {flex_name}_keys",
+        f"SELECT /*+LABEL('utilities.pcsv')*/ key_name, data_type_guess FROM {flex_name}_keys",
         title="Guessing the data types.",
         method="fetchall",
     )
     dtype = {}
     for column_dtype in result:
         try:
-            query = """SELECT 
+            query = """SELECT /*+LABEL('utilities.pcsv')*/
                         (CASE 
                             WHEN "{0}"=\'{1}\' THEN NULL 
                             ELSE "{0}" 
@@ -1073,11 +1073,11 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Ingesting the data.",
     )
     executeSQL(
-        "SELECT compute_flextable_keys('{}');".format(flex_name),
+        "SELECT /*+LABEL('utilities.pjson')*/ compute_flextable_keys('{}');".format(flex_name),
         title="Computing flex table keys.",
     )
     result = executeSQL(
-        "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),
+        "SELECT /*+LABEL('utilities.pjson')*/ key_name, data_type_guess FROM {}_keys".format(flex_name),
         title="Guessing data types.",
         method="fetchall",
     )
@@ -1232,7 +1232,7 @@ read_json : Ingests a JSON file into the Vertica database.
             "the table when ingesting multiple files."
         )
         table_name = path.split("/")[-2]
-    query = """SELECT 
+    query = """SELECT /*+LABEL('utilities.read_csv')*/
                     column_name 
                FROM columns 
                WHERE table_name = '{0}' 
@@ -1362,7 +1362,7 @@ read_json : Ingests a JSON file into the Vertica database.
             if query1:
                 executeSQL(query1, "Creating the table.")
             executeSQL(
-                query2.format("{}'{}'".format("LOCAL " if ingest_local else "", path)),
+                query2.format("{0}'{1}'".format("LOCAL " if ingest_local else "", path)),
                 "Ingesting the data.",
             )
             if (
@@ -1469,7 +1469,7 @@ read_csv : Ingests a CSV file into the Vertica database.
     if not (table_name):
         table_name = path.split("/")[-1].split(".json")[0]
     query = (
-        "SELECT column_name, data_type FROM columns WHERE table_name = '{0}' "
+        "SELECT /*+LABEL('utilities.read_json')*/ column_name, data_type FROM columns WHERE table_name = '{0}' "
         "AND table_schema = '{1}' ORDER BY ordinal_position"
     ).format(table_name.replace("'", "''"), schema.replace("'", "''"))
     column_name = executeSQL(
@@ -1502,11 +1502,11 @@ read_csv : Ingests a CSV file into the Vertica database.
             title="Ingesting the data in the flex table.",
         )
         executeSQL(
-            "SELECT compute_flextable_keys('{}');".format(flex_name),
+            "SELECT /*+LABEL('utilities.read_json')*/ compute_flextable_keys('{}');".format(flex_name),
             title="Computing flex table keys.",
         )
         result = executeSQL(
-            "SELECT key_name, data_type_guess FROM {}_keys".format(flex_name),
+            "SELECT /*+LABEL('utilities.read_json')*/ key_name, data_type_guess FROM {}_keys".format(flex_name),
             title="Guessing data types.",
             method="fetchall",
         )
@@ -1514,7 +1514,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         for column_dtype in result:
             try:
                 executeSQL(
-                    'SELECT "{}"::{} FROM {} LIMIT 1000'.format(
+                    'SELECT /*+LABEL(\'utilities.read_json\')*/ "{}"::{} FROM {} LIMIT 1000'.format(
                         column_dtype[0], column_dtype[1], flex_name
                     ),
                     print_time_sql=False,
@@ -1539,7 +1539,7 @@ read_csv : Ingests a CSV file into the Vertica database.
             temp = "TEMPORARY " if temporary_table else ""
             temp = "LOCAL TEMPORARY " if temporary_local_table else ""
             executeSQL(
-                "CREATE {}TABLE {}{} AS SELECT {} FROM {}".format(
+                "CREATE {}TABLE {}{} AS SELECT /*+LABEL('utilities.read_json')*/ {} FROM {}".format(
                     temp,
                     input_relation,
                     " ON COMMIT PRESERVE ROWS" if temp else "",
@@ -1578,7 +1578,7 @@ read_csv : Ingests a CSV file into the Vertica database.
                     ]
                 )
             executeSQL(
-                "INSERT INTO {} SELECT {} FROM {}".format(
+                "INSERT /*+LABEL('utilities.read_json')*/ INTO {} SELECT {} FROM {}".format(
                     input_relation, ", ".join(final_transformation), flex_name
                 ),
                 title="Inserting data into table.",
@@ -1624,7 +1624,7 @@ vDataFrame
     if file_extension != "shp":
         raise ExtensionError("The file extension is incorrect !")
     query = (
-        f"SELECT STV_ShpCreateTable(USING PARAMETERS file='{path}')"
+        f"SELECT /*+LABEL('utilities.read_shp')*/ STV_ShpCreateTable(USING PARAMETERS file='{path}')"
         " OVER() AS create_shp_table;"
     )
     result = executeSQL(query, title="Getting SHP definition.", method="fetchall")
@@ -1808,7 +1808,7 @@ def set_option(option: str, value: Union[bool, int, str] = None):
     elif option == "temp_schema":
         check_types([("value", value, [str])])
         if isinstance(value, str):
-            query = """SELECT 
+            query = """SELECT /*+LABEL('utilities.set_option')*/
                           schema_name 
                        FROM v_catalog.schemata 
                        WHERE schema_name = '{}' LIMIT 1;""".format(
@@ -2503,7 +2503,7 @@ list
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (verticapy.options["vertica_version"]):
         version = executeSQL(
-            "SELECT version();", title="Getting the version.", method="fetchfirstelem"
+            "SELECT /*+LABEL('utilities.version')*/ version();", title="Getting the version.", method="fetchfirstelem"
         ).split("Vertica Analytic Database v")[1]
         version = version.split(".")
         result = []

@@ -165,7 +165,7 @@ Attributes
             cast = "::float" if self.category() == "float" else ""
             if index < 0:
                 index += self.parent.shape()[0]
-            query = "SELECT {}{} FROM {}{} OFFSET {} LIMIT 1".format(
+            query = "SELECT /*+LABEL('vDataframe[].__getitem__')*/ {}{} FROM {}{} OFFSET {} LIMIT 1".format(
                 self.alias,
                 cast,
                 self.parent.__genSQL__(),
@@ -563,7 +563,7 @@ Attributes
 		"""
         check_types([("dtype", dtype, [str])])
         try:
-            query = "SELECT {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
+            query = "SELECT /*+LABEL('vDataframe[].astype')*/ {}::{} AS {} FROM {} WHERE {} IS NOT NULL LIMIT 20".format(
                 self.alias, dtype, self.alias, self.parent.__genSQL__(), self.alias
             )
             executeSQL(query, title="Testing the Type casting.")
@@ -1201,7 +1201,7 @@ Attributes
                     " FROM vdf_table WHERE {0} IS NOT NULL GROUP BY {0} ORDER BY COUNT(*)"
                     " DESC OFFSET {1}) VERTICAPY_SUBTABLE) ORDER BY count DESC"
                 ).format(self.alias, max_cardinality + 1)
-            query = "WITH vdf_table AS (SELECT * FROM {}) {}".format(
+            query = "WITH vdf_table AS (SELECT /*+LABEL('vDataframe[].describe')*/ * FROM {}) {}".format(
                 self.parent.__genSQL__(), query
             )
             query_result = executeSQL(
@@ -1361,7 +1361,7 @@ Attributes
                     )
                     for i in range(parameters["n_estimators"])
                 ]
-                query = "SELECT split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
+                query = "SELECT /*+LABEL('vDataframe[].discretize')*/ split_value FROM (SELECT split_value, MAX(weighted_information_gain) FROM ({}) VERTICAPY_SUBTABLE WHERE split_value IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY split_value::float".format(
                     " UNION ALL ".join(query), nbins - 1
                 )
                 result = executeSQL(
@@ -1413,7 +1413,7 @@ Attributes
             where = "WHERE _verticapy_row_nb_ IN ({})".format(
                 ", ".join(["1"] + nth_elems + [str(count)])
             )
-            query = "SELECT {} FROM (SELECT {}, ROW_NUMBER() OVER (ORDER BY {}) AS _verticapy_row_nb_ FROM {} WHERE {} IS NOT NULL) VERTICAPY_SUBTABLE {}".format(
+            query = "SELECT /*+LABEL('vDataframe[].discretize')*/ {} FROM (SELECT {}, ROW_NUMBER() OVER (ORDER BY {}) AS _verticapy_row_nb_ FROM {} WHERE {} IS NOT NULL) VERTICAPY_SUBTABLE {}".format(
                 self.alias,
                 self.alias,
                 self.alias,
@@ -1502,7 +1502,7 @@ Attributes
 	vDataFrame.topk : Returns the vColumn most occurent elements.
 		"""
         if "agg" not in kwargs:
-            query = "SELECT {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
+            query = "SELECT /*+LABEL('vDataframe[].distinct')*/ {} AS {} FROM {} WHERE {} IS NOT NULL GROUP BY {} ORDER BY {}".format(
                 bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
                 self.parent.__genSQL__(),
@@ -1511,7 +1511,7 @@ Attributes
                 self.alias,
             )
         else:
-            query = "SELECT {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
+            query = "SELECT /*+LABEL('vDataframe[].distinct')*/ {} FROM (SELECT {} AS {}, {} AS verticapy_agg FROM {} WHERE {} IS NOT NULL GROUP BY 1) x ORDER BY verticapy_agg DESC".format(
                 self.alias,
                 bin_spatial_to_str(self.category(), self.alias),
                 self.alias,
@@ -1582,7 +1582,7 @@ Attributes
             ]
             force_columns.remove(self.alias)
             executeSQL(
-                "SELECT * FROM {} LIMIT 10".format(
+                "SELECT /*+LABEL('vDataframe[].drop')*/ * FROM {} LIMIT 10".format(
                     self.parent.__genSQL__(force_columns=force_columns)
                 ),
                 print_time_sql=False,
@@ -1731,7 +1731,7 @@ Attributes
                 threshold * result["std"][0] + result["avg"][0],
             )
         else:
-            query = "SELECT PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
+            query = "SELECT /*+LABEL('vDataframe[].fill_outliers')*/ PERCENTILE_CONT({}) WITHIN GROUP (ORDER BY {}) OVER (), PERCENTILE_CONT(1 - {}) WITHIN GROUP (ORDER BY {}) OVER () FROM {} LIMIT 1".format(
                 alpha, self.alias, alpha, self.alias, self.parent.__genSQL__()
             )
             p_alpha, p_1_alpha = executeSQL(
@@ -1748,7 +1748,7 @@ Attributes
                 )
             )
         elif method == "mean":
-            query = "WITH vdf_table AS (SELECT * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
+            query = "WITH vdf_table AS (SELECT /*+LABEL('vDataframe[].fill_outliers')*/ * FROM {}) (SELECT AVG({}) FROM vdf_table WHERE {} < {}) UNION ALL (SELECT AVG({}) FROM vdf_table WHERE {} > {})".format(
                 self.parent.__genSQL__(),
                 self.alias,
                 self.alias,
@@ -1881,7 +1881,7 @@ Attributes
                 try:
                     if fun == "MEDIAN":
                         fun = "APPROXIMATE_MEDIAN"
-                    query = "SELECT {}, {}({}) FROM {} GROUP BY {};".format(
+                    query = "SELECT /*+LABEL('vDataframe[].fillna')*/ {}, {}({}) FROM {} GROUP BY {};".format(
                         by[0], fun, self.alias, self.parent.__genSQL__(), by[0]
                     )
                     result = executeSQL(
@@ -1904,7 +1904,7 @@ Attributes
                         ),
                     )
                     executeSQL(
-                        "SELECT {} FROM {} LIMIT 1".format(
+                        "SELECT /*+LABEL('vDataframe[].fillna')*/ {} FROM {} LIMIT 1".format(
                             new_column.format(self.alias), self.parent.__genSQL__()
                         ),
                         print_time_sql=False,
@@ -2677,7 +2677,7 @@ Attributes
         assert n >= 1, ParameterError("Parameter 'n' must be greater or equal to 1")
         where = " WHERE {} IS NOT NULL ".format(self.alias) if (dropna) else " "
         result = executeSQL(
-            "SELECT {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
+            "SELECT /*+LABEL('vDataframe[].mode')*/ {} FROM (SELECT {}, COUNT(*) AS _verticapy_cnt_ FROM {}{}GROUP BY {} ORDER BY _verticapy_cnt_ DESC LIMIT {}) VERTICAPY_SUBTABLE ORDER BY _verticapy_cnt_ ASC LIMIT 1".format(
                 self.alias, self.alias, self.parent.__genSQL__(), where, self.alias, n
             ),
             title="Computing the mode.",
@@ -2811,7 +2811,7 @@ Attributes
                 elif (n == 1) and (self.parent[by[0]].nunique() < 50):
                     try:
                         result = executeSQL(
-                            "SELECT {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
+                            "SELECT /*+LABEL('vDataframe[].normalize')*/ {}, AVG({}), STDDEV({}) FROM {} GROUP BY {}".format(
                                 by[0],
                                 self.alias,
                                 self.alias,
@@ -2857,7 +2857,7 @@ Attributes
                             ),
                         )
                         executeSQL(
-                            "SELECT {}, {} FROM {} LIMIT 1".format(
+                            "SELECT /*+LABEL('vDataframe[].normalize')*/ {}, {} FROM {} LIMIT 1".format(
                                 avg, stddev, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
@@ -2935,7 +2935,7 @@ Attributes
                 elif n == 1:
                     try:
                         result = executeSQL(
-                            "SELECT {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
+                            "SELECT /*+LABEL('vDataframe[].normalize')*/ {}, MIN({}), MAX({}) FROM {} GROUP BY {}".format(
                                 by[0],
                                 self.alias,
                                 self.alias,
@@ -2978,7 +2978,7 @@ Attributes
                             ),
                         )
                         executeSQL(
-                            "SELECT {}, {} FROM {} LIMIT 1".format(
+                            "SELECT /*+LABEL('vDataframe[].normalize')*/ {}, {} FROM {} LIMIT 1".format(
                                 cmax, cmin, self.parent.__genSQL__()
                             ),
                             print_time_sql=False,
@@ -3164,7 +3164,7 @@ Attributes
             table = "(SELECT DATEDIFF('second', '{}'::timestamp, {}) AS {} FROM {}) VERTICAPY_OPTIMAL_H_TABLE".format(
                 min_date, self.alias, self.alias, self.parent.__genSQL__()
             )
-            query = "SELECT COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
+            query = "SELECT /*+LABEL('vDataframe[].numh')*/ COUNT({}) AS NAs, MIN({}) AS min, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.25) AS Q1, APPROXIMATE_PERCENTILE({} USING PARAMETERS percentile = 0.75) AS Q3, MAX({}) AS max FROM {}".format(
                 self.alias, self.alias, self.alias, self.alias, self.alias, table
             )
             result = executeSQL(
@@ -3728,7 +3728,7 @@ Attributes
         if pre_comp != "VERTICAPY_NOT_PRECOMPUTED":
             return pre_comp
         store_usage = executeSQL(
-            "SELECT ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
+            "SELECT /*+LABEL('vDataframe[].storage_usage')*/ ZEROIFNULL(SUM(LENGTH({}::varchar))) FROM {}".format(
                 bin_spatial_to_str(self.category(), self.alias),
                 self.parent.__genSQL__(),
             ),
@@ -3997,7 +3997,7 @@ Attributes
         check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
         topk = "" if (k < 1) else "LIMIT {}".format(k)
         dropna = " WHERE {} IS NOT NULL".format(self.alias) if (dropna) else ""
-        query = "SELECT {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
+        query = "SELECT /*+LABEL('vDataframe[].topk')*/ {} AS {}, COUNT(*) AS _verticapy_cnt_, 100 * COUNT(*) / {} AS percent FROM {}{} GROUP BY {} ORDER BY _verticapy_cnt_ DESC {}".format(
             bin_spatial_to_str(self.category(), self.alias),
             self.alias,
             self.parent.shape()[0],

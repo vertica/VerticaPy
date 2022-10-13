@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="verticapy",
-    version="0.10.1",
+    version="0.11.0",
     author="Badr Ouali",
     author_email="badr.ouali@vertica.com",
     url="https://github.com/vertica/VerticaPy",
@@ -33,7 +33,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.6",
     install_requires=[
-        "matplotlib>=2.0",
+        "matplotlib<=3.5.3",
         "numpy>=1.11.0",
         "pandas>=0.23.0",
         "python-highcharts>=0.4.1",

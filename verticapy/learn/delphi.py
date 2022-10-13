@@ -385,7 +385,7 @@ final_relation_: vDataFrame
                 ] = f"({ts}::timestamp - (LAG({ts}) OVER ({by_tmp}ORDER BY {ts}))::timestamp) / '00:00:01'"
                 vdf_tmp = vdf_tmp.groupby(["verticapy_time_delta"], ["COUNT(*) AS cnt"])
                 rule = executeSQL(
-                    "SELECT verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(
+                    "SELECT /*+LABEL('learn.delphi.AutoDataPrep.fit')*/ verticapy_time_delta FROM {} ORDER BY cnt DESC LIMIT 1".format(
                         vdf_tmp.__genSQL__()
                     ),
                     method="fetchfirstelem",
