@@ -2001,7 +2001,7 @@ def compute_plot_variables(
         query = ""
         for idx, item in enumerate(query_result):
             if idx == 0:
-                query += "(SELECT /*+LABEL('plot.compute_plot_variables')*/ TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
+                query += "((SELECT /*+LABEL('plot.compute_plot_variables')*/ TIMESTAMPADD('second' , {}, '{}'::timestamp))".format(
                     math.floor(h * idx), min_date
                 )
             else:

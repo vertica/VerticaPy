@@ -638,7 +638,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         )
     cols = [quote_ident(col) for col in column_names]
     if copy and not (genSQL):
-        sql = "INSERT /*+LABEL('utilities.insert_into')*/ INTO {} ({}) VALUES ({})".format(
+        sql = "INSERT INTO {} ({}) VALUES ({})".format(
             input_relation,
             ", ".join(cols),
             ", ".join(["%s" for i in range(len(cols))]),
