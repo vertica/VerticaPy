@@ -19,7 +19,7 @@ import os, pickle
 from math import ceil, floor
 
 # Other Modules
-import pandas, geopandas
+# import pandas, geopandas
 
 # VerticaPy
 from verticapy import (
@@ -295,6 +295,8 @@ class TestvDFUtilities:
         assert result.shape == (20, 2)
 
     def test_vDF_to_pandas(self, titanic_vd):
+        import pandas
+
         result = titanic_vd.to_pandas()
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
@@ -307,6 +309,8 @@ class TestvDFUtilities:
         os.remove("save.p")
 
     def test_vDF_to_geopandas(self, world_vd):
+        import geopandas
+
         result = world_vd.to_geopandas(geometry="geometry")
         assert isinstance(result, geopandas.GeoDataFrame)
         assert result.shape == (177, 4)
