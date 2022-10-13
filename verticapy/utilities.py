@@ -657,7 +657,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         if genSQL:
             sql = []
         i, n, total_rows = 0, len(data), 0
-        header = "INSERT /*+LABEL('utilities.insert_into')*/ INTO {} ({}) VALUES ".format(input_relation, ", ".join(cols))
+        header = "INSERT INTO {} ({}) VALUES ".format(input_relation, ", ".join(cols))
         for i in range(n):
             sql_tmp = "("
             for elem in data[i]:
