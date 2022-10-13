@@ -153,7 +153,7 @@ def datatables_repr(
     data = clean_data(data)
     output = read_package_file("html/html_template_connected.html")
     style = "width:100%"
-    classes = ["display"]
+    classes = ["hover", "row-border"]
     if isinstance(classes, list):
         classes = " ".join(classes)
     tableId = str(uuid.uuid4())
