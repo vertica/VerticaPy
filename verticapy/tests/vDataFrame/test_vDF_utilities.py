@@ -19,7 +19,7 @@ import os, pickle
 from math import ceil, floor
 
 # Other Modules
-# import pandas, geopandas
+import pandas
 
 # VerticaPy
 from verticapy import (
@@ -295,8 +295,6 @@ class TestvDFUtilities:
         assert result.shape == (20, 2)
 
     def test_vDF_to_pandas(self, titanic_vd):
-        import pandas
-
         result = titanic_vd.to_pandas()
         assert isinstance(result, pandas.DataFrame)
         assert result.shape == (1234, 14)
@@ -308,6 +306,7 @@ class TestvDFUtilities:
         assert result_tmp.shape() == (20, 2)
         os.remove("save.p")
 
+    @pytest.mark.skip(reason="Python 3.6 VE could not install proper dependencies")
     def test_vDF_to_geopandas(self, world_vd):
         import geopandas
 
