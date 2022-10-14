@@ -1108,7 +1108,9 @@ xlim: list, optional
                         distance = "POWER({0}, {1})".format(distance, 1.0 / p)
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
                         L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(", ".join(L), vdf.__genSQL__())
+                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(
+                        ", ".join(L), vdf.__genSQL__()
+                    )
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1242,7 +1244,9 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map)
+                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(
+                    self.X[0], self.map
+                )
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y = [elem[0] for elem in result], [elem[1] for elem in result]
             else:

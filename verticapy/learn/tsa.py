@@ -383,7 +383,9 @@ papprox_ma: int, optional
             and self.parameters["s"] == 0
             and not (self.exogenous)
         ):
-            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ AVG({}) FROM {}".format(self.y, self.input_relation)
+            query = "SELECT /*+LABEL('learn.tsa.SARIMAX.fit')*/ AVG({}) FROM {}".format(
+                self.y, self.input_relation
+            )
             self.ma_avg_ = executeSQL(
                 query, method="fetchfirstelem", print_time_sql=False
             )
@@ -1333,7 +1335,9 @@ solver: str, optional
         view_name = gen_tmp_name(schema=schema, name="linear_reg")
         drop(view_name, method="view")
         try:
-            query = "CREATE VIEW {} AS SELECT /*+LABEL('learn.tsa.VAR.fit')*/ * FROM {}".format(view_name, relation)
+            query = "CREATE VIEW {} AS SELECT /*+LABEL('learn.tsa.VAR.fit')*/ * FROM {}".format(
+                view_name, relation
+            )
             executeSQL(query, print_time_sql=False)
             self.coef_ = []
             for elem in X:

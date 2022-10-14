@@ -515,7 +515,13 @@ col_sample_by_tree: float, optional
         return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
 
     # ---#
-    def deploySQL(self, X: list = [], cutoff: float = 0.7, contamination: float = None, return_score: bool = False):
+    def deploySQL(
+        self,
+        X: list = [],
+        cutoff: float = 0.7,
+        contamination: float = None,
+        return_score: bool = False,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
@@ -545,13 +551,20 @@ col_sample_by_tree: float, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types([("X", X, [list]), ("cutoff", cutoff, [float]), ("contamination", contamination, [float]), ("return_score", return_score, [bool])])
-        if contamination and not(return_score):
+        check_types(
+            [
+                ("X", X, [list]),
+                ("cutoff", cutoff, [float]),
+                ("contamination", contamination, [float]),
+                ("return_score", return_score, [bool]),
+            ]
+        )
+        if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
                 "'contamination' must be between 0.0 and 1.0, exclusive."
             )
-        elif not(return_score):
+        elif not (return_score):
             assert 0 < cutoff < 1, ParameterError(
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
@@ -633,7 +646,10 @@ col_sample_by_tree: float, optional
         vdf_return = vdf if inplace else vdf.copy()
 
         # Result
-        return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X))
+        return vdf_return.eval(
+            name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X)
+        )
+
 
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):

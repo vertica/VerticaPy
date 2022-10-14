@@ -435,7 +435,7 @@ dict
                 option_val = option_val.lower()
                 conn_info[option_name] = option_val in ("true", "t", "yes", "y")
 
-            elif (option_name != "session_label"):
+            elif option_name != "session_label":
                 conn_info[option_name] = option_val
 
         return conn_info

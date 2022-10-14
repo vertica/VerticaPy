@@ -442,7 +442,9 @@ float
         vdf.__genSQL__(),
     )
     d = executeSQL(
-        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
+        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
+            query
+        ),
         title="Computing the Durbin Watson d.",
         method="fetchfirstelem",
     )

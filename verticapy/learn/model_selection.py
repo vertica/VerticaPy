@@ -2891,7 +2891,9 @@ tablesample
         else input_relation.__genSQL__()
     )
     avg = executeSQL(
-        f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}", method="fetchfirstelem", print_time_sql=False
+        f"SELECT /*+LABEL('learn.model_selection.stepwise')*/ AVG({y}) FROM {table}",
+        method="fetchfirstelem",
+        print_time_sql=False,
     )
     k = 0 if criterion == "aic" else 1
     if x_order == "random":

@@ -444,7 +444,9 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
     while len(query) > 0 and query[-1] in (";", " "):
         query = query[:-1]
     count = executeSQL(
-        "SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(query),
+        "SELECT /*+LABEL('utilities.readSQL')*/ COUNT(*) FROM ({}) VERTICAPY_SUBTABLE".format(
+            query
+        ),
         method="fetchfirstelem",
         print_time_sql=False,
     )
@@ -795,10 +797,10 @@ read_json : Ingests a JSON file into the Vertica database.
         if str_cols:
             # to_csv is adding an undesired special character
             # we remove it
-            with open(path, 'r') as f:
+            with open(path, "r") as f:
                 filedata = f.read()
-            filedata = filedata.replace(',', ',')
-            with open(path, 'w') as f:
+            filedata = filedata.replace(",", ",")
+            with open(path, "w") as f:
                 f.write(filedata)
 
         if insert:
@@ -1073,11 +1075,15 @@ read_json : Ingests a JSON file into the Vertica database.
         title="Ingesting the data.",
     )
     executeSQL(
-        "SELECT /*+LABEL('utilities.pjson')*/ compute_flextable_keys('{}');".format(flex_name),
+        "SELECT /*+LABEL('utilities.pjson')*/ compute_flextable_keys('{}');".format(
+            flex_name
+        ),
         title="Computing flex table keys.",
     )
     result = executeSQL(
-        "SELECT /*+LABEL('utilities.pjson')*/ key_name, data_type_guess FROM {}_keys".format(flex_name),
+        "SELECT /*+LABEL('utilities.pjson')*/ key_name, data_type_guess FROM {}_keys".format(
+            flex_name
+        ),
         title="Guessing data types.",
         method="fetchall",
     )
@@ -1362,7 +1368,9 @@ read_json : Ingests a JSON file into the Vertica database.
             if query1:
                 executeSQL(query1, "Creating the table.")
             executeSQL(
-                query2.format("{0}'{1}'".format("LOCAL " if ingest_local else "", path)),
+                query2.format(
+                    "{0}'{1}'".format("LOCAL " if ingest_local else "", path)
+                ),
                 "Ingesting the data.",
             )
             if (
@@ -1502,11 +1510,15 @@ read_csv : Ingests a CSV file into the Vertica database.
             title="Ingesting the data in the flex table.",
         )
         executeSQL(
-            "SELECT /*+LABEL('utilities.read_json')*/ compute_flextable_keys('{}');".format(flex_name),
+            "SELECT /*+LABEL('utilities.read_json')*/ compute_flextable_keys('{}');".format(
+                flex_name
+            ),
             title="Computing flex table keys.",
         )
         result = executeSQL(
-            "SELECT /*+LABEL('utilities.read_json')*/ key_name, data_type_guess FROM {}_keys".format(flex_name),
+            "SELECT /*+LABEL('utilities.read_json')*/ key_name, data_type_guess FROM {}_keys".format(
+                flex_name
+            ),
             title="Guessing data types.",
             method="fetchall",
         )
@@ -1514,7 +1526,7 @@ read_csv : Ingests a CSV file into the Vertica database.
         for column_dtype in result:
             try:
                 executeSQL(
-                    'SELECT /*+LABEL(\'utilities.read_json\')*/ "{}"::{} FROM {} LIMIT 1000'.format(
+                    "SELECT /*+LABEL('utilities.read_json')*/ \"{}\"::{} FROM {} LIMIT 1000".format(
                         column_dtype[0], column_dtype[1], flex_name
                     ),
                     print_time_sql=False,
@@ -1643,6 +1655,88 @@ vDataFrame
     from verticapy import vDataFrame
 
     return vDataFrame(table_name, schema=schema)
+
+
+# ---#
+def save_to_query_profile(
+    name: str,
+    path: str = "",
+    json_dict: dict = {},
+    query_label: str = "verticapy_json",
+):
+    """
+---------------------------------------------------------------------------
+Send a query to the Vertica Database in order to save some information in
+the query profile table. It is used to save the methods usage and their
+parameters. The function generates a standard JSON string.
+
+Parameters
+----------
+name: str
+    Name of the method.
+path: str, optional
+    Path to the function or method.
+json_dict: dict, optional
+    Dictionary of the different parameters to store.
+query_label: str, optional
+    Name to give to the identifier in the query profile table.
+
+Returns
+-------
+str or bool
+    The generated query if the operation succeeded, False otherwise.
+    """
+    check_types(
+        [
+            ("name", name, [str]),
+            ("path", path, [str]),
+            ("json_dict", json_dict, [dict]),
+            ("query_label", query_label, [str]),
+        ]
+    )
+
+    def dict_to_json_string(name: str = "", json_dict: dict = {}):
+        json = "{"
+        if name:
+            json += f'"verticapy_fname": "{name}", '
+        if path:
+            json += f'"verticapy_fpath": "{path}", '
+        for elem in json_dict:
+            if not (isinstance(elem, str)):
+                raise ParameterError(
+                    "The keys of the parameter 'json_dict' should be of type string."
+                )
+            else:
+                json += f'"{elem}": '
+                if isinstance(json_dict[elem], (float, int)):
+                    json += "{0}".format(json_dict[elem])
+                elif json_dict[elem] is None:
+                    json += "null"
+                elif isinstance(json_dict[elem], bool):
+                    json += "true" if json_dict[elem] else "false"
+                elif isinstance(json_dict[elem], dict):
+                    json += dict_to_json_string(json_dict=json_dict[elem])
+                elif isinstance(json_dict[elem], list):
+                    json += '"{0}"'.format(
+                        ",".join([str(item) for item in json_dict[elem]])
+                    )
+                else:
+                    json += '"{0}"'.format(json_dict[elem])
+                json += ", "
+        json = json[:-2] + "}"
+        return json
+
+    query = "SELECT /*+LABEL('{0}')*/ '{1}'".format(
+        query_label.replace("'", "''"),
+        dict_to_json_string(name, json_dict).replace("'", "''"),
+    )
+    try:
+        executeSQL(
+            query, title="Sending query to save the information in query profile."
+        )
+        return query
+    except:
+        return False
 
 
 # ---#
@@ -2503,7 +2597,9 @@ list
         condition = condition + [0 for elem in range(4 - len(condition))]
     if not (verticapy.options["vertica_version"]):
         version = executeSQL(
-            "SELECT /*+LABEL('utilities.version')*/ version();", title="Getting the version.", method="fetchfirstelem"
+            "SELECT /*+LABEL('utilities.version')*/ version();",
+            title="Getting the version.",
+            method="fetchfirstelem",
         ).split("Vertica Analytic Database v")[1]
         version = version.split(".")
         result = []

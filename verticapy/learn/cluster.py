@@ -388,7 +388,9 @@ p: int, optional
                 title="Computing the DBSCAN Table [Step 2]",
             )
             self.n_noise_ = executeSQL(
-                "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(self.name),
+                "SELECT /*+LABEL('learn.cluster.DBSCAN.fit')*/ COUNT(*) FROM {0} WHERE dbscan_cluster = -1".format(
+                    self.name
+                ),
                 method="fetchfirstelem",
                 print_time_sql=False,
             )

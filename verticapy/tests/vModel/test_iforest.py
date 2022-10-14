@@ -87,8 +87,8 @@ class TestIsolationForest:
     def test_deploySQL(self, model):
         expected_sql = (
             '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
-            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
-            'threshold = 0.7)).is_anomaly)::int'
+            "USING PARAMETERS model_name = 'iforest_model_test', match_by_pos = 'true', "
+            "threshold = 0.7)).is_anomaly)::int"
         )
         result_sql = model.deploySQL()
 
@@ -96,20 +96,20 @@ class TestIsolationForest:
 
         expected_sql = (
             '((APPLY_IFOREST("Gender", "owned cars", "cost", "income", "TransPortation" '
-            'USING PARAMETERS model_name = \'iforest_model_test\', match_by_pos = \'true\', '
-            'contamination = 0.05)).is_anomaly)::int'
+            "USING PARAMETERS model_name = 'iforest_model_test', match_by_pos = 'true', "
+            "contamination = 0.05)).is_anomaly)::int"
         )
-        result_sql = model.deploySQL(contamination = 0.05)
+        result_sql = model.deploySQL(contamination=0.05)
 
         assert result_sql == expected_sql
 
         expected_sql = (
             '(APPLY_IFOREST("Gender", "owned cars", "cost", '
             '"income", "TransPortation" USING PARAMETERS '
-            'model_name = \'iforest_model_test\', '
-            'match_by_pos = \'true\')).anomaly_score'
+            "model_name = 'iforest_model_test', "
+            "match_by_pos = 'true')).anomaly_score"
         )
-        result_sql = model.deploySQL(return_score = True)
+        result_sql = model.deploySQL(return_score=True)
 
         assert result_sql == expected_sql
 
@@ -231,9 +231,7 @@ class TestIsolationForest:
             name="anomaly",
         )
 
-        assert iforest_data_copy["anomaly"].mean() == pytest.approx(
-            0.0, abs=1e-6
-        )
+        assert iforest_data_copy["anomaly"].mean() == pytest.approx(0.0, abs=1e-6)
 
         # TODO - contamination when v12.0.1 is in place
 
