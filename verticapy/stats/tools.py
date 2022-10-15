@@ -106,7 +106,15 @@ tablesample
     save_to_query_profile(
         name="adfuller",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column, "ts": ts, "by": by, "p": p, "with_trend": with_trend, "regresults": regresults,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "p": p,
+            "with_trend": with_trend,
+            "regresults": regresults,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -361,7 +369,12 @@ model
     save_to_query_profile(
         name="cochrane_orcutt",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "ts": ts, "prais_winsten": prais_winsten, "drop_tmp_model": drop_tmp_model,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "ts": ts,
+            "prais_winsten": prais_winsten,
+            "drop_tmp_model": drop_tmp_model,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -442,7 +455,12 @@ float
     save_to_query_profile(
         name="durbin_watson",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "eps": eps, "ts": ts, "by": by,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "eps": eps,
+            "ts": ts,
+            "by": by,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -501,7 +519,11 @@ tablesample
     save_to_query_profile(
         name="endogtest",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "eps": eps, "X": X,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "eps": eps,
+            "X": X,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -579,7 +601,13 @@ tablesample
     save_to_query_profile(
         name="het_arch",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "eps": eps, "ts": ts, "by": by, "p": p,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "eps": eps,
+            "ts": ts,
+            "by": by,
+            "p": p,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -670,7 +698,11 @@ tablesample
     save_to_query_profile(
         name="het_breuschpagan",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "eps": eps, "X": X,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "eps": eps,
+            "X": X,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -760,7 +792,14 @@ tablesample
     save_to_query_profile(
         name="het_goldfeldquandt",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "y": y, "X": X, "idx": idx, "split": split, "alternative": alternative,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "y": y,
+            "X": X,
+            "idx": idx,
+            "split": split,
+            "alternative": alternative,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -841,7 +880,11 @@ tablesample
     save_to_query_profile(
         name="het_white",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "eps": eps, "X": X,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "eps": eps,
+            "X": X,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -929,7 +972,11 @@ tablesample
     save_to_query_profile(
         name="jarque_bera",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column, "alpha": alpha,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+            "alpha": alpha,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -986,7 +1033,10 @@ tablesample
     save_to_query_profile(
         name="kurtosistest",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1054,7 +1104,15 @@ tablesample
     save_to_query_profile(
         name="ljungbox",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column, "ts": ts, "by": by, "p": p, "alpha": alpha, "box_pierce": box_pierce,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "p": p,
+            "alpha": alpha,
+            "box_pierce": box_pierce,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1131,7 +1189,12 @@ tablesample
     save_to_query_profile(
         name="adfuller",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column, "ts": ts, "alpha": alpha,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+            "ts": ts,
+            "alpha": alpha,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1228,7 +1291,10 @@ tablesample
     save_to_query_profile(
         name="normaltest",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1297,7 +1363,18 @@ vDataFrame
     save_to_query_profile(
         name="seasonal_decompose",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column, "ts": ts, "by": by, "period": period, "polynomial_order": polynomial_order, "estimate_seasonality": estimate_seasonality, "rule": rule, "mult": mult, "two_sided": two_sided,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "period": period,
+            "polynomial_order": polynomial_order,
+            "estimate_seasonality": estimate_seasonality,
+            "rule": rule,
+            "mult": mult,
+            "two_sided": two_sided,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1452,7 +1529,10 @@ tablesample
     save_to_query_profile(
         name="skewtest",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "column": column,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "column": column,
+        },
         query_label="verticapy_json",
     )
     # -#
@@ -1501,7 +1581,11 @@ float
     save_to_query_profile(
         name="variance_inflation_factor",
         path="stats.tools",
-        json_dict={"vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf), "X": X, "X_idx": X_idx,},
+        json_dict={
+            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "X": X,
+            "X_idx": X_idx,
+        },
         query_label="verticapy_json",
     )
     # -#

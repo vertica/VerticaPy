@@ -731,7 +731,13 @@ Attributes
         save_to_query_profile(
             name="bar",
             path="vcolumn.vColumn",
-            json_dict={"method": method, "of": of, "max_cardinality": max_cardinality, "nbins": nbins, "h": h,},
+            json_dict={
+                "method": method,
+                "of": of,
+                "max_cardinality": max_cardinality,
+                "nbins": nbins,
+                "h": h,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -797,7 +803,12 @@ Attributes
         save_to_query_profile(
             name="boxplot",
             path="vcolumn.vColumn",
-            json_dict={"by": by, "h": h, "max_cardinality": max_cardinality, "cat_priority": cat_priority,},
+            json_dict={
+                "by": by,
+                "h": h,
+                "max_cardinality": max_cardinality,
+                "cat_priority": cat_priority,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -948,7 +959,12 @@ Attributes
         save_to_query_profile(
             name="cut",
             path="vcolumn.vColumn",
-            json_dict={"breaks": breaks, "labels": labels, "include_lowest": include_lowest, "right": right,},
+            json_dict={
+                "breaks": breaks,
+                "labels": labels,
+                "include_lowest": include_lowest,
+                "right": right,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -1128,7 +1144,12 @@ Attributes
         save_to_query_profile(
             name="density",
             path="vcolumn.vColumn",
-            json_dict={"by": by, "kernel": kernel, "bandwidth": bandwidth, "nbins": nbins,},
+            json_dict={
+                "by": by,
+                "kernel": kernel,
+                "bandwidth": bandwidth,
+                "nbins": nbins,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -1252,7 +1273,11 @@ Attributes
         save_to_query_profile(
             name="describe",
             path="vcolumn.vColumn",
-            json_dict={"method": method, "max_cardinality": max_cardinality, "numcol": numcol,},
+            json_dict={
+                "method": method,
+                "max_cardinality": max_cardinality,
+                "numcol": numcol,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -1456,7 +1481,15 @@ Attributes
         save_to_query_profile(
             name="discretize",
             path="vcolumn.vColumn",
-            json_dict={"RFmodel_params": RFmodel_params, "return_enum_trans": return_enum_trans, "h": h, "response": response, "nbins": nbins, "method": method, "return_enum_trans": return_enum_trans,},
+            json_dict={
+                "RFmodel_params": RFmodel_params,
+                "return_enum_trans": return_enum_trans,
+                "h": h,
+                "response": response,
+                "nbins": nbins,
+                "method": method,
+                "return_enum_trans": return_enum_trans,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -1808,7 +1841,11 @@ Attributes
         save_to_query_profile(
             name="drop_outliers",
             path="vcolumn.vColumn",
-            json_dict={"threshold": threshold, "use_threshold": use_threshold, "alpha": alpha,},
+            json_dict={
+                "threshold": threshold,
+                "use_threshold": use_threshold,
+                "alpha": alpha,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -1910,7 +1947,12 @@ Attributes
         save_to_query_profile(
             name="fill_outliers",
             path="vcolumn.vColumn",
-            json_dict={"method": method, "alpha": alpha, "use_threshold": use_threshold, "threshold": threshold,},
+            json_dict={
+                "method": method,
+                "alpha": alpha,
+                "use_threshold": use_threshold,
+                "threshold": threshold,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -2024,7 +2066,13 @@ Attributes
         save_to_query_profile(
             name="fillna",
             path="vcolumn.vColumn",
-            json_dict={"val": val, "method": method, "expr": expr, "by": by, "order_by": order_by,},
+            json_dict={
+                "val": val,
+                "method": method,
+                "expr": expr,
+                "by": by,
+                "order_by": order_by,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -2289,7 +2337,12 @@ Attributes
         save_to_query_profile(
             name="one_hot_encode",
             path="vcolumn.vColumn",
-            json_dict={"prefix": prefix, "prefix_sep": prefix_sep, "drop_first": drop_first, "use_numbers_as_suffix": use_numbers_as_suffix,},
+            json_dict={
+                "prefix": prefix,
+                "prefix_sep": prefix_sep,
+                "drop_first": drop_first,
+                "use_numbers_as_suffix": use_numbers_as_suffix,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -2456,7 +2509,13 @@ Attributes
         save_to_query_profile(
             name="hist",
             path="vcolumn.vColumn",
-            json_dict={"method": method, "of": of, "max_cardinality": max_cardinality, "h": h, "nbins": nbins,},
+            json_dict={
+                "method": method,
+                "of": of,
+                "max_cardinality": max_cardinality,
+                "h": h,
+                "nbins": nbins,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -3659,7 +3718,13 @@ Attributes
         save_to_query_profile(
             name="pie",
             path="vcolumn.vColumn",
-            json_dict={"method": method, "of": of, "max_cardinality": max_cardinality, "h": h, "pie_type": pie_type,},
+            json_dict={
+                "method": method,
+                "of": of,
+                "max_cardinality": max_cardinality,
+                "h": h,
+                "pie_type": pie_type,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -3736,7 +3801,14 @@ Attributes
         save_to_query_profile(
             name="plot",
             path="vcolumn.vColumn",
-            json_dict={"ts": ts, "by": by, "start_date": start_date, "end_date": end_date, "area": area, "step": step,},
+            json_dict={
+                "ts": ts,
+                "by": by,
+                "start_date": start_date,
+                "end_date": end_date,
+                "area": area,
+                "step": step,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -3875,7 +3947,13 @@ Attributes
         save_to_query_profile(
             name="range_plot",
             path="vcolumn.vColumn",
-            json_dict={"ts": ts, "q": q, "start_date": start_date, "end_date": end_date, "plot_median": plot_median,},
+            json_dict={
+                "ts": ts,
+                "q": q,
+                "start_date": start_date,
+                "end_date": end_date,
+                "plot_median": plot_median,
+            },
             query_label="verticapy_json",
         )
         # -#
@@ -4127,7 +4205,13 @@ Attributes
         save_to_query_profile(
             name="spider",
             path="vcolumn.vColumn",
-            json_dict={"by": by, "method": method, "of": of, "max_cardinality": max_cardinality, "h": h,},
+            json_dict={
+                "by": by,
+                "method": method,
+                "of": of,
+                "max_cardinality": max_cardinality,
+                "h": h,
+            },
             query_label="verticapy_json",
         )
         # -#

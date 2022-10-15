@@ -294,9 +294,7 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
         save_to_query_profile(
             name="DummyTreeClassifier",
             path="learn.tree",
-            json_dict={
-                "name": name,
-            },
+            json_dict={"name": name,},
             query_label="verticapy_json",
         )
         # -#
@@ -335,9 +333,7 @@ class DummyTreeRegressor(Regressor, Tree):
         save_to_query_profile(
             name="DummyTreeRegressor",
             path="learn.tree",
-            json_dict={
-                "name": name,
-            },
+            json_dict={"name": name,},
             query_label="verticapy_json",
         )
         # -#
