@@ -2047,7 +2047,7 @@ attributes: dict
         save_to_query_profile(
             name="memModel",
             path="learn.memmodel",
-            json_dict={"model_type": model_type, "attributes": attributes,},
+            json_dict={"model_type": model_type,},
             query_label="verticapy_json",
         )
         # -#
