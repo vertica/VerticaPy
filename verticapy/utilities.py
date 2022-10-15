@@ -1864,6 +1864,9 @@ str or bool
     )
 
     def dict_to_json_string(name: str = "", json_dict: dict = {}):
+        from verticapy import vDataFrame
+        from verticapy.learn.vmodel import vModel
+
         json = "{"
         if name:
             json += f'"verticapy_fname": "{name}", '
@@ -1882,11 +1885,15 @@ str or bool
                     json += "null"
                 elif isinstance(json_dict[elem], bool):
                     json += "true" if json_dict[elem] else "false"
+                elif isinstance(json_dict[elem], vDataFrame):
+                    json += '"{0}"'.format(json_dict[elem].__genSQL__())
+                elif isinstance(json_dict[elem], vModel):
+                    json += '"{0}"'.format(json_dict[elem].type)
                 elif isinstance(json_dict[elem], dict):
                     json += dict_to_json_string(json_dict=json_dict[elem])
                 elif isinstance(json_dict[elem], list):
                     json += '"{0}"'.format(
-                        ",".join([str(item) for item in json_dict[elem]])
+                        ";".join([str(item) for item in json_dict[elem]])
                     )
                 else:
                     json += '"{0}"'.format(json_dict[elem])

@@ -112,7 +112,7 @@ tablesample
         name="create_index",
         path="geo",
         json_dict={
-            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "vdf": vdf,
             "gid": gid,
             "g": g,
             "index": index,
@@ -198,7 +198,7 @@ vDataFrame
         name="coordinate_converter",
         path="geo",
         json_dict={
-            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
+            "vdf": vdf,
             "x": x,
             "y": y,
             "x0": x0,
@@ -319,14 +319,7 @@ vDataFrame
     save_to_query_profile(
         name="intersect",
         path="geo",
-        json_dict={
-            "vdf": vdf.__genSQL__() if isinstance(vdf, vDataFrame) else str(vdf),
-            "index": index,
-            "gid": gid,
-            "g": g,
-            "x": x,
-            "y": y,
-        },
+        json_dict={"vdf": vdf, "index": index, "gid": gid, "g": g, "x": x, "y": y,},
         query_label="verticapy_json",
     )
     # -#

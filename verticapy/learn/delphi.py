@@ -181,6 +181,29 @@ final_relation_: vDataFrame
         identify_ts: bool = True,
         save: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="AutoDataPrep",
+            path="learn.delphi",
+            json_dict={
+                "name": name,
+                "cat_method": cat_method,
+                "num_method": num_method,
+                "nbins": nbins,
+                "outliers_threshold": outliers_threshold,
+                "na_method": na_method,
+                "cat_topk": cat_topk,
+                "rule": rule,
+                "normalize": normalize,
+                "normalize_min_cat": normalize_min_cat,
+                "apply_pca": apply_pca,
+                "id_method": id_method,
+                "identify_ts": identify_ts,
+                "save": save,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -480,6 +503,23 @@ model_: object
         },
         print_info: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="AutoClustering",
+            path="learn.delphi",
+            json_dict={
+                "name": name,
+                "n_cluster": n_cluster,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+                "print_info": print_info,
+                "preprocess_data": preprocess_data,
+                "preprocess_dict": preprocess_dict,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str]),
@@ -688,6 +728,33 @@ model_grid_ : tablesample
         preprocess_dict: dict = {"identify_ts": False},
         print_info: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="AutoML",
+            path="learn.delphi",
+            json_dict={
+                "name": name,
+                "estimator": estimator,
+                "estimator_type": estimator_type,
+                "metric": metric,
+                "cv": cv,
+                "pos_label": pos_label,
+                "cutoff": cutoff,
+                "nbins": nbins,
+                "lmax": lmax,
+                "optimized_grid": optimized_grid,
+                "print_info": print_info,
+                "stepwise": stepwise,
+                "stepwise_criterion": stepwise_criterion,
+                "stepwise_direction": stepwise_direction,
+                "stepwise_max_steps": stepwise_max_steps,
+                "stepwise_x_order": stepwise_x_order,
+                "preprocess_data": preprocess_data,
+                "preprocess_dict": preprocess_dict,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str]),
