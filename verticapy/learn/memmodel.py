@@ -56,6 +56,7 @@ from typing import Union
 # VerticaPy Modules
 from verticapy.toolbox import *
 from verticapy.errors import *
+from verticapy.utilities import save_to_query_profile
 
 # ---#
 def predict_from_nb(
@@ -2042,6 +2043,14 @@ attributes: dict
     #
     # ---#
     def __init__(self, model_type: str, attributes: dict):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="memModel",
+            path="learn.memmodel",
+            json_dict={"model_type": model_type, "attributes": attributes,},
+            query_label="verticapy_json",
+        )
+        # -#
         check_types(
             [
                 ("attributes", attributes, [dict]),

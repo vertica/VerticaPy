@@ -101,6 +101,22 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="ElasticNet",
+            path="learn.linear_model",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": solver,
+                "l1_ratio": l1_ratio,
+                "fit_intercept": fit_intercept,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
@@ -163,6 +179,21 @@ fit_intercept: bool, optional
         solver: str = "CGD",
         fit_intercept: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="Lasso",
+            path="learn.linear_model",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": solver,
+                "fit_intercept": fit_intercept,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LinearRegression", name
@@ -222,6 +253,20 @@ fit_intercept: bool, optional
         solver: str = "Newton",
         fit_intercept: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LinearRegression",
+            path="learn.linear_model",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "max_iter": max_iter,
+                "solver": solver,
+                "fit_intercept": fit_intercept,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 0, 0])
         check_types(
             [
@@ -300,6 +345,23 @@ fit_intercept: bool, optional
         l1_ratio: float = 0.5,
         fit_intercept: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LogisticRegression",
+            path="learn.linear_model",
+            json_dict={
+                "name": name,
+                "penalty": penalty,
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": solver,
+                "l1_ratio": l1_ratio,
+                "fit_intercept": fit_intercept,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 0, 0])
         check_types([("name", name, [str]), ("fit_intercept", fit_intercept, [bool])])
         self.type, self.name = "LogisticRegression", name
@@ -371,6 +433,21 @@ fit_intercept: bool, optional
         solver: str = "Newton",
         fit_intercept: bool = True,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="Ridge",
+            path="learn.linear_model",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "C": C,
+                "max_iter": max_iter,
+                "solver": solver,
+                "fit_intercept": fit_intercept,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 0, 0])
         check_types(
             [
