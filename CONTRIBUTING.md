@@ -420,6 +420,16 @@ executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fet
   135,
   'Montreal, PQ / Chesterville, ON']]
 ```
+The last thing to know before writing an entire function is the save_to_query_profile() method. It is used to save the method call in a specific Vertica table. This table can be used to run statistics or in order to debug some code.
+
+The function is quite simple and it uses 4 main parameters:
+ - name: it is the name of the function.
+ - path: it is the location of the function. For example, the method corr of the vDataFrame is located in vdataframe.vDataFrame.
+ - json_dict: it is the dictionary of the different parameters.
+ - query_label: it is the name to give to the identifier column in the query profile table.
+
+You'll understand quickly how to use the function in the following examples.
+
 For example, let's create a method to compute the correlations between two vDataFrame columns.
 ```python
 # Example correlation method for a vDataFrame
@@ -447,6 +457,12 @@ def pearson(self, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", # name of the function - pearson
+                          path="vdataframe.vDataFrame", # function location
+                          json_dict={"column1": column1, # function parameters
+                                     "column2": column2,},
+                          query_label="vertica_json",) # name of the label
     # Check data types
     check_types([("column1", column1, [str]),
                  ("column2", column2, [str]),])
@@ -491,6 +507,11 @@ def pearson(self, column: str,):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", 
+                          path="vcolumn.vColumn", 
+                          json_dict={"column": column,},
+                          query_label="vertica_json",)
     # Check data types
     check_types([("column", column, [str]),])
     # Check if the column belongs to the vDataFrame 
@@ -540,6 +561,13 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", 
+                          path="vdataframe", 
+                          json_dict={"vdf": vdf,
+                                     "column1": column1,
+                                     "column2": column2,},
+                          query_label="vertica_json",)
     # Check data types
     check_types([("vdf", vdf, [vDataFrame]),
                  ("column1", column1, [str]),

@@ -2230,9 +2230,7 @@ list of dict
     save_to_query_profile(
         name="parameter_grid",
         path="learn.model_selection",
-        json_dict={
-            "param_grid": param_grid,
-        },
+        json_dict={"param_grid": param_grid,},
         query_label="verticapy_json",
     )
     # -#
@@ -2284,13 +2282,7 @@ tablesample
     save_to_query_profile(
         name="plot_acf_pacf",
         path="learn.model_selection",
-        json_dict={
-            "vdf": vdf,
-            "column": column,
-            "ts": ts,
-            "by": by,
-            "p": p,
-        },
+        json_dict={"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
         query_label="verticapy_json",
     )
     # -#

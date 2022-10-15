@@ -1831,6 +1831,7 @@ def save_to_query_profile(
     path: str = "",
     json_dict: dict = {},
     query_label: str = "verticapy_json",
+    return_query: bool = False,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1848,45 +1849,46 @@ json_dict: dict, optional
     Dictionary of the different parameters to store.
 query_label: str, optional
     Name to give to the identifier in the query profile table.
+return_query: bool, optional
+    If set to True, the query is returned.
 
 Returns
 -------
 str or bool
-    The generated query if the operation succeeded, False otherwise.
+    True if the operation succeeded, False otherwise.
     """
-    check_types(
-        [
-            ("name", name, [str]),
-            ("path", path, [str]),
-            ("json_dict", json_dict, [dict]),
-            ("query_label", query_label, [str]),
-        ]
-    )
+    try:
+        check_types(
+            [
+                ("name", name, [str]),
+                ("path", path, [str]),
+                ("json_dict", json_dict, [dict]),
+                ("query_label", query_label, [str]),
+                ("return_query", return_query, [bool]),
+            ]
+        )
 
-    def dict_to_json_string(name: str = "", json_dict: dict = {}):
-        from verticapy import vDataFrame
-        from verticapy.learn.vmodel import vModel
+        def dict_to_json_string(name: str = "", json_dict: dict = {}):
+            from verticapy import vDataFrame
+            from verticapy.learn.vmodel import vModel
 
-        json = "{"
-        if name:
-            json += f'"verticapy_fname": "{name}", '
-        if path:
-            json += f'"verticapy_fpath": "{path}", '
-        for elem in json_dict:
-            if not (isinstance(elem, str)):
-                raise ParameterError(
-                    "The keys of the parameter 'json_dict' should be of type string."
-                )
-            else:
-                json += f'"{elem}": '
-                if isinstance(json_dict[elem], (float, int)):
+            json = "{"
+            if name:
+                json += f'"verticapy_fname": "{name}", '
+            if path:
+                json += f'"verticapy_fpath": "{path}", '
+            for elem in json_dict:
+                json += '"{0}": '.format(str(elem))
+                if isinstance(json_dict[elem], bool):
+                    json += "true" if json_dict[elem] else "false"
+                elif isinstance(json_dict[elem], (float, int)):
                     json += "{0}".format(json_dict[elem])
                 elif json_dict[elem] is None:
                     json += "null"
-                elif isinstance(json_dict[elem], bool):
-                    json += "true" if json_dict[elem] else "false"
                 elif isinstance(json_dict[elem], vDataFrame):
-                    json += '"{0}"'.format(json_dict[elem].__genSQL__())
+                    json += '"{0}"'.format(
+                        json_dict[elem].__genSQL__().replace('"', '\\"')
+                    )
                 elif isinstance(json_dict[elem], vModel):
                     json += '"{0}"'.format(json_dict[elem].type)
                 elif isinstance(json_dict[elem], dict):
@@ -1896,20 +1898,21 @@ str or bool
                         ";".join([str(item) for item in json_dict[elem]])
                     )
                 else:
-                    json += '"{0}"'.format(json_dict[elem])
+                    json += '"{0}"'.format(str(json_dict[elem]).replace('"', '\\"'))
                 json += ", "
-        json = json[:-2] + "}"
-        return json
+            json = json[:-2] + "}"
+            return json
 
-    query = "SELECT /*+LABEL('{0}')*/ '{1}'".format(
-        query_label.replace("'", "''"),
-        dict_to_json_string(name, json_dict).replace("'", "''"),
-    )
-    try:
-        executeSQL(
-            query, title="Sending query to save the information in query profile."
+        query = "SELECT /*+LABEL('{0}')*/ '{1}'".format(
+            query_label.replace("'", "''"),
+            dict_to_json_string(name, json_dict).replace("'", "''"),
         )
-        return query
+        if return_query:
+            return query
+        executeSQL(
+            query, title="Sending query to save the information in query profile table."
+        )
+        return True
     except:
         return False
 
