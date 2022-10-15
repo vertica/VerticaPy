@@ -202,6 +202,19 @@ Returns
 tuple of floats
     (AIC, BIC)
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="aic_bic",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "k": k,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types([("k", k, [int])])
     rss, n = compute_metric_query(
         "SUM(POWER({0} - {1}, 2)), COUNT(*)",
@@ -250,6 +263,19 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="anova_table",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "k": k,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -331,6 +357,18 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="explained_variance",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return compute_metric_query(
         "1 - VARIANCE({1} - {0}) / VARIANCE({0})",
         y_true,
@@ -362,6 +400,18 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="max_error",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return compute_metric_query(
         "MAX(ABS({0} - {1}))::FLOAT",
         y_true,
@@ -395,6 +445,18 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="mean_absolute_error",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return compute_metric_query(
         "AVG(ABS({0} - {1}))",
         y_true,
@@ -433,6 +495,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="mean_squared_error",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "root": root,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types([("root", root, [bool])])
     result = compute_metric_query(
         "MSE({0}, {1}) OVER ()", y_true, y_score, input_relation, "Computing the MSE."
@@ -466,6 +541,18 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="mean_squared_log_error",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return compute_metric_query(
         "AVG(POW(LOG({0} + 1) - LOG({1} + 1), 2))",
         y_true,
@@ -499,6 +586,18 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="median_absolute_error",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return compute_metric_query(
         "APPROXIMATE_MEDIAN(ABS({0} - {1}))",
         y_true,
@@ -534,6 +633,19 @@ Returns
 float
     score
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="quantile_error",
+        path="learn.metrics",
+        json_dict={
+            "q": q,
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types([("q", q, [int, float])])
     metric = (
         "APPROXIMATE_PERCENTILE(ABS({0} - {1}) USING PARAMETERS percentile = {2})"
@@ -575,6 +687,20 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="r2_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "k": k,
+            "adj": adj,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types([("k", k, [int]), ("adj", adj, [bool])])
     result = compute_metric_query(
         "RSQUARED({0}, {1}) OVER()",
@@ -625,6 +751,19 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="regression_report",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "k": k,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -726,6 +865,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="accuracy_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -793,6 +945,20 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="auc",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+            "nbins": nbins,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return roc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_roc=True
     )
@@ -846,6 +1012,22 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="classification_report",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "labels": labels,
+            "cutoff": cutoff,
+            "estimator": estimator,
+            "nbins": nbins,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -1003,6 +1185,19 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="confusion_matrix",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -1073,6 +1268,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="critical_success_index",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     csi = tp / (tp + fn + fp) if (tp + fn + fp != 0) else 0
     return csi
@@ -1108,6 +1316,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="f1_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
@@ -1149,6 +1370,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="informedness",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tpr = tp / (tp + fn) if (tp + fn != 0) else 0
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
@@ -1185,6 +1419,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="log_loss",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     metric = (
         "AVG(CASE WHEN {0} = '{1}' THEN - LOG({2}::float + 1e-90)"
         " ELSE - LOG(1 - {3}::float + 1e-90) END)"
@@ -1224,6 +1471,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="markedness",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     ppv = tp / (tp + fp) if (tp + fp != 0) else 0
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
@@ -1261,6 +1521,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="matthews_corrcoef",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     mcc = (
         (tp * tn - fp * fn) / math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
@@ -1297,6 +1570,19 @@ tablesample
  	An object containing the result. For more information, see
  	utilities.tablesample.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="multilabel_confusion_matrix",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "labels": labels,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     check_types(
         [
             ("y_true", y_true, [str]),
@@ -1367,6 +1653,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="negative_predictive_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     npv = tn / (tn + fn) if (tn + fn != 0) else 0
     return npv
@@ -1409,6 +1708,20 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="prc_auc",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+            "nbins": nbins,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     return prc_curve(
         y_true, y_score, input_relation, pos_label, nbins=nbins, auc_prc=True
     )
@@ -1444,6 +1757,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="precision_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     precision = tp / (tp + fp) if (tp + fp != 0) else 0
     return precision
@@ -1479,6 +1805,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="recall_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     recall = tp / (tp + fn) if (tp + fn != 0) else 0
     return recall
@@ -1514,6 +1853,19 @@ Returns
 float
 	score
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="specificity_score",
+        path="learn.metrics",
+        json_dict={
+            "y_true": y_true,
+            "y_score": y_score,
+            "input_relation": input_relation,
+            "pos_label": pos_label,
+        },
+        query_label="verticapy_json",
+    )
+    # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
     tnr = tn / (tn + fp) if (tn + fp != 0) else 0
     return tnr
