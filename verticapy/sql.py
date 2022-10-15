@@ -78,11 +78,21 @@ from verticapy import (
     tablesample,
     clean_query,
     replace_vars_in_query,
+    save_to_query_profile,
 )
 
 # ---#
 @needs_local_scope
 def sql(line, cell="", local_ns=None):
+
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="sql_magic",
+        path="sql",
+        json_dict={"line": line, "cell": cell,},
+        query_label="verticapy_json",
+    )
+    # -#
 
     # We don't want to display the query/time twice if the options are still on
     # So we save the previous configuration and turn them off.
