@@ -65,6 +65,7 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     get_magic_options,
+    save_to_query_profile,
 )
 from verticapy.highchart import hchartSQL
 

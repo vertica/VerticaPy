@@ -50,6 +50,7 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
+from verticapy.utilities import save_to_query_profile
 
 # Standard Python Modules
 from typing import Union
@@ -164,6 +165,22 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="DecisionTreeClassifier",
+            path="learn.tree",
+            json_dict={
+                "name": name,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
@@ -226,6 +243,22 @@ class DecisionTreeRegressor(Regressor, Tree):
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="DecisionTreeRegressor",
+            path="learn.tree",
+            json_dict={
+                "name": name,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
@@ -257,6 +290,16 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
     """
 
     def __init__(self, name: str):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="DummyTreeClassifier",
+            path="learn.tree",
+            json_dict={
+                "name": name,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestClassifier", name
@@ -288,6 +331,16 @@ class DummyTreeRegressor(Regressor, Tree):
     """
 
     def __init__(self, name: str):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="DummyTreeRegressor",
+            path="learn.tree",
+            json_dict={
+                "name": name,
+            },
+            query_label="verticapy_json",
+        )
+        # -#
         version(condition=[9, 0, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "RandomForestRegressor", name
