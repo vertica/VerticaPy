@@ -73,6 +73,14 @@ steps: list
 	"""
 
     def __init__(self, steps: list):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="Pipeline",
+            path="learn.pipeline",
+            json_dict={"steps": steps,},
+            query_label="verticapy_json",
+        )
+        # -#
         check_types([("steps", steps, [list])])
         self.type = "Pipeline"
         self.steps = []

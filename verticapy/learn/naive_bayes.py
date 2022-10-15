@@ -50,6 +50,7 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
+from verticapy.utilities import save_to_query_profile
 
 # ---#
 class NaiveBayes(MulticlassClassifier):
@@ -84,6 +85,15 @@ nbtype: str, optional
 	"""
 
     def __init__(self, name: str, alpha: float = 1.0, nbtype: str = "auto"):
+
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="NaiveBayes",
+            path="learn.naive_bayes",
+            json_dict={"name": name, "alpha": alpha, "nbtype": nbtype,},
+            query_label="verticapy_json",
+        )
+        # -#
 
         nbtype_vals = ["auto", "bernoulli", "categorical", "multinomial", "gaussian"]
         check_types(
