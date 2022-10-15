@@ -672,7 +672,7 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
         json_dict={
             "table_name": table_name,
             "schema": schema,
-            "column_name": column_name,
+            "column_names": column_names,
             "copy": copy,
             "genSQL": genSQL,
         },
