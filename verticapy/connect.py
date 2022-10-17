@@ -398,7 +398,7 @@ dict
             "session_label": "verticapy-"
             + verticapy.__version__
             + "-"
-            + str(verticapy.options["identifier"]),
+            + verticapy.options["identifier"],
         }
 
         for option_name, option_val in options:
@@ -522,6 +522,6 @@ conn
         "session_label": "verticapy-"
         + verticapy.__version__
         + "-"
-        + str(verticapy.options["identifier"]),
+        + verticapy.options["identifier"],
     }
     return vertica_python.connect(**conn_info)
