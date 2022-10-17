@@ -418,7 +418,7 @@ class TestUtilities:
         )
         assert (
             q
-            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"verticapy_fpath": "test_path.test_value", "Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         # with identifier
         q2 = save_to_query_profile(
@@ -462,7 +462,6 @@ class TestUtilities:
         assert "X4" in all_keys
         assert "X5.1" in all_keys
         assert "X5.None" in all_keys
-        assert "X5.verticapy_fpath" in all_keys
         assert "X5.Y0" in all_keys
         save_to_query_profile(
             name="test",
