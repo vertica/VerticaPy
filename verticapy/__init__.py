@@ -74,6 +74,9 @@ import verticapy.stats
 # Learn
 import verticapy.learn
 
+# Other Modules
+import random
+
 verticapy.options = {
     "cache": True,
     "colors": [],
@@ -82,6 +85,7 @@ verticapy.options = {
     "interactive": False,
     "count_on": False,
     "footer_on": True,
+    "identifier": random.randint(0, 1000000000),
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,

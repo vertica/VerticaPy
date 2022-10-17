@@ -1832,6 +1832,7 @@ def save_to_query_profile(
     json_dict: dict = {},
     query_label: str = "verticapy_json",
     return_query: bool = False,
+    add_identifier: bool = True,
 ):
     """
 ---------------------------------------------------------------------------
@@ -1851,6 +1852,8 @@ query_label: str, optional
     Name to give to the identifier in the query profile table.
 return_query: bool, optional
     If set to True, the query is returned.
+add_identifier: bool, optional
+    If set to True, the verticapy identifier is added in the json.
 
 Returns
 -------
@@ -1865,6 +1868,7 @@ str or bool
                 ("json_dict", json_dict, [dict]),
                 ("query_label", query_label, [str]),
                 ("return_query", return_query, [bool]),
+                ("add_identifier", add_identifier, [bool]),
             ]
         )
 
@@ -1877,6 +1881,10 @@ str or bool
                 json += f'"verticapy_fname": "{name}", '
             if path:
                 json += f'"verticapy_fpath": "{path}", '
+            if add_identifier:
+                json += f'"verticapy_id": "{0}", '.format(
+                    verticapy.options["identifier"]
+                )
             for elem in json_dict:
                 json += '"{0}": '.format(str(elem))
                 if isinstance(json_dict[elem], bool):

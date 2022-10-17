@@ -392,7 +392,14 @@ dict
     if confparser.has_section(section):
 
         options = confparser.items(section)
-        conn_info = {"port": 5433, "user": "dbadmin", "session_label": "verticapy"}
+        conn_info = {
+            "port": 5433,
+            "user": "dbadmin",
+            "session_label": "verticapy-"
+            + verticapy.__version__
+            + "-"
+            + str(verticapy.options["identifier"]),
+        }
 
         for option_name, option_val in options:
 
@@ -512,6 +519,9 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": "verticapy",
+        "session_label": "verticapy-"
+        + verticapy.__version__
+        + "-"
+        + str(verticapy.options["identifier"]),
     }
     return vertica_python.connect(**conn_info)
