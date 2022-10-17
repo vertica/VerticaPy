@@ -420,16 +420,14 @@ executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fet
   135,
   'Montreal, PQ / Chesterville, ON']]
 ```
-The last thing to know before writing an entire function is the save_to_query_profile() method. It is used to save the method call in a specific Vertica table. This table can be used to run statistics or in order to debug some code.
+The save_to_query_profile() method is used to save the method call in a Vertica table. This table is used to run statistics and for debugging purposes.
 
-The function is quite simple and it uses 3 main parameters:
- - name: it is the name of the function.
- - path: it is the location of the function. For example, the method corr of the vDataFrame is located in vdataframe.vDataFrame.
- - json_dict: it is the dictionary of the different parameters.
+The save_to_query_profile() function uses three main parameters:
+ - name: The name of the method.
+ - path: The location of the method. For example, the method corr() of the vDataFrame is located in vdataframe.vDataFrame.
+ - json_dict: A dictionary of the parameters to store.
 
-You'll understand quickly how to use the function in the following examples.
-
-For example, let's create a method to compute the correlations between two vDataFrame columns.
+For example, to create a method to compute the correlations between two vDataFrame columns:
 ```python
 # Example correlation method for a vDataFrame
 
@@ -470,7 +468,7 @@ def pearson(self, column1: str, column2: str):
     column1, column2 = self.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = self.__genSQL__()
-    # Create the SQL statement - Do not forget to label the query whenever it is possible
+    # Create the SQL statement - Label the query when possible
     query = f"SELECT /*+LABEL(vDataFrame.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
@@ -520,7 +518,7 @@ def pearson(self, column: str,):
     column2 = self.alias
     # Get the current vDataFrame relation
     table = self.parent.__genSQL__()
-    # Create the SQL statement - Do not forget to label the query whenever it is possible
+    # Create the SQL statement - Label the query when possible
     query = f"SELECT /*+LABEL(vColumn.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
@@ -574,7 +572,7 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
     column1, column2 = vdf.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = vdf.__genSQL__()
-    # Create the SQL statement - Do not forget to label the query whenever it is possible
+    # Create the SQL statement - Label the query when possible
     query = f"SELECT /*+LABEL(pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
