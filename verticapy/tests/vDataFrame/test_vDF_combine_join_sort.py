@@ -107,7 +107,7 @@ class TestvDFCombineJoinSort:
             having="AVG(Price) > 2",
         )
         assert result4.shape() == (
-            197,
+            73,
             4,
         ), "testing vDataFrame.groupby(columns, expr) with rollup and having failed"
 

@@ -1857,7 +1857,12 @@ str or bool
             ]
         )
 
-        def dict_to_json_string(name: str = "", json_dict: dict = {}):
+        def dict_to_json_string(
+            name: str = "",
+            path: str = "",
+            json_dict: dict = {},
+            add_identifier: bool = False,
+        ):
             from verticapy import vDataFrame
             from verticapy.learn.vmodel import vModel
 
@@ -1898,7 +1903,9 @@ str or bool
 
         query = "SELECT /*+LABEL('{0}')*/ '{1}'".format(
             query_label.replace("'", "''"),
-            dict_to_json_string(name, json_dict).replace("'", "''"),
+            dict_to_json_string(name, path, json_dict, add_identifier).replace(
+                "'", "''"
+            ),
         )
         if return_query:
             return query
