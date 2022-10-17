@@ -1867,7 +1867,7 @@ str or bool
             if path:
                 json += f'"verticapy_fpath": "{path}", '
             if add_identifier:
-                json += f'"verticapy_id": "{0}", '.format(
+                json += '"verticapy_id": "{0}", '.format(
                     verticapy.options["identifier"]
                 )
             for elem in json_dict:
