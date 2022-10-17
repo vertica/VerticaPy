@@ -79,10 +79,7 @@ steps: list
         except:
             model_steps = []
         save_to_query_profile(
-            name="Pipeline",
-            path="learn.pipeline",
-            json_dict={"steps": model_steps,},
-            query_label="verticapy_json",
+            name="Pipeline", path="learn.pipeline", json_dict={"steps": model_steps,},
         )
         # -#
         check_types([("steps", steps, [list])])

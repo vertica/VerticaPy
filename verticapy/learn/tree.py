@@ -178,7 +178,6 @@ class DecisionTreeClassifier(MulticlassClassifier, Tree):
                 "min_info_gain": min_info_gain,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 1, 1])
@@ -256,7 +255,6 @@ class DecisionTreeRegressor(Regressor, Tree):
                 "min_info_gain": min_info_gain,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[9, 0, 1])
@@ -292,10 +290,7 @@ class DummyTreeClassifier(MulticlassClassifier, Tree):
     def __init__(self, name: str):
         # Saving information to the query profile table
         save_to_query_profile(
-            name="DummyTreeClassifier",
-            path="learn.tree",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="DummyTreeClassifier", path="learn.tree", json_dict={"name": name,},
         )
         # -#
         version(condition=[8, 1, 1])
@@ -331,10 +326,7 @@ class DummyTreeRegressor(Regressor, Tree):
     def __init__(self, name: str):
         # Saving information to the query profile table
         save_to_query_profile(
-            name="DummyTreeRegressor",
-            path="learn.tree",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="DummyTreeRegressor", path="learn.tree", json_dict={"name": name,},
         )
         # -#
         version(condition=[9, 0, 1])

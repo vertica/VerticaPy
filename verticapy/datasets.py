@@ -97,7 +97,6 @@ vDataFrame
         name="gen_dataset",
         path="datasets",
         json_dict={"features_ranges": features_ranges, "nrows": nrows,},
-        query_label="verticapy_json",
     )
     # -#
 
@@ -208,7 +207,6 @@ vDataFrame
         name="gen_meshgrid",
         path="datasets",
         json_dict={"features_ranges": features_ranges,},
-        query_label="verticapy_json",
     )
     # -#
 
@@ -306,7 +304,6 @@ def load_dataset(
         name="load_" + dataset_name,
         path="datasets",
         json_dict={"schema": schema, "name": name,},
-        query_label="verticapy_json",
     )
     # -#
 

@@ -138,7 +138,6 @@ tol: float, optional
                 "max_iter": max_iter,
                 "tol": tol,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])
@@ -206,7 +205,6 @@ p: int, optional
             name="DBSCAN",
             path="learn.cluster",
             json_dict={"name": name, "eps": eps, "min_samples": min_samples, "p": p,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])
@@ -505,7 +503,6 @@ tol: float, optional
                 "max_iter": max_iter,
                 "tol": tol,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])

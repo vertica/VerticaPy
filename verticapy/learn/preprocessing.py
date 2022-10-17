@@ -103,7 +103,6 @@ vDataFrame
             "method": method,
             "ratio": ratio,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -175,7 +174,6 @@ max_text_size: int, optional
                 "ignore_special": ignore_special,
                 "max_text_size": max_text_size,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])
@@ -370,7 +368,6 @@ method: str, optional
             name="Normalizer",
             path="learn.preprocessing",
             json_dict={"name": name, "method": method,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])
@@ -461,7 +458,6 @@ null_column_name: str, optional
                 "column_naming": column_naming,
                 "null_column_name": null_column_name,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(

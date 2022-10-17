@@ -93,7 +93,6 @@ include_dependencies: list, optional
             "library_name": library_name,
             "include_dependencies": include_dependencies,
         },
-        query_label="verticapy_json",
     )
     # -#
     directory = os.path.dirname(verticapy.__file__)
@@ -172,7 +171,6 @@ udx_str, sql
             "file_path": file_path,
             "create_file": create_file,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(include_dependencies, (str)):

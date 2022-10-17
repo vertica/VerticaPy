@@ -114,7 +114,6 @@ fit_intercept: bool, optional
                 "l1_ratio": l1_ratio,
                 "fit_intercept": fit_intercept,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 0, 0])
@@ -191,7 +190,6 @@ fit_intercept: bool, optional
                 "solver": solver,
                 "fit_intercept": fit_intercept,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 0, 0])
@@ -264,7 +262,6 @@ fit_intercept: bool, optional
                 "solver": solver,
                 "fit_intercept": fit_intercept,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 0, 0])
@@ -359,7 +356,6 @@ fit_intercept: bool, optional
                 "l1_ratio": l1_ratio,
                 "fit_intercept": fit_intercept,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 0, 0])
@@ -445,7 +441,6 @@ fit_intercept: bool, optional
                 "solver": solver,
                 "fit_intercept": fit_intercept,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 0, 0])

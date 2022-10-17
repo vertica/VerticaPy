@@ -71,10 +71,7 @@ name: str
     def __init__(self, name: str):
         # Saving information to the query profile table
         save_to_query_profile(
-            name="MCA",
-            path="learn.decomposition",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="MCA", path="learn.decomposition", json_dict={"name": name,},
         )
         # -#
         version(condition=[9, 1, 0])
@@ -294,7 +291,6 @@ method: str, optional
                 "scale": scale,
                 "method": method,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[9, 1, 0])
@@ -333,7 +329,6 @@ method: str, optional
             name="SVD",
             path="learn.decomposition",
             json_dict={"name": name, "n_components": n_components, "method": method,},
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[9, 1, 0])

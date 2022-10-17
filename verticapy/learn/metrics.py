@@ -212,7 +212,6 @@ tuple of floats
             "input_relation": input_relation,
             "k": k,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("k", k, [int])])
@@ -273,7 +272,6 @@ tablesample
             "input_relation": input_relation,
             "k": k,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -366,7 +364,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     return compute_metric_query(
@@ -409,7 +406,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     return compute_metric_query(
@@ -454,7 +450,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     return compute_metric_query(
@@ -505,7 +500,6 @@ float
             "input_relation": input_relation,
             "root": root,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("root", root, [bool])])
@@ -550,7 +544,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     return compute_metric_query(
@@ -595,7 +588,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     return compute_metric_query(
@@ -643,7 +635,6 @@ float
             "y_score": y_score,
             "input_relation": input_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("q", q, [int, float])])
@@ -698,7 +689,6 @@ float
             "k": k,
             "adj": adj,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("k", k, [int]), ("adj", adj, [bool])])
@@ -761,7 +751,6 @@ tablesample
             "input_relation": input_relation,
             "k": k,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -875,7 +864,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -956,7 +944,6 @@ float
             "pos_label": pos_label,
             "nbins": nbins,
         },
-        query_label="verticapy_json",
     )
     # -#
     return roc_curve(
@@ -1025,7 +1012,6 @@ tablesample
             "estimator": estimator,
             "nbins": nbins,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1195,7 +1181,6 @@ tablesample
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1278,7 +1263,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1326,7 +1310,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1380,7 +1363,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1429,7 +1411,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     metric = (
@@ -1481,7 +1462,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1531,7 +1511,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1580,7 +1559,6 @@ tablesample
             "input_relation": input_relation,
             "labels": labels,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1663,7 +1641,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1719,7 +1696,6 @@ float
             "pos_label": pos_label,
             "nbins": nbins,
         },
-        query_label="verticapy_json",
     )
     # -#
     return prc_curve(
@@ -1767,7 +1743,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1815,7 +1790,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)
@@ -1863,7 +1837,6 @@ float
             "input_relation": input_relation,
             "pos_label": pos_label,
         },
-        query_label="verticapy_json",
     )
     # -#
     tn, fn, fp, tp = compute_tn_fn_fp_tp(y_true, y_score, input_relation, pos_label)

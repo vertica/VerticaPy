@@ -463,7 +463,6 @@ col_sample_by_tree: float, optional
                 "sample": sample,
                 "col_sample_by_tree": col_sample_by_tree,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[12, 0, 0])
@@ -734,7 +733,6 @@ nbins: int, optional
                 "min_info_gain": min_info_gain,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 1, 1])
@@ -822,7 +820,6 @@ nbins: int, optional
                 "min_info_gain": min_info_gain,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[9, 0, 1])
@@ -923,7 +920,6 @@ col_sample_by_node: float, optional
                 "col_sample_by_tree": col_sample_by_tree,
                 "col_sample_by_node": col_sample_by_node,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[10, 1, 0])
@@ -1029,7 +1025,6 @@ col_sample_by_node: float, optional
                 "col_sample_by_tree": col_sample_by_tree,
                 "col_sample_by_node": col_sample_by_node,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[10, 1, 0])

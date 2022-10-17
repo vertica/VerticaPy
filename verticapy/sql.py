@@ -87,10 +87,7 @@ def sql(line, cell="", local_ns=None):
 
     # Saving information to the query profile table
     save_to_query_profile(
-        name="sql_magic",
-        path="sql",
-        json_dict={"line": line, "cell": cell,},
-        query_label="verticapy_json",
+        name="sql_magic", path="sql", json_dict={"line": line, "cell": cell,},
     )
     # -#
 

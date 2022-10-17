@@ -139,7 +139,6 @@ papprox_ma: int, optional
                 "max_pik": max_pik,
                 "papprox_ma": papprox_ma,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])
@@ -1176,7 +1175,6 @@ solver: str, optional
                 "max_iter": max_iter,
                 "solver": solver,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str])])

@@ -192,7 +192,6 @@ tablesample
             "k_tops": k_tops,
             "RFmodel_params": RFmodel_params,
         },
-        query_label="verticapy_json",
     )
     # -#
     if print_info:
@@ -396,7 +395,6 @@ int
             "tol": tol,
             "elbow_score_stop": elbow_score_stop,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(X, str):
@@ -540,7 +538,6 @@ tablesample
             "show_time": show_time,
             "training_score": training_score,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(X, str):
@@ -825,7 +822,6 @@ tablesample
             "max_iter": max_iter,
             "tol": tol,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(X, str):
@@ -969,7 +965,6 @@ tablesample
             "estimator_type": estimator_type,
             "cutoff": cutoff,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("estimator_type", estimator_type, ["logit", "enet", "auto"])])
@@ -1068,7 +1063,6 @@ tablesample
             "lmax": lmax,
             "optimized_grid": optimized_grid,
         },
-        query_label="verticapy_json",
     )
     # -#
     from verticapy.learn.cluster import KMeans, BisectingKMeans, DBSCAN
@@ -1688,7 +1682,6 @@ tablesample
             "training_score": training_score,
             "skip_error": skip_error,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(X, str):
@@ -1945,7 +1938,6 @@ tablesample
             "cutoff": cutoff,
             "std_coeff": std_coeff,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("method", method, ["efficiency", "performance", "scalability"])])
@@ -2134,7 +2126,6 @@ tablesample
             "pos_label": pos_label,
             "nbins": nbins,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -2231,7 +2222,6 @@ list of dict
         name="parameter_grid",
         path="learn.model_selection",
         json_dict={"param_grid": param_grid,},
-        query_label="verticapy_json",
     )
     # -#
     check_types([("param_grid", param_grid, [dict])])
@@ -2283,7 +2273,6 @@ tablesample
         name="plot_acf_pacf",
         path="learn.model_selection",
         json_dict={"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(by, str):
@@ -2413,7 +2402,6 @@ tablesample
             "nbins": nbins,
             "auc_prc": auc_prc,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -2589,7 +2577,6 @@ tablesample
             "comb_limit": comb_limit,
             "skip_error": skip_error,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(X, str):
@@ -2832,7 +2819,6 @@ tablesample
             "lmax": lmax,
             "optimized_grid": optimized_grid,
         },
-        query_label="verticapy_json",
     )
     # -#
     param_grid = gen_params_grid(estimator, nbins, len(X), lmax, optimized_grid)
@@ -2919,7 +2905,6 @@ tablesample
             "best_threshold": best_threshold,
             "cutoff_curve": cutoff_curve,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -3129,7 +3114,6 @@ tablesample
             "x_order": x_order,
             "show": show,
         },
-        query_label="verticapy_json",
     )
     # -#
     from verticapy.learn.metrics import aic_bic
@@ -3393,7 +3377,6 @@ tablesample
             "cutoff": cutoff,
             "std_coeff": std_coeff,
         },
-        query_label="verticapy_json",
     )
     # -#
     if not (isinstance(param_range, Iterable)) or isinstance(param_range, str):

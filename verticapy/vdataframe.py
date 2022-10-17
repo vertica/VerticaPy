@@ -180,7 +180,6 @@ vColumns : vColumn
                 "sql": sql,
                 "empty": empty,
             },
-            query_label="verticapy_json",
         )
         # Initialization
         if not (isinstance(input_relation, (pd.DataFrame, np.ndarray))):
@@ -1721,10 +1720,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="aad",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="aad", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["aad"], columns=columns)
@@ -1753,10 +1749,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="abs",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="abs", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         if isinstance(columns, str):
@@ -1875,7 +1868,6 @@ vColumns : vColumn
                 "round_nb": round_nb,
                 "show": show,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -2007,7 +1999,6 @@ vColumns : vColumn
             name="add_duplicates",
             path="vdataframe.vDataFrame",
             json_dict={"weight": weight, "use_gcd": use_gcd,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("weight", weight, [str, int]), ("use_gcd", use_gcd, [bool])])
@@ -2128,7 +2119,6 @@ vColumns : vColumn
                 "ncols_block": ncols_block,
                 "processes": processes,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -2668,10 +2658,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="all",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="all", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwds,)
@@ -2782,7 +2769,6 @@ vColumns : vColumn
                 "x_smoothing": x_smoothing,
                 "add_count": add_count,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -3238,7 +3224,6 @@ vColumns : vColumn
                 "ts_steps": ts_steps,
                 "bubble_img": bubble_img,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -3424,10 +3409,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="any",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="any", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwds,)
@@ -3480,7 +3462,6 @@ vColumns : vColumn
                 "expr2": expr2,
                 "union_all": union_all,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(expr1, str):
@@ -3539,10 +3520,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="apply",
-            path="vdataframe.vDataFrame",
-            json_dict={"func": func,},
-            query_label="verticapy_json",
+            name="apply", path="vdataframe.vDataFrame", json_dict={"func": func,},
         )
         # -#
         check_types([("func", func, [dict])])
@@ -3580,7 +3558,6 @@ vColumns : vColumn
             name="applymap",
             path="vdataframe.vDataFrame",
             json_dict={"func": func, "numeric_only": numeric_only,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("func", func, [str]), ("numeric_only", numeric_only, [bool])])
@@ -3639,7 +3616,6 @@ vColumns : vColumn
             name="interpolate",
             path="vdataframe.vDataFrame",
             json_dict={"ts": ts, "rule": rule, "method": method, "by": by,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -3716,10 +3692,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="astype",
-            path="vdataframe.vDataFrame",
-            json_dict={"dtype": dtype,},
-            query_label="verticapy_json",
+            name="astype", path="vdataframe.vDataFrame", json_dict={"dtype": dtype,},
         )
         # -#
         check_types([("dtype", dtype, [dict])])
@@ -3760,7 +3733,6 @@ vColumns : vColumn
             name="at_time",
             path="vdataframe.vDataFrame",
             json_dict={"ts": ts, "time": time,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("ts", ts, [str]), ("time", time, [str, datetime.timedelta])])
@@ -3796,10 +3768,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="avg",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="avg", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["avg"], columns=columns, **agg_kwds,)
@@ -3880,7 +3849,6 @@ vColumns : vColumn
                 "max_cardinality": max_cardinality,
                 "hist_type": hist_type,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -3984,7 +3952,6 @@ vColumns : vColumn
                 "x": x,
                 "order_by": order_by,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -4061,7 +4028,6 @@ vColumns : vColumn
             name="between_time",
             path="vdataframe.vDataFrame",
             json_dict={"ts": ts, "start_time": start_time, "end_time": end_time,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -4096,10 +4062,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="bool_to_int",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="bool_to_int", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         columns = self.get_columns()
@@ -4141,7 +4104,6 @@ vColumns : vColumn
             name="boxplot",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -4214,7 +4176,6 @@ vColumns : vColumn
                 "bbox": bbox,
                 "img": img,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -4282,7 +4243,6 @@ vColumns : vColumn
             name="catcol",
             path="vdataframe.vDataFrame",
             json_dict={"max_cardinality": max_cardinality,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("max_cardinality", max_cardinality, [int, float])])
@@ -4354,7 +4314,6 @@ vColumns : vColumn
                 "tcdt": tcdt,
                 "drop_transf_cols": drop_transf_cols,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -4458,7 +4417,6 @@ vColumns : vColumn
                 "method": method,
                 "RFmodel_params": RFmodel_params,
             },
-            query_label="verticapy_json",
         )
         # -#
         if "process" not in kwds or kwds["process"]:
@@ -4625,7 +4583,6 @@ vColumns : vColumn
             name="chaid_columns",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "max_cardinality": max_cardinality,},
-            query_label="verticapy_json",
         )
         # -#
         columns_tmp = columns.copy()
@@ -4676,10 +4633,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="copy",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="copy", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         copy_vDataFrame = vDataFrame("", empty=True)
@@ -4751,10 +4705,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="case_when",
-            path="vdataframe.vDataFrame",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="case_when", path="vdataframe.vDataFrame", json_dict={"name": name,},
         )
         # -#
         check_types([("name", name, [str])])
@@ -4798,7 +4749,6 @@ vColumns : vColumn
             name="contour",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "func": func, "nbins": nbins,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -4880,7 +4830,6 @@ vColumns : vColumn
                 "focus": focus,
                 "show": show,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -4973,7 +4922,6 @@ vColumns : vColumn
             name="corr_pvalue",
             path="vdataframe.vDataFrame",
             json_dict={"column1": column1, "column2": column2, "method": method,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -5147,10 +5095,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="count",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="count", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["count"], columns=columns, **agg_kwds,)
@@ -5195,7 +5140,6 @@ vColumns : vColumn
             name="count_percent",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "sort_result": sort_result, "desc": desc,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -5251,7 +5195,6 @@ vColumns : vColumn
             name="cov",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "focus": focus, "show": show,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -5316,7 +5259,6 @@ vColumns : vColumn
             name="cummax",
             path="vdataframe.vDataFrame",
             json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-            query_label="verticapy_json",
         )
         # -#
         return self.rolling(
@@ -5368,7 +5310,6 @@ vColumns : vColumn
             name="cummin",
             path="vdataframe.vDataFrame",
             json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-            query_label="verticapy_json",
         )
         # -#
         return self.rolling(
@@ -5420,7 +5361,6 @@ vColumns : vColumn
             name="cumprod",
             path="vdataframe.vDataFrame",
             json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-            query_label="verticapy_json",
         )
         # -#
         return self.rolling(
@@ -5472,7 +5412,6 @@ vColumns : vColumn
             name="cumsum",
             path="vdataframe.vDataFrame",
             json_dict={"column": column, "by": by, "order_by": order_by, "name": name,},
-            query_label="verticapy_json",
         )
         # -#
         return self.rolling(
@@ -5505,7 +5444,6 @@ vColumns : vColumn
             name="current_relation",
             path="vdataframe.vDataFrame",
             json_dict={"reindent": reindent,},
-            query_label="verticapy_json",
         )
         # -#
         if reindent:
@@ -5532,10 +5470,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="datecol",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="datecol", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         columns = []
@@ -5558,10 +5493,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="del_catalog",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="del_catalog", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         self.__update_catalog__(erase=True)
@@ -5626,7 +5558,6 @@ vColumns : vColumn
                 "nbins": nbins,
                 "xlim": xlim,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -5746,7 +5677,6 @@ vColumns : vColumn
                 "ncols_block": ncols_block,
                 "processes": processes,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -6132,10 +6062,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="drop",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="drop", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         if isinstance(columns, str):
@@ -6174,7 +6101,6 @@ vColumns : vColumn
             name="drop_duplicates",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -6226,7 +6152,6 @@ vColumns : vColumn
             name="dropna",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -6263,10 +6188,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="dtypes",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="dtypes", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         values = {"index": [], "dtype": []}
@@ -6305,7 +6227,6 @@ vColumns : vColumn
             name="duplicated",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "count": count, "limit": limit,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -6358,10 +6279,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="empty",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="empty", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         return not (self.get_columns())
@@ -6396,7 +6314,6 @@ vColumns : vColumn
             name="eval",
             path="vdataframe.vDataFrame",
             json_dict={"name": name, "expr": expr,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(expr, str_sql):
@@ -6478,7 +6395,6 @@ vColumns : vColumn
             name="expected_store_usage",
             path="vdataframe.vDataFrame",
             json_dict={"unit": unit,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("unit", unit, [str])])
@@ -6599,7 +6515,6 @@ vColumns : vColumn
             name="explain",
             path="vdataframe.vDataFrame",
             json_dict={"digraph": digraph,},
-            query_label="verticapy_json",
         )
         # -#
         query = "EXPLAIN SELECT /*+LABEL('vDataframe.explain')*/ * FROM {}".format(
@@ -6660,7 +6575,6 @@ vColumns : vColumn
             name="fillna",
             path="vdataframe.vDataFrame",
             json_dict={"val": val, "method": method, "numeric_only": numeric_only,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -6725,7 +6639,6 @@ vColumns : vColumn
             name="filter",
             path="vdataframe.vDataFrame",
             json_dict={"conditions": conditions,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("conditions", conditions, [list, str])])
@@ -6823,7 +6736,6 @@ vColumns : vColumn
             name="first",
             path="vdataframe.vDataFrame",
             json_dict={"ts": ts, "offset": offset,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
@@ -6864,7 +6776,6 @@ vColumns : vColumn
             name="get_columns",
             path="vdataframe.vDataFrame",
             json_dict={"exclude_columns": exclude_columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(exclude_columns, str):
@@ -6936,7 +6847,6 @@ vColumns : vColumn
                 "drop_first": drop_first,
                 "use_numbers_as_suffix": use_numbers_as_suffix,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -7009,7 +6919,6 @@ vColumns : vColumn
             name="groupby",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "expr": expr, "rollup": rollup},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -7064,7 +6973,9 @@ vColumns : vColumn
                     str(i + 1)
                     for i in range(len([str(elem) for elem in columns_to_select]))
                 ],
-            ) if not (rollup) else rollup_expr,
+            )
+            if not (rollup)
+            else rollup_expr,
             having,
         )
         return self.__vDataFrameSQL__(
@@ -7243,7 +7154,6 @@ vColumns : vColumn
                 "stock": stock,
                 "alpha": alpha,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types([("kind", kind, [str])])
@@ -7359,10 +7269,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="head",
-            path="vdataframe.vDataFrame",
-            json_dict={"limit": limit,},
-            query_label="verticapy_json",
+            name="head", path="vdataframe.vDataFrame", json_dict={"limit": limit,},
         )
         # -#
         return self.iloc(limit=limit, offset=0)
@@ -7419,7 +7326,6 @@ vColumns : vColumn
             name="heatmap",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "method": method, "of": of, "h": h,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -7521,7 +7427,6 @@ vColumns : vColumn
                 "bbox": bbox,
                 "img": img,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -7619,7 +7524,6 @@ vColumns : vColumn
                 "h": h,
                 "hist_type": hist_type,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -7703,7 +7607,6 @@ vColumns : vColumn
             name="iloc",
             path="vdataframe.vDataFrame",
             json_dict={"limit": limit, "offset": offset, "columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -7777,10 +7680,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="info",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="info", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         if len(self._VERTICAPY_VARIABLES_["history"]) == 0:
@@ -7816,10 +7716,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="isin",
-            path="vdataframe.vDataFrame",
-            json_dict={"val": val,},
-            query_label="verticapy_json",
+            name="isin", path="vdataframe.vDataFrame", json_dict={"val": val,},
         )
         # -#
         check_types([("val", val, [dict])])
@@ -7916,7 +7813,6 @@ vColumns : vColumn
                 "expr1": expr1,
                 "expr2": expr2,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(expr1, str):
@@ -8039,7 +7935,6 @@ vColumns : vColumn
             name="kurtosis",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwds,)
@@ -8077,7 +7972,6 @@ vColumns : vColumn
             name="last",
             path="vdataframe.vDataFrame",
             json_dict={"ts": ts, "offset": offset,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("ts", ts, [str]), ("offset", offset, [str])])
@@ -8113,10 +8007,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="load",
-            path="vdataframe.vDataFrame",
-            json_dict={"offset": offset,},
-            query_label="verticapy_json",
+            name="load", path="vdataframe.vDataFrame", json_dict={"offset": offset,},
         )
         # -#
         check_types([("offset", offset, [int, float])])
@@ -8152,10 +8043,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="mad",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="mad", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["mad"], columns=columns, **agg_kwds,)
@@ -8188,10 +8076,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="max",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="max", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
@@ -8230,7 +8115,6 @@ vColumns : vColumn
             name="median",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "approx": approx,},
-            query_label="verticapy_json",
         )
         # -#
         return self.quantile(0.5, columns=columns, approx=approx, **agg_kwds,)
@@ -8253,10 +8137,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="memory_usage",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="memory_usage", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         import sys
@@ -8302,10 +8183,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="min",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="min", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["min"], columns=columns, **agg_kwds,)
@@ -8354,7 +8232,6 @@ vColumns : vColumn
                 "col_name": col_name,
                 "val_name": val_name,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -8437,7 +8314,6 @@ vColumns : vColumn
             name="normalize",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "method": method,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -8491,7 +8367,6 @@ vColumns : vColumn
             name="numcol",
             path="vdataframe.vDataFrame",
             json_dict={"exclude_columns": exclude_columns,},
-            query_label="verticapy_json",
         )
         # -#
         columns, cols = [], self.get_columns(exclude_columns=exclude_columns)
@@ -8534,7 +8409,6 @@ vColumns : vColumn
             name="nunique",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "approx": approx,},
-            query_label="verticapy_json",
         )
         # -#
         func = ["approx_unique"] if approx else ["unique"]
@@ -8585,7 +8459,6 @@ vColumns : vColumn
                 "threshold": threshold,
                 "robust": robust,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -8683,7 +8556,6 @@ vColumns : vColumn
                 "inliers_border_color": inliers_border_color,
                 "max_nb_points": max_nb_points,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -8792,7 +8664,6 @@ vColumns : vColumn
                 "alpha": alpha,
                 "show": show,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -8966,7 +8837,6 @@ vColumns : vColumn
             name="pie",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "max_cardinality": max_cardinality, "h": h,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -9029,7 +8899,6 @@ vColumns : vColumn
                 "aggr": aggr,
                 "prefix": prefix,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -9136,7 +9005,6 @@ vColumns : vColumn
                 "method": method,
                 "RFmodel_params": RFmodel_params,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -9292,7 +9160,6 @@ vColumns : vColumn
                 "with_numbers": with_numbers,
                 "fill_none": fill_none,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -9387,7 +9254,6 @@ vColumns : vColumn
                 "end_date": end_date,
                 "step": step,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -9443,7 +9309,6 @@ vColumns : vColumn
             name="polynomial_comb",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "r": r,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -9491,7 +9356,6 @@ vColumns : vColumn
             name="product",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         return self.aggregate(func=["prod"], columns=columns, **agg_kwds,)
@@ -9535,7 +9399,6 @@ vColumns : vColumn
             name="quantile",
             path="vdataframe.vDataFrame",
             json_dict={"q": q, "columns": columns, "approx": approx,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(q, (int, float)):
@@ -9618,7 +9481,6 @@ vColumns : vColumn
                 "start_date": start_date,
                 "end_date": end_date,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -9777,7 +9639,6 @@ vColumns : vColumn
                 "return_position": return_position,
                 "name": name,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -9881,7 +9742,6 @@ vColumns : vColumn
             name="regr",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns, "method": method, "show": show,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -10114,7 +9974,6 @@ vColumns : vColumn
                 "order_by": order_by,
                 "name": name,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -10332,7 +10191,6 @@ vColumns : vColumn
             name="sample",
             path="vdataframe.vDataFrame",
             json_dict={"n": n, "x": x, "method": method, "by": by,},
-            query_label="verticapy_json",
         )
         # -#
         if x == 1:
@@ -10423,10 +10281,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="save",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="save", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         vdf = self.copy()
@@ -10510,7 +10365,6 @@ vColumns : vColumn
                 "bbox": bbox,
                 "img": img,
             },
-            query_label="verticapy_json",
         )
         # -#
         if len(columns) > 3 and dimensions == None:
@@ -10642,7 +10496,6 @@ vColumns : vColumn
             name="scatter_matrix",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -10701,7 +10554,6 @@ vColumns : vColumn
                 "expr": expr,
                 "order_by": order_by,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(order_by, str):
@@ -10755,7 +10607,6 @@ vColumns : vColumn
             name="select",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -10802,10 +10653,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sem",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="sem", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["sem"], columns=columns, **agg_kwds,)
@@ -10858,7 +10706,6 @@ vColumns : vColumn
                 "session_threshold": session_threshold,
                 "name": name,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -10943,7 +10790,6 @@ vColumns : vColumn
                 "method": method,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -11071,10 +10917,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="shape",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="shape", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         m = len(self.get_columns())
@@ -11122,7 +10965,6 @@ vColumns : vColumn
             name="skewness",
             path="vdataframe.vDataFrame",
             json_dict={"columns": columns,},
-            query_label="verticapy_json",
         )
         # -#
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
@@ -11154,10 +10996,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sort",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="sort", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         if isinstance(columns, str):
@@ -11225,7 +11064,6 @@ vColumns : vColumn
                 "end_date": end_date,
                 "fully": fully,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):
@@ -11290,10 +11128,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="std",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="std", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwds,)
@@ -11327,10 +11162,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sum",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="sum", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["sum"], columns=columns, **agg_kwds,)
@@ -11358,7 +11190,6 @@ vColumns : vColumn
             name="swap",
             path="vdataframe.vDataFrame",
             json_dict={"column1": column1, "column2": column2,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -11414,10 +11245,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="tail",
-            path="vdataframe.vDataFrame",
-            json_dict={"limit": limit,},
-            query_label="verticapy_json",
+            name="tail", path="vdataframe.vDataFrame", json_dict={"limit": limit,},
         )
         # -#
         return self.iloc(limit=limit, offset=-1)
@@ -11494,7 +11322,6 @@ vColumns : vColumn
                 "order_by": order_by,
                 "n_files": n_files,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(order_by, str):
@@ -11637,7 +11464,6 @@ vColumns : vColumn
                 "db_filter": db_filter,
                 "nb_split": nb_split,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(usecols, str):
@@ -11750,7 +11576,6 @@ vColumns : vColumn
             name="to_geopandas",
             path="vdataframe.vDataFrame",
             json_dict={"geometry": geometry,},
-            query_label="verticapy_json",
         )
         # -#
         try:
@@ -11834,7 +11659,6 @@ vColumns : vColumn
                 "order_by": order_by,
                 "n_files": n_files,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(order_by, str):
@@ -11917,10 +11741,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="to_list",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="to_list", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         query = "SELECT /*+LABEL('vDataframe.to_list')*/ * FROM {}{}".format(
@@ -11954,10 +11775,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="to_numpy",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="to_numpy", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         return np.array(self.to_list())
@@ -11977,10 +11795,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="to_pandas",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="to_pandas", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         query = "SELECT /*+LABEL('vDataframe.to_pandas')*/ * FROM {}{}".format(
@@ -12093,7 +11908,6 @@ vColumns : vColumn
                 "by": by,
                 "order_by": order_by,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(order_by, str):
@@ -12160,10 +11974,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="to_pickle",
-            path="vdataframe.vDataFrame",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="to_pickle", path="vdataframe.vDataFrame", json_dict={"name": name,},
         )
         # -#
         pickle.dump(self, open(name, "wb"))
@@ -12215,7 +12026,6 @@ vColumns : vColumn
                 "overwrite": overwrite,
                 "shape": shape,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(usecols, str):
@@ -12293,7 +12103,6 @@ vColumns : vColumn
                 "order_by": order_by,
                 "random_state": random_state,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(order_by, str):
@@ -12361,10 +12170,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="var",
-            path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
-            query_label="verticapy_json",
+            name="var", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
         )
         # -#
         return self.aggregate(func=["variance"], columns=columns, **agg_kwds,)
@@ -12384,10 +12190,7 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="version",
-            path="vdataframe.vDataFrame",
-            json_dict={},
-            query_label="verticapy_json",
+            name="version", path="vdataframe.vDataFrame", json_dict={},
         )
         # -#
         from verticapy.utilities import version as vertica_version
@@ -12434,7 +12237,6 @@ vColumns : vColumn
             name="iv_woe",
             path="vdataframe.vDataFrame",
             json_dict={"y": y, "columns": columns, "nbins": nbins, "show": show,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(columns, str):

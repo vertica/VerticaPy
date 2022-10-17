@@ -2048,7 +2048,6 @@ attributes: dict
             name="memModel",
             path="learn.memmodel",
             json_dict={"model_type": model_type,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(

@@ -93,7 +93,6 @@ bool
         name="create_schema",
         path="utilities",
         json_dict={"schema": schema, "raise_error": raise_error,},
-        query_label="verticapy_json",
     )
     # -#
     try:
@@ -158,7 +157,6 @@ bool
             "temporary_local_table": temporary_local_table,
             "raise_error": raise_error,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -210,10 +208,7 @@ Creates a schema named 'verticapy' used to store VerticaPy extended models.
     """
     # Saving information to the query profile table
     save_to_query_profile(
-        name="create_verticapy_schema",
-        path="utilities",
-        json_dict={},
-        query_label="verticapy_json",
+        name="create_verticapy_schema", path="utilities", json_dict={},
     )
     # -#
     sql = "CREATE SCHEMA IF NOT EXISTS verticapy;"
@@ -266,7 +261,6 @@ bool
         name="drop",
         path="utilities",
         json_dict={"name": name, "method": method, "raise_error": raise_error,},
-        query_label="verticapy_json",
     )
     # -#
     if "relation_type" in kwds and method == "auto":
@@ -479,7 +473,6 @@ def readSQL(query: str, time_on: bool = False, limit: int = 100):
         name="readSQL",
         path="utilities",
         json_dict={"query": query, "time_on": time_on, "limit": limit,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -548,7 +541,6 @@ list of tuples
         name="get_data_types",
         path="utilities",
         json_dict={"expr": expr, "column_name": column_name,},
-        query_label="verticapy_json",
     )
     # -#
     from verticapy.connect import current_cursor
@@ -676,7 +668,6 @@ pandas_to_vertica : Ingests a pandas DataFrame into the Vertica database.
             "copy": copy,
             "genSQL": genSQL,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -832,7 +823,6 @@ read_json : Ingests a JSON file into the Vertica database.
             "temp_path": temp_path,
             "insert": insert,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -997,7 +987,6 @@ read_json : Ingests a JSON file into the Vertica database.
             "escape": escape,
             "ingest_local": ingest_local,
         },
-        query_label="verticapy_json",
     )
     # -#
     flex_name = gen_tmp_name(name="flex")[1:-1]
@@ -1073,7 +1062,7 @@ VERTICAPY Interactive Help (FAQ).
     """
     # Saving information to the query profile table
     save_to_query_profile(
-        name="help_start", path="utilities", json_dict={}, query_label="verticapy_json",
+        name="help_start", path="utilities", json_dict={},
     )
     # -#
     try:
@@ -1173,7 +1162,6 @@ read_json : Ingests a JSON file into the Vertica database.
         name="pjson",
         path="utilities",
         json_dict={"path": path, "ingest_local": ingest_local,},
-        query_label="verticapy_json",
     )
     # -#
     flex_name = gen_tmp_name(name="flex")[1:-1]
@@ -1316,7 +1304,6 @@ read_json : Ingests a JSON file into the Vertica database.
             "gen_tmp_table_name": gen_tmp_table_name,
             "ingest_local": ingest_local,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1602,7 +1589,6 @@ read_csv : Ingests a CSV file into the Vertica database.
             "gen_tmp_table_name": gen_tmp_table_name,
             "ingest_local": ingest_local,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1789,7 +1775,6 @@ vDataFrame
         name="read_shp",
         path="utilities",
         json_dict={"path": path, "schema": schema, "table_name": table_name,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1991,7 +1976,6 @@ def set_option(option: str, value: Union[bool, int, str] = None):
         name="set_option",
         path="utilities",
         json_dict={"option": option, "value": value,},
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(option, str):
@@ -2653,7 +2637,6 @@ def to_tablesample(
         name="to_tablesample",
         path="utilities",
         json_dict={"query": query, "title": title, "max_columns": max_columns,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -2796,10 +2779,7 @@ list
     """
     # Saving information to the query profile table
     save_to_query_profile(
-        name="version",
-        path="utilities",
-        json_dict={"condition": condition,},
-        query_label="verticapy_json",
+        name="version", path="utilities", json_dict={"condition": condition,},
     )
     # -#
     check_types([("condition", condition, [list])])

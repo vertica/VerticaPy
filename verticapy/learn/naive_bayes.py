@@ -91,7 +91,6 @@ nbtype: str, optional
             name="NaiveBayes",
             path="learn.naive_bayes",
             json_dict={"name": name, "alpha": alpha, "nbtype": nbtype,},
-            query_label="verticapy_json",
         )
         # -#
 

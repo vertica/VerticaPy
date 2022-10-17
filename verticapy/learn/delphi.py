@@ -201,7 +201,6 @@ final_relation_: vDataFrame
                 "identify_ts": identify_ts,
                 "save": save,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -517,7 +516,6 @@ model_: object
                 "preprocess_data": preprocess_data,
                 "preprocess_dict": preprocess_dict,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -752,7 +750,6 @@ model_grid_ : tablesample
                 "preprocess_data": preprocess_data,
                 "preprocess_dict": preprocess_dict,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(

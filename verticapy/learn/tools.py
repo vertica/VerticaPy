@@ -92,7 +92,6 @@ int
             "raise_error": raise_error,
             "return_model_type": return_model_type,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types([("name", name, [str])])
@@ -167,7 +166,6 @@ model
             "input_relation": input_relation,
             "test_relation": test_relation,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(

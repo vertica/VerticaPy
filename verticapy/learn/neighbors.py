@@ -88,7 +88,6 @@ p: int, optional
             name="NearestCentroid",
             path="learn.neighbors",
             json_dict={"name": name, "p": p,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str], False)])
@@ -207,7 +206,6 @@ p: int, optional
             name="KNeighborsClassifier",
             path="learn.neighbors",
             json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str], False)])
@@ -1020,7 +1018,6 @@ xlim: list, optional
                 "min_samples_leaf": int(min_samples_leaf),
                 "xlim": xlim,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1378,7 +1375,6 @@ p: int, optional
             name="KNeighborsRegressor",
             path="learn.neighbors",
             json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str], False)])
@@ -1629,7 +1625,6 @@ p: int, optional
             name="LocalOutlierFactor",
             path="learn.neighbors",
             json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("name", name, [str], False)])

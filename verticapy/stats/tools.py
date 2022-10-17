@@ -115,7 +115,6 @@ tablesample
             "with_trend": with_trend,
             "regresults": regresults,
         },
-        query_label="verticapy_json",
     )
     # -#
 
@@ -375,7 +374,6 @@ model
             "prais_winsten": prais_winsten,
             "drop_tmp_model": drop_tmp_model,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -456,7 +454,6 @@ float
         name="durbin_watson",
         path="stats.tools",
         json_dict={"vdf": vdf, "eps": eps, "ts": ts, "by": by,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -515,7 +512,6 @@ tablesample
         name="endogtest",
         path="stats.tools",
         json_dict={"vdf": vdf, "eps": eps, "X": X,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -593,7 +589,6 @@ tablesample
         name="het_arch",
         path="stats.tools",
         json_dict={"vdf": vdf, "eps": eps, "ts": ts, "by": by, "p": p,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -684,7 +679,6 @@ tablesample
         name="het_breuschpagan",
         path="stats.tools",
         json_dict={"vdf": vdf, "eps": eps, "X": X,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -781,7 +775,6 @@ tablesample
             "split": split,
             "alternative": alternative,
         },
-        query_label="verticapy_json",
     )
     # -#
     def model_fit(input_relation, X, y, model):
@@ -862,7 +855,6 @@ tablesample
         name="het_white",
         path="stats.tools",
         json_dict={"vdf": vdf, "eps": eps, "X": X,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -950,7 +942,6 @@ tablesample
         name="jarque_bera",
         path="stats.tools",
         json_dict={"vdf": vdf, "column": column, "alpha": alpha,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1007,7 +998,6 @@ tablesample
         name="kurtosistest",
         path="stats.tools",
         json_dict={"vdf": vdf, "column": column,},
-        query_label="verticapy_json",
     )
     # -#
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
@@ -1083,7 +1073,6 @@ tablesample
             "alpha": alpha,
             "box_pierce": box_pierce,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1160,7 +1149,6 @@ tablesample
         name="adfuller",
         path="stats.tools",
         json_dict={"vdf": vdf, "column": column, "ts": ts, "alpha": alpha,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -1257,7 +1245,6 @@ tablesample
         name="normaltest",
         path="stats.tools",
         json_dict={"vdf": vdf, "column": column,},
-        query_label="verticapy_json",
     )
     # -#
     Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
@@ -1337,7 +1324,6 @@ vDataFrame
             "mult": mult,
             "two_sided": two_sided,
         },
-        query_label="verticapy_json",
     )
     # -#
     if isinstance(by, str):
@@ -1489,10 +1475,7 @@ tablesample
     """
     # Saving information to the query profile table
     save_to_query_profile(
-        name="skewtest",
-        path="stats.tools",
-        json_dict={"vdf": vdf, "column": column,},
-        query_label="verticapy_json",
+        name="skewtest", path="stats.tools", json_dict={"vdf": vdf, "column": column,},
     )
     # -#
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
@@ -1541,7 +1524,6 @@ float
         name="variance_inflation_factor",
         path="stats.tools",
         json_dict={"vdf": vdf, "X": X, "X_idx": X_idx,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(

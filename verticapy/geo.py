@@ -120,7 +120,6 @@ tablesample
             "max_mem_mb": max_mem_mb,
             "skip_nonindexable_polygons": skip_nonindexable_polygons,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -205,7 +204,6 @@ vDataFrame
             "earth_radius": earth_radius,
             "reverse": reverse,
         },
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -264,7 +262,6 @@ tablesample
         name="describe_index",
         path="geo",
         json_dict={"name": name, "list_polygons": list_polygons,},
-        query_label="verticapy_json",
     )
     # -#
     check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
@@ -320,7 +317,6 @@ vDataFrame
         name="intersect",
         path="geo",
         json_dict={"vdf": vdf, "index": index, "gid": gid, "g": g, "x": x, "y": y,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -390,7 +386,6 @@ bool
         name="rename_index",
         path="geo",
         json_dict={"source": source, "dest": dest, "overwrite": overwrite,},
-        query_label="verticapy_json",
     )
     # -#
     check_types(
@@ -443,10 +438,7 @@ vDataFrame
     """
     # Saving information to the query profile table
     save_to_query_profile(
-        name="split_polygon_n",
-        path="geo",
-        json_dict={"p": p, "nbins": nbins,},
-        query_label="verticapy_json",
+        name="split_polygon_n", path="geo", json_dict={"p": p, "nbins": nbins,},
     )
     # -#
     check_types([("p", p, [str]), ("nbins", nbins, [int])])

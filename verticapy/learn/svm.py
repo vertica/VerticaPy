@@ -118,7 +118,6 @@ max_iter: int, optional
                 "class_weight": class_weight,
                 "max_iter": max_iter,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 1, 0])
@@ -220,7 +219,6 @@ test_relation: str
                 "acceptable_error_margin": acceptable_error_margin,
                 "max_iter": max_iter,
             },
-            query_label="verticapy_json",
         )
         # -#
         version(condition=[8, 1, 1])

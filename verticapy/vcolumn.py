@@ -220,10 +220,7 @@ Attributes
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="aad",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="aad", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["aad"]).values[self.alias][0]
@@ -245,10 +242,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="abs",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="abs", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.apply(func="ABS({})")
@@ -276,10 +270,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="add",
-            path="vcolumn.vColumn",
-            json_dict={"x": x,},
-            query_label="verticapy_json",
+            name="add", path="vcolumn.vColumn", json_dict={"x": x,},
         )
         # -#
         check_types([("x", x, [int, float])])
@@ -310,10 +301,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="add_copy",
-            path="vcolumn.vColumn",
-            json_dict={"name": name,},
-            query_label="verticapy_json",
+            name="add_copy", path="vcolumn.vColumn", json_dict={"name": name,},
         )
         # -#
         check_types([("name", name, [str])])
@@ -392,10 +380,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="aggregate",
-            path="vcolumn.vColumn",
-            json_dict={"func": func,},
-            query_label="verticapy_json",
+            name="aggregate", path="vcolumn.vColumn", json_dict={"func": func,},
         )
         # -#
         return self.parent.aggregate(func=func, columns=[self.alias]).transpose()
@@ -432,7 +417,6 @@ Attributes
             name="apply",
             path="vcolumn.vColumn",
             json_dict={"func": func, "copy_name": copy_name,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(func, str_sql):
@@ -551,10 +535,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="apply_fun",
-            path="vcolumn.vColumn",
-            json_dict={"func": func, "x": x,},
-            query_label="verticapy_json",
+            name="apply_fun", path="vcolumn.vColumn", json_dict={"func": func, "x": x,},
         )
         # -#
         check_types(
@@ -619,10 +600,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="astype",
-            path="vcolumn.vColumn",
-            json_dict={"dtype": dtype,},
-            query_label="verticapy_json",
+            name="astype", path="vcolumn.vColumn", json_dict={"dtype": dtype,},
         )
         # -#
         check_types([("dtype", dtype, [str])])
@@ -668,10 +646,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="avg",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="avg", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["avg"]).values[self.alias][0]
@@ -738,7 +713,6 @@ Attributes
                 "nbins": nbins,
                 "h": h,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -809,7 +783,6 @@ Attributes
                 "max_cardinality": max_cardinality,
                 "cat_priority": cat_priority,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(cat_priority, str) or not (isinstance(cat_priority, Iterable)):
@@ -876,7 +849,6 @@ Attributes
             name="clip",
             path="vcolumn.vColumn",
             json_dict={"lower": lower, "upper": upper,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("lower", lower, [float, int]), ("upper", upper, [float, int])])
@@ -914,10 +886,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="count",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="count", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["count"]).values[self.alias][0]
@@ -965,7 +934,6 @@ Attributes
                 "include_lowest": include_lowest,
                 "right": right,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1046,10 +1014,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="date_part",
-            path="vcolumn.vColumn",
-            json_dict={"field": field,},
-            query_label="verticapy_json",
+            name="date_part", path="vcolumn.vColumn", json_dict={"field": field,},
         )
         # -#
         return self.apply(func="DATE_PART('{}', {})".format(field, "{}"))
@@ -1083,10 +1048,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="decode",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="decode", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         import verticapy.stats as st
@@ -1150,7 +1112,6 @@ Attributes
                 "bandwidth": bandwidth,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1278,7 +1239,6 @@ Attributes
                 "max_cardinality": max_cardinality,
                 "numcol": numcol,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1490,7 +1450,6 @@ Attributes
                 "method": method,
                 "return_enum_trans": return_enum_trans,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1688,10 +1647,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="distinct",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="distinct", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         if "agg" not in kwargs:
@@ -1741,10 +1697,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="div",
-            path="vcolumn.vColumn",
-            json_dict={"x": x,},
-            query_label="verticapy_json",
+            name="div", path="vcolumn.vColumn", json_dict={"x": x,},
         )
         # -#
         check_types([("x", x, [int, float])])
@@ -1780,7 +1733,6 @@ Attributes
             name="drop",
             path="vcolumn.vColumn",
             json_dict={"add_history": add_history,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("add_history", add_history, [bool])])
@@ -1846,7 +1798,6 @@ Attributes
                 "use_threshold": use_threshold,
                 "alpha": alpha,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -1891,10 +1842,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="dropna",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="dropna", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         self.parent.filter("{} IS NOT NULL".format(self.alias))
@@ -1953,7 +1901,6 @@ Attributes
                 "use_threshold": use_threshold,
                 "threshold": threshold,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(method, str):
@@ -2073,7 +2020,6 @@ Attributes
                 "by": by,
                 "order_by": order_by,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -2265,10 +2211,7 @@ Attributes
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="geo_plot",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="geo_plot", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         columns = [self.alias]
@@ -2343,7 +2286,6 @@ Attributes
                 "drop_first": drop_first,
                 "use_numbers_as_suffix": use_numbers_as_suffix,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -2447,10 +2389,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="head",
-            path="vcolumn.vColumn",
-            json_dict={"limit": limit,},
-            query_label="verticapy_json",
+            name="head", path="vcolumn.vColumn", json_dict={"limit": limit,},
         )
         # -#
         return self.iloc(limit=limit)
@@ -2516,7 +2455,6 @@ Attributes
                 "h": h,
                 "nbins": nbins,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -2564,7 +2502,6 @@ Attributes
             name="iloc",
             path="vcolumn.vColumn",
             json_dict={"limit": limit, "offset": offset,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("limit", limit, [int, float]), ("offset", offset, [int, float])])
@@ -2648,10 +2585,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="isin",
-            path="vcolumn.vColumn",
-            json_dict={"val": val,},
-            query_label="verticapy_json",
+            name="isin", path="vcolumn.vColumn", json_dict={"val": val,},
         )
         # -#
         if isinstance(val, str) or not (isinstance(val, Iterable)):
@@ -2706,10 +2640,7 @@ Attributes
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="iv_woe",
-            path="vcolumn.vColumn",
-            json_dict={"y": y, "nbins": nbins,},
-            query_label="verticapy_json",
+            name="iv_woe", path="vcolumn.vColumn", json_dict={"y": y, "nbins": nbins,},
         )
         # -#
         check_types([("y", y, [str]), ("nbins", nbins, [int])])
@@ -2771,10 +2702,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="kurtosis",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="kurtosis", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["kurtosis"]).values[self.alias][0]
@@ -2801,10 +2729,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="label_encode",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="label_encode", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         if self.category() in ["date", "float"]:
@@ -2850,10 +2775,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="mad",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="mad", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["mad"]).values[self.alias][0]
@@ -2875,10 +2797,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="max",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="max", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["max"]).values[self.alias][0]
@@ -2912,7 +2831,6 @@ Attributes
             name="mean_encode",
             path="vcolumn.vColumn",
             json_dict={"response": response,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("response", response, [str])])
@@ -2964,10 +2882,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="median",
-            path="vcolumn.vColumn",
-            json_dict={"approx": approx,},
-            query_label="verticapy_json",
+            name="median", path="vcolumn.vColumn", json_dict={"approx": approx,},
         )
         # -#
         return self.quantile(0.5, approx=approx)
@@ -2989,10 +2904,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="memory_usage",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="memory_usage", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         import sys
@@ -3024,10 +2936,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="min",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="min", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["min"]).values[self.alias][0]
@@ -3057,10 +2966,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="mode",
-            path="vcolumn.vColumn",
-            json_dict={"dropna": dropna, "n": n,},
-            query_label="verticapy_json",
+            name="mode", path="vcolumn.vColumn", json_dict={"dropna": dropna, "n": n,},
         )
         # -#
         check_types([("dropna", dropna, [bool]), ("n", n, [int, float])])
@@ -3110,10 +3016,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="mul",
-            path="vcolumn.vColumn",
-            json_dict={"x": x,},
-            query_label="verticapy_json",
+            name="mul", path="vcolumn.vColumn", json_dict={"x": x,},
         )
         # -#
         check_types([("x", x, [int, float])])
@@ -3142,10 +3045,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="nlargest",
-            path="vcolumn.vColumn",
-            json_dict={"n": n,},
-            query_label="verticapy_json",
+            name="nlargest", path="vcolumn.vColumn", json_dict={"n": n,},
         )
         # -#
         check_types([("n", n, [int, float])])
@@ -3193,7 +3093,6 @@ Attributes
             name="normalize",
             path="vcolumn.vColumn",
             json_dict={"method": method, "by": by, "return_trans": return_trans,},
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(by, str):
@@ -3528,10 +3427,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="nsmallest",
-            path="vcolumn.vColumn",
-            json_dict={"n": n,},
-            query_label="verticapy_json",
+            name="nsmallest", path="vcolumn.vColumn", json_dict={"n": n,},
         )
         # -#
         check_types([("n", n, [int, float])])
@@ -3562,10 +3458,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="numh",
-            path="vcolumn.vColumn",
-            json_dict={"method": method,},
-            query_label="verticapy_json",
+            name="numh", path="vcolumn.vColumn", json_dict={"method": method,},
         )
         # -#
         check_types(
@@ -3648,10 +3541,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="nunique",
-            path="vcolumn.vColumn",
-            json_dict={"approx": approx,},
-            query_label="verticapy_json",
+            name="nunique", path="vcolumn.vColumn", json_dict={"approx": approx,},
         )
         # -#
         check_types([("approx", approx, [bool])])
@@ -3725,7 +3615,6 @@ Attributes
                 "h": h,
                 "pie_type": pie_type,
             },
-            query_label="verticapy_json",
         )
         # -#
         if isinstance(pie_type, str):
@@ -3809,7 +3698,6 @@ Attributes
                 "area": area,
                 "step": step,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -3850,10 +3738,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="product",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="product", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(func=["prod"]).values[self.alias][0]
@@ -3889,7 +3774,6 @@ Attributes
             name="quantile",
             path="vcolumn.vColumn",
             json_dict={"x": x, "approx": approx,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("x", x, [int, float], ("approx", approx, [bool]))])
@@ -3954,7 +3838,6 @@ Attributes
                 "end_date": end_date,
                 "plot_median": plot_median,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -4042,10 +3925,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="round",
-            path="vcolumn.vColumn",
-            json_dict={"n": n,},
-            query_label="verticapy_json",
+            name="round", path="vcolumn.vColumn", json_dict={"n": n,},
         )
         # -#
         check_types([("n", n, [int, float])])
@@ -4068,10 +3948,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sem",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="sem", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["sem"]).values[self.alias][0]
@@ -4093,10 +3970,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="skewness",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="skewness", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["skewness"]).values[self.alias][0]
@@ -4132,7 +4006,6 @@ Attributes
             name="slice",
             path="vcolumn.vColumn",
             json_dict={"length": length, "unit": unit, "start": start,},
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -4212,7 +4085,6 @@ Attributes
                 "max_cardinality": max_cardinality,
                 "h": h,
             },
-            query_label="verticapy_json",
         )
         # -#
         check_types(
@@ -4256,10 +4128,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="std",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="std", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["stddev"]).values[self.alias][0]
@@ -4282,10 +4151,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="store_usage",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="store_usage", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         pre_comp = self.parent.__get_catalog_value__(self.alias, "store_usage")
@@ -4333,10 +4199,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="str_contains",
-            path="vcolumn.vColumn",
-            json_dict={"pat": pat,},
-            query_label="verticapy_json",
+            name="str_contains", path="vcolumn.vColumn", json_dict={"pat": pat,},
         )
         # -#
         check_types([("pat", pat, [str])])
@@ -4373,10 +4236,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="str_count",
-            path="vcolumn.vColumn",
-            json_dict={"pat": pat,},
-            query_label="verticapy_json",
+            name="str_count", path="vcolumn.vColumn", json_dict={"pat": pat,},
         )
         # -#
         check_types([("pat", pat, [str])])
@@ -4413,10 +4273,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="str_extract",
-            path="vcolumn.vColumn",
-            json_dict={"pat": pat,},
-            query_label="verticapy_json",
+            name="str_extract", path="vcolumn.vColumn", json_dict={"pat": pat,},
         )
         # -#
         check_types([("pat", pat, [str])])
@@ -4458,7 +4315,6 @@ Attributes
             name="str_replace",
             path="vcolumn.vColumn",
             json_dict={"to_replace": to_replace, "value": value,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("to_replace", to_replace, [str]), ("value", value, [str])])
@@ -4502,7 +4358,6 @@ Attributes
             name="str_slice",
             path="vcolumn.vColumn",
             json_dict={"start": start, "step": step,},
-            query_label="verticapy_json",
         )
         # -#
         check_types([("start", start, [int, float]), ("step", step, [int, float])])
@@ -4531,10 +4386,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sub",
-            path="vcolumn.vColumn",
-            json_dict={"x": x,},
-            query_label="verticapy_json",
+            name="sub", path="vcolumn.vColumn", json_dict={"x": x,},
         )
         # -#
         check_types([("x", x, [int, float])])
@@ -4560,10 +4412,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sum",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="sum", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["sum"]).values[self.alias][0]
@@ -4591,10 +4440,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="tail",
-            path="vcolumn.vColumn",
-            json_dict={"limit": limit,},
-            query_label="verticapy_json",
+            name="tail", path="vcolumn.vColumn", json_dict={"limit": limit,},
         )
         # -#
         return self.iloc(limit=limit, offset=-1)
@@ -4624,10 +4470,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="topk",
-            path="vcolumn.vColumn",
-            json_dict={"k": k, "dropna": dropna,},
-            query_label="verticapy_json",
+            name="topk", path="vcolumn.vColumn", json_dict={"k": k, "dropna": dropna,},
         )
         # -#
         check_types([("k", k, [int, float]), ("dropna", dropna, [bool])])
@@ -4680,10 +4523,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="value_counts",
-            path="vcolumn.vColumn",
-            json_dict={"k": k,},
-            query_label="verticapy_json",
+            name="value_counts", path="vcolumn.vColumn", json_dict={"k": k,},
         )
         # -#
         return self.describe(method="categorical", max_cardinality=k)
@@ -4705,10 +4545,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="var",
-            path="vcolumn.vColumn",
-            json_dict={},
-            query_label="verticapy_json",
+            name="var", path="vcolumn.vColumn", json_dict={},
         )
         # -#
         return self.aggregate(["variance"]).values[self.alias][0]
