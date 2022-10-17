@@ -6925,19 +6925,19 @@ vColumns : vColumn
     Parameters
     ----------
     columns: list / str
-        List of the vColumns used for the grouping. It can also be customized 
-        expressions. If rollup is set to True, it can be a list of tuples.
+        List of the vColumns used to group the elements or a customized expression. 
+        If rollup is set to True, this can be a list of tuples.
     expr: list, optional
-        List of the different aggregations in pure SQL. Aliases can also be given. 
-        'SUM(column)' or 'AVG(column) AS my_new_alias' are correct whereas 'AVG' 
-        is incorrect. Aliases are recommended to keep the track of the different 
-        features and not have ambiguous names. The function MODE does not exist in 
-        SQL for example but can be obtained using the 'analytic' method first and 
-        then by grouping the result.
+        List of the different aggregations in pure SQL. Aliases can be used.
+        For example, 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct 
+        whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
+        the features and to prevent ambiguous names. For example, the MODE 
+        function does not exist, but can be replicated by using the 'analytic' 
+        method and then grouping the result.
     rollup: bool, optional
-        If set to True, the rollup operator will be used.
+        If set to True, the rollup operator is used.
     having: str, optional
-        Expression used to filter the result of the group by.
+        Expression used to filter the result.
 
     Returns
     -------
