@@ -1821,9 +1821,9 @@ def save_to_query_profile(
 ):
     """
 ---------------------------------------------------------------------------
-Send a query to the Vertica Database in order to save some information in
-the query profile table. It is used to save the methods usage and their
-parameters. The function generates a standard JSON string.
+Saves information about the specified VerticaPy method to the QUERY_PROFILES 
+table in the Vertica database. It is used to collect usage statistics on 
+methods and their parameters. This function generates a JSON string.
 
 Parameters
 ----------
@@ -1834,11 +1834,12 @@ path: str, optional
 json_dict: dict, optional
     Dictionary of the different parameters to store.
 query_label: str, optional
-    Name to give to the identifier in the query profile table.
+    Name to give to the identifier in the query profile table. If 
+    unspecified, the name of the method is used.
 return_query: bool, optional
     If set to True, the query is returned.
 add_identifier: bool, optional
-    If set to True, the verticapy identifier is added in the json.
+    If set to True, the VerticaPy identifier is added to the generated json.
 
 Returns
 -------

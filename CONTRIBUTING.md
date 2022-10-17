@@ -420,7 +420,7 @@ executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fet
   135,
   'Montreal, PQ / Chesterville, ON']]
 ```
-The save_to_query_profile() method is used to save the method call in a Vertica table. This table is used to run statistics and for debugging purposes.
+The save_to_query_profile() method saves information about a specified VerticaPy method to the QUERY_PROFILES table in the Vertica database. You can use this to collect usage statistics on methods and their parameters.
 
 The save_to_query_profile() function uses three main parameters:
  - name: The name of the method.
