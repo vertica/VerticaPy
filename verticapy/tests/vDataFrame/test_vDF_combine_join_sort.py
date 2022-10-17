@@ -89,6 +89,27 @@ class TestvDFCombineJoinSort:
                 expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
             )
         assert exception_info.match('Syntax error at or near "For"')
+        # with rollup
+        result3 = market_vd.groupby(
+            columns=["Form", "Name"],
+            expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
+            rollup=True,
+        )
+        assert result3.shape() == (
+            164,
+            4,
+        ), "testing vDataFrame.groupby(columns, expr) with rollup failed"
+        # using the having parameter
+        result4 = market_vd.groupby(
+            columns=["Form", "Name"],
+            expr=["AVG(Price) AS avg_price", "STDDEV(Price) AS std"],
+            rollup=True,
+            having="AVG(Price) > 2",
+        )
+        assert result4.shape() == (
+            164,
+            4,
+        ), "testing vDataFrame.groupby(columns, expr) with rollup and having failed"
 
     def test_vDF_join(self, market_vd):
         # CREATE TABLE not_fresh AS SELECT * FROM market WHERE Form != 'Fresh';
