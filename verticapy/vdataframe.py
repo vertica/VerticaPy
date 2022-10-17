@@ -6967,16 +6967,18 @@ vColumns : vColumn
 
     one_hot_encode = get_dummies
     # ---#
-    def groupby(self, columns: list, expr: list = []):
+    def groupby(
+        self, columns: list, expr: list = [], rollup: bool = False, having: str = "",
+    ):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame by grouping the elements.
 
     Parameters
     ----------
-    columns: list
+    columns: list / str
         List of the vColumns used for the grouping. It can also be customized 
-        expressions.
+        expressions. If rollup is set to True, it can be a list of tuples.
     expr: list, optional
         List of the different aggregations in pure SQL. Aliases can also be given. 
         'SUM(column)' or 'AVG(column) AS my_new_alias' are correct whereas 'AVG' 
@@ -6984,6 +6986,10 @@ vColumns : vColumn
         features and not have ambiguous names. The function MODE does not exist in 
         SQL for example but can be obtained using the 'analytic' method first and 
         then by grouping the result.
+    rollup: bool, optional
+        If set to True, the rollup operator will be used.
+    having: str, optional
+        Expression used to filter the result of the group by.
 
     Returns
     -------
@@ -7002,7 +7008,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="groupby",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "expr": expr,},
+            json_dict={"columns": columns, "expr": expr, "rollup": rollup},
             query_label="verticapy_json",
         )
         # -#
@@ -7010,20 +7016,58 @@ vColumns : vColumn
             columns = [columns]
         if isinstance(expr, str):
             expr = [expr]
-        check_types([("columns", columns, [list]), ("expr", expr, [list])])
-        columns_copy = [column for column in columns]
-        for i in range(len(columns)):
-            column = self.format_colnames([columns[i]])
-            if column:
-                columns_copy[i] = column[0]
-        relation = "(SELECT {} FROM {} GROUP BY {}) VERTICAPY_SUBTABLE".format(
+        check_types(
+            [
+                ("columns", columns, [list]),
+                ("expr", expr, [list]),
+                ("rollup", rollup, [bool]),
+            ]
+        )
+        columns_to_select = []
+        rollup_expr = "ROLLUP("
+        for elem in columns:
+            if isinstance(elem, tuple) and rollup:
+                rollup_expr += "("
+                for item in elem:
+                    colname = self.format_colnames([item])
+                    if colname:
+                        rollup_expr += colname
+                        columns_to_select += [colname]
+                    else:
+                        rollup_expr += str(item)
+                        columns_to_select += [item]
+                    rollup_expr += ", "
+                rollup_expr = rollup_expr[:-2] + "), "
+            elif isinstance(elem, str):
+                colname = self.format_colnames([elem])
+                if colname:
+                    rollup_expr += colname
+                    columns_to_select += [colname]
+                else:
+                    rollup_expr += str(elem)
+                    columns_to_select += [elem]
+                rollup_expr += ", "
+            else:
+                raise ParameterError(
+                    "Parameter 'columns' must be a string; list of strings or tuples (only when rollup is set to True)."
+                )
+        rollup_expr = rollup_expr[:-2] + ")"
+        if having:
+            having = " HAVING {}".format(having)
+        relation = "(SELECT {} FROM {} GROUP BY {}{}) VERTICAPY_SUBTABLE".format(
             ", ".join(
-                [str(elem) for elem in columns_copy] + [str(elem) for elem in expr]
+                [str(elem) for elem in columns_to_select] + [str(elem) for elem in expr]
             ),
             self.__genSQL__(),
             ", ".join(
-                [str(i + 1) for i in range(len([str(elem) for elem in columns_copy]))]
+                [
+                    str(i + 1)
+                    for i in range(len([str(elem) for elem in columns_to_select]))
+                ]
+                if not (rollup)
+                else rollup_expr,
             ),
+            having,
         )
         return self.__vDataFrameSQL__(
             relation,
