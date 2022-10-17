@@ -707,11 +707,14 @@ Attributes
             name="bar",
             path="vcolumn.vColumn",
             json_dict={
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "nbins": nbins,
-                "h": h,
+                **{
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "nbins": nbins,
+                    "h": h,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -778,10 +781,13 @@ Attributes
             name="boxplot",
             path="vcolumn.vColumn",
             json_dict={
-                "by": by,
-                "h": h,
-                "max_cardinality": max_cardinality,
-                "cat_priority": cat_priority,
+                **{
+                    "by": by,
+                    "h": h,
+                    "max_cardinality": max_cardinality,
+                    "cat_priority": cat_priority,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -1048,7 +1054,7 @@ Attributes
 		"""
         # Saving information to the query profile table
         save_to_query_profile(
-            name="decode", path="vcolumn.vColumn", json_dict={},
+            name="decode", path="vcolumn.vColumn", json_dict={"argv": argv},
         )
         # -#
         import verticapy.stats as st
@@ -1107,10 +1113,8 @@ Attributes
             name="density",
             path="vcolumn.vColumn",
             json_dict={
-                "by": by,
-                "kernel": kernel,
-                "bandwidth": bandwidth,
-                "nbins": nbins,
+                **{"by": by, "kernel": kernel, "bandwidth": bandwidth, "nbins": nbins,},
+                **style_kwds,
             },
         )
         # -#
@@ -2211,7 +2215,7 @@ Attributes
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="geo_plot", path="vcolumn.vColumn", json_dict={},
+            name="geo_plot", path="vcolumn.vColumn", json_dict=kwargs,
         )
         # -#
         columns = [self.alias]
@@ -2449,11 +2453,14 @@ Attributes
             name="hist",
             path="vcolumn.vColumn",
             json_dict={
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "h": h,
-                "nbins": nbins,
+                **{
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "h": h,
+                    "nbins": nbins,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -3609,11 +3616,14 @@ Attributes
             name="pie",
             path="vcolumn.vColumn",
             json_dict={
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "h": h,
-                "pie_type": pie_type,
+                **{
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "h": h,
+                    "pie_type": pie_type,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -3691,12 +3701,15 @@ Attributes
             name="plot",
             path="vcolumn.vColumn",
             json_dict={
-                "ts": ts,
-                "by": by,
-                "start_date": start_date,
-                "end_date": end_date,
-                "area": area,
-                "step": step,
+                **{
+                    "ts": ts,
+                    "by": by,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "area": area,
+                    "step": step,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -3832,11 +3845,14 @@ Attributes
             name="range_plot",
             path="vcolumn.vColumn",
             json_dict={
-                "ts": ts,
-                "q": q,
-                "start_date": start_date,
-                "end_date": end_date,
-                "plot_median": plot_median,
+                **{
+                    "ts": ts,
+                    "q": q,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "plot_median": plot_median,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -4079,11 +4095,14 @@ Attributes
             name="spider",
             path="vcolumn.vColumn",
             json_dict={
-                "by": by,
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "h": h,
+                **{
+                    "by": by,
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "h": h,
+                },
+                **style_kwds,
             },
         )
         # -#

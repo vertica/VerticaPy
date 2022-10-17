@@ -1697,7 +1697,9 @@ vColumns : vColumn
     # Methods
     #
     # ---#
-    def aad(self, columns: list = []):
+    def aad(
+        self, columns: list = [], **agg_kwds,
+    ):
         """
     ---------------------------------------------------------------------------
     Aggregates the vDataFrame using 'aad' (Average Absolute Deviation).
@@ -1707,6 +1709,8 @@ vColumns : vColumn
     columns: list, optional
         List of the vColumns names. If empty, all numerical vColumns will be 
         used.
+    **agg_kwds
+        Any optional parameter to pass to the Aggregate function.
 
     Returns
     -------
@@ -1720,10 +1724,12 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="aad", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="aad",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
-        return self.aggregate(func=["aad"], columns=columns)
+        return self.aggregate(func=["aad"], columns=columns, **agg_kwds,)
 
     # ---#
     def abs(self, columns: list = []):
@@ -1856,17 +1862,20 @@ vColumns : vColumn
             name="acf",
             path="vdataframe.vDataFrame",
             json_dict={
-                "column": column,
-                "ts": ts,
-                "by": by,
-                "p": p,
-                "unit": unit,
-                "method": method,
-                "acf_type": acf_type,
-                "confidence": confidence,
-                "alpha": alpha,
-                "round_nb": round_nb,
-                "show": show,
+                **{
+                    "column": column,
+                    "ts": ts,
+                    "by": by,
+                    "p": p,
+                    "unit": unit,
+                    "method": method,
+                    "acf_type": acf_type,
+                    "confidence": confidence,
+                    "alpha": alpha,
+                    "round_nb": round_nb,
+                    "show": show,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -2658,7 +2667,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="all", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="all",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["bool_and"], columns=columns, **agg_kwds,)
@@ -3206,23 +3217,26 @@ vColumns : vColumn
             name="animated",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "ts": ts,
-                "by": by,
-                "kind": kind,
-                "start_date": start_date,
-                "end_date": end_date,
-                "limit_over": limit_over,
-                "limit_labels": limit_labels,
-                "limit": limit,
-                "fixed_xy_lim": fixed_xy_lim,
-                "date_in_title": date_in_title,
-                "date_style_dict": date_style_dict,
-                "interval": interval,
-                "repeat": repeat,
-                "return_html": return_html,
-                "ts_steps": ts_steps,
-                "bubble_img": bubble_img,
+                **{
+                    "columns": columns,
+                    "ts": ts,
+                    "by": by,
+                    "kind": kind,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "limit_over": limit_over,
+                    "limit_labels": limit_labels,
+                    "limit": limit,
+                    "fixed_xy_lim": fixed_xy_lim,
+                    "date_in_title": date_in_title,
+                    "date_style_dict": date_style_dict,
+                    "interval": interval,
+                    "repeat": repeat,
+                    "return_html": return_html,
+                    "ts_steps": ts_steps,
+                    "bubble_img": bubble_img,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -3409,7 +3423,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="any", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="any",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["bool_or"], columns=columns, **agg_kwds,)
@@ -3768,7 +3784,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="avg", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="avg",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["avg"], columns=columns, **agg_kwds,)
@@ -3842,12 +3860,15 @@ vColumns : vColumn
             name="bar",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "method": method,
-                "of": of,
-                "h": h,
-                "max_cardinality": max_cardinality,
-                "hist_type": hist_type,
+                **{
+                    "columns": columns,
+                    "method": method,
+                    "of": of,
+                    "h": h,
+                    "max_cardinality": max_cardinality,
+                    "hist_type": hist_type,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -4103,7 +4124,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="boxplot",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
+            json_dict={**{"columns": columns,}, **style_kwds},
         )
         # -#
         if isinstance(columns, str):
@@ -4168,13 +4189,16 @@ vColumns : vColumn
             name="bubble",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "size_bubble_col": size_bubble_col,
-                "catcol": catcol,
-                "cmap_col": cmap_col,
-                "max_nb_points": max_nb_points,
-                "bbox": bbox,
-                "img": img,
+                **{
+                    "columns": columns,
+                    "size_bubble_col": size_bubble_col,
+                    "catcol": catcol,
+                    "cmap_col": cmap_col,
+                    "max_nb_points": max_nb_points,
+                    "bbox": bbox,
+                    "img": img,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -4748,7 +4772,10 @@ vColumns : vColumn
         save_to_query_profile(
             name="contour",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "func": func, "nbins": nbins,},
+            json_dict={
+                **{"columns": columns, "func": func, "nbins": nbins,},
+                **style_kwds,
+            },
         )
         # -#
         check_types(
@@ -4824,11 +4851,14 @@ vColumns : vColumn
             name="corr",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "method": method,
-                "round_nb": round_nb,
-                "focus": focus,
-                "show": show,
+                **{
+                    "columns": columns,
+                    "method": method,
+                    "round_nb": round_nb,
+                    "focus": focus,
+                    "show": show,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -5095,7 +5125,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="count", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="count",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["count"], columns=columns, **agg_kwds,)
@@ -5194,7 +5226,10 @@ vColumns : vColumn
         save_to_query_profile(
             name="cov",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "focus": focus, "show": show,},
+            json_dict={
+                **{"columns": columns, "focus": focus, "show": show,},
+                **style_kwds,
+            },
         )
         # -#
         if isinstance(columns, str):
@@ -5552,11 +5587,14 @@ vColumns : vColumn
             name="density",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "bandwidth": bandwidth,
-                "kernel": kernel,
-                "nbins": nbins,
-                "xlim": xlim,
+                **{
+                    "columns": columns,
+                    "bandwidth": bandwidth,
+                    "kernel": kernel,
+                    "nbins": nbins,
+                    "xlim": xlim,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -7325,7 +7363,10 @@ vColumns : vColumn
         save_to_query_profile(
             name="heatmap",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "method": method, "of": of, "h": h,},
+            json_dict={
+                **{"columns": columns, "method": method, "of": of, "h": h,},
+                **style_kwds,
+            },
         )
         # -#
         if isinstance(columns, str):
@@ -7421,11 +7462,14 @@ vColumns : vColumn
             name="hexbin",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "method": method,
-                "of": of,
-                "bbox": bbox,
-                "img": img,
+                **{
+                    "columns": columns,
+                    "method": method,
+                    "of": of,
+                    "bbox": bbox,
+                    "img": img,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -7517,12 +7561,15 @@ vColumns : vColumn
             name="hist",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "h": h,
-                "hist_type": hist_type,
+                **{
+                    "columns": columns,
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "h": h,
+                    "hist_type": hist_type,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -7934,7 +7981,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="kurtosis",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["kurtosis"], columns=columns, **agg_kwds,)
@@ -8043,7 +8090,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="mad", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="mad",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["mad"], columns=columns, **agg_kwds,)
@@ -8076,7 +8125,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="max", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="max",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["max"], columns=columns, **agg_kwds,)
@@ -8183,7 +8234,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="min", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="min",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["min"], columns=columns, **agg_kwds,)
@@ -8548,13 +8601,16 @@ vColumns : vColumn
             name="outliers_plot",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "threshold": threshold,
-                "color": color,
-                "outliers_color": outliers_color,
-                "inliers_color": inliers_color,
-                "inliers_border_color": inliers_border_color,
-                "max_nb_points": max_nb_points,
+                **{
+                    "columns": columns,
+                    "threshold": threshold,
+                    "color": color,
+                    "outliers_color": outliers_color,
+                    "inliers_color": inliers_color,
+                    "inliers_border_color": inliers_border_color,
+                    "max_nb_points": max_nb_points,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -8655,14 +8711,17 @@ vColumns : vColumn
             name="pacf",
             path="vdataframe.vDataFrame",
             json_dict={
-                "column": column,
-                "ts": ts,
-                "by": by,
-                "p": p,
-                "unit": unit,
-                "confidence": confidence,
-                "alpha": alpha,
-                "show": show,
+                **{
+                    "column": column,
+                    "ts": ts,
+                    "by": by,
+                    "p": p,
+                    "unit": unit,
+                    "confidence": confidence,
+                    "alpha": alpha,
+                    "show": show,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -8836,7 +8895,10 @@ vColumns : vColumn
         save_to_query_profile(
             name="pie",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "max_cardinality": max_cardinality, "h": h,},
+            json_dict={
+                **{"columns": columns, "max_cardinality": max_cardinality, "h": h,},
+                **style_kwds,
+            },
         )
         # -#
         if isinstance(columns, str):
@@ -9151,14 +9213,17 @@ vColumns : vColumn
             name="pivot_table",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "method": method,
-                "of": of,
-                "max_cardinality": max_cardinality,
-                "h": h,
-                "show": show,
-                "with_numbers": with_numbers,
-                "fill_none": fill_none,
+                **{
+                    "columns": columns,
+                    "method": method,
+                    "of": of,
+                    "max_cardinality": max_cardinality,
+                    "h": h,
+                    "show": show,
+                    "with_numbers": with_numbers,
+                    "fill_none": fill_none,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -9248,11 +9313,14 @@ vColumns : vColumn
             name="plot",
             path="vdataframe.vDataFrame",
             json_dict={
-                "ts": ts,
-                "columns": columns,
-                "start_date": start_date,
-                "end_date": end_date,
-                "step": step,
+                **{
+                    "ts": ts,
+                    "columns": columns,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "step": step,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -9355,7 +9423,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="product",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["prod"], columns=columns, **agg_kwds,)
@@ -9741,7 +9809,10 @@ vColumns : vColumn
         save_to_query_profile(
             name="regr",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "method": method, "show": show,},
+            json_dict={
+                **{"columns": columns, "method": method, "show": show,},
+                **style_kwds,
+            },
         )
         # -#
         if isinstance(columns, str):
@@ -10355,15 +10426,18 @@ vColumns : vColumn
             name="scatter",
             path="vdataframe.vDataFrame",
             json_dict={
-                "columns": columns,
-                "catcol": catcol,
-                "max_cardinality": max_cardinality,
-                "cat_priority": cat_priority,
-                "with_others": with_others,
-                "max_nb_points": max_nb_points,
-                "dimensions": dimensions,
-                "bbox": bbox,
-                "img": img,
+                **{
+                    "columns": columns,
+                    "catcol": catcol,
+                    "max_cardinality": max_cardinality,
+                    "cat_priority": cat_priority,
+                    "with_others": with_others,
+                    "max_nb_points": max_nb_points,
+                    "dimensions": dimensions,
+                    "bbox": bbox,
+                    "img": img,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -10495,7 +10569,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="scatter_matrix",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
+            json_dict={**{"columns": columns,}, **style_kwds},
         )
         # -#
         if isinstance(columns, str):
@@ -10653,7 +10727,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sem", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="sem",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["sem"], columns=columns, **agg_kwds,)
@@ -10964,7 +11040,7 @@ vColumns : vColumn
         save_to_query_profile(
             name="skewness",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns,},
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["skewness"], columns=columns, **agg_kwds,)
@@ -11058,11 +11134,14 @@ vColumns : vColumn
             name="stacked_area",
             path="vdataframe.vDataFrame",
             json_dict={
-                "ts": ts,
-                "columns": columns,
-                "start_date": start_date,
-                "end_date": end_date,
-                "fully": fully,
+                **{
+                    "ts": ts,
+                    "columns": columns,
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "fully": fully,
+                },
+                **style_kwds,
             },
         )
         # -#
@@ -11128,7 +11207,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="std", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="std",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["stddev"], columns=columns, **agg_kwds,)
@@ -11162,7 +11243,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="sum", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="sum",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["sum"], columns=columns, **agg_kwds,)
@@ -12170,7 +12253,9 @@ vColumns : vColumn
         """
         # Saving information to the query profile table
         save_to_query_profile(
-            name="var", path="vdataframe.vDataFrame", json_dict={"columns": columns,},
+            name="var",
+            path="vdataframe.vDataFrame",
+            json_dict={**{"columns": columns,}, **agg_kwds},
         )
         # -#
         return self.aggregate(func=["variance"], columns=columns, **agg_kwds,)

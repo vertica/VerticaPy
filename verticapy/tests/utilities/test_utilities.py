@@ -440,9 +440,9 @@ class TestUtilities:
         )
         assert (
             q2
-            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": '
+            == 'SELECT /*+LABEL(\'verticapy_test_utilities_json\')*/ \'{"verticapy_fname": "test", "verticapy_fpath": "test_path.test_value", "verticapy_id": "'
             + str(verticapy.options["identifier"])
-            + ', "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"verticapy_fpath": "test_path.test_value", "Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
+            + '", "X0": 1103, "X1": null, "X2": true, "X3": false, "X4": "x0;x1;x2;x3", "X5": {"verticapy_fpath": "test_path.test_value", "Y0": 3, "1": "y0;y1", "None": 4}, "vdf": "\\"public\\".\\"iris\\"", "model": "LinearRegression"}\''
         )
         current_cursor().execute(
             "SELECT MAPKEYS(MAPJSONEXTRACTOR(SUBSTRING('{0}', 53, 284))) OVER ();".format(

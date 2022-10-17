@@ -815,12 +815,15 @@ tablesample
         name="elbow",
         path="learn.model_selection",
         json_dict={
-            "input_relation": input_relation,
-            "X": X,
-            "n_cluster": n_cluster,
-            "init": init,
-            "max_iter": max_iter,
-            "tol": tol,
+            **{
+                "input_relation": input_relation,
+                "X": X,
+                "n_cluster": n_cluster,
+                "init": init,
+                "max_iter": max_iter,
+                "tol": tol,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -1926,17 +1929,20 @@ tablesample
         name="learning_curve",
         path="learn.model_selection",
         json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "sizes": sizes,
-            "method": method,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "std_coeff": std_coeff,
+            **{
+                "estimator": estimator,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "sizes": sizes,
+                "method": method,
+                "metric": metric,
+                "cv": cv,
+                "pos_label": pos_label,
+                "cutoff": cutoff,
+                "std_coeff": std_coeff,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -2120,11 +2126,14 @@ tablesample
         name="lift_chart",
         path="learn.model_selection",
         json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-            "nbins": nbins,
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "nbins": nbins,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -2272,7 +2281,10 @@ tablesample
     save_to_query_profile(
         name="plot_acf_pacf",
         path="learn.model_selection",
-        json_dict={"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
+        json_dict={
+            **{"vdf": vdf, "column": column, "ts": ts, "by": by, "p": p,},
+            **style_kwds,
+        },
     )
     # -#
     if isinstance(by, str):
@@ -2395,12 +2407,15 @@ tablesample
         name="prc_curve",
         path="learn.model_selection",
         json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-            "nbins": nbins,
-            "auc_prc": auc_prc,
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "nbins": nbins,
+                "auc_prc": auc_prc,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -2896,14 +2911,17 @@ tablesample
         name="roc_curve",
         path="learn.model_selection",
         json_dict={
-            "y_true": y_true,
-            "y_score": y_score,
-            "input_relation": input_relation,
-            "pos_label": pos_label,
-            "auc_roc": auc_roc,
-            "nbins": nbins,
-            "best_threshold": best_threshold,
-            "cutoff_curve": cutoff_curve,
+            **{
+                "y_true": y_true,
+                "y_score": y_score,
+                "input_relation": input_relation,
+                "pos_label": pos_label,
+                "auc_roc": auc_roc,
+                "nbins": nbins,
+                "best_threshold": best_threshold,
+                "cutoff_curve": cutoff_curve,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -3102,17 +3120,20 @@ tablesample
         name="stepwise",
         path="learn.model_selection",
         json_dict={
-            "estimator": estimator,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "criterion": criterion,
-            "direction": direction,
-            "max_steps": max_steps,
-            "criterion_threshold": criterion_threshold,
-            "drop_final_estimator": drop_final_estimator,
-            "x_order": x_order,
-            "show": show,
+            **{
+                "estimator": estimator,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "criterion": criterion,
+                "direction": direction,
+                "max_steps": max_steps,
+                "criterion_threshold": criterion_threshold,
+                "drop_final_estimator": drop_final_estimator,
+                "x_order": x_order,
+                "show": show,
+            },
+            **style_kwds,
         },
     )
     # -#
@@ -3365,17 +3386,20 @@ tablesample
         name="validation_curve",
         path="learn.model_selection",
         json_dict={
-            "estimator": estimator,
-            "param_name": param_name,
-            "param_range": param_range,
-            "input_relation": input_relation,
-            "X": X,
-            "y": y,
-            "metric": metric,
-            "cv": cv,
-            "pos_label": pos_label,
-            "cutoff": cutoff,
-            "std_coeff": std_coeff,
+            **{
+                "estimator": estimator,
+                "param_name": param_name,
+                "param_range": param_range,
+                "input_relation": input_relation,
+                "X": X,
+                "y": y,
+                "metric": metric,
+                "cv": cv,
+                "pos_label": pos_label,
+                "cutoff": cutoff,
+                "std_coeff": std_coeff,
+            },
+            **style_kwds,
         },
     )
     # -#
