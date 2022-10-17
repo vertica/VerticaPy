@@ -75,7 +75,7 @@ import verticapy.stats
 import verticapy.learn
 
 # Other Modules
-import random
+import uuid
 
 verticapy.options = {
     "cache": True,
@@ -85,7 +85,7 @@ verticapy.options = {
     "interactive": False,
     "count_on": False,
     "footer_on": True,
-    "identifier": random.randint(0, 1000000000),
+    "identifier": str(uuid.uuid1()).replace("-", ""),
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,

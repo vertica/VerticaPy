@@ -7031,8 +7031,8 @@ vColumns : vColumn
                 for item in elem:
                     colname = self.format_colnames([item])
                     if colname:
-                        rollup_expr += colname
-                        columns_to_select += [colname]
+                        rollup_expr += colname[0]
+                        columns_to_select += [colname[0]]
                     else:
                         rollup_expr += str(item)
                         columns_to_select += [item]
@@ -7041,8 +7041,8 @@ vColumns : vColumn
             elif isinstance(elem, str):
                 colname = self.format_colnames([elem])
                 if colname:
-                    rollup_expr += colname
-                    columns_to_select += [colname]
+                    rollup_expr += colname[0]
+                    columns_to_select += [colname[0]]
                 else:
                     rollup_expr += str(elem)
                     columns_to_select += [elem]
@@ -7063,17 +7063,15 @@ vColumns : vColumn
                 [
                     str(i + 1)
                     for i in range(len([str(elem) for elem in columns_to_select]))
-                ]
-                if not (rollup)
-                else rollup_expr,
-            ),
+                ],
+            ) if not (rollup) else rollup_expr,
             having,
         )
         return self.__vDataFrameSQL__(
             relation,
             "groupby",
             "[Groupby]: The columns were grouped by {}".format(
-                ", ".join([str(elem) for elem in columns_copy])
+                ", ".join([str(elem) for elem in columns_to_select])
             ),
         )
 
