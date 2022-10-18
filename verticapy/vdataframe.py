@@ -6917,8 +6917,8 @@ vColumns : vColumn
     # ---#
     def groupby(
         self,
-        columns: list,
-        expr: list = [],
+        columns: Union[list, str],
+        expr: Union[list, str] = [],
         rollup: Union[bool, list] = False,
         having: str = "",
     ):
@@ -6931,7 +6931,7 @@ vColumns : vColumn
     columns: list / str
         List of the vColumns used to group the elements or a customized expression. 
         If rollup is set to True, this can be a list of tuples.
-    expr: list, optional
+    expr: list / str, optional
         List of the different aggregations in pure SQL. Aliases can be used.
         For example, 'SUM(column)' or 'AVG(column) AS my_new_alias' are correct 
         whereas 'AVG' is incorrect. Aliases are recommended to keep the track of 
@@ -6965,7 +6965,12 @@ vColumns : vColumn
         save_to_query_profile(
             name="groupby",
             path="vdataframe.vDataFrame",
-            json_dict={"columns": columns, "expr": expr, "rollup": rollup},
+            json_dict={
+                "columns": columns,
+                "expr": expr,
+                "rollup": rollup,
+                "having": having,
+            },
         )
         # -#
         if isinstance(columns, str):

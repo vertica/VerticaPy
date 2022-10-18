@@ -17,7 +17,7 @@ import pytest
 # VerticaPy
 from vertica_python.errors import VerticaSyntaxError
 from verticapy import drop, set_option
-from verticapy.datasets import load_iris, load_market, load_amazon
+from verticapy.datasets import load_iris, load_market, load_amazon, load_titanic
 
 set_option("print_info", False)
 
