@@ -618,7 +618,9 @@ def hchartSQL(
 ):
     aggregate, stock = False, False
     data = executeSQL(
-        "SELECT /*+LABEL('highchart.hchartSQL')*/ * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(query),
+        "SELECT /*+LABEL('highchart.hchartSQL')*/ * FROM ({}) VERTICAPY_SUBTABLE LIMIT 0".format(
+            query
+        ),
         method="fetchall",
         print_time_sql=False,
     )

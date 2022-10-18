@@ -107,6 +107,21 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="create_index",
+        path="geo",
+        json_dict={
+            "vdf": vdf,
+            "gid": gid,
+            "g": g,
+            "index": index,
+            "overwrite": overwrite,
+            "max_mem_mb": max_mem_mb,
+            "skip_nonindexable_polygons": skip_nonindexable_polygons,
+        },
+    )
+    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -177,6 +192,20 @@ Returns
 vDataFrame
     result of the transformation.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="coordinate_converter",
+        path="geo",
+        json_dict={
+            "vdf": vdf,
+            "x": x,
+            "y": y,
+            "x0": x0,
+            "earth_radius": earth_radius,
+            "reverse": reverse,
+        },
+    )
+    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -228,6 +257,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="describe_index",
+        path="geo",
+        json_dict={"name": name, "list_polygons": list_polygons,},
+    )
+    # -#
     check_types([("name", name, [str]), ("list_polygons", list_polygons, [bool])])
 
     if not (name):
@@ -276,6 +312,13 @@ Returns
 vDataFrame
     object containing the result of the intersection.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="intersect",
+        path="geo",
+        json_dict={"vdf": vdf, "index": index, "gid": gid, "g": g, "x": x, "y": y,},
+    )
+    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame]),
@@ -338,6 +381,13 @@ Returns
 bool
     True if the index was renamed, False otherwise.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="rename_index",
+        path="geo",
+        json_dict={"source": source, "dest": dest, "overwrite": overwrite,},
+    )
+    # -#
     check_types(
         [
             ("source", source, [str]),
@@ -386,6 +436,11 @@ Returns
 vDataFrame
     output vDataFrame that includes the new polygons.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="split_polygon_n", path="geo", json_dict={"p": p, "nbins": nbins,},
+    )
+    # -#
     check_types([("p", p, [str]), ("nbins", nbins, [int])])
 
     sql = """SELECT /*+LABEL(split_polygon_n)*/

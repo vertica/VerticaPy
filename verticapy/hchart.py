@@ -65,12 +65,19 @@ from verticapy import (
     clean_query,
     replace_vars_in_query,
     get_magic_options,
+    save_to_query_profile,
 )
 from verticapy.highchart import hchartSQL
 
 # ---#
 @needs_local_scope
 def hchart(line, cell="", local_ns=None):
+
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="hchart_magic", path="hchart", json_dict={"line": line, "cell": cell,},
+    )
+    # -#
 
     # Initialization
     query = "" if (not (cell) and (line)) else cell

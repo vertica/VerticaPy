@@ -83,6 +83,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="NearestCentroid",
+            path="learn.neighbors",
+            json_dict={"name": name, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "NearestCentroid", name
         self.set_params({"p": p})
@@ -194,6 +201,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KNeighborsClassifier",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsClassifier", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -989,6 +1003,23 @@ xlim: list, optional
         xlim: list = [],
         **kwargs,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KernelDensity",
+            path="learn.neighbors",
+            json_dict={
+                "name": name,
+                "nbins": nbins,
+                "p": p,
+                "bandwidth": bandwidth,
+                "kernel": kernel,
+                "max_leaf_nodes": int(max_leaf_nodes),
+                "max_depth": int(max_depth),
+                "min_samples_leaf": int(min_samples_leaf),
+                "xlim": xlim,
+            },
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str], False),
@@ -1108,7 +1139,9 @@ xlim: list, optional
                         distance = "POWER({0}, {1})".format(distance, 1.0 / p)
                         fkernel_tmp = fkernel.format(f"{distance} / {h}")
                         L += [f"SUM({fkernel_tmp}) / ({h} * {N})"]
-                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(", ".join(L), vdf.__genSQL__())
+                    query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.fit')*/ {0} FROM {1}".format(
+                        ", ".join(L), vdf.__genSQL__()
+                    )
                     result = executeSQL(
                         query, title="Computing the KDE", method="fetchrow"
                     )
@@ -1242,7 +1275,9 @@ xlim: list, optional
         """
         if len(self.X) == 1:
             if self.verticapy_store:
-                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(self.X[0], self.map)
+                query = "SELECT /*+LABEL('learn.neighbors.KernelDensity.plot')*/ {}, KDE FROM {} ORDER BY 1".format(
+                    self.X[0], self.map
+                )
                 result = executeSQL(query, method="fetchall", print_time_sql=False)
                 x, y = [elem[0] for elem in result], [elem[1] for elem in result]
             else:
@@ -1335,6 +1370,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 5, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="KNeighborsRegressor",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "KNeighborsRegressor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})
@@ -1578,6 +1620,13 @@ p: int, optional
 	"""
 
     def __init__(self, name: str, n_neighbors: int = 20, p: int = 2):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LocalOutlierFactor",
+            path="learn.neighbors",
+            json_dict={"name": name, "n_neighbors": n_neighbors, "p": p,},
+        )
+        # -#
         check_types([("name", name, [str], False)])
         self.type, self.name = "LocalOutlierFactor", name
         self.set_params({"n_neighbors": n_neighbors, "p": p})

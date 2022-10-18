@@ -451,6 +451,20 @@ col_sample_by_tree: float, optional
         sample: float = 0.632,
         col_sample_by_tree: float = 1.0,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="IsolationForest",
+            path="learn.ensemble",
+            json_dict={
+                "name": name,
+                "n_estimators": n_estimators,
+                "max_depth": max_depth,
+                "nbins": nbins,
+                "sample": sample,
+                "col_sample_by_tree": col_sample_by_tree,
+            },
+        )
+        # -#
         version(condition=[12, 0, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "IsolationForest", name
@@ -515,7 +529,13 @@ col_sample_by_tree: float, optional
         return vdf_return.eval(name, self.deploySQL(X=X, return_score=True,))
 
     # ---#
-    def deploySQL(self, X: list = [], cutoff: float = 0.7, contamination: float = None, return_score: bool = False):
+    def deploySQL(
+        self,
+        X: list = [],
+        cutoff: float = 0.7,
+        contamination: float = None,
+        return_score: bool = False,
+    ):
         """
     ---------------------------------------------------------------------------
     Returns the SQL code needed to deploy the model. 
@@ -545,13 +565,20 @@ col_sample_by_tree: float, optional
         """
         if isinstance(X, str):
             X = [X]
-        check_types([("X", X, [list]), ("cutoff", cutoff, [float]), ("contamination", contamination, [float]), ("return_score", return_score, [bool])])
-        if contamination and not(return_score):
+        check_types(
+            [
+                ("X", X, [list]),
+                ("cutoff", cutoff, [float]),
+                ("contamination", contamination, [float]),
+                ("return_score", return_score, [bool]),
+            ]
+        )
+        if contamination and not (return_score):
             assert 0 < contamination < 1, ParameterError(
                 "Incorrect parameter 'contamination'.\nThe parameter "
                 "'contamination' must be between 0.0 and 1.0, exclusive."
             )
-        elif not(return_score):
+        elif not (return_score):
             assert 0 < cutoff < 1, ParameterError(
                 "Incorrect parameter 'cutoff'.\nThe parameter "
                 "'cutoff' must be between 0.0 and 1.0, exclusive."
@@ -633,7 +660,10 @@ col_sample_by_tree: float, optional
         vdf_return = vdf if inplace else vdf.copy()
 
         # Result
-        return vdf_return.eval(name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X))
+        return vdf_return.eval(
+            name, self.deploySQL(cutoff=cutoff, contamination=contamination, X=X)
+        )
+
 
 # ---#
 class RandomForestClassifier(MulticlassClassifier, Tree):
@@ -688,6 +718,23 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="RandomForestClassifier",
+            path="learn.ensemble",
+            json_dict={
+                "name": name,
+                "n_estimators": n_estimators,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": sample,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            },
+        )
+        # -#
         version(condition=[8, 1, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestClassifier", name
@@ -758,6 +805,23 @@ nbins: int, optional
         min_info_gain: float = 0.0,
         nbins: int = 32,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="RandomForestRegressor",
+            path="learn.ensemble",
+            json_dict={
+                "name": name,
+                "n_estimators": n_estimators,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "sample": sample,
+                "max_depth": max_depth,
+                "min_samples_leaf": min_samples_leaf,
+                "min_info_gain": min_info_gain,
+                "nbins": nbins,
+            },
+        )
+        # -#
         version(condition=[9, 0, 1])
         check_types([("name", name, [str], False)])
         self.type, self.name = "RandomForestRegressor", name
@@ -838,6 +902,26 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="XGBoostClassifier",
+            path="learn.ensemble",
+            json_dict={
+                "name": name,
+                "max_ntree": max_ntree,
+                "max_depth": max_depth,
+                "nbins": nbins,
+                "split_proposal_method": split_proposal_method,
+                "tol": tol,
+                "learning_rate": learning_rate,
+                "min_split_loss": min_split_loss,
+                "weight_reg": weight_reg,
+                "sample": sample,
+                "col_sample_by_tree": col_sample_by_tree,
+                "col_sample_by_node": col_sample_by_node,
+            },
+        )
+        # -#
         version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostClassifier", name
@@ -923,6 +1007,26 @@ col_sample_by_node: float, optional
         col_sample_by_tree: float = 1.0,
         col_sample_by_node: float = 1.0,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="XGBoostRegressor",
+            path="learn.ensemble",
+            json_dict={
+                "name": name,
+                "max_ntree": max_ntree,
+                "max_depth": max_depth,
+                "nbins": nbins,
+                "split_proposal_method": split_proposal_method,
+                "tol": tol,
+                "learning_rate": learning_rate,
+                "min_split_loss": min_split_loss,
+                "weight_reg": weight_reg,
+                "sample": sample,
+                "col_sample_by_tree": col_sample_by_tree,
+                "col_sample_by_node": col_sample_by_node,
+            },
+        )
+        # -#
         version(condition=[10, 1, 0])
         check_types([("name", name, [str], False)])
         self.type, self.name = "XGBoostRegressor", name

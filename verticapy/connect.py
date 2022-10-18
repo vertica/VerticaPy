@@ -392,7 +392,14 @@ dict
     if confparser.has_section(section):
 
         options = confparser.items(section)
-        conn_info = {"port": 5433, "user": "dbadmin", "session_label": "verticapy"}
+        conn_info = {
+            "port": 5433,
+            "user": "dbadmin",
+            "session_label": "verticapy-"
+            + verticapy.__version__
+            + "-"
+            + verticapy.options["identifier"],
+        }
 
         for option_name, option_val in options:
 
@@ -435,7 +442,7 @@ dict
                 option_val = option_val.lower()
                 conn_info[option_name] = option_val in ("true", "t", "yes", "y")
 
-            elif (option_name != "session_label"):
+            elif option_name != "session_label":
                 conn_info[option_name] = option_val
 
         return conn_info
@@ -512,6 +519,9 @@ conn
         "password": "",
         "database": "demo",
         "backup_server_node": ["localhost"],
-        "session_label": "verticapy",
+        "session_label": "verticapy-"
+        + verticapy.__version__
+        + "-"
+        + verticapy.options["identifier"],
     }
     return vertica_python.connect(**conn_info)

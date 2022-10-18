@@ -50,6 +50,7 @@
 #
 # VerticaPy Modules
 from verticapy.learn.vmodel import *
+from verticapy.utilities import save_to_query_profile
 
 # ---#
 class LinearSVC(BinaryClassifier):
@@ -103,6 +104,22 @@ max_iter: int, optional
         class_weight: list = [1, 1],
         max_iter: int = 100,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LinearSVC",
+            path="learn.svm",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "C": C,
+                "fit_intercept": fit_intercept,
+                "intercept_scaling": intercept_scaling,
+                "intercept_mode": intercept_mode,
+                "class_weight": class_weight,
+                "max_iter": max_iter,
+            },
+        )
+        # -#
         version(condition=[8, 1, 0])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVC", name
@@ -188,6 +205,22 @@ test_relation: str
         acceptable_error_margin: float = 0.1,
         max_iter: int = 100,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="LinearSVR",
+            path="learn.svm",
+            json_dict={
+                "name": name,
+                "tol": tol,
+                "C": C,
+                "fit_intercept": fit_intercept,
+                "intercept_scaling": intercept_scaling,
+                "intercept_mode": intercept_mode,
+                "acceptable_error_margin": acceptable_error_margin,
+                "max_iter": max_iter,
+            },
+        )
+        # -#
         version(condition=[8, 1, 1])
         check_types([("name", name, [str])])
         self.type, self.name = "LinearSVR", name

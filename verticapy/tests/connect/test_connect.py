@@ -40,6 +40,13 @@ class TestConnect:
         assert result2 == [1]
         # delete_connection
         assert delete_connection("vp_test_config")
+        # connection label
+        current_cursor().execute(
+            "SELECT client_label FROM v_monitor.sessions WHERE client_label LIKE 'verticapy%' LIMIT 1;"
+        )
+        label = current_cursor().fetchone()[0].split("-")
+        assert label[1] == verticapy.__version__
+        assert label[2] == str(verticapy.options["identifier"])
 
     def test_vertica_connection(self, base):
         cur = vertica_connection(

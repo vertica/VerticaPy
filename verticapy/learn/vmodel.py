@@ -113,7 +113,9 @@ Main Class for Vertica Model
                     )
                 except:
                     res = executeSQL(
-                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{}')".format(name),
+                        "SELECT /*+LABEL('learn.vModel.__repr__')*/ SUMMARIZE_MODEL('{}')".format(
+                            name
+                        ),
                         title="Summarizing the model.",
                         method="fetchfirstelem",
                     )
@@ -875,7 +877,9 @@ Main Class for Vertica Model
                 **style_kwds,
             )
         elif self.type == "LocalOutlierFactor":
-            query = "SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {}".format(self.name)
+            query = "SELECT /*+LABEL('learn.vModel.plot')*/ COUNT(*) FROM {}".format(
+                self.name
+            )
             tablesample = 100 * min(
                 float(
                     max_nb_points

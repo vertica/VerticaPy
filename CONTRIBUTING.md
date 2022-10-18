@@ -420,7 +420,14 @@ executeSQL("SELECT * FROM {0} LIMIT 2".format(titanic.__genSQL__()), method="fet
   135,
   'Montreal, PQ / Chesterville, ON']]
 ```
-For example, let's create a method to compute the correlations between two vDataFrame columns.
+The save_to_query_profile() method saves information about a specified VerticaPy method to the QUERY_PROFILES table in the Vertica database. You can use this to collect usage statistics on methods and their parameters.
+
+The save_to_query_profile() function uses three main parameters:
+ - name: The name of the method.
+ - path: The location of the method. For example, the method corr() of the vDataFrame is located in vdataframe.vDataFrame.
+ - json_dict: A dictionary of the parameters to store.
+
+For example, to create a method to compute the correlations between two vDataFrame columns:
 ```python
 # Example correlation method for a vDataFrame
 
@@ -447,6 +454,11 @@ def pearson(self, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", # name of the function - pearson
+                          path="vdataframe.vDataFrame", # function location
+                          json_dict={"column1": column1, # function parameters
+                                     "column2": column2,},)
     # Check data types
     check_types([("column1", column1, [str]),
                  ("column2", column2, [str]),])
@@ -456,8 +468,8 @@ def pearson(self, column1: str, column2: str):
     column1, column2 = self.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = self.__genSQL__()
-    # Create the SQL statement
-    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Create the SQL statement - Label the query when possible
+    query = f"SELECT /*+LABEL(vDataFrame.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
                         title = "Computing Pearson coefficient", 
@@ -491,6 +503,10 @@ def pearson(self, column: str,):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", 
+                          path="vcolumn.vColumn", 
+                          json_dict={"column": column,},)
     # Check data types
     check_types([("column", column, [str]),])
     # Check if the column belongs to the vDataFrame 
@@ -502,8 +518,8 @@ def pearson(self, column: str,):
     column2 = self.alias
     # Get the current vDataFrame relation
     table = self.parent.__genSQL__()
-    # Create the SQL statement
-    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Create the SQL statement - Label the query when possible
+    query = f"SELECT /*+LABEL(vColumn.pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
                         title = "Computing Pearson coefficient", 
@@ -540,6 +556,12 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
     --------
     vDataFrame.corr : Computes the Correlation Matrix of the vDataFrame.
         """
+    # Save the call in the query profile table
+    save_to_query_profile(name="pearson", 
+                          path="vdataframe", 
+                          json_dict={"vdf": vdf,
+                                     "column1": column1,
+                                     "column2": column2,},)
     # Check data types
     check_types([("vdf", vdf, [vDataFrame]),
                  ("column1", column1, [str]),
@@ -550,8 +572,8 @@ def pearson(vdf: vDataFrame, column1: str, column2: str):
     column1, column2 = vdf.format_colnames([column1, column2])
     # Get the current vDataFrame relation
     table = vdf.__genSQL__()
-    # Create the SQL statement
-    query = f"SELECT CORR({column1}, {column2}) FROM {table};"
+    # Create the SQL statement - Label the query when possible
+    query = f"SELECT /*+LABEL(pearson)*/ CORR({column1}, {column2}) FROM {table};"
     # Execute the SQL query and get the result
     result = executeSQL(query, 
                         title = "Computing Pearson coefficient", 

@@ -74,6 +74,9 @@ import verticapy.stats
 # Learn
 import verticapy.learn
 
+# Other Modules
+import uuid
+
 verticapy.options = {
     "cache": True,
     "colors": [],
@@ -82,6 +85,7 @@ verticapy.options = {
     "interactive": False,
     "count_on": False,
     "footer_on": True,
+    "identifier": str(uuid.uuid1()).replace("-", ""),
     "max_columns": 50,
     "max_rows": 100,
     "mode": None,

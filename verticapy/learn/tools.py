@@ -83,6 +83,17 @@ int
     1 if the model exists and is native.
     2 if the model exists and is not native.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="does_model_exist",
+        path="learn.tools",
+        json_dict={
+            "name": name,
+            "raise_error": raise_error,
+            "return_model_type": return_model_type,
+        },
+    )
+    # -#
     check_types([("name", name, [str])])
     model_type = None
     schema, model_name = schema_relation(name)
@@ -146,6 +157,17 @@ Returns
 model
     The model.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="load_model",
+        path="learn.tools",
+        json_dict={
+            "name": name,
+            "input_relation": input_relation,
+            "test_relation": test_relation,
+        },
+    )
+    # -#
     check_types(
         [
             ("name", name, [str]),

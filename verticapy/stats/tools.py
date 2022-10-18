@@ -102,6 +102,21 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="adfuller",
+        path="stats.tools",
+        json_dict={
+            "vdf": vdf,
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "p": p,
+            "with_trend": with_trend,
+            "regresults": regresults,
+        },
+    )
+    # -#
 
     def critical_value(alpha, N, with_trend):
         if not (with_trend):
@@ -349,10 +364,23 @@ model
      - anova_table_ : ANOVA table.
      - r2_          : R2
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="cochrane_orcutt",
+        path="stats.tools",
+        json_dict={
+            "vdf": vdf,
+            "ts": ts,
+            "prais_winsten": prais_winsten,
+            "drop_tmp_model": drop_tmp_model,
+        },
+    )
+    # -#
     check_types(
         [
             ("vdf", vdf, [vDataFrame, str]),
             ("ts", ts, [vDataFrame, str]),
+            ("prais_winsten", prais_winsten, [bool]),
             ("drop_tmp_model", drop_tmp_model, [bool]),
         ]
     )
@@ -421,6 +449,13 @@ Returns
 float
     Durbin Watson statistic
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="durbin_watson",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "eps": eps, "ts": ts, "by": by,},
+    )
+    # -#
     check_types(
         [
             ("ts", ts, [str]),
@@ -442,7 +477,9 @@ float
         vdf.__genSQL__(),
     )
     d = executeSQL(
-        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(query),
+        "SELECT /*+LABEL('stats.tools.durbin_watson')*/ SUM(POWER(et - lag_et, 2)) / SUM(POWER(et, 2)) FROM {}".format(
+            query
+        ),
         title="Computing the Durbin Watson d.",
         method="fetchfirstelem",
     )
@@ -470,6 +507,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="endogtest",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "eps": eps, "X": X,},
+    )
+    # -#
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
@@ -540,6 +584,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="het_arch",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "eps": eps, "ts": ts, "by": by, "p": p,},
+    )
+    # -#
     check_types(
         [
             ("eps", eps, [str]),
@@ -623,6 +674,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="het_breuschpagan",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "eps": eps, "X": X,},
+    )
+    # -#
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
@@ -705,7 +763,20 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
-
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="het_goldfeldquandt",
+        path="stats.tools",
+        json_dict={
+            "vdf": vdf,
+            "y": y,
+            "X": X,
+            "idx": idx,
+            "split": split,
+            "alternative": alternative,
+        },
+    )
+    # -#
     def model_fit(input_relation, X, y, model):
         mse = []
         for vdf_tmp in input_relation:
@@ -779,6 +850,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="het_white",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "eps": eps, "X": X,},
+    )
+    # -#
     check_types(
         [("eps", eps, [str]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str])]
     )
@@ -859,6 +937,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="jarque_bera",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "column": column, "alpha": alpha,},
+    )
+    # -#
     check_types(
         [
             ("column", column, [str]),
@@ -908,6 +993,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="kurtosistest",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "column": column,},
+    )
+    # -#
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
@@ -968,6 +1060,21 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="ljungbox",
+        path="stats.tools",
+        json_dict={
+            "vdf": vdf,
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "p": p,
+            "alpha": alpha,
+            "box_pierce": box_pierce,
+        },
+    )
+    # -#
     check_types(
         [
             ("ts", ts, [str]),
@@ -1037,6 +1144,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="adfuller",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "column": column, "ts": ts, "alpha": alpha,},
+    )
+    # -#
     check_types(
         [
             ("ts", ts, [str]),
@@ -1126,6 +1240,13 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="normaltest",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "column": column,},
+    )
+    # -#
     Z1, Z2 = skewtest(vdf, column)["value"][0], kurtosistest(vdf, column)["value"][0]
     Z = Z1 ** 2 + Z2 ** 2
     pvalue = chi2.sf(Z, 2)
@@ -1187,6 +1308,24 @@ Returns
 vDataFrame
     object containing (ts, column, TS seasonal part, TS trend, TS noise).
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="seasonal_decompose",
+        path="stats.tools",
+        json_dict={
+            "vdf": vdf,
+            "column": column,
+            "ts": ts,
+            "by": by,
+            "period": period,
+            "polynomial_order": polynomial_order,
+            "estimate_seasonality": estimate_seasonality,
+            "rule": rule,
+            "mult": mult,
+            "two_sided": two_sided,
+        },
+    )
+    # -#
     if isinstance(by, str):
         by = [by]
     check_types(
@@ -1334,6 +1473,11 @@ tablesample
     An object containing the result. For more information, see
     utilities.tablesample.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="skewtest", path="stats.tools", json_dict={"vdf": vdf, "column": column,},
+    )
+    # -#
     check_types([("column", column, [str]), ("vdf", vdf, [vDataFrame])])
     vdf.are_namecols_in(column)
     column = vdf.format_colnames(column)
@@ -1375,6 +1519,13 @@ Returns
 float
     VIF.
     """
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="variance_inflation_factor",
+        path="stats.tools",
+        json_dict={"vdf": vdf, "X": X, "X_idx": X_idx,},
+    )
+    # -#
     check_types(
         [("X_idx", X_idx, [int]), ("X", X, [list]), ("vdf", vdf, [vDataFrame, str]),]
     )

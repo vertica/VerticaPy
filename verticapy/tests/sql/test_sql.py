@@ -39,7 +39,10 @@ class TestSQL:
         # SQL line Test -c
         result = sql('  -c "SELECT * FROM titanic;"', "")
         assert result.shape() == (1234, 14)
-        assert result._VERTICAPY_VARIABLES_["main_relation"] == "(SELECT * FROM titanic) VSQL_MAGIC"
+        assert (
+            result._VERTICAPY_VARIABLES_["main_relation"]
+            == "(SELECT * FROM titanic) VSQL_MAGIC"
+        )
 
         # SQL line Test --command
         result = sql('  --command "SELECT * FROM titanic;"', "")

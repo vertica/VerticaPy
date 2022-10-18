@@ -92,6 +92,19 @@ Returns
 vDataFrame
 	vDataFrame of the created view
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="Balance",
+        path="learn.preprocessing",
+        json_dict={
+            "name": name,
+            "input_relation": input_relation,
+            "y": y,
+            "method": method,
+            "ratio": ratio,
+        },
+    )
+    # -#
     check_types(
         [
             ("name", name, [str]),
@@ -148,6 +161,21 @@ max_text_size: int, optional
         ignore_special: bool = True,
         max_text_size: int = 2000,
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="CountVectorizer",
+            path="learn.preprocessing",
+            json_dict={
+                "name": name,
+                "lowercase": lowercase,
+                "max_df": max_df,
+                "min_df": min_df,
+                "max_features": max_features,
+                "ignore_special": ignore_special,
+                "max_text_size": max_text_size,
+            },
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "CountVectorizer", name
         self.set_params(
@@ -335,6 +363,13 @@ method: str, optional
 	"""
 
     def __init__(self, name: str, method: str = "zscore"):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="Normalizer",
+            path="learn.preprocessing",
+            json_dict={"name": name, "method": method,},
+        )
+        # -#
         check_types([("name", name, [str])])
         self.type, self.name = "Normalizer", name
         self.set_params({"method": method})
@@ -410,6 +445,21 @@ null_column_name: str, optional
         column_naming: str = "indices",
         null_column_name: str = "null",
     ):
+        # Saving information to the query profile table
+        save_to_query_profile(
+            name="OneHotEncoder",
+            path="learn.preprocessing",
+            json_dict={
+                "name": name,
+                "extra_levels": extra_levels,
+                "drop_first": drop_first,
+                "ignore_null": ignore_null,
+                "separator": separator,
+                "column_naming": column_naming,
+                "null_column_name": null_column_name,
+            },
+        )
+        # -#
         check_types(
             [
                 ("name", name, [str]),

@@ -84,6 +84,17 @@ include_dependencies: list, optional
 	Library files dependencies. The function will copy paste the different files
 	in the UDF definition.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="import_lib_udf",
+        path="udf",
+        json_dict={
+            "udf_list": udf_list,
+            "library_name": library_name,
+            "include_dependencies": include_dependencies,
+        },
+    )
+    # -#
     directory = os.path.dirname(verticapy.__file__)
     session_name = get_session()
     file_name = f"{library_name}_{session_name}.py"
@@ -104,11 +115,7 @@ include_dependencies: list, optional
         return True
     except Exception as e:
         os.remove(directory + "/" + file_name)
-        if conn:
-            conn.close()
         raise e
-    if conn:
-        conn.close()
 
 
 # ---#
@@ -153,6 +160,19 @@ Returns
 udx_str, sql
     UDF py file, str needed to install the library.
 	"""
+    # Saving information to the query profile table
+    save_to_query_profile(
+        name="create_lib_udf",
+        path="udf",
+        json_dict={
+            "udf_list": udf_list,
+            "library_name": library_name,
+            "include_dependencies": include_dependencies,
+            "file_path": file_path,
+            "create_file": create_file,
+        },
+    )
+    # -#
     if isinstance(include_dependencies, (str)):
         include_dependencies = [include_dependencies]
     if not (isinstance(include_dependencies, (list))):
