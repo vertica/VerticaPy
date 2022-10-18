@@ -1843,7 +1843,7 @@ add_identifier: bool, optional
 
 Returns
 -------
-str or bool
+bool
     True if the operation succeeded, False otherwise.
     """
     try:
