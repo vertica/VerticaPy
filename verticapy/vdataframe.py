@@ -6940,11 +6940,11 @@ vColumns : vColumn
         method and then grouping the result.
     rollup: bool / list of bools, optional
         If set to True, the rollup operator is used.
-        If it is a list of bools, the rollup operator will be used on the matching
-        indexes. For example if columns = ['col1', ('col2', 'col3'), 'col4'] and
-        rollup = [False, True, True]. The rollup operator will be used on the set
-        ('col2', 'col3') and on 'col4'. In that case, the length of the 'rollup'
-        parameter must match the length of the 'columns' parameter.
+        If set to a list of bools, the rollup operator is used on the matching
+        indexes and the length of 'rollup' must match the length of 'columns.'
+        For example for columns = ['col1', ('col2', 'col3'), 'col4'] and
+        rollup = [False, True, True], the rollup operator is used on the set
+        ('col2', 'col3') and on 'col4'.
     having: str, optional
         Expression used to filter the result.
 
